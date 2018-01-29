@@ -567,11 +567,6 @@ TEST_P(InvTrans8x8DCT, CompareReference) {
 
 using std::tr1::make_tuple;
 
-INSTANTIATE_TEST_CASE_P(C, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_c,
-                                                     &aom_idct8x8_64_add_c,
-                                                     DCT_DCT, AOM_BITS_8)));
-
 INSTANTIATE_TEST_CASE_P(
     C, FwdTrans8x8HT,
     ::testing::Values(
@@ -590,10 +585,6 @@ INSTANTIATE_TEST_CASE_P(
                    AOM_BITS_8)));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_sse2,
-                                                     &aom_idct8x8_64_add_c,
-                                                     DCT_DCT, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, FwdTrans8x8HT,
     ::testing::Values(make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c,
@@ -605,12 +596,5 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c,
                                  ADST_ADST, AOM_BITS_8)));
 #endif  // HAVE_SSE2
-
-#if HAVE_SSSE3 && ARCH_X86_64
-INSTANTIATE_TEST_CASE_P(SSSE3, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_ssse3,
-                                                     &aom_idct8x8_64_add_ssse3,
-                                                     DCT_DCT, AOM_BITS_8)));
-#endif
 
 }  // namespace

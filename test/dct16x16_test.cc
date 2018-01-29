@@ -237,16 +237,6 @@ typedef std::tr1::tuple<FhtFunc, IhtFunc, TX_TYPE, aom_bit_depth_t>
 typedef std::tr1::tuple<IdctFunc, IdctFunc, TX_TYPE, aom_bit_depth_t>
     Idct16x16Param;
 
-void fdct16x16_ref(const int16_t *in, tran_low_t *out, int stride,
-                   TxfmParam * /*txfm_param*/) {
-  aom_fdct16x16_c(in, out, stride);
-}
-
-void idct16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
-                   const TxfmParam * /*txfm_param*/) {
-  aom_idct16x16_256_add_c(in, dest, stride);
-}
-
 void fht16x16_ref(const int16_t *in, tran_low_t *out, int stride,
                   TxfmParam *txfm_param) {
   av1_fht16x16_c(in, out, stride, txfm_param);
@@ -542,50 +532,6 @@ class Trans16x16TestBase {
   TxfmParam txfm_param_;
 };
 
-class Trans16x16DCT : public Trans16x16TestBase,
-                      public ::testing::TestWithParam<Dct16x16Param> {
- public:
-  virtual ~Trans16x16DCT() {}
-
-  virtual void SetUp() {
-    fwd_txfm_ = GET_PARAM(0);
-    inv_txfm_ = GET_PARAM(1);
-    bit_depth_ = GET_PARAM(3);
-    pitch_ = 16;
-    fwd_txfm_ref = fdct16x16_ref;
-    inv_txfm_ref = idct16x16_ref;
-    mask_ = (1 << bit_depth_) - 1;
-    inv_txfm_ref = idct16x16_ref;
-    txfm_param_.tx_type = GET_PARAM(2);
-  }
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
-
- protected:
-  void RunFwdTxfm(int16_t *in, tran_low_t *out, int stride) {
-    fwd_txfm_(in, out, stride);
-  }
-  void RunInvTxfm(tran_low_t *out, uint8_t *dst, int stride) {
-    inv_txfm_(out, dst, stride);
-  }
-
-  FdctFunc fwd_txfm_;
-  IdctFunc inv_txfm_;
-};
-
-TEST_P(Trans16x16DCT, AccuracyCheck) { RunAccuracyCheck(); }
-
-TEST_P(Trans16x16DCT, CoeffCheck) { RunCoeffCheck(); }
-
-TEST_P(Trans16x16DCT, MemCheck) { RunMemCheck(); }
-
-TEST_P(Trans16x16DCT, QuantCheck) {
-  // Use maximally allowed quantization step sizes for DC and AC
-  // coefficients respectively.
-  RunQuantCheck(1336, 1828);
-}
-
-TEST_P(Trans16x16DCT, InvAccuracyCheck) { RunInvAccuracyCheck(); }
-
 class Trans16x16HT : public Trans16x16TestBase,
                      public ::testing::TestWithParam<Ht16x16Param> {
  public:
@@ -723,10 +669,6 @@ TEST_P(PartialTrans16x16Test, Random) {
 
 using std::tr1::make_tuple;
 
-INSTANTIATE_TEST_CASE_P(C, Trans16x16DCT,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_c,
-                                                     &aom_idct16x16_256_add_c,
-                                                     DCT_DCT, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16HT,
     ::testing::Values(
@@ -748,10 +690,6 @@ INSTANTIATE_TEST_CASE_P(
                    AOM_BITS_8)));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, Trans16x16DCT,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_sse2,
-                                                     &aom_idct16x16_256_add_c,
-                                                     DCT_DCT, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16HT,
     ::testing::Values(make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,

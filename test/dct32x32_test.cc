@@ -146,76 +146,6 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
       << "Error: 32x32 FDCT/IDCT has average round-trip error > 1 per block";
 }
 
-TEST_P(Trans32x32Test, CoeffCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = 1000;
-
-  DECLARE_ALIGNED(16, int16_t, input_block[kNumCoeffs]);
-  DECLARE_ALIGNED(16, tran_low_t, output_ref_block[kNumCoeffs]);
-  DECLARE_ALIGNED(16, tran_low_t, output_block[kNumCoeffs]);
-
-  for (int i = 0; i < count_test_block; ++i) {
-    for (int j = 0; j < kNumCoeffs; ++j)
-      input_block[j] = (rnd.Rand16() & mask_) - (rnd.Rand16() & mask_);
-
-    const int stride = 32;
-    aom_fdct32x32_c(input_block, output_ref_block, stride);
-    ASM_REGISTER_STATE_CHECK(fwd_txfm_(input_block, output_block, stride));
-
-    if (version_ == 0) {
-      for (int j = 0; j < kNumCoeffs; ++j)
-        EXPECT_EQ(output_block[j], output_ref_block[j])
-            << "Error: 32x32 FDCT versions have mismatched coefficients";
-    } else {
-      for (int j = 0; j < kNumCoeffs; ++j)
-        EXPECT_GE(6, abs(output_block[j] - output_ref_block[j]))
-            << "Error: 32x32 FDCT rd has mismatched coefficients";
-    }
-  }
-}
-
-TEST_P(Trans32x32Test, MemCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = 2000;
-
-  DECLARE_ALIGNED(16, int16_t, input_extreme_block[kNumCoeffs]);
-  DECLARE_ALIGNED(16, tran_low_t, output_ref_block[kNumCoeffs]);
-  DECLARE_ALIGNED(16, tran_low_t, output_block[kNumCoeffs]);
-
-  for (int i = 0; i < count_test_block; ++i) {
-    // Initialize a test block with input range [-mask_, mask_].
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      input_extreme_block[j] = rnd.Rand8() & 1 ? mask_ : -mask_;
-    }
-    if (i == 0) {
-      for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = mask_;
-    } else if (i == 1) {
-      for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = -mask_;
-    }
-
-    const int stride = 32;
-    aom_fdct32x32_c(input_extreme_block, output_ref_block, stride);
-    ASM_REGISTER_STATE_CHECK(
-        fwd_txfm_(input_extreme_block, output_block, stride));
-
-    // The minimum quant value is 4.
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      if (version_ == 0) {
-        EXPECT_EQ(output_block[j], output_ref_block[j])
-            << "Error: 32x32 FDCT versions have mismatched coefficients";
-      } else {
-        EXPECT_GE(6, abs(output_block[j] - output_ref_block[j]))
-            << "Error: 32x32 FDCT rd has mismatched coefficients";
-      }
-      EXPECT_GE(4 * DCT_MAX_VALUE << (bit_depth_ - 8), abs(output_ref_block[j]))
-          << "Error: 32x32 FDCT C has coefficient larger than 4*DCT_MAX_VALUE";
-      EXPECT_GE(4 * DCT_MAX_VALUE << (bit_depth_ - 8), abs(output_block[j]))
-          << "Error: 32x32 FDCT has coefficient larger than "
-          << "4*DCT_MAX_VALUE";
-    }
-  }
-}
-
 TEST_P(Trans32x32Test, InverseAccuracy) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = 1000;
@@ -313,33 +243,4 @@ TEST_P(PartialTrans32x32Test, Random) {
   EXPECT_EQ(sum >> 3, output[0]);
 }
 
-using std::tr1::make_tuple;
-
-INSTANTIATE_TEST_CASE_P(
-    C, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c, 0,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_c, &aom_idct32x32_1024_add_c,
-                                 1, AOM_BITS_8)));
-
-#if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, Trans32x32Test,
-                        ::testing::Values(make_tuple(&aom_fdct32x32_sse2,
-                                                     &aom_idct32x32_1024_add_c,
-                                                     DCT_DCT, AOM_BITS_8),
-                                          make_tuple(&aom_fdct32x32_rd_sse2,
-                                                     &aom_idct32x32_1024_add_c,
-                                                     ADST_DCT, AOM_BITS_8)));
-#endif  // HAVE_SSE2
-
-#if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
-    AVX2, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_avx2,
-                                 &aom_idct32x32_1024_add_sse2, DCT_DCT,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_avx2,
-                                 &aom_idct32x32_1024_add_sse2, ADST_DCT,
-                                 AOM_BITS_8)));
-#endif  // HAVE_AVX2
 }  // namespace

@@ -448,30 +448,12 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes"){
     add_proto qw/void aom_fdct8x8/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/aom_fdct8x8 sse2/, "$ssse3_x86_64";
 
-    add_proto qw/void aom_fdct16x16/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/aom_fdct16x16 sse2/;
-
-    add_proto qw/void aom_fdct32x32/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/aom_fdct32x32 sse2 avx2/;
-
-    add_proto qw/void aom_fdct32x32_rd/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/aom_fdct32x32_rd sse2 avx2/;
-
     # High bit depth
     add_proto qw/void aom_highbd_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/aom_highbd_fdct4x4 sse2/;
 
     add_proto qw/void aom_highbd_fdct8x8/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/aom_highbd_fdct8x8 sse2/;
-
-    add_proto qw/void aom_highbd_fdct16x16/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/aom_highbd_fdct16x16 sse2/;
-
-    add_proto qw/void aom_highbd_fdct32x32/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/aom_highbd_fdct32x32 sse2/;
-
-    add_proto qw/void aom_highbd_fdct32x32_rd/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/aom_highbd_fdct32x32_rd sse2/;
 
 }  # CONFIG_AV1_ENCODER
 
@@ -492,41 +474,6 @@ if (aom_config("CONFIG_AV1") eq "yes") {
 
   add_proto qw/void aom_idct4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
   specialize qw/aom_idct4x4_1_add sse2/;
-
-  add_proto qw/void aom_idct8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct8x8_64_add sse2 ssse3/;
-
-  add_proto qw/void aom_idct8x8_12_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct8x8_12_add sse2 ssse3/;
-
-  add_proto qw/void aom_idct8x8_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct8x8_1_add sse2/;
-
-  add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct16x16_256_add sse2 avx2/;
-
-  add_proto qw/void aom_idct16x16_38_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct16x16_38_add avx2/;
-
-  add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct16x16_10_add sse2 avx2/;
-
-  add_proto qw/void aom_idct16x16_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct16x16_1_add sse2 avx2/;
-
-  add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct32x32_1024_add sse2 ssse3 avx2/;
-
-  add_proto qw/void aom_idct32x32_135_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct32x32_135_add sse2 ssse3 avx2/;
-  # Need to add 135 eob idct32x32 implementations.
-  $aom_idct32x32_135_add_sse2=aom_idct32x32_1024_add_sse2;
-
-  add_proto qw/void aom_idct32x32_34_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct32x32_34_add sse2 ssse3 avx2/;
-
-  add_proto qw/void aom_idct32x32_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_idct32x32_1_add sse2 avx2/;
 }  # CONFIG_AV1
 
 #

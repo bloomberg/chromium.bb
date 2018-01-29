@@ -54,33 +54,4 @@ void reference_dct_2d(int16_t input[64], double output[64]) {
   for (int i = 0; i < 64; ++i) output[i] *= 2;
 }
 
-TEST(AV1Idct8x8Test, AccuracyCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = 10000;
-  for (int i = 0; i < count_test_block; ++i) {
-    int16_t input[64];
-    tran_low_t coeff[64];
-    double output_r[64];
-    uint8_t dst[64], src[64];
-
-    for (int j = 0; j < 64; ++j) {
-      src[j] = rnd.Rand8();
-      dst[j] = rnd.Rand8();
-    }
-    // Initialize a test block with input range [-255, 255].
-    for (int j = 0; j < 64; ++j) input[j] = src[j] - dst[j];
-
-    reference_dct_2d(input, output_r);
-    for (int j = 0; j < 64; ++j)
-      coeff[j] = static_cast<tran_low_t>(round(output_r[j]));
-    aom_idct8x8_64_add_c(coeff, dst, 8);
-    for (int j = 0; j < 64; ++j) {
-      const int diff = dst[j] - src[j];
-      const int error = diff * diff;
-      EXPECT_GE(1, error) << "Error: 8x8 FDCT/IDCT has error " << error
-                          << " at index " << j;
-    }
-  }
-}
-
 }  // namespace
