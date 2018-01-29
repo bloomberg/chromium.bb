@@ -296,6 +296,7 @@ const CGFloat kToolbarHeight = 56;
 - (BOOL)loadPanel:(NewTabPageBarItem*)item {
   DCHECK(self.parentViewController);
   UIViewController* panelController = nil;
+  UICollectionView* collectionView = nil;
   // Only load the controllers once.
   if (item.identifier == ntp_home::HOME_PANEL) {
     if (!self.contentSuggestionsCoordinator) {
@@ -311,6 +312,8 @@ const CGFloat kToolbarHeight = 56;
           self.contentSuggestionsCoordinator.headerController;
     }
     panelController = [self.contentSuggestionsCoordinator viewController];
+    collectionView =
+        self.contentSuggestionsCoordinator.viewController.collectionView;
     self.homePanel = self.contentSuggestionsCoordinator;
     [self.homePanel setDelegate:self];
   } else if (item.identifier == ntp_home::INCOGNITO_PANEL) {
@@ -346,6 +349,7 @@ const CGFloat kToolbarHeight = 56;
     [self.parentViewController addChildViewController:panelController];
     [self.view insertSubview:view belowSubview:self.view.tabBar];
     self.view.contentView = view;
+    self.view.contentCollectionView = collectionView;
     [panelController didMoveToParentViewController:self.parentViewController];
   }
   return created;

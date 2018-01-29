@@ -16,6 +16,7 @@
 
 @implementation NewTabPageView
 @synthesize contentView = _contentView;
+@synthesize contentCollectionView = _contentCollectionView;
 @synthesize tabBar = tabBar_;
 @synthesize safeAreaInsetForToolbar = _safeAreaInsetForToolbar;
 
@@ -76,9 +77,13 @@
     self.tabBar.frame = CGRectMake(CGRectGetMinX(self.bounds),
                                    CGRectGetMaxY(self.bounds) - barSize.height,
                                    barSize.width, barSize.height);
+    CGRect previousContentFrame = self.contentView.frame;
     self.contentView.frame = CGRectMake(
         CGRectGetMinX(self.bounds), CGRectGetMinY(self.bounds),
         CGRectGetWidth(self.bounds), CGRectGetMinY(self.tabBar.frame));
+    if (!CGRectEqualToRect(previousContentFrame, self.contentView.frame)) {
+      [self.contentCollectionView.collectionViewLayout invalidateLayout];
+    }
   }
 
   // When using a new_tab_page_view in autolayout -setFrame is never called,
