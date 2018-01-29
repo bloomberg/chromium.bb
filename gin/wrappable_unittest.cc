@@ -74,7 +74,7 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
   Handle<MyObject> obj = MyObject::Create(isolate);
 
   v8::Local<v8::Value> wrapper =
-      ConvertToV8(isolate->GetCurrentContext(), obj.get()).ToLocalChecked();
+      ConvertToV8(isolate, obj.get()).ToLocalChecked();
   EXPECT_FALSE(wrapper.IsEmpty());
 
   MyObject* unwrapped = NULL;
@@ -99,8 +99,7 @@ TEST_F(WrappableTest, UnwrapFailures) {
 
   // An object that's wrapping a C++ object of the wrong type.
   thing.Clear();
-  thing = ConvertToV8(isolate->GetCurrentContext(), new MyObject2())
-              .ToLocalChecked();
+  thing = ConvertToV8(isolate, new MyObject2()).ToLocalChecked();
   EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
   EXPECT_FALSE(unwrapped);
 }
@@ -128,7 +127,7 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
   v8::Local<v8::Value> argv[] = {
-      ConvertToV8(isolate->GetCurrentContext(), obj.get()).ToLocalChecked(),
+      ConvertToV8(isolate, obj.get()).ToLocalChecked(),
   };
   func->Call(v8::Undefined(isolate), 1, argv);
   EXPECT_FALSE(try_catch.HasCaught());

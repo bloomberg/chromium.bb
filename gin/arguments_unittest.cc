@@ -74,8 +74,7 @@ TEST_F(ArgumentsTest, TestGetAll) {
 
   V8List list1 = {
       gin::ConvertToV8(isolate, 1), gin::StringToV8(isolate, "some string"),
-      gin::ConvertToV8(context, std::vector<double>({2.0, 3.0}))
-          .ToLocalChecked(),
+      gin::ConvertToV8(isolate, std::vector<double>({2.0, 3.0})),
   };
   bool called1 = false;
 
