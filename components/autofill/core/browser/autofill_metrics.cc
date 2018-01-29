@@ -143,6 +143,7 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
           break;
         case ADDRESS_HOME_STREET_ADDRESS:
           group = GROUP_STREET_ADDRESS;
+          break;
         case ADDRESS_HOME_CITY:
           group = GROUP_ADDRESS_CITY;
           break;
