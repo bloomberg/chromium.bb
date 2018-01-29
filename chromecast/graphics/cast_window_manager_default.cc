@@ -27,4 +27,12 @@ gfx::NativeView CastWindowManagerDefault::GetRootWindow() {
   return nullptr;
 }
 
+void CastWindowManagerDefault::AddSideSwipeGestureHandler(
+    CastSideSwipeGestureHandlerInterface* handler) {}
+
+// Remove the registration of a system side swipe event handler.
+void CastWindowManagerDefault::CastWindowManagerDefault::
+    RemoveSideSwipeGestureHandler(
+        CastSideSwipeGestureHandlerInterface* handler) {}
+
 }  // namespace chromecast
