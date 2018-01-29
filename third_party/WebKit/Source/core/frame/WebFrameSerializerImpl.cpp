@@ -429,6 +429,7 @@ void WebFrameSerializerImpl::BuildContentForNode(Node* node,
     // Document type node can be in DOM?
     case Node::kDocumentTypeNode:
       param->have_seen_doc_type = true;
+      FALLTHROUGH;
     default:
       // For other type node, call default action.
       SaveHTMLContentToBuffer(CreateMarkup(node), param);
