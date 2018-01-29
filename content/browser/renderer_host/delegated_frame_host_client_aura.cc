@@ -76,6 +76,9 @@ viz::LocalSurfaceId DelegatedFrameHostClientAura::GetLocalSurfaceId() const {
   return render_widget_host_view_->GetLocalSurfaceId();
 }
 
+void DelegatedFrameHostClientAura::OnFirstSurfaceActivation(
+    const viz::SurfaceInfo& surface_info) {}
+
 void DelegatedFrameHostClientAura::OnBeginFrame(base::TimeTicks frame_time) {
   render_widget_host_view_->OnBeginFrame(frame_time);
 }

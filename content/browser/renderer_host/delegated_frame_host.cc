@@ -611,6 +611,9 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     UpdateGutters();
   }
 
+  // This is used by macOS' unique resize path.
+  client_->OnFirstSurfaceActivation(surface_info);
+
   frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   // Note: the frame may have been evicted immediately.
 }
