@@ -146,6 +146,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
     return is_tablet_mode_animation_running_;
   }
 
+  // Returns whether this shelf should be hidden on secondary display in a given
+  // |state|.
+  bool ShouldHideOnSecondaryDisplay(session_manager::SessionState state);
+
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
   ShelfLockingManager* GetShelfLockingManagerForTesting();
   ShelfView* GetShelfViewForTesting();

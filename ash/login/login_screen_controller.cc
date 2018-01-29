@@ -34,11 +34,29 @@ std::string CalculateHash(const std::string& password,
   return key.GetSecret();
 }
 
-void SetSystemTrayVisibility(bool visible) {
-  auto* status_area =
-      Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
-  if (status_area)
-    status_area->SetSystemTrayVisibility(visible);
+enum class SystemTrayVisibility {
+  kNone,     // Tray not visible anywhere.
+  kPrimary,  // Tray visible only on primary display.
+  kAll,      // Tray visible on all displays.
+};
+
+void SetSystemTrayVisibility(SystemTrayVisibility visibility) {
+  RootWindowController* primary_window_controller =
+      Shell::GetPrimaryRootWindowController();
+  for (RootWindowController* window_controller :
+       Shell::GetAllRootWindowControllers()) {
+    StatusAreaWidget* status_area = window_controller->GetStatusAreaWidget();
+    if (!status_area)
+      continue;
+    if (window_controller == primary_window_controller) {
+      status_area->SetSystemTrayVisibility(
+          visibility == SystemTrayVisibility::kPrimary ||
+          visibility == SystemTrayVisibility::kAll);
+    } else {
+      status_area->SetSystemTrayVisibility(visibility ==
+                                           SystemTrayVisibility::kAll);
+    }
+  }
 }
 
 }  // namespace
@@ -71,7 +89,7 @@ void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
 void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
   ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
   std::move(on_shown).Run(true);
-  SetSystemTrayVisibility(true);
+  SetSystemTrayVisibility(SystemTrayVisibility::kPrimary);
 }
 
 void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
@@ -85,7 +103,7 @@ void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
   // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
   ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
   std::move(on_shown).Run(true);
-  SetSystemTrayVisibility(true);
+  SetSystemTrayVisibility(SystemTrayVisibility::kPrimary);
 }
 
 void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
