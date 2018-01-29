@@ -194,3 +194,17 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
       setFocusCallback(desktop);
   });
 });
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'StartsReadingAtFirstNodeWithText', function() {
+  this.testReadTextAtKeystroke(
+      '<div id="empty"></div><div><p>This is some <b>bold</b> text</p></div>',
+      function(desktop) {
+        let firstNode = this.findTextNode(desktop, 'This is some ').root.children[0];        
+        let lastNode = this.findTextNode(desktop, ' text');
+        chrome.automation.setDocumentSelection({
+            anchorObject: firstNode, anchorOffset: 0,
+            focusObject: lastNode, focusOffset: 5
+        });
+      }, 'This is some bold text');
+});

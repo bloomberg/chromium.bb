@@ -93,7 +93,7 @@ function getNearestContainingWindow(node) {
  * @return {NodeState} the current node state.
  */
 function getNodeState(node) {
-  if (node.root == null) {
+  if (node === undefined || node.root === null || node.root === undefined) {
     // The node has been removed from the tree, perhaps because the
     // window was closed.
     return NodeState.NODE_STATE_INVALID;
@@ -299,7 +299,7 @@ function getDeepEquivalentForSelection(parent, offset) {
     }
   }
   // We are off the end of the last node.
-  return {node: node, offset: node.name.length};
+  return {node: node, offset: node.name ? node.name.length : 0};
 }
 
 
@@ -644,14 +644,17 @@ SelectToSpeak.prototype = {
       firstPosition.offset = 0;
     }
     if (lastPosition.node.role != 'staticText' &&
-        lastPosition.node.role != 'inlineTextBox' && lastPosition.node.name) {
-      lastPosition.offset = lastPosition.node.name.length;
+        lastPosition.node.role != 'inlineTextBox') {
+      lastPosition.offset =
+          lastPosition.node.name ? lastPosition.node.name.length : 0;
     }
 
     let nodes = [];
     let selectedNode = firstPosition.node;
-    if (firstPosition.offset < selectedNode.name.length) {
-      // Initialize to the first node in the list.
+    if (firstPosition.offset < selectedNode.name.length &&
+        !shouldIgnoreNode(selectedNode)) {
+      // Initialize to the first node in the list if it's valid and inside
+      // of the offset bounds.
       nodes.push(selectedNode);
     } else {
       // The selectedNode actually has no content selected. Let the list
@@ -784,7 +787,7 @@ SelectToSpeak.prototype = {
         pitch: this.speechPitch_,
         'enqueue': true,
         onEvent:
-            (function(nodeGroup, isFirst, isLast, event) {
+            (event) => {
               if (event.type == 'start' && nodeGroup.nodes.length > 0) {
                 if (nodeGroup.endIndex != nodeGroup.startIndex) {
                   // The block parent only matters if the block has more
@@ -859,7 +862,7 @@ SelectToSpeak.prototype = {
                   this.currentNodeWord_ = null;
                 }
               }
-            }).bind(this, nodeGroup, isFirst, isLast)
+            }
       };
 
       // Pick the voice name from prefs first, or the one that matches
@@ -1046,10 +1049,13 @@ SelectToSpeak.prototype = {
   /**
    * Updates the speech and focus ring states based on a node's current state.
    *
-   * @param {AutomationNode} node The node to use for updates
+   * @param {NodeGroupItem} nodeGroupItem The node to use for updates
    * @param {boolean} inForeground Whether the node is in the foreground window.
    */
-  updateFromNodeState_: function(node, inForeground) {
+  updateFromNodeState_: function(nodeGroupItem, inForeground) {
+    let node = nodeGroupItem.hasInlineTextChildren() ?
+        nodeGroupItem.node.children[nodeGroupItem.inlineTextBoxIndex] :
+        nodeGroupItem.node;
     switch (getNodeState(node)) {
       case NodeState.NODE_STATE_INVALID:
         // If the node is invalid, stop speaking entirely.
@@ -1109,7 +1115,7 @@ SelectToSpeak.prototype = {
     if (this.currentNode_.node.location === undefined) {
       // Don't do the hit test because there is no location to test against.
       // Just directly update Select To Speak from node state.
-      this.updateFromNodeState_(this.currentNode_.node, false);
+      this.updateFromNodeState_(this.currentNode_, false);
     } else {
       // Do a hit test to make sure the node is not in a background window
       // or minimimized. On the result checkCurrentNodeMatchesHitTest_ will be
@@ -1143,7 +1149,7 @@ SelectToSpeak.prototype = {
         var focusedWindow = getNearestContainingWindow(focusedNode.root);
         inForeground = focusedWindow != null && currentWindow == focusedWindow;
       }
-      this.updateFromNodeState_(this.currentNode_.node, inForeground);
+      this.updateFromNodeState_(this.currentNode_, inForeground);
     }.bind(this));
   },
 
@@ -1164,17 +1170,22 @@ SelectToSpeak.prototype = {
       return;
     }
     // Get the next word based on the event's charIndex.
-    let nextWordStart = getNextWordStart(text, charIndex, this.currentNode_);
+    let currentNode = this.currentNode_.hasInlineTextChildren() ?
+        new NodeGroupItem(
+            this.currentNode_.node
+                .children[this.currentNode_.inlineTextBoxIndex],
+            this.currentNode_.startChar) :
+        this.currentNode_;
+    let nextWordStart = getNextWordStart(text, charIndex, currentNode);
     let nextWordEnd = getNextWordEnd(
         text, opt_startIndex === undefined ? nextWordStart : opt_startIndex,
-        this.currentNode_);
+        currentNode);
     // Map the next word into the node's index from the text.
     let nodeStart = opt_startIndex === undefined ?
-        nextWordStart - this.currentNode_.startChar :
-        opt_startIndex - this.currentNode_.startChar;
+        nextWordStart - currentNode.startChar :
+        opt_startIndex - currentNode.startChar;
     let nodeEnd = Math.min(
-        nextWordEnd - this.currentNode_.startChar,
-        this.currentNode_.node.name.length);
+        nextWordEnd - currentNode.startChar, currentNode.node.name.length);
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
         nodeStart != nodeEnd) {

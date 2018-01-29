@@ -4,6 +4,7 @@
 
 var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
+const NO_INLINE_TEXT_BOX = -1;
 
 /**
  * Gets the first ancestor of a node which is a paragraph or is not inline,
@@ -92,7 +93,12 @@ function buildNodeGroup(nodes, index) {
   // a text type node, continue building the paragraph.
   while (index < nodes.length) {
     if (node.name !== undefined && !isWhitespace(node.name)) {
-      result.nodes.push(new NodeGroupItem(node, result.text.length));
+      if (node.role == RoleType.INLINE_TEXT_BOX && node.parent !== undefined) {
+        result.nodes.push(new NodeGroupItem(
+            node.parent, result.text.length, node.indexInParent));
+      } else {
+        result.nodes.push(new NodeGroupItem(node, result.text.length));
+      }
       result.text += node.name + ' ';
     }
     if (!inSameParagraph(node, next)) {
@@ -118,7 +124,7 @@ function buildNodeGroup(nodes, index) {
 function NodeGroup(startIndex, blockParent) {
   /**
    * Full text of this paragraph.
-   * @type {string|undefined}
+   * @type {string}
    */
   this.text = '';
 
@@ -157,10 +163,13 @@ function NodeGroup(startIndex, blockParent) {
  *
  * @param {AutomationNode} node The AutomationNode associated with this item
  * @param {number} startChar The index into the NodeGroup's text string where
- *                             this item begins.
+ *     this item begins.
+ * @param {number=} opt_inlineTextBoxIndex If the node role is staticText,
+ *     this represents the index into the inlineTextBox children of that
+ *     node.
  * @constructor
  */
-function NodeGroupItem(node, startChar) {
+function NodeGroupItem(node, startChar, opt_inlineTextBoxIndex) {
   /**
    * @type {AutomationNode}
    */
@@ -172,4 +181,24 @@ function NodeGroupItem(node, startChar) {
    * @type {number}
    */
   this.startChar = startChar;
+
+  /**
+   * If this is a staticText node, this is ihe index into the inlineTextBox
+   * children which is represented by this node. We cannot store
+   * inlineTextBox children directly because they are not guarenteed to be
+   * stable. Instead, indexing into their children allows for stability.
+   * @type {number}
+   */
+  this.inlineTextBoxIndex = opt_inlineTextBoxIndex !== undefined ?
+      opt_inlineTextBoxIndex :
+      NO_INLINE_TEXT_BOX;
+
+  /**
+   * Whether this NodeGroupItem is better represented by an inlineTextBox
+   * at the index of inlineTextBoxIndex rather than the node directly.
+   * @return {boolean} True if there are inlineTextBox children.
+   */
+  this.hasInlineTextChildren = function() {
+    return this.inlineTextBoxIndex != NO_INLINE_TEXT_BOX;
+  };
 }
