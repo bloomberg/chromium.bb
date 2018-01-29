@@ -11123,11 +11123,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.SurfaceManager.NumOldTemporaryReferences">
+  <obsolete>
+    Deprecated 2018/01/24.
+  </obsolete>
   <owner>kylechar@chromium.org</owner>
   <summary>
     The number of temporary references that have existed for at least 10 seconds
     and are most likely orphaned. This is logged every 10 seconds.
   </summary>
+</histogram>
+
+<histogram name="Compositing.SurfaceManager.RemovedTemporaryReference"
+    enum="TemporaryReferenceRemovedReason">
+  <owner>kylechar@chromium.org</owner>
+  <summary>Tracks the reason for removing a temporary reference.</summary>
 </histogram>
 
 <histogram name="Conflicts.ConfirmedBadModules" units="modules">

@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -190,6 +191,16 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
 
+  // The reason for removing a temporary reference.
+  enum class RemovedReason {
+    EMBEDDED,     // The surface was embedded.
+    DROPPED,      // The surface won't be embedded so it was dropped.
+    SKIPPED,      // A newer surface was embedded and the surface was skipped.
+    INVALIDATED,  // The expected embedder was invalidated.
+    EXPIRED,      // The surface was never embedded and expired.
+    COUNT
+  };
+
   struct SurfaceReferenceInfo {
     SurfaceReferenceInfo();
     ~SurfaceReferenceInfo();
@@ -239,13 +250,15 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // owner initially.
   void AddTemporaryReference(const SurfaceId& surface_id);
 
-  // Removes temporary reference to |surface_id|. If |remove_range| is true then
-  // all temporary references to surfaces with the same FrameSinkId as
-  // |surface_id| that were added before |surface_id| will also be removed.
-  void RemoveTemporaryReference(const SurfaceId& surface_id, bool remove_range);
+  // Removes temporary reference to |surface_id|. The |reason| for removing will
+  // be recorded with UMA. If |reason| is EMBEDDED then older temporary
+  // references from the same FrameSinkId will also be removed.
+  void RemoveTemporaryReference(const SurfaceId& surface_id,
+                                RemovedReason reason);
 
-  // Marks old temporary references for logging and deletion.
-  void MarkOldTemporaryReferences();
+  // Marks and then expires old temporary references. This function is run
+  // periodically by a timer.
+  void ExpireOldTemporaryReferences();
 
   // Removes the surface from the surface map and destroys it.
   void DestroySurfaceInternal(const SurfaceId& surface_id);
@@ -311,8 +324,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temporary_reference_ranges_;
 
-  // Timer that ticks every 10 seconds and calls MarkTemporaryReference().
-  base::RepeatingTimer temporary_reference_timer_;
+  // Timer to remove old temporary references that aren't removed after an
+  // interval of time. The timer will started/stopped so it only runs if there
+  // are temporary references. Also the timer isn't used with Android WebView.
+  base::Optional<base::RepeatingTimer> expire_timer_;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 

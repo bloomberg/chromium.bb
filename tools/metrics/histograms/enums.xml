@@ -42115,6 +42115,14 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Flushing"/>
 </enum>
 
+<enum name="TemporaryReferenceRemovedReason">
+  <int value="0" label="Embedded"/>
+  <int value="1" label="Dropped"/>
+  <int value="2" label="Skipped"/>
+  <int value="3" label="Invalidated"/>
+  <int value="4" label="Expired"/>
+</enum>
+
 <enum name="TerminationStatus">
   <summary>
     Return status values from GetTerminationStatus as defined in
