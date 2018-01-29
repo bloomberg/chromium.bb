@@ -307,8 +307,17 @@ views::View* PasswordPendingView::GetInitiallyFocusedView() {
   return PasswordBubbleViewBase::GetInitiallyFocusedView();
 }
 
+int PasswordPendingView::GetDialogButtons() const {
+  if (sign_in_promo_)
+    return sign_in_promo_->GetDialogButtons();
+
+  return PasswordBubbleViewBase::GetDialogButtons();
+}
+
 base::string16 PasswordPendingView::GetDialogButtonLabel(
     ui::DialogButton button) const {
+  // TODO(pbos): Generalize the different promotion classes to not store and ask
+  // each different possible promo.
   if (sign_in_promo_)
     return sign_in_promo_->GetDialogButtonLabel(button);
 #if defined(OS_WIN)
