@@ -74,6 +74,13 @@ const char kStabilityBreakpadRegistrationSuccess[] =
 const char kStabilityBreakpadRegistrationFail[] =
     "user_experience_metrics.stability.breakpad_registration_fail";
 
+// A time stamp at which time the browser was known to be alive. Used to
+// evaluate whether the browser crash was due to a whole system crash.
+// At minimum this is updated each time the "exited_cleanly" preference is
+// modified, but can also be optionally updated on a slow schedule.
+const char kStabilityBrowserLastLiveTimeStamp[] =
+    "user_experience_metrics.stability.browser_last_live_timestamp";
+
 // Total number of child process crashes (other than renderer / extension
 // renderer ones, and plugin children, which are counted separately) since the
 // last report.
