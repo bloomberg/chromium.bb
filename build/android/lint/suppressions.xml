@@ -226,8 +226,6 @@ Still reading?
     <ignore regexp="Static interface  method requires API level 24"/>
     <!-- TODO(crbug.com/805479): Remove the following suppression and fix. -->
     <ignore regexp="Call requires API level 18.*android.view.View#setClipBounds"/>
-    <!-- TODO(crbug.com/805509): Remove the following suppression and fix. -->
-    <ignore regexp="Call requires API level 19.*new java.lang.AssertionError"/>
     <!-- Suppressions below this line need rationale :( -->
     <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml"/>
