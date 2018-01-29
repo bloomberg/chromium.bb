@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
@@ -99,20 +100,17 @@ class OmniboxPerfTest : public PerfTest {
     // The OCMOCK_VALUE macro doesn't like std::unique_ptr, but it works just
     // fine if a temporary variable is used.
     ToolbarModelIOS* model_for_mock = toolbar_model_ios_.get();
-    web::WebState* web_state_for_mock = web_state_list_->GetWebStateAt(0);
-    id webToolbarDelegate =
-        [OCMockObject niceMockForProtocol:@protocol(WebToolbarDelegate)];
-    [[[webToolbarDelegate stub] andReturnValue:OCMOCK_VALUE(model_for_mock)]
+    id toolbarDelegate = OCMProtocolMock(@protocol(ToolbarCoordinatorDelegate));
+    [[[toolbarDelegate stub] andReturnValue:OCMOCK_VALUE(model_for_mock)]
         toolbarModelIOS];
-    [[[webToolbarDelegate stub] andReturnValue:OCMOCK_VALUE(web_state_for_mock)]
-        currentWebState];
-    id urlLoader = [OCMockObject niceMockForProtocol:@protocol(UrlLoader)];
-    toolbar_ = [[WebToolbarController alloc]
-        initWithDelegate:webToolbarDelegate
-               urlLoader:urlLoader
-            browserState:chrome_browser_state_.get()
-              dispatcher:nil];
-    UIView* toolbarView = [toolbar_ view];
+
+    coordinator_ = [[ToolbarCoordinator alloc] init];
+    coordinator_.delegate = toolbarDelegate;
+    coordinator_.browserState = chrome_browser_state_.get();
+    coordinator_.webStateList = web_state_list_.get();
+    [coordinator_ start];
+
+    UIView* toolbarView = coordinator_.viewController.view;
     CGRect toolbarFrame = toolbarView.frame;
     toolbarFrame.origin = CGPointZero;
     toolbarFrame.size.width = screenBounds.size.width;
@@ -120,7 +118,11 @@ class OmniboxPerfTest : public PerfTest {
     // Add toolbar to window.
     [window_ addSubview:toolbarView];
     AddNamedGuide(kOmniboxGuide, window_);
-    [toolbar_ didMoveToParentViewController:nil];
+    AddNamedGuide(kBackButtonGuide, window_);
+    AddNamedGuide(kForwardButtonGuide, window_);
+    AddNamedGuide(kToolsMenuGuide, window_);
+    AddNamedGuide(kTabSwitcherGuide, window_);
+    [coordinator_.viewController didMoveToParentViewController:nil];
     base::test::ios::WaitUntilCondition(^bool() {
       return IsToolbarLoaded(window_);
     });
@@ -128,11 +130,11 @@ class OmniboxPerfTest : public PerfTest {
 
   void TearDown() override {
     // Remove toolbar from window.
-    [[toolbar_ view] removeFromSuperview];
+    [coordinator_.viewController.view removeFromSuperview];
     base::test::ios::WaitUntilCondition(^bool() {
       return !IsToolbarLoaded(window_);
     });
-    [toolbar_ browserStateDestroyed];
+    [coordinator_ stop];
     PerfTest::TearDown();
   }
 
@@ -221,7 +223,7 @@ class OmniboxPerfTest : public PerfTest {
   std::unique_ptr<WebStateList> web_state_list_;
   std::unique_ptr<ToolbarModelDelegateIOS> toolbar_model_delegate_;
   std::unique_ptr<ToolbarModelIOS> toolbar_model_ios_;
-  WebToolbarController* toolbar_;
+  ToolbarCoordinator* coordinator_;
   UIWindow* window_;
   KeyboardAppearanceListener* keyboard_listener_;
 };
@@ -231,7 +233,7 @@ class OmniboxPerfTest : public PerfTest {
 TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
   LogPerfTiming("Keyboard preload", PreLoadKeyboard());
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
-      [toolbar_ view], [OmniboxTextFieldIOS class]);
+      coordinator_.viewController.view, [OmniboxTextFieldIOS class]);
 
   // Time how long it takes to "focus" on omnibox.
   RepeatTimedRuns("Begin editing",
@@ -247,7 +249,7 @@ TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
 // into the Omnibox.
 TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
-      [toolbar_ view], [OmniboxTextFieldIOS class]);
+      coordinator_.viewController.view, [OmniboxTextFieldIOS class]);
   RepeatTimedRuns("Type first character",
                   ^base::TimeDelta(int index) {
                     EnableKeyboard(textField);
@@ -264,7 +266,7 @@ TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
 // TODO(crbug.com/799488): Re-enable this test.
 TEST_F(OmniboxPerfTest, DISABLED_TestTypingInTextField) {
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
-      [toolbar_ view], [OmniboxTextFieldIOS class]);
+      coordinator_.viewController.view, [OmniboxTextFieldIOS class]);
   // The characters to type into the omnibox text field.
   NSArray* inputCharacters =
       [NSArray arrayWithObjects:@"g", @"o", @"o", @"g", @"l", @"e", nil];
