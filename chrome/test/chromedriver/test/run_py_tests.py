@@ -190,6 +190,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCloseWindowUsingJavascript',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2108
         'ChromeLoggingCapabilityTest.testPerformanceLogger',
+        # Android doesn't support headless mode
+        'HeadlessInvalidCertificateTest.*',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
