@@ -3272,7 +3272,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       }
 
       DCHECK(!frame_->Selection().NeedsLayoutSelectionUpdate());
-      DCHECK((frame_->GetDocument()->Printing() &&
+      DCHECK(ShouldThrottleRendering() ||
+             (frame_->GetDocument()->Printing() &&
               Lifecycle().GetState() == DocumentLifecycle::kPrePaintClean) ||
              Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
     }
