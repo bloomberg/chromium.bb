@@ -63,7 +63,7 @@ void EnsureProcessTerminated(Process process) {
     return;
   }
 
-  process.Terminate(/*exit_code=*/1, /*wait=*/false);
+  process.Terminate(/*exit_code=*/1, /*wait=*/true);
 }
 
 }  // namespace base
