@@ -21,7 +21,9 @@
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -67,15 +69,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
     const gfx::Size& size() const { return resource_->size(); }
     const viz::ResourceFormat& format() const { return resource_->format(); }
+    const gfx::ColorSpace& color_space() const {
+      return resource_->color_space();
+    }
     // The ResourceId when the backing is given to the ResourceProvider for
     // export to the display compositor.
     const viz::ResourceId& resource_id_for_export() const {
-      return resource_->resource_id();
-    }
-
-    // Only valid when the ResourcePool is vending software-backed resources.
-    const viz::ResourceId& software_backing_resource_id() const {
-      DCHECK(!is_gpu_);
+      // The ResourceId should not be accessed before it is created!
+      DCHECK(resource_->resource_id());
       return resource_->resource_id();
     }
 
@@ -83,6 +84,19 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     const viz::ResourceId& gpu_backing_resource_id() const {
       DCHECK(is_gpu_);
       return resource_->resource_id();
+    }
+
+    // Only valid when the ResourcePool is vending software-backed resources.
+    viz::SharedBitmap* shared_bitmap() const {
+      DCHECK(!is_gpu_);
+      return resource_->shared_bitmap();
+    }
+    // Only valid when the ResourcePool is vending software-backed resources.
+    void set_shared_bitmap(
+        std::unique_ptr<viz::SharedBitmap> shared_bitmap) const {
+      DCHECK(!is_gpu_);
+      DCHECK(!resource_->shared_bitmap());
+      resource_->set_shared_bitmap(std::move(shared_bitmap));
     }
 
    private:
@@ -130,6 +144,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
       const gfx::Rect& new_invalidated_rect,
       uint64_t previous_content_id,
       gfx::Rect* total_invalidated_rect);
+
+  // Gives the InUsePoolResource a |resource_id_for_export()| in order to allow
+  // exporting of the resource to the display compositor. This must be called
+  // with a resource only after it has a backing allocated for it. Initially an
+  // acquired InUsePoolResource will be only metadata, and the backing is given
+  // to it by code which is aware of the expected backing type - currently by
+  // RasterBufferProvider::AcquireBufferForRaster().
+  void PrepareForExport(const InUsePoolResource& resource);
 
   // Called when a resource's content has been fully replaced (and is completely
   // valid). Updates the resource's content ID to its new value.
@@ -186,7 +208,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     const gfx::Size& size() const { return size_; }
     const viz::ResourceFormat& format() const { return format_; }
     const gfx::ColorSpace& color_space() const { return color_space_; }
+
     const viz::ResourceId& resource_id() const { return resource_id_; }
+    void set_resource_id(viz::ResourceId id) { resource_id_ = id; }
+
+    viz::SharedBitmap* shared_bitmap() const { return shared_bitmap_.get(); }
+    void set_shared_bitmap(std::unique_ptr<viz::SharedBitmap> shared_bitmap) {
+      shared_bitmap_ = std::move(shared_bitmap);
+    }
 
     uint64_t content_id() const { return content_id_; }
     void set_content_id(uint64_t content_id) { content_id_ = content_id; }
@@ -198,6 +227,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     void set_invalidated_rect(const gfx::Rect& invalidated_rect) {
       invalidated_rect_ = invalidated_rect;
     }
+
+    const gpu::SyncToken& sync_token() const { return sync_token_; }
+    void set_sync_token(const gpu::SyncToken& token) { sync_token_ = token; }
 
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       const LayerTreeResourceProvider* resource_provider,
@@ -213,10 +245,24 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     base::TimeTicks last_usage_;
     gfx::Rect invalidated_rect_;
 
-    viz::ResourceId resource_id_;
-    // TODO(crbug.com/730660): Own a backing for software resources here,
+    // TODO(danakj): Own a backing for gpu resources here also,
     // instead of owning it through the |resource_id_|.
+    viz::ResourceId resource_id_ = 0;
+
+    // The backing for software resources. Initially null for resources given
+    // out by ResourcePool, to be filled in by the client.
+    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
+
+    // If a resource was exported and returned, then this will hold the token
+    // that must be waited on before re-using the resource.
+    gpu::SyncToken sync_token_;
   };
+
+  // Callback from the ResourceProvider to notify when an exported PoolResource
+  // is not busy and may be reused.
+  void OnResourceReleased(size_t unique_id,
+                          const gpu::SyncToken& sync_token,
+                          bool lost);
 
   // Tries to reuse a resource. Returns |nullptr| if none are available.
   PoolResource* ReuseResource(const gfx::Size& size,

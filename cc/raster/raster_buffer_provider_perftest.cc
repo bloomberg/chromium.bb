@@ -386,8 +386,8 @@ class RasterBufferProviderPerfTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
-        raster_buffer_provider_ =
-            BitmapRasterBufferProvider::Create(resource_provider_.get());
+        raster_buffer_provider_ = std::make_unique<BitmapRasterBufferProvider>(
+            resource_provider_.get(), &shared_bitmap_manager_);
         resource_pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), task_runner_,
             ResourcePool::kDefaultExpirationDelay, false);

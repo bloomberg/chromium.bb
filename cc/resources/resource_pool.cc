@@ -145,7 +145,14 @@ ResourcePool::PoolResource* ResourcePool::ReuseResource(
   for (auto it = unused_resources_.begin(); it != unused_resources_.end();
        ++it) {
     PoolResource* resource = it->get();
-    DCHECK(resource_provider_->CanLockForWrite(resource->resource_id()));
+// TODO(danakj): When gpu raster buffer providers make their own backings,
+// then they need to switch to the else branch.
+#if DCHECK_IS_ON()
+    if (use_gpu_memory_buffers_ || use_gpu_resources_)
+      DCHECK(resource_provider_->CanLockForWrite(resource->resource_id()));
+    else
+      DCHECK(!resource->resource_id());
+#endif
 
     if (resource->format() != format)
       continue;
@@ -154,6 +161,20 @@ ResourcePool::PoolResource* ResourcePool::ReuseResource(
       continue;
     if (resource->color_space() != color_space)
       continue;
+
+    if (!use_gpu_memory_buffers_ && !use_gpu_resources_) {
+      DCHECK(!resource->sync_token().HasData());
+    } else {
+      // TODO(danakj): This will have to happen for Gpu backed resources. We
+      // should make the RasterBufferProvider ask for the SyncToken, and wait on
+      // it before doing raster, then reset the SyncToken on the
+      // InUsePoolResource.
+      // if (resource->sync_token().HasData()) {
+      //   resource_provider_->WaitSyncToken(
+      //       resource->sync_token());
+      //   resource->set_sync_token(gpu::SyncToken());
+      // }
+    }
 
     // Transfer resource to |in_use_resources_|.
     in_use_resources_[resource->unique_id()] = std::move(*it);
@@ -179,8 +200,7 @@ ResourcePool::PoolResource* ResourcePool::CreateResource(
     resource_id = resource_provider_->CreateGpuTextureResource(
         size, hint_, format, color_space);
   } else {
-    DCHECK_EQ(format, viz::RGBA_8888);
-    resource_id = resource_provider_->CreateBitmapResource(size, color_space);
+    resource_id = 0;
   }
   auto pool_resource = std::make_unique<PoolResource>(
       next_resource_unique_id_++, size, format, color_space, resource_id);
@@ -269,7 +289,28 @@ ResourcePool::TryAcquireResourceForPartialRaster(
   // |in_use_resources_| and return it.
   if (iter_resource_to_return != unused_resources_.end()) {
     PoolResource* resource = iter_resource_to_return->get();
-    DCHECK(resource_provider_->CanLockForWrite(resource->resource_id()));
+// TODO(danakj): When gpu raster buffer providers make their own backings,
+// then they need to switch to the else branch.
+#if DCHECK_IS_ON()
+    if (use_gpu_memory_buffers_ || use_gpu_resources_)
+      DCHECK(resource_provider_->CanLockForWrite(resource->resource_id()));
+    else
+      DCHECK(!resource->resource_id());
+#endif
+
+    if (!use_gpu_memory_buffers_ && !use_gpu_resources_) {
+      DCHECK(!resource->sync_token().HasData());
+    } else {
+      // TODO(danakj): This will have to happen for Gpu backed resources. We
+      // should make the RasterBufferProvider ask for the SyncToken, and wait on
+      // it before doing raster, then reset the SyncToken on the
+      // InUsePoolResource.
+      // if (resource->sync_token().HasData()) {
+      //   resource_provider_->WaitSyncToken(
+      //       resource->sync_token());
+      //   resource->set_sync_token(gpu::SyncToken());
+      // }
+    }
 
     // Transfer resource to |in_use_resources_|.
     in_use_resources_[resource->unique_id()] =
@@ -288,6 +329,56 @@ ResourcePool::TryAcquireResourceForPartialRaster(
   }
 
   return InUsePoolResource();
+}
+
+void ResourcePool::OnResourceReleased(size_t unique_id,
+                                      const gpu::SyncToken& sync_token,
+                                      bool lost) {
+  // If this fails we've removed a resource from the ResourceProvider somehow
+  // while it was still in use by the ResourcePool client. That would prevent
+  // the client from being able to use the ResourceId on the InUsePoolResource,
+  // which would be problematic!
+  DCHECK(in_use_resources_.find(unique_id) == in_use_resources_.end());
+
+  // TODO(danakj): Should busy_resources be a map?
+  auto busy_it = std::find_if(
+      busy_resources_.begin(), busy_resources_.end(),
+      [unique_id](const std::unique_ptr<PoolResource>& busy_resource) {
+        return busy_resource->unique_id() == unique_id;
+      });
+  // If the resource isn't busy then we made it available for reuse already
+  // somehow, even though it was exported to the ResourceProvider, or we evicted
+  // a resource that was still in use by the display compositor.
+  DCHECK(busy_it != busy_resources_.end());
+
+  PoolResource* resource = busy_it->get();
+  if (lost || evict_busy_resources_when_unused_) {
+    DeleteResource(std::move(*busy_it));
+    busy_resources_.erase(busy_it);
+    return;
+  }
+
+  resource->set_resource_id(0);
+  resource->set_sync_token(sync_token);
+  DidFinishUsingResource(std::move(*busy_it));
+  busy_resources_.erase(busy_it);
+}
+
+void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
+  // TODO(danakj): Add branches for gpu too once a gpu-backed raster provider
+  // does this.
+  if (use_gpu_memory_buffers_ || use_gpu_resources_)
+    return;
+
+  auto transferable = viz::TransferableResource::MakeSoftware(
+      resource.resource_->shared_bitmap()->id(),
+      resource.resource_->shared_bitmap()->sequence_number(),
+      resource.resource_->size());
+  resource.resource_->set_resource_id(resource_provider_->ImportResource(
+      std::move(transferable),
+      viz::SingleReleaseCallback::Create(base::BindOnce(
+          &ResourcePool::OnResourceReleased, weak_ptr_factory_.GetWeakPtr(),
+          resource.resource_->unique_id()))));
 }
 
 void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
@@ -332,12 +423,27 @@ void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
   CHECK(it->second.get());
 
   pool_resource->set_last_usage(base::TimeTicks::Now());
-
-  // Transfer resource to |busy_resources_|.
-  busy_resources_.push_front(std::move(it->second));
-  in_use_resources_.erase(it);
   in_use_memory_usage_bytes_ -= ResourceUtil::UncheckedSizeInBytes<size_t>(
       pool_resource->size(), pool_resource->format());
+
+  // Transfer resource to |unused_resources_| or |busy_resources_|, depending if
+  // it was exported to the ResourceProvider via PrepareForExport(). If not,
+  // then we can immediately make the resource available to be reused.
+  if (!pool_resource->resource_id())
+    DidFinishUsingResource(std::move(it->second));
+  else
+    busy_resources_.push_front(std::move(it->second));
+  in_use_resources_.erase(it);
+
+  // TODO(danakj): When gpu raster buffer providers make their own backings,
+  // then they need to switch to this branch.
+  if (!use_gpu_memory_buffers_ && !use_gpu_resources_) {
+    // If the resource was exported, then it has a resource id. By removing the
+    // resource id, we will be notified in the ReleaseCallback when the resource
+    // is no longer exported and can be reused.
+    if (pool_resource->resource_id())
+      resource_provider_->RemoveImportedResource(pool_resource->resource_id());
+  }
 
   // Now that we have evictable resources, schedule an eviction call for this
   // resource if necessary.
@@ -390,7 +496,10 @@ void ResourcePool::DeleteResource(std::unique_ptr<PoolResource> resource) {
       resource->size(), resource->format());
   total_memory_usage_bytes_ -= resource_bytes;
   --total_resource_count_;
-  resource_provider_->DeleteResource(resource->resource_id());
+  // TODO(danakj): When gpu raster buffer providers make their own backings,
+  // then they need to switch off this branch.
+  if (use_gpu_memory_buffers_ || use_gpu_resources_)
+    resource_provider_->DeleteResource(resource->resource_id());
 }
 
 void ResourcePool::UpdateResourceContentIdAndInvalidation(
@@ -406,6 +515,14 @@ void ResourcePool::UpdateResourceContentIdAndInvalidation(
 }
 
 void ResourcePool::CheckBusyResources() {
+  // TODO(danakj): When gpu raster buffer providers make their own backings,
+  // then they need to switch to this branch.
+  if (!use_gpu_memory_buffers_ && !use_gpu_resources_) {
+    // The ReleaseCallback tells ResourcePool when they are no longer busy, so
+    // there is nothing to do here.
+    return;
+  }
+
   for (auto it = busy_resources_.begin(); it != busy_resources_.end();) {
     PoolResource* resource = it->get();
 
@@ -541,12 +658,12 @@ void ResourcePool::PoolResource::OnMemoryDump(
   // Resource IDs are not process-unique, so log with the
   // LayerTreeResourceProvider's unique id.
   std::string parent_node =
-      base::StringPrintf("cc/resource_memory/provider_%d/resource_%d",
-                         resource_provider->tracing_id(), resource_id_);
+      base::StringPrintf("cc/resource_memory/provider_%d/resource_%zd",
+                         resource_provider->tracing_id(), unique_id_);
 
   std::string dump_name =
-      base::StringPrintf("cc/tile_memory/provider_%d/resource_%d",
-                         resource_provider->tracing_id(), resource_id_);
+      base::StringPrintf("cc/tile_memory/provider_%d/resource_%zd",
+                         resource_provider->tracing_id(), unique_id_);
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
   pmd->AddSuballocation(dump->guid(), parent_node);
 

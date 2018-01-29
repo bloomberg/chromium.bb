@@ -2568,8 +2568,9 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
         ResourcePool::kDefaultExpirationDelay,
         settings_.disallow_non_exact_resource_reuse);
 
-    *raster_buffer_provider =
-        BitmapRasterBufferProvider::Create(resource_provider_.get());
+    *raster_buffer_provider = std::make_unique<BitmapRasterBufferProvider>(
+        resource_provider_.get(),
+        layer_tree_frame_sink_->shared_bitmap_manager());
     return;
   }
 
