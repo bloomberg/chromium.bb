@@ -4,6 +4,9 @@
 
 #include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 
+#include <string>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -23,6 +26,7 @@
 #include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
+#include "content/shell/renderer/layout_test/test_websocket_handshake_throttle.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
@@ -228,6 +232,11 @@ LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
 #else
   return nullptr;
 #endif
+}
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+LayoutTestContentRendererClient::CreateWebSocketHandshakeThrottle() {
+  return std::make_unique<TestWebSocketHandshakeThrottle>();
 }
 
 void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
