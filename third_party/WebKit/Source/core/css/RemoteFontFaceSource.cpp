@@ -35,7 +35,7 @@ RemoteFontFaceSource::DisplayPeriod ComputePeriod(
     case kFontDisplayAuto:
       if (is_intervention_triggered)
         return RemoteFontFaceSource::kSwapPeriod;
-    // Fall through.
+      FALLTHROUGH;
     case kFontDisplayBlock:
       switch (phase) {
         case RemoteFontFaceSource::kNoLimitExceeded:

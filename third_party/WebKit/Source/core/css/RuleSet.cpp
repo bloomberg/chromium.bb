@@ -134,6 +134,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         default:
           break;
       }
+      break;
     default:
       break;
   }
