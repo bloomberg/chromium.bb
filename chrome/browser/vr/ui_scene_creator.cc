@@ -1771,12 +1771,14 @@ void UiSceneCreator::CreateOmnibox() {
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_hint,
                 &TextInput::SetHintColor);
 
-  auto mic_icon = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  auto mic_icon =
+      Create<VectorIcon>(kOmniboxVoiceSearchButton, kPhaseForeground, 100);
   mic_icon->set_hit_testable(false);
   mic_icon->SetIcon(vector_icons::kMicIcon);
   mic_icon->SetSize(kOmniboxTextFieldIconSizeDMM, kOmniboxTextFieldIconSizeDMM);
   VR_BIND_COLOR(model_, mic_icon.get(), &ColorScheme::omnibox_text,
                 &VectorIcon::SetColor);
+
   auto mic_icon_box = Create<Button>(
       kNone, kPhaseForeground,
       base::BindRepeating(

@@ -53,7 +53,7 @@ enum UiElementName {
   kOmniboxContainer,
   kOmniboxTextField,
   kOmniboxTextFieldLayout,
-  kOmniboxClearTextFieldButton,
+  kOmniboxVoiceSearchButton,
   kOmniboxCloseButton,
   kOmniboxSuggestions,
   kOmniboxSuggestionsOuterLayout,

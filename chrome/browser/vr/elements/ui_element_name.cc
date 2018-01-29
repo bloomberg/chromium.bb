@@ -54,7 +54,7 @@ static const char* g_ui_element_name_strings[] = {
     "kOmniboxContainer",
     "kOmniboxTextField",
     "kOmniboxTextFieldLayout",
-    "kOmniboxClearTextFieldButton",
+    "kOmniboxVoiceSearchButton",
     "kOmniboxCloseButton",
     "kOmniboxSuggestions",
     "kOmniboxSuggestionsOuterLayout",
