@@ -67,7 +67,7 @@ static void create{{namespace}}FunctionMap() {
     g_{{namespace}}_constructors->Set(data[i].tag.LocalName(), data[i].func);
 }
 
-{{namespace}}Element* {{namespace}}ElementFactory::create{{namespace}}Element(
+{{namespace}}Element* {{namespace}}ElementFactory::CreateRaw{{namespace}}Element(
     const AtomicString& localName,
     Document& document,
     CreateElementFlags flags) {
@@ -75,6 +75,15 @@ static void create{{namespace}}FunctionMap() {
     create{{namespace}}FunctionMap();
   if ({{namespace}}ConstructorFunction function = g_{{namespace}}_constructors->at(localName))
     return function(document, flags);
+  return nullptr;
+}
+
+{{namespace}}Element* {{namespace}}ElementFactory::create{{namespace}}Element(
+    const AtomicString& localName,
+    Document& document,
+    CreateElementFlags flags) {
+  if (auto* element = {{namespace}}ElementFactory::CreateRaw{{namespace}}Element(localName, document, flags))
+    return element;
 
   {% if namespace == 'HTML' %}
   // createElement handles custom element creation itself in order to
@@ -85,7 +94,7 @@ static void create{{namespace}}FunctionMap() {
   if (flags != kCreatedByCreateElement && CustomElement::ShouldCreateCustomElement(localName)) {
     QualifiedName tagName(g_null_atom, localName, HTMLNames::xhtmlNamespaceURI);
     if (flags & kAsynchronousCustomElements)
-      return CustomElement::CreateCustomElementAsync(document, tagName);
+      return CustomElement::CreateCustomElementAsync(document, tagName, flags);
     return CustomElement::CreateCustomElementSync(document, tagName);
   }
   {% endif %}

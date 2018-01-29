@@ -6,18 +6,24 @@
 #ifndef BLINK_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
 #define BLINK_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
 
-#include "core/dom/Document.h"
+#include "core/dom/CreateElementFlags.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
+class Document;
 class {{namespace}}Element;
-{% if namespace == 'HTML' %}
-class HTMLFormElement;
-{% endif %}
 
 class {{namespace}}ElementFactory {
  public:
+  // If |localName| is unknown, nullptr is returned.
+  static {{namespace}}Element* CreateRaw{{namespace}}Element(
+      const AtomicString& localName,
+      Document&,
+      CreateElementFlags flags);
+
+  // CreateRaw{{namespace}}Element() + custom element processing.
+  // If |localName| is unknown, a {{fallback_interface}} instance is returned.
   static {{namespace}}Element* create{{namespace}}Element(
       const AtomicString& localName,
       Document&,
