@@ -859,8 +859,10 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       // same popup.
       view_impl->SetLastHiddenPagePopup(view_impl->GetPagePopup());
       View()->HidePopups();
+      FALLTHROUGH;
     case WebInputEvent::kGestureTapCancel:
       View()->SetLastHiddenPagePopup(nullptr);
+      break;
     case WebInputEvent::kGestureShowPress:
     case WebInputEvent::kGestureDoubleTap:
       break;
