@@ -245,11 +245,11 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
     icon.allocN32Pixels(800, 800);
     icon.eraseARGB(255, 128, 255, 128);
 
-    auto prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(
-        external_install_ ? ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT
-                          : ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
+    auto prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(type_);
     prompt->AddPermissions(permissions_,
                            ExtensionInstallPrompt::REGULAR_PERMISSIONS);
+    prompt->AddPermissions(withheld_permissions_,
+                           ExtensionInstallPrompt::WITHHELD_PERMISSIONS);
     prompt->set_retained_files(retained_files_);
     prompt->set_retained_device_messages(retained_devices_);
 
@@ -264,11 +264,17 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
         &icon, std::move(prompt), ExtensionInstallPrompt::ShowDialogCallback());
   }
 
-  void set_external_install() { external_install_ = true; }
   void set_from_webstore() { from_webstore_ = true; }
+
+  void set_type(ExtensionInstallPrompt::PromptType type) { type_ = type; }
 
   void AddPermission(std::string permission) {
     permissions_.push_back(
+        PermissionMessage(base::ASCIIToUTF16(permission), PermissionIDSet()));
+  }
+
+  void AddWithheldPermission(std::string permission) {
+    withheld_permissions_.push_back(
         PermissionMessage(base::ASCIIToUTF16(permission), PermissionIDSet()));
   }
 
@@ -289,9 +295,11 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
   }
 
  private:
-  bool external_install_ = false;
+  ExtensionInstallPrompt::PromptType type_ =
+      ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   bool from_webstore_ = false;
   PermissionMessages permissions_;
+  PermissionMessages withheld_permissions_;
   std::vector<base::FilePath> retained_files_;
   std::vector<base::string16> retained_devices_;
 
@@ -305,13 +313,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
                        InvokeUi_External) {
-  set_external_install();
+  set_type(ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT);
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
                        InvokeUi_ExternalWithPermission) {
-  set_external_install();
+  set_type(ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT);
+  AddPermission("Example permission");
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeUi_ReEnable) {
+  set_type(ExtensionInstallPrompt::RE_ENABLE_PROMPT);
   AddPermission("Example permission");
   ShowAndVerifyUi();
 }
@@ -353,6 +368,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
        base::ASCIIToUTF16("Detailed permission 2"),
        base::ASCIIToUTF16("Very very very very very very long detailed "
                           "permission that wraps to a new line")});
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeUi_WithheldPermission) {
+  AddWithheldPermission("Example permission");
   ShowAndVerifyUi();
 }
 

@@ -53,6 +53,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
  private:
   // views::DialogDelegateView:
+  gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   int GetDialogButtons() const override;
