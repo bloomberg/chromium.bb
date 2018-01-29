@@ -165,6 +165,13 @@ constexpr size_t kHeaderGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1))
 constexpr size_t kHeaderSizeMask = (static_cast<size_t>((1 << 14) - 1)) << 3;
 constexpr size_t kHeaderMarkBitMask = 1;
 constexpr size_t kHeaderFreedBitMask = 2;
+// TODO(haraken): Remove the dead bit. It is used only by a header of
+// a promptly freed object.
+constexpr size_t kHeaderDeadBitMask = 4;
+// On free-list entries we reuse the dead bit to distinguish a normal free-list
+// entry from one that has been promptly freed.
+constexpr size_t kHeaderPromptlyFreedBitMask =
+    kHeaderFreedBitMask | kHeaderDeadBitMask;
 constexpr size_t kLargeObjectSizeInHeader = 0;
 constexpr size_t kGcInfoIndexForFreeListHeader = 0;
 constexpr size_t kNonLargeObjectPageSizeMax = 1 << kBlinkPageSizeLog2;
@@ -185,6 +192,15 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   NO_SANITIZE_ADDRESS bool IsFree() const {
     return encoded_ & kHeaderFreedBitMask;
+  }
+
+  NO_SANITIZE_ADDRESS bool IsPromptlyFreed() const {
+    return (encoded_ & kHeaderPromptlyFreedBitMask) ==
+           kHeaderPromptlyFreedBitMask;
+  }
+
+  NO_SANITIZE_ADDRESS void MarkPromptlyFreed() {
+    encoded_ |= kHeaderPromptlyFreedBitMask;
   }
 
   size_t size() const;
@@ -851,9 +867,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   bool Coalesce();
   void PromptlyFreeObject(HeapObjectHeader*);
-  void PromptlyFreeObjectInFreeList(HeapObjectHeader*, size_t);
   bool ExpandObject(HeapObjectHeader*, size_t);
   bool ShrinkObject(HeapObjectHeader*, size_t);
+  void DecreasePromptlyFreedSize(size_t size) { promptly_freed_size_ -= size; }
   size_t promptly_freed_size() const { return promptly_freed_size_; }
 
   bool IsObjectAllocatedAtAllocationPoint(HeapObjectHeader* header) {
@@ -900,9 +916,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   size_t remaining_allocation_size_;
   size_t last_remaining_allocation_size_;
 
-  // The size of promptly freed objects in the heap. This counter is set to
-  // zero before sweeping when clearing the free list and after coalescing.
-  // It will increase for promptly freed objects on already swept pages.
+  // The size of promptly freed objects in the heap.
   size_t promptly_freed_size_;
 
   bool is_lazy_sweeping_;
