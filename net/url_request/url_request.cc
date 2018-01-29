@@ -31,7 +31,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
-#include "net/reporting/reporting_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
@@ -45,6 +44,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_service.h"
 #include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

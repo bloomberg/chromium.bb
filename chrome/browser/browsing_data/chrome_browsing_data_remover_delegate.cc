@@ -84,9 +84,7 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/reporting/reporting_browsing_data_remover.h"
-#include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
+#include "net/net_features.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/url_util.h"
@@ -100,18 +98,18 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "sql/connection.h"
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -120,16 +118,22 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/log_list.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_browsing_data_remover.h"
+#include "net/reporting/reporting_service.h"
+#include "net/url_request/network_error_logging_delegate.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using base::UserMetricsAction;
 using content::BrowserContext;
@@ -255,6 +259,7 @@ void ClearHttpAuthCacheOnIOThread(
   http_session->CloseAllConnections();
 }
 
+#if BUILDFLAG(ENABLE_REPORTING)
 void ClearReportingCacheOnIOThread(
     net::URLRequestContextGetter* context,
     int data_type_mask,
@@ -277,6 +282,7 @@ void ClearNetworkErrorLoggingOnIOThread(
   if (delegate)
     delegate->RemoveBrowsingData(origin_filter);
 }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if defined(OS_ANDROID)
 void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
@@ -1042,6 +1048,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
   }
 
+#if BUILDFLAG(ENABLE_REPORTING)
   if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) ||
       (remove_mask & DATA_TYPE_HISTORY)) {
     scoped_refptr<net::URLRequestContextGetter> context =
@@ -1072,6 +1079,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                        base::RetainedRef(std::move(context)), filter),
         UIThreadTrampoline(CreatePendingTaskCompletionClosure()));
   }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
 //////////////////////////////////////////////////////////////////////////////
 // DATA_TYPE_WEB_APP_DATA
 #if defined(OS_ANDROID)

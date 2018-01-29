@@ -33,9 +33,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_policy.h"
-#include "net/reporting/reporting_service.h"
+#include "net/net_features.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
@@ -46,6 +44,12 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"
 #endif
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using content::BrowserThread;
 
@@ -280,6 +284,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
       std::move(protocol_handler_interceptor), context->network_delegate(),
       context->host_resolver());
   context->SetJobFactory(std::move(top_job_factory));
+#if BUILDFLAG(ENABLE_REPORTING)
   if (context->reporting_service()) {
     context->SetReportingService(net::ReportingService::Create(
         context->reporting_service()->GetPolicy(), context));
@@ -290,6 +295,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
     context->network_error_logging_delegate()->SetReportingService(
         context->reporting_service());
   }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
   return context;
 }
 

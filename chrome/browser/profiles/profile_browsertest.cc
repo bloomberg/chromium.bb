@@ -50,6 +50,7 @@
 #include "extensions/common/value_builder.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/net_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -556,6 +557,7 @@ void CompareURLRequestContexts(
   EXPECT_NE(extension_context->channel_id_service(),
             main_context->channel_id_service());
   EXPECT_NE(extension_context->cookie_store(), main_context->cookie_store());
+#if BUILDFLAG(ENABLE_REPORTING)
   if (extension_context->reporting_service()) {
     EXPECT_NE(extension_context->reporting_service(),
               main_context->reporting_service());
@@ -564,6 +566,7 @@ void CompareURLRequestContexts(
     EXPECT_NE(extension_context->network_error_logging_delegate(),
               main_context->network_error_logging_delegate());
   }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Check that the ChannelIDService in the HttpNetworkSession is the same as
   // the one directly on the URLRequestContext.
@@ -586,10 +589,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+#if BUILDFLAG(ENABLE_REPORTING)
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {network::features::kReporting, network::features::kNetworkErrorLogging},
       {});
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
@@ -628,10 +633,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+#if BUILDFLAG(ENABLE_REPORTING)
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {network::features::kReporting, network::features::kNetworkErrorLogging},
       {});
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
