@@ -903,28 +903,6 @@
       'android', 'debug_trybot', 'arm64',
     ],
 
-    'android_release_bot_minimal_symbols': [
-      'android', 'release_bot', 'minimal_symbols',
-      'strip_debug_info',
-    ],
-
-    'android_release_bot_minimal_symbols_arm64': [
-      'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info',
-    ],
-
-    'android_release_thumb_bot': [
-      'android', 'release_bot', 'arm_thumb',
-    ],
-
-    'android_release_trybot': [
-      'android', 'release_trybot', 'strip_debug_info',
-    ],
-
-    'android_release_trybot_arm64': [
-      'android', 'release_trybot', 'arm64', 'strip_debug_info',
-    ],
-
     'android_debug_static_bot_x64': [
       'android', 'debug_static_bot', 'x64',
     ],
@@ -974,19 +952,29 @@
     ],
 
     'android_release_bot_minimal_symbols': [
-      'android', 'release_bot', 'minimal_symbols', 'strip_debug_info',
+      'android', 'release_bot', 'minimal_symbols',
+      'strip_debug_info',
+    ],
+
+    'android_release_bot_minimal_symbols_arm64': [
+      'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'strip_debug_info',
+    ],
+
+    'android_release_thumb_bot': [
+      'android', 'release_bot', 'arm_thumb',
+    ],
+
+    'android_release_trybot': [
+      'android', 'release_trybot', 'strip_debug_info',
+    ],
+
+    'android_release_trybot_arm64': [
+      'android', 'release_trybot', 'arm64', 'strip_debug_info',
     ],
 
     'android_shared_release_bot_x64': [
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
-    ],
-
-    'android_release_trybot': [
-      'android', 'release_trybot',
-    ],
-
-    'android_release_trybot_arm64': [
-      'android', 'release_trybot', 'arm64',
     ],
 
     'android_without_codecs_release_bot_minimal_symbols': [
