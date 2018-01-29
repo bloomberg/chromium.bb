@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -729,11 +730,20 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, ExtensionProcessReuse) {
   }
 }
 
+// Time-outs on Win (http://crbug.com/806684).
+#if defined(OS_WIN)
+#define MAYBE_NestedURLNavigationsToExtensionBlocked \
+  DISABLED_NestedURLNavigationsToExtensionBlocked
+#else
+#define MAYBE_NestedURLNavigationsToExtensionBlocked \
+  NestedURLNavigationsToExtensionBlocked
+#endif
+
 // Test that navigations to blob: and filesystem: URLs with extension origins
 // are disallowed when initiated from non-extension processes.  See
 // https://crbug.com/645028 and https://crbug.com/644426.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       NestedURLNavigationsToExtensionBlocked) {
+                       MAYBE_NestedURLNavigationsToExtensionBlocked) {
   // Disabling web security is necessary to test the browser enforcement;
   // without it, the loads in this test would be blocked by
   // SecurityOrigin::canDisplay() as invalid local resource loads.
