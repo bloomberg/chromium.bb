@@ -1467,6 +1467,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
+    {"ash-enable-docked-magnifier",
+     flag_descriptions::kEnableDockedMagnifierName,
+     flag_descriptions::kEnableDockedMagnifierDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableDockedMagnifier)},
     {"ash-enable-night-light", flag_descriptions::kEnableNightLightName,
      flag_descriptions::kEnableNightLightDescription, kOsAll,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableNightLight)},
