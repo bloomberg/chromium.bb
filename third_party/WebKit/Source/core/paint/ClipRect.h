@@ -50,8 +50,6 @@ class ClipRect {
     has_radius_ = rect.HasRadius();
   }
 
-  LayoutRect& MutableRect() { return rect_; }
-
   const LayoutRect& Rect() const { return rect_; }
 
   bool HasRadius() const { return has_radius_; }
