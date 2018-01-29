@@ -21,7 +21,7 @@ const int kTimeoutDurationMs = 10000;
 }  // namespace
 
 ProfilingClient::ProfilingClient()
-    : binding_(this), started_profiling_(false) {}
+    : started_profiling_(false) {}
 
 ProfilingClient::~ProfilingClient() {
   StopAllocatorShimDangerous();
@@ -46,7 +46,7 @@ void ProfilingClient::OnServiceManagerConnected(
 }
 
 void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void ProfilingClient::StartProfiling(mojo::ScopedHandle memlog_sender_pipe,

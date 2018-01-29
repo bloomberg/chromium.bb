@@ -676,6 +676,14 @@ void ProfilingProcessHost::StartManualProfiling(base::ProcessId pid) {
                          base::Unretained(this), pid));
 }
 
+void ProfilingProcessHost::StartProfilingRenderersForTesting() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  for (auto iter = content::RenderProcessHost::AllHostsIterator();
+       !iter.IsAtEnd(); iter.Advance()) {
+    StartProfilingRenderer(iter.GetCurrentValue());
+  }
+}
+
 void ProfilingProcessHost::StartProfilingPidOnIOThread(base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
