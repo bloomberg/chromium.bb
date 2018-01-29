@@ -879,6 +879,7 @@ bool AXNodeObject::IsMultiSelectable() const {
                                         multiselectable)) {
         return multiselectable;
       }
+      break;
     }
     default:
       break;
