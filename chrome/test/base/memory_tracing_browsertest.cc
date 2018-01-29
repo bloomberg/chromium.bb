@@ -114,7 +114,8 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
   bool should_test_memory_dump_success_;
 };
 
-IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestMemoryInfra) {
+// TODO(crbug.com/806988): Disabled due to excessive output.
+IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, DISABLED_TestMemoryInfra) {
   // TODO(ssid): Test for dump success once the on start tracing done callback
   // is fixed to be called after enable tracing is acked by all processes,
   // crbug.com/709524. The test still tests if dumping does not crash.
