@@ -139,6 +139,14 @@ class ExtensionSystem : public KeyedService {
                              const std::string& public_key,
                              const base::FilePath& unpacked_dir,
                              InstallUpdateCallback install_update_callback) = 0;
+
+  // Attempts finishing installation of an update for an extension with the
+  // specified id, when installation of that extension was previously delayed.
+  // |install_immediately| - Install the extension should be installed if it is
+  // currently in use.
+  // Returns whether the extension installation was finished.
+  virtual bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                                bool install_immediately) = 0;
 };
 
 }  // namespace extensions

@@ -74,6 +74,8 @@ class TestExtensionSystem : public ExtensionSystem {
                      const std::string& public_key,
                      const base::FilePath& temp_dir,
                      InstallUpdateCallback install_update_callback) override;
+  bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                        bool install_immediately) override;
 
   // Note that you probably want to use base::RunLoop().RunUntilIdle() right
   // after this to run all the accumulated tasks.

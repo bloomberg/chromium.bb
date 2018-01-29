@@ -151,6 +151,13 @@ void TestExtensionSystem::InstallUpdate(
   NOTREACHED();
 }
 
+bool TestExtensionSystem::FinishDelayedInstallationIfReady(
+    const std::string& extension_id,
+    bool install_immediately) {
+  NOTREACHED();
+  return false;
+}
+
 TestingValueStore* TestExtensionSystem::value_store() {
   // These tests use TestingValueStore in a way that ensures it only ever mints
   // instances of TestingValueStore.

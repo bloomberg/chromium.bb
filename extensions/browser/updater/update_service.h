@@ -13,7 +13,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/update_client/update_client.h"
 
 namespace base {
 class Version;
@@ -37,7 +39,8 @@ struct ExtensionUpdateCheckParams;
 // This service manages the autoupdate of extensions.  It should eventually
 // replace ExtensionUpdater in Chrome.
 // TODO(rockot): Replace ExtensionUpdater with this service.
-class UpdateService : public KeyedService {
+class UpdateService : public KeyedService,
+                      update_client::UpdateClient::Observer {
  public:
   static UpdateService* Get(content::BrowserContext* context);
 
@@ -56,6 +59,9 @@ class UpdateService : public KeyedService {
   // This function verifies if the current implementation can update
   // |extension_id|.
   bool CanUpdate(const std::string& extension_id) const;
+
+  // Overriden from update_client::UpdateClient::Observer.
+  void OnEvent(Events event, const std::string& id) override;
 
  private:
   friend class UpdateServiceFactory;
@@ -77,6 +83,8 @@ class UpdateService : public KeyedService {
 
   // The set of extensions that are being checked for update.
   std::set<std::string> updating_extensions_;
+
+  THREAD_CHECKER(thread_checker_);
 
   // used to create WeakPtrs to |this|.
   base::WeakPtrFactory<UpdateService> weak_ptr_factory_;
