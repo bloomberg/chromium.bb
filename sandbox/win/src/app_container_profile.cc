@@ -204,6 +204,7 @@ bool AppContainerProfile::AccessCheck(const wchar_t* object_name,
   GENERIC_MAPPING generic_mapping;
   if (!GetGenericMappingForType(object_type, &generic_mapping))
     return false;
+  MapGenericMask(&desired_access, &generic_mapping);
   PSECURITY_DESCRIPTOR sd = nullptr;
   PACL dacl = nullptr;
   if (GetNamedSecurityInfo(

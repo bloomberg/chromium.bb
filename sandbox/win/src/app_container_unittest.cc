@@ -143,7 +143,7 @@ void AccessCheckFile(AppContainerProfile* profile,
   DWORD granted_access;
   BOOL access_status;
   ASSERT_TRUE(profile->AccessCheck(path.value().c_str(), SE_FILE_OBJECT,
-                                   FILE_READ_DATA, &granted_access,
+                                   desired_access, &granted_access,
                                    &access_status));
   ASSERT_EQ(expected_status, access_status);
   if (access_status)
@@ -300,6 +300,10 @@ TEST(AppContainerTest, AccessCheckFile) {
                   Sid::FromKnownCapability(kInternetClient), FILE_READ_DATA,
                   FILE_READ_DATA, TRUE);
 
+  // Check mapping generic access rights.
+  AccessCheckFile(profile.get(), path, ::WinBuiltinAnyPackageSid,
+                  GENERIC_READ | GENERIC_EXECUTE,
+                  FILE_GENERIC_READ | FILE_GENERIC_EXECUTE, TRUE);
   // No support for LPAC less than Win10 RS1.
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
