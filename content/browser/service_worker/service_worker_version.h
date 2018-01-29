@@ -632,6 +632,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                   GetClientsCallback callback) override;
   void GetClient(const std::string& client_uuid,
                  GetClientCallback callback) override;
+  void SkipWaiting(SkipWaitingCallback callback) override;
 
   void OnSetCachedMetadataFinished(int64_t callback_id,
                                    size_t size,
@@ -666,7 +667,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       int request_id,
       ServiceWorkerStatusCode status,
       blink::mojom::ServiceWorkerClientInfoPtr client_info);
-  void OnSkipWaiting(int request_id);
+
   void OnPongFromWorker();
 
   void OnFocusClientFinished(
@@ -681,8 +682,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void StartWorkerInternal();
-
-  void DidSkipWaiting(int request_id);
 
   // Callback function for simple events dispatched through mojo interface
   // mojom::ServiceWorkerEventDispatcher. Use CreateSimpleEventCallback() to
@@ -790,6 +789,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<ServiceWorkerInstalledScriptsSender>
       installed_scripts_sender_;
 
+  std::vector<SkipWaitingCallback> pending_skip_waiting_requests_;
+  base::TimeTicks skip_waiting_time_;
+  base::TimeTicks no_controllees_time_;
+
   mojo::AssociatedBinding<blink::mojom::ServiceWorkerHost> binding_;
 
   // The number of fetch event responses that the service worker is streaming to
@@ -840,10 +843,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool pause_after_download_ = false;
   bool is_update_scheduled_ = false;
   bool in_dtor_ = false;
-
-  std::vector<int> pending_skip_waiting_requests_;
-  base::TimeTicks skip_waiting_time_;
-  base::TimeTicks no_controllees_time_;
 
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
 

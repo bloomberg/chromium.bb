@@ -143,10 +143,6 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NavigateClient,
                     std::string /* uuid */,
                     GURL /* url */)
 
-// Asks the browser to force this worker to become activated.
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
-                    int /* request_id */)
-
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //
@@ -160,10 +156,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* thread_id */,
                      int /* handle_id */,
                      blink::mojom::ServiceWorkerState)
-
-// Sent via EmbeddedWorker to dispatch events.
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
-                     int /* request_id */)
 
 // Sent via EmbeddedWorker as a response of OpenWindow.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,

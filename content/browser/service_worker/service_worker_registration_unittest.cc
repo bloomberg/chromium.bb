@@ -421,8 +421,18 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
 
   void RunLameDuckTimer() { registration_->RemoveLameDuckIfNeeded(); }
 
-  void SimulateSkipWaiting(ServiceWorkerVersion* version, int request_id) {
-    version->OnSkipWaiting(request_id);
+  // Simulates skipWaiting(). Note that skipWaiting() might not try to activate
+  // the worker "immediately", if it can't yet be activated yet. If activation
+  // is delayed, |out_result| will not be set. If activation is attempted,
+  // |out_result| is generally true but false in case of a fatal/unexpected
+  // error like ServiceWorkerContext shutdown.
+  void SimulateSkipWaiting(ServiceWorkerVersion* version,
+                           base::Optional<bool>* out_result) {
+    version->SkipWaiting(
+        base::BindOnce([](base::Optional<bool>* out_result,
+                          bool success) { *out_result = success; },
+                       out_result));
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -484,8 +494,10 @@ TEST_F(ServiceWorkerActivationTest, SkipWaiting) {
   EXPECT_EQ(version_1.get(), reg->active_version());
 
   // Call skipWaiting. Activation should happen.
-  SimulateSkipWaiting(version_2.get(), 77 /* dummy request_id */);
-  base::RunLoop().RunUntilIdle();
+  base::Optional<bool> result;
+  SimulateSkipWaiting(version_2.get(), &result);
+  EXPECT_TRUE(result.has_value());
+  EXPECT_TRUE(*result);
   EXPECT_EQ(version_2.get(), reg->active_version());
 }
 
@@ -495,16 +507,19 @@ TEST_F(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
 
+  base::Optional<bool> result;
   // Set skip waiting flag. Since there is still an in-flight request,
   // activation should not happen.
-  SimulateSkipWaiting(version_2.get(), 77 /* dummy request_id */);
-  base::RunLoop().RunUntilIdle();
+  SimulateSkipWaiting(version_2.get(), &result);
+  EXPECT_FALSE(result.has_value());
   EXPECT_EQ(version_1.get(), reg->active_version());
 
   // Finish the request. Activation should happen.
   version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
                            base::Time::Now());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(result.has_value());
+  EXPECT_TRUE(*result);
   EXPECT_EQ(version_2.get(), reg->active_version());
 }
 
@@ -519,10 +534,12 @@ TEST_F(ServiceWorkerActivationTest, TimeSinceSkipWaiting_Installing) {
   reg->UnsetVersion(version.get());
   version->SetStatus(ServiceWorkerVersion::INSTALLING);
 
+  base::Optional<bool> result;
   // Call skipWaiting(). The time ticks since skip waiting shouldn't start
   // since the version is not yet installed.
-  SimulateSkipWaiting(version.get(), 77 /* dummy request_id */);
-  base::RunLoop().RunUntilIdle();
+  SimulateSkipWaiting(version.get(), &result);
+  EXPECT_TRUE(result.has_value());
+  EXPECT_TRUE(*result);
   clock.Advance(base::TimeDelta::FromSeconds(11));
   EXPECT_EQ(base::TimeDelta(), version->TimeSinceSkipWaiting());
 
@@ -533,9 +550,10 @@ TEST_F(ServiceWorkerActivationTest, TimeSinceSkipWaiting_Installing) {
   clock.Advance(base::TimeDelta::FromSeconds(33));
   EXPECT_EQ(base::TimeDelta::FromSeconds(33), version->TimeSinceSkipWaiting());
 
+  result.reset();
   // Call skipWaiting() again. It doesn't reset the time.
-  SimulateSkipWaiting(version.get(), 88 /* dummy request_id */);
-  base::RunLoop().RunUntilIdle();
+  SimulateSkipWaiting(version.get(), &result);
+  EXPECT_FALSE(result.has_value());
   EXPECT_EQ(base::TimeDelta::FromSeconds(33), version->TimeSinceSkipWaiting());
 }
 
@@ -551,11 +569,12 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_SkipWaiting) {
   version_1->SetTickClockForTesting(&clock_1);
   version_2->SetTickClockForTesting(&clock_2);
 
+  base::Optional<bool> result;
   // Set skip waiting flag. Since there is still an in-flight request,
   // activation should not happen. But the lame duck timer should start.
   EXPECT_FALSE(IsLameDuckTimerRunning());
-  SimulateSkipWaiting(version_2.get(), 77 /* dummy request_id */);
-  base::RunLoop().RunUntilIdle();
+  SimulateSkipWaiting(version_2.get(), &result);
+  EXPECT_FALSE(result.has_value());
   EXPECT_EQ(version_1.get(), reg->active_version());
   EXPECT_TRUE(IsLameDuckTimerRunning());
 
@@ -565,6 +584,8 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_SkipWaiting) {
   // Activation should happen by the lame duck timer.
   RunLameDuckTimer();
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(result.has_value());
+  EXPECT_TRUE(*result);
   EXPECT_EQ(version_2.get(), reg->active_version());
   EXPECT_FALSE(IsLameDuckTimerRunning());
 }

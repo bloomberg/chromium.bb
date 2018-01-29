@@ -35,7 +35,15 @@ interface ServiceWorkerHost {
   // PostMessageToClient();
   // FocusClient();
   // NavigateClient();
-  // SkipWaiting();
+
+  // Corresponds to ServiceWorkerGlobalScope#skipWaiting(). Allows this service
+  // worker to progress from the registration's waiting position to active even
+  // while service worker clients are using the registration.
+  // The callback is called with |success| true when the skipWaiting() promise
+  // should be resolved. If |success| is false, the operation failed fatally,
+  // but per spec the skipWaiting() promise should be left unresolved as it can
+  // never reject.
+  SkipWaiting() => (bool success);
 
   // Corresponds to Clients#claim(). Allows an active service worker to set
   // itself as the controller for all clients within its scope.
