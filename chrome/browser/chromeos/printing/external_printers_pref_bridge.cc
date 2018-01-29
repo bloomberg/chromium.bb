@@ -40,9 +40,9 @@ std::vector<std::string> FromPrefs(const PrefService* prefs,
 void ExternalPrintersPrefBridge::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry,
     const ExternalPrinterPolicies& policies) {
-  // Default value for access mode is blacklist.
+  // Default value for access mode is AllAccess.
   registry->RegisterIntegerPref(policies.access_mode,
-                                ExternalPrinters::BLACKLIST_ONLY);
+                                ExternalPrinters::ALL_ACCESS);
   registry->RegisterListPref(policies.blacklist);
   registry->RegisterListPref(policies.whitelist);
 }
