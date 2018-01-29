@@ -4,8 +4,6 @@
 
 source_set("cpp") {
   sources = [
-    "constants.cc",
-    "constants.h",
     "device_to_feedback_observer_adapter.cc",
     "device_to_feedback_observer_adapter.h",
     "receiver_media_to_mojo_adapter.cc",

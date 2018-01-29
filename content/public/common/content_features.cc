@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "content/public/common/content_features.h"
+#include "build/build_config.h"
 
 namespace features {
 
@@ -135,7 +135,7 @@ const base::Feature kGuestViewCrossProcessFrames{
 
 // Enables BlinkGC heap compaction.
 const base::Feature kHeapCompaction{"HeapCompaction",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable lazy initialization of the media controls.
 const base::Feature kLazyInitializeMediaControls{
@@ -152,7 +152,7 @@ const base::Feature kLowPriorityIframes{"LowPriorityIframes",
 // If this feature is enabled, media-device enumerations use a cache that is
 // invalidated upon notifications sent by base::SystemMonitor. If disabled, the
 // cache is considered invalid on every enumeration request.
-const base::Feature kMediaDevicesSystemMonitorCache{
+const base::Feature kMediaDevicesSystemMonitorCache {
   "MediaDevicesSystemMonitorCaching",
 #if defined(OS_MACOSX) || defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -165,9 +165,8 @@ const base::Feature kMediaDevicesSystemMonitorCache{
 // WARNING:
 // The memory coordinator is not ready for use and enabling this may cause
 // unexpected memory regression at this point. Please do not enable this.
-const base::Feature kMemoryCoordinator {
-  "MemoryCoordinator", base::FEATURE_DISABLED_BY_DEFAULT
-};
+const base::Feature kMemoryCoordinator{"MemoryCoordinator",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the network service.
 const base::Feature kNetworkService{"NetworkService",
@@ -192,6 +191,16 @@ const base::Feature kMojoInputMessages{"MojoInputMessages",
 // Mojo-based Session Storage.
 const base::Feature kMojoSessionStorage{"MojoSessionStorage",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables/disables the video capture service.
+const base::Feature kMojoVideoCapture {
+  "MojoVideoCapture",
+#if defined(OS_MACOSX) || defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // ES6 Modules dynamic imports.
 const base::Feature kModuleScriptsDynamicImport{
@@ -218,7 +227,7 @@ const base::Feature kOutOfBlinkCORS{"OutOfBlinkCORS",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether a download can be handled by parallel jobs.
-const base::Feature kParallelDownloading{
+const base::Feature kParallelDownloading {
   "ParallelDownloading",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -284,6 +293,12 @@ const base::Feature kRequireCSSExtensionForFile{
 // Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
 const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Run video capture service in the Browser process as opposed to a dedicated
+// utility process
+const base::Feature kRunVideoCaptureServiceInBrowserProcess{
+    "RunVideoCaptureServiceInBrowserProcess",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
@@ -426,17 +441,16 @@ const base::Feature kWebPayments{"WebPayments",
 
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
-const base::Feature kWebRtcEcdsaDefault {"WebRTC-EnableWebRtcEcdsa",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
-    "WebRTC-UseGpuMemoryBufferVideoFrames",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables HW H264 encoding on Android.
-const base::Feature kWebRtcHWH264Encoding{
-    "WebRtcHWH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables HW VP8 encoding on Android.
 const base::Feature kWebRtcHWVP8Encoding {
@@ -541,5 +555,25 @@ const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsVideoCaptureServiceEnabledForOutOfProcess() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(features::kMojoVideoCapture) &&
+         !base::FeatureList::IsEnabled(
+             features::kRunVideoCaptureServiceInBrowserProcess);
+#endif
+}
+
+bool IsVideoCaptureServiceEnabledForBrowserProcess() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(features::kMojoVideoCapture);
+#else
+  return base::FeatureList::IsEnabled(features::kMojoVideoCapture) &&
+         base::FeatureList::IsEnabled(
+             features::kRunVideoCaptureServiceInBrowserProcess);
+#endif
+}
 
 }  // namespace features

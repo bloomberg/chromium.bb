@@ -21,6 +21,11 @@ ServiceImpl::~ServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
+// static
+std::unique_ptr<service_manager::Service> ServiceImpl::Create() {
+  return std::make_unique<ServiceImpl>();
+}
+
 void ServiceImpl::OnStart() {
   DCHECK(thread_checker_.CalledOnValidThread());
 

@@ -27,6 +27,8 @@ class ServiceImpl : public service_manager::Service {
   ServiceImpl();
   ~ServiceImpl() override;
 
+  static std::unique_ptr<service_manager::Service> Create();
+
   // service_manager::Service implementation.
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,

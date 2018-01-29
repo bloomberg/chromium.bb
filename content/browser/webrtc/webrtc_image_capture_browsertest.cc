@@ -6,6 +6,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_webcam_browsertest.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -15,7 +16,6 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/video_capture/public/cpp/constants.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -150,8 +150,7 @@ class WebRtcImageCaptureSucceedsBrowserTest
  public:
   WebRtcImageCaptureSucceedsBrowserTest() {
     if (std::get<1>(GetParam()).use_video_capture_service) {
-      scoped_feature_list_.InitAndEnableFeature(
-          video_capture::kMojoVideoCapture);
+      scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
     }
   }
 
@@ -283,8 +282,7 @@ class WebRtcImageCaptureCustomConfigFakeDeviceBrowserTest
  public:
   WebRtcImageCaptureCustomConfigFakeDeviceBrowserTest() {
     if (GetParam().use_video_capture_service) {
-      scoped_feature_list_.InitAndEnableFeature(
-          video_capture::kMojoVideoCapture);
+      scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
     }
   }
 

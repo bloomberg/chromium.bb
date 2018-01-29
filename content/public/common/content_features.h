@@ -58,6 +58,7 @@ CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
 CONTENT_EXPORT extern const base::Feature kMojoInputMessages;
 CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
+CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;
 CONTENT_EXPORT extern const base::Feature kNotificationsWithMojo;
@@ -75,6 +76,8 @@ CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kReportRendererPeakMemoryStats;
 CONTENT_EXPORT extern const base::Feature kRequireCSSExtensionForFile;
 CONTENT_EXPORT extern const base::Feature kResourceLoadScheduler;
+CONTENT_EXPORT extern const base::Feature
+    kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kScrollAnchorSerialization;
 CONTENT_EXPORT
@@ -141,6 +144,9 @@ CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
+
+CONTENT_EXPORT bool IsVideoCaptureServiceEnabledForOutOfProcess();
+CONTENT_EXPORT bool IsVideoCaptureServiceEnabledForBrowserProcess();
 
 }  // namespace features
 
