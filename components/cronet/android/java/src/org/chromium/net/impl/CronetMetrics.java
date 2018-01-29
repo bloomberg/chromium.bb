@@ -200,7 +200,6 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         return toDate(mRequestEndMs);
     }
 
-    @Nullable
     public boolean getSocketReused() {
         return mSocketReused;
     }
