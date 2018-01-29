@@ -202,15 +202,10 @@ cr.define('print_preview', function() {
       // Initialize the element which renders the destination's connection
       // status.
       this.getElement().classList.toggle(
-          'stale',
-          this.destination_.isOffline ||
-              this.destination_.shouldShowInvalidCertificateError);
+          'stale', this.destination_.isOfflineOrInvalid);
       const connectionStatusEl = this.getChildElement('.connection-status');
       connectionStatusEl.textContent = this.destination_.connectionStatusText;
-      setIsVisible(
-          connectionStatusEl,
-          this.destination_.isOffline ||
-              this.destination_.shouldShowInvalidCertificateError);
+      setIsVisible(connectionStatusEl, this.destination_.isOfflineOrInvalid);
       setIsVisible(
           this.getChildElement('.learn-more-link'),
           this.destination_.shouldShowInvalidCertificateError);

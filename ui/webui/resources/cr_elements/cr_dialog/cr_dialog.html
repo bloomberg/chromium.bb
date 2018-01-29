@@ -116,6 +116,16 @@
         align-self: flex-start;
         margin-top: 4px;
         padding: 10px;  /* Makes the actual icon 16x16. */
+
+        @apply --cr-dialog-close-image;
+      }
+
+      #close:hover {
+        @apply --cr-dialog-close-image-hover;
+      }
+
+      #close:active {
+        @apply --cr-dialog-close-image-active;
       }
     </style>
     <!-- This wrapper is necessary, such that the "pulse" animation is not

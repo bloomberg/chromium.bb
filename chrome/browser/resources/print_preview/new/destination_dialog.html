@@ -1,0 +1,83 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
+<link rel="import" href="../data/destination.html">
+<link rel="import" href="../data/destination_store.html">
+<link rel="import" href="button_css.html">
+<link rel="import" href="destination_list.html">
+<link rel="import" href="print_preview_shared_css.html">
+
+<dom-module id="print-preview-destination-dialog">
+  <template>
+    <style include="print-preview-shared button action-link">
+      :host #dialog::backdrop {
+        background-color: rgba(255, 255, 255, 0.75);
+      }
+
+      :host #dialog {
+        --cr-dialog-close-image: {
+          background-image: url(chrome://theme/IDR_CLOSE_DIALOG);
+        }
+        --cr-dialog-close-image-active: {
+          background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
+        }
+        --cr-dialog-close-image-hover: {
+          background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
+        }
+        --cr-icon-ripple-size: 0;
+        --cr-icon-size: 14px;
+
+        box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
+          0 2px 6px rgba(0, 0, 0, 0.15);
+        width: 640px;
+      }
+
+      :host #dialog .cloudprint-promo {
+        align-items: center;
+        background-color: #f5f5f5;
+        border-color: #e7e7e7;
+        border-top-style: solid;
+        border-width: 1px;
+        color: #888;
+        display: flex;
+        padding: 14px 17px;
+      }
+
+      :host .cloudprint-promo .promo-text {
+        flex: 1;
+      }
+
+      :host .cloudprint-promo .icon {
+        -webkit-margin-end: 12px;
+        display: block;
+        height: 24px;
+        width: 24px;
+      }
+    </style>
+    <dialog is="cr-dialog" id="dialog">
+      <div slot="title">
+        <span>$i18n{destinationSearchTitle}</span>
+      </div>
+      <div slot="body" scrollable>
+        <print-preview-destination-list destinations="[[destinations_]]"
+            has-action-link=true loading-destinations="[[loadingDestinations_]]"
+            title="$i18n{printDestinationsTitle}">
+        </print-preview-destination-list>
+      </div>
+      <div slot="button-container">
+        <button class="cancel-button" on-tap="onCancelButtonTap_">
+          $i18n{cancel}
+        </button>
+      </div>
+      <div class="cloudprint-promo" slot="footer">
+        <img src="../images/cloud.png" class="icon" alt="">
+        <div class="promo-text" inner-h-t-m-l="[[getCloudPrintPromotion_()]]">
+        </div>
+      </div>
+    </dialog>
+  </template>
+  <script src="destination_dialog.js"></script>
+</dom-module>

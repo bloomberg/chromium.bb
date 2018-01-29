@@ -17,14 +17,21 @@ Polymer({
       notify: true,
     },
 
-    /** @private {print_preview.DocumentInfo} */
-    documentInfo_: {
+    /** @private {print_preview.Destination} */
+    destination_: {
       type: Object,
       notify: true,
     },
 
-    /** @private {print_preview.Destination} */
-    destination_: {
+    /** @private {?print_preview.DestinationStore} */
+    destinationStore_: {
+      type: Object,
+      notify: true,
+      value: null,
+    },
+
+    /** @private {print_preview.DocumentInfo} */
+    documentInfo_: {
       type: Object,
       notify: true,
     },
@@ -49,26 +56,27 @@ Polymer({
         cancelled: false,
       },
     },
+
+    /** @private {?print_preview.UserInfo} */
+    userInfo_: {
+      type: Object,
+      notify: true,
+      value: null,
+    },
   },
-
-  /** @private {?print_preview.NativeLayer} */
-  nativeLayer_: null,
-
-  /** @private {?print_preview.UserInfo} */
-  userInfo_: null,
 
   /** @private {?WebUIListenerTracker} */
   listenerTracker_: null,
 
-  /** @private {?print_preview.DestinationStore} */
-  destinationStore_: null,
-
-  /** @private {!EventTracker} */
-  tracker_: new EventTracker(),
-
   /** @type {!print_preview.MeasurementSystem} */
   measurementSystem_: new print_preview.MeasurementSystem(
       ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL),
+
+  /** @private {?print_preview.NativeLayer} */
+  nativeLayer_: null,
+
+  /** @private {!EventTracker} */
+  tracker_: new EventTracker(),
 
   /** @override */
   attached: function() {

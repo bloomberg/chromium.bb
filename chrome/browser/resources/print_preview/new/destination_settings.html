@@ -1,8 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import"
+    href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="button_css.html">
+<link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="../data/destination.html">
+<link rel="import" href="../data/destination_store.html">
+<link rel="import" href="../data/user_info.html">
+<link rel="import" href="button_css.html">
+<link rel="import" href="destination_dialog.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
 <link rel="import" href="settings_section.html">
@@ -75,9 +81,16 @@
                 [[destination.connectionStatusText]]</div>
           </div>
         </div>
-        <button>$i18n{changeDestination}</button>
+        <button disabled$="[[!destinationStore]]" on-tap="onChangeButtonTap_">
+          $i18n{changeDestination}
+        </button>
       </div>
     </print-preview-settings-section>
+    <template is="cr-lazy-render" id="destinationDialog">
+      <print-preview-destination-dialog
+          destination-store="[[destinationStore]]" user-info="[[userInfo]]">
+      </print-preview-destination-dialog>
+    </template>
   </template>
   <script src="destination_settings.js"></script>
 </dom-module>
