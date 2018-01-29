@@ -14,11 +14,11 @@ namespace device {
 class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
  public:
   static void CreateSensorFusion(
-      mojo::ScopedSharedBufferMapping mapping,
+      SensorReadingSharedBuffer* reading_buffer,
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
       const PlatformSensorProviderBase::CreateSensorCallback& callback,
       PlatformSensorProvider* provider) {
-    scoped_refptr<Factory> factory(new Factory(std::move(mapping),
+    scoped_refptr<Factory> factory(new Factory(reading_buffer,
                                                std::move(fusion_algorithm),
                                                std::move(callback), provider));
     factory->FetchSources();
@@ -27,20 +27,20 @@ class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
  private:
   friend class base::RefCounted<Factory>;
 
-  Factory(mojo::ScopedSharedBufferMapping mapping,
+  Factory(SensorReadingSharedBuffer* reading_buffer,
           std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
           const PlatformSensorProviderBase::CreateSensorCallback& callback,
           PlatformSensorProvider* provider)
       : fusion_algorithm_(std::move(fusion_algorithm)),
         result_callback_(std::move(callback)),
-        mapping_(std::move(mapping)),
+        reading_buffer_(reading_buffer),
         provider_(provider) {
     const auto& types = fusion_algorithm_->source_types();
     DCHECK(!types.empty());
     // Make sure there are no dups.
     DCHECK(std::adjacent_find(types.begin(), types.end()) == types.end());
     DCHECK(result_callback_);
-    DCHECK(mapping_);
+    DCHECK(reading_buffer_);
     DCHECK(provider_);
   }
 
@@ -74,7 +74,7 @@ class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
     sources_map_[type] = std::move(sensor);
     if (sources_map_.size() == fusion_algorithm_->source_types().size()) {
       scoped_refptr<PlatformSensor> fusion_sensor(new PlatformSensorFusion(
-          std::move(mapping_), provider_, std::move(fusion_algorithm_),
+          reading_buffer_, provider_, std::move(fusion_algorithm_),
           std::move(sources_map_)));
       std::move(result_callback_).Run(fusion_sensor);
     }
@@ -82,29 +82,27 @@ class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
 
   std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm_;
   PlatformSensorProviderBase::CreateSensorCallback result_callback_;
-  mojo::ScopedSharedBufferMapping mapping_;
+  SensorReadingSharedBuffer* reading_buffer_;  // NOTE: Owned by |provider_|.
   PlatformSensorProvider* provider_;
   PlatformSensorFusion::SourcesMap sources_map_;
 };
 
 // static
 void PlatformSensorFusion::Create(
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     PlatformSensorProvider* provider,
     std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
     const PlatformSensorProviderBase::CreateSensorCallback& callback) {
-  Factory::CreateSensorFusion(std::move(mapping), std::move(fusion_algorithm),
+  Factory::CreateSensorFusion(reading_buffer, std::move(fusion_algorithm),
                               callback, provider);
 }
 
 PlatformSensorFusion::PlatformSensorFusion(
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     PlatformSensorProvider* provider,
     std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
     PlatformSensorFusion::SourcesMap sources)
-    : PlatformSensor(fusion_algorithm->fused_type(),
-                     std::move(mapping),
-                     provider),
+    : PlatformSensor(fusion_algorithm->fused_type(), reading_buffer, provider),
       fusion_algorithm_(std::move(fusion_algorithm)),
       source_sensors_(std::move(sources)),
       reporting_mode_(mojom::ReportingMode::CONTINUOUS) {

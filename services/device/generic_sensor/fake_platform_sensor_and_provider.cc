@@ -12,10 +12,11 @@ using ::testing::_;
 
 namespace device {
 
-FakePlatformSensor::FakePlatformSensor(mojom::SensorType type,
-                                       mojo::ScopedSharedBufferMapping mapping,
-                                       PlatformSensorProvider* provider)
-    : PlatformSensor(type, std::move(mapping), provider) {
+FakePlatformSensor::FakePlatformSensor(
+    mojom::SensorType type,
+    SensorReadingSharedBuffer* reading_buffer,
+    PlatformSensorProvider* provider)
+    : PlatformSensor(type, reading_buffer, provider) {
   ON_CALL(*this, StartSensor(_))
       .WillByDefault(
           Invoke([this](const PlatformSensorConfiguration& configuration) {
@@ -68,18 +69,20 @@ FakePlatformSensorProvider::FakePlatformSensorProvider() {
 
 FakePlatformSensorProvider::~FakePlatformSensorProvider() = default;
 
-mojo::ScopedSharedBufferMapping FakePlatformSensorProvider::GetMapping(
+SensorReadingSharedBuffer* FakePlatformSensorProvider::GetSensorReadingBuffer(
     mojom::SensorType type) {
-  return CreateSharedBufferIfNeeded() ? MapSharedBufferForType(type) : nullptr;
+  return CreateSharedBufferIfNeeded()
+             ? GetSensorReadingSharedBufferForType(type)
+             : nullptr;
 }
 
 void FakePlatformSensorProvider::CreateSensorInternal(
     mojom::SensorType type,
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback) {
   DCHECK(type >= mojom::SensorType::FIRST && type <= mojom::SensorType::LAST);
   auto sensor =
-      base::MakeRefCounted<FakePlatformSensor>(type, std::move(mapping), this);
+      base::MakeRefCounted<FakePlatformSensor>(type, reading_buffer, this);
   DoCreateSensorInternal(type, std::move(sensor), callback);
 }
 

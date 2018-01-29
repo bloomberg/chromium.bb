@@ -61,7 +61,7 @@ PlatformSensorProviderWin::~PlatformSensorProviderWin() = default;
 
 void PlatformSensorProviderWin::CreateSensorInternal(
     mojom::SensorType type,
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!StartSensorThread()) {
@@ -77,8 +77,8 @@ void PlatformSensorProviderWin::CreateSensorInternal(
       // If this PlatformSensorFusion object is successfully initialized,
       // |callback| will be run with a reference to this object.
       PlatformSensorFusion::Create(
-          std::move(mapping), this,
-          std::move(linear_acceleration_fusion_algorithm), callback);
+          reading_buffer, this, std::move(linear_acceleration_fusion_algorithm),
+          callback);
       break;
     }
 
@@ -89,8 +89,7 @@ void PlatformSensorProviderWin::CreateSensorInternal(
           base::Bind(&PlatformSensorProviderWin::CreateSensorReader,
                      base::Unretained(this), type),
           base::Bind(&PlatformSensorProviderWin::SensorReaderCreated,
-                     base::Unretained(this), type, base::Passed(&mapping),
-                     callback));
+                     base::Unretained(this), type, reading_buffer, callback));
       break;
     }
   }
@@ -119,7 +118,7 @@ void PlatformSensorProviderWin::StopSensorThread() {
 
 void PlatformSensorProviderWin::SensorReaderCreated(
     mojom::SensorType type,
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback,
     std::unique_ptr<PlatformSensorReaderWin> sensor_reader) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -129,7 +128,7 @@ void PlatformSensorProviderWin::SensorReaderCreated(
   }
 
   scoped_refptr<PlatformSensor> sensor = new PlatformSensorWin(
-      type, std::move(mapping), this, sensor_thread_->task_runner(),
+      type, reading_buffer, this, sensor_thread_->task_runner(),
       std::move(sensor_reader));
   callback.Run(sensor);
 }

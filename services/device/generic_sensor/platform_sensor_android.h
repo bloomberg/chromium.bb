@@ -14,7 +14,7 @@ namespace device {
 class PlatformSensorAndroid : public PlatformSensor {
  public:
   PlatformSensorAndroid(mojom::SensorType type,
-                        mojo::ScopedSharedBufferMapping mapping,
+                        SensorReadingSharedBuffer* reading_buffer,
                         PlatformSensorProvider* provider,
                         const base::android::JavaRef<jobject>& java_sensor);
 
