@@ -22,6 +22,13 @@ class QUIC_EXPORT_PRIVATE QuicUrlUtils {
   // (e.g. greater than 65535).
   static bool IsValidUrl(QuicStringPiece url);
 
+  // Returns a canonical, valid URL for a PUSH_PROMISE with the specified
+  // ":scheme", ":authority", and ":path" header fields, or an empty
+  // string if the resulting URL is not valid or supported.
+  static std::string GetPushPromiseUrl(QuicStringPiece scheme,
+                                       QuicStringPiece authority,
+                                       QuicStringPiece path);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUrlUtils);
 };
