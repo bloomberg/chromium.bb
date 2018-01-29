@@ -144,6 +144,8 @@ class TrayAccessibilityTest
     if (GetParam() == PREF_SERVICE) {
       PrefService* prefs = GetProfile()->GetPrefs();
       prefs->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu, value);
+      // Prefs are sent to ash asynchronously.
+      base::RunLoop().RunUntilIdle();
     } else if (GetParam() == POLICY) {
       policy::PolicyMap policy_map;
       policy_map.Set(policy::key::kShowAccessibilityOptionsInSystemTrayMenu,
@@ -1584,9 +1586,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   CloseDetailMenu();
 }
 
-// Flaky: https://crbug.com/787024
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
-                       DISABLED_CheckMenuVisibilityOnDetailMenu) {
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   // Except help & settings, others should be kept the same
   // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
   EXPECT_TRUE(CreateDetailedMenu());
