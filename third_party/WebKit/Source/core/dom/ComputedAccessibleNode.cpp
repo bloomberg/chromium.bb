@@ -50,12 +50,59 @@ ScriptPromise ComputedAccessibleNode::ComputeAccessibleProperties(
   return promise;
 }
 
+int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
+                                                bool& is_null) const {
+  int32_t out = 0;
+  is_null = true;
+  if (tree_->GetIntAttributeForAXNode(cache_->GetAXID(element_), attr, &out)) {
+    is_null = false;
+  }
+  return out;
+}
+
 const String ComputedAccessibleNode::name() const {
   return tree_->GetNameForAXNode(cache_->GetAXID(element_));
 }
 
 const String ComputedAccessibleNode::role() const {
   return tree_->GetRoleForAXNode(cache_->GetAXID(element_));
+}
+
+int32_t ComputedAccessibleNode::colCount(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_COLUMN_COUNT, is_null);
+}
+
+int32_t ComputedAccessibleNode::colIndex(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_COLUMN_INDEX, is_null);
+}
+
+int32_t ComputedAccessibleNode::colSpan(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_COLUMN_SPAN, is_null);
+}
+
+int32_t ComputedAccessibleNode::level(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_HIERARCHICAL_LEVEL,
+                         is_null);
+}
+
+int32_t ComputedAccessibleNode::posInSet(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_POS_IN_SET, is_null);
+}
+
+int32_t ComputedAccessibleNode::rowCount(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_ROW_COUNT, is_null);
+}
+
+int32_t ComputedAccessibleNode::rowIndex(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_ROW_INDEX, is_null);
+}
+
+int32_t ComputedAccessibleNode::rowSpan(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_ROW_SPAN, is_null);
+}
+
+int32_t ComputedAccessibleNode::setSize(bool& is_null) const {
+  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_SET_SIZE, is_null);
 }
 
 void ComputedAccessibleNode::OnSnapshotResponse(
