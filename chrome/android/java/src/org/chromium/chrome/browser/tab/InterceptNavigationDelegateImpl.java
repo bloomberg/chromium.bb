@@ -26,7 +26,7 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
  * certain navigations to Intents to 3rd party applications and to "pause" navigations when data use
  * tracking has ended.
- * Note the Intent is often created together with a new empty tab which then shoud be closed
+ * Note the Intent is often created together with a new empty tab which then should be closed
  * immediately. Closing the tab will cancel the navigation that this delegate is running for,
  * hence can cause UAF error. It should be done in an asynchronous fashion to avoid it.
  * See https://crbug.com/732260.
