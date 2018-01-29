@@ -14,6 +14,41 @@
         "id": "WallpaperSource",
         "type": "string",
         "enum": [ "ONLINE", "OEM", "DAILY", "CUSTOM", "THIRDPARTY" ]
+      },
+      {
+        "id": "CollectionInfo",
+        "type": "object",
+        "description": "The name of a wallpaper collection (ie. a category such as Art, Landscape etc.) and its id.",
+        "properties": {
+          "collectionName": {
+            "type": "string",
+            "description": "The name of the collection used for display."
+          },
+          "collectionId": {
+            "type": "string",
+            "description": "The id of the collection used as a token to fetch images info."
+          }
+        }
+      },
+      {
+        "id": "ImageInfo",
+        "type": "object",
+        "description": "The info (url, description etc.) specific to each wallpaper image.",
+        "properties": {
+          "imageUrl": {
+            "type": "string",
+            "description": "The url that points to the image."
+          },
+          "actionUrl": {
+            "type": "string",
+            "description": "The url of the Learn More link."
+          },
+          "displayText": {
+            "type": "array",
+            "description": "The descriptive text such as the name of the artist.",
+            "items": {"type": "string"}
+          }
+        }
       }
     ],
     "functions": [
@@ -21,7 +56,7 @@
         "name": "getStrings",
         "type": "function",
         "description": "Gets translated strings and initialization data.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "function",
@@ -40,7 +75,7 @@
         "name": "getSyncSetting",
         "type": "function",
         "description": "Gets the sync themes(and wallpaper on ChromeOS) setting value.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "function",
@@ -59,7 +94,7 @@
         "name": "setWallpaperIfExists",
         "type": "function",
         "description": "Sets wallpaper if it exists in the local file system with specified layout",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "string",
@@ -85,7 +120,7 @@
         "name": "setWallpaper",
         "type": "function",
         "description": "Sets wallpaper to the image from url with specified layout",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "binary",
@@ -110,14 +145,14 @@
         "name": "resetWallpaper",
         "type": "function",
         "description": "Clears current user's active custom wallpaper and changes to default wallpaper.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": []
       },
       {
         "name": "setCustomWallpaper",
         "type": "function",
         "description": "Sets wallpaper to the image from local file with specified layout and returns thumbnail if needed.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "binary",
@@ -153,7 +188,7 @@
         "name": "setCustomWallpaperLayout",
         "type": "function",
         "description": "Sets current custom wallpaper to the specified layout",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "name": "layout",
@@ -170,21 +205,21 @@
         "name": "minimizeInactiveWindows",
         "type": "function",
         "description": "Minimizes all inactive open windows.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": []
       },
       {
         "name": "restoreMinimizedWindows",
         "type": "function",
         "description": "Restores all previously minimized windows.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": []
       },
       {
         "name": "getThumbnail",
         "type": "function",
         "description": "Gets thumbnail of wallpaper from thumbnail directory.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "string",
@@ -214,7 +249,7 @@
         "name": "saveThumbnail",
         "type": "function",
         "description": "Saves thumbnail to thumbnail directory.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "string",
@@ -239,7 +274,7 @@
         "name": "getOfflineWallpaperList",
         "type": "function",
         "description": "Get the list of file names of downloaded wallpapers.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "type": "function",
@@ -259,11 +294,56 @@
         "name": "recordWallpaperUMA",
         "type": "function",
         "description": "Record wallpaper UMA when a new wallpaper is set, either by Wallpaper Picker App, or by a third party App.",
-        "nodoc": "true",
+        "nodoc": true,
         "parameters": [
           {
             "name": "source",
             "$ref": "WallpaperSource"
+          }
+        ]
+      },
+      {
+        "name": "getCollectionsInfo",
+        "type": "function",
+        "description": "Gets the info of wallpaper collections (ie. categories such as Art, Landscape etc.)",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                "type": "array",
+                "name": "collectionsInfo",
+                "items": {"$ref": "CollectionInfo"}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getImagesInfo",
+        "type": "function",
+        "description": "Gets wallpaper related info (url, description etc.) for a particular collection (ie. category).",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collectionId",
+            "description": "The id of the collection whose info is requested."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                "type": "array",
+                "name": "imagesInfo",
+                "items": {"$ref": "ImageInfo"}
+              }
+            ]
           }
         ]
       }

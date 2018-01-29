@@ -40,6 +40,7 @@ source_set("chromeos") {
   deps = [
     # TODO(tbarzic): Cleanup this list.
     ":attestation_proto",
+    ":backdrop_wallpaper_proto",
     ":device_policy_remover_generated",
     ":user_activity_event_proto",
     "//apps",
@@ -1575,6 +1576,8 @@ source_set("chromeos") {
     "upgrade_detector_chromeos.h",
 
     # Extension API implementations.
+    "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.cc",
+    "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h",
     "extensions/echo_private_api.cc",
     "extensions/echo_private_api.h",
     "extensions/file_manager/device_event_router.cc",
@@ -2093,6 +2096,13 @@ proto_library("user_activity_event_proto") {
   sources = [
     "power/ml/user_activity_event.proto",
   ]
+}
+
+proto_library("backdrop_wallpaper_proto") {
+  sources = [
+    "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.proto",
+  ]
+  generate_python = false
 }
 
 service_manifest("ash_pref_connector_manifest") {

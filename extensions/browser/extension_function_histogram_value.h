@@ -1274,6 +1274,8 @@ enum HistogramValue {
   SYSTEM_DISPLAY_SETMIRRORMODE,
   TTSENGINE_UPDATEVOICES,
   PASSWORDSPRIVATE_REQUESTEXPORTPROGRESSSTATUS,
+  WALLPAPERPRIVATE_GETCOLLECTIONSINFO,
+  WALLPAPERPRIVATE_GETIMAGESINFO,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
