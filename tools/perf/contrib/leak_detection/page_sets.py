@@ -62,7 +62,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       # websites which were found to be leaking in the past
       'https://www.prezi.com',
       'http://www.time.com',
-      'http://infomoney.com.br',
       'http://www.cheapoair.com',
       'http://www.onlinedown.net',
       'http://www.dailypost.ng',
@@ -74,6 +73,7 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.quora.com',
       'https://www.macys.com',
       'https://www.reddit.com',
+      'http://infomoney.com.br',
     ]
     for url in urls_list:
       self.AddStory(LeakDetectionPage(url, self, url))
