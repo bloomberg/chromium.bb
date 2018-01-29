@@ -50,8 +50,6 @@ class DOMTimerCoordinator {
   // deeper timer nesting level, see DOMTimer::DOMTimer.
   void SetTimerNestingLevel(int level) { timer_nesting_level_ = level; }
 
-  void SetTimerTaskRunner(scoped_refptr<WebTaskRunner>);
-
   scoped_refptr<WebTaskRunner> TimerTaskRunner() const {
     return timer_task_runner_;
   }

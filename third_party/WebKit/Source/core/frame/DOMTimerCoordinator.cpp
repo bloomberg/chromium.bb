@@ -56,9 +56,4 @@ int DOMTimerCoordinator::NextID() {
   }
 }
 
-void DOMTimerCoordinator::SetTimerTaskRunner(
-    scoped_refptr<WebTaskRunner> timer_task_runner) {
-  timer_task_runner_ = std::move(timer_task_runner);
-}
-
 }  // namespace blink
