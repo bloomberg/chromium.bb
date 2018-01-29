@@ -31,7 +31,7 @@ function runTests() {
     shouldBeEqualToString('ahemFace.weight', '300');
     shouldBeEqualToString('ahemFace.unicodeRange', 'U+0-3FF');
     shouldBeEqualToString('ahemFace.variant', 'small-caps');
-    shouldBeEqualToString('ahemFace.featureSettings', "'dlig' 1");
+    shouldBeEqualToString('ahemFace.featureSettings', '"dlig" 1');
     shouldBeEqualToString('ahemFace.display', 'block');
 
     debug('');
@@ -59,7 +59,7 @@ function runTests() {
     shouldBeEqualToString('constructedFace.weight', 'bold');
     shouldBeEqualToString('constructedFace.unicodeRange', 'U+100-1FF, U+ABCD');
     shouldBeEqualToString('constructedFace.variant', 'small-caps');
-    shouldBeEqualToString('constructedFace.featureSettings', "'liga' 0");
+    shouldBeEqualToString('constructedFace.featureSettings', '"liga" 0');
     shouldBeEqualToString('constructedFace.display', 'optional');
 
     debug('');
@@ -76,7 +76,7 @@ function runTests() {
     shouldBeEqualToString('modifiedFace.weight', '900');
     shouldBeEqualToString('modifiedFace.unicodeRange', 'U+0-3FF');
     shouldBeEqualToString('modifiedFace.variant', 'small-caps');
-    shouldBeEqualToString('modifiedFace.featureSettings', "'dlig' 1, 'liga' 0");
+    shouldBeEqualToString('modifiedFace.featureSettings', '"dlig" 1, "liga" 0');
     shouldBeEqualToString('modifiedFace.display', 'fallback');
 
     debug('');

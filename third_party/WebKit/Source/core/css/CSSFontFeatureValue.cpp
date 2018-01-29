@@ -35,9 +35,9 @@ CSSFontFeatureValue::CSSFontFeatureValue(const AtomicString& tag, int value)
 
 String CSSFontFeatureValue::CustomCSSText() const {
   StringBuilder builder;
-  builder.Append('\'');
+  builder.Append('"');
   builder.Append(tag_);
-  builder.Append("' ");
+  builder.Append("\" ");
   builder.AppendNumber(value_);
   return builder.ToString();
 }
