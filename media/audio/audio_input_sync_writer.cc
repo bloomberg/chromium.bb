@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_input_sync_writer.h"
+#include "media/audio/audio_input_sync_writer.h"
 
 #include <algorithm>
 #include <utility>
@@ -14,11 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
-using media::AudioBus;
-using media::AudioInputBuffer;
-using media::AudioInputBufferParameters;
-
-namespace content {
+namespace media {
 
 namespace {
 
@@ -36,7 +32,7 @@ AudioInputSyncWriter::OverflowData::OverflowData(
     double volume,
     bool key_pressed,
     base::TimeTicks capture_time,
-    std::unique_ptr<media::AudioBus> audio_bus)
+    std::unique_ptr<AudioBus> audio_bus)
     : volume_(volume),
       key_pressed_(key_pressed),
       capture_time_(capture_time),
@@ -52,7 +48,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(
     std::unique_ptr<base::SharedMemory> shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> socket,
     uint32_t shared_memory_segment_count,
-    const media::AudioParameters& params)
+    const AudioParameters& params)
     : log_callback_(std::move(log_callback)),
       socket_(std::move(socket)),
       shared_memory_(std::move(shared_memory)),
@@ -105,24 +101,22 @@ AudioInputSyncWriter::~AudioInputSyncWriter() {
 
   write_to_fifo_count_ -= trailing_write_to_fifo_count_;
   write_error_count_ -= trailing_write_error_count_;
-  write_count_ -= std::max(trailing_write_to_fifo_count_,
-                           trailing_write_error_count_);
+  write_count_ -=
+      std::max(trailing_write_to_fifo_count_, trailing_write_error_count_);
 
   if (write_count_ == 0)
     return;
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Media.AudioCapturerMissedReadDeadline",
-      100.0 * write_to_fifo_count_ / write_count_);
+  UMA_HISTOGRAM_PERCENTAGE("Media.AudioCapturerMissedReadDeadline",
+                           100.0 * write_to_fifo_count_ / write_count_);
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Media.AudioCapturerDroppedData",
-      100.0 * write_error_count_ / write_count_);
+  UMA_HISTOGRAM_PERCENTAGE("Media.AudioCapturerDroppedData",
+                           100.0 * write_error_count_ / write_count_);
 
   UMA_HISTOGRAM_ENUMERATION("Media.AudioCapturerAudioGlitches",
-                            write_error_count_ == 0 ?
-                                AUDIO_CAPTURER_NO_AUDIO_GLITCHES :
-                                AUDIO_CAPTURER_AUDIO_GLITCHES,
+                            write_error_count_ == 0
+                                ? AUDIO_CAPTURER_NO_AUDIO_GLITCHES
+                                : AUDIO_CAPTURER_AUDIO_GLITCHES,
                             AUDIO_CAPTURER_AUDIO_GLITCHES_MAX + 1);
 
   std::string log_string = base::StringPrintf(
@@ -135,15 +129,14 @@ AudioInputSyncWriter::~AudioInputSyncWriter() {
 std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
     base::RepeatingCallback<void(const std::string&)> log_callback,
     uint32_t shared_memory_segment_count,
-    const media::AudioParameters& params,
+    const AudioParameters& params,
     base::CancelableSyncSocket* foreign_socket) {
   // Having no shared memory doesn't make sense, so fail creation in that case.
   if (shared_memory_segment_count == 0)
     return nullptr;
 
   base::CheckedNumeric<uint32_t> requested_memory_size =
-      media::ComputeAudioInputBufferSizeChecked(params,
-                                                shared_memory_segment_count);
+      ComputeAudioInputBufferSizeChecked(params, shared_memory_segment_count);
 
   if (!requested_memory_size.IsValid())
     return nullptr;
@@ -185,8 +178,7 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
   if (number_of_indices_available > 0) {
     auto indices = std::make_unique<uint32_t[]>(number_of_indices_available);
     size_t bytes_received = socket_->Receive(
-        &indices[0],
-        number_of_indices_available * sizeof(indices[0]));
+        &indices[0], number_of_indices_available * sizeof(indices[0]));
     CHECK_EQ(number_of_indices_available * sizeof(indices[0]), bytes_received);
     for (size_t i = 0; i < number_of_indices_available; ++i) {
       ++next_read_buffer_index_;
@@ -234,7 +226,6 @@ void AudioInputSyncWriter::Close() {
   socket_->Close();
 }
 
-
 void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
 #if !defined(OS_ANDROID)
   static const base::TimeDelta kLogDelayThreadhold =
@@ -245,7 +236,8 @@ void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
     // This is the first time Write is called.
     base::TimeDelta interval = base::Time::Now() - creation_time_;
     oss << "AISW::Write: audio input data received for the first time: delay "
-           "= " << interval.InMilliseconds() << "ms";
+           "= "
+        << interval.InMilliseconds() << "ms";
   } else {
     base::TimeDelta interval = base::Time::Now() - last_write_time_;
     if (interval > kLogDelayThreadhold) {
@@ -389,4 +381,4 @@ bool AudioInputSyncWriter::SignalDataWrittenAndUpdateCounters() {
   return true;
 }
 
-}  // namespace content
+}  // namespace media

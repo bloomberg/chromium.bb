@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_input_sync_writer.h"
+#include "media/audio/audio_input_sync_writer.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,10 +27,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using media::AudioBus;
-using media::AudioParameters;
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -78,9 +76,7 @@ class MockCancelableSyncSocket : public base::CancelableSyncSocket {
     return received * sizeof(uint32_t);
   }
 
-  size_t Peek() override {
-    return (reads_ - receives_) * sizeof(uint32_t);
-  }
+  size_t Peek() override { return (reads_ - receives_) * sizeof(uint32_t); }
 
   // Simluates reading |buffers| number of buffers from the ring buffer.
   void Read(int buffers) {
@@ -113,10 +109,10 @@ class AudioInputSyncWriterTest : public testing::Test {
     const int frames = sampling_frequency_hz / 100;  // 10 ms
     const int bits_per_sample = 16;
     const AudioParameters audio_params(
-        AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_MONO,
-        sampling_frequency_hz, bits_per_sample, frames);
+        AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_MONO, sampling_frequency_hz,
+        bits_per_sample, frames);
     const uint32_t data_size =
-        media::ComputeAudioInputBufferSize(audio_params, kSegments);
+        ComputeAudioInputBufferSize(audio_params, kSegments);
 
     auto shared_memory = std::make_unique<base::SharedMemory>();
     EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(data_size));
@@ -129,8 +125,7 @@ class AudioInputSyncWriterTest : public testing::Test {
     audio_bus_ = AudioBus::Create(audio_params);
   }
 
-  ~AudioInputSyncWriterTest() override {
-  }
+  ~AudioInputSyncWriterTest() override {}
 
   // Get total number of expected log calls. On non-Android we expect one log
   // call at first Write() call, zero on Android. We also expect all call in the
@@ -221,9 +216,8 @@ TEST_F(AudioInputSyncWriterTest, FillAndEmptyRingBuffer) {
   // Empty half of the ring buffer.
   const int buffers_to_read = kSegments / 2;
   socket_->Read(buffers_to_read);
-  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments - buffers_to_read,
-                                            buffers_to_read * sizeof(uint32_t),
-                                            0));
+  EXPECT_TRUE(TestSocketAndFifoExpectations(
+      kSegments - buffers_to_read, buffers_to_read * sizeof(uint32_t), 0));
 
   // Fill up again. The first write should do receive until that queue is
   // empty.
@@ -337,4 +331,4 @@ TEST_F(AudioInputSyncWriterTest, MultipleFillAndEmptyRingBufferAndPartOfFifo) {
   EXPECT_TRUE(TestSocketAndFifoExpectations(0, 3 * sizeof(uint32_t), 0));
 }
 
-}  // namespace content
+}  // namespace media

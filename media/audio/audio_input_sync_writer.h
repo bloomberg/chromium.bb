@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
+#ifndef MEDIA_AUDIO_AUDIO_INPUT_SYNC_WRITER_H_
+#define MEDIA_AUDIO_AUDIO_INPUT_SYNC_WRITER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,10 +18,10 @@
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_export.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -31,14 +31,14 @@ namespace base {
 class SharedMemory;
 }
 
-namespace content {
+namespace media {
 
 // A AudioInputController::SyncWriter implementation using SyncSocket. This
 // is used by AudioInputController to provide a low latency data source for
 // transmitting audio packets between the browser process and the renderer
 // process.
-class CONTENT_EXPORT AudioInputSyncWriter
-    : public media::AudioInputController::SyncWriter {
+class MEDIA_EXPORT AudioInputSyncWriter
+    : public AudioInputController::SyncWriter {
  public:
   // Maximum fifo size (|overflow_buses_| and |overflow_params_|) in number of
   // AudioBuses.
@@ -51,14 +51,14 @@ class CONTENT_EXPORT AudioInputSyncWriter
       std::unique_ptr<base::SharedMemory> shared_memory,
       std::unique_ptr<base::CancelableSyncSocket> socket,
       uint32_t shared_memory_segment_count,
-      const media::AudioParameters& params);
+      const AudioParameters& params);
 
   ~AudioInputSyncWriter() override;
 
   static std::unique_ptr<AudioInputSyncWriter> Create(
       base::RepeatingCallback<void(const std::string&)> log_callback,
       uint32_t shared_memory_segment_count,
-      const media::AudioParameters& params,
+      const AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
 
   const base::SharedMemory* shared_memory() const {
@@ -67,8 +67,8 @@ class CONTENT_EXPORT AudioInputSyncWriter
 
   size_t shared_memory_segment_count() const { return audio_buses_.size(); }
 
-  // media::AudioInputController::SyncWriter implementation.
-  void Write(const media::AudioBus* data,
+  // AudioInputController::SyncWriter implementation.
+  void Write(const AudioBus* data,
              double volume,
              bool key_pressed,
              base::TimeTicks capture_time) override;
@@ -85,7 +85,7 @@ class CONTENT_EXPORT AudioInputSyncWriter
   // Push |data| and metadata to |audio_buffer_fifo_|. Returns true if
   // successful. Logs error and returns false if the fifo already reached the
   // maximum size.
-  bool PushDataToFifo(const media::AudioBus* data,
+  bool PushDataToFifo(const AudioBus* data,
                       double volume,
                       bool key_pressed,
                       base::TimeTicks capture_time);
@@ -163,7 +163,7 @@ class CONTENT_EXPORT AudioInputSyncWriter
 
   // Vector of audio buses allocated during construction and deleted in the
   // destructor.
-  std::vector<std::unique_ptr<media::AudioBus>> audio_buses_;
+  std::vector<std::unique_ptr<AudioBus>> audio_buses_;
 
   // Fifo for audio that is used in case there isn't room in the shared memory.
   // This can for example happen under load when the consumer side is starved.
@@ -174,14 +174,14 @@ class CONTENT_EXPORT AudioInputSyncWriter
     OverflowData(double volume,
                  bool key_pressed,
                  base::TimeTicks capture_time,
-                 std::unique_ptr<media::AudioBus> audio_bus);
+                 std::unique_ptr<AudioBus> audio_bus);
     ~OverflowData();
     OverflowData(OverflowData&&);
     OverflowData& operator=(OverflowData&& other);
     double volume_;
     bool key_pressed_;
     base::TimeTicks capture_time_;
-    std::unique_ptr<media::AudioBus> audio_bus_;
+    std::unique_ptr<AudioBus> audio_bus_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(OverflowData);
@@ -192,6 +192,6 @@ class CONTENT_EXPORT AudioInputSyncWriter
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
+#endif  // MEDIA_AUDIO_AUDIO_INPUT_SYNC_WRITER_H_
