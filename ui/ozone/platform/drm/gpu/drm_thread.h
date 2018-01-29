@@ -156,8 +156,10 @@ class DrmThread : public base::Thread,
   // requests from two different client threads.
   mojo::BindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
 
-  // The mojo implementation of DrmDevice can use a simple binding.
-  mojo::Binding<ozone::mojom::DrmDevice> drm_binding_;
+  // The mojo implementation of DrmDevice requires a BindingSet because the
+  // DrmThread services requests from different client threads when operating in
+  // --mus mode
+  mojo::BindingSet<ozone::mojom::DrmDevice> drm_bindings_;
 
   base::WeakPtrFactory<DrmThread> weak_ptr_factory_;
 

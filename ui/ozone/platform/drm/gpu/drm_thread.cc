@@ -77,8 +77,7 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 
 }  // namespace
 
-DrmThread::DrmThread()
-    : base::Thread("DrmThread"), drm_binding_(this), weak_ptr_factory_(this) {}
+DrmThread::DrmThread() : base::Thread("DrmThread"), weak_ptr_factory_(this) {}
 
 DrmThread::~DrmThread() {
   Stop();
@@ -357,7 +356,7 @@ void DrmThread::AddBindingCursorDevice(
 
 void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {
   TRACE_EVENT0("drm", "DrmThread::AddBindingDrmDevice");
-  drm_binding_.Bind(std::move(request));
+  drm_bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace ui
