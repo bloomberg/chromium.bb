@@ -87,32 +87,26 @@ CSSValueID GetBaselineKeyword(CSSValue& value) {
     return CSSValueBaseline;
   }
 
+  DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).First()).GetValueID() ==
+         CSSValueLast);
   DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).Second()).GetValueID() ==
          CSSValueBaseline);
-  if (ToCSSIdentifierValue(ToCSSValuePair(value).First()).GetValueID() ==
-      CSSValueLast) {
-    return CSSValueLastBaseline;
-  }
-  DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).First()).GetValueID() ==
-         CSSValueFirst);
-  return CSSValueFirstBaseline;
+  return CSSValueLastBaseline;
 }
 
 CSSValue* ConsumeBaselineKeyword(CSSParserTokenRange& range) {
-  CSSValueID id = range.Peek().Id();
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueBaseline>(id))
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-
-  if (CSSIdentifierValue* preference =
-          CSSPropertyParserHelpers::ConsumeIdent<CSSValueFirst, CSSValueLast>(
-              range)) {
-    if (range.Peek().Id() == CSSValueBaseline) {
-      return CSSValuePair::Create(preference,
-                                  CSSPropertyParserHelpers::ConsumeIdent(range),
-                                  CSSValuePair::kDropIdenticalValues);
-    }
+  CSSIdentifierValue* preference =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueFirst, CSSValueLast>(
+          range);
+  CSSIdentifierValue* baseline =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueBaseline>(range);
+  if (!baseline)
+    return nullptr;
+  if (preference && preference->GetValueID() == CSSValueLast) {
+    return CSSValuePair::Create(preference, baseline,
+                                CSSValuePair::kDropIdenticalValues);
   }
-  return nullptr;
+  return baseline;
 }
 
 CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
@@ -549,6 +543,7 @@ bool IsContentPositionOrLeftOrRightKeyword(CSSValueID id) {
 CSSValue* ConsumeSelfPositionOverflowPosition(
     CSSParserTokenRange& range,
     IsPositionKeyword is_position_keyword) {
+  DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
   if (IsAutoOrNormalOrStretch(id))
     return CSSPropertyParserHelpers::ConsumeIdent(range);
@@ -570,6 +565,7 @@ CSSValue* ConsumeSelfPositionOverflowPosition(
 
 CSSValue* ConsumeSimplifiedItemPosition(CSSParserTokenRange& range,
                                         IsPositionKeyword is_position_keyword) {
+  DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
   if (IsAutoOrNormalOrStretch(id) || is_position_keyword(id))
     return CSSPropertyParserHelpers::ConsumeIdent(range);
@@ -583,6 +579,7 @@ CSSValue* ConsumeSimplifiedItemPosition(CSSParserTokenRange& range,
 CSSValue* ConsumeContentDistributionOverflowPosition(
     CSSParserTokenRange& range,
     IsPositionKeyword is_position_keyword) {
+  DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal>(id)) {
     return CSSContentDistributionValue::Create(
@@ -618,6 +615,7 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
 CSSValue* ConsumeSimplifiedContentPosition(
     CSSParserTokenRange& range,
     IsPositionKeyword is_position_keyword) {
+  DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal>(id) ||
       is_position_keyword(id)) {
@@ -2377,9 +2375,18 @@ bool ConsumePlaceAlignment(CSSParserTokenRange& range,
   DCHECK(!align_value);
   DCHECK(!justify_value);
 
+  bool is_baseline = IsBaselineKeyword(range.Peek().Id());
   align_value = consume_alignment_value(range, IsSelfPositionKeyword);
   if (!align_value)
     return false;
+
+  // justify-content property does not allow the <baseline-position> values.
+  if (consume_alignment_value == ConsumeSimplifiedContentPosition) {
+    if (range.AtEnd() && is_baseline)
+      return false;
+    if (IsBaselineKeyword(range.Peek().Id()))
+      return false;
+  }
 
   justify_value =
       range.AtEnd()
