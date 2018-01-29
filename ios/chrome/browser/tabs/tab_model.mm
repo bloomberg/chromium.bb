@@ -783,7 +783,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
         webState->GetNavigationManager()->GetVisibleItem();
 
     if (!(visible_item &&
-          visible_item->GetVirtualURL() == GURL(kChromeUINewTabURL))) {
+          visible_item->GetVirtualURL() == kChromeUINewTabURL)) {
       PagePlaceholderTabHelper::FromWebState(webState)
           ->AddPlaceholderForNextNavigation();
     }

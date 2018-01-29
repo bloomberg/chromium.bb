@@ -78,7 +78,7 @@ bool ChromeOmniboxClientIOS::IsInstantNTP() const {
   // because if they're not using Google the Google landing page is not shown
   // (crbug/315563).
   GURL currentURL = controller_->GetWebState()->GetVisibleURL();
-  return currentURL == GURL(kChromeUINewTabURL);
+  return currentURL == kChromeUINewTabURL;
 }
 
 bool ChromeOmniboxClientIOS::IsSearchResultsPage() const {

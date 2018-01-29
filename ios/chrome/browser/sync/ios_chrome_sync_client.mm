@@ -111,7 +111,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   }
 
   bool ShouldSyncURL(const GURL& url) const override {
-    if (url == GURL(kChromeUIHistoryURL)) {
+    if (url == kChromeUIHistoryURL) {
       // The history page is treated specially as we want it to trigger syncable
       // events for UI purposes.
       return true;
