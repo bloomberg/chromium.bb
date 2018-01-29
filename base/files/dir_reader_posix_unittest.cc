@@ -21,7 +21,14 @@
 
 namespace base {
 
-TEST(DirReaderPosixUnittest, Read) {
+#if defined(ADDRESS_SANITIZER)
+// On ASAN builds, the working directory for the test is /, which is not
+// readable. See crbug.com/804348.
+#define MAYBE_Read DISABLED_Read
+#else
+#define MAYBE_Read Read
+#endif  // defined(ADDRESS_SANITIZER)
+TEST(DirReaderPosixUnittest, MAYBE_Read) {
   static const unsigned kNumFiles = 100;
 
   if (DirReaderPosix::IsFallback())
