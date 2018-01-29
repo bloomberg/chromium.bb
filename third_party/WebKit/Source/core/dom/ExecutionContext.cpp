@@ -51,7 +51,8 @@ ExecutionContext::ExecutionContext()
       is_context_paused_(false),
       is_context_destroyed_(false),
       window_interaction_tokens_(0),
-      referrer_policy_(kReferrerPolicyDefault) {}
+      referrer_policy_(kReferrerPolicyDefault),
+      invalidator_(std::make_unique<InterfaceInvalidator>()) {}
 
 ExecutionContext::~ExecutionContext() = default;
 
@@ -87,6 +88,7 @@ void ExecutionContext::UnpausePausableObjects() {
 
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
+  invalidator_.reset();
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
