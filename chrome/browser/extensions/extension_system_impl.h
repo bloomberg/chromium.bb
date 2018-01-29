@@ -80,6 +80,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
                      const std::string& public_key,
                      const base::FilePath& unpacked_dir,
                      InstallUpdateCallback install_update_callback) override;
+  bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                        bool install_immediately) override;
 
  private:
   friend class ExtensionSystemSharedFactory;

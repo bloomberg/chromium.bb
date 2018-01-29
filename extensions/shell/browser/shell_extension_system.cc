@@ -211,6 +211,13 @@ void ShellExtensionSystem::InstallUpdate(
   base::DeleteFile(temp_dir, true /* recursive */);
 }
 
+bool ShellExtensionSystem::FinishDelayedInstallationIfReady(
+    const std::string& extension_id,
+    bool install_immediately) {
+  NOTREACHED();
+  return false;
+}
+
 void ShellExtensionSystem::OnExtensionRegisteredWithRequestContexts(
     scoped_refptr<Extension> extension) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
