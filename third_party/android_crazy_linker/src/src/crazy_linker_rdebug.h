@@ -122,6 +122,13 @@
 // linker's actions, so to avoid clashing with it we may need to try and
 // move 'r_map' updates to a different thread, to serialize them with
 // other system linker activity.
+//
+// TECHNICAL NOTE: If CRAZY_DISABLE_R_BRK is defined at compile time,
+// then the crazy linker will never try to call the r_brk() GDB Hook
+// function. This can be useful to avoid runtime crashes on certain
+// Android devices with x86 processors, running ARM binaries with
+// a machine translator like Houdini. See http://crbug.com/796938
+//
 namespace crazy {
 
 struct link_map_t {
@@ -197,17 +204,6 @@ class RDebug {
 
   r_debug* GetAddress() { return r_debug_; }
 
-  // Debugger support, which is the default, implies calling the special
-  // hook function r_brk(). Unfortunately, this sometimes results in rare
-  // runtime crashes (see https://crbug.com/796938). This method allows the
-  // client to disable this operation. If |enabled| is false, shared
-  // libraries loaded through the crazy linker will *not* be visible to GDB
-  // (but will continue to appear in stack traces).
-  void SetDebuggerSupport(bool enabled);
-
-  // Return the state of debugger support.
-  bool GetDebuggerSupport() const;
-
  private:
   // Try to find the address of the global _r_debug variable, even
   // though there is no symbol for it. Returns true on success.
@@ -258,7 +254,6 @@ class RDebug {
   r_debug* r_debug_;
   bool init_;
   bool readonly_entries_;
-  bool call_r_brk_;
   rdebug_callback_poster_t post_for_later_execution_;
   void* post_for_later_execution_context_;
 };

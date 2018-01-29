@@ -92,6 +92,6 @@ Local Modifications:
 - Add custom operator new(size_t) and operator delete(void*) in order to
   reduce the size of the final binaries (24 kiB on ARM, 64 kiB on AARCH4).
 
-- Allow client disable debugger support.
+- Define CRAZY_DISABLE_R_BRK to disable debugger support.
 
 - Enable integration and unit tests when building with Chromium.

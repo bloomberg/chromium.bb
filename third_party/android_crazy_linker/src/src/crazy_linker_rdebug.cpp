@@ -213,7 +213,6 @@ bool RDebug::Init() {
   // The address of '_r_debug' is in the DT_DEBUG entry of the current
   // executable.
   init_ = true;
-  call_r_brk_ = true;
 
   size_t dynamic_addr = 0;
   size_t dynamic_size = 0;
@@ -278,21 +277,11 @@ bool RDebug::Init() {
   return false;
 }
 
-void RDebug::SetDebuggerSupport(bool enabled) {
-  LOG("%s: Setting debugger support to: %s", __FUNCTION__,
-      enabled ? "enabled" : "DISABLED");
-  call_r_brk_ = enabled;
-}
-
-bool RDebug::GetDebuggerSupport() const {
-  return call_r_brk_;
-}
-
 void RDebug::CallRBrk(int state) {
-  if (call_r_brk_) {
-    r_debug_->r_state = state;
-    r_debug_->r_brk();
-  }
+#if !defined(CRAZY_DISABLE_R_BRK)
+  r_debug_->r_state = state;
+  r_debug_->r_brk();
+#endif  // !CRAZY_DISABLE_R_BRK
 }
 
 namespace {
