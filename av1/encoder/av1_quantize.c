@@ -107,9 +107,9 @@ static INLINE int quantize_coeff_fp_nuq(
   int q = 0;
 
   if (abs_coeff * wt >= (cuml_bins_ptr[0] * (1 << AOM_QM_BITS))) {
-    int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
-    q = NUQ_KNOTS + ((((int64_t)tmp - cuml_bins_ptr[0]) * wt * quant) >>
-                     (16 + AOM_QM_BITS));
+    int64_t tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
+    q = NUQ_KNOTS +
+        (int)(((tmp - cuml_bins_ptr[0]) * wt * quant) >> (16 + AOM_QM_BITS));
 #if CONFIG_AOM_QM
     (void)dequant_val;
     *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dq, is_ac_coeff, 0);
@@ -138,11 +138,11 @@ static INLINE int quantize_coeff_bigtx_fp_nuq(
   int q = 0;
   if (abs_coeff * wt >=
       (cuml_bins_ptr[0] * (1 << (AOM_QM_BITS - logsizeby16)))) {
-    int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
+    int64_t tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
     q = NUQ_KNOTS +
-        ((((int64_t)tmp - ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16)) *
-          wt * quant) >>
-         (16 - logsizeby16 + AOM_QM_BITS));
+        (int)(((tmp - ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16)) * wt *
+               quant) >>
+              (16 - logsizeby16 + AOM_QM_BITS));
 #if CONFIG_AOM_QM
     (void)dequant_val;
     *dqcoeff_ptr =
