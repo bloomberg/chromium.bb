@@ -1026,30 +1026,27 @@ void GpuProcessHost::SetChildSurface(gpu::SurfaceHandle parent_handle,
   constexpr char kBadMessageError[] = "Bad parenting request from gpu process.";
   if (!in_process_) {
     DCHECK(process_);
-    {
-      DWORD process_id = 0;
-      DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
 
-      if (!thread_id || process_id != ::GetCurrentProcessId()) {
-        process_->TerminateOnBadMessageReceived(kBadMessageError);
-        return;
-      }
+    DWORD parent_process_id = 0;
+    DWORD parent_thread_id =
+        GetWindowThreadProcessId(parent_handle, &parent_process_id);
+    if (!parent_thread_id || parent_process_id != ::GetCurrentProcessId()) {
+      LOG(ERROR) << kBadMessageError;
+      return;
     }
 
-    {
-      DWORD process_id = 0;
-      DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
-
-      if (!thread_id || process_id != process_->GetProcess().Pid()) {
-        process_->TerminateOnBadMessageReceived(kBadMessageError);
-        return;
-      }
+    DWORD child_process_id = 0;
+    DWORD child_thread_id =
+        GetWindowThreadProcessId(window_handle, &child_process_id);
+    if (!child_thread_id || child_process_id != process_->GetProcess().Pid()) {
+      LOG(ERROR) << kBadMessageError;
+      return;
     }
   }
 
   if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
           parent_handle, window_handle)) {
-    process_->TerminateOnBadMessageReceived(kBadMessageError);
+    LOG(ERROR) << kBadMessageError;
   }
 #endif
 }
