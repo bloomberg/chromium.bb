@@ -37,6 +37,10 @@ void FullscreenModel::IncrementDisabledCounter() {
     for (auto& observer : observers_) {
       observer.FullscreenModelEnabledStateChanged(this);
     }
+    // Fullscreen observers are expected to show the toolbar when fullscreen is
+    // disabled. Update the internal state to match this.
+    SetProgress(1.0);
+    base_offset_ = NAN;
   }
 }
 
@@ -81,13 +85,14 @@ CGFloat FullscreenModel::GetToolbarHeight() const {
 }
 
 void FullscreenModel::SetYContentOffset(CGFloat y_content_offset) {
-  if (!enabled())
-    return;
 
   y_content_offset_ = y_content_offset;
 
   if (!has_base_offset())
     UpdateBaseOffset();
+
+  if (!enabled())
+    return;
 
   if (scrolling_ && !observer_callback_count_) {
     CGFloat delta = base_offset_ - y_content_offset_;
