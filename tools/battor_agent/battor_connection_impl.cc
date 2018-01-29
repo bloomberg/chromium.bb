@@ -128,7 +128,9 @@ void BattOrConnectionImpl::OnOpened(bool success) {
     return;
   }
 
-  Flush();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
+                            base::Unretained(listener_), true));
 }
 
 void BattOrConnectionImpl::Close() {
@@ -345,7 +347,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
         static_cast<int>(error)));
     pending_read_buffer_ = nullptr;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
+        FROM_HERE, base::Bind(&Listener::OnConnectionFlushed,
                               base::Unretained(listener_), false));
     return;
   }
@@ -361,7 +363,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
       LogSerial("(flush) Quiet period has finished.");
       pending_read_buffer_ = nullptr;
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
+          FROM_HERE, base::Bind(&Listener::OnConnectionFlushed,
                                 base::Unretained(listener_), true));
       return;
     }

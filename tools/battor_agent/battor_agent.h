@@ -90,6 +90,7 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   // BattOrConnection::Listener implementation.
   void OnConnectionOpened(bool success) override;
+  void OnConnectionFlushed(bool success) override;
   void OnBytesSent(bool success) override;
   void OnMessageRead(bool success,
                      BattOrMessageType type,
@@ -124,6 +125,7 @@ class BattOrAgent : public BattOrConnection::Listener,
 
     // Actions required to connect to a BattOr.
     REQUEST_CONNECTION,
+    POST_CONNECT_FLUSH,
 
     // Actions required for starting tracing.
     SEND_INIT,
