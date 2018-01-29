@@ -431,6 +431,7 @@ FrameInputHandlerImpl::HandlingState::HandlingState(
   switch (state) {
     case UpdateState::kIsPasting:
       render_frame->set_is_pasting(true);
+      FALLTHROUGH;  // Matches RenderFrameImpl::OnPaste() which sets both.
     case UpdateState::kIsSelectingRange:
       render_frame->set_handling_select_range(true);
       break;
