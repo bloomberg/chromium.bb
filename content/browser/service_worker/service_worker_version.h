@@ -630,6 +630,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void ClaimClients(ClaimClientsCallback callback) override;
   void GetClients(blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
                   GetClientsCallback callback) override;
+  void GetClient(const std::string& client_uuid,
+                 GetClientCallback callback) override;
 
   void OnSetCachedMetadataFinished(int64_t callback_id,
                                    size_t size,
@@ -637,9 +639,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnClearCachedMetadataFinished(int64_t callback_id, int result);
 
   // Message handlers.
-
-  // This corresponds to the spec's get(id) steps.
-  void OnGetClient(int request_id, const std::string& client_uuid);
 
   // Currently used for Clients.openWindow() only.
   void OnOpenNewTab(int request_id, const GURL& url);
@@ -691,10 +690,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnSimpleEventFinished(int request_id,
                              blink::mojom::ServiceWorkerEventStatus status,
                              base::Time dispatch_event_time);
-
-  void OnGetClientFinished(
-      int request_id,
-      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.
