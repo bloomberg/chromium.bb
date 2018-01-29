@@ -214,8 +214,14 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                                    MainThreadTaskQueue::QueueType::kCompositor)
                                    .SetShouldMonitorQuiescence(true))),
+      input_task_queue_(
+          helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+                                   MainThreadTaskQueue::QueueType::kInput)
+                                   .SetShouldMonitorQuiescence(true))),
       compositor_task_queue_enabled_voter_(
           compositor_task_queue_->CreateQueueEnabledVoter()),
+      input_task_queue_enabled_voter_(
+          input_task_queue_->CreateQueueEnabledVoter()),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
@@ -243,6 +249,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   task_runners_.insert(
       std::make_pair(compositor_task_queue_,
                      compositor_task_queue_->CreateQueueEnabledVoter()));
+  task_runners_.insert(std::make_pair(
+      input_task_queue_, input_task_queue_->CreateQueueEnabledVoter()));
 
   default_timer_task_queue_ =
       NewTimerTaskQueue(MainThreadTaskQueue::QueueType::kDefaultTimer);
@@ -593,6 +601,12 @@ RendererSchedulerImpl::CompositorTaskRunner() {
   return compositor_task_queue_;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::InputTaskRunner() {
+  helper_.CheckOnValidThread();
+  return input_task_queue_;
+}
+
 scoped_refptr<SingleThreadIdleTaskRunner>
 RendererSchedulerImpl::IdleTaskRunner() {
   return idle_helper_.IdleTaskRunner();
@@ -611,6 +625,11 @@ scoped_refptr<MainThreadTaskQueue>
 RendererSchedulerImpl::CompositorTaskQueue() {
   helper_.CheckOnValidThread();
   return compositor_task_queue_;
+}
+
+scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::InputTaskQueue() {
+  helper_.CheckOnValidThread();
+  return input_task_queue_;
 }
 
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::TimerTaskQueue() {

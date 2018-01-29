@@ -30,6 +30,11 @@ FakeRendererScheduler::CompositorTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::InputTaskRunner() {
+  return nullptr;
+}
+
 scoped_refptr<SingleThreadIdleTaskRunner>
 FakeRendererScheduler::IdleTaskRunner() {
   return nullptr;

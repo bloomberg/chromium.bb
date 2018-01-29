@@ -1493,7 +1493,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread) {
     input_event_queue_ = new MainThreadEventQueue(
-        this, render_thread->GetRendererScheduler()->CompositorTaskRunner(),
+        this, render_thread->GetRendererScheduler()->InputTaskRunner(),
         render_thread->GetRendererScheduler(), should_generate_frame_sink);
 
     InputHandlerManager* input_handler_manager =
