@@ -120,6 +120,11 @@ const char kArcPlaystoreJSPath[] = "playstore.js";
 const char kArcPlaystoreLogoPath[] = "playstore.svg";
 const char kProductLogoPath[] = "product-logo.png";
 
+#if defined(GOOGLE_CHROME_BUILD)
+const char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
+const char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
+#endif
+
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::DictionaryValue& localized_strings,
@@ -177,6 +182,11 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kCustomElementsUserPodHTMLPath,
                             IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }
+#if defined(GOOGLE_CHROME_BUILD)
+  source->AddResourcePath(kLogo24PX1XSvgPath, IDR_PRODUCT_LOGO_24PX_1X);
+  source->AddResourcePath(kLogo24PX2XSvgPath, IDR_PRODUCT_LOGO_24PX_2X);
+  // No #else section here as Sync Settings screen is Chrome-specific.
+#endif
 
   // Required for postprocessing of Goolge PlayStore Terms.
   source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
