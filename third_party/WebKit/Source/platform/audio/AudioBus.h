@@ -135,8 +135,6 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   // Scales all samples by the same amount.
   void Scale(float scale);
 
-  void Reset() { is_first_time_ = true; }  // for de-zippering
-
   // Copies the samples from the source bus to this one.
   // This is just a simple per-channel copy if the number of channels match,
   // otherwise an up-mix or down-mix is done.
@@ -147,16 +145,9 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   // otherwise an up-mix or down-mix is done.
   void SumFrom(const AudioBus& source_bus, ChannelInterpretation = kSpeakers);
 
-  // Copy each channel from sourceBus into our corresponding channel.
-  // We scale by targetGain (and our own internal gain m_busGain), performing
-  // "de-zippering" to smoothly change from *lastMixGain to
-  // (targetGain*m_busGain).  The caller is responsible for setting up
-  // lastMixGain to point to storage which is unique for every "stream" which
-  // will be applied to this bus.
-  // This represents the dezippering memory.
-  void CopyWithGainFrom(const AudioBus& source_bus,
-                        float* last_mix_gain,
-                        float target_gain);
+  // Copy each channel from |source_bus| into our corresponding channel.  We
+  // scale |source_bus| by |gain| before copying into the bus.
+  void CopyWithGainFrom(const AudioBus& source_bus, float gain);
 
   // Copies the sourceBus by scaling with sample-accurate gain values.
   void CopyWithSampleAccurateGainValuesFrom(const AudioBus& source_bus,
@@ -188,9 +179,6 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   size_t length_;
   Vector<std::unique_ptr<AudioChannel>> channels_;
   int layout_;
-  float bus_gain_;
-  std::unique_ptr<AudioFloatArray> dezipper_gain_values_;
-  bool is_first_time_;
   float sample_rate_;  // 0.0 if unknown or N/A
 };
 

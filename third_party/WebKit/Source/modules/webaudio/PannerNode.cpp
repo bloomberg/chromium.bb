@@ -57,7 +57,6 @@ PannerHandler::PannerHandler(AudioNode& node,
       distance_model_(DistanceEffect::kModelInverse),
       is_azimuth_elevation_dirty_(true),
       is_distance_cone_gain_dirty_(true),
-      last_gain_(-1.0),
       cached_azimuth_(0),
       cached_elevation_(0),
       cached_distance_cone_gain_(1.0f),
@@ -151,10 +150,8 @@ void PannerHandler::Process(size_t frames_to_process) {
       // Get the distance and cone gain.
       float total_gain = DistanceConeGain();
 
-      last_gain_ = total_gain;
-
-      // Apply gain in-place with de-zippering.
-      destination->CopyWithGainFrom(*destination, &last_gain_, total_gain);
+      // Apply gain in-place.
+      destination->CopyWithGainFrom(*destination, total_gain);
     }
   } else {
     // Too bad - The tryLock() failed.  We must be in the middle of changing the

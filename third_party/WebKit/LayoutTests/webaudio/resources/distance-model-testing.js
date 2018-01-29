@@ -168,6 +168,8 @@ function checkDistanceResult(renderedBuffer, model, should) {
 
       maxError = Math.max(maxError, Math.abs(error));
 
+      should(renderedData[k]).beCloseTo(expected, {threshold: maxAllowedError});
+
       // Keep track of any impulses that aren't where we expect them
       // to be.
       let expectedOffset = timeToSampleFrame(time[impulseCount], sampleRate);
