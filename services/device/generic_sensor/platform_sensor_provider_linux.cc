@@ -53,7 +53,7 @@ PlatformSensorProviderLinux::~PlatformSensorProviderLinux() {
 
 void PlatformSensorProviderLinux::CreateSensorInternal(
     mojom::SensorType type,
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback) {
   if (!sensor_device_manager_)
     sensor_device_manager_.reset(new SensorDeviceManager());
@@ -61,7 +61,7 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
   if (IsFusionSensorType(type)) {
     // For sensor fusion the device nodes initialization will happen
     // during fetching the source sensors.
-    CreateFusionSensor(type, std::move(mapping), callback);
+    CreateFusionSensor(type, reading_buffer, callback);
     return;
   }
 
@@ -81,12 +81,12 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
     return;
   }
 
-  SensorDeviceFound(type, std::move(mapping), callback, sensor_device);
+  SensorDeviceFound(type, reading_buffer, callback, sensor_device);
 }
 
 void PlatformSensorProviderLinux::SensorDeviceFound(
     mojom::SensorType type,
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     const PlatformSensorProviderBase::CreateSensorCallback& callback,
     const SensorInfoLinux* sensor_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -98,7 +98,7 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
   }
 
   scoped_refptr<PlatformSensorLinux> sensor =
-      new PlatformSensorLinux(type, std::move(mapping), this, sensor_device,
+      new PlatformSensorLinux(type, reading_buffer, this, sensor_device,
                               polling_thread_->task_runner());
   callback.Run(sensor);
 }
@@ -201,11 +201,11 @@ void PlatformSensorProviderLinux::CreateSensorAndNotify(
     SensorInfoLinux* sensor_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<PlatformSensorLinux> sensor;
-  mojo::ScopedSharedBufferMapping mapping = MapSharedBufferForType(type);
-  if (sensor_device && mapping && StartPollingThread()) {
-    sensor =
-        new PlatformSensorLinux(type, std::move(mapping), this, sensor_device,
-                                polling_thread_->task_runner());
+  SensorReadingSharedBuffer* reading_buffer =
+      GetSensorReadingSharedBufferForType(type);
+  if (sensor_device && reading_buffer && StartPollingThread()) {
+    sensor = new PlatformSensorLinux(type, reading_buffer, this, sensor_device,
+                                     polling_thread_->task_runner());
   }
   NotifySensorCreated(type, sensor);
 }
@@ -243,7 +243,7 @@ void PlatformSensorProviderLinux::OnDeviceRemoved(
 
 void PlatformSensorProviderLinux::CreateFusionSensor(
     mojom::SensorType type,
-    mojo::ScopedSharedBufferMapping mapping,
+    SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback) {
   DCHECK(IsFusionSensorType(type));
   std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm;
@@ -266,7 +266,7 @@ void PlatformSensorProviderLinux::CreateFusionSensor(
   }
 
   DCHECK(fusion_algorithm);
-  PlatformSensorFusion::Create(std::move(mapping), this,
+  PlatformSensorFusion::Create(reading_buffer, this,
                                std::move(fusion_algorithm), callback);
 }
 

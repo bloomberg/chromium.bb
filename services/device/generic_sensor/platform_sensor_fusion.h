@@ -38,7 +38,7 @@ class PlatformSensorFusion : public PlatformSensor,
   // |callback| call: it can be either newly created object on success or
   // nullptr on failure.
   static void Create(
-      mojo::ScopedSharedBufferMapping mapping,
+      SensorReadingSharedBuffer* reading_buffer,
       PlatformSensorProvider* provider,
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
       const PlatformSensorProviderBase::CreateSensorCallback& callback);
@@ -64,7 +64,7 @@ class PlatformSensorFusion : public PlatformSensor,
   using SourcesMapEntry =
       std::pair<mojom::SensorType, scoped_refptr<PlatformSensor>>;
   PlatformSensorFusion(
-      mojo::ScopedSharedBufferMapping mapping,
+      SensorReadingSharedBuffer* reading_buffer,
       PlatformSensorProvider* provider,
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
       SourcesMap sources);
