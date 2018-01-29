@@ -192,6 +192,7 @@ class InMenuButtonBackground : public views::Background {
       case views::Button::STATE_HOVERED:
         // Hovered should be handled in DrawBackground.
         NOTREACHED();
+        FALLTHROUGH;
       default:
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_MenuBackgroundColor);
