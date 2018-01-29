@@ -199,8 +199,8 @@ void RawInputDataFetcher::EnumerateDevices() {
         const std::string vendor = base::StringPrintf("%04x", vendor_int);
         const std::string product = base::StringPrintf("%04x", product_int);
         const std::string version = base::StringPrintf("%04x", version_number);
-        state->mapper =
-            GetGamepadStandardMappingFunction(vendor, product, version);
+        state->mapper = GetGamepadStandardMappingFunction(
+            vendor, product, version, GAMEPAD_BUS_UNKNOWN);
         state->axis_mask = 0;
         state->button_mask = 0;
 
