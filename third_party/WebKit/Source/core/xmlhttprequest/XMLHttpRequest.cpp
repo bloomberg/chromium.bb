@@ -1828,7 +1828,7 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
     case kResponseTypeDefault:
       if (ResponseIsXML())
         return TextResourceDecoder::Create(decoder_options_for_xml);
-    // fall through
+      FALLTHROUGH;
     case kResponseTypeText:
       return TextResourceDecoder::Create(decoder_options_for_utf8_plain_text);
     case kResponseTypeDocument:
