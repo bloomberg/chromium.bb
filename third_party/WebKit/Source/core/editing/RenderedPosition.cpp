@@ -35,6 +35,7 @@
 #include "core/editing/InlineBoxPosition.h"
 #include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/LocalCaretRect.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
@@ -406,26 +407,27 @@ bool LayoutObjectContainsPosition(LayoutObject* target,
 
 CompositedSelection RenderedPosition::ComputeCompositedSelection(
     const FrameSelection& frame_selection) {
-  const VisibleSelection& visible_selection =
-      frame_selection.ComputeVisibleSelectionInDOMTree();
   if (!frame_selection.IsHandleVisible() || frame_selection.IsHidden())
     return {};
 
+  // TODO(yoichio): Compute SelectionInDOMTree w/o VS canonicalization.
+  // crbug.com/789870 for detail.
+  const SelectionInDOMTree& visible_selection =
+      frame_selection.ComputeVisibleSelectionInDOMTree().AsSelection();
   // Non-editable caret selections lack any kind of UI affordance, and
   // needn't be tracked by the client.
-  if (visible_selection.IsCaret() && !visible_selection.IsContentEditable())
+  if (visible_selection.IsCaret() &&
+      !IsEditablePosition(visible_selection.ComputeStartPosition()))
     return {};
 
   CompositedSelection selection;
-  PositionWithAffinity position_start(visible_selection.Start(),
-                                      visible_selection.Affinity());
-  selection.start = PositionInGraphicsLayerBacking(true, position_start);
+  selection.start = PositionInGraphicsLayerBacking(
+      true, visible_selection.ComputeStartPosition());
   if (!selection.start.layer)
     return {};
 
-  PositionWithAffinity position_end(visible_selection.End(),
-                                    visible_selection.Affinity());
-  selection.end = PositionInGraphicsLayerBacking(false, position_end);
+  selection.end = PositionInGraphicsLayerBacking(
+      false, visible_selection.ComputeEndPosition());
   if (!selection.end.layer)
     return {};
 
