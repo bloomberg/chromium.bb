@@ -45,4 +45,8 @@ void ScriptWrappable::TraceWrappers(
   DOMWrapperWorld::TraceWrappers(this, visitor);
 }
 
+const char* ScriptWrappable::NameInHeapSnapshot() const {
+  return GetWrapperTypeInfo()->interface_name;
+}
+
 }  // namespace blink

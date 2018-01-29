@@ -64,6 +64,8 @@ class PLATFORM_EXPORT ScriptWrappable
 
   bool IsScriptWrappable() const override { return true; }
 
+  const char* NameInHeapSnapshot() const override;
+
   template <typename T>
   T* ToImpl() {
     // All ScriptWrappables are managed by the Blink GC heap; check that
