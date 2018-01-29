@@ -736,6 +736,10 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
      * gets initialized first.
      */
     private boolean isFrameInfoInitialized() {
+        if (mWebContents == null) {
+            // We already got frame info since WebContents finished its lifecycle.
+            return true;
+        }
         RenderCoordinates rc = mWebContents.getRenderCoordinates();
         return rc.getContentWidthCss() != 0.0 || rc.getContentHeightCss() != 0.0;
     }
