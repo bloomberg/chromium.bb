@@ -624,6 +624,12 @@ static_library("test_support") {
     "//ui/gfx/geometry",
   ]
 
+  if (!is_ios) {
+    sources += [ "render_text_test_api.h" ]
+
+    deps += [ "//third_party:freetype_harfbuzz" ]
+  }
+
   if (is_linux) {
     deps += [ "//third_party/fontconfig" ]
   }

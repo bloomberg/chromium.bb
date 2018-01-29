@@ -1739,6 +1739,8 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
   }
 }
 
+// Returns the current run list, |display_run_list_| if the text is elided, or
+// |layout_run_list_| otherwise.
 internal::TextRunList* RenderTextHarfBuzz::GetRunList() {
   DCHECK(!update_layout_run_list_);
   DCHECK(!update_display_run_list_);
@@ -1785,6 +1787,10 @@ bool RenderTextHarfBuzz::GetDecoratedTextForRange(
     }
   }
   return true;
+}
+
+void RenderTextHarfBuzz::SetGlyphWidthForTest(float test_width) {
+  glyph_width_for_test_ = test_width;
 }
 
 }  // namespace gfx
