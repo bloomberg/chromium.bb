@@ -35,6 +35,10 @@ class MODULES_EXPORT DeviceOrientationController
 
   virtual void Trace(blink::Visitor*);
 
+  static void LogToConsolePolicyFeaturesDisabled(
+      LocalFrame*,
+      const AtomicString& event_name);
+
  protected:
   explicit DeviceOrientationController(Document&);
 

@@ -11,6 +11,7 @@
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceMotionDispatcher.h"
 #include "modules/device_orientation/DeviceMotionEvent.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 
@@ -42,20 +43,17 @@ void DeviceMotionController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
-  if (GetDocument().GetFrame()) {
+  LocalFrame* frame = GetDocument().GetFrame();
+  if (frame) {
     if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(GetDocument().GetFrame(),
-                        WebFeature::kDeviceMotionSecureOrigin);
+      UseCounter::Count(frame, WebFeature::kDeviceMotionSecureOrigin);
     } else {
-      Deprecation::CountDeprecation(GetDocument().GetFrame(),
+      Deprecation::CountDeprecation(frame,
                                     WebFeature::kDeviceMotionInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           GetDocument(),
           HostsUsingFeatures::Feature::kDeviceMotionInsecureHost);
-      if (GetDocument()
-              .GetFrame()
-              ->GetSettings()
-              ->GetStrictPowerfulFeatureRestrictions())
+      if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())
         return;
     }
   }
@@ -67,6 +65,13 @@ void DeviceMotionController::DidAddEventListener(
     if (!IsSameSecurityOriginAsMainFrame()) {
       Platform::Current()->RecordRapporURL(
           "DeviceSensors.DeviceMotionCrossOrigin", WebURL(GetDocument().Url()));
+    }
+
+    if (!CheckPolicyFeatures({FeaturePolicyFeature::kAccelerometer,
+                              FeaturePolicyFeature::kGyroscope})) {
+      DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
+          frame, EventTypeName());
+      return;
     }
   }
 
