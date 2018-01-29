@@ -178,6 +178,20 @@
 
     [[self window] setDelegate:nsWindowController_];
 
+    // Insert ourselves into the repsonder chain. First, find the responder
+    // that comes before nsWindowController_.
+    NSResponder* nextResponderToCheck = [self window];
+    while ([nextResponderToCheck nextResponder] &&
+           [nextResponderToCheck nextResponder] != nsWindowController_.get()) {
+      nextResponderToCheck = [nextResponderToCheck nextResponder];
+    }
+    // If nextResponder is nil, nsWindowController_ is not in the responder
+    // chain.
+    DCHECK([nextResponderToCheck nextResponder]);
+    // Insert before nsWindowController_.
+    [nextResponderToCheck setNextResponder:self];
+    [self setNextResponder:nsWindowController_];
+
     chromeContentView_.reset([[ChromeContentView alloc]
         initWithFrame:NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight)]);
     [chromeContentView_
@@ -233,6 +247,14 @@
 }
 
 - (void)dealloc {
+  // Restore the reponder chain. Find the responder before us in the chain.
+  NSResponder* nextResponderToCheck = [self window];
+  while ([nextResponderToCheck nextResponder] &&
+         [nextResponderToCheck nextResponder] != self) {
+    nextResponderToCheck = [nextResponderToCheck nextResponder];
+  }
+  [nextResponderToCheck setNextResponder:[self nextResponder]];
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[self window] setDelegate:nil];
   [nsWindowController_ setTabWindowController:nil];
