@@ -64,6 +64,7 @@ shared_library("chrome_elf") {
     "//chrome/install_static:primary_module",
     "//components/crash/content/app:crash_export_thunks",
   ]
+
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
 
@@ -137,6 +138,10 @@ source_set("sha1") {
   ]
 }
 
+# This source_set defines whitelist-related structures and APIs used from
+# outside chrome_elf.dll.  The APIs are exported from chrome_elf (add a
+# data_dep on //chrome_elf:chrome_elf), which will always be loaded before
+# chrome.dll.
 source_set("whitelist_packed_format") {
   sources = [
     "whitelist/whitelist_packed_format.cc",
@@ -233,6 +238,7 @@ static_library("nt_registry") {
 }
 
 static_library("whitelist") {
+  visibility = [ ":*" ]  # Only targets in this file can depend on this.
   sources = [
     "whitelist/whitelist.cc",
     "whitelist/whitelist.h",
@@ -240,6 +246,8 @@ static_library("whitelist") {
     "whitelist/whitelist_file.h",
     "whitelist/whitelist_ime.cc",
     "whitelist/whitelist_ime.h",
+    "whitelist/whitelist_log.cc",
+    "whitelist/whitelist_log.h",
   ]
   deps = [
     ":nt_registry",
@@ -264,6 +272,7 @@ test("chrome_elf_unittests") {
     "sha1/sha1_unittest.cc",
     "whitelist/whitelist_file_unittest.cc",
     "whitelist/whitelist_ime_unittest.cc",
+    "whitelist/whitelist_log_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
   deps = [

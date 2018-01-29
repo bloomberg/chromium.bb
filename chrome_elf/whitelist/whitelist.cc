@@ -7,7 +7,9 @@
 #include <assert.h>
 
 #include "chrome_elf/nt_registry/nt_registry.h"
+#include "chrome_elf/whitelist/whitelist_file.h"
 #include "chrome_elf/whitelist/whitelist_ime.h"
+#include "chrome_elf/whitelist/whitelist_log.h"
 
 namespace {
 
@@ -27,11 +29,13 @@ bool Init() {
   // Debug check: Init should not be called more than once.
   assert(!g_whitelist_initialized);
 
-  // TODO(pennymac): As sources are added, consider multi-threaded init.
-  // Source: Input Method Editors (IMEs)
-  IMEStatus rc = InitIMEs();
-  if (rc != IMEStatus::kSuccess)
+  // TODO(pennymac): As work is added, consider multi-threaded init.
+  // TODO(pennymac): Handle return status codes for UMA.
+  if (InitIMEs() != IMEStatus::kSuccess ||
+      InitFromFile() != FileStatus::kSuccess ||
+      InitLogs() != LogStatus::kSuccess) {
     return false;
+  }
 
   // Record initialization.
   g_whitelist_initialized = true;

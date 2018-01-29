@@ -283,4 +283,8 @@ IMEStatus InitIMEs() {
   return IMEStatus::kSuccess;
 }
 
+void DeinitIMEsForTesting() {
+  GetImeVector()->clear();
+}
+
 }  // namespace whitelist

@@ -38,27 +38,11 @@ std::wstring& GetBlFilePath() {
 // Private functions
 //------------------------------------------------------------------------------
 
-// Returns -1 if |first| < |second|
-// Returns 0 if |first| == |second|
-// Returns 1 if |first| > |second|
-int CompareHashes(const uint8_t* first, const uint8_t* second) {
-  // Compare bytes, high-order to low-order.
-  for (size_t i = 0; i < elf_sha1::kSHA1Length; ++i) {
-    if (first[i] < second[i])
-      return -1;
-    if (first[i] > second[i])
-      return 1;
-    // else they are equal, continue;
-  }
-
-  return 0;
-}
-
 // Binary predicate compare function for use with
 // std::equal_range/std::is_sorted. Must return TRUE if lhs < rhs.
 bool HashBinaryPredicate(const PackedWhitelistModule& lhs,
                          const PackedWhitelistModule& rhs) {
-  return CompareHashes(lhs.basename_hash, rhs.basename_hash) < 0;
+  return elf_sha1::CompareHashes(lhs.basename_hash, rhs.basename_hash) < 0;
 }
 
 // Given a file opened for read, pull in the packed list.
@@ -206,7 +190,7 @@ bool IsModuleListed(const std::string& basename,
 
   // Search for secondary hash.
   for (PackedWhitelistModule* i = pair.first; i != pair.second; ++i) {
-    if (!CompareHashes(target.code_id_hash, i->code_id_hash))
+    if (!elf_sha1::CompareHashes(target.code_id_hash, i->code_id_hash))
       return true;
   }
 
@@ -234,6 +218,18 @@ FileStatus InitFromFile() {
 
 void OverrideFilePathForTesting(const std::wstring& new_bl_path) {
   GetBlFilePath().assign(new_bl_path);
+}
+
+void DeinitFromFileForTesting() {
+  if (!g_initialized)
+    return;
+
+  delete[] g_bl_module_array;
+  g_bl_module_array = nullptr;
+  g_bl_module_array_size = 0;
+  GetBlFilePath().clear();
+
+  g_initialized = false;
 }
 
 }  // namespace whitelist

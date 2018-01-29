@@ -42,6 +42,9 @@ FileStatus InitFromFile();
 // Overrides the blacklist path for use by tests.
 void OverrideFilePathForTesting(const std::wstring& new_bl_path);
 
+// Removes initialization for use by tests.
+void DeinitFromFileForTesting();
+
 }  // namespace whitelist
 
 #endif  // CHROME_ELF_WHITELIST_WHITELIST_FILE_H_

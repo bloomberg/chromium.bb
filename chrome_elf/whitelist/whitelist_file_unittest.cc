@@ -109,6 +109,8 @@ class WhitelistFileTest : public testing::Test {
     OverrideFilePathForTesting(bl_test_file_path_);
   }
 
+  void TearDown() override { DeinitFromFileForTesting(); }
+
   void CreateTestFile() {
     base::File file(base::FilePath(bl_test_file_path_),
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
