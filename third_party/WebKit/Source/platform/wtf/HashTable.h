@@ -1629,7 +1629,10 @@ void HashTable<Key,
       }
     }
   }
-  Allocator::FreeHashTableBacking(table);
+  // Notify if this is a weak table since immediately freeing a weak hash table
+  // backing may cause a use-after-free when the weak callback is called.
+  Allocator::FreeHashTableBacking(
+      table, Traits::kWeakHandlingFlag == kWeakHandlingInCollections);
 }
 
 template <typename Key,

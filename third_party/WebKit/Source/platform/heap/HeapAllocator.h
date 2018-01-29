@@ -124,7 +124,7 @@ class PLATFORM_EXPORT HeapAllocator {
   static T* AllocateZeroedHashTableBacking(size_t size) {
     return AllocateHashTableBacking<T, HashTable>(size);
   }
-  static void FreeHashTableBacking(void* address);
+  static void FreeHashTableBacking(void* address, bool is_weak_table);
   static bool ExpandHashTableBacking(void*, size_t);
 
   template <typename Return, typename Metadata>

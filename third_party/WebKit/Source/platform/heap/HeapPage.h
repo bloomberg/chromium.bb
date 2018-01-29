@@ -870,6 +870,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   bool ExpandObject(HeapObjectHeader*, size_t);
   bool ShrinkObject(HeapObjectHeader*, size_t);
   void DecreasePromptlyFreedSize(size_t size) { promptly_freed_size_ -= size; }
+  size_t promptly_freed_size() const { return promptly_freed_size_; }
 
   bool IsObjectAllocatedAtAllocationPoint(HeapObjectHeader* header) {
     return header->PayloadEnd() == current_allocation_point_;
