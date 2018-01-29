@@ -305,27 +305,25 @@ static GraphicsLayer* GetGraphicsLayerBacking(
       &paint_invalidation_container);
 }
 
-std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionEndpoints(
-    bool selection_start,
+std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionStartpoints(
     const LocalCaretRect& local_caret_rect) {
   const LayoutRect rect = local_caret_rect.rect;
-  if (local_caret_rect.layout_object->Style()->IsHorizontalWritingMode()) {
-    const LayoutPoint edge_top_in_layer = rect.MinXMinYCorner();
-    const LayoutPoint edge_bottom_in_layer = rect.MinXMaxYCorner();
-    return {edge_top_in_layer, edge_bottom_in_layer};
-  }
-  LayoutPoint edge_top_in_layer = rect.MinXMinYCorner();
-  LayoutPoint edge_bottom_in_layer = rect.MaxXMinYCorner();
+  if (local_caret_rect.layout_object->Style()->IsHorizontalWritingMode())
+    return {rect.MinXMinYCorner(), rect.MinXMaxYCorner()};
 
   // When text is vertical, it looks better for the start handle baseline to
   // be at the starting edge, to enclose the selection fully between the
   // handles.
-  if (selection_start) {
-    LayoutUnit x_swap = edge_bottom_in_layer.X();
-    edge_bottom_in_layer.SetX(edge_top_in_layer.X());
-    edge_top_in_layer.SetX(x_swap);
-  }
-  return {edge_top_in_layer, edge_bottom_in_layer};
+  return {rect.MaxXMinYCorner(), rect.MinXMinYCorner()};
+}
+
+std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionEndpoints(
+    const LocalCaretRect& local_caret_rect) {
+  const LayoutRect rect = local_caret_rect.rect;
+  if (local_caret_rect.layout_object->Style()->IsHorizontalWritingMode())
+    return {rect.MinXMinYCorner(), rect.MinXMaxYCorner()};
+
+  return {rect.MinXMinYCorner(), rect.MaxXMinYCorner()};
 }
 
 static LayoutPoint GetSamplePointForVisibility(
@@ -383,7 +381,8 @@ static CompositedSelectionBound PositionInGraphicsLayerBacking(
 
   LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
   std::tie(edge_top_in_layer, edge_bottom_in_layer) =
-      GetLocalSelectionEndpoints(selection_start, local_caret_rect);
+      selection_start ? GetLocalSelectionStartpoints(local_caret_rect)
+                      : GetLocalSelectionEndpoints(local_caret_rect);
   bound.edge_top_in_layer =
       LocalToInvalidationBackingPoint(edge_top_in_layer, *layout_object);
   bound.edge_bottom_in_layer =
