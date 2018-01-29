@@ -369,8 +369,8 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
     // experience for out-of-scope navigations improves.
     DVLOG(1) << "Open in new tab.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BookmarkAppNavigationThrottle::OpenInNewTab,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&BookmarkAppNavigationThrottle::OpenInNewTab,
+                                  weak_ptr_factory_.GetWeakPtr()));
     RecordProcessNavigationResult(
         ProcessNavigationResult::kDeferOpenNewTabInAppOutOfScope);
     return content::NavigationThrottle::DEFER;
@@ -392,8 +392,9 @@ BookmarkAppNavigationThrottle::OpenInAppWindowAndCloseTabIfNecessary(
     if (!source->HasOpener()) {
       DVLOG(1) << "Deferring opening app.";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&BookmarkAppNavigationThrottle::OpenBookmarkApp,
-                                weak_ptr_factory_.GetWeakPtr(), target_app));
+          FROM_HERE,
+          base::BindOnce(&BookmarkAppNavigationThrottle::OpenBookmarkApp,
+                         weak_ptr_factory_.GetWeakPtr(), target_app));
     } else {
       OpenBookmarkApp(target_app);
     }
@@ -402,8 +403,9 @@ BookmarkAppNavigationThrottle::OpenInAppWindowAndCloseTabIfNecessary(
     // a WebContents should be done asynchronously to avoid UAFs. Closing the
     // WebContents will cancel the navigation.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BookmarkAppNavigationThrottle::CloseWebContents,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&BookmarkAppNavigationThrottle::CloseWebContents,
+                       weak_ptr_factory_.GetWeakPtr()));
     return content::NavigationThrottle::DEFER;
   }
 
