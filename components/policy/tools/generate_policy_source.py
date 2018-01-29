@@ -518,7 +518,7 @@ class SchemaNodesGenerator:
       min_value = int(schema['minimum'])
       min_value_set = True
     if 'maximum' in schema:
-      max_value = int(schema['minimum'])
+      max_value = int(schema['maximum'])
       max_value_set = True
     if min_value_set and max_value_set and min_value > max_value:
       raise RuntimeError('Invalid ranged type in %s' % name)
