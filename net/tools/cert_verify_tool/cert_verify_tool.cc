@@ -17,6 +17,8 @@
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
+#include "net/cert/crl_set.h"
+#include "net/cert/crl_set_storage.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
@@ -83,6 +85,7 @@ class CertVerifyImpl {
                           const std::vector<CertInput>& intermediate_der_certs,
                           const std::vector<CertInput>& root_der_certs,
                           base::Time verify_time,
+                          net::CRLSet* crl_set,
                           const base::FilePath& dump_prefix_path) = 0;
 };
 
@@ -100,6 +103,7 @@ class CertVerifyImplUsingProc : public CertVerifyImpl {
                   const std::vector<CertInput>& intermediate_der_certs,
                   const std::vector<CertInput>& root_der_certs,
                   base::Time verify_time,
+                  net::CRLSet* crl_set,
                   const base::FilePath& dump_prefix_path) override {
     if (!verify_time.is_null()) {
       std::cerr << "WARNING: --time is not supported by " << GetName()
@@ -114,7 +118,7 @@ class CertVerifyImplUsingProc : public CertVerifyImpl {
 
     return VerifyUsingCertVerifyProc(proc_.get(), target_der_cert, hostname,
                                      intermediate_der_certs, root_der_certs,
-                                     dump_prefix_path);
+                                     crl_set, dump_prefix_path);
   }
 
  private:
@@ -132,6 +136,7 @@ class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
                   const std::vector<CertInput>& intermediate_der_certs,
                   const std::vector<CertInput>& root_der_certs,
                   base::Time verify_time,
+                  net::CRLSet* crl_set,
                   const base::FilePath& dump_prefix_path) override {
     if (!hostname.empty()) {
       std::cerr << "WARNING: --hostname is not verified with CertPathBuilder\n";
@@ -176,6 +181,11 @@ const char kUsage[] =
     "        1994-11-15 12:45:26 GMT\n"
     "        Tue, 15 Nov 1994 12:45:26 GMT\n"
     "        Nov 15 12:45:26 1994 GMT\n"
+    "\n"
+    " --crlset=<crlset path>\n"
+    "      <crlset path> is a file containing a serialized CRLSet to use\n"
+    "      during revocation checking. For example:\n"
+    "        <chrome data dir>/CertificateRevocation/<number>/crl-set\n"
     "\n"
     " --dump=<file prefix>\n"
     "      Dumps the verified chain to PEM files starting with\n"
@@ -235,6 +245,18 @@ int main(int argc, char** argv) {
       command_line.GetSwitchValuePath("intermediates");
   base::FilePath target_path = base::FilePath(args[0]);
 
+  base::FilePath crlset_path = command_line.GetSwitchValuePath("crlset");
+  scoped_refptr<net::CRLSet> crl_set;
+  if (!crlset_path.empty()) {
+    std::string crl_set_bytes;
+    if (!ReadFromFile(crlset_path, &crl_set_bytes))
+      return 1;
+    if (!net::CRLSetStorage::Parse(crl_set_bytes, &crl_set)) {
+      std::cerr << "Error parsing CRLSet\n";
+      return 1;
+    }
+  }
+
   base::FilePath dump_prefix_path = command_line.GetSwitchValuePath("dump");
 
   std::vector<CertInput> root_der_certs;
@@ -291,7 +313,8 @@ int main(int argc, char** argv) {
 
     std::cout << impls[i]->GetName() << ":\n";
     if (!impls[i]->VerifyCert(target_der_cert, hostname, intermediate_der_certs,
-                              root_der_certs, verify_time, dump_prefix_path)) {
+                              root_der_certs, verify_time, crl_set.get(),
+                              dump_prefix_path)) {
       all_impls_success = false;
     }
   }

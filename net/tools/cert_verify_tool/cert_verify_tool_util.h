@@ -39,6 +39,9 @@ bool ReadChainFromFile(const base::FilePath& file_path,
                        CertInput* target,
                        std::vector<CertInput>* intermediates);
 
+// Reads from a file and prints an error message if it failed.
+bool ReadFromFile(const base::FilePath& file_path, std::string* file_data);
+
 // Writes a file and prints an error message if it failed.
 bool WriteToFile(const base::FilePath& file_path, const std::string& data);
 
