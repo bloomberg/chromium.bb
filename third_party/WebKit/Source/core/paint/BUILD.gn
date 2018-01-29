@@ -39,6 +39,8 @@ blink_core_sources("paint") {
     "BoxPainterBase.h",
     "BoxReflectionUtils.cpp",
     "BoxReflectionUtils.h",
+    "CSSMaskPainter.cpp",
+    "CSSMaskPainter.h",
     "ClipPathClipper.cpp",
     "ClipPathClipper.h",
     "ClipRect.cpp",

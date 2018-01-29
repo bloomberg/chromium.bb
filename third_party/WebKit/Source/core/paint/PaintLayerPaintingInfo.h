@@ -89,7 +89,6 @@ struct PaintLayerPaintingInfo {
       : root_layer(in_root_layer),
         paint_dirty_rect(in_dirty_rect),
         sub_pixel_accumulation(in_sub_pixel_accumulation),
-        ancestor_has_clip_path_clipping(false),
         global_paint_flags_(global_paint_flags) {}
 
   GlobalPaintFlags GetGlobalPaintFlags() const { return global_paint_flags_; }
@@ -99,7 +98,6 @@ struct PaintLayerPaintingInfo {
   LayoutRect paint_dirty_rect;  // relative to rootLayer;
   LayoutSize sub_pixel_accumulation;
   IntSize scroll_offset_accumulation;
-  bool ancestor_has_clip_path_clipping;
 
  private:
   const GlobalPaintFlags global_paint_flags_;
