@@ -188,9 +188,10 @@ class VolumeManagerTest : public testing::Test {
     VolumeManager* volume_manager() const { return volume_manager_.get(); }
 
    private:
-    const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfo(
-        const std::string& /*storage_name*/) {
-      return &fake_mtp_storage_info_;
+    void GetFakeMtpStorageInfo(
+        const std::string& storage_name,
+        device::MediaTransferProtocolManager::GetStorageInfoCallback callback) {
+      std::move(callback).Run(&fake_mtp_storage_info_);
     }
 
     std::unique_ptr<TestingProfile> profile_;

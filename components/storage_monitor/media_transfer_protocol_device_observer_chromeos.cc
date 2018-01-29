@@ -182,16 +182,23 @@ void MediaTransferProtocolDeviceObserverChromeOS::StorageChanged(
   }
 
   // New storage is attached.
-  const device::mojom::MtpStorageInfo* mtp_storage_info =
-    get_mtp_storage_info_cb_.Run(storage_name);
+  get_mtp_storage_info_cb_.Run(
+      storage_name,
+      base::BindOnce(
+          &MediaTransferProtocolDeviceObserverChromeOS::DoAttachStorage,
+          weak_ptr_factory_.GetWeakPtr()));
+}
 
+void MediaTransferProtocolDeviceObserverChromeOS::DoAttachStorage(
+    const device::mojom::MtpStorageInfo* mtp_storage_info) {
   if (!mtp_storage_info)
     return;
 
   std::string device_id = GetDeviceIdFromStorageInfo(*mtp_storage_info);
   base::string16 storage_label =
     GetDeviceLabelFromStorageInfo(*mtp_storage_info);
-  std::string location = GetDeviceLocationFromStorageName(storage_name);
+  std::string location =
+      GetDeviceLocationFromStorageName(mtp_storage_info->storage_name);
   base::string16 vendor_name = base::UTF8ToUTF16(mtp_storage_info->vendor);
   base::string16 product_name = base::UTF8ToUTF16(mtp_storage_info->product);
 

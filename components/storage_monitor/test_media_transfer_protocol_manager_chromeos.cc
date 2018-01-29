@@ -23,10 +23,10 @@ void TestMediaTransferProtocolManagerChromeOS::GetStorages(
   std::move(callback).Run(std::vector<std::string>());
 }
 
-const device::mojom::MtpStorageInfo*
-TestMediaTransferProtocolManagerChromeOS::GetStorageInfo(
-    const std::string& storage_name) const {
-  return NULL;
+void TestMediaTransferProtocolManagerChromeOS::GetStorageInfo(
+    const std::string& storage_name,
+    GetStorageInfoCallback callback) const {
+  std::move(callback).Run(nullptr);
 }
 
 void TestMediaTransferProtocolManagerChromeOS::GetStorageInfoFromDevice(
