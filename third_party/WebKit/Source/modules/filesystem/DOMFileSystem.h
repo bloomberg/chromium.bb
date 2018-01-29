@@ -44,7 +44,6 @@ namespace blink {
 
 class DirectoryEntry;
 class FileEntry;
-class FileWriterCallback;
 
 class MODULES_EXPORT DOMFileSystem final
     : public DOMFileSystemBase,
@@ -77,7 +76,9 @@ class MODULES_EXPORT DOMFileSystem final
   // ScriptWrappable overrides.
   bool HasPendingActivity() const final;
 
-  void CreateWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
+  void CreateWriter(const FileEntry*,
+                    FileWriterCallbacks::OnDidCreateFileWriterCallback*,
+                    ErrorCallbackBase*);
   void CreateFile(const FileEntry*,
                   SnapshotFileCallback::OnDidCreateSnapshotFileCallback*,
                   ErrorCallbackBase*);

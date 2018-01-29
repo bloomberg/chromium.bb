@@ -221,6 +221,10 @@ using FileSystemCallbacksSyncHelper = DOMFileSystemCallbacksSyncHelper<
     FileSystemCallbacks::OnDidOpenFileSystemCallback,
     DOMFileSystem>;
 
+using FileWriterCallbacksSyncHelper = DOMFileSystemCallbacksSyncHelper<
+    FileWriterCallbacks::OnDidCreateFileWriterCallback,
+    FileWriterBase>;
+
 }  // namespace blink
 
 #endif  // SyncCallbackHelper_h

@@ -37,6 +37,7 @@
 #include "bindings/modules/v8/V8ErrorCallback.h"
 #include "bindings/modules/v8/V8FileCallback.h"
 #include "bindings/modules/v8/V8FileSystemCallback.h"
+#include "bindings/modules/v8/V8FileWriterCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -48,8 +49,7 @@
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileEntry.h"
-#include "modules/filesystem/FileWriterBase.h"
-#include "modules/filesystem/FileWriterBaseCallback.h"
+#include "modules/filesystem/FileWriter.h"
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
@@ -367,33 +367,48 @@ void MetadataCallbacks::DidReadMetadata(const FileMetadata& metadata) {
                                   Metadata::Create(metadata));
 }
 
-// FileWriterBaseCallbacks ----------------------------------------------------
+// FileWriterCallbacks ----------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::Create(
-    FileWriterBase* file_writer,
-    FileWriterBaseCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context) {
-  return base::WrapUnique(new FileWriterBaseCallbacks(
-      file_writer, success_callback, error_callback, context));
+void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidCreateFileWriterCallback::Trace(visitor);
 }
 
-FileWriterBaseCallbacks::FileWriterBaseCallbacks(
+void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::OnSuccess(
+    FileWriterBase* file_writer) {
+  // The call sites must pass a FileWriter in |file_writer|.
+  callback_->handleEvent(static_cast<FileWriter*>(file_writer));
+}
+
+std::unique_ptr<AsyncFileSystemCallbacks> FileWriterCallbacks::Create(
     FileWriterBase* file_writer,
-    FileWriterBaseCallback* success_callback,
+    OnDidCreateFileWriterCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context) {
+  return base::WrapUnique(new FileWriterCallbacks(file_writer, success_callback,
+                                                  error_callback, context));
+}
+
+FileWriterCallbacks::FileWriterCallbacks(
+    FileWriterBase* file_writer,
+    OnDidCreateFileWriterCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context)
     : FileSystemCallbacksBase(error_callback, nullptr, context),
       file_writer_(file_writer),
       success_callback_(success_callback) {}
 
-void FileWriterBaseCallbacks::DidCreateFileWriter(
+void FileWriterCallbacks::DidCreateFileWriter(
     std::unique_ptr<WebFileWriter> file_writer,
     long long length) {
   file_writer_->Initialize(std::move(file_writer), length);
-  if (success_callback_)
-    HandleEventOrScheduleCallback(success_callback_.Release(),
-                                  file_writer_.Release());
+
+  if (!success_callback_)
+    return;
+
+  InvokeOrScheduleCallback(&OnDidCreateFileWriterCallback::OnSuccess,
+                           success_callback_.Release(), file_writer_.Release());
 }
 
 // SnapshotFileCallback -------------------------------------------------------
