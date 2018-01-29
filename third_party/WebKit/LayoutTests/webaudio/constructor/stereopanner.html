@@ -47,116 +47,52 @@
         // are not supported there.
         let node;
 
-        // Test that we can set the channel count to 1 or 2.
-        let options = {channelCount: 1};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
-        should(node.channelCount, 'node.channelCount').beEqualTo(1);
+        // An array of tests.
+        [{
+          // Test that we can set the channel count to 1 or 2 and that other
+          // channel counts throw an error.
+          attribute: 'channelCount',
+          tests: [
+            {value: 1}, {value: 2}, {value: 0, error: 'NotSupportedError'},
+            {value: 3, error: 'NotSupportedError'},
+            {value: 99, error: 'NotSupportedError'}
+          ]
+        },
+         {
+           // Test channelCountMode.  A mode of "max" is illegal, but others are
+           // ok.  But also throw an error of unknown values.
+           attribute: 'channelCountMode',
+           tests: [
+             {value: 'clamped-max'}, {value: 'explicit'},
+             {value: 'max', error: 'NotSupportedError'},
+             {value: 'foobar', error: 'TypeError'}
+           ]
+         },
+         {
+           // Test channelInterpretation can be set for valid values and an
+           // error is thrown for others.
+           attribute: 'channelInterpretation',
+           tests: [
+             {value: 'speakers'}, {value: 'discrete'},
+             {value: 'foobar', error: 'TypeError'}
+           ]
+         }].forEach(entry => {
+          entry.tests.forEach(testItem => {
+            let options = {};
+            options[entry.attribute] = testItem.value;
+            let method = testItem.error ? 'throw' : 'notThrow';
 
-        options = {channelCount: 2};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
-        should(node.channelCount, 'node.channelCount').beEqualTo(2);
-
-        // Test that other channel counts throw an error
-        options = {channelCount: 0};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .throw('NotSupportedError');
-
-        options = {channelCount: 3};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .throw('NotSupportedError');
-
-        options = {channelCount: 99};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .throw('NotSupportedError');
-
-        // Test channelCountMode.  A mode of "max" is illegal, but others are
-        // ok.
-        options = {channelCountMode: 'clamped-max'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
-        should(node.channelCountMode, 'node.channelCountMode')
-            .beEqualTo(options.channelCountMode);
-
-        options = {channelCountMode: 'explicit'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
-        should(node.channelCountMode, 'node.channelCountMode')
-            .beEqualTo(options.channelCountMode);
-
-        options = {channelCountMode: 'max'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .throw('NotSupportedError');
-
-        options = {channelCountMode: 'foobar'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .throw('TypeError');
-
-        // Test channelInterpretation.
-        options = {channelInterpretation: 'speakers'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
-        should(node.channelInterpretation, 'node.channelInterpretation')
-            .beEqualTo(options.channelInterpretation);
-
-        options = {channelInterpretation: 'discrete'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .notThrow();
-        should(node.channelInterpretation, 'node.channelInterpretation')
-            .beEqualTo(options.channelInterpretation);
-
-        options = {channelInterpretation: 'foobar'};
-        should(
-            () => {
-              node = new StereoPannerNode(context, options);
-            },
-            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
-            .throw('TypeError');
+            should(
+                () => {
+                  node = new StereoPannerNode(context, options);
+                },
+                `new StereoPannerNode(c, ${JSON.stringify(options)})`)[method](
+                testItem.error);
+            if (!testItem.error)
+              should(node[entry.attribute], `node.${entry.attribute}`)
+                  .beEqualTo(options[entry.attribute]);
+          });
+        });
 
         task.done();
       });
