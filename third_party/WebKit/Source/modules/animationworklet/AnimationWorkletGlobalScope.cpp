@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ObjectParser.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/dom/ExceptionCode.h"
@@ -153,65 +154,37 @@ AnimationWorkletGlobalScope::Mutate(
 
 void AnimationWorkletGlobalScope::registerAnimator(
     const String& name,
-    const ScriptValue& ctorValue,
-    ExceptionState& exceptionState) {
+    const ScriptValue& ctor_value,
+    ExceptionState& exception_state) {
   DCHECK(IsContextThread());
   if (animator_definitions_.Contains(name)) {
-    exceptionState.ThrowDOMException(
+    exception_state.ThrowDOMException(
         kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
     return;
   }
 
   if (name.IsEmpty()) {
-    exceptionState.ThrowTypeError("The empty string is not a valid name.");
+    exception_state.ThrowTypeError("The empty string is not a valid name.");
     return;
   }
 
   v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
   v8::Local<v8::Context> context = ScriptController()->GetContext();
 
-  DCHECK(ctorValue.V8Value()->IsFunction());
+  DCHECK(ctor_value.V8Value()->IsFunction());
   v8::Local<v8::Function> constructor =
-      v8::Local<v8::Function>::Cast(ctorValue.V8Value());
+      v8::Local<v8::Function>::Cast(ctor_value.V8Value());
 
-  v8::Local<v8::Value> prototypeValue;
-  if (!constructor->Get(context, V8AtomicString(isolate, "prototype"))
-           .ToLocal(&prototypeValue))
+  v8::Local<v8::Object> prototype;
+  if (!V8ObjectParser::ParsePrototype(context, constructor, &prototype,
+                                      &exception_state))
     return;
 
-  if (IsUndefinedOrNull(prototypeValue)) {
-    exceptionState.ThrowTypeError(
-        "The 'prototype' object on the class does not exist.");
+  v8::Local<v8::Function> animate;
+  if (!V8ObjectParser::ParseFunction(context, prototype, "animate", &animate,
+                                     &exception_state))
     return;
-  }
-
-  if (!prototypeValue->IsObject()) {
-    exceptionState.ThrowTypeError(
-        "The 'prototype' property on the class is not an object.");
-    return;
-  }
-
-  v8::Local<v8::Object> prototype = v8::Local<v8::Object>::Cast(prototypeValue);
-
-  v8::Local<v8::Value> animateValue;
-  if (!prototype->Get(context, V8AtomicString(isolate, "animate"))
-           .ToLocal(&animateValue))
-    return;
-
-  if (IsUndefinedOrNull(animateValue)) {
-    exceptionState.ThrowTypeError(
-        "The 'animate' function on the prototype does not exist.");
-    return;
-  }
-
-  if (!animateValue->IsFunction()) {
-    exceptionState.ThrowTypeError(
-        "The 'animate' property on the prototype is not a function.");
-    return;
-  }
-
-  v8::Local<v8::Function> animate = v8::Local<v8::Function>::Cast(animateValue);
 
   AnimatorDefinition* definition =
       new AnimatorDefinition(isolate, constructor, animate);
