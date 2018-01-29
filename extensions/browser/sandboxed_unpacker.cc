@@ -670,11 +670,13 @@ void SandboxedUnpacker::MessageCatalogsSanitized(
       error =
           l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                                      ASCIIToUTF16("ERROR_SERIALIZING_CATALOG"));
+      break;
     case JsonFileSanitizer::Status::kFileDeleteError:
     case JsonFileSanitizer::Status::kFileWriteError:
       failure_reason = ERROR_SAVING_CATALOG;
       error = l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                                          ASCIIToUTF16("ERROR_SAVING_CATALOG"));
+      break;
     default:
       NOTREACHED();
       break;
