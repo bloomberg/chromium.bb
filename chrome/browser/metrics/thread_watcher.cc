@@ -534,13 +534,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
                 unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::IO, "IO", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_threads);
-  // TODO(gab): Stop watching deprecated BrowserThreads, crbug.com/768886.
-  StartWatching(BrowserThread::DB, "DB", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
-  StartWatching(BrowserThread::FILE, "FILE", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
-  StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
 }
 
 // static
