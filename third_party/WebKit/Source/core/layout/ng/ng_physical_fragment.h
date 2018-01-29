@@ -49,7 +49,7 @@ class CORE_EXPORT NGPhysicalFragment
   };
   enum NGBoxType {
     kNormalBox,
-    kAnonymousBox,
+    kInlineBox,
     kInlineBlock,
     kFloating,
     kOutOfFlowPositioned,
@@ -74,20 +74,22 @@ class CORE_EXPORT NGPhysicalFragment
 
   // Returns the box type of this fragment.
   NGBoxType BoxType() const { return static_cast<NGBoxType>(box_type_); }
+  // True if this is an inline box; e.g., <span>. Atomic inlines such as
+  // replaced elements or inline block are not included.
+  bool IsInlineBox() const { return BoxType() == NGBoxType::kInlineBox; }
   // Returns whether the fragment is old layout root.
   bool IsOldLayoutRoot() const { return is_old_layout_root_; }
   // An inline block is represented as a kFragmentBox.
   // TODO(eae): This isn't true for replaces elements at the moment.
   bool IsInlineBlock() const { return BoxType() == NGBoxType::kInlineBlock; }
+  // True if this fragment is in-flow in an inline formatting context.
+  bool IsInline() const { return IsText() || IsInlineBox() || IsInlineBlock(); }
   bool IsFloating() const { return BoxType() == NGBoxType::kFloating; }
   bool IsOutOfFlowPositioned() const {
     return BoxType() == NGBoxType::kOutOfFlowPositioned;
   }
   bool IsBlockFlow() const;
 
-  // A box fragment that do not exist in LayoutObject tree. Its LayoutObject is
-  // co-owned by other fragments.
-  bool IsAnonymousBox() const { return BoxType() == NGBoxType::kAnonymousBox; }
   // A block sub-layout starts on this fragment. Inline blocks, floats, out of
   // flow positioned objects are such examples. This is also true on NG/legacy
   // boundary.

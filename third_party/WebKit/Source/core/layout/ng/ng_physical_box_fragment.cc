@@ -49,8 +49,7 @@ bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
   DCHECK(layout_object->IsBoxModelObject());
-  return ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer() &&
-         BoxType() != kAnonymousBox;
+  return ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer();
 }
 
 bool NGPhysicalBoxFragment::ChildrenInline() const {
@@ -62,15 +61,14 @@ bool NGPhysicalBoxFragment::ChildrenInline() const {
 bool NGPhysicalBoxFragment::HasOverflowClip() const {
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
-  return layout_object->HasOverflowClip() && BoxType() != kAnonymousBox;
+  return layout_object->HasOverflowClip();
 }
 
 bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
   return layout_object->IsBox() &&
-         ToLayoutBox(layout_object)->ShouldClipOverflow() &&
-         BoxType() != kAnonymousBox;
+         ToLayoutBox(layout_object)->ShouldClipOverflow();
 }
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfVisualRect() const {

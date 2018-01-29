@@ -46,6 +46,9 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
   switch (fragment.BoxType()) {
     case NGPhysicalFragment::NGBoxType::kNormalBox:
       break;
+    case NGPhysicalFragment::NGBoxType::kInlineBox:
+      result.Append("inline");
+      break;
     case NGPhysicalFragment::NGBoxType::kInlineBlock:
       result.Append("inline-block");
       break;
@@ -55,11 +58,6 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
     case NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned:
       result.Append("out-of-flow-positioned");
       break;
-    case NGPhysicalFragment::NGBoxType::kAnonymousBox:
-      result.Append("anonymous");
-      break;
-    default:
-      NOTREACHED();
   }
   if (fragment.IsOldLayoutRoot()) {
     if (result.length())

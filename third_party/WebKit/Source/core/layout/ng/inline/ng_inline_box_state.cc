@@ -430,6 +430,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // fragment builder so that it should not transform the coordinates for RTL.
   NGFragmentBuilder box(item->GetLayoutObject(), &style, style.GetWritingMode(),
                         TextDirection::kLtr);
+  box.SetBoxType(NGPhysicalFragment::kInlineBox);
 
   // Inline boxes have block start/end borders, even when its containing block
   // was fragmented. Fragmenting a line box in block direction is not
