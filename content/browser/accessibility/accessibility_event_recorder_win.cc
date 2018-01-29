@@ -242,6 +242,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   hr = QueryIAccessible2(iaccessible.Get(), iaccessible2.GetAddressOf());
 
   base::string16 html_tag;
+  base::string16 obj_class;
   base::string16 html_id;
 
   if (SUCCEEDED(hr)) {
@@ -252,6 +253,8 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
           base::string16(attributes_bstr, attributes_bstr.Length()),
           base::string16(1, ';'), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       for (base::string16& attr : ia2_attributes) {
+        if (base::StringPiece16(attr).starts_with(L"class:"))
+          obj_class = attr.substr(6);  // HTML or view class
         if (base::StringPiece16(attr).starts_with(L"id:")) {
           html_id = base::string16(L"#");
           html_id += attr.substr(3);
@@ -264,9 +267,18 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   }
 
   std::string log = base::StringPrintf("%s on", event_str.c_str());
-  if (!html_tag.empty())
-    log += base::StringPrintf(" <%s%s>", base::UTF16ToUTF8(html_tag).c_str(),
-                              base::UTF16ToUTF8(html_id).c_str());
+  if (!html_tag.empty()) {
+    // HTML node with tag
+    log += base::StringPrintf(
+        " <%s%s%s%s>", base::UTF16ToUTF8(html_tag).c_str(),
+        base::UTF16ToUTF8(html_id).c_str(), obj_class.empty() ? "" : ".",
+        base::UTF16ToUTF8(obj_class).c_str());
+  } else if (!obj_class.empty()) {
+    // Non-HTML node with class
+    log +=
+        base::StringPrintf(" class=%s", base::UTF16ToUTF8(obj_class).c_str());
+  }
+
   log += base::StringPrintf(" role=%s", RoleVariantToString(role).c_str());
   if (name_bstr.Length() > 0)
     log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
