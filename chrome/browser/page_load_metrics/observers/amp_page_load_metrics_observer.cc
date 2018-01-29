@@ -60,6 +60,7 @@ const char kAmpCacheHostSuffix[] = "cdn.ampproject.org";
         break;                                                                \
       case AMPViewType::NONE:                                                 \
         NOTREACHED();                                                         \
+        break;                                                                \
       case AMPViewType::AMP_VIEW_TYPE_LAST:                                   \
         break;                                                                \
     }                                                                         \
