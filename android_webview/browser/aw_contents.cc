@@ -1156,7 +1156,7 @@ void AwContents::SmoothScroll(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   float scale = browser_view_renderer_.page_scale_factor();
-  if (!content::UseZoomForDSFEnabled())
+  if (!content::IsUseZoomForDSFEnabled())
     scale *= browser_view_renderer_.dip_scale();
   render_view_host_ext_->SmoothScroll(target_x / scale, target_y / scale,
                                       duration_ms);
@@ -1180,7 +1180,7 @@ void AwContents::OnWebLayoutContentsSizeChanged(
   if (obj.is_null())
     return;
   gfx::Size contents_size_css =
-      content::UseZoomForDSFEnabled()
+      content::IsUseZoomForDSFEnabled()
           ? ScaleToRoundedSize(contents_size,
                                1 / browser_view_renderer_.dip_scale())
           : contents_size;

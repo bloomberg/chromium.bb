@@ -207,7 +207,7 @@ RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     const gfx::Point& point) {
   gfx::PointF point_in_pixel(point);
-  if (UseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled()) {
     point_in_pixel = gfx::ConvertPointToPixel(
         widget_->GetOriginalDeviceScaleFactor(), point_in_pixel);
   }

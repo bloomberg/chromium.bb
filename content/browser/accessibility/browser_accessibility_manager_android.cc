@@ -367,7 +367,7 @@ gfx::Rect BrowserAccessibilityManagerAndroid::GetViewBounds() {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {
     gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
-    if (UseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
+    if (IsUseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
         device_scale_factor() != 1.0)
       bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
     return bounds;

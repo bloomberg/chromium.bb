@@ -33,7 +33,7 @@ bool IsUseZoomForDSFEnabledByDefault() {
 
 namespace content {
 
-bool UseZoomForDSFEnabled() {
+bool IsUseZoomForDSFEnabled() {
   static bool use_zoom_for_dsf_enabled_by_default =
       IsUseZoomForDSFEnabledByDefault();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

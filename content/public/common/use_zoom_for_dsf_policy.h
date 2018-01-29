@@ -12,7 +12,7 @@
 
 namespace content {
 
-CONTENT_EXPORT bool UseZoomForDSFEnabled();
+CONTENT_EXPORT bool IsUseZoomForDSFEnabled();
 
 }  // namespace content
 
