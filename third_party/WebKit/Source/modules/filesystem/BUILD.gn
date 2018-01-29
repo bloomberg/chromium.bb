@@ -54,7 +54,6 @@ blink_modules_sources("filesystem") {
     "FileWriter.h",
     "FileWriterBase.cpp",
     "FileWriterBase.h",
-    "FileWriterBaseCallback.h",
     "FileWriterCallback.h",
     "FileWriterSync.cpp",
     "FileWriterSync.h",

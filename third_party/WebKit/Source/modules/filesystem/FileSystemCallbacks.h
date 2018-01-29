@@ -51,12 +51,12 @@ class ExecutionContext;
 class File;
 class FileMetadata;
 class FileWriterBase;
-class FileWriterBaseCallback;
 class MetadataCallback;
 class V8EntryCallback;
 class V8ErrorCallback;
 class V8FileCallback;
 class V8FileSystemCallback;
+class V8FileWriterCallback;
 class VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
@@ -273,23 +273,49 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
   Persistent<MetadataCallback> success_callback_;
 };
 
-class FileWriterBaseCallbacks final : public FileSystemCallbacksBase {
+class FileWriterCallbacks final : public FileSystemCallbacksBase {
  public:
+  class OnDidCreateFileWriterCallback
+      : public GarbageCollectedFinalized<OnDidCreateFileWriterCallback> {
+   public:
+    virtual ~OnDidCreateFileWriterCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual void OnSuccess(FileWriterBase*) = 0;
+
+   protected:
+    OnDidCreateFileWriterCallback() = default;
+  };
+
+  class OnDidCreateFileWriterV8Impl : public OnDidCreateFileWriterCallback {
+   public:
+    static OnDidCreateFileWriterV8Impl* Create(V8FileWriterCallback* callback) {
+      return callback ? new OnDidCreateFileWriterV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    void OnSuccess(FileWriterBase*) override;
+
+   private:
+    OnDidCreateFileWriterV8Impl(V8FileWriterCallback* callback)
+        : callback_(callback) {}
+
+    Member<V8FileWriterCallback> callback_;
+  };
+
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
       FileWriterBase*,
-      FileWriterBaseCallback*,
+      OnDidCreateFileWriterCallback*,
       ErrorCallbackBase*,
       ExecutionContext*);
   void DidCreateFileWriter(std::unique_ptr<WebFileWriter>,
                            long long length) override;
 
  private:
-  FileWriterBaseCallbacks(FileWriterBase*,
-                          FileWriterBaseCallback*,
-                          ErrorCallbackBase*,
-                          ExecutionContext*);
+  FileWriterCallbacks(FileWriterBase*,
+                      OnDidCreateFileWriterCallback*,
+                      ErrorCallbackBase*,
+                      ExecutionContext*);
   Persistent<FileWriterBase> file_writer_;
-  Persistent<FileWriterBaseCallback> success_callback_;
+  Persistent<OnDidCreateFileWriterCallback> success_callback_;
 };
 
 class SnapshotFileCallback final : public FileSystemCallbacksBase {
