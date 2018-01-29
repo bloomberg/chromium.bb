@@ -546,6 +546,118 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Download.Started">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Metrics taken when a download begins. It has one Download.Ended and none to
+    multiple Download.Interrupted/Download.Resumed events associated with it.
+  </summary>
+  <metric name="DownloadId">
+    <summary>
+      The id of the download that is used to associate separate events.
+    </summary>
+  </metric>
+  <metric name="DownloadSource">
+    <summary>
+      The source of the download, expressed as an enum defined in DownloadEntry.
+    </summary>
+  </metric>
+  <metric name="FileType">
+    <summary>
+      The type of file that is downloaded, expressed as an enum defined in
+      DownloadContentType.
+    </summary>
+  </metric>
+</event>
+
+<event name="Download.Completed">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Metrics taken when a download completes. Its parent event is
+    Download.Started.
+  </summary>
+  <metric name="DownloadId">
+    <summary>
+      The id of the download that is used to associate separate events.
+    </summary>
+  </metric>
+  <metric name="ResultingFileSize">
+    <summary>
+      The size of the file that is downloaded, expressed in kilobytes with
+      exponentially growing buckets.
+    </summary>
+  </metric>
+  <metric name="TimeSinceStart">
+    <summary>
+      The difference in the time between when the download finished and when it
+      began, expressed in miliseconds.
+    </summary>
+  </metric>
+</event>
+
+<event name="Download.Interrupted">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Metrics taken when a download is interrupted. Its parent event is
+    Download.Started.
+  </summary>
+  <metric name="ChangeInFileSize">
+    <summary>
+      The difference in the size of the file that is downloaded compared to the
+      initial reported size, expressed in kilobytes with exponentially growing
+      buckets.
+    </summary>
+  </metric>
+  <metric name="DownloadId">
+    <summary>
+      The id of the download that is used to associate separate events.
+    </summary>
+  </metric>
+  <metric name="Reason">
+    <summary>
+      The reason the download was interrupted, expressed as an enum defined in
+      DownloadInterruptReason.
+    </summary>
+  </metric>
+  <metric name="ResultingFileSize">
+    <summary>
+      The size of the file that is downloaded, expressed in kilobytes with
+      exponentially growing buckets.
+    </summary>
+  </metric>
+  <metric name="TimeSinceStart">
+    <summary>
+      The difference in the time between when the download interrupted and when
+      it began, expressed in miliseconds.
+    </summary>
+  </metric>
+</event>
+
+<event name="Download.Resumed">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Metrics taken when a download is resumed. Its parent event is
+    Download.Started.
+  </summary>
+  <metric name="DownloadId">
+    <summary>
+      The id of the download that is used to associate separate events.
+    </summary>
+  </metric>
+  <metric name="Mode">
+    <summary>
+      The mode by which the download was resumed, expressed as an enum defined
+      in ResumeMode.
+    </summary>
+  </metric>
+  <metric name="TimeSinceStart">
+    <summary>
+      The difference in the time between when the download resumed and when it
+      began, expressed in miliseconds.
+    </summary>
+  </metric>
+</event>
+
 <event name="Event.ScrollUpdate.Touch">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
