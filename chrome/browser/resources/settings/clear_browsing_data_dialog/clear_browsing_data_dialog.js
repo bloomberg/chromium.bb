@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-clear-browsing-data-dialog-tabs' allows the user to
+ * @fileoverview 'settings-clear-browsing-data-dialog' allows the user to
  * delete browsing data that has been cached by Chromium.
  */
 Polymer({
-  is: 'settings-clear-browsing-data-dialog-tabs',
+  is: 'settings-clear-browsing-data-dialog',
 
   behaviors: [WebUIListenerBehavior, settings.RouteObserverBehavior],
 
@@ -167,11 +167,9 @@ Polymer({
    *
    * @param {boolean} signedIn Whether the user is signed in.
    * @param {boolean} syncing Whether the user is syncing history.
-   * @param {boolean} otherFormsOfBrowsingHistory Whether the user has other
-   *     forms of browsing history in their account.
    * @private
    */
-  updateSyncState_: function(signedIn, syncing, otherFormsOfBrowsingHistory) {
+  updateSyncState_: function(signedIn, syncing) {
     this.isSignedIn_ = signedIn;
     this.isSyncingHistory_ = syncing;
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
