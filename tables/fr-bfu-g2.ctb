@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-01-28
+#-updated: 2018-01-29
 
 # liblouis: Unified French Grade 2 Table
 
@@ -93,7 +93,8 @@ class voyabr2 ⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠲⠌⠂⠔
 class voyabr3 aeiouyéàèùAEIOUYÉÀÈÙœŒ⠈⠅⠜⠢⠦⠐⠨⠵⠠⠾⠺⠬⠰⠸⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠲⠌⠂⠔
 
 #En désabrègement, cette classe permet de savoir si nous sommes dans une opération mathématique ou non
-class frmath ⠬⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠂⠆⠒⠲⠖⠶⠦⠔⠴⠤⠄⠐⠠⠌⠘⠷⠾⠜⠃⠨
+class frmath ⠬⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠂⠆⠒⠲⠖⠶⠦⠔⠴⠤⠄⠐⠠⠌⠘⠷⠾⠜⠃⠨⠈
+class puncEnd ⠂,;:.?!")]}
 letsign 56
 noletsignafter '\X2019\X0092
 hyphen - 36
@@ -771,6 +772,7 @@ nofor word dû 145-156
 word elle 1356
 word elles 1356-234
 word en 26
+word en? 15-1345-26
 word est 156
 word et 23456
 word été 2356
@@ -3085,7 +3087,7 @@ word hafiz 125-1-124-24-1356
 prfword hertz 125-236-2345-1356
 word hz 56-125-1356
 nofor word jazz 245-1-1356-1356
-prfword khoz 13-125-135-1356
+endword khoz 13-125-135-1356
 word kibboutz 13-24-12-12-1256-2345-1356
 word kirghiz 13-24-1235-1245-125-24-1356
 word kronprinz 13-1235-346-235-35-1356
@@ -3543,7 +3545,6 @@ word	aquitanien	1-12345-24-2345-1-1345-256
 word	arcadien	4-14-1-145-256
 word	arénigien	1-1235-123456-1345-24-1245-256
 word	argien	4-1245-256
-word	arien	1-1235-256
 word	aristotélicien	1-1235-24-234-2345-135-2345-123456-123-24-14-256
 word	arlésien	4-123-123456-234-256
 word	arminien	4-134-24-1345-256
@@ -3600,7 +3601,6 @@ word	campignien	14-1-134-1234-24-2356-256
 always	canadien	14-1-1345-1-145-256
 word	capésien	14-1-1234-123456-234-256
 word	cappadocien	14-1-1234-1234-1-145-135-14-256
-word	capsien	14-1-1234-234-256
 word	capverdien	14-1-1234-1236-236-145-256
 word	caradocien	14-1-1235-1-145-135-14-256
 word	carnien	14-4-1345-256
@@ -3650,7 +3650,6 @@ word	corallien	14-135-1235-1-456-256
 word	corinthien	14-135-1235-35-2345-125-256
 word	coronarien	14-135-1235-135-1345-1-1235-256
 word	corticosurrénalien	14-56-2345-24-14-135-234-136-1235-1235-123456-1345-1-123-256
-word	coulombien	14-1256-123-2456-12-256
 always	crânien	25-16-1345-256
 word	creswellien	25-15-234-2456-15-456-256
 word	cristallinien	25-24-234-2345-1-456-24-1345-256
@@ -3660,7 +3659,6 @@ word	cyclophyllidien	14-13456-146-135-1234-125-13456-456-24-145-256
 word	dalmatien	145-1-123-134-1-2345-256
 word	daltonien	145-1-123-2345-135-1345-256
 word	dangeardien	145-2-1245-15-4-145-256
-word	danien	145-1-1345-256
 word	danubien	145-1-1345-136-12-256
 word	deutérostomien	145-5-2345-123456-1235-135-234-2345-135-134-256
 word	dévonien	145-123456-1236-135-1345-256
@@ -3742,7 +3740,6 @@ word	georgien	1245-15-56-1245-256
 word	géphyrien	1245-123456-1234-125-13456-1235-256
 word	giscardien	1245-24-234-14-4-145-256
 word	glyconien	345-13456-14-135-1345-256
-word	gordien	1245-56-145-256
 always	grammairien	12456-1-134-134-34-1235-256
 word	graphicien	12456-1-1234-125-24-14-256
 word	gravettien	12456-1-1236-15-2456-256
@@ -3781,7 +3778,6 @@ word	indien	35-145-256
 partword	indien	35-145-256
 word	indo-iranien	35-145-135-36-24-1235-1-1345-256
 word	indonésien	35-145-135-1345-123456-234-256
-word	indusien	35-145-136-234-256
 word	infradien	35-16-1-145-256
 word	irien	24-1235-256
 word	iroquoien	24-1235-135-12345-23456-26
@@ -3823,7 +3819,7 @@ word	leptorhinien	123-15-1234-2345-56-125-24-1345-256
 word	lesbien	123-15-234-12-256
 word	levalloisien	123-15-1236-1-456-23456-234-256
 word	lezguien	123-15-1356-1245-136-256
-word	lien	123-256
+after space word	lien	123-256
 word	ligurien	123-24-1245-136-1235-256
 word	lilliputien	123-24-456-24-1234-136-2345-256
 word	liquidien	123-24-12345-24-145-256
@@ -3858,7 +3854,6 @@ endword	mancien	134-2-14-256
 word	manganésien	134-2-1245-1-1345-123456-234-256
 word	marollien	134-1-1235-135-456-256
 word	martien	134-4-2345-256
-word	marxien	134-4-1346-256
 word	mauricien	134-13-1235-24-14-256
 word	mauritanien	134-13-1235-24-2345-1-1345-256
 always	mécanicien	134-123456-14-1-1345-24-14-256
@@ -3904,7 +3899,6 @@ word	nubien	1345-136-12-256
 word	oasien	135-1-234-256
 always	œdipien	246-145-24-1234-256
 word	œsophagien	246-234-135-1234-125-1-1245-256
-word	œstrien	246-234-356-256
 word	olécranien	135-123-123456-25-1-1345-256
 word	olympien	135-123-13456-134-1234-256
 word	ombrien	2456-23-256
@@ -3974,7 +3968,6 @@ word	protostomien	235-2345-135-234-2345-135-134-256
 word	proudhonien	235-1256-145-125-135-1345-256
 word	proustien	235-1256-234-2345-256
 word	prussien	235-136-2346-256
-word	pubien	1234-136-12-256
 word	pyrrhonien	1234-13456-1235-1235-125-135-1345-256
 word	pythagoricien	1234-13456-2345-125-1-1245-135-1235-24-14-256
 word	pythien	1234-13456-2345-125-256
@@ -4008,7 +4001,6 @@ word	cyrien	14-13456-1235-256
 word	sulpicien	234-136-123-1234-24-14-256
 word	sakmarien	234-1-13-134-1-1235-256
 word	salésien	234-1-123-123456-234-256
-word	salien	234-1-123-256
 word	salpingien	234-1-123-1234-35-1245-256
 word	santonien	234-2-2345-135-1345-256
 word	saoudien	234-1-1256-145-256
@@ -4041,14 +4033,11 @@ word	sogdien	234-135-1245-145-256
 word	somalien	234-135-134-1-123-256
 word	sonvien	234-346-1236-256
 word	soutien	234-1256-2345-256
-word	sovkhozien	234-135-1236-13-125-135-1356-256
 word	sparnacien	234-1234-4-1345-1-14-256
-word	spinalien	234-1234-24-1345-1-123-256
 word	stalinien	234-2345-1-123-24-1345-256
 word	stampien	234-2345-1-134-1234-256
 word	stendhalien	234-2345-26-145-125-1-123-256
 word	stéphanien	234-2345-123456-1234-125-1-1345-256
-endword	sticien	234-2345-24-14-256
 word	strombolien	234-356-2456-12-135-123-256
 word	stylicien	234-2345-13456-123-24-14-256
 word	surrénalien	234-136-1235-1235-123456-1345-1-123-256
@@ -4061,7 +4050,6 @@ word	tarsien	2345-4-234-256
 word	tasmanien	2345-1-234-134-1-1345-256
 word	tatarien	2345-1-2345-1-1235-256
 word	tayacien	2345-1-13456-1-14-256
-word	tchadien	2345-12356-1-145-256
 always	technicien	2345-15-12356-1345-24-14-256
 word	tellien	2345-15-456-256
 word	tellurien	2345-15-456-136-1235-256
@@ -4083,20 +4071,20 @@ word	tokharien	2345-135-13-125-1-1235-256
 word	tomien	2345-135-134-256
 word	tortonien	2345-56-2345-135-1345-256
 word	touranien	2345-1256-1235-1-1345-256
-word	tournaisien	2345-12346-1345-34-234-256
 word	tragien	356-1-1245-256
 word	Transilien	46-356-2-234-24-123-256
 word	transneptunien	356-1345-15-1234-2345-136-1345-256
 word	transuranien	356-2-234-136-1235-1-1345-256
 word	transylvanien	356-2-234-13456-123-1236-1-1345-256
 word	tribunitien	356-24-12-136-1345-24-2345-256
-endword tricien 356-24-14-256
+endword atricien 1-356-24-14-256
+endword ctricien 14-356-24-14-256
+endword otricien 135-356-24-14-256
 word	trinidadien	356-24-1345-24-145-1-145-256
 always	trinitarien	356-24-1345-24-2345-1-1235-256
 word	tsaconien	2345-234-1-14-135-1345-256
 word	turonien	2345-136-1235-135-1345-256
 word	tyrien	2345-13456-1235-256
-word	tyrolien	2345-13456-1235-135-123-256
 word	ukrainien	136-13-1235-34-1345-256
 word	urgonien	136-1235-1245-135-1345-256
 word	urticarien	136-1235-2345-24-14-1-1235-256
@@ -4334,26 +4322,33 @@ nofor pass2 $s@6 *#1=1
 nofor pass2 `!@6 *#1=0
 nofor pass2 $s!@6 *#1=0
 nofor pass2 @56 *#1=0
+nofor pass2 `@6-6-236!%frmath *#1=0
+nofor pass2 $s@6-6-236!%frmath *#1=0
 #Cas particulier des mots finissant par "lieues"
 nofor pass2 @123-6-156~ *#1=0
 nofor pass2 @123-6-156$s *#1=0
 nofor pass2 @123-6-156!$l *#1=0
 
 #Traitement des opérateurs
-nofor pass2 #1=1[@6-6-236] @2378	accolade gauche
-nofor pass2 #1=1[@356-3-3] @3568	accolade droite
-nofor pass2 #1=1[@36] @368	moins
 nofor pass2 #1=1[@235] @2358	plus
-nofor pass2 #1=1[@34] @348	divisé
+nofor pass2 #1=1[@36] @368	moins
 nofor pass2 #1=1[@35] @358	multiplié
+nofor pass2 #1=1[@34] @348	divisé
+nofor pass2 #1=1[@4] @47	puissance
+
+nofor pass2 #1=1[@2356] @23568	égal
+nofor pass2 #1=1[@5-126] @238	inférieur à
+nofor pass2 #1=1[@5-345] @756	supérieur à
+
 nofor pass2 #1=1[@236] @2368	parenthèse gauche
+
 nofor pass2 #1=1[@45-236] @12356a	crochet gauche
 nofor pass2 #1=1[@12356] @12356a	crochet gauche
 nofor pass2 #1=1[@356-12] @23456a	crochet droit
 nofor pass2 #1=1[@23456] @23456a	crochet droit
-nofor pass2 #1=1[@2356] @23568	égal
-nofor pass2 #1=1[@5-126] @238	inférieur à
-nofor pass2 #1=1[@5-345] @756	supérieur à
+
+nofor pass2 #1=1[@6-6-236] @2378	accolade gauche
+nofor pass2 #1=1[@356-3-3] @3568	accolade droite
 
 nofor pass2 #1=0[@356-12]$sp @234568	crochet droit littéraire
 nofor pass2 #1=0[@356-12]~ @234568
@@ -4370,22 +4365,26 @@ nofor pass2 #1=1[@1256] @1256a
 nofor pass2 #1=1[@246] @246a
 nofor pass2 #1=1[@3456] @3456a
 
-nofor context @6-2368-6 "{"
-nofor context @6-2368-6-6-2368 "({"
-nofor context @6-6-2368-6-2368 "{("
-nofor context @6-6-2368 "{"
-nofor context @13678 "-"
-nofor context @2378 "{"
-nofor context @3568 "}"
 nofor context @2358 "+"
-nofor context @348 "/"
-nofor context @358 "*"
-nofor context @23568 "="
 nofor context @368 "-"
-nofor context @2368 "("
+nofor context @13678 "-"
+nofor context @358 "*"
+nofor context @348 "/"
+nofor context @47 "^"
+
+nofor context @23568 "="
 nofor context @238 "<"
 nofor context @756 ">"
+
+nofor context @2368 "("
 nofor context @234568 "]"
+
+nofor context @6-2368-6 "{"
+nofor context @6-6-2368 "{"
+nofor context @2378 "{"
+nofor context @3568 "}"
+nofor context @6-2368-6-6-2368 "({"
+nofor context @6-6-2368-6-2368 "{("
 
 #Crochets mathématiques en forward
 noback correct `["["]$dmp "`~["
@@ -4396,6 +4395,9 @@ noback context ["~["] @12356
 noback context ["~~]"] @23456
 noback pass2 @12356[@6]!$l ?
 noback pass3 @23456[@6]!$l ?
+
+noback correct $s["+"] "`+"
+noback correct `["+"] "`+"
 #Fin opérations mathématiques
 
 
@@ -4406,18 +4408,6 @@ nofor correct $l["-te-"]"el" "-t-"
 nofor correct $l["-te-"]"en" "-t-"
 nofor correct $l["-te-"]"on" "-t-"
 nofor correct $l["-te-"]"y" "-t-"
-
-#noback pass2 $l[@26]@26 @15-1345
-#noback correct `$l"e." "\x0084"*
-#noback correct [$s]$l"e." "\s\x0084"
-#noback correct `$l"e)" "\x0084"*
-#noback correct [$s]$l"e)" "\s\x0084"
-#noback correct `$l"e?" "\x0084"*
-# .................
-#noback correct [$s]$l"e?" "\s\x0084"
-#nofor pass2 [@256-256-256]~ @368-368-368
-#nofor pass2 [@256-256-256]$s @368-368-368
-#nofor context [@368-368-368] "..."
 
 # lettres suivi nombre
 nofor pass2 $l[]@6$d @0-8-0
@@ -4541,35 +4531,16 @@ compbrl .tar
 compbrl .zip
 nofor pass4 @6-6-236[]!@0 @0-8-0
 nofor pass4 !@0[]@356-3-3 @0-8-0
-word avoir. 1-1235-56-256
-word caps. 14-1-1234-234-56-256
-word coulomb. 14-1256-123-2456-12-56-256
-word dan. 145-1-1345-56-256
-word diagnostic. 145-24-1-2356-135-234-2345-24-14-56-256
-word gord. 1245-56-145-56-256
-word indus. 35-145-136-234-56-256
-word le. 123-56-256
-word loustic. 123-1256-234-2345-24-14-56-256 
-word marx. 134-1-1235-1346-56-256
-word mastic. 134-1-234-2345-24-14-56-256
-word me. 134-56-256
-word pub. 1234-136-12-56-256
-word sal. 234-1-123-56-256
-word se. 234-56-256
-word tchad 2345-14-125-1-145-56-256
-word te. 2345-56-256
-word tyrol. 2345-13456-1235-135-123-56-256
-word tournais. 2345-12346-1345-34-234-56-256
-word sovkhoz. 234-135-1236-13-125-125-135-1356
-word spinal. 234-1234-24-1345-1-123-56-256
-word plastic. 1246-1-234-2345-24-14-56-256
-word polytric. 1234-135-123-13456-356-24-14-256
-word pronostic. 235-1345-135-234-2345-24-14-56-256
 
-word ce) 14-56-356
-word le) 123-56-356
-word me) 134-56-356
-word ne) 1345-56-356
-word te) 2345-56-356
-word sons) 246-234-56-356
+#word sons) 246-234-56-356
+word ce) 14-15-356
+word le) 123-15-356
+word me) 134-15-356
+word ne) 1345-15-356
+word te) 2345-15-356
+word le. 123-15-256
+word me. 134-15-256
+word se. 234-15-256
+word te. 2345-15-256
 
+word cor) 14-135-1235-356

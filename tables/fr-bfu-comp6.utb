@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-01-28
+#-updated: 2018-01-29
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -43,6 +43,7 @@
 # Uncontracted Unified French Table
 # ----------------------------------
 
+#include unicode.dis
 undefined 0
 
 display ¨ 46
@@ -90,8 +91,6 @@ punctuation ) 356  # parenthèse fermante
 punctuation ' 3    #  apostrophe
 punctuation « 2356 # guillemet français ouvrant
 punctuation » 2356 # guillemet français fermant
-#math [ 12356
-#math ] 23456
 punctuation [ 45-236  # crochet droit ouvrant
 punctuation ] 356-12	#	crochet droit fermant
 punctuation { 6-6-236	#	accolade de gauche
@@ -302,13 +301,18 @@ endnum = 2356
 midnum / 34
 endnum / 34
 decpoint , 2
-#math [ 12356
-#math ] 23456
+
+math [ 12356
+math ] 23456
 #begnum [ 12356
 midnum [ 12356
 endnum [ 12356
 midnum ] 23456
 endnum ] 23456
+midnum ( 236
+endnum ( 236
+midnum ) 356
+endnum ) 356
 
 postpunc , 2
 postpunc ; 23
@@ -341,4 +345,3 @@ endword = 6-2356
 
 nofor pass2 [@6-235]$d @6-235-6
 nofor pass2 [@6-2356]$d @6-2356-6
-

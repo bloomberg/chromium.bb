@@ -15,7 +15,9 @@ tests:
     - ["+", "⠠⠖"]
     - ["=", "⠠⠶"]
     - ["(3+2)/2", "⠠⠦3⠖2⠴⠌2"]
-    - ["[(3+2)-2(4+6)]-4*(8-2)", "⠠⠷⠦3⠖2⠴⠤2⠦4⠖6⠴⠾⠤4⠔⠦8⠤2⠴", xfail: True]
+    - - "[(3+2)-2(4+6)]-4*(8-2)"
+      - "⠠⠷⠦3⠖2⠴⠤2⠦4⠖6⠴⠾⠤4⠔⠦8⠤2⠴"
+      - xfail: true
     - ["4^2=4*4=16", "⠠4⠈2⠶4⠔4⠶16"]
     - ["2/4=1/2", "⠠2⠌4⠶1⠌2"]
     - ["2-2=0", "⠠2⠤2⠶0"]
@@ -1101,7 +1103,7 @@ tests:
     - ["⠰⠍⠲⠰⠞⠲⠰⠎⠲", "m.t.s."]
     - ["⠠2⠤2⠶0", "2-2=0"]
     - ["⠠⠦⠩⠖⠣⠴⠌⠣", "(3+2)/2"]
-    - ["⠠⠷⠦⠩⠖⠣⠴⠤⠣⠦⠹⠖⠫⠴⠾⠤⠹⠔⠦⠳⠤⠣⠴", "[(3+2)-2(4+6)]-4*(8-2)"]
+    - ["`à(3!2)-2(4!6)ù-4*(8-2) ⠰a", "[(3+2)-2(4+6)]-4*(8-2) a"]
     - ["⠠⠹⠈⠣⠶⠹⠔⠹⠶⠡⠫", "4^2=4*4=16"]
     - ["⠠2⠌4⠶1⠌2", "2/4=1/2"]
     - ["⠪⠕ ⠁⠝ ⠊⠞⠑⠍⠲", "• an item."]
@@ -2244,9 +2246,11 @@ tests:
     - ["¨bj! ¨bj?", "Bonjour! Bonjour?"]
     - ["⠠⠷⠦1⠖1⠴⠤⠦34⠖14⠴⠾", "[(1+1)-(34+14)]"]
     - ["`(1!1)^2-2/2", "(1+1)^2-2/2"]
-    - ["`(1!1)^2-(2!2)^2", "(1+1)^2-(2+2)^2", xfail: True]
-    - ["(⠰l) (⠰j) ⠰j) (j) c⠰) n⠰) m⠰) (m⠰) (t⠰) (l⠰)", "(l) (j) j) (je) ce) ne) me) (me) (te) (le)"]
-    - - mastic⠰. m⠰. lüstic⠰. m⠰. g⠰d⠰. !nostic⠰. !nostic⠰... ëastic.. ëastic.... aligat⠰. aligat⠰...
-      - mastic. me. loustic. me. gord. pronostic. pronostic... plasticien. plasticien... aligator. aligator...
-    - - b tyrol⠰... tçn/s⠰. tçn/s⠰... aligat⠰. aligat⠰... ),sist⠰...
+    - ["`(1!1)^2-(2!2)^2", "(1+1)^2-(2+2)^2"]
+    - ["(⠰l) (⠰j) ⠰j) ⠰⠍⠴ (j) ⠰ce) ⠰n⠑) ⠰me) (⠰m⠑) (⠰te) (⠰l⠑)", "(l) (j) j) m) (je) ce) ne) me) (me) (te) (le)"]
+    - - mastic. m⠰. lüstic. ⠰me. g⠰d. !nostic. !nostic... ëastic⠊⠢. ëastic⠊⠢... aligat⠰. aligat⠰...
+      - mastic. mor. loustic. me. gord. pronostic. pronostic... plasticien. plasticien... aligator. aligator...
+    - - b tyrol... tçn/s. tçn/s... aligat⠰. aligat⠰... ),sist⠰...
       - bien tyrol... tournais. tournais... aligator. aligator... transistor...
+    - - l c⠰ û u *s)umê. c⠰)
+      - le cor est un instrument. cor)
