@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Illegal constructor: localName does not match the HTML element interface
-Found 442 tests; 402 PASS, 40 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 442 tests; 414 PASS, 28 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a: Define a customized built-in element
 PASS a: Operator 'new' should instantiate a customized built-in element
 PASS a: document.createElement() should instantiate a customized built-in element
@@ -69,17 +69,9 @@ PASS button: Operator 'new' should instantiate a customized built-in element
 PASS button: document.createElement() should instantiate a customized built-in element
 PASS button: innerHTML should instantiate a customized built-in element
 PASS canvas: Define a customized built-in element
-FAIL canvas: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL canvas: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyCanvas extends HTMLCanvasElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLCanvasElement() { [native code] }"
-FAIL canvas: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyCanvas extends HTMLCanvasElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLCanvasElement() { [native code] }"
+PASS canvas: Operator 'new' should instantiate a customized built-in element
+PASS canvas: document.createElement() should instantiate a customized built-in element
+PASS canvas: innerHTML should instantiate a customized built-in element
 PASS caption: Define a customized built-in element
 PASS caption: Operator 'new' should instantiate a customized built-in element
 PASS caption: document.createElement() should instantiate a customized built-in element
@@ -220,33 +212,17 @@ PASS i: Operator 'new' should instantiate a customized built-in element
 PASS i: document.createElement() should instantiate a customized built-in element
 PASS i: innerHTML should instantiate a customized built-in element
 PASS iframe: Define a customized built-in element
-FAIL iframe: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL iframe: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyIframe extends HTMLIFrameElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLIFrameElement() { [native code] }"
-FAIL iframe: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyIframe extends HTMLIFrameElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLIFrameElement() { [native code] }"
+PASS iframe: Operator 'new' should instantiate a customized built-in element
+PASS iframe: document.createElement() should instantiate a customized built-in element
+PASS iframe: innerHTML should instantiate a customized built-in element
 PASS img: Define a customized built-in element
 PASS img: Operator 'new' should instantiate a customized built-in element
 PASS img: document.createElement() should instantiate a customized built-in element
 PASS img: innerHTML should instantiate a customized built-in element
 PASS input: Define a customized built-in element
-FAIL input: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL input: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyInput extends HTMLInputElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLInputElement() { [native code] }"
-FAIL input: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyInput extends HTMLInputElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLInputElement() { [native code] }"
+PASS input: Operator 'new' should instantiate a customized built-in element
+PASS input: document.createElement() should instantiate a customized built-in element
+PASS input: innerHTML should instantiate a customized built-in element
 PASS ins: Define a customized built-in element
 PASS ins: Operator 'new' should instantiate a customized built-in element
 PASS ins: document.createElement() should instantiate a customized built-in element
@@ -516,17 +492,9 @@ PASS var: Operator 'new' should instantiate a customized built-in element
 PASS var: document.createElement() should instantiate a customized built-in element
 PASS var: innerHTML should instantiate a customized built-in element
 PASS video: Define a customized built-in element
-FAIL video: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL video: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyVideo extends HTMLVideoElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLVideoElement() { [native code] }"
-FAIL video: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyVideo extends HTMLVideoElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLVideoElement() { [native code] }"
+PASS video: Operator 'new' should instantiate a customized built-in element
+PASS video: document.createElement() should instantiate a customized built-in element
+PASS video: innerHTML should instantiate a customized built-in element
 PASS wbr: Define a customized built-in element
 FAIL wbr: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
 FAIL wbr: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyWbr extends HTMLElement {

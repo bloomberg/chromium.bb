@@ -24,6 +24,7 @@
 enum SelectionMode { "select", "start", "end", "preserve" };
 
 [
+    HTMLConstructor,
     ActiveScriptWrappable
 ] interface HTMLInputElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString accept;

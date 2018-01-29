@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-iframe-element
-
+[HTMLConstructor]
 interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute USVString src;
     [CEReactions, Reflect] attribute DOMString srcdoc;
