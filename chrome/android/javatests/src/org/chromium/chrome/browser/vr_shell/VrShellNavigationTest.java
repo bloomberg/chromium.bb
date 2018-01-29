@@ -228,6 +228,7 @@ public class VrShellNavigationTest {
      * Tests navigation from a presenting WebVR to a 2D page.
      */
     @Test
+    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrPresentingTo2d()
@@ -245,6 +246,7 @@ public class VrShellNavigationTest {
      * Tests navigation from a presenting WebVR to a WebVR page.
      */
     @Test
+    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrPresentingToWebVr()
@@ -262,6 +264,7 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened WebVR to a 2D page.
      */
     @Test
+    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrFullscreenTo2d()
@@ -279,6 +282,7 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened WebVR to a WebVR page.
      */
     @Test
+    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrFullscreenToWebVr()
