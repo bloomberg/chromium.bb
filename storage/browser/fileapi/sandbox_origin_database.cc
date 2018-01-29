@@ -112,7 +112,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
       }
       UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
                                 DB_REPAIR_FAILED, DB_REPAIR_MAX);
-      // fall through
+      FALLTHROUGH;
     case DELETE_ON_CORRUPTION:
       if (!base::DeleteFile(file_system_directory_, true))
         return false;

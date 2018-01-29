@@ -764,7 +764,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
       UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
                                 DB_REPAIR_FAILED, DB_REPAIR_MAX);
       LOG(WARNING) << "Failed to repair SandboxDirectoryDatabase.";
-      // fall through
+      FALLTHROUGH;
     case DELETE_ON_CORRUPTION:
       LOG(WARNING) << "Clearing SandboxDirectoryDatabase.";
       if (!base::DeleteFile(filesystem_data_directory_, true))
