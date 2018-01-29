@@ -229,7 +229,7 @@ int RunApplication(NSString* app_path,
                    NSString* xctest_path,
                    NSString* udid,
                    NSMutableDictionary* app_env,
-                   NSString* cmd_args,
+                   NSMutableArray* cmd_args,
                    NSMutableArray* tests_filter) {
   NSString* tempFilePath = [NSTemporaryDirectory()
       stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
@@ -270,8 +270,8 @@ int RunApplication(NSString* app_path,
     [testTargetName setObject:app_env forKey:@"EnvironmentVariables"];
   }
 
-  if (cmd_args) {
-    [testTargetName setObject:@[ cmd_args ] forKey:@"CommandLineArguments"];
+  if ([cmd_args count] > 0) {
+    [testTargetName setObject:cmd_args forKey:@"CommandLineArguments"];
   }
 
   if ([tests_filter count] > 0) {
@@ -332,7 +332,6 @@ int main(int argc, char* const argv[]) {
 
   NSString* app_path = nil;
   NSString* xctest_path = nil;
-  NSString* cmd_args = nil;
   NSString* device_name = @"iPhone 6s";
   bool wants_wipe = false;
   bool wants_print_home = false;
@@ -343,6 +342,7 @@ int main(int argc, char* const argv[]) {
   }
   NSString* sdk_version = [NSString stringWithFormat:@"%0.1f", sdk];
   NSMutableDictionary* app_env = [NSMutableDictionary dictionary];
+  NSMutableArray* cmd_args = [NSMutableArray array];
   NSMutableArray* tests_filter = [NSMutableArray array];
 
   int c;
@@ -357,9 +357,10 @@ int main(int argc, char* const argv[]) {
       case 'w':
         wants_wipe = true;
         break;
-      case 'c':
-        cmd_args = [NSString stringWithUTF8String:optarg];
-        break;
+      case 'c': {
+        NSString* cmd_arg = [NSString stringWithUTF8String:optarg];
+        [cmd_args addObject:cmd_arg];
+      } break;
       case 't': {
         NSString* test = [NSString stringWithUTF8String:optarg];
         [tests_filter addObject:test];
