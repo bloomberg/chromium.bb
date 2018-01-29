@@ -95,13 +95,6 @@ V8CacheOptions GetV8CacheOptions() {
   }
 }
 
-bool IsUseZoomForDSFEnabled() {
-  // TODO(jaebaek): Remove this IsUseZoomForDSFEnabled() and use
-  // UseZoomForDSFEnabled() in content/public/common/use_zoom_for_dsf_policy.h
-  // instead.
-  return content::UseZoomForDSFEnabled();
-}
-
 ProgressBarCompletion GetProgressBarCompletionPolicy() {
 #if defined(OS_ANDROID)
   const base::CommandLine& command_line =

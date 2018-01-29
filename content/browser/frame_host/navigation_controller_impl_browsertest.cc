@@ -1431,7 +1431,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
   EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), script, &value));
 
   double expected = 100;
-  if (UseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled()) {
     WebContentsView* view =
         static_cast<WebContentsImpl*>(shell()->web_contents())->GetView();
     ScreenInfo screen_info;
@@ -1472,7 +1472,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   double expected_div_scroll_top = 100;
   double expected_window_scroll_y = 10;
-  if (UseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled()) {
     WebContentsView* view =
         static_cast<WebContentsImpl*>(shell()->web_contents())->GetView();
     ScreenInfo screen_info;

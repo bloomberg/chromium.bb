@@ -544,7 +544,7 @@ bool WebContentsAccessibilityAndroid::OnHoverEvent(
   if (event.GetAction() != ui::MotionEvent::ACTION_HOVER_EXIT &&
       root_manager_) {
     gfx::PointF point =
-        UseZoomForDSFEnabled() ? event.GetPointPix() : event.GetPoint();
+        IsUseZoomForDSFEnabled() ? event.GetPointPix() : event.GetPoint();
     root_manager_->HitTest(gfx::ToFlooredPoint(point));
   }
   return true;

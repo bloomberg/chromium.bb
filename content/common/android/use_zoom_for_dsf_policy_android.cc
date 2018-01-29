@@ -15,7 +15,7 @@ namespace content {
 jboolean JNI_UseZoomForDSFPolicy_IsUseZoomForDSFEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return UseZoomForDSFEnabled();
+  return IsUseZoomForDSFEnabled();
 }
 
 }  // namespace content

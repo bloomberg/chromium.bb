@@ -40,7 +40,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     ui::AXActionData action_data;
     action_data.action = ax::mojom::Action::kHitTest;
     action_data.target_point =
-        UseZoomForDSFEnabled()
+        IsUseZoomForDSFEnabled()
             ? ScaleToRoundedPoint(point, manager->device_scale_factor())
             : point;
     action_data.hit_test_event_to_fire = event_to_fire;

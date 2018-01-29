@@ -29,7 +29,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "content/common/content_switches_internal.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/drag_messages.h"
 #include "content/common/input_messages.h"
@@ -2410,10 +2409,10 @@ void RenderWidget::ShowUnhandledTapUIIfNeeded(
                         !tapped_node.IsContentEditable() &&
                         !tapped_node.IsInsideFocusableElementOrARIAWidget();
   if (should_trigger) {
-    float x_px = UseZoomForDSFEnabled()
+    float x_px = IsUseZoomForDSFEnabled()
                      ? tapped_position.x
                      : tapped_position.x * device_scale_factor_;
-    float y_px = UseZoomForDSFEnabled()
+    float y_px = IsUseZoomForDSFEnabled()
                      ? tapped_position.y
                      : tapped_position.y * device_scale_factor_;
     Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(routing_id_, x_px, y_px));

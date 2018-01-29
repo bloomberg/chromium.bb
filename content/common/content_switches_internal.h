@@ -23,8 +23,6 @@ ProgressBarCompletion GetProgressBarCompletionPolicy();
 
 SavePreviousDocumentResources GetSavePreviousDocumentResources();
 
-CONTENT_EXPORT bool IsUseZoomForDSFEnabled();
-
 void WaitForDebugger(const std::string& label);
 
 // Returns all comma-separated values from all instances of a switch, in the
