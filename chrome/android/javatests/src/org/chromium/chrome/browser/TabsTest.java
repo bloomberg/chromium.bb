@@ -652,7 +652,7 @@ public class TabsTest {
      */
     @Test
     @FlakyTest
-    public void testOpenManyTabsInBursts() throws InterruptedException {
+    public void testOpenManyTabsInBursts() throws InterruptedException, TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final int burstSize = 5;
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
@@ -674,7 +674,7 @@ public class TabsTest {
      */
     @Test
     @FlakyTest(message = "crbug.com/223110")
-    public void testOpenManyTabsAtOnce10() throws InterruptedException {
+    public void testOpenManyTabsAtOnce10() throws InterruptedException, TimeoutException {
         openAndVerifyManyTestTabs(10);
     }
 
@@ -682,7 +682,8 @@ public class TabsTest {
      * Verify that we can open a large number of tabs all at once and that each
      * tab loads when selected.
      */
-    private void openAndVerifyManyTestTabs(final int num) throws InterruptedException {
+    private void openAndVerifyManyTestTabs(final int num)
+            throws InterruptedException, TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
@@ -1943,7 +1944,7 @@ public class TabsTest {
      * @param numTabs The number of tabs to open.
      */
     private void loadUrlInManyNewTabs(final String url, final int numTabs)
-            throws InterruptedException {
+            throws InterruptedException, TimeoutException {
         final CallbackHelper[] pageLoadedCallbacks = new CallbackHelper[numTabs];
         final int[] tabIds = new int[numTabs];
         for (int i = 0; i < numTabs; ++i) {
@@ -1978,12 +1979,7 @@ public class TabsTest {
                     TabModelUtils.setIndex(tabModel, tabModel.indexOf(tab));
                 }
             });
-            try {
-                pageLoadedCallbacks[i].waitForCallback(0);
-            } catch (TimeoutException e) {
-                throw new AssertionError(
-                        "PAGE_LOAD_FINISHED was not received for tabId=" + tabIds[i], e);
-            }
+            pageLoadedCallbacks[i].waitForCallback(0);
         }
     }
 }
