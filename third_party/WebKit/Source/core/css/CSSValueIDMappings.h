@@ -112,11 +112,59 @@ inline ECursor CssValueIDToPlatformEnum(CSSValueID v) {
 
 template <>
 inline EDisplay CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueNone)
+    return EDisplay::kNone;
+  if (v == CSSValueInline)
+    return EDisplay::kInline;
+  if (v == CSSValueBlock)
+    return EDisplay::kBlock;
+  if (v == CSSValueFlowRoot)
+    return EDisplay::kFlowRoot;
+  if (v == CSSValueListItem)
+    return EDisplay::kListItem;
+  if (v == CSSValueInlineBlock)
+    return EDisplay::kInlineBlock;
+  if (v == CSSValueTable)
+    return EDisplay::kTable;
+  if (v == CSSValueInlineTable)
+    return EDisplay::kInlineTable;
+  if (v == CSSValueTableRowGroup)
+    return EDisplay::kTableRowGroup;
+  if (v == CSSValueTableHeaderGroup)
+    return EDisplay::kTableHeaderGroup;
+  if (v == CSSValueTableFooterGroup)
+    return EDisplay::kTableFooterGroup;
+  if (v == CSSValueTableRow)
+    return EDisplay::kTableRow;
+  if (v == CSSValueTableColumnGroup)
+    return EDisplay::kTableColumnGroup;
+  if (v == CSSValueTableColumn)
+    return EDisplay::kTableColumn;
+  if (v == CSSValueTableCell)
+    return EDisplay::kTableCell;
+  if (v == CSSValueTableCaption)
+    return EDisplay::kTableCaption;
+  if (v == CSSValueWebkitBox)
+    return EDisplay::kWebkitBox;
+  if (v == CSSValueWebkitInlineBox)
+    return EDisplay::kWebkitInlineBox;
+  if (v == CSSValueFlex)
+    return EDisplay::kFlex;
+  if (v == CSSValueInlineFlex)
+    return EDisplay::kInlineFlex;
+  if (v == CSSValueGrid)
+    return EDisplay::kGrid;
+  if (v == CSSValueInlineGrid)
+    return EDisplay::kInlineGrid;
+  if (v == CSSValueContents)
+    return EDisplay::kContents;
   if (v == CSSValueWebkitFlex)
     return EDisplay::kFlex;
   if (v == CSSValueWebkitInlineFlex)
     return EDisplay::kInlineFlex;
-  return detail::cssValueIDToPlatformEnumGenerated<EDisplay>(v);
+
+  NOTREACHED();
+  return EDisplay::kInline;
 }
 
 template <>
@@ -124,6 +172,59 @@ inline EUserSelect CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueAuto)
     return EUserSelect::kAuto;
   return detail::cssValueIDToPlatformEnumGenerated<EUserSelect>(v);
+}
+
+template <>
+inline CSSValueID PlatformEnumToCSSValueID(EDisplay v) {
+  if (v == EDisplay::kNone)
+    return CSSValueNone;
+  if (v == EDisplay::kInline)
+    return CSSValueInline;
+  if (v == EDisplay::kBlock)
+    return CSSValueBlock;
+  if (v == EDisplay::kFlowRoot)
+    return CSSValueFlowRoot;
+  if (v == EDisplay::kListItem)
+    return CSSValueListItem;
+  if (v == EDisplay::kInlineBlock)
+    return CSSValueInlineBlock;
+  if (v == EDisplay::kTable)
+    return CSSValueTable;
+  if (v == EDisplay::kInlineTable)
+    return CSSValueInlineTable;
+  if (v == EDisplay::kTableRowGroup)
+    return CSSValueTableRowGroup;
+  if (v == EDisplay::kTableHeaderGroup)
+    return CSSValueTableHeaderGroup;
+  if (v == EDisplay::kTableFooterGroup)
+    return CSSValueTableFooterGroup;
+  if (v == EDisplay::kTableRow)
+    return CSSValueTableRow;
+  if (v == EDisplay::kTableColumnGroup)
+    return CSSValueTableColumnGroup;
+  if (v == EDisplay::kTableColumn)
+    return CSSValueTableColumn;
+  if (v == EDisplay::kTableCell)
+    return CSSValueTableCell;
+  if (v == EDisplay::kTableCaption)
+    return CSSValueTableCaption;
+  if (v == EDisplay::kWebkitBox)
+    return CSSValueWebkitBox;
+  if (v == EDisplay::kWebkitInlineBox)
+    return CSSValueWebkitInlineBox;
+  if (v == EDisplay::kFlex)
+    return CSSValueFlex;
+  if (v == EDisplay::kInlineFlex)
+    return CSSValueInlineFlex;
+  if (v == EDisplay::kGrid)
+    return CSSValueGrid;
+  if (v == EDisplay::kInlineGrid)
+    return CSSValueInlineGrid;
+  if (v == EDisplay::kContents)
+    return CSSValueContents;
+
+  NOTREACHED();
+  return CSSValueInline;
 }
 
 }  // namespace blink

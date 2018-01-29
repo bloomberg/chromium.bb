@@ -87,6 +87,7 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kGrid:
     case EDisplay::kListItem:
     case EDisplay::kFlowRoot:
+    case EDisplay::kLayoutCustom:
       return display;
     case EDisplay::kInlineTable:
       return EDisplay::kTable;
@@ -96,6 +97,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
       return EDisplay::kFlex;
     case EDisplay::kInlineGrid:
       return EDisplay::kGrid;
+    case EDisplay::kInlineLayoutCustom:
+      return EDisplay::kLayoutCustom;
 
     case EDisplay::kContents:
     case EDisplay::kInline:

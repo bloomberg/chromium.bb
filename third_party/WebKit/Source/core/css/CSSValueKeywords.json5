@@ -373,6 +373,8 @@
     //none
     "-webkit-flex",
     "-webkit-inline-flex",
+    "layout",
+    "inline-layout",
     //
     // cursor
     // The order of this enum must match the order found in CSSPropertyParser::ConsumeCursor().
@@ -1142,7 +1144,7 @@
     // containment
     // paint
     "style",
-    "layout",
+    // layout
     "size",
 
     // grid auto-repeat

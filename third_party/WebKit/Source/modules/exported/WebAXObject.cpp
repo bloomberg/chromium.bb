@@ -1038,8 +1038,11 @@ WebString WebAXObject::ComputedStyleDisplay() const {
   if (!computed_style)
     return WebString();
 
-  return WebString(
-      CSSIdentifierValue::Create(computed_style->Display())->CssText());
+  return WebString(CSSProperty::Get(CSSPropertyDisplay)
+                       .CSSValueFromComputedStyle(
+                           *computed_style, /* layout_object */ nullptr, node,
+                           /* allow_visited_style */ false)
+                       ->CssText());
 }
 
 bool WebAXObject::AccessibilityIsIgnored() const {

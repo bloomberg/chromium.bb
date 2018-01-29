@@ -1266,8 +1266,7 @@
     },
     {
       name: "display",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_template: 'keyword',
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       keywords: [
         "inline", "block", "list-item", "inline-block", "table", "inline-table",
         "table-row-group", "table-header-group", "table-footer-group",
@@ -1275,7 +1274,7 @@
         "table-caption", "-webkit-box", "-webkit-inline-box", "flex",
         "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
       ],
-      default_value: "inline",
+      custom_apply_functions_all: true,
     },
     {
       name: "dominant-baseline",

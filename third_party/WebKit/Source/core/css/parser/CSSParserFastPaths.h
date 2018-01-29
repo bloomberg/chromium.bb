@@ -27,6 +27,11 @@ class CORE_EXPORT CSSParserFastPaths {
   // Properties handled here shouldn't be explicitly handled in
   // CSSPropertyParser
   static bool IsKeywordPropertyID(CSSPropertyID);
+
+  // Returns if a property should be handled by the fast path, but have other
+  // non-keyword values which should be handled by the CSSPropertyParser.
+  static bool IsPartialKeywordPropertyID(CSSPropertyID);
+
   static bool IsValidKeywordPropertyAndValue(CSSPropertyID,
                                              CSSValueID,
                                              CSSParserMode);
