@@ -112,18 +112,28 @@ TEST_F(
     LayoutObjectTest,
     ContainingBlockAbsoluteLayoutObjectShouldBeNonStaticallyPositionedBlockAncestor) {
   SetBodyInnerHTML(R"HTML(
-    <div style='position:relative'>
-      <bar style='position:absolute'></bar>
+    <div style='position:relative; left:20px'>
+      <bar style='position:absolute; left:2px; top:10px'></bar>
     </div>
   )HTML");
   LayoutObject* containing_blocklayout_object =
       GetDocument().body()->GetLayoutObject()->SlowFirstChild();
   LayoutObject* layout_object = containing_blocklayout_object->SlowFirstChild();
+  EXPECT_TRUE(
+      containing_blocklayout_object->CanContainOutOfFlowPositionedElement(
+          EPosition::kAbsolute));
+  EXPECT_FALSE(
+      containing_blocklayout_object->CanContainOutOfFlowPositionedElement(
+          EPosition::kFixed));
   EXPECT_EQ(layout_object->Container(), containing_blocklayout_object);
   EXPECT_EQ(layout_object->ContainingBlock(), containing_blocklayout_object);
   EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
             containing_blocklayout_object);
   EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(), GetLayoutView());
+  auto offset =
+      layout_object->OffsetFromContainer(containing_blocklayout_object);
+  EXPECT_EQ(offset.Width().ToInt(), 2);
+  EXPECT_EQ(offset.Height().ToInt(), 10);
 }
 
 TEST_F(LayoutObjectTest, ContainingBlockFixedLayoutObjectInTransformedDiv) {
@@ -135,6 +145,12 @@ TEST_F(LayoutObjectTest, ContainingBlockFixedLayoutObjectInTransformedDiv) {
   LayoutObject* containing_blocklayout_object =
       GetDocument().body()->GetLayoutObject()->SlowFirstChild();
   LayoutObject* layout_object = containing_blocklayout_object->SlowFirstChild();
+  EXPECT_TRUE(
+      containing_blocklayout_object->CanContainOutOfFlowPositionedElement(
+          EPosition::kAbsolute));
+  EXPECT_TRUE(
+      containing_blocklayout_object->CanContainOutOfFlowPositionedElement(
+          EPosition::kFixed));
   EXPECT_EQ(layout_object->Container(), containing_blocklayout_object);
   EXPECT_EQ(layout_object->ContainingBlock(), containing_blocklayout_object);
   EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
@@ -147,6 +163,25 @@ TEST_F(LayoutObjectTest, ContainingBlockFixedLayoutObjectInBody) {
   SetBodyInnerHTML("<div style='position:fixed'></div>");
   LayoutObject* layout_object =
       GetDocument().body()->GetLayoutObject()->SlowFirstChild();
+  EXPECT_TRUE(layout_object->CanContainOutOfFlowPositionedElement(
+      EPosition::kAbsolute));
+  EXPECT_FALSE(
+      layout_object->CanContainOutOfFlowPositionedElement(EPosition::kFixed));
+  EXPECT_EQ(layout_object->Container(), GetLayoutView());
+  EXPECT_EQ(layout_object->ContainingBlock(), GetLayoutView());
+  EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
+            GetLayoutView());
+  EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(), GetLayoutView());
+}
+
+TEST_F(LayoutObjectTest, ContainingBlockAbsoluteLayoutObjectInBody) {
+  SetBodyInnerHTML("<div style='position:absolute'></div>");
+  LayoutObject* layout_object =
+      GetDocument().body()->GetLayoutObject()->SlowFirstChild();
+  EXPECT_TRUE(layout_object->CanContainOutOfFlowPositionedElement(
+      EPosition::kAbsolute));
+  EXPECT_FALSE(
+      layout_object->CanContainOutOfFlowPositionedElement(EPosition::kFixed));
   EXPECT_EQ(layout_object->Container(), GetLayoutView());
   EXPECT_EQ(layout_object->ContainingBlock(), GetLayoutView());
   EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
@@ -160,11 +195,20 @@ TEST_F(
   // Test note: We can't use a raw string literal here, since extra whitespace
   // causes failures.
   SetBodyInnerHTML(
-      "<span style='position:relative'><bar "
-      "style='position:absolute'></bar></span>");
+      "<span style='position:relative; top:1px; left:2px'><bar "
+      "style='position:absolute; top:10px; left:20px;'></bar></span>");
   LayoutObject* body_layout_object = GetDocument().body()->GetLayoutObject();
   LayoutObject* span_layout_object = body_layout_object->SlowFirstChild();
   LayoutObject* layout_object = span_layout_object->SlowFirstChild();
+
+  EXPECT_TRUE(span_layout_object->CanContainOutOfFlowPositionedElement(
+      EPosition::kAbsolute));
+  EXPECT_FALSE(span_layout_object->CanContainOutOfFlowPositionedElement(
+      EPosition::kFixed));
+
+  auto offset = layout_object->OffsetFromContainer(span_layout_object);
+  EXPECT_EQ(offset.Width().ToInt(), 20);
+  EXPECT_EQ(offset.Height().ToInt(), 10);
 
   // Sanity check: Make sure we don't generate anonymous objects.
   EXPECT_EQ(nullptr, body_layout_object->SlowFirstChild()->NextSibling());

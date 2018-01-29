@@ -1627,6 +1627,14 @@ void LayoutInline::InvalidateDisplayItemClients(
     paint_invalidator.InvalidateDisplayItemClient(*box, invalidation_reason);
 }
 
+void LayoutInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                                      TransformState& transform_state,
+                                      MapCoordinatesFlags mode) const {
+  if (CanContainFixedPositionObjects())
+    mode &= ~kIsFixed;
+  LayoutBoxModelObject::MapLocalToAncestor(ancestor, transform_state, mode);
+}
+
 // TODO(loonybear): Not to just dump 0, 0 as the x and y here
 LayoutRect LayoutInline::DebugRect() const {
   IntRect lines_box = EnclosingIntRect(LinesBoundingBox());
