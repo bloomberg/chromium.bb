@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/nqe/network_quality_estimator_params.h"
 
 namespace net {
 
@@ -133,19 +132,6 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefSequence(
   // prefs cannot contain period in the path.
   if (network_id_string.find('.') != std::string::npos)
     return;
-
-  if (cached_network_quality.effective_connection_type() ==
-      network_quality_estimator_->params()->GetDefaultECT(network_id.type)) {
-    // No need to cache the network quality since the default network quality
-    // (synthesized using the platform APIs) matches the observed network
-    // quality.
-    if (!prefs_->RemoveKey(network_id_string)) {
-      // Return early since the prefs was unchanged.
-      return;
-    }
-    pref_delegate_->SetDictionaryValue(*prefs_);
-    return;
-  }
 
   prefs_->SetString(network_id_string,
                     GetNameForEffectiveConnectionType(

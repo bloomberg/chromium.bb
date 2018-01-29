@@ -249,10 +249,6 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return socket_watchers_min_notification_interval_;
   }
 
-  // Returns the default effective connection type for a given connection type.
-  EffectiveConnectionType GetDefaultECT(
-      NetworkChangeNotifier::ConnectionType connection_type) const;
-
  private:
   // Map containing all field trial parameters related to
   // NetworkQualityEstimator field trial.
