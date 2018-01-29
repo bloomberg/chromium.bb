@@ -29,6 +29,14 @@
 #include "base/macros.h"
 
 namespace base {
+namespace trace_event {
+namespace internal {
+
+template <class MruCacheType>
+size_t DoEstimateMemoryUsageForMruCache(const MruCacheType&);
+
+}  // namespace internal
+}  // namespace trace_event
 
 // MRUCacheBase ----------------------------------------------------------------
 
@@ -195,6 +203,10 @@ class MRUCacheBase {
   bool empty() const { return ordering_.empty(); }
 
  private:
+  template <class MruCacheType>
+  friend size_t trace_event::internal::DoEstimateMemoryUsageForMruCache(
+      const MruCacheType&);
+
   PayloadList ordering_;
   KeyIndex index_;
 
