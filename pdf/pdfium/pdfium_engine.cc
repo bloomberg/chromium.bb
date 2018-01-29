@@ -1405,6 +1405,7 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
       // TODO(dsinclair): This should allow a little bit of movement (up to the
       // touch radii) to account for finger jiggle.
       KillTouchTimer(next_touch_timer_id_);
+      break;
     default:
       break;
   }
