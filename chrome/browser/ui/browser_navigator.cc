@@ -161,7 +161,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
 #if defined(OS_ANDROID)
       }
 #endif
-    // fall through
+      FALLTHROUGH;
     case WindowOpenDisposition::CURRENT_TAB:
       if (params.browser)
         return {params.browser, -1};
@@ -260,7 +260,7 @@ void NormalizeDisposition(NavigateParams* params) {
       // automatically.
       if (params->window_action == NavigateParams::NO_ACTION)
         params->window_action = NavigateParams::SHOW_WINDOW;
-      // Fall-through.
+      FALLTHROUGH;
     }
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::SINGLETON_TAB:
