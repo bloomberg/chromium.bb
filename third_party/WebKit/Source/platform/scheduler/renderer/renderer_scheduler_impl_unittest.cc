@@ -301,7 +301,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
     loading_task_runner_ = scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoading);
     loading_control_task_runner_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading_kControl);
+        MainThreadTaskQueue::QueueType::kFrameLoadingControl);
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->TimerTaskQueue();
     v8_task_runner_ = scheduler_->V8TaskQueue();
@@ -3773,7 +3773,7 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
       scheduler_->NewLoadingTaskQueue(
           MainThreadTaskQueue::QueueType::kFrameLoading);
   scoped_refptr<TaskQueue> loading_control_tq = scheduler_->NewLoadingTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameLoading_kControl);
+      MainThreadTaskQueue::QueueType::kFrameLoadingControl);
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
       MainThreadTaskQueue::QueueType::kFrameThrottleable);
   scoped_refptr<MainThreadTaskQueue> unthrottled_tq =

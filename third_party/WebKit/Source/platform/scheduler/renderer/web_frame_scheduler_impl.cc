@@ -300,7 +300,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading_kControl);
+        MainThreadTaskQueue::QueueType::kFrameLoadingControl);
     loading_control_task_queue_->SetBlameContext(blame_context_);
     loading_control_task_queue_->SetFrameScheduler(this);
     loading_control_queue_enabled_voter_ =
