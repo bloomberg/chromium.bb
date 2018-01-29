@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -224,6 +225,7 @@ public class VrShellTransitionTest {
      * from WebVR presentation to the VR browser.
      */
     @Test
+    @DisabledTest(message = "crbug.com/804808")
     @CommandLineFlags.Add("enable-webvr")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
