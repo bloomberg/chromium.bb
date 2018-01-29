@@ -378,6 +378,10 @@ const char kEnableDesktopPWAsDescription[] =
     "Experimental windowing and install banner treatment for Progressive Web "
     "Apps on desktop platforms. Implies #enable-experimental-app-banners.";
 
+const char kEnableDockedMagnifierName[] = "Docked Magnifier";
+const char kEnableDockedMagnifierDescription[] =
+    "Enables the Docked Magnifier (a.k.a. picture-in-picture magnifier).";
+
 const char kEnableEnumeratingAudioDevicesName[] =
     "Experimentally enable enumerating audio devices.";
 const char kEnableEnumeratingAudioDevicesDescription[] =

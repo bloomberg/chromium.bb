@@ -260,6 +260,9 @@ extern const char kEnableDataReductionProxySavingsPromoDescription[];
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
 
+extern const char kEnableDockedMagnifierName[];
+extern const char kEnableDockedMagnifierDescription[];
+
 extern const char kEnableEnumeratingAudioDevicesName[];
 extern const char kEnableEnumeratingAudioDevicesDescription[];
 

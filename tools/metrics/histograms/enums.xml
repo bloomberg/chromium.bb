@@ -25742,6 +25742,7 @@ from previous Chrome versions.
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
+  <int value="-833382237" label="ash-enable-docked-magnifier"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-828070439" label="NativeSmb:disabled"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
