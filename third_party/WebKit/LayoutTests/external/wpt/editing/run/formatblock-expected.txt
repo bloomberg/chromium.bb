@@ -2229,7 +2229,7 @@ PASS [["formatblock","<blockquote>"]] "<p>[foo<p>bar]<p>baz" queryCommandState("
 FAIL [["formatblock","<blockquote>"]] "<p>[foo<p>bar]<p>baz" queryCommandValue("formatblock") before assert_equals: Wrong result returned expected "p" but got ""
 PASS [["formatblock","<blockquote>"]] "<p>[foo<p>bar]<p>baz" queryCommandIndeterm("formatblock") after
 PASS [["formatblock","<blockquote>"]] "<p>[foo<p>bar]<p>baz" queryCommandState("formatblock") after
-FAIL [["formatblock","<blockquote>"]] "<p>[foo<p>bar]<p>baz" queryCommandValue("formatblock") after assert_equals: Wrong result returned expected "p" but got ""
+FAIL [["formatblock","<blockquote>"]] "<p>[foo<p>bar]<p>baz" queryCommandValue("formatblock") after assert_equals: Wrong result returned expected "p" but got "blockquote"
 FAIL [["formatblock","<blockquote>"]] "<section>[foo]</section>": execCommand("formatblock", false, "<blockquote>") return value assert_equals: expected false but got true
 PASS [["formatblock","<blockquote>"]] "<section>[foo]</section>" checks for modifications to non-editable content
 FAIL [["formatblock","<blockquote>"]] "<section>[foo]</section>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<section>foo</section>" but got "<blockquote>foo</blockquote>"

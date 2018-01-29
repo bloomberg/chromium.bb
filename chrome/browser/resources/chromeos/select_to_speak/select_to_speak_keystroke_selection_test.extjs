@@ -142,7 +142,7 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksAcrossNodesAtKeystroke',
         let lastNode = this.findTextNode(desktop, ' text');
         chrome.automation.setDocumentSelection({
             anchorObject: firstNode, anchorOffset: 0,
-            focusObject: lastNode, focusOffset: 6
+            focusObject: lastNode, focusOffset: 5
         });
       }, 'This is some bold text');
 });
@@ -156,7 +156,7 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
         let lastNode = this.findTextNode(desktop, 'This is some ');
         let firstNode = this.findTextNode(desktop, ' text');
         chrome.automation.setDocumentSelection({
-            anchorObject: firstNode, anchorOffset: 6,
+            anchorObject: firstNode, anchorOffset: 5,
             focusObject: lastNode, focusOffset: 0
         });
       }, 'This is some bold text');
