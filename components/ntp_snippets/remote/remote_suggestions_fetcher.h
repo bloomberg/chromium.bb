@@ -49,6 +49,9 @@ class RemoteSuggestionsFetcher {
   // Returns the last JSON fetched from the server.
   virtual const std::string& GetLastJsonForDebugging() const = 0;
 
+  // Returns whether the last fetch was authenticated.
+  virtual bool WasLastFetchAuthenticatedForDebugging() const = 0;
+
   // Returns the URL endpoint used by the fetcher.
   virtual const GURL& GetFetchUrlForDebugging() const = 0;
 };

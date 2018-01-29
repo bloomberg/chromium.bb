@@ -331,6 +331,7 @@ void SnippetsInternalsMessageHandler::HandleDownload(
   DCHECK_EQ(0u, args->GetSize());
 
   SendString("remote-status", std::string());
+  SendString("remote-authenticated", std::string());
 
   if (!remote_suggestions_provider_) {
     return;
@@ -611,6 +612,12 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
             ->GetLastStatusForDebugging();
     if (!status.empty()) {
       SendString("remote-status", "Finished: " + status);
+      SendString(
+          "remote-authenticated",
+          remote_suggestions_provider_->suggestions_fetcher_for_debugging()
+                  ->WasLastFetchAuthenticatedForDebugging()
+              ? "Authenticated"
+              : "Non-authenticated");
     }
   }
 
