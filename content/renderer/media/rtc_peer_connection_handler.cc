@@ -1352,6 +1352,9 @@ bool RTCPeerConnectionHandler::Initialize(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRTCSmoothnessAlgorithm));
 
+  configuration_.set_experiment_cpu_load_estimator(
+      base::FeatureList::IsEnabled(media::kNewEncodeCpuLoadEstimator));
+
   // Copy all the relevant constraints into |config|.
   CopyConstraintsIntoRtcConfiguration(options, &configuration_);
 
