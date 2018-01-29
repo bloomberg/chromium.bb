@@ -1598,7 +1598,6 @@ if (is_win) {
   common_optimize_on_cflags = [
     "/Ob2",  # Both explicit and auto inlining.
     "/Oy-",  # Disable omitting frame pointers, must be after /O2.
-    "/d2Zi+",  # Improve debugging of optimized code.
     "/Zc:inline",  # Remove unreferenced COMDAT (faster links).
   ]
   if (!is_asan) {
