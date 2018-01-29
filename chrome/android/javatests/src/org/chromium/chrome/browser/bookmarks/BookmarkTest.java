@@ -9,7 +9,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.Adapter;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -281,35 +280,36 @@ public class BookmarkTest {
         final BookmarkDelegate delegate = adapter.getDelegateForTesting();
 
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
-        assertBookmarkItems("Wrong number of items before starting search.", 3, adapter, delegate);
+        Assert.assertEquals(
+                "Wrong number of items before starting search.", 3, adapter.getItemCount());
 
         ThreadUtils.runOnUiThreadBlocking(delegate::openSearchUI);
 
         Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
-        assertBookmarkItems(
+        Assert.assertEquals(
                 "Wrong number of items after showing search UI. The promo should be hidden.", 2,
-                adapter, delegate);
+                adapter.getItemCount());
 
         searchBookmarks("Google");
-        assertBookmarkItems("Wrong number of items after searching.", 1,
-                mItemsContainer.getAdapter(), delegate);
+        Assert.assertEquals("Wrong number of items after searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
 
         BookmarkId newBookmark = addBookmark(TEST_PAGE_TITLE_GOOGLE2, mTestPage);
-        assertBookmarkItems("Wrong number of items after bookmark added while searching.", 2,
-                mItemsContainer.getAdapter(), delegate);
+        Assert.assertEquals("Wrong number of items after bookmark added while searching.", 2,
+                mItemsContainer.getAdapter().getItemCount());
 
         removeBookmark(newBookmark);
-        assertBookmarkItems("Wrong number of items after bookmark removed while searching.", 1,
-                mItemsContainer.getAdapter(), delegate);
+        Assert.assertEquals("Wrong number of items after bookmark removed while searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
 
         searchBookmarks("Non-existent page");
-        assertBookmarkItems("Wrong number of items after searching for non-existent item.", 0,
-                mItemsContainer.getAdapter(), delegate);
+        Assert.assertEquals("Wrong number of items after searching for non-existent item.", 0,
+                mItemsContainer.getAdapter().getItemCount());
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> ((BookmarkManager) delegate).getToolbarForTests().hideSearchView());
-        assertBookmarkItems("Wrong number of items after closing search UI.", 3,
-                mItemsContainer.getAdapter(), delegate);
+        Assert.assertEquals("Wrong number of items after closing search UI.", 3,
+                mItemsContainer.getAdapter().getItemCount());
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
     }
 
@@ -327,7 +327,8 @@ public class BookmarkTest {
 
         Assert.assertEquals("Wrong state, should be in folder", BookmarkUIState.STATE_FOLDER,
                 manager.getCurrentState());
-        assertBookmarkItems("Wrong number of items before starting search.", 3, adapter, manager);
+        Assert.assertEquals(
+                "Wrong number of items before starting search.", 3, adapter.getItemCount());
 
         // Start searching without entering a query.
         ThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
@@ -346,15 +347,16 @@ public class BookmarkTest {
         // Search should be exited and the folder should be gone.
         Assert.assertEquals("Wrong state, should be in folder", BookmarkUIState.STATE_FOLDER,
                 manager.getCurrentState());
-        assertBookmarkItems("Wrong number of items before starting search.", 2, adapter, manager);
+        Assert.assertEquals(
+                "Wrong number of items before starting search.", 2, adapter.getItemCount());
 
         // Start searching, enter a query.
         ThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
                 manager.getCurrentState());
         searchBookmarks("Google");
-        assertBookmarkItems(
-                "Wrong number of items after searching.", 1, mItemsContainer.getAdapter(), manager);
+        Assert.assertEquals("Wrong number of items after searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
 
         // Remove the bookmark.
         removeBookmark(testBookmark);
@@ -362,8 +364,8 @@ public class BookmarkTest {
         // The user should still be searching, and the bookmark should be gone.
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
                 manager.getCurrentState());
-        assertBookmarkItems(
-                "Wrong number of items after searching.", 0, mItemsContainer.getAdapter(), manager);
+        Assert.assertEquals("Wrong number of items after searching.", 0,
+                mItemsContainer.getAdapter().getItemCount());
 
         // Undo the deletion.
         ThreadUtils.runOnUiThreadBlocking(() -> manager.getUndoControllerForTests().onAction(null));
@@ -371,8 +373,8 @@ public class BookmarkTest {
         // The user should still be searching, and the bookmark should reappear.
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
                 manager.getCurrentState());
-        assertBookmarkItems(
-                "Wrong number of items after searching.", 1, mItemsContainer.getAdapter(), manager);
+        Assert.assertEquals("Wrong number of items after searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
     }
 
     @Test
@@ -439,26 +441,6 @@ public class BookmarkTest {
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         BookmarkManager.preventLoadingForTesting(false);
-    }
-
-    /**
-     * Asserts the number of bookmark items being shown, taking large device dividers into account.
-     *
-     * @param errorMessage Error message to display in case the assert fails.
-     * @param expectedOnRegularDevice Expected count of items on small tablets.
-     * @param adapter Adapter to retrieve the bookmark item count from.
-     * @param delegate BookmarkDelegate to check the bookmark UI state.
-     */
-    private void assertBookmarkItems(final String errorMessage, final int expectedOnRegularDevice,
-            final Adapter<?> adapter, final BookmarkDelegate delegate) {
-        // TODO(twellington): Remove after bookmarks redesign is complete.
-        // The +1 for large devices stems from the divider being added to the state folder for now,
-        // which will offset all counts by one.
-        final int expectedCount = DeviceFormFactor.isLargeTablet(mActivityTestRule.getActivity())
-                        && BookmarkUIState.STATE_FOLDER == delegate.getCurrentState()
-                ? expectedOnRegularDevice + 1
-                : expectedOnRegularDevice;
-        Assert.assertEquals(errorMessage, expectedCount, adapter.getItemCount());
     }
 
     /**
