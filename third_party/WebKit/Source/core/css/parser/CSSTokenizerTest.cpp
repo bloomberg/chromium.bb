@@ -39,7 +39,7 @@ void CompareTokens(const CSSParserToken& expected,
       break;
     case kNumberToken:
       ASSERT_EQ(expected.GetNumericSign(), actual.GetNumericSign());
-    // fallthrough
+      FALLTHROUGH;
     case kPercentageToken:
       ASSERT_EQ(expected.GetNumericValueType(), actual.GetNumericValueType());
       ASSERT_DOUBLE_EQ(expected.NumericValue(), actual.NumericValue());

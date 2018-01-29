@@ -527,7 +527,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
       // but should be PseudoElement like double colon.
       if (match_ == kPseudoClass)
         match_ = kPseudoElement;
-    // fallthrough
+      FALLTHROUGH;
     case kPseudoBackdrop:
     case kPseudoCue:
     case kPseudoPlaceholder:
@@ -562,7 +562,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
         pseudo_type_ = kPseudoUnknown;
         break;
       }
-    // fallthrough
+      FALLTHROUGH;
     case kPseudoActive:
     case kPseudoAny:
     case kPseudoAnyLink:
@@ -836,6 +836,7 @@ String CSSSelector::SelectorText() const {
         break;
       case kSubSelector:
         NOTREACHED();
+        break;
       case kShadowPseudo:
       case kShadowSlot:
         result = builder.ToString() + result;
