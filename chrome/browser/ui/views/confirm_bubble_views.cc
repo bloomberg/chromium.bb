@@ -11,7 +11,9 @@
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -44,6 +46,8 @@ ConfirmBubbleViews::ConfirmBubbleViews(
 
   // Initialize the help button.
   help_button_ = CreateVectorImageButton(this);
+  help_button_->SetFocusForPlatform();
+  help_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   SetImageFromVectorIcon(help_button_, vector_icons::kHelpOutlineIcon);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CONFIRM_BUBBLE);
