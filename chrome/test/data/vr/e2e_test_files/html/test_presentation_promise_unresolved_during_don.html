@@ -24,7 +24,7 @@ resolved or rejected while the DON flow is active.
             assert_unreached("requestPresent promise rejected");
           });
         });
-        window.setTimeout( () => {t.done();}, 1000);
+        window.setTimeout( () => {t.done();}, 2000);
       }
       webglCanvas.onclick = onVrRequestPresentWithDon;
     </script>
