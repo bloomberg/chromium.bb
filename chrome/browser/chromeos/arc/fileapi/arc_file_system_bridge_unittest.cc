@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -118,14 +119,35 @@ TEST_F(ArcFileSystemBridgeTest, GetFileName) {
   base::RunLoop run_loop;
   arc_file_system_bridge_->GetFileName(
       EncodeToChromeContentProviderUrl(GURL(kTestUrl)).spec(),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop,
              const base::Optional<std::string>& result) {
+            run_loop->Quit();
             ASSERT_TRUE(result.has_value());
             EXPECT_EQ("File 1.txt", result.value());
-            run_loop->Quit();
           },
           &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcFileSystemBridgeTest, GetFileNameNonASCII) {
+  const std::string filename = base::UTF16ToUTF8(base::string16({
+      0x307b,  // HIRAGANA_LETTER_HO
+      0x3052,  // HIRAGANA_LETTER_GE
+  }));
+  const GURL url("externalfile:drive-test-user-hash/root/" + filename);
+
+  base::RunLoop run_loop;
+  arc_file_system_bridge_->GetFileName(
+      EncodeToChromeContentProviderUrl(url).spec(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const std::string& expected,
+             const base::Optional<std::string>& result) {
+            run_loop->Quit();
+            ASSERT_TRUE(result.has_value());
+            EXPECT_EQ(expected, result.value());
+          },
+          &run_loop, filename));
   run_loop.Run();
 }
 
