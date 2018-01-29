@@ -26,6 +26,8 @@ class Animation;
 class AnimationPlayer;
 struct PropertyAnimationState;
 
+typedef size_t TickerId;
+
 // An AnimationTicker owns a group of Animations for a single target (identified
 // by a ElementId). It is responsible for managing the animations' running
 // states (starting, running, paused, etc), as well as ticking the animations
@@ -42,8 +44,11 @@ class CC_ANIMATION_EXPORT AnimationTicker {
     virtual base::TimeTicks GetTimeForAnimation(const Animation&) const = 0;
   };
 
-  explicit AnimationTicker(AnimationPlayer* animation_player);
+  explicit AnimationTicker(TickerId id);
   ~AnimationTicker();
+
+  static std::unique_ptr<AnimationTicker> Create(TickerId id);
+  std::unique_ptr<AnimationTicker> CreateImplInstance() const;
 
   // ElementAnimations object where this controller is listed.
   scoped_refptr<ElementAnimations> element_animations() const {
@@ -85,6 +90,7 @@ class CC_ANIMATION_EXPORT AnimationTicker {
                             Animation* animation,
                             AnimationTarget* target);
   void RemoveFromTicking();
+  bool is_ticking() const { return is_ticking_; }
 
   void UpdateState(bool start_ready_animations, AnimationEvents* events);
   void UpdateTickingState(UpdateTickingType type);
@@ -155,7 +161,10 @@ class CC_ANIMATION_EXPORT AnimationTicker {
       AnimationTicker* element_ticker_impl) const;
   void PushPropertiesTo(AnimationTicker* animation_ticker_impl);
 
+  void SetAnimationPlayer(AnimationPlayer* animation_player);
+
   std::string AnimationsToString() const;
+  TickerId id() const { return id_; }
 
  private:
   void StartAnimations(base::TimeTicks monotonic_time);
@@ -169,6 +178,8 @@ class CC_ANIMATION_EXPORT AnimationTicker {
 
   std::vector<std::unique_ptr<Animation>> animations_;
   AnimationPlayer* animation_player_;
+
+  TickerId id_;
   ElementId element_id_;
 
   // element_animations_ is non-null if controller is attached to an element.

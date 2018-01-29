@@ -24,9 +24,9 @@
 
 namespace cc {
 class Animation;
-class AnimationPlayer;
 class AnimationTimeline;
 class Layer;
+class SingleTickerAnimationPlayer;
 }
 
 namespace gfx {
@@ -119,7 +119,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // Detach AnimationPlayer from Layer and AnimationTimeline
   void DetachLayerAndTimeline(Compositor* compositor);
 
-  cc::AnimationPlayer* GetAnimationPlayerForTesting() const;
+  cc::SingleTickerAnimationPlayer* GetAnimationPlayerForTesting() const;
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
@@ -388,7 +388,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   LayerAnimationDelegate* delegate_;
 
   // Plays CC animations.
-  scoped_refptr<cc::AnimationPlayer> animation_player_;
+  scoped_refptr<cc::SingleTickerAnimationPlayer> animation_player_;
 
   // The currently running animations.
   RunningAnimations running_animations_;
