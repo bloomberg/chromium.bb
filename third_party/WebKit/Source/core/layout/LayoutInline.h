@@ -209,6 +209,10 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   LayoutPoint FirstLineBoxTopLeft() const;
 
+  void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags mode) const override;
+
   const char* GetName() const override { return "LayoutInline"; }
 
   LayoutRect DebugRect() const override;

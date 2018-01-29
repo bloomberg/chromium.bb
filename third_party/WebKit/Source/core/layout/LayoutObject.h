@@ -1008,6 +1008,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutBlock* ContainingBlockForAbsolutePosition(
       AncestorSkipInfo* = nullptr) const;
 
+  bool CanContainOutOfFlowPositionedElement(EPosition position) const {
+    DCHECK(position == EPosition::kAbsolute || position == EPosition::kFixed);
+    return (position == EPosition::kAbsolute &&
+            CanContainAbsolutePositionObjects()) ||
+           (position == EPosition::kFixed && CanContainFixedPositionObjects());
+  }
+
   virtual LayoutObject* HoverAncestor() const { return Parent(); }
 
   Element* OffsetParent(const Element* = nullptr) const;

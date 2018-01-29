@@ -2185,9 +2185,10 @@ LayoutSize LayoutBox::OffsetFromContainer(const LayoutObject* o) const {
   if (o->HasOverflowClip())
     offset -= ToLayoutBox(o)->ScrolledContentOffset();
 
-  if (Style()->GetPosition() == EPosition::kAbsolute &&
-      o->IsInFlowPositioned() && o->IsLayoutInline())
+  if (IsOutOfFlowPositioned() && o->IsLayoutInline() &&
+      o->CanContainOutOfFlowPositionedElement(Style()->GetPosition())) {
     offset += ToLayoutInline(o)->OffsetForInFlowPositionedInline(*this);
+  }
 
   return offset;
 }
@@ -2241,7 +2242,8 @@ void LayoutBox::PositionLineBox(InlineBox* box) {
 void LayoutBox::MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
   DCHECK(IsOutOfFlowPositioned());
   DCHECK(Container()->IsLayoutInline());
-  DCHECK(Container()->IsInFlowPositioned());
+  DCHECK(Container()->CanContainOutOfFlowPositionedElement(
+      Style()->GetPosition()));
   // If this object is inside a relative positioned inline and its inline
   // position is an explicit offset from the edge of its container then it will
   // need to move if its inline container has changed width. We do not track if
@@ -2504,8 +2506,8 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
 
   const ComputedStyle& style_to_use = StyleRef();
   EPosition position = style_to_use.GetPosition();
-  if (position == EPosition::kAbsolute && container->IsInFlowPositioned() &&
-      container->IsLayoutInline()) {
+  if (IsOutOfFlowPositioned() && container->IsLayoutInline() &&
+      container->CanContainOutOfFlowPositionedElement(position)) {
     container_offset.Move(
         ToLayoutInline(container)->OffsetForInFlowPositionedInline(*this));
   } else if (style_to_use.HasInFlowPosition() && Layer()) {
@@ -3818,7 +3820,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
                     ToLayoutBox(containing_block)->ClientLogicalWidth());
 
   DCHECK(containing_block->IsLayoutInline());
-  DCHECK(containing_block->IsInFlowPositioned());
+  DCHECK(containing_block->CanContainOutOfFlowPositionedElement(
+      Style()->GetPosition()));
 
   const LayoutInline* flow = ToLayoutInline(containing_block);
   InlineFlowBox* first = flow->FirstLineBox();
@@ -3877,7 +3880,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
   }
 
   DCHECK(containing_block->IsLayoutInline());
-  DCHECK(containing_block->IsInFlowPositioned());
+  DCHECK(containing_block->CanContainOutOfFlowPositionedElement(
+      Style()->GetPosition()));
 
   const LayoutInline* flow = ToLayoutInline(containing_block);
   InlineFlowBox* first = flow->FirstLineBox();

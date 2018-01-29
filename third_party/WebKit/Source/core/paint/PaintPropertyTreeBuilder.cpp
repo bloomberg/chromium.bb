@@ -186,6 +186,7 @@ void FrameViewPaintPropertyTreeBuilder::Update(
     context.current.should_flatten_inherited_transform = true;
     context.absolute_position = context.current;
     full_context.container_for_absolute_position = nullptr;
+    full_context.container_for_fixed_position = nullptr;
     context.fixed_position = context.current;
     context.fixed_position.fixed_position_children_fixed_to_root = true;
     return;
@@ -262,6 +263,7 @@ void FrameViewPaintPropertyTreeBuilder::Update(
   context.current.should_flatten_inherited_transform = true;
   context.absolute_position = context.current;
   full_context.container_for_absolute_position = nullptr;
+  full_context.container_for_fixed_position = nullptr;
   context.fixed_position = context.current;
   context.fixed_position.transform = fixed_transform_node;
   context.fixed_position.scroll = fixed_scroll_node;
@@ -1561,8 +1563,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         // Absolutely positioned content in an inline should be positioned
         // relative to the inline.
         const auto* container = full_context_.container_for_absolute_position;
-        if (container && container->IsInFlowPositioned() &&
-            container->IsLayoutInline()) {
+        if (container && container->IsLayoutInline()) {
+          DCHECK(container->CanContainAbsolutePositionObjects());
           DCHECK(box_model_object.IsBox());
           context_.current.paint_offset +=
               ToLayoutInline(container)->OffsetForInFlowPositionedInline(
@@ -1574,7 +1576,9 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         context_.current.paint_offset +=
             box_model_object.OffsetForInFlowPosition();
         break;
-      case EPosition::kFixed:
+      case EPosition::kFixed: {
+        DCHECK(full_context_.container_for_fixed_position ==
+               box_model_object.Container());
         context_.current = context_.fixed_position;
         // Fixed-position elements that are fixed to the vieport have a
         // transform above the scroll of the LayoutView. Child content is
@@ -1582,7 +1586,16 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         if (context_.fixed_position.fixed_position_children_fixed_to_root)
           context_.current.paint_offset_root = &box_model_object;
 
+        const auto* container = full_context_.container_for_fixed_position;
+        if (container && container->IsLayoutInline()) {
+          DCHECK(container->CanContainFixedPositionObjects());
+          DCHECK(box_model_object.IsBox());
+          context_.current.paint_offset +=
+              ToLayoutInline(container)->OffsetForInFlowPositionedInline(
+                  ToLayoutBox(box_model_object));
+        }
         break;
+      }
       default:
         NOTREACHED();
     }
@@ -2157,6 +2170,8 @@ void ObjectPaintPropertyTreeBuilder::UpdateForChildren() {
 
   if (object_.CanContainAbsolutePositionObjects())
     context_.container_for_absolute_position = &object_;
+  if (object_.CanContainFixedPositionObjects())
+    context_.container_for_fixed_position = &object_;
 }
 
 }  // namespace blink
