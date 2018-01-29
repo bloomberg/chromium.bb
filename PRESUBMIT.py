@@ -1562,6 +1562,7 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
       '*_param_traits*.*',
       # Mojo IPC:
       '*.mojom',
+      '*_mojom_traits*.*',
       '*_struct_traits*.*',
       '*_type_converter*.*',
       '*.typemap',
