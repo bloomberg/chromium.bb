@@ -6,7 +6,6 @@
 #define NinePieceImagePainter_h
 
 #include "platform/heap/Heap.h"
-#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {
 
@@ -28,8 +27,7 @@ class NinePieceImagePainter {
                     Node*,
                     const LayoutRect&,
                     const ComputedStyle&,
-                    const NinePieceImage&,
-                    SkBlendMode = SkBlendMode::kSrcOver);
+                    const NinePieceImage&);
 
  private:
   NinePieceImagePainter() = default;
