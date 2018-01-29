@@ -109,7 +109,8 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
       case kFunctionToken:
         if (!EqualIgnoringASCIICase(token.Value(), "calc"))
           return false;
-      // "calc(" is the same as "("
+        // "calc(" is the same as "("
+        FALLTHROUGH;
       case kLeftParenthesisToken:
         // If the token is a left parenthesis, then push it onto the stack.
         stack.push_back(token);
@@ -137,6 +138,7 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
         break;
       case kCommentToken:
         NOTREACHED();
+        FALLTHROUGH;
       case kCDOToken:
       case kCDCToken:
       case kAtKeywordToken:

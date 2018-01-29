@@ -80,6 +80,7 @@ AtomicString FontBuilder::GenericFontFamilyName(
   switch (generic_family) {
     default:
       NOTREACHED();
+      FALLTHROUGH;
     case FontDescription::kNoFamily:
       return AtomicString();
     case FontDescription::kStandardFamily:

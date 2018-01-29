@@ -778,6 +778,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
       switch (ToCSSIdentifierValue(*item).GetValueID()) {
         default:
           NOTREACHED();
+          FALLTHROUGH;
         case CSSValueOpenQuote:
           quote_type = QuoteType::kOpen;
           break;

@@ -531,6 +531,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     case CSSSelector::kPseudoMatches:
       if (!RuntimeEnabledFeatures::CSSMatchesEnabled())
         break;
+      FALLTHROUGH;
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
     case CSSSelector::kPseudoAny:
@@ -675,6 +676,7 @@ CSSSelector::MatchType CSSSelectorParser::ConsumeAttributeMatch(
     case kDelimiterToken:
       if (token.Delimiter() == '=')
         return CSSSelector::kAttributeExact;
+      FALLTHROUGH;
     default:
       failed_parsing_ = true;
       return CSSSelector::kAttributeExact;

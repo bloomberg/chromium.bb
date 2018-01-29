@@ -162,7 +162,7 @@ bool CSSParserToken::operator==(const CSSParserToken& other) const {
     case kHashToken:
       if (hash_token_type_ != other.hash_token_type_)
         return false;
-    // fallthrough
+      FALLTHROUGH;
     case kIdentToken:
     case kFunctionToken:
     case kStringToken:
@@ -171,7 +171,7 @@ bool CSSParserToken::operator==(const CSSParserToken& other) const {
     case kDimensionToken:
       if (!ValueDataCharRawEqual(other))
         return false;
-    // fallthrough
+      FALLTHROUGH;
     case kNumberToken:
     case kPercentageToken:
       return numeric_sign_ == other.numeric_sign_ &&
