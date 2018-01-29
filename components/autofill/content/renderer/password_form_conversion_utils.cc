@@ -660,7 +660,7 @@ bool GetPasswordForm(
 
   // Call HTML based username detector, only if corresponding flag is enabled.
   if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnableHtmlBasedUsernameDetector)) {
+          password_manager::features::kHtmlBasedUsernameDetector)) {
     if (username_element.IsNull()) {
       GetUsernameFieldBasedOnHtmlAttributes(
           form.control_elements, possible_usernames, password_form->form_data,

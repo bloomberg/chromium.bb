@@ -3525,7 +3525,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHtmlBasedUsernameDetectorName,
      flag_descriptions::kHtmlBasedUsernameDetectorDescription, kOsAll,
      FEATURE_VALUE_TYPE(
-         password_manager::features::kEnableHtmlBasedUsernameDetector)},
+         password_manager::features::kHtmlBasedUsernameDetector)},
 #if defined(OS_MACOSX)
     {"mac-system-share-menu", flag_descriptions::kMacSystemShareMenuName,
      flag_descriptions::kMacSystemShareMenuDescription, kOsMac,

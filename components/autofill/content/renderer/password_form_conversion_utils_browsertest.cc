@@ -350,7 +350,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        HTMLDetector_DeveloperGroupAttributes) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      password_manager::features::kEnableHtmlBasedUsernameDetector);
+      password_manager::features::kHtmlBasedUsernameDetector);
 
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
@@ -472,7 +472,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, HTMLDetector_SeveralDetections) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      password_manager::features::kEnableHtmlBasedUsernameDetector);
+      password_manager::features::kHtmlBasedUsernameDetector);
 
   // If word matches in more than 2 fields, we don't match on it.
   // We search for match with another word.
@@ -506,7 +506,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        HTMLDetector_UserGroupAttributes) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      password_manager::features::kEnableHtmlBasedUsernameDetector);
+      password_manager::features::kHtmlBasedUsernameDetector);
 
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
@@ -626,7 +626,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, HTMLDetectorCache) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      password_manager::features::kEnableHtmlBasedUsernameDetector);
+      password_manager::features::kHtmlBasedUsernameDetector);
 
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddTextField("unknown", "12345", nullptr);
@@ -2414,7 +2414,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, ResetPasswordForm) {
   // without any text fields.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      password_manager::features::kEnableHtmlBasedUsernameDetector);
+      password_manager::features::kHtmlBasedUsernameDetector);
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddPasswordField("password", "secret", nullptr);
   builder.AddSubmitButton("submit");
