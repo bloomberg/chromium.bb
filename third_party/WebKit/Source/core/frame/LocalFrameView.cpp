@@ -1888,30 +1888,38 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
         case DecodeURLResult::kAsciiOnly:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentSucceedWithASCII);
+          break;
         case DecodeURLResult::kUTF8:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentSucceedWithUTF8);
+          break;
         case DecodeURLResult::kIsomorphic:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentSucceedWithIsomorphic);
+          break;
         case DecodeURLResult::kMixed:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentSucceedWithMixed);
+          break;
       }
     } else {
       switch (decode_result) {
         case DecodeURLResult::kAsciiOnly:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentFailWithASCII);
+          break;
         case DecodeURLResult::kUTF8:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentFailWithUTF8);
+          break;
         case DecodeURLResult::kIsomorphic:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentFailWithIsomorphic);
+          break;
         case DecodeURLResult::kMixed:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentFailWithMixed);
+          break;
       }
     }
   } else {
