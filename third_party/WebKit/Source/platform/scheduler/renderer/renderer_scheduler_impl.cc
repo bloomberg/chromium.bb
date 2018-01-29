@@ -731,9 +731,11 @@ void RendererSchedulerImpl::OnShutdownTaskQueue(
       case MainThreadTaskQueue::QueueClass::kTimer:
         task_queue->RemoveTaskObserver(
             &main_thread_only().timer_task_cost_estimator);
+        break;
       case MainThreadTaskQueue::QueueClass::kLoading:
         task_queue->RemoveTaskObserver(
             &main_thread_only().loading_task_cost_estimator);
+        break;
       default:
         break;
     }
