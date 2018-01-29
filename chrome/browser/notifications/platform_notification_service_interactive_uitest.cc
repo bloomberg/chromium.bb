@@ -167,22 +167,6 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
         script, result);
   }
 
-  // Executes |script| and stores the result as a string in |result|. Blocks
-  // until a notification has been added to the |display_service_tester_|'s
-  // display service.
-  void RunScriptAndWaitForNotificationAdded(const std::string& script,
-                                            std::string* result) const {
-    base::RunLoop run_loop;
-    display_service_tester_->SetNotificationAddedClosure(
-        run_loop.QuitClosure());
-    ASSERT_TRUE(RunScript(script, result));
-    run_loop.Run();
-
-    // Clear the closure.
-    display_service_tester_->SetNotificationAddedClosure(
-        base::RepeatingClosure());
-  }
-
   GURL TestPageUrl() const {
     return https_server_->GetURL(std::string("/") + kTestFileName);
   }
@@ -1004,8 +988,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   // First, test the default values.
 
   std::string script_result;
-  RunScriptAndWaitForNotificationAdded(
-      "DisplayNonPersistentNotification('Title')", &script_result);
+  RunScript("DisplayNonPersistentNotification('Title')", &script_result);
   EXPECT_EQ("ok", script_result);
 
   std::vector<message_center::Notification> notifications =
@@ -1033,7 +1016,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
 
   // Now, test the non-default values.
 
-  RunScriptAndWaitForNotificationAdded(
+  RunScript(
       R"(DisplayNonPersistentNotification('Title2', {
           body: 'Contents',
           tag: 'replace-id',
@@ -1086,7 +1069,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   // Test that notifications with the same tag replace each other and have
   // identical ids.
 
-  RunScriptAndWaitForNotificationAdded(
+  RunScript(
       R"(DisplayNonPersistentNotification('Title3', {
           tag: 'replace-id'
         }))",
