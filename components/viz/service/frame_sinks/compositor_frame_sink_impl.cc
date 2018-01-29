@@ -43,8 +43,10 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                       std::move(hit_test_region_list))) {
+  bool success;
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  std::move(hit_test_region_list), &success);
+  if (!success) {
     DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id;
     compositor_frame_sink_binding_.CloseWithReason(
         1, "Surface invariants violation");

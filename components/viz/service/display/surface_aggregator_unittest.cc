@@ -693,6 +693,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
 
   // Submit the fallback again to create some damage then aggregate again.
+  fallback_child_local_surface_id = allocator_.GenerateId();
   SubmitCompositorFrame(fallback_child_support.get(), fallback_child_passes,
                         arraysize(fallback_child_passes),
                         fallback_child_local_surface_id, device_scale_factor_1);

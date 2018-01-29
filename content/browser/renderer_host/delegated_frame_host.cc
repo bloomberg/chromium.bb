@@ -507,9 +507,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
 
     // If surface synchronization is off, then OnFirstSurfaceActivation will be
     // called in the same call stack.
-    bool result = support_->SubmitCompositorFrame(
-        local_surface_id, std::move(frame), std::move(hit_test_region_list));
-    DCHECK(result);
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                    std::move(hit_test_region_list));
   }
 }
 

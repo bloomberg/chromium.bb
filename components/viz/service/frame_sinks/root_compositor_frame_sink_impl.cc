@@ -103,8 +103,10 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
   }
 
-  if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                       std::move(hit_test_region_list))) {
+  bool success;
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  std::move(hit_test_region_list), &success);
+  if (!success) {
     DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id;
     compositor_frame_sink_binding_.Close();
     OnClientConnectionLost();
