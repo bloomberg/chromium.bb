@@ -1045,9 +1045,6 @@ extern const char kAndroidAutofillAccessibilityDescription[];
 extern const char kAndroidPaymentAppsName[];
 extern const char kAndroidPaymentAppsDescription[];
 
-extern const char kAndroidViewPasswordsName[];
-extern const char kAndroidViewPasswordsDescription[];
-
 extern const char kAsyncDnsName[];
 extern const char kAsyncDnsDescription[];
 

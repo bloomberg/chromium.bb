@@ -1703,10 +1703,6 @@ const char kAndroidPaymentAppsName[] = "Android payment apps";
 const char kAndroidPaymentAppsDescription[] =
     "Enable third party Android apps to integrate as payment apps";
 
-const char kAndroidViewPasswordsName[] = "Copy and view passwords for Android";
-const char kAndroidViewPasswordsDescription[] =
-    "Enables copying and viewing passwords in settings.";
-
 const char kAsyncDnsName[] = "Async DNS resolver";
 const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
 

@@ -77,12 +77,6 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordSearchMobile = {"PasswordSearchMobile",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Control whether users can view and copy passwords. This is only used for
-// mobile, the desktop version of Chrome always allows users to view
-// passwords.
-const base::Feature kViewPasswords = {"ViewPasswords",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
