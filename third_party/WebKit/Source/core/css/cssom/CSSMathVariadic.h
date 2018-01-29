@@ -16,7 +16,6 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
 
  public:
   CSSNumericArray* values() { return values_.Get(); }
-  void setValues(CSSNumericArray* values) { values_ = values; }
 
   const CSSNumericValueVector& NumericValues() const {
     return values_->Values();

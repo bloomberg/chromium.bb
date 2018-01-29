@@ -651,12 +651,10 @@ interface CSSMathMax : CSSMathValue
     attribute @@toStringTag
     getter values
     method constructor
-    setter values
 interface CSSMathMin : CSSMathValue
     attribute @@toStringTag
     getter values
     method constructor
-    setter values
 interface CSSMathNegate : CSSMathValue
     attribute @@toStringTag
     getter value
@@ -666,12 +664,10 @@ interface CSSMathProduct : CSSMathValue
     attribute @@toStringTag
     getter values
     method constructor
-    setter values
 interface CSSMathSum : CSSMathValue
     attribute @@toStringTag
     getter values
     method constructor
-    setter values
 interface CSSMathValue : CSSNumericValue
     attribute @@toStringTag
     getter operator
