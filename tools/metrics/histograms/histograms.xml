@@ -95148,11 +95148,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Variations.SafeMode.FellBackToSafeMode" enum="BooleanSafeMode">
+  <obsolete>
+    Deprecated as of M66 / Jan 2018. Replaced by
+    Variations.SafeMode.FellBackToSafeMode2.
+  </obsolete>
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    Whether or not the VariationsService /would/ fall back to Safe Mode, due to
+    either too many crashes or too many failures to fetch a new seed, given some
+    initial/unrefined heuristics. Recorded during Chrome startup, when the
+    VariationsService is created.
+
+    This metric was only reported before Safe Mode was actually implemented, as
+    a sanity-check for the forthcoming implementation.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.FellBackToSafeMode2"
+    enum="BooleanSafeMode">
   <owner>isherman@chromium.org</owner>
   <summary>
     Whether or not the VariationsService fell back to Safe Mode, due to either
     too many crashes or too many failures to fetch a new seed. Recorded during
-    Chrome startup, when the VariationsService is created.
+    Chrome startup, immediately before field trials are created. Only recorded
+    if either a recent or a safe seed was loaded successfully.
   </summary>
 </histogram>
 

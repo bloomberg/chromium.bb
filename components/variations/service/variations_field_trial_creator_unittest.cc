@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
 #include "base/version.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/platform_field_trials.h"
@@ -250,6 +251,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSeed) {
               DoSetActiveSeedState(kTestSeedData, kTestSeedSignature, _))
       .Times(1);
 
+  base::HistogramTester histogram_tester;
   TestVariationsServiceClient variations_service_client;
   TestVariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, &safe_seed_manager);
@@ -262,6 +264,10 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSeed) {
   EXPECT_TRUE(field_trial_creator.SetupFieldTrials());
   EXPECT_EQ(kTestSeedExperimentName,
             base::FieldTrialList::FindFullName(kTestSeedStudyName));
+
+  // Verify metrics.
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
+                                      false, 1);
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_NoLastFetchTime) {
@@ -274,6 +280,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_NoLastFetchTime) {
               DoSetActiveSeedState(kTestSeedData, kTestSeedSignature, _))
       .Times(1);
 
+  base::HistogramTester histogram_tester;
   TestVariationsServiceClient variations_service_client;
   TestVariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, &safe_seed_manager);
@@ -286,6 +293,10 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_NoLastFetchTime) {
   EXPECT_TRUE(field_trial_creator.SetupFieldTrials());
   EXPECT_EQ(base::FieldTrialList::FindFullName(kTestSeedStudyName),
             kTestSeedExperimentName);
+
+  // Verify metrics.
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
+                                      false, 1);
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
@@ -296,6 +307,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
       .WillByDefault(Return(false));
   EXPECT_CALL(safe_seed_manager, DoSetActiveSeedState(_, _, _)).Times(0);
 
+  base::HistogramTester histogram_tester;
   TestVariationsServiceClient variations_service_client;
   TestVariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, &safe_seed_manager);
@@ -308,6 +320,10 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ExpiredSeed) {
   // Check that field trials are not created from the expired seed.
   EXPECT_FALSE(field_trial_creator.SetupFieldTrials());
   EXPECT_TRUE(base::FieldTrialList::FindFullName(kTestSeedStudyName).empty());
+
+  // Verify metrics.
+  histogram_tester.ExpectTotalCount("Variations.SafeMode.FellBackToSafeMode2",
+                                    0);
 }
 
 TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSafeSeed) {
@@ -318,6 +334,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSafeSeed) {
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode()).WillByDefault(Return(true));
   EXPECT_CALL(safe_seed_manager, DoSetActiveSeedState(_, _, _)).Times(0);
 
+  base::HistogramTester histogram_tester;
   TestVariationsServiceClient variations_service_client;
   TestVariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, &safe_seed_manager);
@@ -328,6 +345,10 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_ValidSafeSeed) {
   EXPECT_TRUE(field_trial_creator.SetupFieldTrials());
   EXPECT_EQ(kTestSafeSeedExperimentName,
             base::FieldTrialList::FindFullName(kTestSeedStudyName));
+
+  // Verify metrics.
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
+                                      true, 1);
 }
 
 TEST_F(FieldTrialCreatorTest,
@@ -341,6 +362,7 @@ TEST_F(FieldTrialCreatorTest,
               DoSetActiveSeedState(kTestSeedData, kTestSeedSignature, _))
       .Times(1);
 
+  base::HistogramTester histogram_tester;
   TestVariationsServiceClient variations_service_client;
   TestVariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, &safe_seed_manager);
@@ -352,6 +374,10 @@ TEST_F(FieldTrialCreatorTest,
   EXPECT_TRUE(field_trial_creator.SetupFieldTrials());
   EXPECT_EQ(kTestSeedExperimentName,
             base::FieldTrialList::FindFullName(kTestSeedStudyName));
+
+  // Verify metrics.
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
+                                      false, 1);
 }
 
 }  // namespace variations

@@ -7,10 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/client_filterable_state.h"
+#include "components/variations/pref_names.h"
 #include "components/variations/variations_seed_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -139,5 +143,72 @@ TEST_F(SafeSeedManagerTest,
   EXPECT_EQ(std::string(), seed_store.session_consistency_country());
   EXPECT_EQ(base::Time(), seed_store.date());
 }
+
+TEST_F(SafeSeedManagerTest, StreakMetrics_NoPrefs) {
+  base::HistogramTester histogram_tester;
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 0,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 0, 1);
+}
+
+TEST_F(SafeSeedManagerTest, StreakMetrics_NoCrashes_NoFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 0);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
+
+  base::HistogramTester histogram_tester;
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 0,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 0, 1);
+}
+
+TEST_F(SafeSeedManagerTest, StreakMetrics_SomeCrashes_SomeFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 1);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 2);
+
+  base::HistogramTester histogram_tester;
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 2, 1);
+}
+
+TEST_F(SafeSeedManagerTest, StreakMetrics_CrashIncrementsCrashStreak) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 1);
+
+  base::HistogramTester histogram_tester;
+  SafeSeedManager safe_seed_manager(false, &prefs_);
+
+  EXPECT_EQ(2, prefs_.GetInteger(prefs::kVariationsCrashStreak));
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 2,
+                                      1);
+}
+
+TEST_F(SafeSeedManagerTest, StreakMetrics_CrashIncrementsCrashStreak_NoPrefs) {
+  base::HistogramTester histogram_tester;
+  SafeSeedManager safe_seed_manager(false, &prefs_);
+
+  EXPECT_EQ(1, prefs_.GetInteger(prefs::kVariationsCrashStreak));
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 1,
+                                      1);
+}
+
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_OverriddenByCommandlineFlag) {
+  // So many failures.
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 100);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 100);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      ::switches::kForceFieldTrials, "SomeFieldTrial");
+
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_FALSE(safe_seed_manager.ShouldRunInSafeMode());
+}
+
+// TODO(isherman): Add more tests for ShouldRunInSafeMode() once thresholds are
+// selected and implemented.
 
 }  // namespace variations

@@ -192,6 +192,9 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   if (!run_in_safe_mode && !LoadSeed(&seed, &seed_data, &base64_seed_signature))
     return false;
 
+  UMA_HISTOGRAM_BOOLEAN("Variations.SafeMode.FellBackToSafeMode2",
+                        run_in_safe_mode);
+
   // Note that passing |&ui_string_overrider_| via base::Unretained below is
   // safe because the callback is executed synchronously. It is not possible to
   // pass UIStringOverrider directly to VariationSeedProcessor as the variations
