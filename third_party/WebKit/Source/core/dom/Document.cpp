@@ -146,6 +146,7 @@
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
+#include "core/html/HTMLUnknownElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/WindowNameCollection.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
@@ -211,6 +212,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGScriptElement.h"
 #include "core/svg/SVGTitleElement.h"
+#include "core/svg/SVGUnknownElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/svg_element_factory.h"
 #include "core/svg_names.h"
@@ -853,6 +855,38 @@ AtomicString Document::ConvertLocalName(const AtomicString& name) {
   return IsHTMLDocument() ? name.LowerASCII() : name;
 }
 
+// Just creates an element with specified qualified name without any
+// custom element processing.
+// This is a common code for step 5.2 and 7.2 of "create an element"
+// <https://dom.spec.whatwg.org/#concept-create-element>
+// Functions other than this one should not use HTMLElementFactory and
+// SVGElementFactory because they don't support prefixes correctly.
+Element* Document::CreateRawElement(const QualifiedName& qname,
+                                    CreateElementFlags flags) {
+  Element* element = nullptr;
+  if (qname.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
+    element = HTMLElementFactory::CreateRawHTMLElement(qname.LocalName(), *this,
+                                                       flags);
+    if (!element)
+      element = HTMLUnknownElement::Create(qname, *this);
+    saw_elements_in_known_namespaces_ = true;
+  } else if (qname.NamespaceURI() == SVGNames::svgNamespaceURI) {
+    element =
+        SVGElementFactory::CreateRawSVGElement(qname.LocalName(), *this, flags);
+    if (!element)
+      element = SVGUnknownElement::Create(qname, *this);
+    saw_elements_in_known_namespaces_ = true;
+  } else {
+    element = Element::Create(qname, this);
+  }
+
+  if (element->prefix() != qname.Prefix())
+    element->SetTagNameForCreateElementNS(qname);
+  DCHECK(qname == element->TagQName());
+
+  return element;
+}
+
 // https://dom.spec.whatwg.org/#dom-document-createelement
 Element* Document::createElement(const AtomicString& name,
                                  ExceptionState& exception_state) {
@@ -966,9 +1000,12 @@ Element* Document::createElement(const AtomicString& local_name,
         *this,
         QualifiedName(g_null_atom, converted_local_name, xhtmlNamespaceURI));
   } else {
-    element = createElement(local_name, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+    element =
+        CreateRawElement(QualifiedName(g_null_atom, converted_local_name,
+                                       IsXHTMLDocument() || IsHTMLDocument()
+                                           ? HTMLNames::xhtmlNamespaceURI
+                                           : g_null_atom),
+                         kCreatedByCreateElement);
   }
 
   // 8. If 'is' is non-null, set 'is' attribute
@@ -1016,7 +1053,10 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   if (CustomElement::ShouldCreateCustomElement(q_name))
     return CustomElement::CreateCustomElementSync(*this, q_name);
-  return createElement(q_name, kCreatedByCreateElement);
+  else if (RegistrationContext() &&
+           V0CustomElement::IsValidName(q_name.LocalName()))
+    return RegistrationContext()->CreateCustomTagElement(*this, q_name);
+  return CreateRawElement(q_name, kCreatedByCreateElement);
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
@@ -1076,7 +1116,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
              RegistrationContext()) {
     element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
   } else {
-    element = createElement(q_name, kCreatedByCreateElement);
+    element = CreateRawElement(q_name, kCreatedByCreateElement);
   }
 
   // 6. If 'is' is non-null, set 'is' attribute
