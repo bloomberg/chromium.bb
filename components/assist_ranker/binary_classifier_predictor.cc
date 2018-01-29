@@ -75,6 +75,25 @@ RankerModelStatus BinaryClassifierPredictor::ValidateModel(
     DVLOG(0) << "Model is incompatible.";
     return RankerModelStatus::INCOMPATIBLE;
   }
+  const GenericLogisticRegressionModel& glr =
+      model.proto().logistic_regression();
+  if (glr.is_preprocessed_model()) {
+    if (glr.fullname_weights().empty() || !glr.weights().empty()) {
+      DVLOG(0) << "Model is incompatible. Preprocessed model should use "
+                  "fullname_weights.";
+      return RankerModelStatus::INCOMPATIBLE;
+    }
+    if (!glr.preprocessor_config().feature_indices().empty()) {
+      DVLOG(0) << "Preprocessed model doesn't need feature indices.";
+      return RankerModelStatus::INCOMPATIBLE;
+    }
+  } else {
+    if (!glr.fullname_weights().empty() || glr.weights().empty()) {
+      DVLOG(0) << "Model is incompatible. Non-preprocessed model should use "
+                  "weights.";
+      return RankerModelStatus::INCOMPATIBLE;
+    }
+  }
   return RankerModelStatus::OK;
 }
 

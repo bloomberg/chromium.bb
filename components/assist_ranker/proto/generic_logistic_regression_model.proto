@@ -8,6 +8,8 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "example_preprocessor.proto";
+
 package assist_ranker;
 
 message SparseWeights {
@@ -69,4 +71,15 @@ message GenericLogisticRegressionModel {
   // Map of weights keyed by feature name. Features can be scalar, one-hot,
   // sparse or bucketized.
   map<string, FeatureWeight> weights = 3;
+
+  // If it's a preprocessed_model, then use preprocessor_config to preprocess
+  // the input and fullname_weights to calculate the score.
+  optional bool is_preprocessed_model = 4;
+
+  // Map from feature fullname to it's weights.
+  map<string, float> fullname_weights = 5;
+
+  // Config for preprocessor (without feature_indices; there is no need for
+  // vectorization, since the inference model use ExampleFloatIterator instead).
+  optional ExamplePreprocessorConfig preprocessor_config = 6;
 }
