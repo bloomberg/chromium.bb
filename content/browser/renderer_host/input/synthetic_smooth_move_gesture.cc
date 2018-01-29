@@ -201,6 +201,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
     case SETUP:
       NOTREACHED() << "State SETUP invalid for synthetic scroll using mouse "
                       "wheel input.";
+      break;
     case STOPPING:
       NOTREACHED() << "State STOPPING invalid for synthetic scroll using mouse "
                       "wheel input.";

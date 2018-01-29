@@ -152,6 +152,7 @@ void FlingController::OnGestureEventAck(
           fling_curve_ && !processed) {
         CancelCurrentFling();
       }
+      break;
     default:
       break;
   }
