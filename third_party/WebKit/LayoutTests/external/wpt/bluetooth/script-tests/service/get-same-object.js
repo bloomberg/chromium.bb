@@ -1,6 +1,7 @@
 'use strict';
-bluetooth_test(() => {
-  return getHealthThermometerService()
+const test_desc = 'Calls to FUNCTION_NAME should return the same object.';
+
+bluetooth_test(() => getHealthThermometerService()
     .then(({service}) => Promise.all([
       service.CALLS([
         getCharacteristic('measurement_interval')|
@@ -20,5 +21,4 @@ bluetooth_test(() => {
       characteristics_first_call.forEach(characteristic => {
         assert_true(second_call_set.has(characteristic));
       });
-    });
-}, 'Calls to FUNCTION_NAME should return the same object.');
+    }), test_desc);
