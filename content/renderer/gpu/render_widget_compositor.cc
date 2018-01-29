@@ -475,6 +475,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
 
+  settings.check_damage_early = cmd.HasSwitch(cc::switches::kCheckDamageEarly);
+
 #if defined(OS_ANDROID)
   bool using_synchronous_compositor =
       GetContentClient()->UsingSynchronousCompositing();

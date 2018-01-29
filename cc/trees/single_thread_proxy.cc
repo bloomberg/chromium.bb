@@ -634,14 +634,14 @@ void SingleThreadProxy::ClearHistoryOnNavigation() {
     scheduler_on_impl_thread_->ClearHistoryOnNavigation();
 }
 
-void SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
+bool SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DebugScopedSetImplThread impl(task_runner_provider_);
 #if DCHECK_IS_ON()
   DCHECK(!inside_impl_frame_)
       << "WillBeginImplFrame called while already inside an impl frame!";
   inside_impl_frame_ = true;
 #endif
-  host_impl_->WillBeginImplFrame(args);
+  return host_impl_->WillBeginImplFrame(args);
 }
 
 void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
