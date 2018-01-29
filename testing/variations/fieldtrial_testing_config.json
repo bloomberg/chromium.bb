@@ -1855,21 +1855,6 @@
             ]
         }
     ],
-    "MacMDDownloadShelf": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MacMDDownloadShelf"
-                    ]
-                }
-            ]
-        }
-    ],
     "MacV2Sandbox": [
         {
             "platforms": [
