@@ -38,8 +38,6 @@ cc_component("animation") {
     "scroll_offset_animations_impl.h",
     "scroll_timeline.cc",
     "scroll_timeline.h",
-    "single_ticker_animation_player.cc",
-    "single_ticker_animation_player.h",
     "timing_function.cc",
     "timing_function.h",
     "transform_operation.cc",

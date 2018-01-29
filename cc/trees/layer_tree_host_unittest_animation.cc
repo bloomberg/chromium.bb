@@ -11,12 +11,12 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animations.h"
-#include "cc/animation/single_ticker_animation_player.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/completion_event.h"
@@ -39,8 +39,8 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
         player_id_(AnimationIdProvider::NextPlayerId()),
         player_child_id_(AnimationIdProvider::NextPlayerId()) {
     timeline_ = AnimationTimeline::Create(timeline_id_);
-    player_ = SingleTickerAnimationPlayer::Create(player_id_);
-    player_child_ = SingleTickerAnimationPlayer::Create(player_child_id_);
+    player_ = AnimationPlayer::Create(player_id_);
+    player_child_ = AnimationPlayer::Create(player_child_id_);
 
     player_->set_animation_delegate(this);
   }
@@ -56,11 +56,9 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
     AnimationHost* animation_host_impl = GetImplAnimationHost(&host_impl);
     timeline_impl_ = animation_host_impl->GetTimelineById(timeline_id_);
     EXPECT_TRUE(timeline_impl_);
-    player_impl_ = static_cast<SingleTickerAnimationPlayer*>(
-        timeline_impl_->GetPlayerById(player_id_));
+    player_impl_ = timeline_impl_->GetPlayerById(player_id_);
     EXPECT_TRUE(player_impl_);
-    player_child_impl_ = static_cast<SingleTickerAnimationPlayer*>(
-        timeline_impl_->GetPlayerById(player_child_id_));
+    player_child_impl_ = timeline_impl_->GetPlayerById(player_child_id_);
     EXPECT_TRUE(player_child_impl_);
   }
 
@@ -71,12 +69,12 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
 
  protected:
   scoped_refptr<AnimationTimeline> timeline_;
-  scoped_refptr<SingleTickerAnimationPlayer> player_;
-  scoped_refptr<SingleTickerAnimationPlayer> player_child_;
+  scoped_refptr<AnimationPlayer> player_;
+  scoped_refptr<AnimationPlayer> player_child_;
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
-  scoped_refptr<SingleTickerAnimationPlayer> player_impl_;
-  scoped_refptr<SingleTickerAnimationPlayer> player_child_impl_;
+  scoped_refptr<AnimationPlayer> player_impl_;
+  scoped_refptr<AnimationPlayer> player_child_impl_;
 
   const int timeline_id_;
   const int player_id_;
@@ -313,9 +311,8 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
 
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_child_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_child_id_));
+    scoped_refptr<AnimationPlayer> player_child_impl =
+        timeline_impl->GetPlayerById(player_child_id_);
 
     Animation* animation =
         player_child_impl->GetAnimation(TargetProperty::OPACITY);
@@ -379,9 +376,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
                             bool has_unfinished_animation) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(impl_host)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_child_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_child_id_));
+    scoped_refptr<AnimationPlayer> player_child_impl =
+        timeline_impl->GetPlayerById(player_child_id_);
 
     Animation* animation =
         player_child_impl->GetAnimation(TargetProperty::OPACITY);
@@ -457,9 +453,8 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_id_));
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_id_);
 
     Animation* animation_impl =
         player_impl->GetAnimation(TargetProperty::OPACITY);
@@ -1044,9 +1039,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
 
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_child_id_));
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_child_id_);
 
     LayerImpl* scroll_layer_impl =
         host_impl->active_tree()->LayerById(scroll_layer_->id());
@@ -1135,15 +1129,13 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
                             bool has_unfinished_animation) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_id_));
-    scoped_refptr<SingleTickerAnimationPlayer> player_child_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_child_id_));
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_id_);
+    scoped_refptr<AnimationPlayer> player_child_impl =
+        timeline_impl->GetPlayerById(player_child_id_);
 
     // wait for tree activation.
-    if (!player_impl->animation_ticker()->element_animations())
+    if (!player_impl->element_animations())
       return;
 
     Animation* root_animation =
@@ -1216,9 +1208,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
 
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_id_));
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_id_);
 
     LayerImpl* child = sync_tree->LayerById(layer_->id());
     Animation* animation = player_impl->GetAnimation(TargetProperty::TRANSFORM);
@@ -1263,7 +1254,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
     animation_host()->AddAnimationTimeline(timeline_.get());
     timeline_->AttachPlayer(player_.get());
     player_->AttachElement(layer_->element_id());
-    DCHECK(player_->animation_ticker()->element_animations());
+    DCHECK(player_->element_animations());
 
     AddOpacityTransitionToPlayer(player_.get(), 10000.0, 0.1f, 0.9f, true);
   }
@@ -1273,32 +1264,26 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
   void DidCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_TRUE(player_->animation_ticker()
-                        ->element_animations()
-                        ->has_element_in_active_list());
-        EXPECT_FALSE(player_->animation_ticker()
-                         ->element_animations()
-                         ->has_element_in_pending_list());
+        EXPECT_TRUE(
+            player_->element_animations()->has_element_in_active_list());
+        EXPECT_FALSE(
+            player_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
       case 1:
         layer_->RemoveFromParent();
-        EXPECT_FALSE(player_->animation_ticker()
-                         ->element_animations()
-                         ->has_element_in_active_list());
-        EXPECT_FALSE(player_->animation_ticker()
-                         ->element_animations()
-                         ->has_element_in_pending_list());
+        EXPECT_FALSE(
+            player_->element_animations()->has_element_in_active_list());
+        EXPECT_FALSE(
+            player_->element_animations()->has_element_in_pending_list());
         EXPECT_FALSE(animation_host()->NeedsTickAnimations());
         break;
       case 2:
         layer_tree_host()->root_layer()->AddChild(layer_);
-        EXPECT_TRUE(player_->animation_ticker()
-                        ->element_animations()
-                        ->has_element_in_active_list());
-        EXPECT_FALSE(player_->animation_ticker()
-                         ->element_animations()
-                         ->has_element_in_pending_list());
+        EXPECT_TRUE(
+            player_->element_animations()->has_element_in_active_list());
+        EXPECT_FALSE(
+            player_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
     }
@@ -1307,27 +1292,23 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleTickerAnimationPlayer> player_impl =
-        static_cast<SingleTickerAnimationPlayer*>(
-            timeline_impl->GetPlayerById(player_id_));
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_id_);
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_TRUE(player_impl->animation_ticker()
-                        ->element_animations()
-                        ->has_element_in_active_list());
+        EXPECT_TRUE(
+            player_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 1:
-        EXPECT_FALSE(player_impl->animation_ticker()
-                         ->element_animations()
-                         ->has_element_in_active_list());
+        EXPECT_FALSE(
+            player_impl->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 2:
-        EXPECT_TRUE(player_impl->animation_ticker()
-                        ->element_animations()
-                        ->has_element_in_active_list());
+        EXPECT_TRUE(
+            player_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         EndTest();
         break;
@@ -1808,7 +1789,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 
 // Check that transform sync happens correctly at commit when we remove and add
 // a different animation player to an element.
-class LayerTreeHostAnimationTestChangeSingleTickerAnimationPlayer
+class LayerTreeHostAnimationTestChangeAnimationPlayer
     : public LayerTreeHostAnimationTest {
  public:
   void SetupTree() override {
@@ -1866,8 +1847,7 @@ class LayerTreeHostAnimationTestChangeSingleTickerAnimationPlayer
   void AfterTest() override {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestChangeSingleTickerAnimationPlayer);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestChangeAnimationPlayer);
 
 // Check that SetTransformIsPotentiallyAnimatingChanged is called
 // if we destroy ElementAnimations.
@@ -1952,8 +1932,7 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
 MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction);
 
-// Check that we invalidate property trees on
-// SingleTickerAnimationPlayer::SetNeedsCommit.
+// Check that we invalidate property trees on AnimationPlayer::SetNeedsCommit.
 class LayerTreeHostAnimationTestRebuildPropertyTreesOnAnimationSetNeedsCommit
     : public LayerTreeHostAnimationTest {
  public:

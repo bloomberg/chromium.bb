@@ -13,7 +13,7 @@ WorkletAnimationPlayer::WorkletAnimationPlayer(
     int id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline)
-    : SingleTickerAnimationPlayer(id),
+    : AnimationPlayer(id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)) {}
 
@@ -43,7 +43,7 @@ void WorkletAnimationPlayer::SetLocalTime(base::TimeDelta local_time) {
 }
 
 void WorkletAnimationPlayer::Tick(base::TimeTicks monotonic_time) {
-  animation_ticker()->Tick(monotonic_time, this);
+  animation_ticker_->Tick(monotonic_time, this);
 }
 
 // TODO(crbug.com/780151): The current time returned should be an offset against
@@ -68,7 +68,7 @@ base::TimeTicks WorkletAnimationPlayer::GetTimeForAnimation(
 
 void WorkletAnimationPlayer::PushPropertiesTo(
     AnimationPlayer* animation_player_impl) {
-  SingleTickerAnimationPlayer::PushPropertiesTo(animation_player_impl);
+  AnimationPlayer::PushPropertiesTo(animation_player_impl);
   static_cast<WorkletAnimationPlayer*>(animation_player_impl)
       ->SetLocalTime(local_time_);
 }

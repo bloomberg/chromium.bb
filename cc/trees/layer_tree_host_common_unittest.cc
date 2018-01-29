@@ -14,8 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/single_ticker_animation_player.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -7328,23 +7328,23 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   host_impl.active_tree()->SetElementIdsForTesting();
 
-  scoped_refptr<SingleTickerAnimationPlayer> grand_parent_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> grand_parent_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(grand_parent_player);
   grand_parent_player->AttachElement(grand_parent_raw->element_id());
 
-  scoped_refptr<SingleTickerAnimationPlayer> parent_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> parent_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(parent_player);
   parent_player->AttachElement(parent_raw->element_id());
 
-  scoped_refptr<SingleTickerAnimationPlayer> child_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> child_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(child_player);
   child_player->AttachElement(child_raw->element_id());
 
-  scoped_refptr<SingleTickerAnimationPlayer> grand_child_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> grand_child_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(grand_child_player);
   grand_child_player->AttachElement(grand_child_raw->element_id());
 
@@ -8813,13 +8813,12 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
   std::unique_ptr<Animation> transform_animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(1));
+  scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   timeline()->AttachPlayer(player);
   // TODO(smcgruer): Should attach a timeline and element rather than call this
   // directly. See http://crbug.com/771316
-  host_impl.animation_host()->RegisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
+  host_impl.animation_host()->RegisterPlayerForElement(root_ptr->element_id(),
+                                                       player.get());
   player->AddAnimation(std::move(transform_animation));
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->test_properties()->transform = singular;
@@ -8828,9 +8827,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
-  host_impl.animation_host()->UnregisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
-  host_impl.animation_host()->RemoveFromTicking(player.get());
+  host_impl.animation_host()->UnregisterPlayerForElement(root_ptr->element_id(),
+                                                         player.get());
   timeline()->DetachPlayer(player);
 }
 
@@ -8866,22 +8864,20 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
   std::unique_ptr<Animation> transform_animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(1));
+  scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   timeline()->AttachPlayer(player);
   // TODO(smcgruer): Should attach a timeline and element rather than call this
   // directly. See http://crbug.com/771316
-  host_impl()->animation_host()->RegisterTickerForElement(
-      grand_child->element_id(), player->animation_ticker());
+  host_impl()->animation_host()->RegisterPlayerForElement(
+      grand_child->element_id(), player.get());
   player->AddAnimation(std::move(transform_animation));
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 0), grand_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
 
-  host_impl()->animation_host()->UnregisterTickerForElement(
-      grand_child->element_id(), player->animation_ticker());
-  host_impl()->animation_host()->RemoveFromTicking(player.get());
+  host_impl()->animation_host()->UnregisterPlayerForElement(
+      grand_child->element_id(), player.get());
   timeline()->DetachPlayer(player);
 }
 
@@ -8932,13 +8928,12 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.3f, nullptr));
   std::unique_ptr<Animation> animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(1));
+  scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   timeline()->AttachPlayer(player);
   // TODO(smcgruer): Should attach a timeline and element rather than call this
   // directly. See http://crbug.com/771316
-  host_impl.animation_host()->RegisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
+  host_impl.animation_host()->RegisterPlayerForElement(root_ptr->element_id(),
+                                                       player.get());
   player->AddAnimation(std::move(animation));
   root_ptr->test_properties()->opacity = 0.f;
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
@@ -8946,9 +8941,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
-  host_impl.animation_host()->UnregisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
-  host_impl.animation_host()->RemoveFromTicking(player.get());
+  host_impl.animation_host()->UnregisterPlayerForElement(root_ptr->element_id(),
+                                                         player.get());
   timeline()->DetachPlayer(player);
 }
 
@@ -9766,8 +9760,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   animated->SetBounds(gfx::Size(20, 20));
   animated->SetOpacity(0.f);
 
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline()->AttachPlayer(player);
 
   player->AttachElement(animated->element_id());
@@ -9813,8 +9807,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   root->SetForceRenderSurfaceForTesting(true);
   animated->SetBounds(gfx::Size(20, 20));
 
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline()->AttachPlayer(player);
   player->AttachElement(animated->element_id());
 

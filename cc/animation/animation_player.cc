@@ -12,6 +12,7 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/transform_operations.h"
@@ -28,7 +29,7 @@ AnimationPlayer::AnimationPlayer(int id)
       animation_timeline_(),
       animation_delegate_(),
       id_(id),
-      ticking_tickers_count(0) {
+      animation_ticker_(new AnimationTicker(this)) {
   DCHECK(id_);
 }
 
@@ -41,13 +42,8 @@ scoped_refptr<AnimationPlayer> AnimationPlayer::CreateImplInstance() const {
   return player;
 }
 
-ElementId AnimationPlayer::element_id_of_ticker(TickerId ticker_id) const {
-  DCHECK(GetTickerById(ticker_id));
-  return GetTickerById(ticker_id)->element_id();
-}
-
-bool AnimationPlayer::IsElementAttached(ElementId id) const {
-  return !!element_to_ticker_id_map_.count(id);
+ElementId AnimationPlayer::element_id() const {
+  return animation_ticker_->element_id();
 }
 
 void AnimationPlayer::SetAnimationHost(AnimationHost* animation_host) {
@@ -58,201 +54,107 @@ void AnimationPlayer::SetAnimationTimeline(AnimationTimeline* timeline) {
   if (animation_timeline_ == timeline)
     return;
 
-  // We need to unregister ticker to manage ElementAnimations and observers
+  // We need to unregister player to manage ElementAnimations and observers
   // properly.
-  if (!element_to_ticker_id_map_.empty() && animation_host_) {
-    // Destroy ElementAnimations or release it if it's still needed.
-    UnregisterTickers();
-  }
+  if (animation_ticker_->has_attached_element() &&
+      animation_ticker_->has_bound_element_animations())
+    UnregisterPlayer();
 
   animation_timeline_ = timeline;
 
-  // Register player only if layer AND host attached. Unlike the
-  // SingleAnimationPlayer case, all tickers have been attached to their
-  // corresponding elements.
-  if (!element_to_ticker_id_map_.empty() && animation_host_) {
-    RegisterTickers();
-  }
-}
-
-bool AnimationPlayer::has_element_animations() const {
-  return !element_to_ticker_id_map_.empty();
-}
-
-scoped_refptr<ElementAnimations> AnimationPlayer::element_animations(
-    TickerId ticker_id) const {
-  return GetTickerById(ticker_id)->element_animations();
-}
-
-void AnimationPlayer::AttachElementForTicker(ElementId element_id,
-                                             TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->AttachElement(element_id);
-  element_to_ticker_id_map_[element_id].emplace(ticker_id);
   // Register player only if layer AND host attached.
-  if (animation_host_) {
-    // Create ElementAnimations or re-use existing.
-    RegisterTicker(element_id, ticker_id);
-  }
+  if (animation_ticker_->has_attached_element() && animation_host_)
+    RegisterPlayer();
 }
 
-void AnimationPlayer::DetachElementForTicker(ElementId element_id,
-                                             TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  DCHECK_EQ(GetTickerById(ticker_id)->element_id(), element_id);
+bool AnimationPlayer::has_any_animation() const {
+  return animation_ticker_->has_any_animation();
+}
 
-  UnregisterTicker(element_id, ticker_id);
-  GetTickerById(ticker_id)->DetachElement();
-  element_to_ticker_id_map_[element_id].erase(ticker_id);
+scoped_refptr<ElementAnimations> AnimationPlayer::element_animations() const {
+  return animation_ticker_->element_animations();
+}
+
+void AnimationPlayer::AttachElement(ElementId element_id) {
+  animation_ticker_->AttachElement(element_id);
+
+  // Register player only if layer AND host attached.
+  if (animation_host_)
+    RegisterPlayer();
 }
 
 void AnimationPlayer::DetachElement() {
-  if (animation_host_) {
-    // Destroy ElementAnimations or release it if it's still needed.
-    UnregisterTickers();
-  }
+  DCHECK(animation_ticker_->has_attached_element());
 
-  for (auto pair = element_to_ticker_id_map_.begin();
-       pair != element_to_ticker_id_map_.end();) {
-    for (auto ticker = pair->second.begin(); ticker != pair->second.end();) {
-      GetTickerById(*ticker)->DetachElement();
-      ticker = pair->second.erase(ticker);
-    }
-    pair = element_to_ticker_id_map_.erase(pair);
-  }
-  DCHECK_EQ(element_to_ticker_id_map_.size(), 0u);
+  if (animation_host_)
+    UnregisterPlayer();
+
+  animation_ticker_->DetachElement();
 }
 
-void AnimationPlayer::RegisterTicker(ElementId element_id, TickerId ticker_id) {
+void AnimationPlayer::RegisterPlayer() {
   DCHECK(animation_host_);
-  AnimationTicker* ticker = GetTickerById(ticker_id);
-  DCHECK(!ticker->has_bound_element_animations());
+  DCHECK(animation_ticker_->has_attached_element());
+  DCHECK(!animation_ticker_->has_bound_element_animations());
 
-  if (!ticker->has_attached_element())
-    return;
-  animation_host_->RegisterTickerForElement(element_id, ticker);
+  // Create ElementAnimations or re-use existing.
+  animation_host_->RegisterPlayerForElement(animation_ticker_->element_id(),
+                                            this);
 }
 
-void AnimationPlayer::UnregisterTicker(ElementId element_id,
-                                       TickerId ticker_id) {
+void AnimationPlayer::UnregisterPlayer() {
   DCHECK(animation_host_);
-  AnimationTicker* ticker = GetTickerById(ticker_id);
-  DCHECK(ticker);
-  if (ticker->has_attached_element() &&
-      ticker->has_bound_element_animations()) {
-    animation_host_->UnregisterTickerForElement(element_id, ticker);
-  }
-}
-void AnimationPlayer::RegisterTickers() {
-  for (auto& element_id_ticker_id : element_to_ticker_id_map_) {
-    const ElementId element_id = element_id_ticker_id.first;
-    const std::unordered_set<TickerId>& ticker_ids =
-        element_id_ticker_id.second;
-    for (auto& ticker_id : ticker_ids)
-      RegisterTicker(element_id, ticker_id);
-  }
+  DCHECK(animation_ticker_->has_attached_element());
+  DCHECK(animation_ticker_->has_bound_element_animations());
+
+  // Destroy ElementAnimations or release it if it's still needed.
+  animation_host_->UnregisterPlayerForElement(animation_ticker_->element_id(),
+                                              this);
 }
 
-void AnimationPlayer::UnregisterTickers() {
-  for (auto& element_id_ticker_id : element_to_ticker_id_map_) {
-    const ElementId element_id = element_id_ticker_id.first;
-    const std::unordered_set<TickerId>& ticker_ids =
-        element_id_ticker_id.second;
-    for (auto& ticker_id : ticker_ids)
-      UnregisterTicker(element_id, ticker_id);
-  }
-  animation_host_->RemoveFromTicking(this);
+void AnimationPlayer::AddAnimation(std::unique_ptr<Animation> animation) {
+  animation_ticker_->AddAnimation(std::move(animation));
 }
 
-void AnimationPlayer::PushAttachedTickersToImplThread(
-    AnimationPlayer* player_impl) const {
-  for (auto& ticker : tickers_) {
-    AnimationTicker* ticker_impl = player_impl->GetTickerById(ticker->id());
-    if (ticker_impl)
-      continue;
-
-    std::unique_ptr<AnimationTicker> to_add = ticker->CreateImplInstance();
-    player_impl->AddTicker(std::move(to_add));
-  }
+void AnimationPlayer::PauseAnimation(int animation_id, double time_offset) {
+  animation_ticker_->PauseAnimation(animation_id, time_offset);
 }
 
-void AnimationPlayer::PushPropertiesToImplThread(AnimationPlayer* player_impl) {
-  for (auto& ticker : tickers_) {
-    if (AnimationTicker* ticker_impl =
-            player_impl->GetTickerById(ticker->id())) {
-      ticker->PushPropertiesTo(ticker_impl);
-    }
-  }
+void AnimationPlayer::RemoveAnimation(int animation_id) {
+  animation_ticker_->RemoveAnimation(animation_id);
 }
 
-void AnimationPlayer::AddAnimationForTicker(
-    std::unique_ptr<Animation> animation,
-    TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->AddAnimation(std::move(animation));
-}
-
-void AnimationPlayer::PauseAnimationForTicker(int animation_id,
-                                              double time_offset,
-                                              TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->PauseAnimation(animation_id, time_offset);
-}
-
-void AnimationPlayer::RemoveAnimationForTicker(int animation_id,
-                                               TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->RemoveAnimation(animation_id);
-}
-
-void AnimationPlayer::AbortAnimationForTicker(int animation_id,
-                                              TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->AbortAnimation(animation_id);
+void AnimationPlayer::AbortAnimation(int animation_id) {
+  animation_ticker_->AbortAnimation(animation_id);
 }
 
 void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
                                       bool needs_completion) {
-  for (auto& ticker : tickers_)
-    ticker->AbortAnimations(target_property, needs_completion);
+  animation_ticker_->AbortAnimations(target_property, needs_completion);
 }
 
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
-  PushAttachedTickersToImplThread(player_impl);
-  PushPropertiesToImplThread(player_impl);
+  animation_ticker_->PushPropertiesTo(player_impl->animation_ticker_.get());
 }
 
 void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   DCHECK(!monotonic_time.is_null());
-  for (auto& ticker : tickers_)
-    ticker->Tick(monotonic_time, nullptr);
+  animation_ticker_->Tick(monotonic_time, nullptr);
 }
 
 void AnimationPlayer::UpdateState(bool start_ready_animations,
                                   AnimationEvents* events) {
-  for (auto& ticker : tickers_) {
-    ticker->UpdateState(start_ready_animations, events);
-    ticker->UpdateTickingState(UpdateTickingType::NORMAL);
-  }
+  animation_ticker_->UpdateState(start_ready_animations, events);
+  animation_ticker_->UpdateTickingState(UpdateTickingType::NORMAL);
 }
 
 void AnimationPlayer::AddToTicking() {
-  ++ticking_tickers_count;
-  if (ticking_tickers_count > 1)
-    return;
   DCHECK(animation_host_);
   animation_host_->AddToTicking(this);
 }
 
 void AnimationPlayer::AnimationRemovedFromTicking() {
-  DCHECK_GE(ticking_tickers_count, 0);
-  if (!ticking_tickers_count)
-    return;
-  --ticking_tickers_count;
   DCHECK(animation_host_);
-  DCHECK_GE(ticking_tickers_count, 0);
-  if (ticking_tickers_count)
-    return;
   animation_host_->RemoveFromTicking(this);
 }
 
@@ -289,11 +191,17 @@ void AnimationPlayer::NotifyAnimationTakeover(const AnimationEvent& event) {
   }
 }
 
+bool AnimationPlayer::NotifyAnimationFinishedForTesting(
+    TargetProperty::Type target_property,
+    int group_id) {
+  AnimationEvent event(AnimationEvent::FINISHED,
+                       animation_ticker_->element_id(), group_id,
+                       target_property, base::TimeTicks());
+  return animation_ticker_->NotifyAnimationFinished(event);
+}
+
 size_t AnimationPlayer::TickingAnimationsCount() const {
-  size_t count = 0;
-  for (auto& ticker : tickers_)
-    count += ticker->TickingAnimationsCount();
-  return count;
+  return animation_ticker_->TickingAnimationsCount();
 }
 
 void AnimationPlayer::SetNeedsCommit() {
@@ -302,49 +210,29 @@ void AnimationPlayer::SetNeedsCommit() {
 }
 
 void AnimationPlayer::SetNeedsPushProperties() {
-  if (!animation_timeline_)
-    return;
+  DCHECK(animation_timeline_);
   animation_timeline_->SetNeedsPushProperties();
 }
 
 void AnimationPlayer::ActivateAnimations() {
-  for (auto& ticker : tickers_) {
-    ticker->ActivateAnimations();
-    ticker->UpdateTickingState(UpdateTickingType::NORMAL);
-  }
+  animation_ticker_->ActivateAnimations();
+  animation_ticker_->UpdateTickingState(UpdateTickingType::NORMAL);
 }
 
-Animation* AnimationPlayer::GetAnimationForTicker(
-    TargetProperty::Type target_property,
-    TickerId ticker_id) const {
-  DCHECK(GetTickerById(ticker_id));
-  return GetTickerById(ticker_id)->GetAnimation(target_property);
+Animation* AnimationPlayer::GetAnimation(
+    TargetProperty::Type target_property) const {
+  return animation_ticker_->GetAnimation(target_property);
 }
 
 std::string AnimationPlayer::ToString() const {
-  std::string output = base::StringPrintf("AnimationPlayer{id=%d", id_);
-  for (const auto& ticker : tickers_) {
-    output += base::StringPrintf(", element_id=%s, animations=[%s]",
-                                 ticker->element_id().ToString().c_str(),
-                                 ticker->AnimationsToString().c_str());
-  }
-  return output + "}";
+  return base::StringPrintf(
+      "AnimationPlayer{id=%d, element_id=%s, animations=[%s]}", id_,
+      animation_ticker_->element_id().ToString().c_str(),
+      animation_ticker_->AnimationsToString().c_str());
 }
 
 bool AnimationPlayer::IsWorkletAnimationPlayer() const {
   return false;
-}
-
-void AnimationPlayer::AddTicker(std::unique_ptr<AnimationTicker> ticker) {
-  ticker->SetAnimationPlayer(this);
-  tickers_.push_back(std::move(ticker));
-
-  SetNeedsPushProperties();
-}
-
-AnimationTicker* AnimationPlayer::GetTickerById(TickerId ticker_id) const {
-  // May return nullptr when syncing tickers_ to impl.
-  return tickers_.size() > ticker_id ? tickers_[ticker_id].get() : nullptr;
 }
 
 }  // namespace cc
