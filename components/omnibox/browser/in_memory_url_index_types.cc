@@ -10,10 +10,11 @@
 #include <numeric>
 #include <set>
 
+#include "base/feature_list.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
-#include "base/feature_list.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/tailored_word_break_iterator.h"
 #include "net/base/escape.h"
@@ -190,6 +191,11 @@ HistoryInfoMapValue& HistoryInfoMapValue::operator=(
     HistoryInfoMapValue&& other) = default;
 HistoryInfoMapValue::~HistoryInfoMapValue() = default;
 
+size_t HistoryInfoMapValue::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(url_row) +
+         base::trace_event::EstimateMemoryUsage(visits);
+}
+
 // RowWordStarts ---------------------------------------------------------------
 
 RowWordStarts::RowWordStarts() = default;
@@ -198,6 +204,11 @@ RowWordStarts::RowWordStarts(RowWordStarts&& other) = default;
 RowWordStarts& RowWordStarts::operator=(const RowWordStarts& other) = default;
 RowWordStarts& RowWordStarts::operator=(RowWordStarts&& other) = default;
 RowWordStarts::~RowWordStarts() = default;
+
+size_t RowWordStarts::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(url_word_starts_) +
+         base::trace_event::EstimateMemoryUsage(title_word_starts_);
+}
 
 void RowWordStarts::Clear() {
   url_word_starts_.clear();

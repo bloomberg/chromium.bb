@@ -158,6 +158,10 @@ struct HistoryInfoMapValue {
   HistoryInfoMapValue& operator=(HistoryInfoMapValue&& other);
   ~HistoryInfoMapValue();
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
+
   // This field is always populated.
   history::URLRow url_row;
 
@@ -179,6 +183,10 @@ struct RowWordStarts {
   RowWordStarts& operator=(const RowWordStarts& other);
   RowWordStarts& operator=(RowWordStarts&& other);
   ~RowWordStarts();
+
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
 
   // Clears both url_word_starts_ and title_word_starts_.
   void Clear();

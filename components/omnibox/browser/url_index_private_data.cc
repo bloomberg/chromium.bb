@@ -483,6 +483,22 @@ void URLIndexPrivateData::Clear() {
   word_starts_map_.clear();
 }
 
+size_t URLIndexPrivateData::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(search_term_cache_);
+  res += base::trace_event::EstimateMemoryUsage(word_list_);
+  res += base::trace_event::EstimateMemoryUsage(available_words_);
+  res += base::trace_event::EstimateMemoryUsage(word_map_);
+  res += base::trace_event::EstimateMemoryUsage(char_word_map_);
+  res += base::trace_event::EstimateMemoryUsage(word_id_history_map_);
+  res += base::trace_event::EstimateMemoryUsage(history_id_word_map_);
+  res += base::trace_event::EstimateMemoryUsage(history_info_map_);
+  res += base::trace_event::EstimateMemoryUsage(word_starts_map_);
+
+  return res;
+}
+
 URLIndexPrivateData::~URLIndexPrivateData() {}
 
 HistoryIDVector URLIndexPrivateData::HistoryIDsFromWords(
@@ -1298,6 +1314,11 @@ URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem() : used_(true) {
 
 URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem(
     const SearchTermCacheItem& other) = default;
+
+size_t URLIndexPrivateData::SearchTermCacheItem::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(word_id_set_) +
+         base::trace_event::EstimateMemoryUsage(history_id_set_);
+}
 
 URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {
 }

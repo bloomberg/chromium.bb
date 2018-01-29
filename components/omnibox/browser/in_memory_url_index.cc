@@ -4,12 +4,16 @@
 
 #include "components/omnibox/browser/in_memory_url_index.h"
 
+#include <cinttypes>
 #include <memory>
 
 #include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
@@ -98,9 +102,15 @@ InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
   // TODO(mrossetti): Register for language change notifications.
   if (history_service_)
     history_service_->AddObserver(this);
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "InMemoryURLIndex", base::ThreadTaskRunnerHandle::Get());
 }
 
 InMemoryURLIndex::~InMemoryURLIndex() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+
   // If there was a history directory (which there won't be for some unit tests)
   // then insure that the cache has already been saved.
   DCHECK(history_dir_.empty() || !needs_to_be_cached_);
@@ -201,6 +211,26 @@ void InMemoryURLIndex::OnHistoryServiceLoaded(
   if (listen_to_history_service_loaded_)
     ScheduleRebuildFromHistory();
   listen_to_history_service_loaded_ = false;
+}
+
+bool InMemoryURLIndex::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* process_memory_dump) {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(scheme_whitelist_);
+
+  // TODO(dyaroshev): Add support for scoped_refptr in
+  //                  base::trace_event::EstimateMemoryUsage.
+  res += sizeof(URLIndexPrivateData) + private_data_->EstimateMemoryUsage();
+
+  const std::string dump_name =
+      base::StringPrintf("omnibox/in_memory_url_index_0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(this));
+  auto* dump = process_memory_dump->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, res);
+  return true;
 }
 
 // Restoring from Cache --------------------------------------------------------
