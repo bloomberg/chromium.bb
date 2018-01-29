@@ -54,6 +54,7 @@ import sys
 
 import argparse
 import json
+import logging
 import os
 import subprocess
 import urllib2
@@ -331,7 +332,7 @@ def DownloadCoverageToolsIfNeeded():
   try:
     clang_update.DownloadAndUnpack(coverage_tools_url,
                                    clang_update.LLVM_BUILD_DIR)
-    print('Coverage tools %s unpacked' % package_version)
+    logging.info('Coverage tools %s unpacked', package_version)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
       file_handle.write('%s,%s' % (package_version, platform))
       file_handle.write('\n')
@@ -357,6 +358,8 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
   # [[-object BIN]] [SOURCES]
   # NOTE: For object files, the first one is specified as a positional argument,
   # and the rest are specified as keyword argument.
+  logging.debug('Generating per file line by line coverage reports using '
+                '"llvm-cov show" command')
   subprocess_cmd = [
       LLVM_COV_PATH, 'show', '-format=html',
       '-output-dir={}'.format(OUTPUT_DIR),
@@ -365,16 +368,16 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
   subprocess_cmd.extend(filters)
-
   subprocess.check_call(subprocess_cmd)
+  logging.debug('Finished running "llvm-cov show" command')
 
 
 def _GeneratePerDirectoryCoverageInHtml(binary_paths, profdata_file_path,
                                         filters):
   """Generates coverage breakdown per directory."""
+  logging.debug('Calculating and writing per-directory coverage reports')
   per_file_coverage_summary = _GeneratePerFileCoverageSummary(
       binary_paths, profdata_file_path, filters)
-
   per_directory_coverage_summary = defaultdict(
       lambda: _CoverageSummary(0, 0, 0, 0, 0, 0))
 
@@ -392,6 +395,9 @@ def _GeneratePerDirectoryCoverageInHtml(binary_paths, profdata_file_path,
   for dir_path in per_directory_coverage_summary:
     _GenerateCoverageInHtmlForDirectory(
         dir_path, per_directory_coverage_summary, per_file_coverage_summary)
+
+  logging.debug(
+      'Finished calculating and writing per-directory coverage reports')
 
 
 def _GenerateCoverageInHtmlForDirectory(
@@ -496,8 +502,7 @@ def _BuildTargets(targets, jobs_count):
     build_args = _ParseArgsGnFile()
     return 'use_goma' in build_args and build_args['use_goma'] == 'true'
 
-  print('Building %s' % str(targets))
-
+  logging.info('Building %s', str(targets))
   if jobs_count is None and _IsGomaConfigured():
     jobs_count = DEFAULT_GOMA_JOBS
 
@@ -507,6 +512,7 @@ def _BuildTargets(targets, jobs_count):
 
   subprocess_cmd.extend(targets)
   subprocess.check_call(subprocess_cmd)
+  logging.debug('Finished building %s', str(targets))
 
 
 def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
@@ -519,6 +525,8 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
   Returns:
     A list of relative paths to the generated profraw data files.
   """
+  logging.debug('Executing the test commands')
+
   # Remove existing profraw data files.
   for file_or_dir in os.listdir(OUTPUT_DIR):
     if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
@@ -527,6 +535,8 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
   # Run all test targets to generate profraw data files.
   for target, command in zip(targets, commands):
     _ExecuteCommand(target, command)
+
+  logging.debug('Finished executing the test commands')
 
   profraw_file_paths = []
   for file_or_dir in os.listdir(OUTPUT_DIR):
@@ -570,8 +580,8 @@ def _ExecuteCommand(target, command):
   output_file_name = os.extsep.join([target + '_output', 'txt'])
   output_file_path = os.path.join(OUTPUT_DIR, output_file_name)
 
-  print('Running command: "%s", the output is redirected to "%s"' %
-        (command, output_file_path))
+  logging.info('Running command: "%s", the output is redirected to "%s"',
+               command, output_file_path)
   output = subprocess.check_output(
       command.split(), env={
           'LLVM_PROFILE_FILE': expected_profraw_file_path
@@ -593,10 +603,9 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
   Raises:
     CalledProcessError: An error occurred merging profraw data files.
   """
-  print('Creating the profile data file')
-
+  logging.info('Creating the coverage profile data file')
+  logging.debug('Merging profraw files to create profdata file')
   profdata_file_path = os.path.join(OUTPUT_DIR, PROFDATA_FILE_NAME)
-
   try:
     subprocess_cmd = [
         LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path, '-sparse=true'
@@ -607,6 +616,9 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
     print('Failed to merge profraw files to create profdata file')
     raise error
 
+  logging.debug('Finished merging profraw files')
+  logging.info('Code coverage profile data is created as: %s',
+               profdata_file_path)
   return profdata_file_path
 
 
@@ -616,6 +628,8 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
   # [[-object BIN]] [SOURCES].
   # NOTE: For object files, the first one is specified as a positional argument,
   # and the rest are specified as keyword argument.
+  logging.debug('Generating per-file code coverage summary using "llvm-cov '
+                'export -summary-only" command')
   subprocess_cmd = [
       LLVM_COV_PATH, 'export', '-summary-only',
       '-instr-profile=' + profdata_file_path, binary_paths[0]
@@ -652,6 +666,7 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
         lines_total=summary['lines']['count'],
         lines_covered=summary['lines']['covered'])
 
+  logging.debug('Finished generating per-file code coverage summary')
   return per_file_coverage_summary
 
 
@@ -782,6 +797,15 @@ def _ParseCommandArguments():
       '\'ninja -h\' for more details.')
 
   arg_parser.add_argument(
+      '-v',
+      '--verbose',
+      action='store_true',
+      help='Prints additional output for diagnostics.')
+
+  arg_parser.add_argument(
+      '-l', '--log_file', type=str, help='Redirects logs to a file.')
+
+  arg_parser.add_argument(
       'targets', nargs='+', help='The names of the test targets to run.')
 
   args = arg_parser.parse_args()
@@ -803,6 +827,11 @@ def Main():
   global OUTPUT_DIR
   OUTPUT_DIR = args.output_dir
 
+  log_level = logging.DEBUG if args.verbose else logging.INFO
+  log_format = '[%(asctime)s] %(message)s'
+  log_file = args.log_file if args.log_file else None
+  logging.basicConfig(filename=log_file, level=log_level, format=log_format)
+
   assert len(args.targets) == len(args.command), ('Number of targets must be '
                                                   'equal to the number of test '
                                                   'commands.')
@@ -823,8 +852,8 @@ def Main():
       args.targets, args.command, args.jobs)
   binary_paths = [_GetBinaryPath(command) for command in args.command]
 
-  print('Generating code coverage report in html (this can take a while '
-        'depending on size of target!)')
+  logging.info('Generating code coverage report in html (this can take a while '
+               'depending on size of target!)')
   _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
                                         absolute_filter_paths)
   _GeneratePerDirectoryCoverageInHtml(binary_paths, profdata_file_path,
@@ -836,8 +865,8 @@ def Main():
 
   html_index_file_path = 'file://' + os.path.abspath(
       os.path.join(OUTPUT_DIR, 'index.html'))
-  print('\nCode coverage profile data is created as: %s' % profdata_file_path)
-  print('Index file for html report is generated as: %s' % html_index_file_path)
+  logging.info('Index file for html report is generated as: %s',
+               html_index_file_path)
 
 
 if __name__ == '__main__':
