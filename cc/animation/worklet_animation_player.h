@@ -7,8 +7,8 @@
 
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_ticker.h"
-#include "cc/animation/single_ticker_animation_player.h"
 
 namespace cc {
 
@@ -18,7 +18,7 @@ class ScrollTimeline;
 // timing to be controlled by an animator instance that is running in a
 // AnimationWorkletGlobalScope.
 class CC_ANIMATION_EXPORT WorkletAnimationPlayer final
-    : public SingleTickerAnimationPlayer,
+    : public AnimationPlayer,
       AnimationTicker::AnimationTimeProvider {
  public:
   WorkletAnimationPlayer(int id,

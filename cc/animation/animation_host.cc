@@ -15,7 +15,6 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
-#include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
@@ -124,10 +123,10 @@ void AnimationHost::UnregisterElement(ElementId element_id,
     element_animations->ElementUnregistered(element_id, list_type);
 }
 
-void AnimationHost::RegisterTickerForElement(ElementId element_id,
-                                             AnimationTicker* ticker) {
+void AnimationHost::RegisterPlayerForElement(ElementId element_id,
+                                             AnimationPlayer* player) {
   DCHECK(element_id);
-  DCHECK(ticker);
+  DCHECK(player);
 
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
@@ -143,24 +142,26 @@ void AnimationHost::RegisterTickerForElement(ElementId element_id,
     element_animations->InitAffectedElementTypes();
   }
 
-  element_animations->AddTicker(ticker);
+  element_animations->AddTicker(player->animation_ticker());
 }
 
-void AnimationHost::UnregisterTickerForElement(ElementId element_id,
-                                               AnimationTicker* ticker) {
+void AnimationHost::UnregisterPlayerForElement(ElementId element_id,
+                                               AnimationPlayer* player) {
   DCHECK(element_id);
-  DCHECK(ticker);
+  DCHECK(player);
 
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
-  element_animations->RemoveTicker(ticker);
+  element_animations->RemoveTicker(player->animation_ticker());
 
   if (element_animations->IsEmpty()) {
     element_animations->ClearAffectedElementTypes();
     element_to_animations_map_.erase(element_animations->element_id());
     element_animations->SetAnimationHost(nullptr);
   }
+
+  RemoveFromTicking(player);
 }
 
 void AnimationHost::SetMutatorHostClient(MutatorHostClient* client) {

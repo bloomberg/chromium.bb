@@ -7,11 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_ticker.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "cc/animation/single_ticker_animation_player.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/time_util.h"
@@ -28,7 +28,7 @@ using cc::TransformKeyframe;
 
 namespace cc {
 
-int AddOpacityTransition(SingleTickerAnimationPlayer* target,
+int AddOpacityTransition(AnimationPlayer* target,
                          double duration,
                          float start_opacity,
                          float end_opacity,
@@ -53,12 +53,11 @@ int AddOpacityTransition(SingleTickerAnimationPlayer* target,
       TargetProperty::OPACITY));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimationForTicker(std::move(animation),
-                                target->animation_ticker()->id());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 
-int AddAnimatedTransform(SingleTickerAnimationPlayer* target,
+int AddAnimatedTransform(AnimationPlayer* target,
                          double duration,
                          TransformOperations start_operations,
                          TransformOperations operations) {
@@ -80,12 +79,11 @@ int AddAnimatedTransform(SingleTickerAnimationPlayer* target,
       TargetProperty::TRANSFORM));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimationForTicker(std::move(animation),
-                                target->animation_ticker()->id());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 
-int AddAnimatedTransform(SingleTickerAnimationPlayer* target,
+int AddAnimatedTransform(AnimationPlayer* target,
                          double duration,
                          int delta_x,
                          int delta_y) {
@@ -99,7 +97,7 @@ int AddAnimatedTransform(SingleTickerAnimationPlayer* target,
   return AddAnimatedTransform(target, duration, start_operations, operations);
 }
 
-int AddAnimatedFilter(SingleTickerAnimationPlayer* target,
+int AddAnimatedFilter(AnimationPlayer* target,
                       double duration,
                       float start_brightness,
                       float end_brightness) {
@@ -126,8 +124,7 @@ int AddAnimatedFilter(SingleTickerAnimationPlayer* target,
       TargetProperty::FILTER));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimationForTicker(std::move(animation),
-                                target->animation_ticker()->id());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 
@@ -216,7 +213,7 @@ std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
   return base::WrapUnique(new FakeFloatTransition(*this));
 }
 
-int AddScrollOffsetAnimationToPlayer(SingleTickerAnimationPlayer* player,
+int AddScrollOffsetAnimationToPlayer(AnimationPlayer* player,
                                      gfx::ScrollOffset initial_value,
                                      gfx::ScrollOffset target_value,
                                      bool impl_only) {
@@ -233,27 +230,26 @@ int AddScrollOffsetAnimationToPlayer(SingleTickerAnimationPlayer* player,
       TargetProperty::SCROLL_OFFSET));
   animation->set_is_impl_only(impl_only);
 
-  player->AddAnimationForTicker(std::move(animation),
-                                player->animation_ticker()->id());
+  player->AddAnimation(std::move(animation));
 
   return id;
 }
 
-int AddAnimatedTransformToPlayer(SingleTickerAnimationPlayer* player,
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
                                  double duration,
                                  int delta_x,
                                  int delta_y) {
   return AddAnimatedTransform(player, duration, delta_x, delta_y);
 }
 
-int AddAnimatedTransformToPlayer(SingleTickerAnimationPlayer* player,
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
                                  double duration,
                                  TransformOperations start_operations,
                                  TransformOperations operations) {
   return AddAnimatedTransform(player, duration, start_operations, operations);
 }
 
-int AddOpacityTransitionToPlayer(SingleTickerAnimationPlayer* player,
+int AddOpacityTransitionToPlayer(AnimationPlayer* player,
                                  double duration,
                                  float start_opacity,
                                  float end_opacity,
@@ -262,14 +258,14 @@ int AddOpacityTransitionToPlayer(SingleTickerAnimationPlayer* player,
                               use_timing_function);
 }
 
-int AddAnimatedFilterToPlayer(SingleTickerAnimationPlayer* player,
+int AddAnimatedFilterToPlayer(AnimationPlayer* player,
                               double duration,
                               float start_brightness,
                               float end_brightness) {
   return AddAnimatedFilter(player, duration, start_brightness, end_brightness);
 }
 
-int AddOpacityStepsToPlayer(SingleTickerAnimationPlayer* player,
+int AddOpacityStepsToPlayer(AnimationPlayer* player,
                             double duration,
                             float start_opacity,
                             float end_opacity,
@@ -292,19 +288,18 @@ int AddOpacityStepsToPlayer(SingleTickerAnimationPlayer* player,
       TargetProperty::OPACITY));
   animation->set_needs_synchronized_start_time(true);
 
-  player->AddAnimationForTicker(std::move(animation),
-                                player->animation_ticker()->id());
+  player->AddAnimation(std::move(animation));
   return id;
 }
 
 void AddAnimationToElementWithPlayer(ElementId element_id,
                                      scoped_refptr<AnimationTimeline> timeline,
                                      std::unique_ptr<Animation> animation) {
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
   player->AttachElement(element_id);
-  DCHECK(player->animation_ticker()->element_animations());
+  DCHECK(player->element_animations());
   player->AddAnimation(std::move(animation));
 }
 
@@ -353,11 +348,11 @@ int AddAnimatedFilterToElementWithPlayer(
     double duration,
     float start_brightness,
     float end_brightness) {
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
   player->AttachElement(element_id);
-  DCHECK(player->animation_ticker()->element_animations());
+  DCHECK(player->element_animations());
   return AddAnimatedFilterToPlayer(player.get(), duration, start_brightness,
                                    end_brightness);
 }
@@ -368,11 +363,11 @@ int AddAnimatedTransformToElementWithPlayer(
     double duration,
     int delta_x,
     int delta_y) {
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
   player->AttachElement(element_id);
-  DCHECK(player->animation_ticker()->element_animations());
+  DCHECK(player->element_animations());
   return AddAnimatedTransformToPlayer(player.get(), duration, delta_x, delta_y);
 }
 
@@ -382,11 +377,11 @@ int AddAnimatedTransformToElementWithPlayer(
     double duration,
     TransformOperations start_operations,
     TransformOperations operations) {
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
   player->AttachElement(element_id);
-  DCHECK(player->animation_ticker()->element_animations());
+  DCHECK(player->element_animations());
   return AddAnimatedTransformToPlayer(player.get(), duration, start_operations,
                                       operations);
 }
@@ -398,11 +393,11 @@ int AddOpacityTransitionToElementWithPlayer(
     float start_opacity,
     float end_opacity,
     bool use_timing_function) {
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
   player->AttachElement(element_id);
-  DCHECK(player->animation_ticker()->element_animations());
+  DCHECK(player->element_animations());
   return AddOpacityTransitionToPlayer(player.get(), duration, start_opacity,
                                       end_opacity, use_timing_function);
 }
