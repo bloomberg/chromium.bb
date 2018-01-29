@@ -919,13 +919,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
                                       int blk_col, TX_SIZE tx_size) {
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  (void)blk_row;
-  (void)blk_col;
-#if CONFIG_INTRABC && (CONFIG_TXK_SEL)
-  // TODO(aconverse@google.com): Handle INTRABC + EXT_TX + TXK_SEL
-  if (is_intrabc_block(mbmi)) return DCT_DCT;
-#endif  // CONFIG_INTRABC && (CONFIG_TXK_SEL)
-
   const struct macroblockd_plane *const pd = &xd->plane[plane_type];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
   const TxSetType tx_set_type =
@@ -952,6 +945,9 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   assert(tx_type < TX_TYPES);
   if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
   return tx_type;
+#else
+  (void)blk_row;
+  (void)blk_col;
 #endif  // CONFIG_TXK_SEL
 
   // TODO(sarahparker) This assumes reduced_tx_set_used == 0. I will do a

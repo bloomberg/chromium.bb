@@ -8900,7 +8900,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   if (rd_cost->rate != INT_MAX && rd_cost->rdcost < best_rd)
     best_rd = rd_cost->rdcost;
   if (rd_pick_intrabc_mode_sb(cpi, x, rd_cost, bsize, best_rd) < best_rd) {
-    ctx->skip = x->skip;  // FIXME where is the proper place to set this?!
+    ctx->skip = x->skip;
     memcpy(ctx->blk_skip[0], x->blk_skip[0],
            sizeof(x->blk_skip[0][0]) * ctx->num_4x4_blk);
     assert(rd_cost->rate != INT_MAX);
