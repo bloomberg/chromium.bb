@@ -41,8 +41,8 @@ class KeyMobileSitesSmoothPage(page_module.Page):
 
 class LinkedInSmoothPage(key_mobile_sites_pages.LinkedInPage):
 
-  def __init__(self, page_set):
-    super(LinkedInSmoothPage, self).__init__(page_set=page_set)
+  def __init__(self, page_set, name=''):
+    super(LinkedInSmoothPage, self).__init__(page_set=page_set, name=name)
 
   # Linkedin has expensive shader compilation so it can benefit from shader
   # cache from reload.
@@ -54,10 +54,11 @@ class LinkedInSmoothPage(key_mobile_sites_pages.LinkedInPage):
 
 class WowwikiSmoothPage(KeyMobileSitesSmoothPage):
   """Why: Mobile wiki."""
-  def __init__(self, page_set):
+  def __init__(self, page_set, name=''):
     super(WowwikiSmoothPage, self).__init__(
       url='http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria',
-      page_set=page_set)
+      page_set=page_set,
+      name=name)
 
   # Wowwiki has expensive shader compilation so it can benefit from shader
   # cache from reload.

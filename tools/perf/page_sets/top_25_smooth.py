@@ -18,11 +18,13 @@ def _IssueMarkerAndScroll(action_runner, scroll_forever):
 
 
 def _CreatePageClassWithSmoothInteractions(page_cls):
+
   class DerivedSmoothPage(page_cls):  # pylint: disable=no-init
 
     def RunPageInteractions(self, action_runner):
       action_runner.Wait(1)
       _IssueMarkerAndScroll(action_runner, self.story_set.scroll_forever)
+
   return DerivedSmoothPage
 
 
@@ -32,7 +34,9 @@ class TopSmoothPage(page_module.Page):
     if name == '':
       name = url
     super(TopSmoothPage, self).__init__(
-        url=url, page_set=page_set, name=name,
+        url=url,
+        page_set=page_set,
+        name=name,
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
 
   def RunPageInteractions(self, action_runner):
@@ -41,20 +45,13 @@ class TopSmoothPage(page_module.Page):
 
 
 class GmailSmoothPage(top_pages.GmailPage):
-
   """ Why: productivity, top google properties """
 
-  def __init__(self, page_set,
-               shared_page_state_class=shared_page_state.SharedPageState):
-    super(GmailSmoothPage, self).__init__(
-        page_set=page_set,
-        shared_page_state_class=shared_page_state_class)
-
   def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('''
+    action_runner.ExecuteJavaScript("""
         gmonkey.load('2.0', function(api) {
           window.__scrollableElementForTelemetry = api.getScrollableElement();
-        });''')
+        });""")
     action_runner.WaitForJavaScriptCondition(
         'window.__scrollableElementForTelemetry != null')
     action_runner.Wait(1)
@@ -63,14 +60,15 @@ class GmailSmoothPage(top_pages.GmailPage):
           element_function='window.__scrollableElementForTelemetry')
       if self.story_set.scroll_forever:
         while True:
-          action_runner.ScrollElement(direction='up',
+          action_runner.ScrollElement(
+              direction='up',
               element_function='window.__scrollableElementForTelemetry')
-          action_runner.ScrollElement(direction='down',
+          action_runner.ScrollElement(
+              direction='down',
               element_function='window.__scrollableElementForTelemetry')
 
 
 class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
-
   """ Why: productivity, top google properties """
 
   def RunPageInteractions(self, action_runner):
@@ -79,14 +77,13 @@ class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
       action_runner.ScrollElement(selector='#scrolltimedeventswk')
       if self.story_set.scroll_forever:
         while True:
-          action_runner.ScrollElement(direction='up',
-                                      selector='#scrolltimedeventswk')
-          action_runner.ScrollElement(direction='down',
-                                      selector='#scrolltimedeventswk')
+          action_runner.ScrollElement(
+              direction='up', selector='#scrolltimedeventswk')
+          action_runner.ScrollElement(
+              direction='down', selector='#scrolltimedeventswk')
 
 
 class GoogleDocSmoothPage(top_pages.GoogleDocPage):
-
   """ Why: productivity, top google properties; Sample doc in the link """
 
   def RunPageInteractions(self, action_runner):
@@ -95,14 +92,13 @@ class GoogleDocSmoothPage(top_pages.GoogleDocPage):
       action_runner.ScrollElement(selector='.kix-appview-editor')
       if self.story_set.scroll_forever:
         while True:
-          action_runner.ScrollElement(direction='up',
-                                      selector='.kix-appview-editor')
-          action_runner.ScrollElement(direction='down',
-                                      selector='.kix-appview-editor')
+          action_runner.ScrollElement(
+              direction='up', selector='.kix-appview-editor')
+          action_runner.ScrollElement(
+              direction='down', selector='.kix-appview-editor')
 
 
 class ESPNSmoothPage(top_pages.ESPNPage):
-
   """ Why: #1 sports """
 
   def RunPageInteractions(self, action_runner):
@@ -116,47 +112,48 @@ class ESPNSmoothPage(top_pages.ESPNPage):
 
 
 class Top25SmoothPageSet(story.StorySet):
-
   """ Pages hand-picked for 2012 CrOS scrolling tuning efforts. """
 
-  def __init__(self, techcrunch=True, scroll_forever=False):
+  def __init__(self, scroll_forever=False):
     super(Top25SmoothPageSet, self).__init__(
         archive_data_file='data/top_25_smooth.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.scroll_forever = scroll_forever
+
     desktop_state_class = shared_page_state.SharedDesktopPageState
 
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.GoogleWebSearchPage)(self, desktop_state_class))
-    self.AddStory(GmailSmoothPage(self, desktop_state_class))
-    self.AddStory(GoogleCalendarSmoothPage(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.GoogleImageSearchPage)(self, desktop_state_class))
-    self.AddStory(GoogleDocSmoothPage(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.GooglePlusPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.YoutubePage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.BlogspotPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.WordpressPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.FacebookPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.LinkedinPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.WikipediaPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.TwitterPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.PinterestPage)(self, desktop_state_class))
-    self.AddStory(ESPNSmoothPage(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.WeatherPage)(self, desktop_state_class))
-    self.AddStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.YahooGamesPage)(self, desktop_state_class))
+    smooth_page_classes = [
+        GmailSmoothPage,
+        GoogleCalendarSmoothPage,
+        GoogleDocSmoothPage,
+        ESPNSmoothPage,
+    ]
+
+    for smooth_page_class in smooth_page_classes:
+      self.AddStory(
+          smooth_page_class(self, shared_page_state_class=desktop_state_class))
+
+    non_smooth_page_classes = [
+        top_pages.GoogleWebSearchPage,
+        top_pages.GoogleImageSearchPage,
+        top_pages.GooglePlusPage,
+        top_pages.YoutubePage,
+        top_pages.BlogspotPage,
+        top_pages.WordpressPage,
+        top_pages.FacebookPage,
+        top_pages.LinkedinPage,
+        top_pages.WikipediaPage,
+        top_pages.TwitterPage,
+        top_pages.PinterestPage,
+        top_pages.WeatherPage,
+        top_pages.YahooGamesPage,
+    ]
+
+    for non_smooth_page_class in non_smooth_page_classes:
+      self.AddStory(
+          _CreatePageClassWithSmoothInteractions(non_smooth_page_class)(
+              self, shared_page_state_class=desktop_state_class))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)
@@ -174,11 +171,9 @@ class Top25SmoothPageSet(story.StorySet):
         'http://answers.yahoo.com',
         # Why: #1 Alexa sports
         'http://sports.yahoo.com/',
+        # Why: top tech blog
+        'http://techcrunch.com',
     ]
-
-    if techcrunch:
-      # Why: top tech blog
-      other_urls.append('http://techcrunch.com')
 
     for url in other_urls:
       self.AddStory(TopSmoothPage(url, self))
