@@ -57,7 +57,7 @@ Node* FlatTreeTraversalNg::TraverseChild(const Node& node,
   Node* child;
   ElementShadow* shadow = ShadowFor(node);
   if (shadow) {
-    ShadowRoot& shadow_root = shadow->GetShadowRoot();
+    ShadowRoot& shadow_root = shadow->YoungestShadowRoot();
     child = direction == kTraversalDirectionForward ? shadow_root.firstChild()
                                                     : shadow_root.lastChild();
   } else {

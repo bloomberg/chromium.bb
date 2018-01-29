@@ -303,7 +303,7 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByShadowHost(
     const Element& element,
     FocusController::OwnerMap& owner_map) {
   DCHECK(IsShadowHost(element));
-  return ScopedFocusNavigation(element.Shadow()->GetShadowRoot(), nullptr,
+  return ScopedFocusNavigation(element.Shadow()->YoungestShadowRoot(), nullptr,
                                owner_map);
 }
 

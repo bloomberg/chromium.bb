@@ -60,7 +60,8 @@ class CORE_EXPORT ElementShadowV0 final
  private:
   explicit ElementShadowV0(ElementShadow&);
 
-  ShadowRoot& GetShadowRoot() const;
+  ShadowRoot& YoungestShadowRoot() const;
+  ShadowRoot& OldestShadowRoot() const;
 
   void DistributeNodeChildrenTo(V0InsertionPoint*, ContainerNode*);
 
