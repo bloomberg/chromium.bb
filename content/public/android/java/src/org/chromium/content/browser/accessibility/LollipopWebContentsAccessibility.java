@@ -161,7 +161,7 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (!isNativeInitialized()) return;
-        mContext.unregisterReceiver(mBroadcastReceiver);
+        mContext.getApplicationContext().unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
         if (!isNativeInitialized()) return;
         try {
             IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
-            mContext.registerReceiver(mBroadcastReceiver, filter);
+            mContext.getApplicationContext().registerReceiver(mBroadcastReceiver, filter);
         } catch (ReceiverCallNotAllowedException e) {
             // WebView may be running inside a BroadcastReceiver, in which case registerReceiver is
             // not allowed.
