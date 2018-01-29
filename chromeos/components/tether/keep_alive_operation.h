@@ -45,14 +45,15 @@ class KeepAliveOperation : public MessageTransferOperation {
         std::unique_ptr<DeviceStatus> device_status) = 0;
   };
 
-  KeepAliveOperation(const cryptauth::RemoteDevice& device_to_connect,
-                     BleConnectionManager* connection_manager);
   ~KeepAliveOperation() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
+  KeepAliveOperation(const cryptauth::RemoteDevice& device_to_connect,
+                     BleConnectionManager* connection_manager);
+
   // MessageTransferOperation:
   void OnDeviceAuthenticated(
       const cryptauth::RemoteDevice& remote_device) override;

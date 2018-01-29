@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/tether/ble_constants.h"
@@ -209,9 +210,9 @@ class BleScannerImplTest : public testing::Test {
 
     mock_discovery_session_ = nullptr;
 
-    ble_scanner_ = std::make_unique<BleScannerImpl>(
+    ble_scanner_ = base::WrapUnique(new BleScannerImpl(
         mock_adapter_, mock_local_device_data_provider_.get(),
-        fake_ble_synchronizer_.get(), fake_tether_host_fetcher_.get());
+        fake_ble_synchronizer_.get(), fake_tether_host_fetcher_.get()));
 
     mock_eid_generator_ = new cryptauth::MockForegroundEidGenerator();
     mock_eid_generator_->set_background_scan_filter(

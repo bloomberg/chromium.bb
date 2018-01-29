@@ -60,7 +60,7 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
 
-    crash_recovery_manager_ = std::make_unique<CrashRecoveryManagerImpl>(
+    crash_recovery_manager_ = CrashRecoveryManagerImpl::Factory::NewInstance(
         network_state_handler(), fake_active_host_.get(),
         fake_host_scan_cache_.get());
 
@@ -131,7 +131,7 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
 
   bool is_restoration_finished_;
 
-  std::unique_ptr<CrashRecoveryManagerImpl> crash_recovery_manager_;
+  std::unique_ptr<CrashRecoveryManager> crash_recovery_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrashRecoveryManagerImplTest);

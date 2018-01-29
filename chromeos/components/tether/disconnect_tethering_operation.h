@@ -44,14 +44,15 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
                                      bool success) = 0;
   };
 
-  DisconnectTetheringOperation(const cryptauth::RemoteDevice& device_to_connect,
-                               BleConnectionManager* connection_manager);
   ~DisconnectTetheringOperation() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
+  DisconnectTetheringOperation(const cryptauth::RemoteDevice& device_to_connect,
+                               BleConnectionManager* connection_manager);
+
   void NotifyObserversOperationFinished(bool success);
 
   // MessageTransferOperation:

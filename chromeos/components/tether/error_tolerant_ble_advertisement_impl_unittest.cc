@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_synchronizer.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -41,11 +42,11 @@ class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
 
     fake_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
 
-    advertisement_ = std::make_unique<ErrorTolerantBleAdvertisementImpl>(
+    advertisement_ = base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
         kDeviceId,
         std::make_unique<cryptauth::DataWithTimestamp>(
             *fake_advertisement_data_),
-        fake_synchronizer_.get());
+        fake_synchronizer_.get()));
 
     VerifyServiceDataMatches(0u /* command_index */);
   }

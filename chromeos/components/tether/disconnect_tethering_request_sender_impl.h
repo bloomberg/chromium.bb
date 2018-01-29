@@ -38,9 +38,6 @@ class DisconnectTetheringRequestSenderImpl
     static Factory* factory_instance_;
   };
 
-  DisconnectTetheringRequestSenderImpl(
-      BleConnectionManager* ble_connection_manager,
-      TetherHostFetcher* tether_host_fetcher);
   ~DisconnectTetheringRequestSenderImpl() override;
 
   // DisconnectTetheringRequestSender:
@@ -49,6 +46,11 @@ class DisconnectTetheringRequestSenderImpl
 
   // DisconnectTetheringOperation::Observer:
   void OnOperationFinished(const std::string& device_id, bool success) override;
+
+ protected:
+  DisconnectTetheringRequestSenderImpl(
+      BleConnectionManager* ble_connection_manager,
+      TetherHostFetcher* tether_host_fetcher);
 
  private:
   void OnTetherHostFetched(

@@ -76,10 +76,10 @@ SynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler) {
-  return std::make_unique<SynchronousShutdownObjectContainerImpl>(
+  return base::WrapUnique(new SynchronousShutdownObjectContainerImpl(
       asychronous_container, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
-      network_connect, network_connection_handler);
+      network_connect, network_connection_handler));
 }
 
 SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(

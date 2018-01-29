@@ -78,17 +78,18 @@ class HostScannerOperation : public MessageTransferOperation {
         bool is_final_scan_result) = 0;
   };
 
-  HostScannerOperation(
-      const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
-      BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer,
-      TetherHostResponseRecorder* tether_host_response_recorder);
   ~HostScannerOperation() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
+  HostScannerOperation(
+      const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
+      BleConnectionManager* connection_manager,
+      HostScanDevicePrioritizer* host_scan_device_prioritizer,
+      TetherHostResponseRecorder* tether_host_response_recorder);
+
   void NotifyObserversOfScannedDeviceList(bool is_final_scan_result);
 
   // MessageTransferOperation:

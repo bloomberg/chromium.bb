@@ -104,7 +104,7 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
         fake_operation_factory_.get());
 
     disconnect_tethering_request_sender_ =
-        std::make_unique<DisconnectTetheringRequestSenderImpl>(
+        DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
             fake_ble_connection_manager_.get(),
             fake_tether_host_fetcher_.get());
 
@@ -180,7 +180,7 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
   std::unique_ptr<FakeDisconnectTetheringOperationFactory>
       fake_operation_factory_;
 
-  std::unique_ptr<DisconnectTetheringRequestSenderImpl>
+  std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;
   std::unique_ptr<FakeDisconnectTetheringRequestSenderObserver>
       fake_disconnect_tethering_request_sender_observer_;

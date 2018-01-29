@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/ble_synchronizer.h"
@@ -52,8 +53,8 @@ ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
     BleSynchronizerBase* ble_synchronizer) {
-  return std::make_unique<ErrorTolerantBleAdvertisementImpl>(
-      device_id, std::move(advertisement_data), ble_synchronizer);
+  return base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
+      device_id, std::move(advertisement_data), ble_synchronizer));
 }
 
 ErrorTolerantBleAdvertisementImpl::Factory::~Factory() = default;

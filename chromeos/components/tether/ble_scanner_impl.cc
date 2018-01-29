@@ -59,9 +59,9 @@ std::unique_ptr<BleScanner> BleScannerImpl::Factory::BuildInstance(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     BleSynchronizerBase* ble_synchronizer,
     TetherHostFetcher* tether_host_fetcher) {
-  return std::make_unique<BleScannerImpl>(adapter, local_device_data_provider,
-                                          ble_synchronizer,
-                                          tether_host_fetcher);
+  return base::WrapUnique(
+      new BleScannerImpl(adapter, local_device_data_provider, ble_synchronizer,
+                         tether_host_fetcher));
 }
 
 BleScannerImpl::ServiceDataProviderImpl::ServiceDataProviderImpl() = default;

@@ -112,11 +112,11 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  return std::make_unique<TetherComponentImpl>(
+  return base::WrapUnique(new TetherComponentImpl(
       cryptauth_service, tether_host_fetcher, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
-      network_connection_handler, adapter);
+      network_connection_handler, adapter));
 }
 
 TetherComponentImpl::TetherComponentImpl(

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/network/network_state.h"
@@ -48,8 +49,8 @@ CrashRecoveryManagerImpl::Factory::BuildInstance(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     HostScanCache* host_scan_cache) {
-  return std::make_unique<CrashRecoveryManagerImpl>(
-      network_state_handler, active_host, host_scan_cache);
+  return base::WrapUnique(new CrashRecoveryManagerImpl(
+      network_state_handler, active_host, host_scan_cache));
 }
 
 CrashRecoveryManagerImpl::CrashRecoveryManagerImpl(

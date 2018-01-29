@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
@@ -61,17 +62,18 @@ class ConnectTetheringOperation : public MessageTransferOperation {
         ConnectTetheringResponse_ResponseCode error_code) = 0;
   };
 
-  ConnectTetheringOperation(
-      const cryptauth::RemoteDevice& device_to_connect,
-      BleConnectionManager* connection_manager,
-      TetherHostResponseRecorder* tether_host_response_recorder,
-      bool setup_required);
   ~ConnectTetheringOperation() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
+  ConnectTetheringOperation(
+      const cryptauth::RemoteDevice& device_to_connect,
+      BleConnectionManager* connection_manager,
+      TetherHostResponseRecorder* tether_host_response_recorder,
+      bool setup_required);
+
   // MessageTransferOperation:
   void OnDeviceAuthenticated(
       const cryptauth::RemoteDevice& remote_device) override;
@@ -90,6 +92,8 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
  private:
   friend class ConnectTetheringOperationTest;
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
+                           TestOperation_SetupRequired);
 
   void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
 

@@ -60,9 +60,9 @@ ConnectTetheringOperation::Factory::BuildInstance(
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
-  return std::make_unique<ConnectTetheringOperation>(
+  return base::WrapUnique(new ConnectTetheringOperation(
       device_to_connect, connection_manager, tether_host_response_recorder,
-      setup_required);
+      setup_required));
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
