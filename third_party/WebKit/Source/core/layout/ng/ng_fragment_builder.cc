@@ -21,6 +21,24 @@
 
 namespace blink {
 
+namespace {
+
+NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
+    const LayoutObject* layout_object) {
+  DCHECK(layout_object);
+  if (layout_object->IsFloating())
+    return NGPhysicalFragment::NGBoxType::kFloating;
+  if (layout_object->IsOutOfFlowPositioned())
+    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
+  if (layout_object->IsAtomicInlineLevel())
+    return NGPhysicalFragment::NGBoxType::kInlineBlock;
+  if (layout_object->IsInline())
+    return NGPhysicalFragment::NGBoxType::kInlineBox;
+  return NGPhysicalFragment::NGBoxType::kNormalBox;
+}
+
+}  // namespace
+
 NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
                                      scoped_refptr<const ComputedStyle> style,
                                      WritingMode writing_mode,
@@ -201,18 +219,13 @@ void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
 }
 
 NGPhysicalFragment::NGBoxType NGFragmentBuilder::BoxType() const {
-  if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox)
+  if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox) {
+    DCHECK_EQ(box_type_, BoxTypeFromLayoutObject(layout_object_));
     return box_type_;
+  }
+
   // When implicit, compute from LayoutObject.
-  if (!layout_object_ || layout_object_->Style() != &Style())
-    return NGPhysicalFragment::NGBoxType::kAnonymousBox;
-  if (layout_object_->IsFloating())
-    return NGPhysicalFragment::NGBoxType::kFloating;
-  if (layout_object_->IsOutOfFlowPositioned())
-    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
-  if (layout_object_->IsAtomicInlineLevel())
-    return NGPhysicalFragment::NGBoxType::kInlineBlock;
-  return NGPhysicalFragment::NGBoxType::kNormalBox;
+  return BoxTypeFromLayoutObject(layout_object_);
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetBoxType(

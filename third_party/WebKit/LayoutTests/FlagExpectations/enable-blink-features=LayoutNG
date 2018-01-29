@@ -2966,7 +2966,7 @@ crbug.com/714962 fast/css3-text/css3-text-decoration/text-underline-position/tex
 crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-auto.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Failure ]
 crbug.com/714962 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-dynamic.html [ Failure ]
-crbug.com/714962 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-subscript.html [ Crash ]
+crbug.com/714962 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-subscript.html [ Failure ]
 crbug.com/714962 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under-out-of-flow.html [ Failure ]
 crbug.com/714962 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under-vertical.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ Failure ]
