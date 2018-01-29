@@ -98,14 +98,12 @@
 #include "net/http/transport_security_persister.h"
 #include "net/net_features.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -124,7 +122,7 @@
 #include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/content_protocol_handler.h"
@@ -161,15 +159,20 @@
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/ui/crypto_module_delegate_nss.h"
 #include "net/ssl/client_cert_store_nss.h"
-#endif
+#endif  // defined(USE_NSS_CERTS)
 
 #if defined(OS_WIN)
 #include "net/ssl/client_cert_store_win.h"
-#endif
+#endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
 #include "net/ssl/client_cert_store_mac.h"
-#endif
+#endif  // defined(OS_MACOSX)
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_service.h"
+#include "net/url_request/network_error_logging_delegate.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -623,6 +626,7 @@ void ProfileIOData::AppRequestContext::SetJobFactory(
   set_job_factory(job_factory_.get());
 }
 
+#if BUILDFLAG(ENABLE_REPORTING)
 void ProfileIOData::AppRequestContext::SetReportingService(
     std::unique_ptr<net::ReportingService> reporting_service) {
   reporting_service_ = std::move(reporting_service);
@@ -635,10 +639,13 @@ void ProfileIOData::AppRequestContext::SetNetworkErrorLoggingDelegate(
   network_error_logging_delegate_ = std::move(network_error_logging_delegate);
   set_network_error_logging_delegate(network_error_logging_delegate_.get());
 }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 ProfileIOData::AppRequestContext::~AppRequestContext() {
+#if BUILDFLAG(ENABLE_REPORTING)
   SetNetworkErrorLoggingDelegate(nullptr);
   SetReportingService(nullptr);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
   AssertNoURLRequests();
 }
 

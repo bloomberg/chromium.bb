@@ -10,6 +10,7 @@ import("//build/config/ui.gni")
 import("//content/public/common/zygote_features.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
+import("//net/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 import("//third_party/WebKit/public/public_features.gni")
@@ -1150,8 +1151,6 @@ jumbo_source_set("browser") {
     "net/network_quality_observer_impl.h",
     "net/quota_policy_cookie_store.cc",
     "net/quota_policy_cookie_store.h",
-    "net/reporting_service_proxy.cc",
-    "net/reporting_service_proxy.h",
     "net/view_blob_internals_job_factory.cc",
     "net/view_blob_internals_job_factory.h",
     "net/view_http_cache_job_factory.cc",
@@ -2319,6 +2318,13 @@ jumbo_source_set("browser") {
 
   if (use_zygote_handle) {
     sources += [ "zygote_host/zygote_handle_linux.cc" ]
+  }
+
+  if (enable_reporting) {
+    sources += [
+      "net/reporting_service_proxy.cc",
+      "net/reporting_service_proxy.h",
+    ]
   }
 }
 
