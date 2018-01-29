@@ -20,7 +20,32 @@ namespace chromeos {
 namespace tether {
 
 namespace {
+
 const char kTetherFeature[] = "magic_tether";
+
+std::string StateChangeDetailToString(
+    BleConnectionManager::StateChangeDetail state_change_detail) {
+  switch (state_change_detail) {
+    case BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE:
+      return "[none]";
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION:
+      return "[could not attempt connection]";
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED:
+      return "[GATT connection was attempted]";
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_INTERRUPTED_BY_HIGHER_PRIORITY:
+      return "[attempt interrupted by higher priority]";
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED:
+      return "[device was unregistered]";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
 }  // namespace
 
 const int64_t BleConnectionManager::kAdvertisingTimeoutMillis = 12000;
@@ -158,13 +183,18 @@ void BleConnectionManager::ConnectionMetadata::OnSecureChannelStatusChanged(
   const cryptauth::SecureChannel::Status old_status_copy = old_status;
   const cryptauth::SecureChannel::Status new_status_copy = new_status;
 
+  StateChangeDetail state_change_detail =
+      StateChangeDetail::STATE_CHANGE_DETAIL_NONE;
+
   if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED) {
     secure_channel_->RemoveObserver(this);
     secure_channel_.reset();
+    state_change_detail =
+        StateChangeDetail::STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED;
   }
 
   manager_->OnSecureChannelStatusChanged(device_id_, old_status_copy,
-                                         new_status_copy);
+                                         new_status_copy, state_change_detail);
 }
 
 void BleConnectionManager::ConnectionMetadata::OnMessageReceived(
@@ -177,7 +207,7 @@ void BleConnectionManager::ConnectionMetadata::OnMessageReceived(
     return;
   }
 
-  manager_->SendMessageReceivedEvent(device_id_, payload);
+  manager_->NotifyMessageReceived(device_id_, payload);
 }
 
 void BleConnectionManager::ConnectionMetadata::OnMessageSent(
@@ -187,7 +217,7 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
   PA_LOG(INFO) << "Message sent successfully to device with ID \""
                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id_)
                << "\"; message sequence number: " << sequence_number;
-  manager_->SendMessageSentEvent(sequence_number);
+  manager_->NotifyMessageSent(sequence_number);
 }
 
 void BleConnectionManager::ConnectionMetadata::
@@ -272,9 +302,10 @@ void BleConnectionManager::UnregisterRemoteDevice(
     if (status_before_disconnect !=
         cryptauth::SecureChannel::Status::DISCONNECTED) {
       // Send a status update for the disconnection.
-      SendSecureChannelStatusChangeEvent(
+      NotifySecureChannelStatusChanged(
           device_id_copy, status_before_disconnect,
-          cryptauth::SecureChannel::Status::DISCONNECTED);
+          cryptauth::SecureChannel::Status::DISCONNECTED,
+          StateChangeDetail::STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED);
     }
   }
 
@@ -425,7 +456,9 @@ void BleConnectionManager::UpdateConnectionAttempts() {
                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
                         device_id_to_stop)
                  << "\" interrupted by higher-priority connection.";
-    EndUnsuccessfulAttempt(device_id_to_stop);
+    EndUnsuccessfulAttempt(
+        device_id_to_stop,
+        StateChangeDetail::STATE_CHANGE_DETAIL_INTERRUPTED_BY_HIGHER_PRIORITY);
   }
 
   for (const auto& device_id : should_advertise_to) {
@@ -479,22 +512,24 @@ void BleConnectionManager::StartConnectionAttempt(
 
   // Send a "disconnected => connecting" update to alert clients that a
   // connection attempt for |device_id| is underway.
-  SendSecureChannelStatusChangeEvent(
+  NotifySecureChannelStatusChanged(
       device_id, cryptauth::SecureChannel::Status::DISCONNECTED,
-      cryptauth::SecureChannel::Status::CONNECTING);
+      cryptauth::SecureChannel::Status::CONNECTING,
+      StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
 }
 
 void BleConnectionManager::EndUnsuccessfulAttempt(
-    const std::string& device_id) {
+    const std::string& device_id,
+    StateChangeDetail state_change_detail) {
   GetConnectionMetadata(device_id)->StopConnectionAttemptTimer();
   StopConnectionAttemptAndMoveToEndOfQueue(device_id);
   device_id_to_advertising_start_time_map_[device_id] = base::Time();
 
   // Send a "connecting => disconnected" update to alert clients that a
   // connection attempt for |device_id| has failed.
-  SendSecureChannelStatusChangeEvent(
+  NotifySecureChannelStatusChanged(
       device_id, cryptauth::SecureChannel::Status::CONNECTING,
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      cryptauth::SecureChannel::Status::DISCONNECTED, state_change_detail);
 }
 
 void BleConnectionManager::StopConnectionAttemptAndMoveToEndOfQueue(
@@ -509,15 +544,19 @@ void BleConnectionManager::OnConnectionAttemptTimeout(
   PA_LOG(INFO) << "Connection attempt timeout - Device ID \""
                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
                << "\".";
-  EndUnsuccessfulAttempt(device_id);
+  EndUnsuccessfulAttempt(
+      device_id,
+      StateChangeDetail::STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
   UpdateConnectionAttempts();
 }
 
 void BleConnectionManager::OnSecureChannelStatusChanged(
     const std::string& device_id,
     const cryptauth::SecureChannel::Status& old_status,
-    const cryptauth::SecureChannel::Status& new_status) {
-  SendSecureChannelStatusChangeEvent(device_id, old_status, new_status);
+    const cryptauth::SecureChannel::Status& new_status,
+    StateChangeDetail state_change_detail) {
+  NotifySecureChannelStatusChanged(device_id, old_status, new_status,
+                                   state_change_detail);
   UpdateConnectionAttempts();
 }
 
@@ -530,8 +569,8 @@ void BleConnectionManager::OnGattCharacteristicsNotAvailable(
   ad_hoc_ble_advertisement_->RequestGattServicesForDevice(device_id);
 }
 
-void BleConnectionManager::SendMessageReceivedEvent(std::string device_id,
-                                                    std::string payload) {
+void BleConnectionManager::NotifyMessageReceived(std::string device_id,
+                                                 std::string payload) {
   PA_LOG(INFO) << "Message received - Device ID: \""
                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
                << "\", Message: \"" << payload << "\".";
@@ -539,15 +578,17 @@ void BleConnectionManager::SendMessageReceivedEvent(std::string device_id,
     observer.OnMessageReceived(device_id, payload);
 }
 
-void BleConnectionManager::SendSecureChannelStatusChangeEvent(
+void BleConnectionManager::NotifySecureChannelStatusChanged(
     std::string device_id,
     cryptauth::SecureChannel::Status old_status,
-    cryptauth::SecureChannel::Status new_status) {
+    cryptauth::SecureChannel::Status new_status,
+    StateChangeDetail state_change_detail) {
   PA_LOG(INFO) << "Status change - Device ID: \""
                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
                << "\": " << cryptauth::SecureChannel::StatusToString(old_status)
-               << " => "
-               << cryptauth::SecureChannel::StatusToString(new_status);
+               << " => " << cryptauth::SecureChannel::StatusToString(new_status)
+               << ", State change detail: "
+               << StateChangeDetailToString(state_change_detail);
 
   if (new_status == cryptauth::SecureChannel::Status::CONNECTING) {
     device_id_to_advertising_start_time_map_[device_id] = clock_->Now();
@@ -558,11 +599,13 @@ void BleConnectionManager::SendSecureChannelStatusChangeEvent(
     RecordConnectionToAuthenticationDuration(device_id);
   }
 
-  for (auto& observer : observer_list_)
-    observer.OnSecureChannelStatusChanged(device_id, old_status, new_status);
+  for (auto& observer : observer_list_) {
+    observer.OnSecureChannelStatusChanged(device_id, old_status, new_status,
+                                          state_change_detail);
+  }
 }
 
-void BleConnectionManager::SendMessageSentEvent(int sequence_number) {
+void BleConnectionManager::NotifyMessageSent(int sequence_number) {
   for (auto& observer : observer_list_)
     observer.OnMessageSent(sequence_number);
 }

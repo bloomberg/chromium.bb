@@ -64,12 +64,24 @@ class BleConnectionManager : public BleScanner::Observer {
  public:
   static std::string MessageTypeToString(const MessageType& reason);
 
+  // Extra data about a state change which is passed to observers in
+  // OnSecureChannelStatusChanged(). If no extra data applies to the state
+  // change, STATE_CHANGE_DETAIL_NONE is used.
+  enum class StateChangeDetail {
+    STATE_CHANGE_DETAIL_NONE,
+    STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION,
+    STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED,
+    STATE_CHANGE_DETAIL_INTERRUPTED_BY_HIGHER_PRIORITY,
+    STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED
+  };
+
   class Observer {
    public:
     virtual void OnSecureChannelStatusChanged(
         const std::string& device_id,
         const cryptauth::SecureChannel::Status& old_status,
-        const cryptauth::SecureChannel::Status& new_status) = 0;
+        const cryptauth::SecureChannel::Status& new_status,
+        StateChangeDetail state_change_detail) = 0;
 
     virtual void OnMessageReceived(const std::string& device_id,
                                    const std::string& payload) = 0;
@@ -124,12 +136,13 @@ class BleConnectionManager : public BleScanner::Observer {
       device::BluetoothDevice* bluetooth_device) override;
 
  protected:
-  void SendMessageReceivedEvent(std::string device_id, std::string payload);
-  void SendSecureChannelStatusChangeEvent(
+  void NotifyMessageReceived(std::string device_id, std::string payload);
+  void NotifySecureChannelStatusChanged(
       std::string device_id,
       cryptauth::SecureChannel::Status old_status,
-      cryptauth::SecureChannel::Status new_status);
-  void SendMessageSentEvent(int sequence_number);
+      cryptauth::SecureChannel::Status new_status,
+      StateChangeDetail state_change_detail);
+  void NotifyMessageSent(int sequence_number);
 
  private:
   friend class BleConnectionManagerTest;
@@ -197,14 +210,16 @@ class BleConnectionManager : public BleScanner::Observer {
   void UpdateAdvertisementQueue();
 
   void StartConnectionAttempt(const std::string& device_id);
-  void EndUnsuccessfulAttempt(const std::string& device_id);
+  void EndUnsuccessfulAttempt(const std::string& device_id,
+                              StateChangeDetail state_change_detail);
   void StopConnectionAttemptAndMoveToEndOfQueue(const std::string& device_id);
 
   void OnConnectionAttemptTimeout(const std::string& device_id);
   void OnSecureChannelStatusChanged(
       const std::string& device_id,
       const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status);
+      const cryptauth::SecureChannel::Status& new_status,
+      StateChangeDetail state_change_detail);
   void OnGattCharacteristicsNotAvailable(const std::string& device_id);
 
   void SetTestDoubles(std::unique_ptr<base::Clock> test_clock,
