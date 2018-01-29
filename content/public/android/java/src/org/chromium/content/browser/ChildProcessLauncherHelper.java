@@ -57,9 +57,8 @@ public class ChildProcessLauncherHelper {
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
 
-    // Map from package name to ChildConnectionAllocator.
-    private static final Map<String, ChildConnectionAllocator>
-            sSandboxedChildConnectionAllocatorMap = new HashMap<>();
+    // Allocator used for sandboxed services.
+    private static ChildConnectionAllocator sSandboxedChildConnectionAllocator;
 
     // Map from PID to ChildProcessLauncherHelper.
     @SuppressLint("UseSparseArrays") // TODO(crbug.com/799070): Fix this.
@@ -82,8 +81,6 @@ public class ChildProcessLauncherHelper {
     // Whether the connection is managed by the BindingManager.
     private final boolean mUseBindingManager;
 
-    private final ChildProcessCreationParams mCreationParams;
-
     // Whether the created process should be sandboxed.
     private final boolean mSandboxed;
 
@@ -102,7 +99,7 @@ public class ChildProcessLauncherHelper {
 
                 @Override
                 public void onBeforeConnectionAllocated(Bundle bundle) {
-                    populateServiceBundle(bundle, mCreationParams);
+                    populateServiceBundle(bundle);
                 }
 
                 @Override
@@ -181,7 +178,6 @@ public class ChildProcessLauncherHelper {
     public static ChildProcessLauncherHelper createAndStart(
             long nativePointer, String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
-        ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
         String processType =
                 ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
 
@@ -205,8 +201,8 @@ public class ChildProcessLauncherHelper {
                 ? new GpuProcessCallback()
                 : null;
 
-        ChildProcessLauncherHelper processLauncher = new ChildProcessLauncherHelper(nativePointer,
-                creationParams, commandLine, filesToBeMapped, sandboxed, binderCallback);
+        ChildProcessLauncherHelper processLauncher = new ChildProcessLauncherHelper(
+                nativePointer, commandLine, filesToBeMapped, sandboxed, binderCallback);
         processLauncher.mLauncher.start(
                 true /* doSetupConnection */, true /* queueIfNoFreeConnection */);
         return processLauncher;
@@ -232,27 +228,14 @@ public class ChildProcessLauncherHelper {
             return;
         }
 
-        ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
-        Bundle serviceBundle = populateServiceBundle(new Bundle(), creationParams);
-        ChildConnectionAllocator allocator =
-                getConnectionAllocator(context, creationParams, true /* sandboxed */);
+        Bundle serviceBundle = populateServiceBundle(new Bundle());
+        ChildConnectionAllocator allocator = getConnectionAllocator(context, true /* sandboxed */);
         sSpareSandboxedConnection = new SpareChildConnection(context, allocator, serviceBundle);
     }
 
-    public static String getPackageNameFromCreationParams(
-            Context context, ChildProcessCreationParams params, boolean sandboxed) {
-        return (sandboxed && params != null) ? params.getPackageNameForSandboxedService()
-                                             : context.getPackageName();
-    }
-
-    public static boolean isServiceExternalFromCreationParams(
-            ChildProcessCreationParams params, boolean sandboxed) {
-        return sandboxed && params != null && params.getIsSandboxedServiceExternal();
-    }
-
-    public static boolean isServiceBoundToCallerFromCreationParams(
-            ChildProcessCreationParams params) {
-        return params == null ? false : params.getBindToCallerCheck();
+    public static String getPackageNameForService(boolean sandboxed) {
+        return sandboxed ? ChildProcessCreationParams.getPackageNameForSandboxedService()
+                         : ContextUtils.getApplicationContext().getPackageName();
     }
 
     /**
@@ -268,8 +251,8 @@ public class ChildProcessLauncherHelper {
         LauncherThread.post(new Runnable() {
             @Override
             public void run() {
-                ChildConnectionAllocator allocator = getConnectionAllocator(
-                        context, ChildProcessCreationParams.getDefault(), true /* sandboxed */);
+                ChildConnectionAllocator allocator =
+                        getConnectionAllocator(context, true /* sandboxed */);
                 getBindingManager().startModerateBindingManagement(
                         context, allocator.getNumberOfServices());
             }
@@ -329,14 +312,12 @@ public class ChildProcessLauncherHelper {
     }
 
     @VisibleForTesting
-    static ChildConnectionAllocator getConnectionAllocator(
-            Context context, ChildProcessCreationParams creationParams, boolean sandboxed) {
+    static ChildConnectionAllocator getConnectionAllocator(Context context, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        final String packageName =
-                getPackageNameFromCreationParams(context, creationParams, sandboxed);
-        boolean bindToCaller = isServiceBoundToCallerFromCreationParams(creationParams);
+        final String packageName = getPackageNameForService(sandboxed);
+        boolean bindToCaller = ChildProcessCreationParams.getBindToCallerCheck();
         boolean bindAsExternalService =
-                isServiceExternalFromCreationParams(creationParams, sandboxed);
+                sandboxed && ChildProcessCreationParams.getIsSandboxedServiceExternal();
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
@@ -348,7 +329,7 @@ public class ChildProcessLauncherHelper {
             return sPrivilegedChildConnectionAllocator;
         }
 
-        if (!sSandboxedChildConnectionAllocatorMap.containsKey(packageName)) {
+        if (sSandboxedChildConnectionAllocator == null) {
             Log.w(TAG,
                     "Create a new ChildConnectionAllocator with package name = %s,"
                             + " sandboxed = true",
@@ -372,10 +353,9 @@ public class ChildProcessLauncherHelper {
                 connectionAllocator.setConnectionFactoryForTesting(
                         sSandboxedServiceFactoryForTesting);
             }
-            sSandboxedChildConnectionAllocatorMap.put(packageName, connectionAllocator);
+            sSandboxedChildConnectionAllocator = connectionAllocator;
 
             final ChildConnectionAllocator finalConnectionAllocator = connectionAllocator;
-            // Tracks connections removal so the allocator can be freed when no longer used.
             connectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
                 @Override
                 public void onConnectionAllocated(
@@ -389,57 +369,21 @@ public class ChildProcessLauncherHelper {
                         getBindingManager().releaseAllModerateBindings();
                     }
                 }
-
-                @Override
-                public void onConnectionFreed(final ChildConnectionAllocator allocator,
-                        ChildProcessConnection connection) {
-                    assert allocator == finalConnectionAllocator;
-                    final ChildConnectionAllocator.Listener listener = this;
-                    // The ChildProcessLauncher may have posted a restart that will create a new
-                    // connection with |allocator|. Delay clearing the allocator until that
-                    // potential restart task has been run.
-                    LauncherThread.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (allocator.anyConnectionAllocated()
-                                    || !sSandboxedChildConnectionAllocatorMap.containsKey(
-                                               packageName)) {
-                                // Note the second condition above guards against multiple tasks
-                                // like this one posted consecutively removing the listener more
-                                // than once (and asserting).
-                                return;
-                            }
-
-                            // Last connection was freed, the allocator is going aways, remove
-                            // the listener.
-                            allocator.removeListener(listener);
-                            Log.w(TAG,
-                                    "Removing empty ChildConnectionAllocator for package "
-                                            + "name = %s,",
-                                    packageName);
-                            ChildConnectionAllocator removedAllocator =
-                                    sSandboxedChildConnectionAllocatorMap.remove(packageName);
-                            assert removedAllocator == allocator;
-                        }
-                    });
-                }
             });
         }
-        return sSandboxedChildConnectionAllocatorMap.get(packageName);
+        return sSandboxedChildConnectionAllocator;
     }
 
-    private ChildProcessLauncherHelper(long nativePointer,
-            ChildProcessCreationParams creationParams, String[] commandLine,
+    private ChildProcessLauncherHelper(long nativePointer, String[] commandLine,
             FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback) {
         assert LauncherThread.runningOnLauncherThread();
 
         mNativeChildProcessLauncherHelper = nativePointer;
-        mCreationParams = creationParams;
         mUseBindingManager = sandboxed;
         mSandboxed = sandboxed;
 
-        ChildConnectionAllocator connectionAllocator = getConnectionAllocator(
-                ContextUtils.getApplicationContext(), mCreationParams, sandboxed);
+        ChildConnectionAllocator connectionAllocator =
+                getConnectionAllocator(ContextUtils.getApplicationContext(), sandboxed);
         mLauncher = new ChildProcessLauncher(LauncherThread.getHandler(), mLauncherDelegate,
                 commandLine, filesToBeMapped, connectionAllocator,
                 binderCallback == null ? null : Arrays.asList(binderCallback));
@@ -493,7 +437,7 @@ public class ChildProcessLauncherHelper {
             }
         }
 
-        if (mCreationParams != null && mCreationParams.getIgnoreVisibilityForImportance()) {
+        if (ChildProcessCreationParams.getIgnoreVisibilityForImportance()) {
             foreground = false;
             boostForPendingViews = false;
         }
@@ -539,10 +483,8 @@ public class ChildProcessLauncherHelper {
             return sSandboxedServicesCountForTesting;
         }
 
-        final ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
         final Context context = ContextUtils.getApplicationContext();
-        final String packageName = ChildProcessLauncherHelper.getPackageNameFromCreationParams(
-                context, params, true /* inSandbox */);
+        final String packageName = ChildProcessCreationParams.getPackageNameForSandboxedService();
         try {
             return ChildConnectionAllocator.getNumberOfServices(
                     context, packageName, NUM_SANDBOXED_SERVICES_KEY);
@@ -589,14 +531,13 @@ public class ChildProcessLauncherHelper {
         }
     }
 
-    private static Bundle populateServiceBundle(
-            Bundle bundle, ChildProcessCreationParams creationParams) {
-        boolean bindToCallerCheck = false;
+    private static Bundle populateServiceBundle(Bundle bundle) {
+        ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
         if (creationParams != null) {
-            bindToCallerCheck = creationParams.getBindToCallerCheck();
             creationParams.addIntentExtras(bundle);
         }
-        bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
+        bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER,
+                ChildProcessCreationParams.getBindToCallerCheck());
         ChromiumLinkerParams linkerParams = getLinkerParamsForNewConnection();
         if (linkerParams != null) linkerParams.populateBundle(bundle);
         return bundle;
@@ -614,12 +555,11 @@ public class ChildProcessLauncherHelper {
     }
 
     @VisibleForTesting
-    public static ChildProcessLauncherHelper createAndStartForTesting(
-            ChildProcessCreationParams creationParams, String[] commandLine,
+    public static ChildProcessLauncherHelper createAndStartForTesting(String[] commandLine,
             FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback,
             boolean doSetupConnection) {
         ChildProcessLauncherHelper launcherHelper = new ChildProcessLauncherHelper(
-                0L, creationParams, commandLine, filesToBeMapped, sandboxed, binderCallback);
+                0L, commandLine, filesToBeMapped, sandboxed, binderCallback);
         launcherHelper.mLauncher.start(doSetupConnection, true /* queueIfNoFreeConnection */);
         return launcherHelper;
     }
@@ -630,23 +570,14 @@ public class ChildProcessLauncherHelper {
         int count = sPrivilegedChildConnectionAllocator == null
                 ? 0
                 : sPrivilegedChildConnectionAllocator.allocatedConnectionsCountForTesting();
-        return count + getConnectedSandboxedServicesCountForTesting(null /* packageName */);
+        return count + getConnectedSandboxedServicesCountForTesting();
     }
 
     @VisibleForTesting
-    public static int getConnectedSandboxedServicesCountForTesting(String packageName) {
-        int count = 0;
-        for (ChildConnectionAllocator allocator : sSandboxedChildConnectionAllocatorMap.values()) {
-            if (packageName == null || packageName.equals(allocator.getPackageName())) {
-                count += allocator.allocatedConnectionsCountForTesting();
-            }
-        }
-        return count;
-    }
-
-    @VisibleForTesting
-    static boolean hasSandboxedConnectionAllocatorForPackage(String packageName) {
-        return sSandboxedChildConnectionAllocatorMap.containsKey(packageName);
+    public static int getConnectedSandboxedServicesCountForTesting() {
+        return sSandboxedChildConnectionAllocator == null
+                ? 0
+                : sSandboxedChildConnectionAllocator.allocatedConnectionsCountForTesting();
     }
 
     @VisibleForTesting
