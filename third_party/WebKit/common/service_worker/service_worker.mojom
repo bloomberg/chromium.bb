@@ -25,8 +25,11 @@ interface ServiceWorkerHost {
   GetClients(ServiceWorkerClientQueryOptions options)
     => (array<ServiceWorkerClientInfo> clients);
 
+  // Corresponds to Clients#get(id). Gets information of the service worker
+  // client with |client_uuid|.
+  GetClient(string client_uuid) => (ServiceWorkerClientInfo client);
+
   // TODO(leonhsl): Impl all methods.
-  // GetClient();
   // OpenNewTab();
   // OpenNewPopup();
   // PostMessageToClient();

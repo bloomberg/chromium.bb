@@ -115,11 +115,6 @@ IPC_MESSAGE_CONTROL5(
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
                      int /* handle_id */)
 
-// Asks the browser to retrieve client of the sender ServiceWorker.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClient,
-                    int /* request_id */,
-                    std::string /* client_uuid */)
-
 // Sends MessageEvent to a client (renderer->browser).
 IPC_MESSAGE_ROUTED3(
     ServiceWorkerHostMsg_PostMessageToClient,
@@ -169,11 +164,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)
-
-// Sent via EmbeddedWorker as a response of GetClient.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClient,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerClientInfo)
 
 // Sent via EmbeddedWorker as a response of OpenWindow.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,
