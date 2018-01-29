@@ -31,7 +31,6 @@
 #include "modules/filesystem/DirectoryEntry.h"
 
 #include "core/fileapi/FileError.h"
-#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileSystemFlags.h"
@@ -66,10 +65,11 @@ void DirectoryEntry::getDirectory(const String& path,
       ScriptErrorCallback::Wrap(error_callback));
 }
 
-void DirectoryEntry::removeRecursively(VoidCallback* success_callback,
+void DirectoryEntry::removeRecursively(V8VoidCallback* success_callback,
                                        V8ErrorCallback* error_callback) const {
-  file_system_->RemoveRecursively(this, success_callback,
-                                  ScriptErrorCallback::Wrap(error_callback));
+  file_system_->RemoveRecursively(
+      this, VoidCallbacks::OnDidSucceedV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void DirectoryEntry::Trace(blink::Visitor* visitor) {

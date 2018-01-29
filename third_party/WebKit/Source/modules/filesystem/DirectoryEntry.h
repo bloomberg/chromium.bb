@@ -43,7 +43,7 @@ class DirectoryReader;
 class FileSystemFlags;
 class V8EntryCallback;
 class V8ErrorCallback;
-class VoidCallback;
+class V8VoidCallback;
 
 class MODULES_EXPORT DirectoryEntry final : public Entry {
   DEFINE_WRAPPERTYPEINFO();
@@ -64,7 +64,7 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
                     const FileSystemFlags&,
                     V8EntryCallback* = nullptr,
                     V8ErrorCallback* = nullptr);
-  void removeRecursively(VoidCallback* success_callback = nullptr,
+  void removeRecursively(V8VoidCallback* success_callback = nullptr,
                          V8ErrorCallback* = nullptr) const;
 
   void Trace(blink::Visitor*) override;

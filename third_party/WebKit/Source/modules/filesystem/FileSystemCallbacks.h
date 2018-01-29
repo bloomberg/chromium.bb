@@ -58,7 +58,7 @@ class V8FileCallback;
 class V8FileSystemCallback;
 class V8FileWriterCallback;
 class V8MetadataCallback;
-class VoidCallback;
+class V8VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
 // may capture the error for throwing on return to script (for synchronous APIs)
@@ -398,18 +398,43 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
 
 class VoidCallbacks final : public FileSystemCallbacksBase {
  public:
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(VoidCallback*,
+  class OnDidSucceedCallback
+      : public GarbageCollectedFinalized<OnDidSucceedCallback> {
+   public:
+    virtual ~OnDidSucceedCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual void OnSuccess(ExecutionContext* dummy_arg_for_sync_helper) = 0;
+
+   protected:
+    OnDidSucceedCallback() = default;
+  };
+
+  class OnDidSucceedV8Impl : public OnDidSucceedCallback {
+   public:
+    static OnDidSucceedV8Impl* Create(V8VoidCallback* callback) {
+      return callback ? new OnDidSucceedV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    void OnSuccess(ExecutionContext* dummy_arg_for_sync_helper) override;
+
+   private:
+    OnDidSucceedV8Impl(V8VoidCallback* callback) : callback_(callback) {}
+
+    Member<V8VoidCallback> callback_;
+  };
+
+  static std::unique_ptr<AsyncFileSystemCallbacks> Create(OnDidSucceedCallback*,
                                                           ErrorCallbackBase*,
                                                           ExecutionContext*,
                                                           DOMFileSystemBase*);
   void DidSucceed() override;
 
  private:
-  VoidCallbacks(VoidCallback*,
+  VoidCallbacks(OnDidSucceedCallback*,
                 ErrorCallbackBase*,
                 ExecutionContext*,
                 DOMFileSystemBase*);
-  Persistent<VoidCallback> success_callback_;
+  Persistent<OnDidSucceedCallback> success_callback_;
 };
 
 }  // namespace blink
