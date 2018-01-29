@@ -255,6 +255,13 @@ const base::Feature kMseBufferByPts{"MseBufferByPts",
 const base::Feature kMseFlacInIsobmff{"MseFlacInIsobmff",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable new cpu load estimator. Intended for evaluation in local
+// testing and origin-trial.
+// TODO(nisse): Delete once we have switched over to always using the
+// new estimator.
+const base::Feature kNewEncodeCpuLoadEstimator{
+    "NewEncodeCpuLoadEstimator", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the new Remote Playback / media flinging pipeline.
 const base::Feature kNewRemotePlaybackPipeline{
     "NewRemotePlaybackPipeline", base::FEATURE_DISABLED_BY_DEFAULT};
