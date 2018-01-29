@@ -725,6 +725,10 @@ Profile* ProfileManager::GetProfileByPathInternal(
 
 Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
   TRACE_EVENT0("browser", "ProfileManager::GetProfileByPath");
+  if (IsProfileDirectoryMarkedForDeletion(path)) {
+    LOG(ERROR) << "Tried to get deleted profile: " << path.value();
+    return nullptr;
+  }
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
   return (profile_info && profile_info->created) ? profile_info->profile.get()
                                                  : nullptr;
