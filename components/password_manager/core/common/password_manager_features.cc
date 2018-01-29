@@ -17,8 +17,8 @@ const base::Feature kAffiliationBasedMatching = {
     "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use HTML based username detector.
-const base::Feature kEnableHtmlBasedUsernameDetector = {
-    "EnableHtmlBaseUsernameDetector", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kHtmlBasedUsernameDetector = {
+    "HtmlBaseUsernameDetector", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable additional elements in the form popup UI, which will allow the user to
 // view all saved passwords.
