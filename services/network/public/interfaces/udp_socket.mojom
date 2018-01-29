@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mutable_network_traffic_annotation_tag.mojom";
 import "mojo/common/read_only_buffer.mojom";
 import "net/interfaces/address_family.mojom";
 import "net/interfaces/ip_endpoint.mojom";
@@ -114,12 +115,16 @@ interface UDPSocket {
   //   requests will be failed quickly (which might happen before the completion
   //   of requests that were sent earlier).
   SendTo(net.interfaces.IPEndPoint dest_addr,
-         mojo.common.mojom.ReadOnlyBuffer data) => (int32 result);
+         mojo.common.mojom.ReadOnlyBuffer data,
+         MutableNetworkTrafficAnnotationTag traffic_annotation)
+      => (int32 result);
 
   // Same as SendTo(), except this method sends data to the destination
   // specified in an earlier Connect(). This method should only be called after
   // a successful Connect().
-  Send(mojo.common.mojom.ReadOnlyBuffer data) => (int32 result);
+  Send(mojo.common.mojom.ReadOnlyBuffer data,
+       MutableNetworkTrafficAnnotationTag traffic_annotation)
+      => (int32 result);
 };
 
 // An interface the consumers of UDPSocket can implement to listen for incoming

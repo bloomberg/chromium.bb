@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -81,6 +82,7 @@ int UDPSocketTestHelper::SendToSync(mojom::UDPSocketPtr* socket,
   int net_error = net::ERR_FAILED;
   socket->get()->SendTo(
       remote_addr, input,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       base::BindOnce(
           [](base::RunLoop* run_loop, int* result_out, int result) {
             *result_out = result;
@@ -96,12 +98,14 @@ int UDPSocketTestHelper::SendSync(mojom::UDPSocketPtr* socket,
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   socket->get()->Send(
-      input, base::BindOnce(
-                 [](base::RunLoop* run_loop, int* result_out, int result) {
-                   *result_out = result;
-                   run_loop->Quit();
-                 },
-                 base::Unretained(&run_loop), base::Unretained(&net_error)));
+      input,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, int* result_out, int result) {
+            *result_out = result;
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop), base::Unretained(&net_error)));
   run_loop.Run();
   return net_error;
 }

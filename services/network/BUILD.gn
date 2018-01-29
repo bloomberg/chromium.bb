@@ -60,6 +60,7 @@ source_set("test_support") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//net:test_support",
     "//services/network:network_service",
     "//services/network/public/interfaces",
     "//testing/gtest",

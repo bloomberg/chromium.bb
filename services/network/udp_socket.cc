@@ -18,7 +18,6 @@
 #include "net/base/rand_callback.h"
 #include "net/log/net_log.h"
 #include "net/socket/udp_socket.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace network {
 
@@ -54,17 +53,20 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
   int SetReceiveBufferSize(uint32_t size) override {
     return socket_.SetReceiveBufferSize(size);
   }
-  int SendTo(net::IOBuffer* buf,
-             int buf_len,
-             const net::IPEndPoint& dest_addr,
-             const net::CompletionCallback& callback) override {
+  int SendTo(
+      net::IOBuffer* buf,
+      int buf_len,
+      const net::IPEndPoint& dest_addr,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     return socket_.SendTo(buf, buf_len, dest_addr, callback);
   }
-  int Write(net::IOBuffer* buf,
-            int buf_len,
-            const net::CompletionCallback& callback) override {
-    return socket_.Write(buf, buf_len, callback,
-                         NO_TRAFFIC_ANNOTATION_BUG_656607);
+  int Write(
+      net::IOBuffer* buf,
+      int buf_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return socket_.Write(buf, buf_len, callback, traffic_annotation);
   }
   int RecvFrom(net::IOBuffer* buf,
                int buf_len,
@@ -206,22 +208,33 @@ void UDPSocket::ReceiveMore(uint32_t num_additional_datagrams) {
   }
 }
 
-void UDPSocket::SendTo(const net::IPEndPoint& dest_addr,
-                       base::span<const uint8_t> data,
-                       SendToCallback callback) {
+void UDPSocket::SendTo(
+    const net::IPEndPoint& dest_addr,
+    base::span<const uint8_t> data,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    SendToCallback callback) {
   if (!is_bound_) {
     std::move(callback).Run(net::ERR_UNEXPECTED);
     return;
   }
-  DoSendToOrWrite(&dest_addr, data, std::move(callback));
+  DoSendToOrWrite(
+      &dest_addr, data,
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
+      std::move(callback));
 }
 
-void UDPSocket::Send(base::span<const uint8_t> data, SendCallback callback) {
+void UDPSocket::Send(
+    base::span<const uint8_t> data,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    SendCallback callback) {
   if (!is_connected_) {
     std::move(callback).Run(net::ERR_UNEXPECTED);
     return;
   }
-  DoSendToOrWrite(nullptr, data, std::move(callback));
+  DoSendToOrWrite(
+      nullptr, data,
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
+      std::move(callback));
 }
 
 bool UDPSocket::IsConnectedOrBound() const {
@@ -244,9 +257,11 @@ void UDPSocket::DoRecvFrom() {
     OnRecvFromCompleted(net_result);
 }
 
-void UDPSocket::DoSendToOrWrite(const net::IPEndPoint* dest_addr,
-                                const base::span<const uint8_t>& data,
-                                SendToCallback callback) {
+void UDPSocket::DoSendToOrWrite(
+    const net::IPEndPoint* dest_addr,
+    const base::span<const uint8_t>& data,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    SendToCallback callback) {
   if (pending_send_requests_.size() >= kMaxPendingSendRequests) {
     std::move(callback).Run(net::ERR_INSUFFICIENT_RESOURCES);
     return;
@@ -268,17 +283,21 @@ void UDPSocket::DoSendToOrWrite(const net::IPEndPoint* dest_addr,
     if (dest_addr)
       request->addr = std::make_unique<net::IPEndPoint>(*dest_addr);
     request->data = buffer;
+    request->traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
     request->callback = std::move(callback);
     pending_send_requests_.push_back(std::move(request));
     return;
   }
 
-  DoSendToOrWriteBuffer(dest_addr, buffer, std::move(callback));
+  DoSendToOrWriteBuffer(dest_addr, buffer, traffic_annotation,
+                        std::move(callback));
 }
 
 void UDPSocket::DoSendToOrWriteBuffer(
     const net::IPEndPoint* dest_addr,
     scoped_refptr<net::IOBufferWithSize> buffer,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SendToCallback callback) {
   DCHECK(!send_buffer_);
   DCHECK(send_callback_.is_null());
@@ -291,12 +310,14 @@ void UDPSocket::DoSendToOrWriteBuffer(
     net_result = wrapped_socket_->SendTo(
         buffer.get(), buffer->size(), *dest_addr,
         base::BindRepeating(&UDPSocket::OnSendToCompleted,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+        traffic_annotation);
   } else {
     net_result = wrapped_socket_->Write(
         buffer.get(), buffer->size(),
         base::BindRepeating(&UDPSocket::OnSendToCompleted,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+        traffic_annotation);
   }
   if (net_result != net::ERR_IO_PENDING)
     OnSendToCompleted(net_result);
@@ -337,6 +358,8 @@ void UDPSocket::OnSendToCompleted(int net_result) {
       std::move(pending_send_requests_.front());
   pending_send_requests_.pop_front();
   DoSendToOrWriteBuffer(request->addr.get(), request->data,
+                        static_cast<net::NetworkTrafficAnnotationTag>(
+                            request->traffic_annotation),
                         std::move(request->callback));
 }
 
