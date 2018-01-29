@@ -100,6 +100,8 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   return browserPluginElement;
 };
 
+GuestViewContainer.prototype.prepareForReattach_ = function() {};
+
 GuestViewContainer.prototype.setupFocusPropagation = function() {
   if (!this.element.hasAttribute('tabIndex')) {
     // GuestViewContainer needs a tabIndex in order to be focusable.

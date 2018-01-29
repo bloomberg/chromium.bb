@@ -211,6 +211,16 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMultipleConnects) {
              NO_TEST_SERVER);
 }
 
+// Tests that <appview> correctly handles connects that occur after the
+// completion of a previous connect.
+IN_PROC_BROWSER_TEST_P(AppViewTest,
+                       TestAppViewConnectFollowingPreviousConnect) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("app_view/shim/skeleton");
+  TestHelper("testAppViewConnectFollowingPreviousConnect", "app_view/shim",
+             skeleton_app->id(), NO_TEST_SERVER);
+}
+
 // Tests that <appview> does not embed self (the app which owns appview).
 IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewEmbedSelfShouldFail) {
   const extensions::Extension* skeleton_app =

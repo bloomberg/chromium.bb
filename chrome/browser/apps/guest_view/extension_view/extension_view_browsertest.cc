@@ -146,10 +146,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPISameIdDifferentSrc) {
   TestLoadApiHelper("testLoadAPISameIdDifferentSrc");
 }
 
-// extensionview cannot do cross extension navigation with OOPIF based guests.
-// crbug.com/800407
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
-                       DISABLED_LoadAPILoadOtherExtension) {
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPILoadOtherExtension) {
   TestLoadApiHelper("testLoadAPILoadOtherExtension");
 }
 
@@ -169,9 +166,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, QueuedLoadAPIFunction) {
   TestLoadApiHelper("testQueuedLoadAPIFunction");
 }
 
-// extensionview cannot do cross extension navigation with OOPIF based guests.
-// crbug.com/800407
 IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
-                       DISABLED_QueuedLoadAPILoadOtherExtension) {
+                       QueuedLoadAPILoadOtherExtension) {
   TestLoadApiHelper("testQueuedLoadAPILoadOtherExtension");
 }

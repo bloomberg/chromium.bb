@@ -162,6 +162,34 @@ function testAppViewMultipleConnects(appToEmbed) {
   appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
 };
 
+function testAppViewConnectFollowingPreviousConnect(appToEmbed) {
+  var appview = new AppView();
+  LOG('appToEmbed  ' + appToEmbed);
+  document.body.appendChild(appview);
+
+  var connections = 0;
+
+  function doAppViewConnect() {
+    return new Promise(function(resolve, reject) {
+      appview.connect(appToEmbed, {'foo': 'bleep'}, function(success) {
+        if (success) {
+          ++connections;
+          LOG('CONNECTED. (' + connections + ' / 3)');
+          resolve();
+        } else {
+          LOG('FAILED TO CONNECT.');
+          reject();
+        }
+      });
+    });
+  };
+
+  doAppViewConnect()
+      .then(doAppViewConnect)
+      .then(doAppViewConnect)
+      .then(embedder.test.succeed, embedder.test.fail);
+};
+
 function testAppViewEmbedSelfShouldFail(appToEmbed) {
   var appview = new AppView();
   var currentapp_id = chrome.runtime.id;
@@ -185,6 +213,8 @@ embedder.test.testList = {
   'testAppViewRefusedDataShouldFail': testAppViewRefusedDataShouldFail,
   'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed,
   'testAppViewMultipleConnects': testAppViewMultipleConnects,
+  'testAppViewConnectFollowingPreviousConnect':
+      testAppViewConnectFollowingPreviousConnect,
   'testAppViewEmbedSelfShouldFail': testAppViewEmbedSelfShouldFail
 };
 

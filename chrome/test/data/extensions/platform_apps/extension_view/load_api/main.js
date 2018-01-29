@@ -114,9 +114,9 @@ function testLoadAPILoadOtherExtension(extensionIdOne, extensionIdTwo) {
             extensionScheme + extensionIdOne + '/' + srcOne);
       })
       .then(function() {
-        checkExtensionAttribute(extensionview, extensionIdTwo);
+        checkExtensionAttribute(extensionview, extensionIdOne);
         checkSrcAttribute(
-            extensionview, extensionScheme + extensionIdTwo + '/' + srcOne);
+            extensionview, extensionScheme + extensionIdOne + '/' + srcOne);
       })
       .then(embedder.test.succeed, embedder.test.fail);
 };

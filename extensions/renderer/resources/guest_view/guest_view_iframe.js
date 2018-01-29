@@ -121,11 +121,6 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
     return;
   }
 
-  // If this guest is attached, then detach it first.
-  if (!!this.internalInstanceId) {
-    GuestViewInternalNatives.DetachGuest(this.internalInstanceId);
-  }
-
   // Reset the state of the destroyed guest;
   this.contentWindow = null;
   this.id = 0;
