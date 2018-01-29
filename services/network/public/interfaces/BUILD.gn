@@ -27,6 +27,13 @@ mojom("data_pipe_interface") {
   }
 }
 
+mojom("mutable_network_traffic_annotation_interface") {
+  sources = [
+    "mutable_network_traffic_annotation_tag.mojom",
+    "mutable_partial_network_traffic_annotation_tag.mojom",
+  ]
+}
+
 # UDP socket interface relies on mojo.common.mojom.ReadOnlyBuffer, which is
 # mapped to base::span<const uint8_t>. ReadOnlyBufffer doesn't yet work with
 # lazy serialization, so this needs to be in a separate target that doesn't have
@@ -37,6 +44,7 @@ mojom("udp_socket_interface") {
   ]
 
   public_deps = [
+    ":mutable_network_traffic_annotation_interface",
     "//mojo/common:read_only_buffer",
     "//net/interfaces:interfaces",
   ]
@@ -53,8 +61,6 @@ mojom("interfaces") {
     "cors.mojom",
     "fetch_api.mojom",
     "http_request_headers.mojom",
-    "mutable_network_traffic_annotation_tag.mojom",
-    "mutable_partial_network_traffic_annotation_tag.mojom",
     "network_change_manager.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
@@ -68,6 +74,7 @@ mojom("interfaces") {
 
   public_deps = [
     ":data_pipe_interface",
+    ":mutable_network_traffic_annotation_interface",
     ":udp_socket_interface",
     "//mojo/common:common_custom_types",
     "//services/proxy_resolver/public/interfaces",

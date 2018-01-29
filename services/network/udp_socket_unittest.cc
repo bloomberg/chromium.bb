@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/udp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/udp_socket.mojom.h"
 #include "services/network/udp_socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,16 +52,20 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  int SendTo(net::IOBuffer* buf,
-             int buf_len,
-             const net::IPEndPoint& dest_addr,
-             const net::CompletionCallback& callback) override {
+  int SendTo(
+      net::IOBuffer* buf,
+      int buf_len,
+      const net::IPEndPoint& dest_addr,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  int Write(net::IOBuffer* buf,
-            int buf_len,
-            const net::CompletionCallback& callback) override {
+  int Write(
+      net::IOBuffer* buf,
+      int buf_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
@@ -100,10 +105,12 @@ class HangingUDPSocket : public SocketWrapperTestImpl {
   // SocketWrapperTestImpl implementation.
   int Open(net::AddressFamily address_family) override { return net::OK; }
   int Bind(const net::IPEndPoint& local_addr) override { return net::OK; }
-  int SendTo(net::IOBuffer* buf,
-             int buf_len,
-             const net::IPEndPoint& address,
-             const net::CompletionCallback& callback) override {
+  int SendTo(
+      net::IOBuffer* buf,
+      int buf_len,
+      const net::IPEndPoint& address,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     EXPECT_EQ(expected_data_,
               std::vector<unsigned char>(buf->data(), buf->data() + buf_len));
     if (should_complete_requests_)
@@ -339,13 +346,15 @@ TEST_F(UDPSocketTest, TestBufferValid) {
   std::vector<uint8_t> test_msg(CreateTestMessage(0, kDatagramSize));
   socket_raw_ptr->set_expected_data(test_msg);
   base::RunLoop run_loop;
-  socket_ptr->SendTo(GetLocalHostWithAnyPort(), test_msg,
-                     base::BindOnce(
-                         [](base::RunLoop* run_loop, int result) {
-                           EXPECT_EQ(net::OK, result);
-                           run_loop->Quit();
-                         },
-                         base::Unretained(&run_loop)));
+  socket_ptr->SendTo(
+      GetLocalHostWithAnyPort(), test_msg,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, int result) {
+            EXPECT_EQ(net::OK, result);
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop)));
 
   socket_ptr.FlushForTesting();
 
@@ -384,13 +393,15 @@ TEST_F(UDPSocketTest, TestInsufficientResources) {
   std::vector<std::unique_ptr<base::RunLoop>> run_loops;
   for (size_t i = 0; i < kQueueSize + 1; ++i) {
     run_loops.push_back(std::make_unique<base::RunLoop>());
-    socket_ptr->SendTo(GetLocalHostWithAnyPort(), test_msg,
-                       base::BindOnce(
-                           [](base::RunLoop* run_loop, int result) {
-                             EXPECT_EQ(net::OK, result);
-                             run_loop->Quit();
-                           },
-                           base::Unretained(run_loops[i].get())));
+    socket_ptr->SendTo(
+        GetLocalHostWithAnyPort(), test_msg,
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+        base::BindOnce(
+            [](base::RunLoop* run_loop, int result) {
+              EXPECT_EQ(net::OK, result);
+              run_loop->Quit();
+            },
+            base::Unretained(run_loops[i].get())));
   }
 
   // SendTo() beyond the queue size should fail.
@@ -564,8 +575,10 @@ TEST_F(UDPSocketTest, TestSendToInvalidAddress) {
   net::IPAddress ip_address(invalid_ip_addr.data(), invalid_ip_addr.size());
   EXPECT_FALSE(ip_address.IsValid());
   net::IPEndPoint invalid_addr(ip_address, 53);
-  server_socket->SendTo(invalid_addr, test_msg,
-                        base::BindOnce([](int result) {}));
+  server_socket->SendTo(
+      invalid_addr, test_msg,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+      base::BindOnce([](int result) {}));
   // Make sure that the pipe is broken upon processing |invalid_addr|.
   base::RunLoop run_loop;
   server_socket.set_connection_error_handler(

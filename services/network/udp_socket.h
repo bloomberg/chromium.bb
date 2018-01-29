@@ -19,6 +19,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/interfaces/address_family.mojom.h"
 #include "net/interfaces/ip_endpoint.mojom.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/interfaces/udp_socket.mojom.h"
 
 namespace net {
@@ -47,13 +48,17 @@ class UDPSocket : public mojom::UDPSocket {
     virtual int Bind(const net::IPEndPoint& local_addr) = 0;
     virtual int SetSendBufferSize(uint32_t size) = 0;
     virtual int SetReceiveBufferSize(uint32_t size) = 0;
-    virtual int SendTo(net::IOBuffer* buf,
-                       int buf_len,
-                       const net::IPEndPoint& dest_addr,
-                       const net::CompletionCallback& callback) = 0;
-    virtual int Write(net::IOBuffer* buf,
-                      int buf_len,
-                      const net::CompletionCallback& callback) = 0;
+    virtual int SendTo(
+        net::IOBuffer* buf,
+        int buf_len,
+        const net::IPEndPoint& dest_addr,
+        const net::CompletionCallback& callback,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+    virtual int Write(
+        net::IOBuffer* buf,
+        int buf_len,
+        const net::CompletionCallback& callback,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
     virtual int RecvFrom(net::IOBuffer* buf,
                          int buf_len,
                          net::IPEndPoint* address,
@@ -80,8 +85,11 @@ class UDPSocket : public mojom::UDPSocket {
   void ReceiveMore(uint32_t num_additional_datagrams) override;
   void SendTo(const net::IPEndPoint& dest_addr,
               base::span<const uint8_t> data,
+              const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
               SendToCallback callback) override;
-  void Send(base::span<const uint8_t> data, SendCallback callback) override;
+  void Send(base::span<const uint8_t> data,
+            const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+            SendCallback callback) override;
 
  private:
   friend class UDPSocketTest;
@@ -93,6 +101,7 @@ class UDPSocket : public mojom::UDPSocket {
     ~PendingSendRequest();
 
     std::unique_ptr<net::IPEndPoint> addr;
+    net::MutableNetworkTrafficAnnotationTag traffic_annotation;
     scoped_refptr<net::IOBufferWithSize> data;
     SendToCallback callback;
   };
@@ -101,12 +110,16 @@ class UDPSocket : public mojom::UDPSocket {
   bool IsConnectedOrBound() const;
 
   void DoRecvFrom();
-  void DoSendToOrWrite(const net::IPEndPoint* dest_addr,
-                       const base::span<const uint8_t>& data,
-                       SendToCallback callback);
-  void DoSendToOrWriteBuffer(const net::IPEndPoint* dest_addr,
-                             scoped_refptr<net::IOBufferWithSize> buffer,
-                             SendToCallback callback);
+  void DoSendToOrWrite(
+      const net::IPEndPoint* dest_addr,
+      const base::span<const uint8_t>& data,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      SendToCallback callback);
+  void DoSendToOrWriteBuffer(
+      const net::IPEndPoint* dest_addr,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      SendToCallback callback);
 
   void OnRecvFromCompleted(int net_result);
   void OnSendToCompleted(int net_result);
