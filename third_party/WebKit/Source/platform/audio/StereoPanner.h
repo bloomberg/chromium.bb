@@ -36,11 +36,6 @@ class PLATFORM_EXPORT StereoPanner {
 
  private:
   explicit StereoPanner(float sample_rate);
-
-  bool is_first_render_;
-  double smoothing_constant_;
-
-  double pan_;
 };
 
 }  // namespace blink
