@@ -278,7 +278,8 @@ void ScreenCaptureMachineAndroid::MaybeCaptureForRefresh() {
   if (lastFrame_.get() == nullptr)
     return;
 
-  const VideoCaptureOracle::Event event = VideoCaptureOracle::kRefreshRequest;
+  const VideoCaptureOracle::Event event =
+      VideoCaptureOracle::kActiveRefreshRequest;
   const base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_refptr<VideoFrame> frame;
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;

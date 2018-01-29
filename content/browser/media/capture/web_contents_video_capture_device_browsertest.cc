@@ -216,26 +216,31 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
   // Creates and starts the device for frame capture, and checks that the
   // initial refresh frame is delivered.
   void AllocateAndStartAndWaitForFirstFrame() {
-    frames_.clear();
-    last_frame_timestamp_ = base::TimeDelta::Min();
-    capture_stack()->SetFrameCallback(
-        base::BindRepeating(&WebContentsVideoCaptureDeviceBrowserTest::OnFrame,
-                            base::Unretained(this)));
-
     auto* const main_frame = shell()->web_contents()->GetMainFrame();
     device_ = std::make_unique<WebContentsVideoCaptureDevice>(
         main_frame->GetProcess()->GetID(), main_frame->GetRoutingID());
+    base::RunLoop run_loop;
+    capture_stack()->SetFrameCallback(base::BindRepeating(
+        [](base::RunLoop* loop, base::TimeDelta* first_frame_timestamp,
+           scoped_refptr<media::VideoFrame> frame) {
+          *first_frame_timestamp = frame->timestamp();
+          loop->Quit();
+        },
+        &run_loop, &last_frame_timestamp_));
     device_->AllocateAndStartWithReceiver(
         SnapshotCaptureParams(), capture_stack()->CreateFrameReceiver());
-    RunAllPendingInMessageLoop(BrowserThread::UI);
+    run_loop.Run();
     EXPECT_TRUE(capture_stack()->started());
     EXPECT_FALSE(capture_stack()->error_occurred());
     capture_stack()->ExpectNoLogMessages();
 
+    frames_.clear();
+    capture_stack()->SetFrameCallback(
+        base::BindRepeating(&WebContentsVideoCaptureDeviceBrowserTest::OnFrame,
+                            base::Unretained(this)));
     min_capture_period_ = base::TimeDelta::FromMicroseconds(
         base::Time::kMicrosecondsPerSecond /
         device_->capture_params().requested_format.frame_rate);
-    WaitForFrameWithColor(SK_ColorBLACK);
   }
 
   // Stops and destroys the device.
@@ -307,7 +312,6 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
         }
 
         if (IsApproximatelySameColor(color, average_content_rgb)) {
-          VLOG(1) << "Observed desired frame.";
           return;
         } else {
           VLOG(3) << "PNG dump of undesired frame: "
@@ -468,8 +472,10 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
 
 // Tests that the device refuses to start if the WebContents target was
 // destroyed before the device could start.
-IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
+IN_PROC_BROWSER_TEST_F(
+    WebContentsVideoCaptureDeviceBrowserTest,
+    DISABLED_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
   auto* const main_frame = shell()->web_contents()->GetMainFrame();
   const auto render_process_id = main_frame->GetProcess()->GetID();
   const auto render_frame_id = main_frame->GetRoutingID();
@@ -501,8 +507,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device starts, captures a frame, and then gracefully
 // errors-out because the WebContents is destroyed before the device is stopped.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       ErrorsOutWhenWebContentsIsDestroyed) {
+                       DISABLED_ErrorsOutWhenWebContentsIsDestroyed) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -522,8 +529,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       SuspendsAndResumes) {
+                       DISABLED_SuspendsAndResumes) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -555,8 +563,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       DeliversRefreshFramesUponRequest) {
+                       DISABLED_DeliversRefreshFramesUponRequest) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Set the page content to a known color.
@@ -586,16 +595,8 @@ class WebContentsVideoCaptureDeviceBrowserTestP
   }
 };
 
-#if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
-    ,
-    WebContentsVideoCaptureDeviceBrowserTestP,
-    testing::Combine(
-        // On ChromeOS, software compositing is not an option.
-        testing::Values(false),
-        // Force video frame resolutions to have a fixed aspect ratio?
-        testing::Values(false, true)));
-#else
+// TODO(crbug/754872): Determine why these tests time out on CrOS only.
+#if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
@@ -604,14 +605,15 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(false, true),
         // Force video frame resolutions to have a fixed aspect ratio?
         testing::Values(false, true)));
-#endif  // defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
 // Tests that the device successfully captures a series of content changes,
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, and whether the WebContents is visible/hidden or
 // occluded/unoccluded.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       CapturesContentChanges) {
+                       DISABLED_CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (use_software_compositing() ? "Software Compositing"
