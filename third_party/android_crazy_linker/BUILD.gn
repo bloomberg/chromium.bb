@@ -21,6 +21,8 @@ group("android_crazy_linker_tests") {
     ":crazy_linker_bench_load_library",
     ":crazy_linker_test_constructors_destructors",
     ":crazy_linker_test_dl_wrappers",
+    ":crazy_linker_test_dl_wrappers_valid_handles",
+    ":crazy_linker_test_dl_wrappers_with_system_handle",
     ":crazy_linker_test_load_library",
     ":crazy_linker_test_load_library_callbacks",
     ":crazy_linker_test_load_library_depends",
@@ -70,6 +72,8 @@ template("crazy_linker_library") {
       "src/src/crazy_linker_line_reader.cpp",
       "src/src/crazy_linker_line_reader.h",
       "src/src/crazy_linker_memory_mapping.h",
+      "src/src/crazy_linker_pointer_set.cpp",
+      "src/src/crazy_linker_pointer_set.h",
       "src/src/crazy_linker_proc_maps.cpp",
       "src/src/crazy_linker_proc_maps.h",
       "src/src/crazy_linker_rdebug.cpp",
@@ -135,6 +139,7 @@ test("android_crazy_linker_unittests") {
     "src/src/crazy_linker_error_unittest.cpp",
     "src/src/crazy_linker_globals_unittest.cpp",
     "src/src/crazy_linker_line_reader_unittest.cpp",
+    "src/src/crazy_linker_pointer_set_unittest.cpp",
     "src/src/crazy_linker_proc_maps_unittest.cpp",
     "src/src/crazy_linker_search_path_list_unittest.cpp",
     "src/src/crazy_linker_system_unittest.cpp",
@@ -166,6 +171,9 @@ template("crazy_linker_test_library") {
     }
     if (defined(invoker.data_deps)) {
       data_deps = invoker.data_deps
+    }
+    if (defined(invoker.libs)) {
+      libs += invoker.libs
     }
 
     # This is not Chromium code.
@@ -221,6 +229,17 @@ crazy_linker_test_library("crazy_linker_tests_libbar_with_relro") {
   ]
 }
 
+crazy_linker_test_library("crazy_linker_tests_libbar_with_two_dlopens") {
+  sources = [
+    "src/tests/bar_with_two_dlopens.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo",
+    ":crazy_linker_tests_libfoo2",
+  ]
+  libs = [ "dl" ]
+}
+
 crazy_linker_test_library("crazy_linker_tests_libzoo") {
   sources = [
     "src/tests/zoo.cpp",
@@ -228,6 +247,13 @@ crazy_linker_test_library("crazy_linker_tests_libzoo") {
   data_deps = [
     ":crazy_linker_tests_libbar",
   ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libzoo_with_dlopen_handle") {
+  sources = [
+    "src/tests/zoo_with_dlopen_handle.cpp",
+  ]
+  libs = [ "dl" ]
 }
 
 # Integration tests are provided as standalone executables for now.
@@ -298,6 +324,30 @@ executable("crazy_linker_test_dl_wrappers") {
   ]
   data_deps = [
     ":crazy_linker_tests_libzoo",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_dl_wrappers_with_system_handle") {
+  sources = [
+    "src/tests/test_dl_wrappers_with_system_handle.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libzoo_with_dlopen_handle",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_dl_wrappers_valid_handles") {
+  sources = [
+    "src/tests/test_dl_wrappers_valid_handles.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libbar_with_two_dlopens",
   ]
   deps = [
     ":android_crazy_linker",

@@ -9,8 +9,9 @@
 #include <dlfcn.h>
 
 #include "crazy_linker_debug.h"
-#include "crazy_linker_library_view.h"
 #include "crazy_linker_globals.h"
+#include "crazy_linker_library_view.h"
+#include "crazy_linker_pointer_set.h"
 #include "crazy_linker_rdebug.h"
 #include "crazy_linker_shared_library.h"
 #include "crazy_linker_system.h"
@@ -174,7 +175,7 @@ void* LibraryList::FindSymbolFrom(const char* symbol_name, LibraryView* from) {
   // Use a work-queue and a set to ensure to perform a breadth-first
   // search.
   Vector<LibraryView*> work_queue;
-  Set<LibraryView*> visited_set;
+  PointerSet visited_set;
 
   work_queue.PushBack(from);
 

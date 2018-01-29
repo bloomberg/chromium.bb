@@ -103,8 +103,10 @@ void* WrapDlopen(const char* path, int mode) {
                                               Globals::GetSearchPaths(),
                                               false,
                                               &error);
-    if (wrap)
+    if (wrap) {
+      Globals::GetValidHandles()->Add(wrap);
       return wrap;
+    }
   }
 
   // Try to load the executable with the system dlopen() instead.
@@ -118,12 +120,11 @@ void* WrapDlopen(const char* path, int mode) {
   LibraryView* wrap_lib = new LibraryView();
   wrap_lib->SetSystem(system_lib, path ? path : "<executable>");
   Globals::GetLibraries()->AddLibrary(wrap_lib);
+  Globals::GetValidHandles()->Add(wrap_lib);
   return wrap_lib;
 }
 
 void* WrapDlsym(void* lib_handle, const char* symbol_name) {
-  LibraryView* wrap_lib = reinterpret_cast<LibraryView*>(lib_handle);
-
   if (!symbol_name) {
     SetLinkerError("dlsym: NULL symbol name");
     return NULL;
@@ -148,12 +149,24 @@ void* WrapDlsym(void* lib_handle, const char* symbol_name) {
   // when |lib_handle| corresponds to a crazy library, except that
   // it stops at system libraries that it depends on.
 
-  void* result = NULL;
+  ScopedGlobalLock lock;
+  if (!Globals::GetValidHandles()->Has(lib_handle)) {
+    // Note: the handle was not opened with the crazy linker, so fall back
+    // to the system linker. That can happen in rare cases.
+    void* result = ::dlsym(lib_handle, symbol_name);
+    if (!result) {
+      SaveSystemError();
+      LOG("dlsym: could not find symbol '%s' from foreign library\n",
+          symbol_name, GetThreadData()->GetError());
+    }
+    return result;
+  }
 
+  auto* wrap_lib = reinterpret_cast<LibraryView*>(lib_handle);
   if (wrap_lib->IsSystem()) {
     // Note: the system dlsym() only looks into the target library,
     // while the GNU linker performs a breadth-first search.
-    result = ::dlsym(wrap_lib->GetSystem(), symbol_name);
+    void* result = ::dlsym(wrap_lib->GetSystem(), symbol_name);
     if (!result) {
       SaveSystemError();
       LOG("dlsym:%s: could not find symbol '%s' from system library\n%s",
@@ -165,7 +178,6 @@ void* WrapDlsym(void* lib_handle, const char* symbol_name) {
   }
 
   if (wrap_lib->IsCrazy()) {
-    ScopedGlobalLock lock;
     LibraryList* lib_list = Globals::GetLibraries();
     void* addr = lib_list->FindSymbolFrom(symbol_name, wrap_lib);
     if (addr)
@@ -212,14 +224,26 @@ int WrapDladdr(void* address, Dl_info* info) {
 }
 
 int WrapDlclose(void* lib_handle) {
-  LibraryView* wrap_lib = reinterpret_cast<LibraryView*>(lib_handle);
-  if (!wrap_lib) {
+  if (!lib_handle) {
     SetLinkerError("NULL library handle");
     return -1;
   }
 
+  ScopedGlobalLock lock;
+  if (!Globals::GetValidHandles()->Remove(lib_handle)) {
+    // This is a foreign handle that was not created by the crazy linker.
+    // Fall-back to the system in this case.
+    if (::dlclose(lib_handle) != 0) {
+      SaveSystemError();
+      LOG("dlclose: could not close foreign library handle %p\n%s", lib_handle,
+          GetThreadData()->GetError());
+      return -1;
+    }
+    return 0;
+  }
+
+  LibraryView* wrap_lib = reinterpret_cast<LibraryView*>(lib_handle);
   if (wrap_lib->IsSystem() || wrap_lib->IsCrazy()) {
-    ScopedGlobalLock lock;
     LibraryList* lib_list = Globals::GetLibraries();
     lib_list->UnloadLibrary(wrap_lib);
     return 0;
@@ -260,6 +284,34 @@ int WrapDl_iterate_phdr(int (*cb)(dl_phdr_info*, size_t, void*), void* data) {
 #endif  // !__arm__
 
 }  // namespace
+
+// This method should only be called from testing code. It is used by
+// one integration test to check that wrapping works correctly within
+// libraries loaded through the crazy-linker.
+void* GetDlCloseWrapperAddressForTesting() {
+  return reinterpret_cast<void*>(&WrapDlclose);
+}
+
+// This method should only be called from testing code. It is used to return
+// the list of valid dlopen() handles created by the crazy-linker. This returns
+// the address of a heap-allocated array of pointers, which must be explicitly
+// free()-ed by the caller. This returns nullptr is the array is empty.
+// On exit, sets |*p_count| to the number of items in the array.
+void** GetValidDlopenHandlesForTesting(size_t* p_count) {
+  ScopedGlobalLock lock;
+  const Vector<void*>& handles =
+      Globals::GetValidHandles()->GetValuesForTesting();
+  *p_count = handles.GetCount();
+  if (handles.IsEmpty())
+    return nullptr;
+
+  auto* ptr =
+      reinterpret_cast<void**>(malloc(handles.GetCount() * sizeof(void*)));
+  for (size_t n = 0; n < handles.GetCount(); ++n) {
+    ptr[n] = handles[n];
+  }
+  return ptr;
+}
 
 void* WrapLinkerSymbol(const char* name) {
   // Shortcut, since all names begin with 'dl'

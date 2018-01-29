@@ -126,11 +126,13 @@ RUN_DIR=/data/local/tmp
 LIBRARY_FILES="\
 libcrazy_linker_tests_libbar.so \
 libcrazy_linker_tests_libbar_with_relro.so \
+libcrazy_linker_tests_libbar_with_two_dlopens.so \
 libcrazy_linker_tests_libfoo.so \
 libcrazy_linker_tests_libfoo_with_relro.so \
 libcrazy_linker_tests_libfoo_with_static_constructor.so \
 libcrazy_linker_tests_libfoo2.so \
 libcrazy_linker_tests_libzoo.so \
+libcrazy_linker_tests_libzoo_with_dlopen_handle.so \
 "
 
 # TODO(digit): Fix crazy_linker_test_load_library_callbacks and add it
@@ -139,6 +141,8 @@ TEST_FILES="\
 crazy_linker_bench_load_library \
 crazy_linker_test_constructors_destructors \
 crazy_linker_test_dl_wrappers \
+crazy_linker_test_dl_wrappers_with_system_handle \
+crazy_linker_test_dl_wrappers_valid_handles \
 crazy_linker_test_load_library \
 crazy_linker_test_load_library_depends \
 crazy_linker_test_relocated_shared_relro \
