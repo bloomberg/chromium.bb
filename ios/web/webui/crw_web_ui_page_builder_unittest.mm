@@ -23,30 +23,30 @@ namespace {
 NSString* const kPageTemplate = @"<html><head>%@</head></html>";
 
 // URL for BuildSimplePage.
-const char* kSimplePageUrl("http://simplepage");
+const char kSimplePageUrl[] = "http://simplepage/";
 // URL for BuildPageWithJSSubresource.
-const char* kJsPageUrl("http://javascriptpage");
+const char kJsPageUrl[] = "http://javascriptpage/";
 // URL for BuildPageWithCSSSubresource.
-const char* kCssPageUrl("http://csspage");
+const char kCssPageUrl[] = "http://csspage/";
 // URL for BuildPageWithMultipleSubresources.
-const char* kMultipleResourcesPageUrl("http://multipleresourcespage");
+const char kMultipleResourcesPageUrl[] = "http://multipleresourcespage/";
 // URL for BuildPageWithCSSNestedSubresources.
-const char* kCssImportPageUrl("http://csspagewithimport");
+const char kCssImportPageUrl[] = "http://csspagewithimport/";
 // URL for BuildPageWithRelativeSubresource.
-const char* kCssRelativePageUrl("http://css/csspage.html");
+const char kCssRelativePageUrl[] = "http://css/csspage.html";
 // URL for BuildPageWithWebUIJS.
-const char* kCoreJsPageUrl("http://corejs");
+const char kCoreJsPageUrl[] = "http://corejs/";
 
 // URL for JS resource.
-const char* kJsResourceUrl("http://javascriptpage/resources/javascript.js");
+const char kJsResourceUrl[] = "http://javascriptpage/resources/javascript.js";
 // URL for CSS resource.
-const char* kCssResourceUrl("http://csspage/resources/stylesheet.css");
+const char kCssResourceUrl[] = "http://csspage/resources/stylesheet.css";
 // URL for CSS resource with import.
-const char* kCssImportResourceUrl("http://csspage/resources/import.css");
+const char kCssImportResourceUrl[] = "http://csspage/resources/import.css";
 // Chrome URL for messaging JavaScript.
-const char* kCoreJsResourceUrl("chrome://resources/js/ios/web_ui.js");
+const char kCoreJsResourceUrl[] = "chrome://resources/js/ios/web_ui.js";
 // String for relative resource URL.
-const char* kRelativeCssString("myresource.css");
+const char kRelativeCssString[] = "myresource.css";
 
 // Template for JS tag with URL.
 NSString* const kJsTagTemplate = @"<script src=\"%@\"></script>";
@@ -107,20 +107,20 @@ NSString* PageForTagTemplateAndContent(NSString* tag_template,
 
 - (NSString*)resourceForURL:(const GURL&)resourceURL {
   // Resource for BuildSimplePage.
-  if (resourceURL == GURL(kSimplePageUrl))
+  if (resourceURL == kSimplePageUrl)
     return [NSString stringWithFormat:kPageTemplate, @""];
   // Resources for BuildPageWithJSSubresource.
-  if (resourceURL == GURL(kJsPageUrl))
+  if (resourceURL == kJsPageUrl)
     return [self pageWithTagTemplate:kJsTagTemplate URL:kJsResourceUrl];
-  if (resourceURL == GURL(kJsResourceUrl))
+  if (resourceURL == kJsResourceUrl)
     return kJsContent;
   // Resources for BuildPageWithCSSSubresource.
-  if (resourceURL == GURL(kCssPageUrl))
+  if (resourceURL == kCssPageUrl)
     return [self pageWithTagTemplate:kCssTagTemplate URL:kCssResourceUrl];
-  if (resourceURL == GURL(kCssResourceUrl))
+  if (resourceURL == kCssResourceUrl)
     return kCssContent;
   // Resource for BuildPageWithMultipleSubresources.
-  if (resourceURL == GURL(kMultipleResourcesPageUrl)) {
+  if (resourceURL == kMultipleResourcesPageUrl) {
     NSString* JSTag =
         [NSString stringWithFormat:kJsTagTemplate,
                                    base::SysUTF8ToNSString(kJsResourceUrl)];
@@ -135,10 +135,10 @@ NSString* PageForTagTemplateAndContent(NSString* tag_template,
     return [NSString stringWithFormat:kPageTemplate, tags];
   }
   // Resources for BuildPageWithCSSNestedSubresource.
-  if (resourceURL == GURL(kCssImportPageUrl)) {
+  if (resourceURL == kCssImportPageUrl) {
     return [self pageWithTagTemplate:kCssTagTemplate URL:kCssImportResourceUrl];
   }
-  if (resourceURL == GURL(kCssImportResourceUrl)) {
+  if (resourceURL == kCssImportResourceUrl) {
     return [NSString stringWithFormat:kCssImportTemplate,
                                       base::SysUTF8ToNSString(kCssResourceUrl)];
   }
@@ -151,7 +151,7 @@ NSString* PageForTagTemplateAndContent(NSString* tag_template,
   if (resourceURL == cssRelativeResourceURL)
     return kRelativeCssContent;
   // Resource for BuildPageWithWebUIJS.
-  if (resourceURL == GURL(kCoreJsPageUrl))
+  if (resourceURL == kCoreJsPageUrl)
     return [self pageWithTagTemplate:kJsTagTemplate URL:kCoreJsResourceUrl];
 
   NOTREACHED();

@@ -2339,7 +2339,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     BOOL hideToolbar = NO;
     if (item) {
       GURL url = item->GetURL();
-      BOOL isNTP = url.GetOrigin() == GURL(kChromeUINewTabURL);
+      BOOL isNTP = url.GetOrigin() == kChromeUINewTabURL;
       hideToolbar = isNTP && !_isOffTheRecord &&
                     ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                     ![self.primaryToolbarCoordinator showingOmniboxPopup];

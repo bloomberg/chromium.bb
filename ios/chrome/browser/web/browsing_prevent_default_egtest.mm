@@ -105,7 +105,7 @@ GURL GetTestUrl() {
                   block:^BOOL {
                     const GURL& currentURL =
                         chrome_test_util::GetCurrentWebState()->GetVisibleURL();
-                    return currentURL == GURL(url::kAboutBlankURL);
+                    return currentURL == url::kAboutBlankURL;
                   }] waitWithTimeout:kConditionTimeout];
   [ChromeEarlGrey waitForMainTabCount:1];
 }

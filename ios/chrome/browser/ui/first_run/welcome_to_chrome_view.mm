@@ -70,6 +70,11 @@ NSString* const kAppLogoImageName = @"launchscreen_app_logo";
 NSString* const kCheckBoxImageName = @"checkbox";
 NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
+// Constants for the Terms of Service and Privacy Notice URLs in the
+// first run experience.
+const char kTermsOfServiceUrl[] = "internal://terms-of-service";
+const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
+
 }  // namespace
 
 @interface WelcomeToChromeView () {
@@ -392,9 +397,9 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
     WelcomeToChromeView* strongSelf = weakSelf;
     if (!strongSelf)
       return;
-    if (url == GURL("internal://terms-of-service")) {
+    if (url == kTermsOfServiceUrl) {
       [[strongSelf delegate] welcomeToChromeViewDidTapTOSLink];
-    } else if (url == GURL("internal://privacy-notice")) {
+    } else if (url == kPrivacyNoticeUrl) {
       [[strongSelf delegate] welcomeToChromeViewDidTapPrivacyLink];
     } else {
       NOTREACHED();
@@ -403,11 +408,10 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
   _TOSLabelLinkController =
       [[LabelLinkController alloc] initWithLabel:_TOSLabel action:action];
-  [_TOSLabelLinkController
-      addLinkWithRange:tosLinkTextRange
-                   url:GURL("internal://terms-of-service")];
+  [_TOSLabelLinkController addLinkWithRange:tosLinkTextRange
+                                        url:GURL(kTermsOfServiceUrl)];
   [_TOSLabelLinkController addLinkWithRange:privacyLinkTextRange
-                                        url:GURL("internal://privacy-notice")];
+                                        url:GURL(kPrivacyNoticeUrl)];
   [_TOSLabelLinkController setLinkColor:UIColorFromRGB(kLinkColorRGB)];
 
   CGSize TOSLabelSize = [self.TOSLabel sizeThatFits:containerSize];

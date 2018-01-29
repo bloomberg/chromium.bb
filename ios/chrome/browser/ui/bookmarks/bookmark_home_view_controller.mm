@@ -782,7 +782,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)loadURL:(const GURL&)url {
-  if (url == GURL() || url.SchemeIs(url::kJavaScriptScheme))
+  if (url.is_empty() || url.SchemeIs(url::kJavaScriptScheme))
     return;
 
   new_tab_page_uma::RecordAction(self.browserState,
