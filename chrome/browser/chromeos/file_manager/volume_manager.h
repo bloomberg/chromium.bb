@@ -27,6 +27,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "device/media_transfer_protocol/public/interfaces/mtp_storage_info.mojom.h"
 
 class Profile;
@@ -237,11 +238,11 @@ class VolumeManager : public KeyedService,
                       public chromeos::file_system_provider::Observer,
                       public storage_monitor::RemovableStorageObserver {
  public:
-  // Returns MediaTransferProtocolManager. Used for injecting
-  // FakeMediaTransferProtocolManager for testing.
-  typedef base::RepeatingCallback<const device::mojom::MtpStorageInfo*(
-      const std::string&)>
-      GetMtpStorageInfoCallback;
+  // An alternate to MediaTransferProtocolManager::GetMtpStorage.
+  // Used for injecting fake MTP manager for testing in VolumeManagerTest.
+  using GetMtpStorageInfoCallback = base::RepeatingCallback<void(
+      const std::string&,
+      device::MediaTransferProtocolManager::GetStorageInfoCallback)>;
 
   VolumeManager(
       Profile* profile,
@@ -345,6 +346,9 @@ class VolumeManager : public KeyedService,
  private:
   void OnDiskMountManagerRefreshed(bool success);
   void OnStorageMonitorInitialized();
+  void DoAttachMtpStorage(
+      const storage_monitor::StorageInfo& info,
+      const device::mojom::MtpStorageInfo* mtp_storage_info);
   void DoMountEvent(chromeos::MountError error_code,
                     std::unique_ptr<Volume> volume);
   void DoUnmountEvent(chromeos::MountError error_code, const Volume& volume);

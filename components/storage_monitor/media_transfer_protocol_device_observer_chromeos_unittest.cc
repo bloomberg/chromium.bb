@@ -46,8 +46,9 @@ base::LazyInstance<std::map<std::string, device::mojom::MtpStorageInfo>>::Leaky
       g_fake_storage_info_map = LAZY_INSTANCE_INITIALIZER;
 
 // Helper function to get fake MTP device details.
-const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfo(
-    const std::string& storage_name) {
+void GetFakeMtpStorageInfo(
+    const std::string& storage_name,
+    device::MediaTransferProtocolManager::GetStorageInfoCallback callback) {
   // Fill the map out if it is empty.
   if (g_fake_storage_info_map.Get().empty()) {
     // Add the invalid MTP storage info.
@@ -68,7 +69,9 @@ const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfo(
   }
 
   const auto it = g_fake_storage_info_map.Get().find(storage_name);
-  return it != g_fake_storage_info_map.Get().end() ? &it->second : nullptr;
+  const auto* storage_info =
+      it != g_fake_storage_info_map.Get().end() ? &it->second : nullptr;
+  std::move(callback).Run(storage_info);
 }
 
 class TestMediaTransferProtocolDeviceObserverChromeOS
