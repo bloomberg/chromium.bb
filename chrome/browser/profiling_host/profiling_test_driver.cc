@@ -29,6 +29,7 @@ namespace {
 
 const char kTestCategory[] = "kTestCategory";
 const char kMallocEvent[] = "kMallocEvent";
+const char kMallocTypeTag[] = "kMallocTypeTag";
 const char kPAEvent[] = "kPAEvent";
 const char kVariadicEvent[] = "kVariadicEvent";
 const char kThreadName[] = "kThreadName";
@@ -542,6 +543,7 @@ void ProfilingTestDriver::MakeTestAllocations() {
 
   {
     DisableAllocationTrackingForCurrentThreadForTesting();
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(kMallocTypeTag);
     TRACE_EVENT0(kTestCategory, kMallocEvent);
     EnableAllocationTrackingForCurrentThreadForTesting();
 
@@ -646,7 +648,8 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
 
   if (should_validate_dumps) {
     result = ValidateDump(heaps_v2, kMallocAllocSize * kMallocAllocCount,
-                          kMallocAllocCount, "malloc", nullptr,
+                          kMallocAllocCount, "malloc",
+                          HasPseudoFrames() ? kMallocTypeTag : nullptr,
                           HasPseudoFrames() ? kMallocEvent : "", thread_name);
     if (!result) {
       LOG(ERROR) << "Failed to validate malloc fixed allocations";
