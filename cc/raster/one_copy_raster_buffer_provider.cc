@@ -117,6 +117,11 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
 void OneCopyRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "OneCopyRasterBufferProvider::OrderingBarrier");
 
+  // This inserts a SyncToken on the compositor thread for the texture and
+  // mailbox created there, which will we written to on the worker thread.
+  // The SyncToken will be waited on and block the worker context's commands
+  // from running until it is flushed, which does not happen here, as we delay
+  // it to run less of them.
   gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
   gpu::SyncToken sync_token =
       LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
@@ -126,6 +131,11 @@ void OneCopyRasterBufferProvider::OrderingBarrier() {
 }
 
 void OneCopyRasterBufferProvider::Flush() {
+  // This flush on the compositor context flushes queued work on all contexts,
+  // including the raster worker. Tile raster inserted a SyncToken which is
+  // waited for in order to tell if a tile is ready for draw, but a flush
+  // is needed to ensure the work is sent for those queries to get the right
+  // answer.
   compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
@@ -398,7 +408,8 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
   ri->DeleteTextures(1, &texture_id);
 
-  // Generate sync token for cross context synchronization.
+  // Generate sync token on the worker context that will be sent to and waited
+  // for by the display compositor before using the content generated here.
   resource_lock->set_sync_token(
       LayerTreeResourceProvider::GenerateSyncTokenHelper(ri));
 }
