@@ -21,7 +21,6 @@ class ScreenPositionClient;
 namespace chromecast {
 
 class CastFocusClientAura;
-class CastSideSwipeGestureHandlerInterface;
 class CastSystemGestureEventHandler;
 class CastWindowTreeHost;
 
@@ -41,13 +40,11 @@ class CastWindowManagerAura : public CastWindowManager,
   aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds) override;
 
-  // Register a new handler for a system side swipe event.
   void AddSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler);
+      CastSideSwipeGestureHandlerInterface* handler) override;
 
-  // Remove the registration of a system side swipe event handler.
   void RemoveSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler);
+      CastSideSwipeGestureHandlerInterface* handler) override;
 
  private:
   friend class CastWindowManager;

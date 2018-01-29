@@ -16,6 +16,8 @@ class Event;
 
 namespace chromecast {
 
+class CastSideSwipeGestureHandlerInterface;
+
 // Chromecast's window-manager interface.
 // This declares the interface to add top-level windows to the Chromecast
 // platform window.  It is owned by the UI thread, and generally one instance
@@ -57,6 +59,14 @@ class CastWindowManager {
 
   // Inject a UI event into the Cast window.
   virtual void InjectEvent(ui::Event* event) = 0;
+
+  // Register a new handler for a system side swipe event.
+  virtual void AddSideSwipeGestureHandler(
+      CastSideSwipeGestureHandlerInterface* handler) = 0;
+
+  // Remove the registration of a system side swipe event handler.
+  virtual void RemoveSideSwipeGestureHandler(
+      CastSideSwipeGestureHandlerInterface* handler) = 0;
 };
 
 }  // namespace chromecast
