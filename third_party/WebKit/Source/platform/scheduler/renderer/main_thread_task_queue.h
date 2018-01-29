@@ -38,7 +38,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     kCompositor = 8,
     kIdle = 9,
     kTest = 10,
-    kFrameLoading_kControl = 11,
+    kFrameLoadingControl = 11,
     kFrameThrottleable = 12,
     kFrameDeferrable = 13,
     kFramePausable = 14,

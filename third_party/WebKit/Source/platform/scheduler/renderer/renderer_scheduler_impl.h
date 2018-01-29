@@ -193,7 +193,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   // Returns a new loading task queue. This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
-  // Note: Tasks posted to kFrameLoading_kControl queues must execute quickly.
+  // Note: Tasks posted to kFrameLoadingControl queues must execute quickly.
   scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue(
       MainThreadTaskQueue::QueueType queue_type);
 

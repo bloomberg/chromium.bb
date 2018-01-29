@@ -38,7 +38,7 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "idle_tq";
     case MainThreadTaskQueue::QueueType::kTest:
       return "test_tq";
-    case MainThreadTaskQueue::QueueType::kFrameLoading_kControl:
+    case MainThreadTaskQueue::QueueType::kFrameLoadingControl:
       return "frame_loading_control_tq";
     case MainThreadTaskQueue::QueueType::kV8:
       return "v8_tq";
@@ -67,7 +67,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kIPC:
       return QueueClass::kNone;
     case QueueType::kFrameLoading:
-    case QueueType::kFrameLoading_kControl:
+    case QueueType::kFrameLoadingControl:
       return QueueClass::kLoading;
     case QueueType::kDefaultTimer:
     case QueueType::kUnthrottled:

@@ -698,7 +698,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
           .SetCanBeDeferred(true)
           .SetUsedForControlTasks(
               queue_type ==
-              MainThreadTaskQueue::QueueType::kFrameLoading_kControl));
+              MainThreadTaskQueue::QueueType::kFrameLoadingControl));
 }
 
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
