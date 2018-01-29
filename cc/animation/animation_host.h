@@ -27,7 +27,6 @@ class ScrollOffset;
 namespace cc {
 
 class AnimationPlayer;
-class AnimationTicker;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerTreeHost;
@@ -62,9 +61,9 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   AnimationTimeline* GetTimelineById(int timeline_id) const;
 
-  void RegisterTickerForElement(ElementId element_id, AnimationTicker* ticker);
-  void UnregisterTickerForElement(ElementId element_id,
-                                  AnimationTicker* ticker);
+  void RegisterPlayerForElement(ElementId element_id, AnimationPlayer* player);
+  void UnregisterPlayerForElement(ElementId element_id,
+                                  AnimationPlayer* player);
 
   scoped_refptr<ElementAnimations> GetElementAnimationsForElementId(
       ElementId element_id) const;

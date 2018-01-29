@@ -14,8 +14,7 @@ namespace blink {
 
 std::unique_ptr<CompositorAnimationPlayer> CompositorAnimationPlayer::Create() {
   return std::make_unique<CompositorAnimationPlayer>(
-      cc::SingleTickerAnimationPlayer::Create(
-          cc::AnimationIdProvider::NextPlayerId()));
+      cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId()));
 }
 
 std::unique_ptr<CompositorAnimationPlayer>
@@ -30,7 +29,7 @@ CompositorAnimationPlayer::CreateWorkletPlayer(
 }
 
 CompositorAnimationPlayer::CompositorAnimationPlayer(
-    scoped_refptr<cc::SingleTickerAnimationPlayer> player)
+    scoped_refptr<cc::AnimationPlayer> player)
     : animation_player_(player), delegate_() {}
 
 CompositorAnimationPlayer::~CompositorAnimationPlayer() {
@@ -41,8 +40,7 @@ CompositorAnimationPlayer::~CompositorAnimationPlayer() {
     animation_player_->animation_timeline()->DetachPlayer(animation_player_);
 }
 
-cc::SingleTickerAnimationPlayer* CompositorAnimationPlayer::CcAnimationPlayer()
-    const {
+cc::AnimationPlayer* CompositorAnimationPlayer::CcAnimationPlayer() const {
   return animation_player_.get();
 }
 

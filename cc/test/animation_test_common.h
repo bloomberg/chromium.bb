@@ -13,13 +13,15 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/element_id.h"
 
+namespace cc {
+class AnimationPlayer;
+}
+
 namespace gfx {
 class ScrollOffset;
 }
 
 namespace cc {
-
-class SingleTickerAnimationPlayer;
 
 class FakeFloatAnimationCurve : public FloatAnimationCurve {
  public:
@@ -73,33 +75,33 @@ class FakeFloatTransition : public FloatAnimationCurve {
   float to_;
 };
 
-int AddScrollOffsetAnimationToPlayer(SingleTickerAnimationPlayer* player,
+int AddScrollOffsetAnimationToPlayer(AnimationPlayer* player,
                                      gfx::ScrollOffset initial_value,
                                      gfx::ScrollOffset target_value,
                                      bool impl_only);
 
-int AddAnimatedTransformToPlayer(SingleTickerAnimationPlayer* player,
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
                                  double duration,
                                  int delta_x,
                                  int delta_y);
 
-int AddAnimatedTransformToPlayer(SingleTickerAnimationPlayer* player,
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
                                  double duration,
                                  TransformOperations start_operations,
                                  TransformOperations operations);
 
-int AddOpacityTransitionToPlayer(SingleTickerAnimationPlayer* player,
+int AddOpacityTransitionToPlayer(AnimationPlayer* player,
                                  double duration,
                                  float start_opacity,
                                  float end_opacity,
                                  bool use_timing_function);
 
-int AddAnimatedFilterToPlayer(SingleTickerAnimationPlayer* player,
+int AddAnimatedFilterToPlayer(AnimationPlayer* player,
                               double duration,
                               float start_brightness,
                               float end_brightness);
 
-int AddOpacityStepsToPlayer(SingleTickerAnimationPlayer* player,
+int AddOpacityStepsToPlayer(AnimationPlayer* player,
                             double duration,
                             float start_opacity,
                             float end_opacity,

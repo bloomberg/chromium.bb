@@ -7,10 +7,10 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_ticker_animation_player.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/property_tree.h"
@@ -364,6 +364,7 @@ AnimationTimelinesTest::~AnimationTimelinesTest() = default;
 
 void AnimationTimelinesTest::SetUp() {
   timeline_ = AnimationTimeline::Create(timeline_id_);
+  player_ = AnimationPlayer::Create(player_id_);
 }
 
 void AnimationTimelinesTest::TearDown() {
@@ -400,7 +401,7 @@ void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
   timeline_->AttachPlayer(player_);
   player_->AttachElement(element_id_);
 
-  element_animations_ = player_->animation_ticker()->element_animations();
+  element_animations_ = player_->element_animations();
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
@@ -411,12 +412,10 @@ void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
 void AnimationTimelinesTest::GetImplTimelineAndPlayerByID() {
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = static_cast<SingleTickerAnimationPlayer*>(
-      timeline_impl_->GetPlayerById(player_id_));
+  player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
 
-  element_animations_impl_ =
-      player_impl_->animation_ticker()->element_animations();
+  element_animations_impl_ = player_impl_->element_animations();
 }
 
 void AnimationTimelinesTest::ReleaseRefPtrs() {
