@@ -933,9 +933,6 @@
   </if>
 
   <!-- Clear Browsing Data -->
-  <message name="IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM" desc="Label at the top of the client area of the dialog, preceding the period combo box">
-    Clear the following items from
-  </message>
   <message name="IDS_SETTINGS_CLEAR_PERIOD_TITLE" desc="Label of the dropdown that selects the time range for which browsing data will be deleted.">
     Time range
   </message>
@@ -981,21 +978,6 @@
   <message name="IDS_SETTINGS_CLEAR_MEDIA_LICENSES" desc="Checkbox for deleting media licenses (premium content, etc.)">
     Media licenses
   </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
-    the past hour
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_DAY" desc="deletion period combo box: day. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
-    the past day
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_WEEK" desc="deletion period combo box: week. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
-    the past week
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_4WEEKS" desc="deletion period combo box: 4 weeks. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
-    the last 4 weeks
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything. In English this finishes the sentence that starts with 'Delete the following items from'.">
-    the beginning of time
-  </message>
   <message name="IDS_SETTINGS_CLEAR_PERIOD_HOUR" desc="The option to delete browsing data from the last hour.">
     Last hour
   </message>
@@ -1010,12 +992,6 @@
   </message>
   <message name="IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING" desc="The option to delete browsing data from the beginning of time.">
     All time
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that some data types will not be cleared.">
-    Some settings that may reflect browsing habits will not be cleared.
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
-    This clears synced data from all devices.
   </message>
   <message name="IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES" desc="Subtitle for the important sites dialog.">
     This will clear cookies and site data for all sites, including

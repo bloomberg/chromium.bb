@@ -325,18 +325,4 @@ BrowsingDataType GetDataTypeFromDeletionPreference(
   return iter->second;
 }
 
-void MigratePreferencesToBasic(PrefService* prefs) {
-  if (!prefs->GetBoolean(prefs::kPreferencesMigratedToBasic)) {
-    prefs->SetBoolean(prefs::kDeleteBrowsingHistoryBasic,
-                      prefs->GetBoolean(prefs::kDeleteBrowsingHistory));
-    prefs->SetBoolean(prefs::kDeleteCacheBasic,
-                      prefs->GetBoolean(prefs::kDeleteCache));
-    prefs->SetBoolean(prefs::kDeleteCookiesBasic,
-                      prefs->GetBoolean(prefs::kDeleteCookies));
-    prefs->SetInteger(prefs::kDeleteTimePeriodBasic,
-                      prefs->GetInteger(prefs::kDeleteTimePeriod));
-    prefs->SetBoolean(prefs::kPreferencesMigratedToBasic, true);
-  }
-}
-
 }  // namespace browsing_data

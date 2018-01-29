@@ -127,7 +127,6 @@ void HostZoomMap::SendErrorPageZoomLevelRefresh(
 
 HostZoomMapImpl::HostZoomMapImpl()
     : default_zoom_level_(0.0),
-      store_last_modified_(false),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -214,8 +213,7 @@ HostZoomMap::ZoomLevelVector HostZoomMapImpl::GetAllZoomLevels() const {
 void HostZoomMapImpl::SetZoomLevelForHost(const std::string& host,
                                           double level) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::Time last_modified =
-      store_last_modified_ ? clock_->Now() : base::Time();
+  base::Time last_modified = clock_->Now();
   SetZoomLevelForHostInternal(host, level, last_modified);
 }
 
@@ -495,11 +493,6 @@ void HostZoomMapImpl::ClearZoomLevels(base::Time delete_begin,
       SetZoomLevelForHost(zoom_level.host, default_zoom_level);
     }
   }
-}
-
-void HostZoomMapImpl::SetStoreLastModified(bool store_last_modified) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  store_last_modified_ = store_last_modified;
 }
 
 void HostZoomMapImpl::ClearTemporaryZoomLevel(int render_process_id,

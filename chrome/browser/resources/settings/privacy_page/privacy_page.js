@@ -80,14 +80,6 @@ Polymer({
     showClearBrowsingDataDialog_: Boolean,
 
     /** @private */
-    tabsInCbd_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('tabsInCbd');
-      }
-    },
-
-    /** @private */
     showDoNotTrackDialog_: {
       type: Boolean,
       value: false,

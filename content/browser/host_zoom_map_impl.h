@@ -50,7 +50,6 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
                              int render_view_id,
                              double level) override;
   void ClearZoomLevels(base::Time delete_begin, base::Time delete_end) override;
-  void SetStoreLastModified(bool store_last_modified) override;
   void ClearTemporaryZoomLevel(int render_process_id,
                                int render_view_id) override;
   double GetDefaultZoomLevel() const override;
@@ -148,8 +147,6 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
   ViewPageScaleFactorsAreOne view_page_scale_factors_are_one_;
 
   TemporaryZoomLevels temporary_zoom_levels_;
-
-  bool store_last_modified_;
 
   base::Clock* clock_;
 

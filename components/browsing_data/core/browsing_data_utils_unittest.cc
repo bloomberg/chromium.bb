@@ -123,32 +123,3 @@ TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   }
   store->ShutdownOnUIThread();
 }
-
-TEST_F(BrowsingDataUtilsTest, MigratePreferencesToBasic) {
-  using namespace browsing_data::prefs;
-
-  prefs()->SetBoolean(kDeleteBrowsingHistory, true);
-  prefs()->SetBoolean(kDeleteCookies, false);
-  prefs()->SetBoolean(kDeleteCache, false);
-  prefs()->SetInteger(kDeleteTimePeriod, 42);
-
-  // History, cookies and cache should be migrated to their basic counterpart.
-  browsing_data::MigratePreferencesToBasic(prefs());
-  EXPECT_TRUE(prefs()->GetBoolean(kDeleteBrowsingHistoryBasic));
-  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCookiesBasic));
-  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCacheBasic));
-  EXPECT_EQ(42, prefs()->GetInteger(kDeleteTimePeriodBasic));
-
-  prefs()->SetBoolean(kDeleteBrowsingHistory, true);
-  prefs()->SetBoolean(kDeleteCookies, true);
-  prefs()->SetBoolean(kDeleteCache, true);
-  prefs()->SetInteger(kDeleteTimePeriod, 100);
-
-  // After the first migration all settings should stay the same if the
-  // migration is executed again.
-  browsing_data::MigratePreferencesToBasic(prefs());
-  EXPECT_TRUE(prefs()->GetBoolean(kDeleteBrowsingHistoryBasic));
-  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCookiesBasic));
-  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCacheBasic));
-  EXPECT_EQ(42, prefs()->GetInteger(kDeleteTimePeriodBasic));
-}

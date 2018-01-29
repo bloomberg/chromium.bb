@@ -133,9 +133,6 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables Basic/Advanced tabs in ClearBrowsingData.
-const base::Feature kTabsInCbd{"TabsInCBD", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, we'll only take thumbnails of unknown URLs (i.e. URLs that are
 // not (yet) part of TopSites) if they have an interesting transition type, i.e.
 // one that qualifies for inclusion in TopSites.
