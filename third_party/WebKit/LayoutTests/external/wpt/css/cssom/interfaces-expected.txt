@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 399 tests; 313 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 399 tests; 314 PASS, 85 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS HTMLElement interface: attribute style
 PASS HTMLElement interface: style_element must inherit property "style" with the proper type
@@ -27,7 +27,7 @@ PASS MediaList interface object name
 FAIL MediaList interface: existence and properties of interface prototype object assert_equals: prototype of MediaList.prototype is not Array.prototype expected [] but got object "[object Object]"
 PASS MediaList interface: existence and properties of interface prototype object's "constructor" property
 PASS MediaList interface: attribute mediaText
-FAIL MediaList interface: stringifier assert_own_property: interface prototype object missing non-static operation expected property "toString" missing
+PASS MediaList interface: stringifier
 PASS MediaList interface: attribute length
 PASS MediaList interface: operation item(unsigned long)
 PASS MediaList interface: operation appendMedium(CSSOMString)

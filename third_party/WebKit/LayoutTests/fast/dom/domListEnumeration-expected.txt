@@ -74,7 +74,7 @@ PASS resultArray[2].i is '2'
 PASS resultArray[2].item is cssStyleDeclaration.item(2)
 
 [object MediaList]
-PASS resultArray.length is 8
+PASS resultArray.length is 9
 PASS resultArray[0].i is '0'
 PASS resultArray[0].item is mediaList.item(0)
 PASS resultArray[1].i is '1'
