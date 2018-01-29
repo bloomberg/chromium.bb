@@ -758,22 +758,23 @@ Node* Internals::effectiveRootScroller(Document* document) {
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host) {
-  // TODO(kochi): Rewrite all references of youngestShadowRoot and
-  // oldestShadowRoot to shadowRoot.
+  // FIXME: Internals::shadowRoot() in tests should be converted to
+  // youngestShadowRoot() or oldestShadowRoot().
+  // https://bugs.webkit.org/show_bug.cgi?id=78465
   return youngestShadowRoot(host);
 }
 
 ShadowRoot* Internals::youngestShadowRoot(Element* host) {
   DCHECK(host);
   if (ElementShadow* shadow = host->Shadow())
-    return &shadow->GetShadowRoot();
+    return &shadow->YoungestShadowRoot();
   return nullptr;
 }
 
 ShadowRoot* Internals::oldestShadowRoot(Element* host) {
   DCHECK(host);
   if (ElementShadow* shadow = host->Shadow())
-    return &shadow->GetShadowRoot();
+    return &shadow->OldestShadowRoot();
   return nullptr;
 }
 
