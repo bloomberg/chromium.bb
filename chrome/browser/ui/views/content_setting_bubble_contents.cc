@@ -224,6 +224,7 @@ void ContentSettingBubbleContents::ListItemContainer::AddItem(
     icon->SetImage(item.image.AsImageSkia());
     label = new views::Label(item.title);
   }
+  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   list_item_views_.push_back(Row(icon, label));
   AddRowToLayout(list_item_views_.back());
 }
