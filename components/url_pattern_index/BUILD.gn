@@ -48,6 +48,17 @@ static_library("test_support") {
   ]
 }
 
+static_library("util") {
+  sources = [
+    "url_rule_util.cc",
+    "url_rule_util.h",
+  ]
+  deps = [
+    ":url_pattern_index",
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -58,10 +69,12 @@ source_set("unit_tests") {
     "unindexed_ruleset_unittest.cc",
     "url_pattern_index_unittest.cc",
     "url_pattern_unittest.cc",
+    "url_rule_util_unittest.cc",
   ]
   deps = [
     ":test_support",
     ":url_pattern_index",
+    ":util",
     "//base",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
