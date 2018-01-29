@@ -284,6 +284,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // false when there is nothing more to do.
   bool PopAndInvokePostMarkingCallback(Visitor*);
 
+  // Invokes all ephemeronIterationDone callbacks on weak tables to do cleanup
+  // (specifically to clear the queued bits for weak hash tables). Needs to be
+  // called even when marking has been aborted.
+  void InvokeEphemeronIterationDoneCallbacks(Visitor*);
+
   // Remove an item from the weak callback work list and call the callback
   // with the visitor and the closure pointer.  Returns false when there is
   // nothing more to do.
@@ -508,6 +513,7 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<CallbackStack> post_marking_callback_stack_;
   std::unique_ptr<CallbackStack> weak_callback_stack_;
   std::unique_ptr<CallbackStack> ephemeron_stack_;
+  std::unique_ptr<CallbackStack> ephemeron_iteration_done_stack_;
   StackFrameDepth stack_frame_depth_;
 
   std::unique_ptr<HeapCompact> compaction_;
