@@ -235,12 +235,13 @@ bool UrlPattern::MatchesUrl(const GURL& url) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern) {
-  // Note: Each fall-through in this switch is intentional.
   switch (pattern.anchor_left()) {
     case proto::ANCHOR_TYPE_SUBDOMAIN:
       out << '|';
+      FALLTHROUGH;
     case proto::ANCHOR_TYPE_BOUNDARY:
       out << '|';
+      FALLTHROUGH;
     default:
       break;
   }
