@@ -24,9 +24,7 @@ class CAPTURE_EXPORT VideoCaptureOracle {
  public:
   enum Event {
     kCompositorUpdate,
-    kActiveRefreshRequest,
-    kPassiveRefreshRequest,
-    kMouseCursorUpdate,
+    kRefreshRequest,
     kNumEvents,
   };
 
@@ -168,11 +166,6 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // Stores the last |event_time| from the last observation/decision.  Used to
   // sanity-check that event times are monotonically non-decreasing.
   base::TimeTicks last_event_time_[kNumEvents];
-
-  // Set to true if there have been updates to the source content that were not
-  // sampled. This will prevent passive refresh requests from being satisfied
-  // when an active refresh should be used instead.
-  bool source_is_dirty_;
 
   // Updated by the last call to ObserveEventAndDecideCapture() with the
   // estimated duration of the next frame to sample.  This is zero if the method
