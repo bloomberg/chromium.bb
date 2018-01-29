@@ -138,6 +138,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       post_marking_callback_stack_(CallbackStack::Create()),
       weak_callback_stack_(CallbackStack::Create()),
       ephemeron_stack_(CallbackStack::Create()),
+      ephemeron_iteration_done_stack_(CallbackStack::Create()),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0),
       should_flush_heap_does_not_contain_cache_(false) {
@@ -240,6 +241,12 @@ bool ThreadHeap::PopAndInvokePostMarkingCallback(Visitor* visitor) {
   return false;
 }
 
+void ThreadHeap::InvokeEphemeronIterationDoneCallbacks(Visitor* visitor) {
+  while (CallbackStack::Item* item = ephemeron_iteration_done_stack_->Pop()) {
+    item->Call(visitor);
+  }
+}
+
 void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
   DCHECK(thread_state_->IsInGC());
 
@@ -263,9 +270,8 @@ void ThreadHeap::RegisterWeakTable(void* table,
   CallbackStack::Item* slot = ephemeron_stack_->AllocateEntry();
   *slot = CallbackStack::Item(table, iteration_callback);
 
-  // Register a post-marking callback to tell the tables that
-  // ephemeron iteration is complete.
-  PushPostMarkingCallback(table, iteration_done_callback);
+  slot = ephemeron_iteration_done_stack_->AllocateEntry();
+  *slot = CallbackStack::Item(table, iteration_done_callback);
 }
 
 #if DCHECK_IS_ON()
@@ -280,6 +286,7 @@ void ThreadHeap::CommitCallbackStacks() {
   post_marking_callback_stack_->Commit();
   weak_callback_stack_->Commit();
   ephemeron_stack_->Commit();
+  ephemeron_iteration_done_stack_->Commit();
 }
 
 HeapCompact* ThreadHeap::Compaction() {
@@ -307,6 +314,7 @@ void ThreadHeap::DecommitCallbackStacks() {
   post_marking_callback_stack_->Decommit();
   weak_callback_stack_->Decommit();
   ephemeron_stack_->Decommit();
+  ephemeron_iteration_done_stack_->Decommit();
 }
 
 void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
@@ -354,6 +362,7 @@ void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
   //    (specifically to clear the queued bits for weak hash tables), and
   // 2. the markNoTracing callbacks on collection backings to mark them
   //    if they are only reachable from their front objects.
+  InvokeEphemeronIterationDoneCallbacks(visitor);
   while (PopAndInvokePostMarkingCallback(visitor)) {
   }
 
