@@ -216,6 +216,7 @@ void SSLErrorUI::HandleCommand(SecurityInterstitialCommand command) {
     case CMD_REPORT_PHISHING_ERROR:
       // Not supported by the SSL error page.
       NOTREACHED() << "Unsupported command: " << command;
+      break;
     case CMD_ERROR:
     case CMD_TEXT_FOUND:
     case CMD_TEXT_NOT_FOUND:
