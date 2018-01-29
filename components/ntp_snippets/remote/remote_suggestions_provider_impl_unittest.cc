@@ -260,6 +260,7 @@ class MockRemoteSuggestionsFetcher : public RemoteSuggestionsFetcher {
                     SnippetsAvailableCallback* callback));
   MOCK_CONST_METHOD0(GetLastStatusForDebugging, const std::string&());
   MOCK_CONST_METHOD0(GetLastJsonForDebugging, const std::string&());
+  MOCK_CONST_METHOD0(WasLastFetchAuthenticatedForDebugging, bool());
   MOCK_CONST_METHOD0(GetFetchUrlForDebugging, const GURL&());
 };
 

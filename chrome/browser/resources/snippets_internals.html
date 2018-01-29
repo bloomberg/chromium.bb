@@ -90,11 +90,10 @@ found in the LICENSE file.
   </div>
 
   <div id="snippets">
-    <h2>NTPSnippetsService</h2>
+    <h2>ContentSuggestionsService</h2>
     <div class="forms">
       <div>
-        <button id="submit-download" type="button">Add snippets</button>
-        <span id="remote-status" class="detail"></span>
+        <button id="submit-download" type="button">Reload suggestions</button>
       </div>
       <div>
         <button id="debug-log-dump" type="button">Dump the debug log</button>
@@ -107,27 +106,36 @@ found in the LICENSE file.
     </div>
   </div>
 
-  <div id="last-json" class="hidden">
-    <h2>Last JSON from Server</h2>
-    <a id="last-json-button">Show the last JSON &gt;&gt;</a>
+  <div id="remote-content-suggestions">
+    <h2>Remote content suggestions</h2>
+    <table class="section-details">
+      <tr>
+        <td class="name">Last Fetch Status
+        <td id="remote-status" class="value">
+      <tr>
+        <td class="name">Last Fetch Type
+        <td id="remote-authenticated" class="value">
+      <tr>
+        <td class="name">Last Background Fetch Time:
+        <td id="last-background-fetch-time-label" class="value">
+    </table>
+    <div>
+      <button id="background-fetch-button" type="button">
+        Fetch remote suggestions in the background in 2 seconds
+      </button>
+    </div>
+    <div>
+      <button id="push-dummy-suggestion-10-seconds-button" type="button">
+        Push dummy suggestion in 10 seconds
+      </button>
+    </div>
+    <div>
+      <button id="last-json-button" type="button">Show the last JSON</button>
+    </div>
     <div id="last-json-container" class="hidden">
       <div id="last-json-text"></div>
       <button id="last-json-dump" type="button">Dump the last JSON</button>
     </div>
-  </div>
-
-  <div id="remote-content-suggestions">
-    <h2>Remote content suggestions</h2>
-    <div>
-      <span>Last Background Fetch Time: </span>
-      <span id="last-background-fetch-time-label"></span>
-    </div>
-    <button id="background-fetch-button" type="button">
-      Fetch remote suggestions in the background in 2 seconds
-    </button>
-    <button id="push-dummy-suggestion-10-seconds-button" type="button">
-      Push dummy suggestion in 10 seconds
-    </button>
   </div>
 
   <div id="notifications">
