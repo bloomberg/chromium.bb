@@ -233,6 +233,15 @@ class TabTest : public views::ViewsTestBase {
     }
   }
 
+  static void StopFadeAnimationIfNecessary(const Tab& tab) {
+    // Stop the fade animation directly instead of waiting an unknown number of
+    // seconds.
+    if (gfx::Animation* fade_animation =
+            tab.alert_indicator_button_->fade_animation_.get()) {
+      fade_animation->Stop();
+    }
+  }
+
  protected:
   void InitWidget(Widget* widget) {
     Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
@@ -314,6 +323,7 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
         controller.set_active_tab(is_active_tab);
         data.alert_state = alert_state;
         tab.SetData(data);
+        StopFadeAnimationIfNecessary(tab);
 
         // Test layout for every width from standard to minimum.
         gfx::Rect bounds(gfx::Point(0, 0), Tab::GetStandardSize());
