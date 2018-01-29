@@ -1660,8 +1660,8 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                          tx_size, reduced_tx_set);
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
@@ -1764,7 +1764,8 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
         const PLANE_TYPE plane_type = get_plane_type(plane);
         TX_TYPE tx_type =
-            av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+            av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
+                            cpi->common.reduced_tx_set_used);
         av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
                                     MAX_TX_SIZE, eob,
                                     cpi->common.reduced_tx_set_used);
@@ -1827,7 +1828,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (plane == 0)
       mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = tx_type;
     TX_TYPE ref_tx_type =
-        av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size);
+        av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
+                        cm->reduced_tx_set_used);
     if (tx_type != ref_tx_type) {
       // use av1_get_tx_type() to check if the tx_type is valid for the current
       // mode if it's not, we skip it here.
@@ -1946,8 +1948,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #if !CONFIG_TXK_SEL
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                          tx_size, cm->reduced_tx_set_used);
   const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   int rate_cost = 0;
 
@@ -3612,7 +3614,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   int64_t tmp;
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
+                                    cm->reduced_tx_set_used);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   BLOCK_SIZE txm_bsize = txsize_to_bsize[tx_size];
@@ -4653,7 +4656,8 @@ static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
 // Uses simple features on top of DCT coefficients to quickly predict
 // whether optimal RD decision is to skip encoding the residual.
 // The sse value is stored in dist.
-static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist) {
+static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
+                             int reduced_tx_set) {
   int max_tx_size =
       get_max_rect_tx_size(bsize, is_inter_block(&x->e_mbd.mi[0]->mbmi));
   if (tx_size_high[max_tx_size] > 16 || tx_size_wide[max_tx_size] > 16)
@@ -4684,11 +4688,9 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist) {
   const struct macroblockd_plane *const pd = &xd->plane[0];
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(xd->mi[0]->mbmi.sb_type, pd);
-  // TODO(sarahparker) This assumes reduced_tx_set_used == 0. I will do a
-  // follow up refactor to make the actual value of reduced_tx_set_used
-  // within this function.
-  param.tx_set_type = get_ext_tx_set_type(param.tx_size, plane_bsize,
-                                          is_inter_block(&xd->mi[0]->mbmi), 0);
+  param.tx_set_type =
+      get_ext_tx_set_type(param.tx_size, plane_bsize,
+                          is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
   const uint32_t ac_q = (uint32_t)av1_ac_quant_QTX(x->qindex, 0, xd->bd);
   uint32_t max_quantized_coef = 0;
   const int bd_idx = (xd->bd == 8) ? 0 : ((xd->bd == 10) ? 1 : 2);
@@ -4831,7 +4833,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // context and terminate early.
   int64_t dist;
   if (is_inter && cpi->sf.tx_type_search.use_skip_flag_prediction &&
-      predict_skip_flag(x, bsize, &dist)) {
+      predict_skip_flag(x, bsize, &dist, cm->reduced_tx_set_used)) {
     set_skip_flag(cpi, x, rd_stats, bsize, dist);
     // Save the RD search results into tx_rd_record.
     if (within_border) save_tx_rd_info(n4, hash, x, rd_stats, tx_rd_record);

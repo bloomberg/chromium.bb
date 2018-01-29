@@ -122,8 +122,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_TXK_SEL
   av1_read_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, r);
 #endif
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                          tx_size, cm->reduced_tx_set_used);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
   int dummy;

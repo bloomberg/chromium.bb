@@ -1031,7 +1031,8 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   // Only y plane's tx_type is transmitted
   if (plane > 0) return;
   PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
+                                    cm->reduced_tx_set_used);
 #endif
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];

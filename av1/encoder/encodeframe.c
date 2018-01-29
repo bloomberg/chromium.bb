@@ -4528,8 +4528,8 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #else
   // Only y plane's tx_type is updated
   if (plane > 0) return;
-  TX_TYPE tx_type =
-      av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, tx_size);
+  TX_TYPE tx_type = av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, tx_size,
+                                    cm->reduced_tx_set_used);
 #endif
   if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&

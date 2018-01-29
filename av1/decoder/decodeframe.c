@@ -156,9 +156,11 @@ static void predict_and_reconstruct_intra_block(
     av1_read_coeffs_txb_facade(cm, xd, r, row, col, plane, tx_size,
                                &max_scan_line, &eob);
     // tx_type will be read out in av1_read_coeffs_txb_facade
-    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size);
+    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size,
+                                            cm->reduced_tx_set_used);
 #else   // CONFIG_LV_MAP
-    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size);
+    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size,
+                                            cm->reduced_tx_set_used);
     const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
     int16_t max_scan_line = 0;
     const int eob =
@@ -218,11 +220,11 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     av1_read_coeffs_txb_facade(cm, xd, r, blk_row, blk_col, plane, tx_size,
                                &max_scan_line, &eob);
     // tx_type will be read out in av1_read_coeffs_txb_facade
-    const TX_TYPE tx_type =
-        av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                            tx_size, cm->reduced_tx_set_used);
 #else   // CONFIG_LV_MAP
-    const TX_TYPE tx_type =
-        av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                            tx_size, cm->reduced_tx_set_used);
     const SCAN_ORDER *sc = get_scan(cm, tx_size, tx_type, mbmi);
     int16_t max_scan_line = 0;
     const int eob =
