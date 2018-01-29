@@ -1591,6 +1591,13 @@ class SitePerProcessMouseWheelHitTestBrowserTest
         web_contents()->GetRenderWidgetHostView());
     set_rwhv_root(rwhv_root);
 
+    if (rwhv_root->wheel_scroll_latching_enabled()) {
+      // Set the wheel scroll latching timeout to a large value to make sure
+      // that the timer doesn't expire for the duration of the test.
+      rwhv_root->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+          TestTimeouts::action_max_timeout());
+    }
+
     InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
                                blink::WebInputEvent::kMouseWheel);
     SendMouseWheel(pos);
