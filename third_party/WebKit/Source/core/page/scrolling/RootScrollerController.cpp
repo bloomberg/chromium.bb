@@ -252,6 +252,9 @@ void RootScrollerController::UpdateIFrameGeometryAndLayoutSize(
   LocalFrameView* child_view =
       ToLocalFrameView(frame_owner.OwnedEmbeddedContentView());
 
+  if (!child_view)
+    return;
+
   // We can get here as a result of the "post layout resize" on the main frame.
   // That happens from inside LocalFrameView::PerformLayout. Calling
   // UpdateGeometry on the iframe causes it to layout which calls
