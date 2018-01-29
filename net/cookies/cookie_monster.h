@@ -374,17 +374,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_DELETE_EQUIVALENT_LAST_ENTRY
   };
 
-  // The strategy for fetching cookies. Controlled by Finch experiment.
-  enum FetchStrategy {
-    // Fetches all cookies only when they're needed.
-    kFetchWhenNecessary = 0,
-    // Fetches all cookies as soon as any cookie is needed.
-    // This is the default behavior.
-    kAlwaysFetch,
-    // The fetch strategy is not yet determined.
-    kUnknownFetch,
-  };
-
   // The number of days since last access that cookies will not be subject
   // to global garbage collection.
   static const int kSafeFromGlobalPurgeDays;
@@ -651,8 +640,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   bool started_fetching_all_cookies_;
   // Indicates whether the cookie store has finished fetching all cookies.
   bool finished_fetching_all_cookies_;
-  // The strategy to use for fetching cookies.
-  FetchStrategy fetch_strategy_;
 
   // List of domain keys that have been loaded from the DB.
   std::set<std::string> keys_loaded_;
