@@ -6,6 +6,7 @@
 #define ScriptWrappableVisitor_h
 
 #include "platform/PlatformExport.h"
+#include "platform/bindings/TraceWrapperBase.h"
 #include "platform/heap/HeapPage.h"
 #include "platform/heap/ThreadingTraits.h"
 #include "platform/heap/VisitorImpl.h"
@@ -31,6 +32,7 @@ using HeapObjectHeaderCallback = HeapObjectHeader* (*)(const void*);
 using MissedWriteBarrierCallback = void (*)();
 using TraceWrappersCallback = void (*)(const ScriptWrappableVisitor*,
                                        const void* self);
+using NameCallback = const char* (*)(const void* self);
 
 #define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)                   \
   template <>                                                        \
@@ -50,6 +52,7 @@ struct WrapperDescriptor {
   TraceWrappersCallback trace_wrappers_callback;
   HeapObjectHeaderCallback heap_object_header_callback;
   MissedWriteBarrierCallback missed_write_barrier_callback;
+  NameCallback name_callback;
 };
 
 // Abstract visitor for wrapper references in a ScriptWrappable.
@@ -126,13 +129,28 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   static WrapperDescriptor WrapperDescriptorFor(const T* traceable) {
     return {traceable, TraceTrait<T>::TraceMarkedWrapper,
             TraceTrait<T>::GetHeapObjectHeader,
-            ScriptWrappableVisitor::MissedWriteBarrier<T>};
+            ScriptWrappableVisitor::MissedWriteBarrier<T>,
+            ScriptWrappableVisitor::NameCallback<T>};
   }
 
  private:
   template <typename T>
   static NOINLINE void MissedWriteBarrier() {
     NOTREACHED();
+  }
+
+  static const char* NameInHeapSnapshot(const TraceWrapperBase* traceable) {
+    return traceable->NameInHeapSnapshot();
+  }
+
+  static const char* NameInHeapSnapshot(...) {
+    // Default case for all non-TraceWrapperBase classes.
+    return "InternalNode";
+  }
+
+  template <typename T>
+  static const char* NameCallback(const void* traceable) {
+    return NameInHeapSnapshot(static_cast<const T*>(traceable));
   }
 
   // Helper method to invoke the virtual Visit method with wrapper descriptor.
