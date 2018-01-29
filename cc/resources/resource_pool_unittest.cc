@@ -156,7 +156,7 @@ TEST_F(ResourcePoolTest, LostResource) {
   EXPECT_EQ(0u, resource_provider_->num_resources());
 }
 
-TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
+TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
   resource_pool_ = std::make_unique<ResourcePool>(
@@ -192,9 +192,12 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
                                 base::TimeDelta::FromMillisecondsD(200));
   run_loop.Run();
 
-  EXPECT_EQ(0u, resource_provider_->num_resources());
-  EXPECT_EQ(0u, resource_pool_->GetTotalMemoryUsageForTesting());
+  // Busy resources are still help, since they may be in flight to the display
+  // compositor and should not be freed.
+  EXPECT_EQ(1u, resource_provider_->num_resources());
+  EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
+  EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
 }
 
 TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
@@ -382,6 +385,53 @@ TEST_F(ResourcePoolTest, ReuseResource) {
   CheckAndReturnResource(std::move(resource));
 }
 
+TEST_F(ResourcePoolTest, PurgedMemory) {
+  // Limits high enough to not be hit by this test.
+  size_t bytes_limit = 10 * 1024 * 1024;
+  size_t count_limit = 100;
+  resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
+
+  gfx::Size size(100, 100);
+  viz::ResourceFormat format = viz::RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  ResourcePool::InUsePoolResource resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // Purging and suspending should not impact an in-use resource.
+  resource_pool_->OnPurgeMemory();
+  resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+  resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
+
+  // Release the resource making it busy.
+  resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
+  resource_pool_->ReleaseResource(std::move(resource));
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // Purging and suspending should not impact a busy resource either.
+  resource_pool_->OnPurgeMemory();
+  resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // The resource moves from busy to available.
+  resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
+  resource_pool_->CheckBusyResources();
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // Purging and suspending should drop unused resources.
+  resource_pool_->OnPurgeMemory();
+  resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
+  EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+}
+
 TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
@@ -405,13 +455,20 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
 
   // Release the resource making it busy.
+  resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
   resource_pool_->ReleaseResource(std::move(resource));
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
 
-  // Purging and suspending should now free the busy resource.
+  // Purging and suspending should not impact a busy resource either.
   resource_pool_->OnPurgeMemory();
   resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // The resource moves from busy to available, but since we are SUSPENDED
+  // it is not kept.
+  resource_pool_->CheckBusyResources();
   EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 }

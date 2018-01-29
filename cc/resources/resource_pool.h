@@ -155,6 +155,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   // Overriden from base::MemoryCoordinatorClient.
   void OnPurgeMemory() override;
+  void OnMemoryStateChange(base::MemoryState state) override;
 
   size_t GetTotalMemoryUsageForTesting() const {
     return total_memory_usage_bytes_;
@@ -257,6 +258,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   size_t total_memory_usage_bytes_ = 0;
   size_t total_resource_count_ = 0;
   bool evict_expired_resources_pending_ = false;
+  bool evict_busy_resources_when_unused_ = false;
 
   // Holds most recently used resources at the front of the queue.
   base::circular_deque<std::unique_ptr<PoolResource>> unused_resources_;
