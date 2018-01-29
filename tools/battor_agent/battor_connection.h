@@ -33,6 +33,7 @@ class BattOrConnection {
   class Listener {
    public:
     virtual void OnConnectionOpened(bool success) = 0;
+    virtual void OnConnectionFlushed(bool success) = 0;
     virtual void OnBytesSent(bool success) = 0;
     virtual void OnMessageRead(bool success,
                                BattOrMessageType type,
@@ -53,6 +54,9 @@ class BattOrConnection {
   virtual void Open() = 0;
   // Closes the serial connection and releases any handles being held.
   virtual void Close() = 0;
+  // Flushes the serial connection by reading and throwing away bytes until the
+  // serial connection remains quiet for a sufficiently long time.
+  virtual void Flush() = 0;
 
   // Sends the specified buffer over the serial connection and calls the
   // listener's OnBytesSent() when complete. Note that bytes_to_send should not
