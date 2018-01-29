@@ -144,7 +144,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // Notify HistoryService that some or all of the URLs have been deleted.
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
-    virtual void NotifyURLsDeleted(bool all_history,
+    virtual void NotifyURLsDeleted(const DeletionTimeRange& time_range,
                                    bool expired,
                                    const URLRows& deleted_rows,
                                    const std::set<GURL>& favicon_urls) = 0;
@@ -820,7 +820,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& rows) override;
-  void NotifyURLsDeleted(bool all_history,
+  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
                          bool expired,
                          const URLRows& rows,
                          const std::set<GURL>& favicon_urls) override;

@@ -2603,18 +2603,18 @@ void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
     delegate_->NotifyURLsModified(rows);
 }
 
-void HistoryBackend::NotifyURLsDeleted(bool all_history,
+void HistoryBackend::NotifyURLsDeleted(const DeletionTimeRange& time_range,
                                        bool expired,
                                        const URLRows& rows,
                                        const std::set<GURL>& favicon_urls) {
   URLRows copied_rows(rows);
   for (HistoryBackendObserver& observer : observers_) {
-    observer.OnURLsDeleted(this, all_history, expired, copied_rows,
+    observer.OnURLsDeleted(this, time_range.IsAllTime(), expired, copied_rows,
                            favicon_urls);
   }
 
   if (delegate_)
-    delegate_->NotifyURLsDeleted(all_history, expired, copied_rows,
+    delegate_->NotifyURLsDeleted(time_range, expired, copied_rows,
                                  favicon_urls);
 }
 
@@ -2672,7 +2672,8 @@ void HistoryBackend::DeleteAllHistory() {
 
   // Send out the notification that history is cleared. The in-memory database
   // will pick this up and clear itself.
-  NotifyURLsDeleted(true, false, URLRows(), std::set<GURL>());
+  NotifyURLsDeleted(DeletionTimeRange::AllTime(), false, URLRows(),
+                    std::set<GURL>());
 }
 
 bool HistoryBackend::ClearAllThumbnailHistory(

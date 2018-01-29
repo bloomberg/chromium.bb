@@ -633,7 +633,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(2, GetSizeofUnhandledSyncPasswordReuses());
 
   service_->RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
-      /*all_history=*/true, deleted_urls);
+      /*all_history=*/true, {});
   EXPECT_EQ(0, GetSizeofUnhandledSyncPasswordReuses());
 }
 
