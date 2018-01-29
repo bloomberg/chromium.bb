@@ -46,6 +46,14 @@
         width: 350px;
       }
 
+      #noSearchResultsMessage {
+        color: var(--md-loading-message-color);
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 80px;
+        text-align: center;
+      }
+
       #addPrinterErrorMessage {
         display: flex;
         justify-content: space-around;
@@ -87,6 +95,11 @@
         active-printer="{{activePrinter}}"
         search-term="[[searchTerm]]">
     </settings-cups-printers-list>
+
+    <div id="noSearchResultsMessage"
+        hidden="[[!showNoSearchResultsMessage_(searchTerm)]]">
+      $i18n{noSearchResults}
+    </div>
 
     <div id="message">
       <div class="center" id="addPrinterDoneMessage" hidden>
