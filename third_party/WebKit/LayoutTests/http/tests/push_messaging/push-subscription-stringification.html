@@ -12,7 +12,7 @@
 // Converts an ArrayBuffer to a base64url encoded string.
 function ArrayBufferToBase64UrlEncodedString(buffer) {
     var base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
-    return base64.replace(/\//g, '_').replace(/\+/g, '-');
+    return base64.replace(/\//g, '_').replace(/\+/g, '-').replace(/=$/, '');
 }
 
 async_test(function(test) {
@@ -20,17 +20,17 @@ async_test(function(test) {
     var workerScope = 'resources/scope/' + location.pathname;
     var swRegistration;
     service_worker_unregister_and_register(test, workerUrl, workerScope)
-        .then(function(serviceWorkerRegistration) {
+        .then(test.step_func(serviceWorkerRegistration => {
             swRegistration = serviceWorkerRegistration;
             return wait_for_state(test, swRegistration.installing, 'activated');
-        })
-        .then(function() {
+        }))
+        .then(test.step_func(() => {
             // If running manually, grant permission when prompted.
             if (window.testRunner)
                 testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
             return swRegistration.pushManager.subscribe({ userVisibleOnly: true });
-        })
-        .then(function(pushSubscription) {
+        }))
+        .then(test.step_func(pushSubscription => {
             var reflectedObject = JSON.parse(JSON.stringify(pushSubscription));
 
             assert_own_property(reflectedObject, 'endpoint');
@@ -50,7 +50,7 @@ async_test(function(test) {
             assert_equals(reflectedObject.keys.auth, auth);
 
             return service_worker_unregister_and_done(test, workerScope);
-        })
+        }))
         .catch(unreached_rejection(test));
 }, 'Stringifying a PushSubscription object includes all object members');
 </script>
