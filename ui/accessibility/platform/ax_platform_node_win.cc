@@ -3198,7 +3198,9 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
 
   // Expose class attribute.
   base::string16 class_attr;
-  if (GetData().GetHtmlAttribute("class", &class_attr)) {
+  if (GetData().GetHtmlAttribute("class", &class_attr) ||
+      GetData().GetString16Attribute(ax::mojom::StringAttribute::kClassName,
+                                     &class_attr)) {
     SanitizeStringAttributeForIA2(class_attr, &class_attr);
     result.push_back(L"class:" + class_attr);
   }
