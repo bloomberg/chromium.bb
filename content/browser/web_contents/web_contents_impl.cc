@@ -5413,8 +5413,10 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 
 void WebContentsImpl::RendererUnresponsive(
     RenderWidgetHostImpl* render_widget_host) {
+  RenderProcessHost* hung_process = render_widget_host->GetProcess();
+
   for (auto& observer : observers_)
-    observer.OnRendererUnresponsive(render_widget_host);
+    observer.OnRendererUnresponsive(hung_process);
 
   // Don't show hung renderer dialog for a swapped out RVH.
   if (render_widget_host != GetRenderViewHost()->GetWidget())
