@@ -41,9 +41,9 @@
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
-#include "content/browser/android/popup_zoomer.h"
 #include "content/browser/android/selection_popup_controller.h"
 #include "content/browser/android/synchronous_compositor_host.h"
+#include "content/browser/android/tap_disambiguator.h"
 #include "content/browser/android/text_suggestion_host_android.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -465,7 +465,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_in_vr_(false),
       content_view_core_(nullptr),
       ime_adapter_android_(nullptr),
-      popup_zoomer_(nullptr),
+      tap_disambiguator_(nullptr),
       selection_popup_controller_(nullptr),
       text_suggestion_host_(nullptr),
       background_color_(SK_ColorWHITE),
@@ -1138,10 +1138,10 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap) {
-  if (!popup_zoomer_)
+  if (!tap_disambiguator_)
     return;
 
-  popup_zoomer_->ShowPopup(rect_pixels, zoomed_bitmap);
+  tap_disambiguator_->ShowPopup(rect_pixels, zoomed_bitmap);
 }
 
 std::unique_ptr<SyntheticGestureTarget>
@@ -2186,8 +2186,8 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
 void RenderWidgetHostViewAndroid::OnSizeChanged() {
   if (ime_adapter_android_)
     ime_adapter_android_->UpdateAfterViewSizeChanged();
-  if (popup_zoomer_)
-    popup_zoomer_->HidePopup();
+  if (tap_disambiguator_)
+    tap_disambiguator_->HidePopup();
 }
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {

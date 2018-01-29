@@ -13,10 +13,8 @@ import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
-import org.chromium.content.browser.PopupZoomer;
 import org.chromium.content.browser.accessibility.WebContentsAccessibility;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
@@ -72,10 +70,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {}
-
-    @VisibleForTesting
-    @Override
-    public void setPopupZoomerForTest(PopupZoomer popupZoomer) {}
 
     @Override
     public void destroy() {}
