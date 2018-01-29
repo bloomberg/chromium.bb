@@ -37,6 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -49,12 +50,14 @@
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutReplaced.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg_names.h"
 #include "platform/Length.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/wtf/Assertions.h"
@@ -74,6 +77,17 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
   if (style.ScrollsOverflow() || is_child_document)
     return touch_action | TouchAction::kTouchActionPan;
   return touch_action;
+}
+
+// Returns true for elements that are either <img> or <svg> image or <video>
+// that are not in an image or media document; returns false otherwise.
+bool IsImageOrVideoElement(const Element* element) {
+  if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
+      !element->GetDocument().IsImageDocument())
+    return true;
+  if (IsHTMLVideoElement(element) && !element->GetDocument().IsMediaDocument())
+    return true;
+  return false;
 }
 
 }  // namespace
@@ -661,6 +675,19 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
           parent_style.UserModify() == EUserModify::kReadOnly) {
         style.SetDisplay(EDisplay::kInlineBlock);
       }
+    }
+  }
+
+  // If intrinsically sized images or videos are disallowed by feature policy,
+  // use default size (300 x 150) instead.
+  if (IsImageOrVideoElement(element)) {
+    if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kUnsizedMedia) &&
+        !element->GetDocument().GetFrame()->IsFeatureEnabled(
+            FeaturePolicyFeature::kUnsizedMedia)) {
+      if (!style.Width().IsSpecified())
+        style.SetLogicalWidth(Length(LayoutReplaced::kDefaultWidth, kFixed));
+      if (!style.Height().IsSpecified())
+        style.SetLogicalHeight(Length(LayoutReplaced::kDefaultHeight, kFixed));
     }
   }
 }

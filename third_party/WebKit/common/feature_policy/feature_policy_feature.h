@@ -59,7 +59,10 @@ enum class FeaturePolicyFeature {
   kAmbientLightSensor,
   kGyroscope,
   kMagnetometer,
-  LAST_FEATURE = kMagnetometer
+  // Controls the layout size of intrinsically sized images and videos. When
+  // disabled, default size (300 x 150) is used to prevent relayout.
+  kUnsizedMedia,
+  LAST_FEATURE = kUnsizedMedia
 };
 
 }  // namespace blink
