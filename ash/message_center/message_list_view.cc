@@ -586,8 +586,4 @@ void MessageListView::AnimateClearingOneNotification() {
   }
 }
 
-void MessageListView::SetRepositionTargetForTest(const gfx::Rect& target_rect) {
-  SetRepositionTarget(target_rect);
-}
-
 }  // namespace ash
