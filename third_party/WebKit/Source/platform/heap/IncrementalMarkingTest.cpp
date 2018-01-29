@@ -1382,6 +1382,42 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyValuesToVectorMember) {
   }
 }
 
+TEST(IncrementalMarkingTest, WeakHashMapPromptlyFreeDisabled) {
+  ThreadState* state = ThreadState::Current();
+  state->SetGCState(ThreadState::kIncrementalMarkingStartScheduled);
+  state->SetGCState(ThreadState::kIncrementalMarkingStepScheduled);
+  Persistent<Object> obj1 = Object::Create();
+  NormalPageArena* arena = static_cast<NormalPageArena*>(
+      ThreadState::Current()->Heap().Arena(BlinkGC::kHashTableArenaIndex));
+  CHECK(arena);
+  {
+    size_t before = arena->promptly_freed_size();
+    // Create two maps so we don't promptly free at the allocation point.
+    HeapHashMap<WeakMember<Object>, Member<Object>> weak_map1;
+    HeapHashMap<WeakMember<Object>, Member<Object>> weak_map2;
+    weak_map1.insert(obj1, obj1);
+    weak_map2.insert(obj1, obj1);
+    weak_map1.clear();
+    size_t after = arena->promptly_freed_size();
+    // Weak hash table backings should not be promptly freed.
+    EXPECT_EQ(after, before);
+  }
+  {
+    size_t before = arena->promptly_freed_size();
+    // Create two maps so we don't promptly free at the allocation point.
+    HeapHashMap<Member<Object>, Member<Object>> map1;
+    HeapHashMap<Member<Object>, Member<Object>> map2;
+    map1.insert(obj1, obj1);
+    map2.insert(obj1, obj1);
+    map1.clear();
+    size_t after = arena->promptly_freed_size();
+    // Non-weak hash table backings should be promptly freed.
+    EXPECT_GT(after, before);
+  }
+  state->SetGCState(ThreadState::kIncrementalMarkingFinalizeScheduled);
+  state->SetGCState(ThreadState::kNoGCScheduled);
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink
 

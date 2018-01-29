@@ -82,7 +82,7 @@ class WTF_EXPORT PartitionAllocator {
     memset(result, 0, size);
     return reinterpret_cast<T*>(result);
   }
-  static void FreeHashTableBacking(void* address);
+  static void FreeHashTableBacking(void* address, bool is_weak_table);
 
   template <typename Return, typename Metadata>
   static Return Malloc(size_t size, const char* type_name) {
