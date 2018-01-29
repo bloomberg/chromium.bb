@@ -222,9 +222,9 @@ Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.21
 
 Name: paper-item
 Repository: https://github.com/PolymerElements/paper-item.git
-Tree: v1.2.1
-Revision: 1eab91333b318ae19e315866575b2dddd38e6abc
-Tree link: https://github.com/PolymerElements/paper-item/tree/v1.2.1
+Tree: v2.0.0
+Revision: 07910f6f76e1042286e931da923bff8ceabc3dc6
+Tree link: https://github.com/PolymerElements/paper-item/tree/v2.0.0
 
 Name: paper-listbox
 Repository: https://github.com/PolymerelEments/paper-listbox.git
@@ -234,9 +234,9 @@ Tree link: https://github.com/PolymerelEments/paper-listbox/tree/v2.0.0
 
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
-Tree: v1.0.10
-Revision: dfdde2b02947fb2dfd3f2d303ec17f7f4919348c
-Tree link: https://github.com/PolymerElements/paper-progress/tree/v1.0.10
+Tree: v2.0.1
+Revision: abe7b27bb1651e1adac99d9878a4c87cd9b40d7d
+Tree link: https://github.com/PolymerElements/paper-progress/tree/v2.0.1
 
 Name: paper-radio-button
 Repository: https://github.com/PolymerElements/paper-radio-button.git
@@ -288,9 +288,9 @@ Tree link: https://github.com/PolymerElements/paper-toggle-button/tree/v1.3.0
 
 Name: paper-tooltip
 Repository: https://github.com/PolymerElements/paper-tooltip.git
-Tree: v1.1.4
-Revision: c7c0a4d47e6ce30578f948986e9274d06fa2b94c
-Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v1.1.4
+Tree: v2.0.0
+Revision: d6233ee968fa0670bc7381ff358e0e4eba64d5ff
+Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v2.0.0
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git
