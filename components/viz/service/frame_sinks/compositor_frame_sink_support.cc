@@ -414,12 +414,15 @@ void CompositorFrameSinkSupport::DetachCaptureClient(
     capture_clients_.erase(it);
 }
 
-gfx::Size CompositorFrameSinkSupport::GetSurfaceSize() {
+gfx::Size CompositorFrameSinkSupport::GetActiveFrameSize() {
   if (current_surface_id_.is_valid()) {
     Surface* current_surface =
         surface_manager_->GetSurfaceForId(current_surface_id_);
-    if (current_surface)
+    if (current_surface->HasActiveFrame()) {
+      DCHECK(current_surface->GetActiveFrame().size_in_pixels() ==
+             current_surface->size_in_pixels());
       return current_surface->size_in_pixels();
+    }
   }
   return gfx::Size();
 }

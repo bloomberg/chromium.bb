@@ -125,10 +125,6 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // exceeding 60% of the design limit is considered "red line" operation.
   static constexpr float kTargetPipelineUtilization = 0.6f;
 
-  // The amount of time to wait before retrying a refresh frame request.
-  static constexpr base::TimeDelta kRefreshFrameRetryInterval =
-      base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 4);
-
  private:
   friend class FrameSinkVideoCapturerTest;
 
@@ -140,12 +136,24 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // up-to-date content will be sent to the consumer in the near future. This
   // refresh operation will be canceled if a compositing event triggers a frame
   // capture in the meantime.
-  void ScheduleRefreshFrame(media::VideoCaptureOracle::Event event);
+  void ScheduleRefreshFrame();
 
-  // Executes the refresh capture, if conditions permit. Otherwise, schedules a
+  // Returns the delay that should be used when setting the refresh timer. This
+  // is based on the current oracle prediction for frame duration.
+  base::TimeDelta GetDelayBeforeNextRefreshAttempt() const;
+
+  // Called whenever a major damage event, such as a capture parameter change, a
+  // resolved target change, etc., occurs. This marks the entire source as dirty
+  // and ensures the consumer will receive a refresh frame with up-to-date
+  // content.
+  void RefreshEntireSourceSoon();
+
+  // Executes a refresh capture, if conditions permit. Otherwise, schedules a
   // later retry. Note that the retry "polling" should be a short-term state,
-  // since it only occurs when the capture target hasn't yet been resolved.
-  void RefreshOrReschedule(media::VideoCaptureOracle::Event event);
+  // since it only occurs until the oracle allows the next frame capture to take
+  // place. If a refresh was already pending, it is canceled in favor of this
+  // new refresh.
+  void RefreshSoon();
 
   // CapturableFrameSink::Client implementation:
   void OnBeginFrame(const BeginFrameArgs& args) final;
@@ -227,15 +235,20 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   using TimeRingBuffer = std::array<base::TimeTicks, kDesignLimitMaxFrames>;
   base::flat_map<BeginFrameSourceId, TimeRingBuffer> frame_display_times_;
 
+  // The portion of the source content that has changed, but has not yet been
+  // captured.
+  gfx::Rect dirty_rect_;
+
   // These are sequence counters used to ensure that the frames are being
   // delivered in the same order they are captured.
   int64_t next_capture_frame_number_ = 0;
   int64_t next_delivery_frame_number_ = 0;
 
-  // When the oracle rejects a "refresh frame" request, or a target is not yet
-  // resolved, this timer is set to auto-retry the refresh at a later point.
-  // This ensures refresh frame requests eventually result in a frame being
-  // delivered to the consumer.
+  // This timer is started whenever the consumer needs another frame delivered.
+  // This might be because: 1) the consumer was just started and needs an
+  // initial frame; 2) the capture target changed; 3) the oracle rejected
+  // an event for timing reasons; 4) to satisfy explicit requests for a refresh
+  // frame, when RequestRefreshFrame() has been called.
   //
   // Note: This is always set, but the instance is overridden for unit testing.
   base::Optional<base::OneShotTimer> refresh_frame_retry_timer_;

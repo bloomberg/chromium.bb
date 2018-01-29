@@ -50,15 +50,8 @@ class CAPTURE_EXPORT VideoCaptureMachine {
   // overloading or under-utilization.
   virtual bool IsAutoThrottlingEnabled() const;
 
-  // Called by ScreenCaptureDeviceCore when it failed to satisfy a "refresh
-  // frame" request by attempting to resurrect the last video frame from the
-  // buffer pool (this is referred to as the "passive" refresh approach).  The
-  // failure can happen for a number of reasons (e.g., the oracle decided to
-  // change resolution, or consumers of the last video frame are not yet
-  // finished with it).
-  //
   // The implementation of this method should consult the oracle, using the
-  // kActiveRefreshRequest event type, to decide whether to initiate a new frame
+  // kRefreshRequest event type, to decide whether to initiate a new frame
   // capture, and then do so if the oracle agrees.
   virtual void MaybeCaptureForRefresh() = 0;
 
@@ -120,12 +113,6 @@ class CAPTURE_EXPORT ScreenCaptureDeviceCore
   // capture pipeline. Besides the VideoCaptureDevice itself, it is the only
   // component of the system with direct access to |client_|.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
-
-  // After Resume(), some unknown amount of time has passed, and the content of
-  // the capture source may have changed. This flag is used to ensure that the
-  // passive refresh mechanism is not used for the first refresh frame following
-  // a Resume().
-  bool force_active_refresh_once_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureDeviceCore);
 };

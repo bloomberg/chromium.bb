@@ -228,7 +228,7 @@ void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
   media::VideoCaptureOracle::Event event;
   if (event_time.is_null()) {
-    event = media::VideoCaptureOracle::kActiveRefreshRequest;
+    event = media::VideoCaptureOracle::kRefreshRequest;
     event_time = start_time;
   } else {
     event = media::VideoCaptureOracle::kCompositorUpdate;
