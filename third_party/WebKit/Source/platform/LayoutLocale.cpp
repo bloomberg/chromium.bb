@@ -186,7 +186,7 @@ AtomicString LayoutLocale::LocaleWithBreakKeyword(
   switch (mode) {
     default:
       NOTREACHED();
-    // Fall through.
+      FALLTHROUGH;
     case LineBreakIteratorMode::kDefault:
       // nullptr will cause any existing values to be removed.
       break;

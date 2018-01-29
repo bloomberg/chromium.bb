@@ -949,6 +949,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
               }
               AppendRun(runs_);
             }
+            break;
           default:
             break;
         }
@@ -964,6 +965,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
           case WTF::Unicode::kEuropeanNumber:
           case WTF::Unicode::kArabicNumber:
             AppendRun(runs_);
+            break;
           case WTF::Unicode::kRightToLeft:
           case WTF::Unicode::kRightToLeftArabic:
             break;
@@ -987,6 +989,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
                 eor_ = last_;
               AppendRun(runs_);
             }
+            break;
           default:
             break;
         }
@@ -1016,6 +1019,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             case WTF::Unicode::kCommonNumberSeparator:
               if (status_.eor == WTF::Unicode::kEuropeanNumber)
                 break;
+              FALLTHROUGH;
             case WTF::Unicode::kEuropeanNumberTerminator:
             case WTF::Unicode::kBoundaryNeutral:
             case WTF::Unicode::kBlockSeparator:
@@ -1060,6 +1064,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
                 // Begin a new EN run.
                 direction_ = WTF::Unicode::kEuropeanNumber;
               }
+              break;
             default:
               break;
           }
@@ -1087,6 +1092,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
           case WTF::Unicode::kCommonNumberSeparator:
             if (status_.eor == WTF::Unicode::kArabicNumber)
               break;
+            FALLTHROUGH;
           case WTF::Unicode::kEuropeanNumberSeparator:
           case WTF::Unicode::kEuropeanNumberTerminator:
           case WTF::Unicode::kBoundaryNeutral:
@@ -1112,6 +1118,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             }
             eor_ = last_;
             AppendRun(runs_);
+            break;
           default:
             break;
         }
