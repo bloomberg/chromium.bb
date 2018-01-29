@@ -158,6 +158,8 @@ test("gin_unittests") {
     ":gin_shell",
     ":gin_test",
     "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
     "//v8",
   ]
 

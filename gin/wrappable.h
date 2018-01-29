@@ -115,10 +115,9 @@ template <typename T>
 struct Converter<T*,
                  typename std::enable_if<
                      std::is_convertible<T*, WrappableBase*>::value>::type> {
-  static v8::MaybeLocal<v8::Value> ToV8(v8::Local<v8::Context> context,
-                                        T* val) {
+  static v8::MaybeLocal<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
     v8::Local<v8::Object> wrapper;
-    if (!val->GetWrapper(context->GetIsolate()).ToLocal(&wrapper))
+    if (!val->GetWrapper(isolate).ToLocal(&wrapper))
       return v8::MaybeLocal<v8::Value>();
     return v8::MaybeLocal<v8::Value>(wrapper);
   }

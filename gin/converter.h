@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "base/logging.h"
@@ -163,15 +164,24 @@ struct GIN_EXPORT Converter<v8::Local<v8::Value> > {
 
 template<typename T>
 struct Converter<std::vector<T> > {
-  static v8::MaybeLocal<v8::Value> ToV8(v8::Local<v8::Context> context,
-                                        const std::vector<T>& val) {
-    v8::Isolate* isolate = context->GetIsolate();
+  static std::conditional_t<ToV8ReturnsMaybe<T>::value,
+                            v8::MaybeLocal<v8::Value>,
+                            v8::Local<v8::Value>>
+  ToV8(v8::Isolate* isolate, const std::vector<T>& val) {
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Array> result(
         v8::Array::New(isolate, static_cast<int>(val.size())));
     for (uint32_t i = 0; i < val.size(); ++i) {
-      auto maybe = result->Set(context, i, Converter<T>::ToV8(isolate, val[i]));
-      if (maybe.IsNothing() || !maybe.FromJust())
-        return v8::MaybeLocal<v8::Value>();
+      v8::MaybeLocal<v8::Value> maybe = Converter<T>::ToV8(isolate, val[i]);
+      v8::Local<v8::Value> element;
+      if (!maybe.ToLocal(&element))
+        return {};
+      bool property_created;
+      if (!result->CreateDataProperty(context, i, element)
+               .To(&property_created) ||
+          !property_created) {
+        NOTREACHED() << "CreateDataProperty should always succeed here.";
+      }
     }
     return result;
   }
@@ -202,18 +212,16 @@ struct Converter<std::vector<T> > {
 
 template<typename T>
 struct ToV8ReturnsMaybe<std::vector<T>> {
-  static const bool value = true;
+  static const bool value = ToV8ReturnsMaybe<T>::value;
 };
 
 // Convenience functions that deduce T.
-template<typename T>
-v8::Local<v8::Value> ConvertToV8(v8::Isolate* isolate, T input) {
+template <typename T>
+std::conditional_t<ToV8ReturnsMaybe<T>::value,
+                   v8::MaybeLocal<v8::Value>,
+                   v8::Local<v8::Value>>
+ConvertToV8(v8::Isolate* isolate, T input) {
   return Converter<T>::ToV8(isolate, input);
-}
-
-template<typename T>
-v8::MaybeLocal<v8::Value> ConvertToV8(v8::Local<v8::Context> context, T input) {
-  return Converter<T>::ToV8(context, input);
 }
 
 template<typename T, bool = ToV8ReturnsMaybe<T>::value> struct ToV8Traits;
