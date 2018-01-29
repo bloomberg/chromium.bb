@@ -50,6 +50,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
+#include "core/css/CSSLayoutFunctionValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
@@ -176,6 +177,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSFontVariationValue>(*this, other);
       case kFunctionClass:
         return CompareCSSValues<CSSFunctionValue>(*this, other);
+      case kLayoutFunctionClass:
+        return CompareCSSValues<CSSLayoutFunctionValue>(*this, other);
       case kLinearGradientClass:
         return CompareCSSValues<CSSLinearGradientValue>(*this, other);
       case kRadialGradientClass:
@@ -280,6 +283,8 @@ String CSSValue::CssText() const {
       return ToCSSFontVariationValue(this)->CustomCSSText();
     case kFunctionClass:
       return ToCSSFunctionValue(this)->CustomCSSText();
+    case kLayoutFunctionClass:
+      return ToCSSLayoutFunctionValue(this)->CustomCSSText();
     case kLinearGradientClass:
       return ToCSSLinearGradientValue(this)->CustomCSSText();
     case kRadialGradientClass:
@@ -394,6 +399,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kFunctionClass:
       ToCSSFunctionValue(this)->~CSSFunctionValue();
+      return;
+    case kLayoutFunctionClass:
+      ToCSSLayoutFunctionValue(this)->~CSSLayoutFunctionValue();
       return;
     case kLinearGradientClass:
       ToCSSLinearGradientValue(this)->~CSSLinearGradientValue();
@@ -542,6 +550,9 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kFunctionClass:
       ToCSSFunctionValue(this)->TraceAfterDispatch(visitor);
+      return;
+    case kLayoutFunctionClass:
+      ToCSSLayoutFunctionValue(this)->TraceAfterDispatch(visitor);
       return;
     case kLinearGradientClass:
       ToCSSLinearGradientValue(this)->TraceAfterDispatch(visitor);

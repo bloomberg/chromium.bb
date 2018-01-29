@@ -1014,6 +1014,15 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
   }
 }
 
+bool CSSParserFastPaths::IsPartialKeywordPropertyID(CSSPropertyID property_id) {
+  switch (property_id) {
+    case CSSPropertyDisplay:
+      return true;
+    default:
+      return false;
+  }
+}
+
 static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
                                    const String& string,
                                    CSSParserMode parser_mode) {

@@ -273,6 +273,10 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kGrid:
     case EDisplay::kInlineGrid:
       return new LayoutGrid(element);
+    case EDisplay::kLayoutCustom:
+    case EDisplay::kInlineLayoutCustom:
+      // TODO(ikilpatrick): return new LayoutCustom(element);
+      return nullptr;
   }
 
   NOTREACHED();

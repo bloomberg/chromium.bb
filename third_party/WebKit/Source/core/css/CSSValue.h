@@ -111,6 +111,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsCSSWideKeyword() const {
     return class_type_ >= kInheritedClass && class_type_ <= kUnsetClass;
   }
+  bool IsLayoutFunctionValue() const {
+    return class_type_ == kLayoutFunctionClass;
+  }
   bool IsLinearGradientValue() const {
     return class_type_ == kLinearGradientClass;
   }
@@ -232,6 +235,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kVariableReferenceClass,
     kCustomPropertyDeclarationClass,
     kPendingSubstitutionValueClass,
+    kLayoutFunctionClass,
 
     kCSSContentDistributionClass,
 
