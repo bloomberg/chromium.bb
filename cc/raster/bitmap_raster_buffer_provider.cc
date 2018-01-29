@@ -18,6 +18,7 @@
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace cc {
 namespace {
@@ -25,13 +26,14 @@ namespace {
 class BitmapRasterBufferImpl : public RasterBuffer {
  public:
   BitmapRasterBufferImpl(LayerTreeResourceProvider* resource_provider,
-                         const ResourcePool::InUsePoolResource& in_use_resource,
+                         const gfx::Size& size,
+                         const gfx::ColorSpace& color_space,
+                         void* pixels,
                          uint64_t resource_content_id,
                          uint64_t previous_content_id)
-      : lock_(resource_provider,
-              in_use_resource.software_backing_resource_id()),
-        resource_format_(in_use_resource.format()),
-        resource_size_(in_use_resource.size()),
+      : resource_size_(size),
+        color_space_(color_space),
+        pixels_(pixels),
         resource_has_previous_content_(
             resource_content_id && resource_content_id == previous_content_id) {
   }
@@ -54,15 +56,15 @@ class BitmapRasterBufferImpl : public RasterBuffer {
 
     size_t stride = 0u;
     RasterBufferProvider::PlaybackToMemory(
-        lock_.sk_bitmap().getPixels(), resource_format_, resource_size_, stride,
-        raster_source, raster_full_rect, playback_rect, transform,
-        lock_.color_space_for_raster(), playback_settings);
+        pixels_, viz::RGBA_8888, resource_size_, stride, raster_source,
+        raster_full_rect, playback_rect, transform, color_space_,
+        playback_settings);
   }
 
  private:
-  LayerTreeResourceProvider::ScopedWriteLockSoftware lock_;
-  const viz::ResourceFormat resource_format_;
   const gfx::Size resource_size_;
+  const gfx::ColorSpace color_space_;
+  void* const pixels_;
   bool resource_has_previous_content_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapRasterBufferImpl);
@@ -70,16 +72,11 @@ class BitmapRasterBufferImpl : public RasterBuffer {
 
 }  // namespace
 
-// static
-std::unique_ptr<RasterBufferProvider> BitmapRasterBufferProvider::Create(
-    LayerTreeResourceProvider* resource_provider) {
-  return base::WrapUnique<RasterBufferProvider>(
-      new BitmapRasterBufferProvider(resource_provider));
-}
-
 BitmapRasterBufferProvider::BitmapRasterBufferProvider(
-    LayerTreeResourceProvider* resource_provider)
-    : resource_provider_(resource_provider) {}
+    LayerTreeResourceProvider* resource_provider,
+    viz::SharedBitmapManager* shared_bitmap_manager)
+    : resource_provider_(resource_provider),
+      shared_bitmap_manager_(shared_bitmap_manager) {}
 
 BitmapRasterBufferProvider::~BitmapRasterBufferProvider() = default;
 
@@ -88,8 +85,20 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
+  DCHECK_EQ(resource.format(), viz::RGBA_8888);
+
+  const gfx::Size& size = resource.size();
+  const gfx::ColorSpace& color_space = resource.color_space();
+  if (!resource.shared_bitmap()) {
+    // Allocate a backing that can be shared out of process to the display
+    // compositor, and give ownership to the ResourcePool.
+    resource.set_shared_bitmap(
+        shared_bitmap_manager_->AllocateSharedBitmap(size));
+  }
+
   return std::make_unique<BitmapRasterBufferImpl>(
-      resource_provider_, resource, resource_content_id, previous_content_id);
+      resource_provider_, size, color_space, resource.shared_bitmap()->pixels(),
+      resource_content_id, previous_content_id);
 }
 
 void BitmapRasterBufferProvider::OrderingBarrier() {
@@ -100,12 +109,13 @@ void BitmapRasterBufferProvider::Flush() {}
 
 viz::ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
-  return resource_provider_->best_texture_format();
+  return viz::RGBA_8888;
 }
 
 bool BitmapRasterBufferProvider::IsResourceSwizzleRequired(
     bool must_support_alpha) const {
-  return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+  // GetResourceFormat() returns a constant so use it directly.
+  return ResourceFormatRequiresSwizzle(viz::RGBA_8888);
 }
 
 bool BitmapRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {

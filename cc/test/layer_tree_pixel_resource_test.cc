@@ -50,6 +50,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
   viz::RasterContextProvider* worker_context_provider =
       host_impl->layer_tree_frame_sink()->worker_context_provider();
   LayerTreeResourceProvider* resource_provider = host_impl->resource_provider();
+  viz::SharedBitmapManager* shared_bitmap_manager =
+      host_impl->layer_tree_frame_sink()->shared_bitmap_manager();
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
 
@@ -58,8 +60,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
       EXPECT_FALSE(compositor_context_provider);
       EXPECT_EQ(PIXEL_TEST_SOFTWARE, test_type_);
 
-      *raster_buffer_provider =
-          BitmapRasterBufferProvider::Create(resource_provider);
+      *raster_buffer_provider = std::make_unique<BitmapRasterBufferProvider>(
+          resource_provider, shared_bitmap_manager);
       *resource_pool = std::make_unique<ResourcePool>(
           resource_provider, std::move(task_runner),
           ResourcePool::kDefaultExpirationDelay, false);
