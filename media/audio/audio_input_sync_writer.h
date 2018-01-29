@@ -120,10 +120,10 @@ class MEDIA_EXPORT AudioInputSyncWriter
   uint32_t current_segment_id_ = 0;
 
   // The time of the creation of this object.
-  base::Time creation_time_;
+  base::TimeTicks creation_time_;
 
   // The time of the last Write call.
-  base::Time last_write_time_;
+  base::TimeTicks last_write_time_;
 
   // Size in bytes of each audio bus.
   const int audio_bus_memory_size_;
