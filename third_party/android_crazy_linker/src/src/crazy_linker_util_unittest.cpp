@@ -189,37 +189,4 @@ TEST(Vector, PopFirst) {
   EXPECT_TRUE(v.IsEmpty());
 }
 
-TEST(Set, Empty) {
-  Set<int> s;
-  EXPECT_TRUE(s.IsEmpty());
-  EXPECT_EQ(0U, s.GetCount());
-}
-
-TEST(Set, OneItem) {
-  Set<int> s;
-
-  EXPECT_FALSE(s.Has(0));
-
-  EXPECT_TRUE(s.Add(0));
-  EXPECT_TRUE(s.Has(0));
-  EXPECT_FALSE(s.IsEmpty());
-  EXPECT_EQ(1U, s.GetCount());
-}
-
-TEST(Set, ThreeItems) {
-  Set<int> s;
-
-  EXPECT_TRUE(s.Add(0));
-  EXPECT_TRUE(s.Add(1));
-  EXPECT_TRUE(s.Add(2));
-
-  EXPECT_FALSE(s.Has(-1));
-  EXPECT_TRUE(s.Has(0));
-  EXPECT_TRUE(s.Has(1));
-  EXPECT_TRUE(s.Has(2));
-  EXPECT_FALSE(s.Has(3));
-
-  EXPECT_EQ(3U, s.GetCount());
-}
-
 }  // namespace crazy

@@ -152,8 +152,15 @@ template <class T>
 class Vector {
  public:
   Vector() : items_(0), count_(0), capacity_(0) {}
+
   ~Vector() { free(items_); }
 
+  // For now, prevent copy operations. They may be implemented later if
+  // needed.
+  Vector(const Vector& other) = delete;
+  Vector& operator=(const Vector& other) = delete;
+
+  const T& operator[](size_t index) const { return items_[index]; }
   T& operator[](size_t index) { return items_[index]; }
 
   bool IsEmpty() const { return count_ == 0; }
@@ -254,52 +261,6 @@ void Vector<T>::Resize(size_t new_size) {
     memset(items_ + count_, 0, (new_size - count_) * sizeof(T));
 
   count_ = new_size;
-}
-
-// Helper template class to implement a set.
-// Given that the crazy linker doesn't expect to deal with hundreds
-// of libraries at the same time, implement it with a vector.
-template <class T>
-class Set {
- public:
-  Set() : items_() {}
-  ~Set() {}
-
-  // Returns the number of items in the set.
-  size_t GetCount() const { return items_.GetCount(); }
-
-  bool IsEmpty() const { return items_.IsEmpty(); }
-
-  // Returns true iff the set contains a given item.
-  bool Has(T item) const { return items_.Has(item); }
-
-  // Add an item to the set. Returns false iff the item was already in it.
-  bool Add(T item);
-
-  // Delete an item from the set. Returns false iff the item was not in it.
-  bool Del(T item);
-
- private:
-  Vector<T> items_;
-};
-
-template <class T>
-bool Set<T>::Add(T item) {
-  int idx = items_.IndexOf(item);
-  if (idx >= 0)
-    return false;
-
-  items_.PushBack(item);
-  return true;
-}
-
-template <class T>
-bool Set<T>::Del(T item) {
-  int idx = items_.IndexOf(item);
-  if (idx < 0)
-    return false;
-  items_.RemoveAt(idx);
-  return true;
 }
 
 }  // namespace crazy
