@@ -766,8 +766,8 @@ void Combobox::OnBlur() {
 }
 
 void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // AX_ROLE_COMBO_BOX is for UI elements with a dropdown and an editable text
-  // field, which views::Combobox does not have. Use
+  // ax::mojom::Role::kComboBox is for UI elements with a dropdown and
+  // an editable text field, which views::Combobox does not have. Use
   // ax::mojom::Role::kPopUpButton to match an HTML <select> element.
   node_data->role = ax::mojom::Role::kPopUpButton;
 
