@@ -3718,9 +3718,10 @@ class FlagsStateSingleton {
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
 #if defined(OS_CHROMEOS)
-  // Don't expose --mash/--mus outside of Canary or developer builds.
+  // Only expose --mash/--mus on unstable channels and developer builds.
   if (!strcmp("mus", entry.internal_name) &&
       channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {
     return true;
   }
