@@ -4,6 +4,9 @@
 
 module blink.mojom;
 
+import "services/network/public/interfaces/http_request_headers.mojom";
+import "services/network/public/interfaces/url_loader.mojom";
+
 // Interface that can be implemented to be informed of certain information while
 // reading the data for a blob.
 interface BlobReaderClient {
@@ -38,6 +41,13 @@ interface Blob {
   // the read operation.
   ReadRange(uint64 offset, uint64 length, handle<data_pipe_producer> pipe,
             BlobReaderClient? client);
+
+  // Creates a URLLoader that returns the contents of this blob.
+  // A "Range" header can be passed in the optional |headers| to only read part
+  // of the blob.
+  CreateLoader(network.mojom.URLLoader& loader,
+               network.mojom.HttpRequestHeaders? headers,
+               network.mojom.URLLoaderClient client);
 
   // This method is an implementation detail of the blob system. You should not
   // ever need to call it directly.

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_url_loader.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
 namespace storage {
@@ -68,6 +69,17 @@ void BlobImpl::ReadAll(mojo::ScopedDataPipeProducerHandle handle,
   MojoBlobReader::Create(
       handle_.get(), net::HttpByteRange(),
       std::make_unique<ReaderDelegate>(std::move(handle), std::move(client)));
+}
+
+void BlobImpl::CreateLoader(
+    network::mojom::URLLoaderRequest loader,
+    const base::Optional<net::HttpRequestHeaders>& headers,
+    network::mojom::URLLoaderClientPtr client) {
+  network::ResourceRequest request;
+  if (headers)
+    request.headers = *headers;
+  BlobURLLoader::CreateAndStart(std::move(loader), request, std::move(client),
+                                std::make_unique<BlobDataHandle>(*handle_));
 }
 
 void BlobImpl::GetInternalUUID(GetInternalUUIDCallback callback) {

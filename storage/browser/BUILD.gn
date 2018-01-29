@@ -30,6 +30,8 @@ component("browser") {
     "blob/blob_storage_registry.h",
     "blob/blob_transport_strategy.cc",
     "blob/blob_transport_strategy.h",
+    "blob/blob_url_loader.cc",
+    "blob/blob_url_loader.h",
     "blob/blob_url_request_job.cc",
     "blob/blob_url_request_job.h",
     "blob/blob_url_request_job_factory.cc",

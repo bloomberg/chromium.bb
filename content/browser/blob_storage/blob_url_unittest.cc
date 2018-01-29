@@ -39,6 +39,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -128,9 +129,15 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
   return entry;
 }
 
+enum class RequestTestType {
+  kNetworkServiceRequest,
+  kNetRequest,
+  kRequestFromBlobImpl
+};
+
 }  // namespace
 
-class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
+class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
  public:
   // A simple ProtocolHandler implementation to create BlobURLRequestJob.
   class MockProtocolHandler
@@ -270,56 +277,81 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
                    const net::HttpRequestHeaders& extra_headers) {
     GURL url("blob:blah");
 
-    if (GetParam()) {
-      GetHandleFromBuilder();  // To add to StorageContext.
-      const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
-          .CreateUrlMapping(url, blob_uuid_);
-      network::ResourceRequest request;
-      request.url = url;
-      request.method = method;
-      request.headers = extra_headers;
+    switch (GetParam()) {
+      case RequestTestType::kNetworkServiceRequest: {
+        GetHandleFromBuilder();  // To add to StorageContext.
+        const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
+            .CreateUrlMapping(url, blob_uuid_);
+        network::ResourceRequest request;
+        request.url = url;
+        request.method = method;
+        request.headers = extra_headers;
 
-      network::mojom::URLLoaderPtr url_loader;
-      TestURLLoaderClient url_loader_client;
-      scoped_refptr<BlobURLLoaderFactory> factory =
-          BlobURLLoaderFactory::Create(
-              base::BindOnce(&BlobURLRequestJobTest::GetStorageContext,
-                             base::Unretained(this)));
-      base::RunLoop().RunUntilIdle();
-      factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
-                                    network::mojom::kURLLoadOptionNone, request,
-                                    url_loader_client.CreateInterfacePtr(),
-                                    net::MutableNetworkTrafficAnnotationTag(
-                                        TRAFFIC_ANNOTATION_FOR_TESTS));
-      url_loader_client.RunUntilComplete();
+        network::mojom::URLLoaderPtr url_loader;
+        TestURLLoaderClient url_loader_client;
+        scoped_refptr<BlobURLLoaderFactory> factory =
+            BlobURLLoaderFactory::Create(
+                base::BindOnce(&BlobURLRequestJobTest::GetStorageContext,
+                               base::Unretained(this)));
+        base::RunLoop().RunUntilIdle();
+        factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
+                                      network::mojom::kURLLoadOptionNone,
+                                      request,
+                                      url_loader_client.CreateInterfacePtr(),
+                                      net::MutableNetworkTrafficAnnotationTag(
+                                          TRAFFIC_ANNOTATION_FOR_TESTS));
+        url_loader_client.RunUntilComplete();
 
-      if (url_loader_client.response_body().is_valid()) {
-        EXPECT_TRUE(mojo::common::BlockingCopyToString(
-            url_loader_client.response_body_release(), &response_));
-      }
-      response_headers_ = url_loader_client.response_head().headers;
-      response_metadata_ = url_loader_client.cached_metadata();
-      response_error_code_ = url_loader_client.completion_status().error_code;
-    } else {
-      std::unique_ptr<net::URLRequest> request =
-          url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
-                                             &url_request_delegate_,
-                                             TRAFFIC_ANNOTATION_FOR_TESTS);
-      request->set_method(method);
-      if (!extra_headers.IsEmpty())
-        request->SetExtraRequestHeaders(extra_headers);
-      request->Start();
+        if (url_loader_client.response_body().is_valid()) {
+          EXPECT_TRUE(mojo::common::BlockingCopyToString(
+              url_loader_client.response_body_release(), &response_));
+        }
+        response_headers_ = url_loader_client.response_head().headers;
+        response_metadata_ = url_loader_client.cached_metadata();
+        response_error_code_ = url_loader_client.completion_status().error_code;
+      } break;
+      case RequestTestType::kNetRequest: {
+        std::unique_ptr<net::URLRequest> request =
+            url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
+                                               &url_request_delegate_,
+                                               TRAFFIC_ANNOTATION_FOR_TESTS);
+        request->set_method(method);
+        if (!extra_headers.IsEmpty())
+          request->SetExtraRequestHeaders(extra_headers);
+        request->Start();
 
-      base::RunLoop().Run();
-      response_ = url_request_delegate_.data_received();
-      response_headers_ = request->response_headers();
-      if (request->response_info().metadata) {
-        response_metadata_ =
-            std::string(request->response_info().metadata->data(),
-                        request->response_info().metadata->size());
-      }
+        base::RunLoop().Run();
+        response_ = url_request_delegate_.data_received();
+        response_headers_ = request->response_headers();
+        if (request->response_info().metadata) {
+          response_metadata_ =
+              std::string(request->response_info().metadata->data(),
+                          request->response_info().metadata->size());
+        }
 
-      response_error_code_ = url_request_delegate_.request_status();
+        response_error_code_ = url_request_delegate_.request_status();
+      } break;
+      case RequestTestType::kRequestFromBlobImpl: {
+        blink::mojom::BlobPtr blob_ptr;
+        storage::BlobImpl::Create(
+            std::make_unique<storage::BlobDataHandle>(*GetHandleFromBuilder()),
+            MakeRequest(&blob_ptr));
+
+        network::mojom::URLLoaderPtr url_loader;
+        TestURLLoaderClient url_loader_client;
+        blob_ptr->CreateLoader(MakeRequest(&url_loader), extra_headers,
+                               url_loader_client.CreateInterfacePtr());
+        url_loader_client.RunUntilComplete();
+
+        if (url_loader_client.response_body().is_valid()) {
+          EXPECT_TRUE(mojo::common::BlockingCopyToString(
+              url_loader_client.response_body_release(), &response_));
+        }
+        response_headers_ = url_loader_client.response_head().headers;
+        response_metadata_ = url_loader_client.cached_metadata();
+        response_error_code_ = url_loader_client.completion_status().error_code;
+
+      } break;
     }
 
     // Verify response.
@@ -665,8 +697,11 @@ TEST_P(BlobURLRequestJobTest, BrokenBlob) {
 }
 
 // The parameter's value determines whether BlobURLLoaderFactory is used.
-INSTANTIATE_TEST_CASE_P(BlobURLRequestJobTest,
-                        BlobURLRequestJobTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    BlobURLRequestJobTest,
+    BlobURLRequestJobTest,
+    ::testing::Values(RequestTestType::kNetworkServiceRequest,
+                      RequestTestType::kNetRequest,
+                      RequestTestType::kRequestFromBlobImpl));
 
 }  // namespace content
