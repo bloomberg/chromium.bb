@@ -10,4 +10,14 @@
 ] interface ComputedAccessibleNode {
     readonly attribute DOMString? name;
     readonly attribute DOMString? role;
+
+    readonly attribute long? colCount;
+    readonly attribute unsigned long? colIndex;
+    readonly attribute unsigned long? colSpan;
+    readonly attribute unsigned long? level;
+    readonly attribute unsigned long? posInSet;
+    readonly attribute long? rowCount;
+    readonly attribute unsigned long? rowIndex;
+    readonly attribute unsigned long? rowSpan;
+    readonly attribute long? setSize;
 };
