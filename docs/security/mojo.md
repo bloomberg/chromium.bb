@@ -380,7 +380,7 @@ serialization and deserialization. 😄
 **_Good_**
 
 ```c++
-// In url_gurl_struct_traits.h:
+// In url_gurl_mojom_traits.h:
 template <>
 struct StructTraits<url::mojom::UrlDataView, GURL> {
   static base::StringPiece url(const GURL& r);
@@ -389,7 +389,7 @@ struct StructTraits<url::mojom::UrlDataView, GURL> {
   static bool Read(url::mojom::UrlDataView data, GURL* out);
 };
 
-// In url_gurl_struct_traits.cc:
+// In url_gurl_mojom_traits.cc:
 // Note that methods that aren't simple getters should be defined
 // out-of-line to avoid code bloat.
 base::StringPiece StructTraits<url::mojom::UrlDataView, GURL>::url(
