@@ -260,6 +260,24 @@ void StreamMixer::CreatePostProcessors(
       << "PostProcessor configuration channel count does not match command line"
       << " flag: " << linearize_filter_->GetOutputChannelCount() << " vs "
       << num_output_channels_;
+
+  int loopback_channel_count =
+      num_output_channels_ == 1 ? 1 : mix_filter_->GetOutputChannelCount();
+  CHECK_LE(loopback_channel_count, 2)
+      << "PostProcessor configuration has " << loopback_channel_count
+      << " channels after 'mix' group, but only 1 or 2 are allowed.";
+
+  LOG(INFO) << "PostProcessor configuration:";
+  if (default_filter_ == mix_filter_) {
+    LOG(INFO) << "Stream layer: none";
+  } else {
+    LOG(INFO) << "Stream layer: " << default_filter_->GetOutputChannelCount()
+              << " channels";
+  }
+  LOG(INFO) << "Mix filter: " << mix_filter_->GetOutputChannelCount()
+            << " channels";
+  LOG(INFO) << "Linearize filter: "
+            << linearize_filter_->GetOutputChannelCount() << " channels";
 }
 
 void StreamMixer::ResetTaskRunnerForTest() {
@@ -631,9 +649,10 @@ void StreamMixer::WriteMixedPcm(int frames) {
 
   // Downmix reference signal to mono to reduce CPU load.
   int mix_channel_count = mix_filter_->GetOutputChannelCount();
+  int loopback_channel_count = mix_channel_count;
 
   float* mixed_data = mix_filter_->GetOutputBuffer();
-  if (num_output_channels_ == 1 && mix_channel_count != num_output_channels_) {
+  if (num_output_channels_ == 1 && mix_channel_count != 1) {
     for (int i = 0; i < frames; ++i) {
       float sum = 0;
       for (int c = 0; c < mix_channel_count; ++c) {
@@ -641,25 +660,25 @@ void StreamMixer::WriteMixedPcm(int frames) {
       }
       mixed_data[i] = sum / mix_channel_count;
     }
+    loopback_channel_count = 1;
   }
 
   // Hard limit to [1.0, -1.0]
-  for (int i = 0; i < frames * num_output_channels_; ++i) {
+  for (int i = 0; i < frames * loopback_channel_count; ++i) {
     mixed_data[i] = std::min(1.0f, std::max(-1.0f, mixed_data[i]));
   }
 
   for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
     observer->OnLoopbackAudio(
         expected_playback_time, kSampleFormatF32, output_samples_per_second_,
-        mix_channel_count, reinterpret_cast<uint8_t*>(mixed_data),
-        static_cast<size_t>(frames) * num_output_channels_ * sizeof(float));
+        loopback_channel_count, reinterpret_cast<uint8_t*>(mixed_data),
+        static_cast<size_t>(frames) * loopback_channel_count * sizeof(float));
   }
 
   // Drop extra channels from linearize filter if necessary.
   float* linearized_data = linearize_filter_->GetOutputBuffer();
   int linearize_channel_count = linearize_filter_->GetOutputChannelCount();
-  if (num_output_channels_ == 1 &&
-      linearize_channel_count != num_output_channels_) {
+  if (num_output_channels_ == 1 && linearize_channel_count != 1) {
     for (int i = 0; i < frames; ++i) {
       linearized_data[i] = linearized_data[i * linearize_channel_count];
     }
@@ -800,6 +819,12 @@ void StreamMixer::SetFilterFrameAlignmentForTest(int filter_frame_alignment) {
       << "Frame alignment ( " << filter_frame_alignment
       << ") is not a power of two";
   filter_frame_alignment_ = filter_frame_alignment;
+}
+
+void StreamMixer::SetNumOutputChannelsForTest(int num_output_channels) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::SetNumOutputChannelsForTest,
+                      num_output_channels);
+  num_output_channels_ = num_output_channels;
 }
 
 void StreamMixer::AddPlayoutChannelRequest(int channel) {
