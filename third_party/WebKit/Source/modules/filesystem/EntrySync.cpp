@@ -48,11 +48,12 @@ EntrySync* EntrySync::Create(EntryBase* entry) {
 }
 
 Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
-  MetadataSyncCallbackHelper* helper = MetadataSyncCallbackHelper::Create();
-  file_system_->GetMetadata(this, helper->GetSuccessCallback(),
-                            helper->GetErrorCallback(),
+  MetadataCallbacksSyncHelper* sync_helper =
+      MetadataCallbacksSyncHelper::Create();
+  file_system_->GetMetadata(this, sync_helper->GetSuccessCallback(),
+                            sync_helper->GetErrorCallback(),
                             DOMFileSystemBase::kSynchronous);
-  return helper->GetResult(exception_state);
+  return sync_helper->GetResultOrThrow(exception_state);
 }
 
 EntrySync* EntrySync::moveTo(DirectoryEntrySync* parent,
@@ -69,11 +70,11 @@ EntrySync* EntrySync::moveTo(DirectoryEntrySync* parent,
 EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
                              const String& name,
                              ExceptionState& exception_state) const {
-  EntryCallbacksSyncHelper* helper = EntryCallbacksSyncHelper::Create();
-  file_system_->Copy(this, parent, name, helper->GetSuccessCallback(),
-                     helper->GetErrorCallback(),
+  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
+  file_system_->Copy(this, parent, name, sync_helper->GetSuccessCallback(),
+                     sync_helper->GetErrorCallback(),
                      DOMFileSystemBase::kSynchronous);
-  Entry* entry = helper->GetResultOrThrow(exception_state);
+  Entry* entry = sync_helper->GetResultOrThrow(exception_state);
   return entry ? EntrySync::Create(entry) : nullptr;
 }
 

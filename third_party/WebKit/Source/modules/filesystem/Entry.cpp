@@ -35,7 +35,6 @@
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/MetadataCallback.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -55,14 +54,16 @@ DOMFileSystem* Entry::filesystem(ScriptState* script_state) const {
 }
 
 void Entry::getMetadata(ScriptState* script_state,
-                        MetadataCallback* success_callback,
+                        V8MetadataCallback* success_callback,
                         V8ErrorCallback* error_callback) {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_GetMetadata_Method_IsolatedFileSystem);
   }
-  file_system_->GetMetadata(this, success_callback,
-                            ScriptErrorCallback::Wrap(error_callback));
+  file_system_->GetMetadata(
+      this,
+      MetadataCallbacks::OnDidReadMetadataV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void Entry::moveTo(ScriptState* script_state,

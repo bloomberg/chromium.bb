@@ -39,9 +39,9 @@
 namespace blink {
 
 class DirectoryEntry;
-class MetadataCallback;
 class V8EntryCallback;
 class V8ErrorCallback;
+class V8MetadataCallback;
 class VoidCallback;
 
 class MODULES_EXPORT Entry : public EntryBase {
@@ -54,7 +54,7 @@ class MODULES_EXPORT Entry : public EntryBase {
   DOMFileSystem* filesystem(ScriptState*) const;
 
   void getMetadata(ScriptState*,
-                   MetadataCallback* success_callback = nullptr,
+                   V8MetadataCallback* success_callback = nullptr,
                    V8ErrorCallback* = nullptr);
   void moveTo(ScriptState*,
               DirectoryEntry* parent,

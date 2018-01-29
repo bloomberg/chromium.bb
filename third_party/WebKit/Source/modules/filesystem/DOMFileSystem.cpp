@@ -38,8 +38,6 @@
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriter.h"
-#include "modules/filesystem/MetadataCallback.h"
-#include "platform/FileMetadata.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/StringBuilder.h"

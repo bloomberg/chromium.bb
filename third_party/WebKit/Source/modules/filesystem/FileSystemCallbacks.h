@@ -51,12 +51,13 @@ class ExecutionContext;
 class File;
 class FileMetadata;
 class FileWriterBase;
-class MetadataCallback;
+class Metadata;
 class V8EntryCallback;
 class V8ErrorCallback;
 class V8FileCallback;
 class V8FileSystemCallback;
 class V8FileWriterCallback;
+class V8MetadataCallback;
 class VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
@@ -259,18 +260,45 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
 
 class MetadataCallbacks final : public FileSystemCallbacksBase {
  public:
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(MetadataCallback*,
-                                                          ErrorCallbackBase*,
-                                                          ExecutionContext*,
-                                                          DOMFileSystemBase*);
+  class OnDidReadMetadataCallback
+      : public GarbageCollectedFinalized<OnDidReadMetadataCallback> {
+   public:
+    virtual ~OnDidReadMetadataCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual void OnSuccess(Metadata*) = 0;
+
+   protected:
+    OnDidReadMetadataCallback() = default;
+  };
+
+  class OnDidReadMetadataV8Impl : public OnDidReadMetadataCallback {
+   public:
+    static OnDidReadMetadataV8Impl* Create(V8MetadataCallback* callback) {
+      return callback ? new OnDidReadMetadataV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    void OnSuccess(Metadata*) override;
+
+   private:
+    OnDidReadMetadataV8Impl(V8MetadataCallback* callback)
+        : callback_(callback) {}
+
+    Member<V8MetadataCallback> callback_;
+  };
+
+  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
+      OnDidReadMetadataCallback*,
+      ErrorCallbackBase*,
+      ExecutionContext*,
+      DOMFileSystemBase*);
   void DidReadMetadata(const FileMetadata&) override;
 
  private:
-  MetadataCallbacks(MetadataCallback*,
+  MetadataCallbacks(OnDidReadMetadataCallback*,
                     ErrorCallbackBase*,
                     ExecutionContext*,
                     DOMFileSystemBase*);
-  Persistent<MetadataCallback> success_callback_;
+  Persistent<OnDidReadMetadataCallback> success_callback_;
 };
 
 class FileWriterCallbacks final : public FileSystemCallbacksBase {

@@ -53,7 +53,6 @@ class EntryBase;
 class ExecutionContext;
 class File;
 class FileMetadata;
-class MetadataCallback;
 class SecurityOrigin;
 class VoidCallback;
 
@@ -114,7 +113,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   // Actual FileSystem API implementations. All the validity checks on virtual
   // paths are done at this level.
   void GetMetadata(const EntryBase*,
-                   MetadataCallback*,
+                   MetadataCallbacks::OnDidReadMetadataCallback*,
                    ErrorCallbackBase*,
                    SynchronousType = kAsynchronous);
   void Move(const EntryBase* source,

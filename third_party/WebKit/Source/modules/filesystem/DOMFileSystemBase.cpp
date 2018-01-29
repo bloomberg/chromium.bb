@@ -41,7 +41,6 @@
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryBase.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/MetadataCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -209,10 +208,11 @@ File* DOMFileSystemBase::CreateFile(const FileMetadata& metadata,
   }
 }
 
-void DOMFileSystemBase::GetMetadata(const EntryBase* entry,
-                                    MetadataCallback* success_callback,
-                                    ErrorCallbackBase* error_callback,
-                                    SynchronousType synchronous_type) {
+void DOMFileSystemBase::GetMetadata(
+    const EntryBase* entry,
+    MetadataCallbacks::OnDidReadMetadataCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    SynchronousType synchronous_type) {
   if (!FileSystem()) {
     ReportError(error_callback, FileError::kAbortErr);
     return;

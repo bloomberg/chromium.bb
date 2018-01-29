@@ -38,6 +38,7 @@
 #include "bindings/modules/v8/V8FileCallback.h"
 #include "bindings/modules/v8/V8FileSystemCallback.h"
 #include "bindings/modules/v8/V8FileWriterCallback.h"
+#include "bindings/modules/v8/V8MetadataCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -51,7 +52,6 @@
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileWriter.h"
 #include "modules/filesystem/Metadata.h"
-#include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
 #include "public/platform/WebFileWriter.h"
 
@@ -345,8 +345,18 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
 
 // MetadataCallbacks ----------------------------------------------------------
 
+void MetadataCallbacks::OnDidReadMetadataV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidReadMetadataCallback::Trace(visitor);
+}
+
+void MetadataCallbacks::OnDidReadMetadataV8Impl::OnSuccess(Metadata* metadata) {
+  callback_->handleEvent(metadata);
+}
+
 std::unique_ptr<AsyncFileSystemCallbacks> MetadataCallbacks::Create(
-    MetadataCallback* success_callback,
+    OnDidReadMetadataCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
     DOMFileSystemBase* file_system) {
@@ -354,17 +364,21 @@ std::unique_ptr<AsyncFileSystemCallbacks> MetadataCallbacks::Create(
       success_callback, error_callback, context, file_system));
 }
 
-MetadataCallbacks::MetadataCallbacks(MetadataCallback* success_callback,
-                                     ErrorCallbackBase* error_callback,
-                                     ExecutionContext* context,
-                                     DOMFileSystemBase* file_system)
+MetadataCallbacks::MetadataCallbacks(
+    OnDidReadMetadataCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DOMFileSystemBase* file_system)
     : FileSystemCallbacksBase(error_callback, file_system, context),
       success_callback_(success_callback) {}
 
 void MetadataCallbacks::DidReadMetadata(const FileMetadata& metadata) {
-  if (success_callback_)
-    HandleEventOrScheduleCallback(success_callback_.Release(),
-                                  Metadata::Create(metadata));
+  if (!success_callback_)
+    return;
+
+  InvokeOrScheduleCallback(&OnDidReadMetadataCallback::OnSuccess,
+                           success_callback_.Release(),
+                           Metadata::Create(metadata));
 }
 
 // FileWriterCallbacks ----------------------------------------------------
