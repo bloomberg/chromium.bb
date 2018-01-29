@@ -4156,6 +4156,7 @@ interface MediaList
     method constructor
     method deleteMedium
     method item
+    method toString
     setter mediaText
 interface MediaMetadata
     attribute @@toStringTag
