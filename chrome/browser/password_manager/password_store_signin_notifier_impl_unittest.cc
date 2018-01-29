@@ -44,7 +44,11 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
 TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-  EXPECT_CALL(*store_, SaveSyncPasswordHash(base::ASCIIToUTF16("password")));
+  EXPECT_CALL(
+      *store_,
+      SaveSyncPasswordHash(
+          base::ASCIIToUTF16("password"),
+          metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN));
   fake_signin_manager_->SignIn("accountid", "username", "password");
   testing::Mock::VerifyAndClearExpectations(store_.get());
   EXPECT_CALL(*store_, ClearSyncPasswordHash());
@@ -59,7 +63,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
   notifier.SubscribeToSigninEvents(store_.get());
 
   notifier.UnsubscribeFromSigninEvents();
-  EXPECT_CALL(*store_, SaveSyncPasswordHash(_)).Times(0);
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(_, _)).Times(0);
   EXPECT_CALL(*store_, ClearSyncPasswordHash()).Times(0);
   fake_signin_manager_->SignIn("accountid", "username", "secret");
   fake_signin_manager_->ForceSignOut();

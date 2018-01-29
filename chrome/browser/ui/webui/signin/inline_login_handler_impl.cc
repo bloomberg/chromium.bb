@@ -239,8 +239,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
         PasswordStoreFactory::GetForProfile(profile_,
                                             ServiceAccessType::EXPLICIT_ACCESS);
     if (password_store) {
-      password_store->SaveSyncPasswordHash(base::UTF8ToUTF16(password_));
-      password_manager::metrics_util::LogSyncPasswordHashChange(
+      password_store->SaveSyncPasswordHash(
+          base::UTF8ToUTF16(password_),
           password_manager::metrics_util::SyncPasswordHashChange::
               SAVED_ON_CHROME_SIGNIN);
     }

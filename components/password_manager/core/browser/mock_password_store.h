@@ -71,12 +71,14 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));
   MOCK_METHOD1(RemoveSiteStatsImpl, void(const GURL&));
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   MOCK_METHOD3(CheckReuse,
                void(const base::string16&,
                     const std::string&,
                     PasswordReuseDetectorConsumer*));
-  MOCK_METHOD1(SaveSyncPasswordHash, void(const base::string16&));
+  MOCK_METHOD2(SaveSyncPasswordHash,
+               void(const base::string16&,
+                    metrics_util::SyncPasswordHashChange));
   MOCK_METHOD0(ClearSyncPasswordHash, void());
 #endif
 

@@ -204,7 +204,9 @@ void SaveSyncPasswordDataToProfile(const UserContext& user_context,
                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (password_store) {
     password_store->SaveSyncPasswordHash(
-        user_context.GetSyncPasswordData().value());
+        user_context.GetSyncPasswordData().value(),
+        password_manager::metrics_util::SyncPasswordHashChange::
+            SAVED_ON_CHROME_SIGNIN);
   }
 }
 

@@ -14,10 +14,11 @@ PasswordStoreSigninNotifier::PasswordStoreSigninNotifier() {}
 PasswordStoreSigninNotifier::~PasswordStoreSigninNotifier() {}
 
 void PasswordStoreSigninNotifier::NotifySignin(const std::string& password) {
-  metrics_util::LogSyncPasswordHashChange(
-      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
-  if (store_)
-    store_->SaveSyncPasswordHash(base::UTF8ToUTF16(password));
+  if (store_) {
+    store_->SaveSyncPasswordHash(
+        base::UTF8ToUTF16(password),
+        metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+  }
 }
 
 void PasswordStoreSigninNotifier::NotifySignedOut() {

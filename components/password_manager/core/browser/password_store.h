@@ -26,6 +26,7 @@
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #endif
@@ -259,10 +260,14 @@ class PasswordStore : protected PasswordStoreSync,
                           PasswordReuseDetectorConsumer* consumer);
 
   // Saves a hash of |password| for password reuse checking.
-  virtual void SaveSyncPasswordHash(const base::string16& password);
+  // |event| is used for metric logging.
+  virtual void SaveSyncPasswordHash(const base::string16& password,
+                                    metrics_util::SyncPasswordHashChange event);
 
   // Saves |sync_password_data| for password reuse checking.
-  virtual void SaveSyncPasswordHash(const SyncPasswordData& sync_password_data);
+  // |event| is used for metric logging.
+  virtual void SaveSyncPasswordHash(const SyncPasswordData& sync_password_data,
+                                    metrics_util::SyncPasswordHashChange event);
 
   // Clears the saved sync password hash.
   virtual void ClearSyncPasswordHash();
