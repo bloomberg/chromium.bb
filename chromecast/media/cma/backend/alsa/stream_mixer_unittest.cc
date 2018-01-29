@@ -368,6 +368,20 @@ class MockPostProcessorFactory : public PostProcessingPipelineFactory {
   }
 };
 
+class MockLoopbackAudioObserver : public CastMediaShlib::LoopbackAudioObserver {
+ public:
+  MockLoopbackAudioObserver() = default;
+  ~MockLoopbackAudioObserver() override = default;
+
+  MOCK_METHOD6(OnLoopbackAudio,
+               void(int64_t, SampleFormat, int, int, uint8_t*, int));
+  MOCK_METHOD0(OnLoopbackInterrupted, void());
+  MOCK_METHOD0(OnRemoved, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLoopbackAudioObserver);
+};
+
 // Given |inputs|, returns mixed audio data according to the mixing method used
 // by the mixer.
 std::unique_ptr<::media::AudioBus> GetMixedAudioData(
@@ -1354,7 +1368,75 @@ TEST_F(StreamMixerTest, SetPostProcessorConfig) {
   mixer->SetPostProcessorConfig(name, config);
 }
 
+TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
+  StreamMixer* mixer = StreamMixer::Get();
+  const int kNumFrames = 256;
+  const int kNumChannels = 2;
+  testing::NiceMock<MockInputQueue>* input =
+      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond);
+  testing::StrictMock<MockLoopbackAudioObserver> observer;
+  mixer->AddInput(base::WrapUnique(input));
+
+  input->SetPaused(false);
+  input->SetMaxReadSize(kNumFrames);
+  mixer->AddLoopbackAudioObserver(&observer);
+
+  EXPECT_CALL(
+      observer,
+      OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond, kNumChannels,
+                      _, kNumChannels * kNumFrames * sizeof(float)));
+
+  mixer->WriteFramesForTest();
+
+  EXPECT_CALL(observer, OnRemoved());
+  mixer->RemoveLoopbackAudioObserver(&observer);
+}
+
+TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
+  StreamMixer* mixer = StreamMixer::Get();
+  const int kNumFrames = 256;
+  const int kNumOutputChannels = 1;
+  mixer->SetNumOutputChannelsForTest(kNumOutputChannels);
+  testing::NiceMock<MockInputQueue>* input =
+      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond);
+  testing::StrictMock<MockLoopbackAudioObserver> observer;
+  mixer->AddInput(base::WrapUnique(input));
+
+  input->SetPaused(false);
+  input->SetMaxReadSize(kNumFrames);
+  mixer->AddLoopbackAudioObserver(&observer);
+
+  EXPECT_CALL(observer,
+              OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
+                              kNumOutputChannels, _,
+                              kNumOutputChannels * kNumFrames * sizeof(float)));
+
+  mixer->WriteFramesForTest();
+
+  EXPECT_CALL(observer, OnRemoved());
+  mixer->RemoveLoopbackAudioObserver(&observer);
+}
+
 TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
+  StreamMixer* mixer = StreamMixer::Get();
+  const std::string config = R"Json({
+"postprocessors": {
+  "linearize": {
+    "processors": [{
+      "processor": "delay.so",
+      "config": { "output_channels": 4,
+                  "delay": 0 }
+    }]
+  }
+}})Json";
+
+  ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
+                   std::make_unique<MockPostProcessorFactory>(), config),
+               "PostProcessor configuration channel count does not match "
+               "command line flag");
+}
+
+TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
   StreamMixer* mixer = StreamMixer::Get();
   const std::string config = R"Json({
 "postprocessors": {
@@ -1365,13 +1447,19 @@ TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
       "config": { "output_channels": 4,
                   "delay": 0 }
     }]
-  }]
+  }],
+  "linearize": {
+    "processors": [{
+      "processor": "delay.so",
+      "config": { "output_channels": 2,
+                  "delay": 0 }
+    }]
+  }
 }})Json";
 
   ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), config),
-               "PostProcessor configuration channel count does not match "
-               "command line flag");
+               "loopback_channel_count <= 2");
 }
 
 }  // namespace media

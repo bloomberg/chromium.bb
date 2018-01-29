@@ -193,6 +193,7 @@ class StreamMixer {
   void SetMixerOutputStreamForTest(std::unique_ptr<MixerOutputStream> output);
   void WriteFramesForTest();  // Can be called on any thread.
   void ClearInputsForTest();  // Removes all inputs.
+  void SetNumOutputChannelsForTest(int num_output_channels);
 
   void AddLoopbackAudioObserver(
       CastMediaShlib::LoopbackAudioObserver* observer);
