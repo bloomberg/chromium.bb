@@ -101,16 +101,6 @@ bool IsNewClearBrowsingDataUIEnabled() {
   return false;
 }
 
-// Emergency switch for https://crbug.com/527084 in case of unforeseen UX
-// regressions.
-// Defaults to Enabled unless the Finch trial has explicitly disabled it.
-bool IsPageIconForDowngradedHTTPSEnabled() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("IOSPageIconForDowngradedHTTPS");
-  return !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
 bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
 }

@@ -48,9 +48,6 @@ bool IsMemoryDebuggingEnabled();
 // Whether the Clear Browsing Data counters and time selection UI is enabled.
 bool IsNewClearBrowsingDataUIEnabled();
 
-// Whether the page icon for downgraded HTTPS is enabled.
-bool IsPageIconForDowngradedHTTPSEnabled();
-
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 
