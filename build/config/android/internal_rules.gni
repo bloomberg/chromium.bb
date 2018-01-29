@@ -1435,7 +1435,7 @@ if (enable_java_templates) {
                              ])
       script = "//build/android/gyp/process_resources.py"
 
-      depfile = "$target_gen_dir/$target_name.d"
+      depfile = "$target_gen_dir/${invoker.target_name}_1.d"
       outputs = []
       _all_resource_dirs = []
       sources = []
@@ -1656,7 +1656,7 @@ if (enable_java_templates) {
 
     if (defined(invoker.post_process_script)) {
       action(target_name) {
-        depfile = "${target_gen_dir}/${target_name}.d"
+        depfile = "${target_gen_dir}/${invoker.target_name}_2.d"
         script = invoker.post_process_script
         args = [
           "--depfile",
