@@ -15,6 +15,7 @@
 @class AdaptiveToolbarViewController;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol OmniboxFocuser;
 class WebStateList;
 
 // Coordinator for the adaptive toolbar. This Coordinator is the super class of
@@ -39,7 +40,7 @@ class WebStateList;
 
 // Dispatcher.
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, ToolbarCommands>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
         dispatcher;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;

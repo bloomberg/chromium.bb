@@ -20,7 +20,8 @@
 @property(nonatomic, readonly) NewTabButton* openNewTabButton;
 
 - (instancetype)initWithDispatcher:
-    (id<ApplicationCommands, BrowserCommands, ToolbarCommands>)dispatcher;
+    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>)
+        dispatcher;
 
 @end
 

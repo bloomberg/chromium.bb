@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -318,6 +319,10 @@ const int styleCount = 2;
                   imageForHighlightedState:NativeImage(IDR_IOS_OMNIBOX_SEARCH)
                      imageForDisabledState:nil];
   [self configureButton:omniboxButton width:kToolbarButtonWidth];
+  [omniboxButton addTarget:self.dispatcher
+                    action:@selector(focusOmnibox)
+          forControlEvents:UIControlEventTouchUpInside];
+
   omniboxButton.visibilityMask =
       self.visibilityConfiguration.omniboxButtonVisibility;
   return omniboxButton;
