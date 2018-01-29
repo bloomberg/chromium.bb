@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
 
 #include <drm.h>
+#include <drm_fourcc.h>
 #include <fcntl.h>
 #include <gbm.h>
 #include <xf86drm.h>
@@ -33,7 +34,6 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      uint32_t format,
                      uint32_t flags,
                      uint64_t modifier,
-                     uint32_t addfb_flags,
                      std::vector<base::ScopedFD>&& fds,
                      const gfx::Size& size,
 
@@ -61,7 +61,7 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
       handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
       strides[i] = gbm_bo_get_plane_stride(bo, i);
       offsets[i] = gbm_bo_get_plane_offset(bo, i);
-      if (addfb_flags & DRM_MODE_FB_MODIFIERS)
+      if (modifier != DRM_FORMAT_MOD_INVALID)
         modifiers[i] = modifier;
     }
 
@@ -69,6 +69,8 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
     // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
     // a bo with modifiers, otherwise, we rely on the "no modifiers"
     // behavior doing the right thing.
+    const uint32_t addfb_flags =
+        modifier != DRM_FORMAT_MOD_INVALID ? DRM_MODE_FB_MODIFIERS : 0;
     bool ret = drm_->AddFramebuffer2(
         gbm_bo_get_width(bo), gbm_bo_get_height(bo), framebuffer_pixel_format_,
         handles, strides, offsets, modifiers, &framebuffer_, addfb_flags);
@@ -188,8 +190,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
     uint32_t format,
     const gfx::Size& size,
     uint32_t flags,
-    uint64_t modifier,
-    uint32_t addfb_flags) {
+    uint64_t modifier) {
   DCHECK(bo);
   std::vector<base::ScopedFD> fds;
   std::vector<gfx::NativePixmapPlane> planes;
@@ -210,13 +211,13 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
       fds.emplace_back(std::move(fd));
     }
 
-    planes.emplace_back(
-        gbm_bo_get_plane_stride(bo, i), gbm_bo_get_plane_offset(bo, i),
-        gbm_bo_get_plane_size(bo, i), gbm_bo_get_plane_format_modifier(bo, i));
+    planes.emplace_back(gbm_bo_get_plane_stride(bo, i),
+                        gbm_bo_get_plane_offset(bo, i),
+                        gbm_bo_get_plane_size(bo, i), modifier);
   }
-  scoped_refptr<GbmBuffer> buffer(
-      new GbmBuffer(gbm, bo, format, flags, modifier, addfb_flags,
-                    std::move(fds), size, std::move(planes)));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, format, flags,
+                                                modifier, std::move(fds), size,
+                                                std::move(planes)));
   if (flags & GBM_BO_USE_SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -240,8 +241,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
     return nullptr;
 
   return CreateBufferForBO(gbm, bo, format, size, flags,
-                           gbm_bo_get_format_modifier(bo),
-                           DRM_MODE_FB_MODIFIERS);
+                           gbm_bo_get_format_modifier(bo));
 }
 
 // static
@@ -258,8 +258,15 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   if (!bo)
     return nullptr;
 
+  // minigbm knows which modifier it chose for the bo it created, and will
+  // tell us if we ask. However, we have to track it as DRM_FORMAT_MOD_INVALID
+  // at this level so we don't try to pass it to addfb2, which may not support
+  // that.  Only when the bo is created with modifiers
+  // (CreateBufferWithModifiers above) do we track the actual modifier, since
+  // we know we can pass it to addfb2 in that case.
+
   return CreateBufferForBO(gbm, bo, format, size, flags,
-                           gbm_bo_get_format_modifier(bo), 0);
+                           DRM_FORMAT_MOD_INVALID);
 }
 
 // static
@@ -304,9 +311,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     }
   }
 
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, format, gbm_flags, 0,
-                                                0, std::move(fds), size,
-                                                std::move(planes)));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
+      gbm, bo, format, gbm_flags, 0, std::move(fds), size, std::move(planes)));
 
   return buffer;
 }
