@@ -20,7 +20,9 @@ class BoxLayout;
 
 namespace ash {
 
+class HoverNotifier;
 class LoginUserView;
+class ScrollBar;
 
 // Scrollable list of the users. Stores the list of login user views. Can be
 // styled with GradientParams that define gradient tinting at the top and at the
@@ -77,6 +79,9 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
     gfx::Insets insets_portrait;
   };
 
+  // Updates visibility of scroll bar thumb. Called when hover state changes.
+  void OnHover(bool has_hover);
+
   // Returns parameters of the layout for given display |style|.
   LayoutParams GetLayoutParams(LoginDisplayStyle style);
   // Returns parameters of the gradient for given display |style|.
@@ -84,7 +89,12 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
 
   views::BoxLayout* layout_ = nullptr;
 
+  // Owned by ScrollView.
+  ScrollBar* scroll_bar_ = nullptr;
+
   std::vector<LoginUserView*> user_views_;
+
+  std::unique_ptr<HoverNotifier> hover_notifier_;
 
   GradientParams gradient_params_;
   LayoutParams layout_params_;
