@@ -60,12 +60,6 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
                                     scoped_refptr<VideoFrame>* storage,
                                     CaptureFrameCallback* callback);
 
-  // Attempt to re-send the last frame to the VideoCaptureDevice::Client.
-  // Returns true if successful. This can fail if the last frame is no longer
-  // available in the buffer pool, or if the VideoCaptureOracle decides to
-  // reject the "passive" refresh.
-  bool AttemptPassiveRefresh();
-
   base::TimeDelta min_capture_period() const {
     return oracle_.min_capture_period();
   }

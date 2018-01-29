@@ -257,7 +257,7 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
   for (int i = 0; i < 10; ++i) {
     t += refresh_interval;
     ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
-        VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t));
+        VideoCaptureOracle::kRefreshRequest, gfx::Rect(), t));
   }
 
   // Now, complete the oustanding compositor-based capture and continue
@@ -267,8 +267,8 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
   did_complete_a_capture = false;
   for (int i = 0; i < 10; ++i) {
     t += refresh_interval;
-    if (oracle.ObserveEventAndDecideCapture(
-            VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
+    if (oracle.ObserveEventAndDecideCapture(VideoCaptureOracle::kRefreshRequest,
+                                            gfx::Rect(), t)) {
       const int frame_number = oracle.next_frame_number();
       oracle.RecordCapture(0.0);
       ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
@@ -281,8 +281,8 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
   for (int i = 0; i <= 10; ++i) {
     ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
     t += refresh_interval;
-    if (oracle.ObserveEventAndDecideCapture(
-            VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
+    if (oracle.ObserveEventAndDecideCapture(VideoCaptureOracle::kRefreshRequest,
+                                            gfx::Rect(), t)) {
       break;
     }
   }
@@ -294,14 +294,14 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
   for (int i = 0; i < 10; ++i) {
     t += refresh_interval;
     ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
-        VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t));
+        VideoCaptureOracle::kRefreshRequest, gfx::Rect(), t));
   }
   ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   for (int i = 0; i <= 10; ++i) {
     ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
     t += refresh_interval;
-    if (oracle.ObserveEventAndDecideCapture(
-            VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
+    if (oracle.ObserveEventAndDecideCapture(VideoCaptureOracle::kRefreshRequest,
+                                            gfx::Rect(), t)) {
       break;
     }
   }
@@ -359,43 +359,6 @@ TEST(VideoCaptureOracleTest, DoesNotRapidlyChangeCaptureSize) {
     oracle.RecordCapture(0.0);
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
-}
-
-// Tests that un-sampled compositor update event will fail the next passive
-// refresh request, forcing an active refresh.
-TEST(VideoCaptureOracleTest, EnforceActiveRefreshForUnsampledCompositorUpdate) {
-  const gfx::Rect damage_rect(Get720pSize());
-  const base::TimeDelta event_increment = Get30HzPeriod() * 2;
-  const base::TimeDelta short_event_increment = Get30HzPeriod() / 4;
-
-  VideoCaptureOracle oracle(false);
-  oracle.SetMinCapturePeriod(Get30HzPeriod());
-  oracle.SetCaptureSizeConstraints(Get720pSize(), Get720pSize(), false);
-
-  base::TimeTicks t = InitialTestTimeTicks();
-  int last_frame_number;
-  base::TimeTicks ignored;
-
-  // CompositorUpdate is sampled normally.
-  t += event_increment;
-  ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
-      VideoCaptureOracle::kCompositorUpdate, damage_rect, t));
-  last_frame_number = oracle.next_frame_number();
-  oracle.RecordCapture(0.0);
-  ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, true, &ignored));
-
-  // Next CompositorUpdate comes too soon and won't be sampled.
-  t += short_event_increment;
-  ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
-      VideoCaptureOracle::kCompositorUpdate, damage_rect, t));
-
-  // Then the next valid PassiveRefreshRequest will fail to enforce an
-  // ActiveRefreshRequest to capture the updated content.
-  t += event_increment;
-  ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
-      VideoCaptureOracle::kPassiveRefreshRequest, damage_rect, t));
-  ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
-      VideoCaptureOracle::kActiveRefreshRequest, damage_rect, t));
 }
 
 namespace {
