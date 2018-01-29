@@ -61,7 +61,6 @@ class GainHandler final : public AudioHandler {
  private:
   GainHandler(AudioNode&, float sample_rate, AudioParamHandler& gain);
 
-  float last_gain_;  // for de-zippering
   scoped_refptr<AudioParamHandler> gain_;
 
   AudioFloatArray sample_accurate_gain_values_;

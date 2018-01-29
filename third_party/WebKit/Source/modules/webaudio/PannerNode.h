@@ -168,7 +168,6 @@ class PannerHandler final : public AudioHandler {
   // Gain
   DistanceEffect distance_effect_;
   ConeEffect cone_effect_;
-  float last_gain_;
 
   // Cached values
   double cached_azimuth_;
