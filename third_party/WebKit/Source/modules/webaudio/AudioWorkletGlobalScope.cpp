@@ -12,6 +12,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "bindings/core/v8/V8ObjectParser.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/modules/v8/V8AudioParamDescriptor.h"
 #include "bindings/modules/v8/V8AudioWorkletProcessor.h"
@@ -77,57 +78,31 @@ void AudioWorkletGlobalScope::registerProcessor(
   v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
   v8::Local<v8::Context> context = ScriptController()->GetContext();
 
-  if (!class_definition.V8Value()->IsFunction()) {
-    exception_state.ThrowTypeError(
-        "The processor definition is neither 'class' nor 'function'.");
+  DCHECK(class_definition.V8Value()->IsFunction());
+  v8::Local<v8::Function> constructor =
+      v8::Local<v8::Function>::Cast(class_definition.V8Value());
+
+  v8::Local<v8::Object> prototype;
+  if (!V8ObjectParser::ParsePrototype(context, constructor, &prototype,
+                                      &exception_state))
     return;
-  }
 
-  v8::Local<v8::Object> class_definition_local =
-      v8::Local<v8::Object>::Cast(class_definition.V8Value());
-
-  v8::Local<v8::Value> prototype_value_local;
-  bool prototype_extracted =
-      class_definition_local->Get(context, V8AtomicString(isolate, "prototype"))
-          .ToLocal(&prototype_value_local);
-  DCHECK(prototype_extracted);
-
-  v8::Local<v8::Object> prototype_object_local =
-      v8::Local<v8::Object>::Cast(prototype_value_local);
-
-  v8::Local<v8::Value> process_value_local;
-  bool process_extracted =
-      prototype_object_local->Get(context, V8AtomicString(isolate, "process"))
-          .ToLocal(&process_value_local);
-  DCHECK(process_extracted);
-
-  if (process_value_local->IsNullOrUndefined()) {
-    exception_state.ThrowTypeError(
-        "The 'process' function does not exist in the prototype.");
+  v8::Local<v8::Function> process;
+  if (!V8ObjectParser::ParseFunction(context, prototype, "process", &process,
+                                     &exception_state))
     return;
-  }
-
-  if (!process_value_local->IsFunction()) {
-    exception_state.ThrowTypeError(
-        "The 'process' property on the prototype is not a function.");
-    return;
-  }
-
-  v8::Local<v8::Function> process_function_local =
-      v8::Local<v8::Function>::Cast(process_value_local);
 
   // constructor() and process() functions are successfully parsed from the
   // script code, thus create the definition. The rest of parsing process
   // (i.e. parameterDescriptors) is optional.
   AudioWorkletProcessorDefinition* definition =
-      AudioWorkletProcessorDefinition::Create(
-          isolate, name, class_definition_local, process_function_local);
+      AudioWorkletProcessorDefinition::Create(isolate, name, constructor,
+                                              process);
   DCHECK(definition);
 
   v8::Local<v8::Value> parameter_descriptors_value_local;
   bool did_get_parameter_descriptor =
-      class_definition_local
-          ->Get(context, V8AtomicString(isolate, "parameterDescriptors"))
+      constructor->Get(context, V8AtomicString(isolate, "parameterDescriptors"))
           .ToLocal(&parameter_descriptors_value_local);
 
   // If parameterDescriptor() is parsed and has a valid value, create a vector

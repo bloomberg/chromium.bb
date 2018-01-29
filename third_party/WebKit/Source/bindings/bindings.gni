@@ -141,6 +141,8 @@ bindings_core_v8_files =
                     "core/v8/V8NodeFilterCondition.h",
                     "core/v8/V8ObjectBuilder.cpp",
                     "core/v8/V8ObjectBuilder.h",
+                    "core/v8/V8ObjectParser.cpp",
+                    "core/v8/V8ObjectParser.h",
                     "core/v8/V8PagePopupControllerBinding.cpp",
                     "core/v8/V8PagePopupControllerBinding.h",
                     "core/v8/V8PersistentValueVector.h",

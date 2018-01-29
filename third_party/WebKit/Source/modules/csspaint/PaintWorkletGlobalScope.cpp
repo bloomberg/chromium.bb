@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
+#include "bindings/core/v8/V8ObjectParser.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/modules/v8/V8PaintRenderingContext2DSettings.h"
 #include "core/CSSPropertyNames.h"
@@ -26,69 +27,36 @@ namespace blink {
 
 namespace {
 
-bool ParseInputProperties(v8::Isolate* isolate,
-                          v8::Local<v8::Context> context,
-                          v8::Local<v8::Function> constructor,
-                          Vector<CSSPropertyID>& native_invalidation_properties,
-                          Vector<AtomicString>& custom_invalidation_properties,
-                          ExceptionState& exception_state,
-                          v8::TryCatch& block) {
-  v8::Local<v8::Value> input_properties_value;
-  if (!constructor->Get(context, V8AtomicString(isolate, "inputProperties"))
-           .ToLocal(&input_properties_value)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-
-  if (!input_properties_value->IsNullOrUndefined()) {
-    Vector<String> properties =
-        NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
-            isolate, input_properties_value, exception_state);
-
-    if (exception_state.HadException())
-      return false;
-
-    for (const auto& property : properties) {
-      CSSPropertyID property_id = cssPropertyID(property);
-      if (property_id == CSSPropertyVariable) {
-        custom_invalidation_properties.push_back(std::move(property));
-      } else if (property_id != CSSPropertyInvalid) {
-        native_invalidation_properties.push_back(std::move(property_id));
-      }
-    }
-  }
-  return true;
-}
-
-bool ParseInputArguments(v8::Isolate* isolate,
-                         v8::Local<v8::Context> context,
+bool ParseInputArguments(v8::Local<v8::Context> context,
                          v8::Local<v8::Function> constructor,
-                         Vector<CSSSyntaxDescriptor>& input_argument_types,
-                         ExceptionState& exception_state,
-                         v8::TryCatch& block) {
+                         Vector<CSSSyntaxDescriptor>* input_argument_types,
+                         ExceptionState* exception_state) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::TryCatch block(isolate);
+
   if (RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled()) {
     v8::Local<v8::Value> input_argument_type_values;
     if (!constructor->Get(context, V8AtomicString(isolate, "inputArguments"))
              .ToLocal(&input_argument_type_values)) {
-      exception_state.RethrowV8Exception(block.Exception());
+      exception_state->RethrowV8Exception(block.Exception());
       return false;
     }
 
     if (!input_argument_type_values->IsNullOrUndefined()) {
       Vector<String> argument_types =
           NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
-              isolate, input_argument_type_values, exception_state);
+              isolate, input_argument_type_values, *exception_state);
 
-      if (exception_state.HadException())
+      if (exception_state->HadException())
         return false;
 
       for (const auto& type : argument_types) {
         CSSSyntaxDescriptor syntax_descriptor(type);
         if (!syntax_descriptor.IsValid()) {
-          exception_state.ThrowTypeError("Invalid argument types.");
+          exception_state->ThrowTypeError("Invalid argument types.");
           return false;
         }
-        input_argument_types.push_back(std::move(syntax_descriptor));
+        input_argument_types->push_back(std::move(syntax_descriptor));
       }
     }
   }
@@ -96,73 +64,23 @@ bool ParseInputArguments(v8::Isolate* isolate,
 }
 
 bool ParsePaintRenderingContext2DSettings(
-    v8::Isolate* isolate,
     v8::Local<v8::Context> context,
     v8::Local<v8::Function> constructor,
-    PaintRenderingContext2DSettings& context_settings,
-    ExceptionState& exception_state,
-    v8::TryCatch& block) {
+    PaintRenderingContext2DSettings* context_settings,
+    ExceptionState* exception_state) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::TryCatch block(isolate);
+
   v8::Local<v8::Value> context_settings_value;
   if (!constructor->Get(context, V8AtomicString(isolate, "contextOptions"))
            .ToLocal(&context_settings_value)) {
-    exception_state.RethrowV8Exception(block.Exception());
+    exception_state->RethrowV8Exception(block.Exception());
     return false;
   }
-  V8PaintRenderingContext2DSettings::ToImpl(isolate, context_settings_value,
-                                            context_settings, exception_state);
-  if (exception_state.HadException())
+  V8PaintRenderingContext2DSettings::ToImpl(
+      isolate, context_settings_value, *context_settings, *exception_state);
+  if (exception_state->HadException())
     return false;
-  return true;
-}
-
-bool ParsePaintFunction(v8::Isolate* isolate,
-                        v8::Local<v8::Context> context,
-                        v8::Local<v8::Function> constructor,
-                        v8::Local<v8::Function>& paint,
-                        ExceptionState& exception_state,
-                        v8::TryCatch& block) {
-  v8::Local<v8::Value> prototype_value;
-  if (!constructor->Get(context, V8AtomicString(isolate, "prototype"))
-           .ToLocal(&prototype_value)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-
-  if (prototype_value->IsNullOrUndefined()) {
-    exception_state.ThrowTypeError(
-        "The 'prototype' object on the class does not exist.");
-    return false;
-  }
-
-  if (!prototype_value->IsObject()) {
-    exception_state.ThrowTypeError(
-        "The 'prototype' property on the class is not an object.");
-    return false;
-  }
-
-  v8::Local<v8::Object> prototype =
-      v8::Local<v8::Object>::Cast(prototype_value);
-
-  v8::Local<v8::Value> paint_value;
-  if (!prototype->Get(context, V8AtomicString(isolate, "paint"))
-           .ToLocal(&paint_value)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-
-  if (paint_value->IsNullOrUndefined()) {
-    exception_state.ThrowTypeError(
-        "The 'paint' function on the prototype does not exist.");
-    return false;
-  }
-
-  if (!paint_value->IsFunction()) {
-    exception_state.ThrowTypeError(
-        "The 'paint' property on the prototype is not a function.");
-    return false;
-  }
-
-  paint = v8::Local<v8::Function>::Cast(paint_value);
   return true;
 }
 
@@ -222,8 +140,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     return;
   }
 
-  v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
   v8::Local<v8::Context> context = ScriptController()->GetContext();
+
   DCHECK(ctor_value.V8Value()->IsFunction());
   v8::Local<v8::Function> constructor =
       v8::Local<v8::Function>::Cast(ctor_value.V8Value());
@@ -231,28 +149,32 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   Vector<CSSPropertyID> native_invalidation_properties;
   Vector<AtomicString> custom_invalidation_properties;
 
-  v8::TryCatch block(isolate);
-  if (!ParseInputProperties(
-          isolate, context, constructor, native_invalidation_properties,
-          custom_invalidation_properties, exception_state, block))
+  if (!V8ObjectParser::ParseCSSPropertyList(
+          context, constructor, "inputProperties",
+          &native_invalidation_properties, &custom_invalidation_properties,
+          &exception_state))
     return;
 
   // Get input argument types. Parse the argument type values only when
   // cssPaintAPIArguments is enabled.
   Vector<CSSSyntaxDescriptor> input_argument_types;
-  if (!ParseInputArguments(isolate, context, constructor, input_argument_types,
-                           exception_state, block))
+  if (!ParseInputArguments(context, constructor, &input_argument_types,
+                           &exception_state))
     return;
 
   PaintRenderingContext2DSettings context_settings;
-  if (!ParsePaintRenderingContext2DSettings(isolate, context, constructor,
-                                            context_settings, exception_state,
-                                            block))
+  if (!ParsePaintRenderingContext2DSettings(
+          context, constructor, &context_settings, &exception_state))
+    return;
+
+  v8::Local<v8::Object> prototype;
+  if (!V8ObjectParser::ParsePrototype(context, constructor, &prototype,
+                                      &exception_state))
     return;
 
   v8::Local<v8::Function> paint;
-  if (!ParsePaintFunction(isolate, context, constructor, paint, exception_state,
-                          block))
+  if (!V8ObjectParser::ParseFunction(context, prototype, "paint", &paint,
+                                     &exception_state))
     return;
 
   CSSPaintDefinition* definition = CSSPaintDefinition::Create(
