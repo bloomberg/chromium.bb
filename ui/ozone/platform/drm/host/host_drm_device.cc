@@ -179,27 +179,27 @@ void HostDrmDevice::RegisterHandlerForDrmOverlayManager(
     DrmOverlayManager* handler) {
   // TODO(rjkroege): Permit overlay manager to run in Viz when the display
   // compositor runs in Viz.
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   overlay_manager_ = handler;
 }
 
 void HostDrmDevice::UnRegisterHandlerForDrmOverlayManager() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   overlay_manager_ = nullptr;
 }
 
 bool HostDrmDevice::GpuCheckOverlayCapabilities(
     gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& overlays) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
   auto callback =
       base::BindOnce(&HostDrmDevice::GpuCheckOverlayCapabilitiesCallback, this);
 
-  drm_device_ptr_->CheckOverlayCapabilities(widget, overlays,
-                                            std::move(callback));
+  drm_device_ptr_compositor_->CheckOverlayCapabilities(widget, overlays,
+                                                       std::move(callback));
 
   return true;
 }
@@ -405,6 +405,13 @@ void HostDrmDevice::OnGpuServiceLaunched(
   // to an I/O thread by GpuProcessHost.
   cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
                                                     std::move(cursor_ptr_io));
+}
+
+void HostDrmDevice::OnGpuServiceLaunchedCompositor(
+    ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor) {
+  DETACH_FROM_THREAD(on_ui_thread_);
+  drm_device_ptr_compositor.Bind(drm_device_ptr_compositor.PassInterface());
+  drm_device_ptr_compositor_ = std::move(drm_device_ptr_compositor);
 }
 
 }  // namespace ui
