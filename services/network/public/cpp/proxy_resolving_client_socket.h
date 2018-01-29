@@ -1,8 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
-#define SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
 
 #include <stdint.h>
 
@@ -26,10 +26,8 @@
 #include "url/gurl.h"
 
 namespace net {
-class ClientSocketFactory;
 class ClientSocketHandle;
 class HttpNetworkSession;
-class URLRequestContextGetter;
 }  // namespace net
 
 namespace network {
@@ -43,21 +41,16 @@ namespace network {
 // exposed only through a mojo interface.
 class ProxyResolvingClientSocket : public net::StreamSocket {
  public:
-  // Constructs a new ProxyResolvingClientSocket. |socket_factory| is the
-  // ClientSocketFactory that will be used by the underlying HttpNetworkSession.
-  // If |socket_factory| is nullptr, the default socket factory
-  // (net::ClientSocketFactory::GetDefaultFactory()) will be used. |url|'s host
-  // and port specify where a connection will be established to. The full URL
-  // will be only used for proxy resolution. Caller doesn't need to explicitly
-  // sanitize the url, any sensitive data (like embedded usernames and
-  // passwords), and local data (i.e. reference fragment) will be sanitized by
+  // Constructs a new ProxyResolvingClientSocket. |url|'s host and port specify
+  // where a connection will be established to. The full URL will be only used
+  // for proxy resolution. Caller doesn't need to explicitly sanitize the url,
+  // any sensitive data (like embedded usernames and passwords), and local data
+  // (i.e. reference fragment) will be sanitized by
   // net::ProxyResolutionService::ResolveProxyHelper() before the url is
-  // disclosed to the proxy.
-  ProxyResolvingClientSocket(
-      net::ClientSocketFactory* socket_factory,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      const net::SSLConfig& ssl_config,
-      const GURL& url);
+  // disclosed to the proxy. |network_session| must outlive |this|.
+  ProxyResolvingClientSocket(net::HttpNetworkSession* network_session,
+                             const net::SSLConfig& ssl_config,
+                             const GURL& url);
   ~ProxyResolvingClientSocket() override;
 
   // net::StreamSocket implementation.
@@ -101,7 +94,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   void CloseTransportSocket();
   int ReconsiderProxyAfterError(int error);
 
-  std::unique_ptr<net::HttpNetworkSession> network_session_;
+  net::HttpNetworkSession* network_session_;
 
   // The transport socket.
   std::unique_ptr<net::ClientSocketHandle> transport_;
@@ -122,4 +115,4 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_

@@ -28,6 +28,7 @@
 #include "net/socket/datagram_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -262,8 +263,14 @@ void P2PSocketDispatcherHost::OnCreateSocket(
     return;
   }
 
+  if (!proxy_resolving_socket_factory_) {
+    proxy_resolving_socket_factory_ =
+        std::make_unique<network::ProxyResolvingClientSocketFactory>(
+            nullptr, url_context_->GetURLRequestContext());
+  }
   std::unique_ptr<P2PSocketHost> socket(P2PSocketHost::Create(
-      this, socket_id, type, url_context_.get(), &throttler_));
+      this, socket_id, type, url_context_.get(),
+      proxy_resolving_socket_factory_.get(), &throttler_));
 
   if (!socket) {
     Send(new P2PMsg_OnError(socket_id));

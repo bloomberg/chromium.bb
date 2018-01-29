@@ -27,6 +27,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class ProxyResolvingClientSocketFactory;
+}
+
 namespace rtc {
 struct PacketOptions;
 }
@@ -43,6 +47,8 @@ class CONTENT_EXPORT P2PSocketHost {
                                int socket_id,
                                P2PSocketType type,
                                net::URLRequestContextGetter* url_context,
+                               network::ProxyResolvingClientSocketFactory*
+                                   proxy_resolving_socket_factory,
                                P2PMessageThrottler* throttler);
 
   virtual ~P2PSocketHost();

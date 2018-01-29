@@ -157,6 +157,8 @@ int InitSocketHandleForWebSocketRequest(
 NET_EXPORT int InitSocketHandleForRawConnect(
     const HostPortPair& host_port_pair,
     HttpNetworkSession* session,
+    int request_load_flags,
+    RequestPriority request_priority,
     const ProxyInfo& proxy_info,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,

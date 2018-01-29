@@ -20,6 +20,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
+namespace network {
+class ProxyResolvingClientSocketFactory;
+}  // namespace network
+
 namespace net {
 class DrainableIOBuffer;
 class GrowableIOBuffer;
@@ -34,7 +38,9 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   P2PSocketHostTcpBase(IPC::Sender* message_sender,
                        int socket_id,
                        P2PSocketType type,
-                       net::URLRequestContextGetter* url_context);
+                       net::URLRequestContextGetter* url_context,
+                       network::ProxyResolvingClientSocketFactory*
+                           proxy_resolving_socket_factory);
   ~P2PSocketHostTcpBase() override;
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
@@ -116,6 +122,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   bool connected_;
   P2PSocketType type_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
+  network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpBase);
 };
@@ -125,7 +132,10 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
   P2PSocketHostTcp(IPC::Sender* message_sender,
                    int socket_id,
                    P2PSocketType type,
-                   net::URLRequestContextGetter* url_context);
+                   net::URLRequestContextGetter* url_context,
+                   network::ProxyResolvingClientSocketFactory*
+                       proxy_resolving_socket_factory);
+
   ~P2PSocketHostTcp() override;
 
  protected:
@@ -149,7 +159,9 @@ class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
   P2PSocketHostStunTcp(IPC::Sender* message_sender,
                        int socket_id,
                        P2PSocketType type,
-                       net::URLRequestContextGetter* url_context);
+                       net::URLRequestContextGetter* url_context,
+                       network::ProxyResolvingClientSocketFactory*
+                           proxy_resolving_socket_factory);
 
   ~P2PSocketHostStunTcp() override;
 
