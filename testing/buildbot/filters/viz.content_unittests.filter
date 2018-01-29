@@ -1,8 +1,5 @@
--RenderWidgetHostInitialSizeTest.InitialSize
 -RenderWidgetHostTest.FrameToken_RendererCrash
 -RenderWidgetHostTest.NewContentRenderingTimeout
--RenderWidgetHostTest.Resize
--RenderWidgetHostTest.ResizeThenCrash
 -RenderWidgetHostTest.SwapCompositorFrameWithBadSourceId
 -RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
 -RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
@@ -12,16 +9,11 @@
 -RenderWidgetHostViewAuraSurfaceSynchronizationTest.DropFallbackWhenHidden
 -RenderWidgetHostViewAuraSurfaceSynchronizationTest.SurfaceChanges
 -RenderWidgetHostViewAuraTest.BackgroundColorMatchesCompositorFrame
--RenderWidgetHostViewAuraTest.DelegatedFrameGutter
--RenderWidgetHostViewAuraTest.DiscardDelegatedFrames
 -RenderWidgetHostViewAuraTest.DiscardDelegatedFramesWithLocking
 -RenderWidgetHostViewAuraTest.DiscardDelegatedFramesWithMemoryPressure
 -RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
 -RenderWidgetHostViewAuraTest.HitTestRegionListSubmitted
--RenderWidgetHostViewAuraTest.MissingFramesDontLock
 -RenderWidgetHostViewAuraTest.OutputSurfaceIdChange
--RenderWidgetHostViewAuraTest.ResizeAfterReceivingFrame
--RenderWidgetHostViewAuraTest.SkippedDelegatedFrames
 -RenderWidgetHostViewAuraTest.TwoOutputSurfaces
 -RenderWidgetHostViewChildFrameTest.FrameEviction
 -RenderWidgetHostViewChildFrameTest.SwapCompositorFrame
@@ -32,4 +24,3 @@
 
 # TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
 -ReflectorImplTest.*
--WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange
