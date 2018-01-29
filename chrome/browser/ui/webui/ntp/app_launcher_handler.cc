@@ -298,7 +298,7 @@ void AppLauncherHandler::Observe(int type,
               crx_installer->profile())) {
         return;
       }
-      // Fall through.
+      FALLTHROUGH;
     }
     case extensions::NOTIFICATION_EXTENSION_LOAD_ERROR: {
       attempted_bookmark_app_install_ = false;
