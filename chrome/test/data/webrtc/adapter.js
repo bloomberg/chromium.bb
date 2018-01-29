@@ -1,4 +1,9 @@
-var RTCPeerConnection = null;
+/**
+ * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 var getUserMedia = null;
 var attachMediaStream = null;
 var reattachMediaStream = null;
@@ -20,9 +25,6 @@ if (navigator.mozGetUserMedia) {
 
   webrtcDetectedVersion =
                   parseInt(navigator.userAgent.match(/Firefox\/([0-9]+)\./)[1]);
-
-  // The RTCPeerConnection object.
-  RTCPeerConnection = mozRTCPeerConnection;
 
   // The RTCSessionDescription object.
   RTCSessionDescription = mozRTCSessionDescription;
@@ -97,9 +99,6 @@ if (navigator.mozGetUserMedia) {
     return iceServer;
   };
 
-  // The RTCPeerConnection object.
-  RTCPeerConnection = webkitRTCPeerConnection;
-
   // Get UserMedia (only difference is the prefix).
   // Code from Adam Barth.
   getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
@@ -120,27 +119,6 @@ if (navigator.mozGetUserMedia) {
   reattachMediaStream = function(to, from) {
     to.src = from.src;
   };
-
-  // The representation of tracks in a stream is changed in M26.
-  // Unify them for earlier Chrome versions in the coexisting period.
-  if (!webkitMediaStream.prototype.getVideoTracks) {
-    webkitMediaStream.prototype.getVideoTracks = function() {
-      return this.videoTracks;
-    };
-    webkitMediaStream.prototype.getAudioTracks = function() {
-      return this.audioTracks;
-    };
-  }
-
-  // New syntax of getXXXStreams method in M26.
-  if (!webkitRTCPeerConnection.prototype.getLocalStreams) {
-    webkitRTCPeerConnection.prototype.getLocalStreams = function() {
-      return this.localStreams;
-    };
-    webkitRTCPeerConnection.prototype.getRemoteStreams = function() {
-      return this.remoteStreams;
-    };
-  }
 } else {
   console.log("Browser does not appear to be WebRTC-capable");
 }
