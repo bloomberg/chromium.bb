@@ -14,9 +14,22 @@ if (current_cpu == "arm") {
 }
 
 declare_args() {
+  # TODO: send a PSA out to tell people to switch to blink_symbol_level
+  # and remove this.
   # If true, doesn't compile debug symbols into webcore reducing the
   # size of the binary and increasing the speed of gdb.
   remove_webcore_debug_symbols = false
+
+  # How many symbols to include in the build of blink. This affects
+  # the performance of the build since the symbols are large and dealing with
+  # them is slow.
+  #   2 means regular build with symbols.
+  #   1 means minimal symbols, usually enough for backtraces only. Symbols with
+  # internal linkage (static functions or those in anonymous namespaces) may not
+  # appear when using this level.
+  #   0 means no symbols.
+  #   -1 means auto-set according to debug/release and platform.
+  blink_symbol_level = -1
 
   # If true, defaults image interpolation to low quality.
   use_low_quality_image_interpolation = is_android
@@ -63,6 +76,9 @@ if (use_default_render_theme) {
   feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
 }
 
+assert(blink_symbol_level == -1 || !remove_webcore_debug_symbols,
+       "blink_symbol_level and remove_webcore_debug_symbols cannot both be set.")
+
 if (remove_webcore_debug_symbols) {
   if (is_win && symbol_level != 0) {
     # If we use no_symbols on Windows when symbol_level is not zero then no
@@ -71,9 +87,18 @@ if (remove_webcore_debug_symbols) {
     # situation keeps the build times fast (roughly identical to no_symbols)
     # while still generating a PDB to keep ninja happy (and it gives us proper
     # call stacks).
-    remove_webcore_symbols_config =
-        [ "//build/config/compiler:minimal_symbols" ]
+    blink_symbol_level = 1
   } else {
-    remove_webcore_symbols_config = [ "//build/config/compiler:no_symbols" ]
+    blink_symbol_level = 0
   }
+}
+
+if (blink_symbol_level == 2) {
+  blink_symbols_config = [ "//build/config/compiler:full_symbols" ]
+} else if (blink_symbol_level == 1) {
+  blink_symbols_config = [ "//build/config/compiler:minimal_symbols" ]
+} else if (blink_symbol_level == 0) {
+  blink_symbols_config = [ "//build/config/compiler:no_symbols" ]
+} else {
+  blink_symbols_config = [ "//build/config/compiler:default_symbols" ]
 }

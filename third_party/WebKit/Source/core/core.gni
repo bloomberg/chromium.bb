@@ -30,10 +30,8 @@ if (is_win && is_official_build) {
   core_config_add += [ "//build/config/compiler:optimize_max" ]
 }
 
-if (remove_webcore_debug_symbols) {
-  core_config_remove += [ "//build/config/compiler:default_symbols" ]
-  core_config_add += remove_webcore_symbols_config
-}
+core_config_remove += [ "//build/config/compiler:default_symbols" ]
+core_config_add += blink_symbols_config
 
 # Use this target type to link core targets.
 if (is_component_build) {
