@@ -111,8 +111,10 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           break;
         case GL_RGB_INTEGER:
           dst_format = WebGLImageConversion::kDataFormatRGB16_S;
+          break;
         case GL_RGBA_INTEGER:
           dst_format = WebGLImageConversion::kDataFormatRGBA16_S;
+          break;
         default:
           return WebGLImageConversion::kDataFormatNumFormats;
       }

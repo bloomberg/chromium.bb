@@ -189,6 +189,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
         break;
       case GL_MAX_TEXTURE_SIZE:
         *value = 1024;
+        break;
       default:
         break;
     }
