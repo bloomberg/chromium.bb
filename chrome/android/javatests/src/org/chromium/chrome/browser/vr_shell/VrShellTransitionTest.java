@@ -194,6 +194,7 @@ public class VrShellTransitionTest {
      */
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     public void testExitFullscreenAfterExitingVrFromCinemaMode()
             throws InterruptedException, TimeoutException {
@@ -262,6 +263,7 @@ public class VrShellTransitionTest {
     @Test
     @CommandLineFlags.Add("enable-webvr")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     public void testWebVrReEntryFromVrBrowser() throws InterruptedException, TimeoutException {
         VrTransitionUtils.forceEnterVr();
