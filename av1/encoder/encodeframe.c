@@ -394,6 +394,7 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
       for (int idx = 0; idx < xd->n8_w; ++idx)
         mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
     }
+    mbmi->min_tx_size = mbmi->tx_size;
   }
 }
 
