@@ -521,14 +521,6 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     return;
   }
 
-  // No-op if the event was a right-click or two-finger tap.
-  if ((event->IsGestureEvent() &&
-       event->AsGestureEvent()->type() == ui::ET_GESTURE_TWO_FINGER_TAP) ||
-      (event->IsMouseEvent() &&
-       event->AsMouseEvent()->IsOnlyRightMouseButton())) {
-    return;
-  }
-
   if (!search_box_view_->is_search_box_active()) {
     Dismiss();
     return;

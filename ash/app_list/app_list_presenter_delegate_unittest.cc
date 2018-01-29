@@ -755,43 +755,26 @@ TEST_F(AppListPresenterDelegateTest, WhitespaceQuery) {
   EXPECT_EQ(app_list::AppListViewState::PEEKING, view->app_list_state());
 }
 
-// Tests that an unhandled two finger tap/right click does not close the app
-// list, and an unhandled one finger tap/left click closes the app list in
-// Peeking mode.
+// Tests that an unhandled tap/click in Peeking mode closes the app
+// list.
 TEST_P(AppListPresenterDelegateTest, UnhandledEventOnPeeking) {
   app_list_presenter_impl()->ShowAndRunLoop(GetPrimaryDisplayId());
   app_list::AppListView* view = app_list_presenter_impl()->GetView();
   ASSERT_EQ(app_list::AppListViewState::PEEKING, view->app_list_state());
 
-  // Two finger tap or right click in the empty space below the searchbox. The
-  // app list should not close.
+  // Tap or click in the empty space below the searchbox. The app list should
+  // close.
   gfx::Point empty_space =
       view->search_box_view()->GetBoundsInScreen().bottom_left();
   empty_space.Offset(0, 10);
   ui::test::EventGenerator& generator = GetEventGenerator();
   if (TestMouseEventParam()) {
     generator.MoveMouseTo(empty_space);
-    generator.PressRightButton();
-    generator.ReleaseRightButton();
-  } else {
-    ui::TouchEvent two_finger_tap(
-        ui::ET_GESTURE_TWO_FINGER_TAP, empty_space, base::TimeTicks::Now(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
-    generator.Dispatch(&two_finger_tap);
-  }
-
-  EXPECT_EQ(app_list::AppListViewState::PEEKING, view->app_list_state());
-  EXPECT_TRUE(app_list_presenter_impl()->IsVisible());
-
-  // One finger tap or left click in the empty space below the searchbox. The
-  // app list should close.
-  if (TestMouseEventParam()) {
-    generator.MoveMouseTo(empty_space);
     generator.ClickLeftButton();
+    generator.ReleaseLeftButton();
   } else {
     generator.GestureTapAt(empty_space);
   }
-
   EXPECT_EQ(app_list::AppListViewState::CLOSED, view->app_list_state());
   EXPECT_FALSE(app_list_presenter_impl()->IsVisible());
 }
