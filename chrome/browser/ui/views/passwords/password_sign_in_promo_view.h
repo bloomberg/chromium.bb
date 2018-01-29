@@ -18,6 +18,7 @@ class PasswordSignInPromoView : public views::View {
 
   bool Accept();
   bool Cancel();
+  int GetDialogButtons() const;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
 
  private:

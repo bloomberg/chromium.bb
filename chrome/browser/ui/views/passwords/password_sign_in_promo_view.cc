@@ -6,16 +6,27 @@
 
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 PasswordSignInPromoView::PasswordSignInPromoView(
     ManagePasswordsBubbleModel* model)
     : model_(model) {
   base::RecordAction(
       base::UserMetricsAction("Signin_Impression_FromPasswordBubble"));
+
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_LABEL),
+      CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMultiLine(true);
+
+  AddChildView(label.release());
 }
 
 bool PasswordSignInPromoView::Accept() {
@@ -24,14 +35,16 @@ bool PasswordSignInPromoView::Accept() {
 }
 
 bool PasswordSignInPromoView::Cancel() {
-  model_->OnSkipSignInClicked();
+  NOTREACHED();
   return true;
+}
+
+int PasswordSignInPromoView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 PasswordSignInPromoView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK
-          ? IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN
-          : IDS_PASSWORD_MANAGER_SIGNIN_PROMO_NO_THANKS);
+  DCHECK(button == ui::DIALOG_BUTTON_OK);
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE);
 }

@@ -58,6 +58,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   // PasswordBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
+  int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void AddedToWidget() override;
   gfx::ImageSkia GetWindowIcon() override;
