@@ -54,14 +54,19 @@ class ASH_EXPORT MessageListView : public views::View,
   // Return the number of the valid notification. This traverse the items so it
   // costs O(n) time, where n is the number of total notifications.
   size_t GetNotificationCount() const;
+
+  // SetRepositionTarget sets the target that the physical location of
+  // the notification at |target_rect| does not change after the repositining.
+  // Repositioning is a process to change the positions of the notifications,
+  // which is caused by addition/modification/removal of notifications.
+  // The term is almost interchangeable with animation.
   void SetRepositionTarget(const gfx::Rect& target_rect);
+
   void ResetRepositionSession();
   void ClearAllClosableNotifications(const gfx::Rect& visible_scroll_rect);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  void SetRepositionTargetForTest(const gfx::Rect& target_rect);
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 

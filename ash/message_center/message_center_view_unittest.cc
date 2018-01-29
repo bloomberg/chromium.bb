@@ -479,7 +479,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateBelowWithRepositionTarget) {
   EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
             GetNotificationView(kNotificationId1)->bounds().y());
 
-  GetMessageListView()->SetRepositionTargetForTest(
+  GetMessageListView()->SetRepositionTarget(
       GetNotificationView(kNotificationId1)->bounds());
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
@@ -509,7 +509,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateOfRepositionTarget) {
   EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
             GetNotificationView(kNotificationId1)->bounds().y());
 
-  GetMessageListView()->SetRepositionTargetForTest(
+  GetMessageListView()->SetRepositionTarget(
       GetNotificationView(kNotificationId1)->bounds());
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
@@ -555,7 +555,7 @@ TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
   int previous_vertical_pos_from_bottom =
       GetMessageListView()->height() -
       GetNotificationView(kNotificationId1)->bounds().y();
-  GetMessageListView()->SetRepositionTargetForTest(
+  GetMessageListView()->SetRepositionTarget(
       GetNotificationView(kNotificationId1)->bounds());
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
@@ -582,7 +582,7 @@ TEST_F(MessageCenterViewTest, PositionAfterRemove) {
   EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
             GetNotificationView(kNotificationId1)->bounds().y());
 
-  GetMessageListView()->SetRepositionTargetForTest(
+  GetMessageListView()->SetRepositionTarget(
       GetNotificationView(kNotificationId2)->bounds());
   int previous_height = GetMessageListView()->height();
   int previous_notification2_y =
