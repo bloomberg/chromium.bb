@@ -176,6 +176,9 @@ const int kInitializationDelaySeconds = 5;
 const int kInitializationDelaySeconds = 30;
 #endif
 
+// The browser last live timestamp is updated every 15 minutes.
+const int kUpdateAliveTimestampSeconds = 15 * 60;
+
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
@@ -267,6 +270,14 @@ void MetricsService::StartRecordingForTests() {
   test_mode_active_ = true;
   EnableRecording();
   DisableReporting();
+}
+
+void MetricsService::StartUpdatingLastLiveTimestamp() {
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&MetricsService::UpdateLastLiveTimestampTask,
+                     self_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kUpdateAliveTimestampSeconds));
 }
 
 void MetricsService::Stop() {
@@ -898,6 +909,13 @@ void MetricsService::LogCleanShutdown(bool end_completed) {
   state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
   SetExecutionPhase(ExecutionPhase::SHUTDOWN_COMPLETE, local_state_);
   StabilityMetricsProvider(local_state_).MarkSessionEndCompleted(end_completed);
+}
+
+void MetricsService::UpdateLastLiveTimestampTask() {
+  state_manager_->clean_exit_beacon()->UpdateLastLiveTimestamp();
+
+  // Schecule the next update.
+  StartUpdatingLastLiveTimestamp();
 }
 
 }  // namespace metrics

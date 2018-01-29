@@ -39,6 +39,11 @@ namespace metrics {
 
 namespace {
 
+void YieldUntil(base::Time when) {
+  while (base::Time::Now() <= when)
+    base::PlatformThread::YieldCurrentThread();
+}
+
 void StoreNoClientInfoBackup(const ClientInfo& /* client_info */) {
 }
 
@@ -392,6 +397,48 @@ TEST_F(MetricsServiceTest, SplitRotation) {
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+}
+
+TEST_F(MetricsServiceTest, LastLiveTimestamp) {
+  TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client,
+                             GetLocalState());
+
+  base::Time initial_last_live_time =
+      GetLocalState()->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp);
+
+  service.InitializeMetricsRecordingState();
+  service.Start();
+
+  task_runner_->RunPendingTasks();
+  size_t num_pending_tasks = task_runner_->NumPendingTasks();
+
+  service.StartUpdatingLastLiveTimestamp();
+
+  // Starting the update sequence should not write anything, but should
+  // set up for a later write.
+  EXPECT_EQ(
+      initial_last_live_time,
+      GetLocalState()->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp));
+  EXPECT_EQ(num_pending_tasks + 1, task_runner_->NumPendingTasks());
+
+  // To avoid flakiness, yield until we're over a microsecond threshold.
+  YieldUntil(initial_last_live_time + base::TimeDelta::FromMicroseconds(2));
+
+  task_runner_->RunPendingTasks();
+
+  // Verify that the time has updated in local state.
+  base::Time updated_last_live_time =
+      GetLocalState()->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp);
+  EXPECT_LT(initial_last_live_time, updated_last_live_time);
+
+  // Double check that an update schedules again...
+  YieldUntil(updated_last_live_time + base::TimeDelta::FromMicroseconds(2));
+
+  task_runner_->RunPendingTasks();
+  EXPECT_LT(
+      updated_last_live_time,
+      GetLocalState()->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp));
 }
 
 }  // namespace metrics

@@ -78,6 +78,9 @@ class MetricsService : public base::HistogramFlattener {
   // memory.
   void StartRecordingForTests();
 
+  // Starts updating the "last live" browser timestamp.
+  void StartUpdatingLastLiveTimestamp();
+
   // Shuts down the metrics system. Should be called at shutdown, or if metrics
   // are turned off.
   void Stop();
@@ -313,6 +316,9 @@ class MetricsService : public base::HistogramFlattener {
   // Records one independent histogram log and then reschedules itself to
   // check for others. The interval is so as to not adversely impact the UI.
   void PrepareProviderMetricsTask();
+
+  // Updates the "last live" browser timestamp and schedules the next update.
+  void UpdateLastLiveTimestampTask();
 
   // Sub-service for uploading logs.
   MetricsReportingService reporting_service_;
