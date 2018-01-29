@@ -99,7 +99,8 @@ void MessageTransferOperation::Initialize() {
 void MessageTransferOperation::OnSecureChannelStatusChanged(
     const std::string& device_id,
     const cryptauth::SecureChannel::Status& old_status,
-    const cryptauth::SecureChannel::Status& new_status) {
+    const cryptauth::SecureChannel::Status& new_status,
+    BleConnectionManager::StateChangeDetail status_change_detail) {
   cryptauth::RemoteDevice* remote_device = GetRemoteDevice(device_id);
   if (!remote_device) {
     // If the device whose status has changed does not correspond to any of the
@@ -107,6 +108,9 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
     // status change.
     return;
   }
+
+  // TODO(khorimoto): Use |status_change_detail| to provide better retry
+  // handling. See https://crbug.com/805218.
 
   if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
     StartTimerForDevice(*remote_device);

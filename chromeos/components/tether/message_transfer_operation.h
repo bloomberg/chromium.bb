@@ -35,7 +35,8 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   void OnSecureChannelStatusChanged(
       const std::string& device_id,
       const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status) override;
+      const cryptauth::SecureChannel::Status& new_status,
+      BleConnectionManager::StateChangeDetail status_change_detail) override;
   void OnMessageReceived(const std::string& device_id,
                          const std::string& payload) override;
   void OnMessageSent(int sequence_number) override {}

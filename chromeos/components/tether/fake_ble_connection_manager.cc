@@ -34,7 +34,8 @@ FakeBleConnectionManager::~FakeBleConnectionManager() = default;
 
 void FakeBleConnectionManager::SetDeviceStatus(
     const std::string& device_id,
-    const cryptauth::SecureChannel::Status& status) {
+    const cryptauth::SecureChannel::Status& status,
+    BleConnectionManager::StateChangeDetail state_change_detail) {
   const auto iter = device_id_map_.find(device_id);
   DCHECK(iter != device_id_map_.end());
 
@@ -45,18 +46,31 @@ void FakeBleConnectionManager::SetDeviceStatus(
   }
 
   iter->second.status = status;
-  SendSecureChannelStatusChangeEvent(device_id, old_status, status);
+  NotifySecureChannelStatusChanged(device_id, old_status, status,
+                                   state_change_detail);
 }
 
 void FakeBleConnectionManager::ReceiveMessage(const std::string& device_id,
                                               const std::string& payload) {
   DCHECK(device_id_map_.find(device_id) != device_id_map_.end());
-  SendMessageReceivedEvent(device_id, payload);
+  NotifyMessageReceived(device_id, payload);
 }
 
 void FakeBleConnectionManager::SetMessageSent(int sequence_number) {
   DCHECK(sequence_number < next_sequence_number_);
-  SendMessageSentEvent(sequence_number);
+  NotifyMessageSent(sequence_number);
+}
+
+void FakeBleConnectionManager::SimulateFailedConnectionAttempts(
+    const std::string& device_id,
+    size_t num_attempts) {
+  for (size_t i = 0; i < num_attempts; ++i) {
+    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::CONNECTING,
+                    StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
+    SetDeviceStatus(
+        device_id, cryptauth::SecureChannel::Status::DISCONNECTED,
+        StateChangeDetail::STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
+  }
 }
 
 bool FakeBleConnectionManager::IsRegistered(const std::string& device_id) {

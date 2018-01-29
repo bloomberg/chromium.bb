@@ -21,6 +21,8 @@ namespace tether {
 
 namespace {
 
+const size_t kMaxConnectionAttemptsPerDevice = 3;
+
 // Arbitrarily chosen value. The MessageType used in this test does not matter
 // except that it must be consistent throughout the test.
 const MessageType kTestMessageType = MessageType::TETHER_AVAILABILITY_REQUEST;
@@ -194,16 +196,20 @@ class MessageTransferOperationTest : public testing::Test {
 
     fake_ble_connection_manager_->SetDeviceStatus(
         remote_device.GetDeviceId(),
-        cryptauth::SecureChannel::Status::CONNECTING);
+        cryptauth::SecureChannel::Status::CONNECTING,
+        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
     fake_ble_connection_manager_->SetDeviceStatus(
         remote_device.GetDeviceId(),
-        cryptauth::SecureChannel::Status::CONNECTED);
+        cryptauth::SecureChannel::Status::CONNECTED,
+        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
     fake_ble_connection_manager_->SetDeviceStatus(
         remote_device.GetDeviceId(),
-        cryptauth::SecureChannel::Status::AUTHENTICATING);
+        cryptauth::SecureChannel::Status::AUTHENTICATING,
+        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
     fake_ble_connection_manager_->SetDeviceStatus(
         remote_device.GetDeviceId(),
-        cryptauth::SecureChannel::Status::AUTHENTICATED);
+        cryptauth::SecureChannel::Status::AUTHENTICATED,
+        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
   }
 
   base::MockTimer* GetTimerForDevice(
@@ -243,20 +249,26 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
   // Try to connect and fail. The device should still be registered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
+      cryptauth::SecureChannel::Status::CONNECTING,
+      BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      cryptauth::SecureChannel::Status::DISCONNECTED,
+      BleConnectionManager::StateChangeDetail::
+          STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
 
   // Try and fail again. The device should still be registered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
+      cryptauth::SecureChannel::Status::CONNECTING,
+      BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      cryptauth::SecureChannel::Status::DISCONNECTED,
+      BleConnectionManager::StateChangeDetail::
+          STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
 
@@ -264,10 +276,13 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
   // so the device should be unregistered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
+      cryptauth::SecureChannel::Status::CONNECTING,
+      BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      cryptauth::SecureChannel::Status::DISCONNECTED,
+      BleConnectionManager::StateChangeDetail::
+          STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
   VerifyOperationStartedAndFinished(true /* has_started */,
@@ -286,10 +301,13 @@ TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
   // Try to connect and fail. The device should still be registered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
+      cryptauth::SecureChannel::Status::CONNECTING,
+      BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      cryptauth::SecureChannel::Status::DISCONNECTED,
+      BleConnectionManager::StateChangeDetail::
+          STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
 
@@ -547,24 +565,8 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   // Fail 3 times to connect to |test_devices_[1]|.
   test_timer_factory_->set_device_id_for_next_timer(
       test_devices_[1].GetDeviceId());
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_ble_connection_manager_->SimulateFailedConnectionAttempts(
+      test_devices_[1].GetDeviceId(), kMaxConnectionAttemptsPerDevice);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[1]));
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[1].GetDeviceId()));
@@ -582,24 +584,8 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   // Fail 3 times to connect to |test_devices_[3]|.
   test_timer_factory_->set_device_id_for_next_timer(
       test_devices_[3].GetDeviceId());
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3].GetDeviceId(),
-      cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3].GetDeviceId(),
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_ble_connection_manager_->SimulateFailedConnectionAttempts(
+      test_devices_[3].GetDeviceId(), kMaxConnectionAttemptsPerDevice);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[3]));
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[3].GetDeviceId()));

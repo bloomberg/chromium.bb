@@ -26,10 +26,18 @@ class FakeBleConnectionManager : public BleConnectionManager {
     std::string message;
   };
 
-  void SetDeviceStatus(const std::string& device_id,
-                       const cryptauth::SecureChannel::Status& status);
+  void SetDeviceStatus(
+      const std::string& device_id,
+      const cryptauth::SecureChannel::Status& status,
+      BleConnectionManager::StateChangeDetail state_change_detail);
   void ReceiveMessage(const std::string& device_id, const std::string& payload);
   void SetMessageSent(int sequence_number);
+
+  // Simulates |num_attempts| consecutive failed connection attempts for the
+  // device with ID |device_id|. Specifically, this function updates the
+  // device's status to CONNECTING then DISCONNECTED on each attempt.
+  void SimulateFailedConnectionAttempts(const std::string& device_id,
+                                        size_t num_attempts);
 
   std::vector<SentMessage>& sent_messages() { return sent_messages_; }
   // Returns -1 if no sequence numbers have been used yet.
