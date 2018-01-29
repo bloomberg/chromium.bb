@@ -1,5 +1,8 @@
+# Please consult components/viz/README.md about allowable dependencies.
+
 include_rules = [
   "+cc",
+  "-components/viz/common/features.h",
   "-components/viz/common/switches.h",
   "+components/viz/service",
   "+services/viz/privileged/interfaces",
