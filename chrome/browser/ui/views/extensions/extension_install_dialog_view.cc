@@ -193,13 +193,6 @@ class CustomScrollableView : public views::View {
       : parent_(parent) {}
   ~CustomScrollableView() override {}
 
-  gfx::Size CalculatePreferredSize() const override {
-    const int content_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                  DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                              GetInsets().width();
-    return gfx::Size(content_width, GetHeightForWidth(content_width));
-  }
-
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
@@ -283,8 +276,8 @@ void ExtensionInstallDialogView::CreateContents() {
   extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  const int content_width =
-      extension_info_container->GetPreferredSize().width();
+  const int content_width = GetPreferredSize().width() -
+                            extension_info_container->GetInsets().width();
 
   std::vector<ExtensionInfoSection> sections;
   if (prompt_->ShouldShowPermissions()) {
@@ -455,6 +448,13 @@ void ExtensionInstallDialogView::ResizeWidget() {
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
+gfx::Size ExtensionInstallDialogView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
+}
+
 void ExtensionInstallDialogView::AddedToWidget() {
   auto title_container = std::make_unique<views::View>();
 
@@ -466,11 +466,14 @@ void ExtensionInstallDialogView::AddedToWidget() {
   constexpr int icon_size = extension_misc::EXTENSION_ICON_SMALL;
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                         0, views::GridLayout::FIXED, icon_size, 0);
+
   // Equalize padding on the left and the right of the icon.
   column_set->AddPaddingColumn(
       0, provider->GetInsetsMetric(views::INSETS_DIALOG).left());
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+  // Set a resize weight so that the title label will be expanded to the
+  // available width.
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
   const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
@@ -486,6 +489,9 @@ void ExtensionInstallDialogView::AddedToWidget() {
   std::unique_ptr<views::Label> title_label =
       views::BubbleFrameView::CreateDefaultTitleLabel(
           prompt_->GetDialogTitle());
+  // Setting the title's preferred size to 0 ensures it won't influence the
+  // overall size of the dialog. It will be expanded by GridLayout.
+  title_label->SetPreferredSize(gfx::Size(0, 0));
   if (prompt_->has_webstore_data()) {
     auto webstore_data_container = std::make_unique<views::View>();
     webstore_data_container->SetLayoutManager(
