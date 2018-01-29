@@ -84,6 +84,13 @@ void DevToolsSession::AttachToAgent(
       const WaitingMessage& message = pair.second;
       DispatchProtocolMessageToAgent(call_id, message.method, message.message);
     }
+  } else {
+    std::vector<SuspendedMessage> temp;
+    for (const auto& pair : waiting_for_response_messages_)
+      temp.push_back({pair.first, pair.second.method, pair.second.message});
+    suspended_messages_.insert(suspended_messages_.begin(), temp.begin(),
+                               temp.end());
+    waiting_for_response_messages_.clear();
   }
 
   // Set cookie to an empty string to reattach next time instead of attaching.
