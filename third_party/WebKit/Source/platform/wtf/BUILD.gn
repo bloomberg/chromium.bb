@@ -311,10 +311,8 @@ jumbo_component("wtf") {
     ]
   }
 
-  if (remove_webcore_debug_symbols) {
-    configs -= [ "//build/config/compiler:default_symbols" ]
-    configs += remove_webcore_symbols_config
-  }
+  configs -= [ "//build/config/compiler:default_symbols" ]
+  configs += blink_symbols_config
 }
 
 test("wtf_unittests") {
