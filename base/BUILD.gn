@@ -1280,6 +1280,7 @@ jumbo_component("base") {
 
     sources += [
       "base_paths_fuchsia.cc",
+      "base_paths_fuchsia.h",
       "debug/stack_trace_fuchsia.cc",
       "files/file_path_watcher_fuchsia.cc",
       "fuchsia/default_job.cc",
