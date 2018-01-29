@@ -860,15 +860,15 @@ void PasswordManager::OnLoginSuccessful() {
         bool is_sync_password_change =
             !provisional_save_manager_->submitted_form()
                  ->new_password_element.empty();
-        metrics_util::LogSyncPasswordHashChange(
-            is_sync_password_change
-                ? metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA
-                : metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
-        store->SaveSyncPasswordHash(
-            is_sync_password_change
-                ? provisional_save_manager_->submitted_form()
-                      ->new_password_value
-                : provisional_save_manager_->submitted_form()->password_value);
+        if (is_sync_password_change) {
+          store->SaveSyncPasswordHash(
+              provisional_save_manager_->submitted_form()->new_password_value,
+              metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA);
+        } else {
+          store->SaveSyncPasswordHash(
+              provisional_save_manager_->submitted_form()->password_value,
+              metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
+        }
       }
     }
 #endif

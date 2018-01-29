@@ -927,7 +927,9 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
 
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
-  store->SaveSyncPasswordHash(sync_password);
+  store->SaveSyncPasswordHash(
+      sync_password,
+      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
 
