@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import collections
 import errno
-import filecmp
 import fileinput
 import glob
 import itertools
@@ -69,7 +68,22 @@ UNITTEST_PACKAGE_BLACKLIST = set((
 # A structure to hold computed values of CROS_WORKON_*.
 CrosWorkonVars = collections.namedtuple(
     'CrosWorkonVars',
-    ('localname', 'project', 'srcpath', 'always_live', 'commit', 'rev_subdirs'))
+    ('localname', 'project', 'srcpath', 'always_live', 'commit', 'rev_subdirs',
+     'subtrees'))
+
+# EBuild source information computed from CrosWorkonVars.
+SourceInfo = collections.namedtuple(
+    'SourceInfo',
+    (
+        # List of project names.
+        'projects',
+        # List of source git directory paths. They are guaranteed to exist,
+        # be a directory.
+        'srcdirs',
+        # List of source paths under subdirs. Their existence is ensured by
+        # cros-workon.eclass. They can be directories or regular files.
+        'subtrees',
+    ))
 
 
 class MissingOverlayException(Exception):
@@ -336,7 +350,7 @@ class EBuild(object):
   VERBOSE = False
   _PACKAGE_VERSION_PATTERN = re.compile(
       r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
-  _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT="(.*)"$')
+  _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT=')
 
   @classmethod
   def _RunCommand(cls, command, **kwargs):
@@ -587,14 +601,21 @@ class EBuild(object):
 
   @staticmethod
   def GetCrosWorkonVars(ebuild_path, pkg_name):
-    """Return computed (as sourced ebuild script) values of:
+    """Return the finalized values of CROS_WORKON vars in an ebuild script.
 
-      * CROS_WORKON_LOCALNAME
-      * CROS_WORKON_PROJECT
-      * CROS_WORKON_SRCPATH
-      * CROS_WORKON_ALWAYS_LIVE
-      * CROS_WORKON_COMMIT
-      * CROS_WORKON_SUBDIRS_TO_REV
+    Args:
+      ebuild_path: Path to the ebuild file (e.g: platform2-9999.ebuild).
+      pkg_name: The package name (e.g.: platform2).
+
+    Returns:
+      A CrosWorkonVars tuple.
+    """
+    cros_workon_vars = EBuild._ReadCrosWorkonVars(ebuild_path, pkg_name)
+    return EBuild._FinalizeCrosWorkonVars(cros_workon_vars, ebuild_path)
+
+  @staticmethod
+  def _ReadCrosWorkonVars(ebuild_path, pkg_name):
+    """Return the raw values of CROS_WORKON vars in an ebuild script.
 
     Args:
       ebuild_path: Path to the ebuild file (e.g: platform2-9999.ebuild).
@@ -610,6 +631,7 @@ class EBuild(object):
         'CROS_WORKON_ALWAYS_LIVE',
         'CROS_WORKON_COMMIT',
         'CROS_WORKON_SUBDIRS_TO_REV',
+        'CROS_WORKON_SUBTREE',
     )
     env = {
         'CROS_WORKON_LOCALNAME': pkg_name,
@@ -641,41 +663,59 @@ class EBuild(object):
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     live = settings['CROS_WORKON_ALWAYS_LIVE']
     commit = settings.get('CROS_WORKON_COMMIT')
+    subtrees = [
+        tuple(subtree.split() or [''])
+        for subtree in settings.get('CROS_WORKON_SUBTREE', '').split(',')]
     if (len(projects) > 1 or len(srcpaths) > 1) and len(rev_subdirs) > 0:
       raise EbuildFormatIncorrectException(
           ebuild_path,
           'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
           'cros_workon projects or source paths.')
 
-    return CrosWorkonVars(localnames, projects, srcpaths, live, commit,
-                          rev_subdirs)
+    return CrosWorkonVars(
+        localname=localnames,
+        project=projects,
+        srcpath=srcpaths,
+        always_live=live,
+        commit=commit,
+        rev_subdirs=rev_subdirs,
+        subtrees=subtrees)
 
-  def GetSourcePath(self, srcroot, manifest):
-    """Get the project and path for this ebuild.
+  @staticmethod
+  def _FinalizeCrosWorkonVars(cros_workon_vars, ebuild_path):
+    """Finalize CrosWorkonVars tuple.
 
-    The path is guaranteed to exist, be a directory, and be absolute.
+    It is allowed to set different number of entries in CROS_WORKON array
+    variables. In that case, this function completes those variable so that
+    all variables have the same number of entries.
+
+    Args:
+      cros_workon_vars: A CrosWorkonVars tuple.
+      ebuild_path: Path to the ebuild file (e.g: platform2-9999.ebuild).
+
+    Returns:
+      A completed CrosWorkonVars tuple.
     """
-    localnames = self.cros_workon_vars.localname
-    projects = self.cros_workon_vars.project
-    srcpaths = self.cros_workon_vars.srcpath
-    always_live = self.cros_workon_vars.always_live
-
-    if always_live:
-      return [], []
+    localnames = cros_workon_vars.localname
+    projects = cros_workon_vars.project
+    srcpaths = cros_workon_vars.srcpath
+    subtrees = cros_workon_vars.subtrees
 
     # Sanity checks and completion.
     num_projects = len(projects)
+
     # Each project specification has to have the same amount of items.
     if num_projects != len(localnames):
       raise EbuildFormatIncorrectException(
-          self._unstable_ebuild_path,
+          ebuild_path,
           'Number of _PROJECT and _LOCALNAME items don\'t match.')
+
     # If both SRCPATH and PROJECT are defined, they must have the same number
     # of items.
     if len(srcpaths) > num_projects:
       if num_projects > 0:
         raise EbuildFormatIncorrectException(
-            self._unstable_ebuild_path,
+            ebuild_path,
             '_PROJECT has fewer items than _SRCPATH.')
       num_projects = len(srcpaths)
       projects = [''] * num_projects
@@ -683,13 +723,48 @@ class EBuild(object):
     elif len(srcpaths) < num_projects:
       if len(srcpaths) > 0:
         raise EbuildFormatIncorrectException(
-            self._unstable_ebuild_path,
+            ebuild_path,
             '_SRCPATH has fewer items than _PROJECT.')
       srcpaths = [''] * num_projects
+
     # We better have at least one PROJECT or SRCPATH value at this point.
     if num_projects == 0:
       raise EbuildFormatIncorrectException(
-          self._unstable_ebuild_path, 'No _PROJECT or _SRCPATH value found.')
+          ebuild_path, 'No _PROJECT or _SRCPATH value found.')
+
+    # Subtree must be either 1 or len(project).
+    if num_projects != len(subtrees):
+      if len(subtrees) > 1:
+        raise EbuildFormatIncorrectException(
+            ebuild_path, 'Incorrect number of _SUBTREE items.')
+      # Multiply by num_projects. Note that subtrees is a list of tuples, and
+      # there should be at least one element.
+      subtrees *= num_projects
+
+    return cros_workon_vars._replace(
+        localname=localnames,
+        project=projects,
+        srcpath=srcpaths,
+        subtrees=subtrees)
+
+  def GetSourceInfo(self, srcroot, manifest):
+    """Get source information for this ebuild.
+
+    Args:
+      srcroot: Full path to the "src" subdirectory in the source repository.
+      manifest: git.ManifestCheckout object.
+
+    Returns:
+      EBuild.SourceInfo namedtuple.
+    """
+    localnames = self.cros_workon_vars.localname
+    projects = self.cros_workon_vars.project
+    srcpaths = self.cros_workon_vars.srcpath
+    always_live = self.cros_workon_vars.always_live
+    subtrees = self.cros_workon_vars.subtrees
+
+    if always_live:
+      return SourceInfo(projects=[], srcdirs=[], subtrees=[])
 
     # Calculate srcdir (used for core packages).
     if self.category in ('chromeos-base', 'brillo-base'):
@@ -706,8 +781,9 @@ class EBuild(object):
         cros_build_lib.Die('_SRCPATH used but source path not found.')
 
     subdir_paths = []
-    rows = zip(localnames, projects, srcpaths)
-    for local, project, srcpath in rows:
+    subtree_paths = []
+    rows = zip(localnames, projects, srcpaths, subtrees)
+    for local, project, srcpath, subtree in rows:
       if srcpath:
         subdir_path = os.path.join(srcbase, srcpath)
         if not os.path.isdir(subdir_path):
@@ -731,8 +807,12 @@ class EBuild(object):
                                                           project))
 
       subdir_paths.append(subdir_path)
+      subtree_paths.extend(
+          os.path.join(subdir_path, s) if s else subdir_path
+          for s in subtree)
 
-    return projects, subdir_paths
+    return SourceInfo(
+        projects=projects, srcdirs=subdir_paths, subtrees=subtree_paths)
 
   def GetCommitId(self, srcdir):
     """Get the commit id for this ebuild."""
@@ -741,15 +821,26 @@ class EBuild(object):
       cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
     return output.rstrip()
 
-  def GetTreeId(self, srcdir):
+  def GetTreeId(self, path):
     """Get the SHA1 of the source tree for this ebuild.
 
     Unlike the commit hash, the SHA1 of the source tree is unaffected by the
     history of the repository, or by commit messages.
+
+    Given path can point a regular file, not a directory. If it does not exist,
+    None is returned.
     """
-    output = self._RunGit(srcdir, ['log', '-1', '--format=%T'])
+    if not os.path.exists(path):
+      return None
+    if os.path.isdir(path):
+      basedir = path
+      relpath = ''
+    else:
+      basedir = os.path.dirname(path)
+      relpath = os.path.basename(path)
+    output = self._RunGit(basedir, ['rev-parse', 'HEAD:./%s' % relpath])
     if not output:
-      cros_build_lib.Die('Cannot determine HEAD tree hash for %s' % srcdir)
+      cros_build_lib.Die('Cannot determine HEAD tree hash for %s' % path)
     return output.rstrip()
 
   def GetVersion(self, srcroot, manifest, default):
@@ -769,7 +860,7 @@ class EBuild(object):
           self._ebuild_path_no_version,
           'Package has a chromeos-version.sh script but is not workon-able.')
 
-    _, srcdirs = self.GetSourcePath(srcroot, manifest)
+    srcdirs = self.GetSourceInfo(srcroot, manifest).srcdirs
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
@@ -858,9 +949,11 @@ class EBuild(object):
     new_stable_ebuild_path = '%s-%s.ebuild' % (
         self._ebuild_path_no_version, new_version)
 
-    _, srcdirs = self.GetSourcePath(srcroot, manifest)
+    info = self.GetSourceInfo(srcroot, manifest)
+    srcdirs = info.srcdirs
+    subtrees = info.subtrees
     commit_ids = map(self.GetCommitId, srcdirs)
-    tree_ids = map(self.GetTreeId, srcdirs)
+    tree_ids = map(self.GetTreeId, subtrees)
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
@@ -906,7 +999,7 @@ class EBuild(object):
                       variables, redirect_file)
 
     old_ebuild_path = self.ebuild_path
-    if filecmp.cmp(old_ebuild_path, new_stable_ebuild_path, shallow=False):
+    if EBuild._AlmostSameEBuilds(old_ebuild_path, new_stable_ebuild_path):
       os.unlink(new_stable_ebuild_path)
       return
     else:
@@ -998,6 +1091,25 @@ class EBuild(object):
     manifest_branch = checkout['revision']
     branch = git.StripRefsHeads(manifest_branch)
     return helper.GetLatestSHA1ForBranch(project, branch)
+
+  @classmethod
+  def _AlmostSameEBuilds(cls, ebuild_path1, ebuild_path2):
+    """Checks if two ebuilds are the same except for CROS_WORKON_COMMIT line.
+
+    Even if CROS_WORKON_COMMIT is different, as long as CROS_WORKON_TREE is
+    the same, we can guarantee the source tree is identical.
+    """
+    return (
+        cls._LoadEBuildForComparison(ebuild_path1) ==
+        cls._LoadEBuildForComparison(ebuild_path2))
+
+  @classmethod
+  def _LoadEBuildForComparison(cls, ebuild_path):
+    """Loads an ebuild file dropping CROS_WORKON_COMMIT line."""
+    lines = osutils.ReadFile(ebuild_path).splitlines()
+    return '\n'.join(
+        line for line in lines
+        if not cls._WORKON_COMMIT_PATTERN.search(line))
 
 
 class PortageDBException(Exception):
@@ -1404,7 +1516,7 @@ def BuildFullWorkonPackageDictionary(buildroot, overlay_type, manifest):
     if ebuild.is_blacklisted:
       continue
     package = ebuild.package
-    _, paths = ebuild.GetSourcePath(directory_src, manifest)
+    paths = ebuild.GetSourceInfo(directory_src, manifest).srcdirs
     for path in paths:
       checkout = manifest.FindCheckoutFromPath(path)
       project = checkout['name']
