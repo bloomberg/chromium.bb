@@ -153,7 +153,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_LinkPressed:
       if (GtkVersionCheck(3, 12))
         return GetFgColor("GtkLabel.link:link:hover:active");
-    // fallthrough
+      FALLTHROUGH;
     case ui::NativeTheme::kColorId_LinkEnabled: {
       if (GtkVersionCheck(3, 12)) {
         return GetFgColor("GtkLabel.link:link");
