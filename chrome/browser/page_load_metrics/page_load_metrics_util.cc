@@ -50,14 +50,18 @@ bool QueryContainsComponentHelper(const base::StringPiece query,
     return false;
   }
 
-  // Verify that the provided query string does not include the query or
-  // fragment start character, as the logic below depends on this character not
-  // being included.
-  DCHECK(query[0] != '?' && query[0] != '#');
+  // Ensures that the first character of |query| is not a query or fragment
+  // delimiter character (? or #). Including it can break the later test for
+  // |component| being at the start of the query string.
+  // Note: This heuristic can cause a component string that starts with one of
+  // these characters to not match a query string which contains it at the
+  // beginning.
+  const base::StringPiece trimmed_query =
+      base::TrimString(query, "?#", base::TrimPositions::TRIM_LEADING);
 
   // We shouldn't try to find matches beyond the point where there aren't enough
   // characters left in query to fully match the component.
-  const size_t last_search_start = query.length() - component.length();
+  const size_t last_search_start = trimmed_query.length() - component.length();
 
   // We need to search for matches in a loop, rather than stopping at the first
   // match, because we may initially match a substring that isn't a full query
@@ -70,14 +74,14 @@ bool QueryContainsComponentHelper(const base::StringPiece query,
   // successful component match.
   for (size_t start_offset = 0; start_offset <= last_search_start;
        start_offset += component.length()) {
-    start_offset = query.find(component, start_offset);
+    start_offset = trimmed_query.find(component, start_offset);
     if (start_offset == std::string::npos) {
       // We searched to end of string and did not find a match.
       return false;
     }
     // Verify that the character prior to the component is valid (either we're
     // at the beginning of the query string, or are preceded by an ampersand).
-    if (start_offset != 0 && query[start_offset - 1] != '&') {
+    if (start_offset != 0 && trimmed_query[start_offset - 1] != '&') {
       continue;
     }
     if (!component_is_prefix) {
@@ -85,7 +89,8 @@ bool QueryContainsComponentHelper(const base::StringPiece query,
       // (either we're at the end of the query string, or are followed by an
       // ampersand).
       const size_t after_offset = start_offset + component.length();
-      if (after_offset < query.length() && query[after_offset] != '&') {
+      if (after_offset < trimmed_query.length() &&
+          trimmed_query[after_offset] != '&') {
         continue;
       }
     }

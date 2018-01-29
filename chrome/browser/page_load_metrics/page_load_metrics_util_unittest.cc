@@ -124,6 +124,8 @@ TEST_F(PageLoadMetricsUtilTest, IsGoogleSearchResultUrl) {
       {false, "http://www.example.com/"},
       {false, "https://www.example.com/webhp?q=test"},
       {false, "https://google.com/#q=test"},
+      // Regression test for crbug.com/805155
+      {false, "https://www.google.com/webmasters/#?modal_active=none"},
   };
   for (const auto& test : test_cases) {
     EXPECT_EQ(test.expected_result,
@@ -190,6 +192,9 @@ TEST_F(PageLoadMetricsUtilTest, QueryContainsComponent) {
       {false, "a=b&foosource=web&c=d", "source=web"},
       {false, "a=b&source=webbar&c=d", "source=web"},
       {false, "a=b&foosource=webbar&c=d", "source=web"},
+      // Correctly handle cases where there is a leading "?" or "#" character.
+      {true, "?a=b&source=web", "a=b"},
+      {false, "a=b&?source=web", "source=web"},
   };
   for (const auto& test : test_cases) {
     EXPECT_EQ(test.expected_result, page_load_metrics::QueryContainsComponent(

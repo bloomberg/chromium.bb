@@ -165,6 +165,10 @@ bool IsGoogleSearchRedirectorUrl(const GURL& url);
 // 'zzzfoo'. For QueryContainsComponent, the component should of the form
 // 'key=value'. For QueryContainsComponentPrefix, the component should be of
 // the form 'key=' (where the value is not specified).
+// Note: The heuristic used by these functions will not find a component at the
+// beginning of the query string if the component starts with a delimiter
+// character ('?' or '#'). For example, '?foo=bar' will match the query string
+// 'a=b&?foo=bar' but not the query string '?foo=bar&a=b'.
 bool QueryContainsComponent(const base::StringPiece query,
                             const base::StringPiece component);
 bool QueryContainsComponentPrefix(const base::StringPiece query,
