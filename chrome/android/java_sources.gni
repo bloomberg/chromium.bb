@@ -996,6 +996,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferencesAdvanced.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferencesBasic.java",
+  "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataFetcher.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataTabsFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ConfirmImportantSitesDialogFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ContextualSearchPreferenceFragment.java",
