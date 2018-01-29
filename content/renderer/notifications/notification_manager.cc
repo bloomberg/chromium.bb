@@ -93,8 +93,8 @@ void NotificationManager::Show(
 
   GURL origin_gurl = url::Origin(origin).GetURL();
 
-  int request_id =
-      notification_dispatcher_->GenerateNotificationId(NotificationWorkerId());
+  int request_id = notification_dispatcher_->GenerateNotificationRequestId(
+      NotificationWorkerId());
 
   active_page_notifications_[request_id] = ActiveNotificationData(
       delegate, origin_gurl,
@@ -141,10 +141,8 @@ void NotificationManager::ShowPersistent(
     return;
   }
 
-  // TODO(peter): GenerateNotificationId is more of a request id. Consider
-  // renaming the method in the NotificationDispatcher if this makes sense.
-  int request_id =
-      notification_dispatcher_->GenerateNotificationId(NotificationWorkerId());
+  int request_id = notification_dispatcher_->GenerateNotificationRequestId(
+      NotificationWorkerId());
 
   pending_show_notification_requests_.AddWithID(std::move(callbacks),
                                                 request_id);
@@ -173,10 +171,8 @@ void NotificationManager::GetNotifications(
   int64_t service_worker_registration_id =
       service_worker_registration_impl->RegistrationId();
 
-  // TODO(peter): GenerateNotificationId is more of a request id. Consider
-  // renaming the method in the NotificationDispatcher if this makes sense.
-  int request_id =
-      notification_dispatcher_->GenerateNotificationId(NotificationWorkerId());
+  int request_id = notification_dispatcher_->GenerateNotificationRequestId(
+      NotificationWorkerId());
 
   pending_get_notification_requests_.AddWithID(std::move(callbacks),
                                                request_id);
