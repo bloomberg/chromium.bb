@@ -80,6 +80,7 @@
 /gvr-android-sdk/src
 /gvr-android-sdk/test-apks/daydream_home/*.apk
 /gvr-android-sdk/test-apks/vr_services/*.apk
+/gvr-android-sdk/test-apks/vr_keyboard/*.apk
 /gperf
 /guava/lib/
 /hamcrest/lib/
