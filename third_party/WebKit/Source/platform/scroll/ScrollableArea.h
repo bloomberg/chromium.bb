@@ -239,6 +239,15 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual int VisibleHeight() const { return VisibleContentRect().Height(); }
   virtual int VisibleWidth() const { return VisibleContentRect().Width(); }
   virtual IntSize ContentsSize() const = 0;
+
+  // scroll snapport is the area of the scrollport that is used as the alignment
+  // container for the scroll snap areas when calculating snap positions. It's
+  // the box's scrollport contracted by its scroll-padding.
+  // https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
+  virtual LayoutRect VisibleScrollSnapportRect() const {
+    return LayoutRect(VisibleContentRect());
+  }
+
   virtual IntPoint LastKnownMousePosition() const { return IntPoint(); }
 
   virtual bool ShouldSuspendScrollAnimations() const { return true; }

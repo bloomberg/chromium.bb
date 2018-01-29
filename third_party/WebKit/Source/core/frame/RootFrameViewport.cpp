@@ -149,6 +149,41 @@ IntRect RootFrameViewport::VisibleContentRect(
       VisualViewport().VisibleContentRect(scrollbar_inclusion).Size());
 }
 
+LayoutRect RootFrameViewport::VisibleScrollSnapportRect() const {
+  // The current viewport is the one that excludes the scrollbars so
+  // we intersect the visual viewport with the scrollbar-excluded frameView
+  // content rect. However, we don't use visibleContentRect directly since it
+  // floors the scroll offset. Instead, we use ScrollAnimatorBase::currentOffset
+  // and construct a LayoutRect from that.
+  LayoutRect frame_rect_in_content = LayoutRect(
+      FloatPoint(LayoutViewport().GetScrollAnimator().CurrentOffset()),
+      FloatSize(LayoutViewport().VisibleContentRect().Size()));
+  LayoutRect visual_rect_in_content =
+      LayoutRect(FloatPoint(ScrollOffsetFromScrollAnimators()),
+                 FloatSize(VisualViewport().VisibleContentRect().Size()));
+
+  // Intersect layout and visual rects to exclude the scrollbar from the view
+  // rect.
+  LayoutRect visible_scroll_snapport =
+      Intersection(visual_rect_in_content, frame_rect_in_content);
+  if (!LayoutViewport().GetLayoutBox())
+    return visible_scroll_snapport;
+
+  const ComputedStyle* style = LayoutViewport().GetLayoutBox()->Style();
+  LayoutRectOutsets padding(
+      MinimumValueForLength(style->ScrollPaddingTop(),
+                            visible_scroll_snapport.Height()),
+      MinimumValueForLength(style->ScrollPaddingRight(),
+                            visible_scroll_snapport.Width()),
+      MinimumValueForLength(style->ScrollPaddingBottom(),
+                            visible_scroll_snapport.Height()),
+      MinimumValueForLength(style->ScrollPaddingLeft(),
+                            visible_scroll_snapport.Width()));
+  visible_scroll_snapport.Contract(padding);
+
+  return visible_scroll_snapport;
+}
+
 bool RootFrameViewport::ShouldUseIntegerScrollOffset() const {
   // Fractionals are floored in the ScrollAnimatorBase but it's important that
   // the ScrollAnimators of the visual and layout viewports get the precise
@@ -211,35 +246,23 @@ ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
 LayoutRect RootFrameViewport::ScrollIntoView(
     const LayoutRect& rect_in_content,
     const WebScrollIntoViewParams& params) {
-  // We want to move the rect into the viewport that excludes the scrollbars so
-  // we intersect the visual viewport with the scrollbar-excluded frameView
-  // content rect. However, we don't use visibleContentRect directly since it
-  // floors the scroll offset. Instead, we use ScrollAnimatorBase::currentOffset
-  // and construct a LayoutRect from that.
-  LayoutRect frame_rect_in_content = LayoutRect(
-      FloatPoint(LayoutViewport().GetScrollAnimator().CurrentOffset()),
-      FloatSize(LayoutViewport().VisibleContentRect().Size()));
-  LayoutRect visual_rect_in_content =
-      LayoutRect(FloatPoint(ScrollOffsetFromScrollAnimators()),
-                 FloatSize(VisualViewport().VisibleContentRect().Size()));
+  LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
 
-  // Intersect layout and visual rects to exclude the scrollbar from the view
-  // rect.
-  LayoutRect view_rect_in_content =
-      Intersection(visual_rect_in_content, frame_rect_in_content);
-  LayoutRect target_viewport = ScrollAlignment::GetRectToExpose(
-      view_rect_in_content, rect_in_content, params.GetScrollAlignmentX(),
-      params.GetScrollAlignmentY());
-  if (target_viewport != view_rect_in_content) {
-    ScrollOffset target_offset(target_viewport.X(), target_viewport.Y());
+  ScrollOffset new_scroll_offset =
+      ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
+          scroll_snapport_rect, rect_in_content, params.GetScrollAlignmentX(),
+          params.GetScrollAlignmentY(), GetScrollOffset()));
+
+  if (new_scroll_offset != GetScrollOffset()) {
     if (params.is_for_scroll_sequence) {
       DCHECK(params.GetScrollType() == kProgrammaticScroll);
       ScrollBehavior behavior =
           DetermineScrollBehavior(params.GetScrollBehavior(),
                                   GetLayoutBox()->Style()->GetScrollBehavior());
-      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset, behavior);
+      GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
+                                                 behavior);
     } else {
-      SetScrollOffset(target_offset, params.GetScrollType());
+      SetScrollOffset(new_scroll_offset, params.GetScrollType());
     }
   }
 

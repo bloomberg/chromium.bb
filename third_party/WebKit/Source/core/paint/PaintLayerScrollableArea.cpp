@@ -101,9 +101,15 @@ static const int kDefaultMinimumHeightForResizing = 15;
 
 }  // namespace
 
-static LayoutRect LocalToAbsolute(LayoutBox& offset, LayoutRect rect) {
+static LayoutRect LocalToAbsolute(const LayoutBox& box, LayoutRect rect) {
   return LayoutRect(
-      offset.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
+      box.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
+          .BoundingBox());
+}
+
+static LayoutRect AbsoluteToLocal(const LayoutBox& box, LayoutRect rect) {
+  return LayoutRect(
+      box.AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
           .BoundingBox());
 }
 
@@ -636,6 +642,22 @@ IntRect PaintLayerScrollableArea::VisibleContentRect(
   return IntRect(FlooredIntPoint(layout_content_rect.Location()),
                  PixelSnappedIntSize(layout_content_rect.Size(),
                                      GetLayoutBox()->Location()));
+}
+
+LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect() const {
+  const ComputedStyle* style = GetLayoutBox()->Style();
+  LayoutRect layout_content_rect(LayoutContentRect(kExcludeScrollbars));
+  layout_content_rect.MoveBy(LayoutPoint(-ScrollOrigin()));
+  LayoutRectOutsets padding(MinimumValueForLength(style->ScrollPaddingTop(),
+                                                  layout_content_rect.Height()),
+                            MinimumValueForLength(style->ScrollPaddingRight(),
+                                                  layout_content_rect.Width()),
+                            MinimumValueForLength(style->ScrollPaddingBottom(),
+                                                  layout_content_rect.Height()),
+                            MinimumValueForLength(style->ScrollPaddingLeft(),
+                                                  layout_content_rect.Width()));
+  layout_content_rect.Contract(padding);
+  return layout_content_rect;
 }
 
 IntSize PaintLayerScrollableArea::ContentsSize() const {
@@ -1906,20 +1928,21 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
 LayoutRect PaintLayerScrollableArea::ScrollIntoView(
     const LayoutRect& rect,
     const WebScrollIntoViewParams& params) {
-  LayoutRect local_expose_rect(
-      GetLayoutBox()
-          ->AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
-          .BoundingBox());
-  local_expose_rect.Move(-GetLayoutBox()->BorderLeft(),
-                         -GetLayoutBox()->BorderTop());
-  LayoutRect visible_rect(IntPoint(), VisibleContentRect().Size());
-  LayoutRect r = ScrollAlignment::GetRectToExpose(
-      visible_rect, local_expose_rect, params.GetScrollAlignmentX(),
-      params.GetScrollAlignmentY());
+  LayoutRect local_expose_rect = AbsoluteToLocal(*GetLayoutBox(), rect);
+  LayoutSize border_origin_to_scroll_origin =
+      LayoutSize(-GetLayoutBox()->BorderLeft(), -GetLayoutBox()->BorderTop()) +
+      LayoutSize(GetScrollOffset());
+  // Represent the rect in the container's scroll-origin coordinate.
+  local_expose_rect.Move(border_origin_to_scroll_origin);
+  LayoutRect scroll_snapport_rect = VisibleScrollSnapportRect();
+
+  ScrollOffset target_offset = ScrollAlignment::GetScrollOffsetToExpose(
+      scroll_snapport_rect, local_expose_rect, params.GetScrollAlignmentX(),
+      params.GetScrollAlignmentY(), GetScrollOffset());
+  ScrollOffset new_scroll_offset(
+      ClampScrollOffset(RoundedIntSize(target_offset)));
 
   ScrollOffset old_scroll_offset = GetScrollOffset();
-  ScrollOffset new_scroll_offset(ClampScrollOffset(RoundedIntSize(
-      ToScrollOffset(FloatPoint(r.Location()) + old_scroll_offset))));
   if (params.is_for_scroll_sequence) {
     DCHECK(params.GetScrollType() == kProgrammaticScroll ||
            params.GetScrollType() == kUserScroll);
@@ -1932,16 +1955,23 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
     SetScrollOffset(new_scroll_offset, params.GetScrollType(),
                     kScrollBehaviorInstant);
   }
-  ScrollOffset scroll_offset_difference =
-      ClampScrollOffset(new_scroll_offset) - old_scroll_offset;
+
+  ScrollOffset scroll_offset_difference = new_scroll_offset - old_scroll_offset;
+  // The container hasn't performed the scroll yet if it's for scroll sequence.
+  // To calculate the result from the scroll, we move the |local_expose_rect| to
+  // the will-be-scrolled location.
   local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
 
-  LayoutRect intersect = LocalToAbsolute(
-      *GetLayoutBox(), Intersection(visible_rect, local_expose_rect));
-  if (intersect.IsEmpty() && !visible_rect.IsEmpty() &&
+  // Represent the rects in the container's border-box coordinate.
+  local_expose_rect.Move(-border_origin_to_scroll_origin);
+  scroll_snapport_rect.Move(-border_origin_to_scroll_origin);
+  LayoutRect intersect = Intersection(scroll_snapport_rect, local_expose_rect);
+
+  if (intersect.IsEmpty() && !scroll_snapport_rect.IsEmpty() &&
       !local_expose_rect.IsEmpty()) {
     return LocalToAbsolute(*GetLayoutBox(), local_expose_rect);
   }
+  intersect = LocalToAbsolute(*GetLayoutBox(), intersect);
   return intersect;
 }
 

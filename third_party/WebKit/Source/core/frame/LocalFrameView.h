@@ -581,6 +581,10 @@ class CORE_EXPORT LocalFrameView final
   IntSize VisibleContentSize(
       IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
+  // The visible scroll snapport rect is contracted from the visible content
+  // rect, by the amount of the document's scroll-padding.
+  LayoutRect VisibleScrollSnapportRect() const override;
+
   // Clips the provided rect to the visible content area. For this purpose, we
   // also query the chrome client for any active overrides to the visible area
   // (e.g. DevTool's viewport override).
