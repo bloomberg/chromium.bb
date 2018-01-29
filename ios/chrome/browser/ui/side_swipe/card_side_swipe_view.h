@@ -13,32 +13,7 @@
 @protocol SideSwipeToolbarSnapshotProviding;
 @class TabModel;
 
-@interface SwipeView : UIView {
-  UIImageView* image_;
-  UIImageView* shadowView_;
-}
-@end
-
-@interface CardSideSwipeView : UIView {
-  // The direction of the swipe that initiated this horizontal view.
-  UISwipeGestureRecognizerDirection direction_;
-
-  // Card views currently displayed.
-  SwipeView* leftCard_;
-  SwipeView* rightCard_;
-
-  // Most recent touch location.
-  CGPoint currentPoint_;
-
-  // Space reserved at the top for the toolbar.
-  CGFloat topMargin_;
-
-  // Tab model.
-  __weak TabModel* model_;
-
-  // The image view containing the background image.
-  UIImageView* backgroundView_;
-}
+@interface CardSideSwipeView : UIView
 
 @property(nonatomic, weak) id<SideSwipeControllerDelegate> delegate;
 // Snapshot provider for the top toolbar.
@@ -47,11 +22,12 @@
 // Snapshot provider for the bottom toolbar.
 @property(nonatomic, weak) id<SideSwipeToolbarSnapshotProviding>
     bottomToolbarSnapshotProvider;
+// Space reserved at the top for the toolbar.
 @property(nonatomic, assign) CGFloat topMargin;
 
-- (id)initWithFrame:(CGRect)frame
-          topMargin:(CGFloat)margin
-              model:(TabModel*)model;
+- (instancetype)initWithFrame:(CGRect)frame
+                    topMargin:(CGFloat)margin
+                        model:(TabModel*)model;
 - (void)updateViewsForDirection:(UISwipeGestureRecognizerDirection)direction;
 - (void)handleHorizontalPan:(SideSwipeGestureRecognizer*)gesture;
 
