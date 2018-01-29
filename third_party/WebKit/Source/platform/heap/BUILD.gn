@@ -54,6 +54,8 @@ blink_platform_sources("heap") {
     "Persistent.h",
     "PersistentNode.cpp",
     "PersistentNode.h",
+    "ProcessHeap.cpp",
+    "ProcessHeap.h",
     "SafePoint.h",
     "SelfKeepAlive.h",
     "SparseHeapBitmap.cpp",
