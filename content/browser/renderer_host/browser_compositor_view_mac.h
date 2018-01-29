@@ -60,12 +60,10 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   gfx::AcceleratedWidget GetAcceleratedWidget();
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
-  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
-                             viz::CompositorFrame frame);
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
   void SetBackgroundColor(SkColor background_color);
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
-  void WasResized();
+  void OnNSViewWasResized();
   bool HasFrameOfSize(const gfx::Size& desired_size);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
@@ -110,6 +108,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnBeginFrame(base::TimeTicks frame_time) override;
   bool IsAutoResizeEnabled() const override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
@@ -181,15 +180,23 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   std::unique_ptr<ui::Layer> root_layer_;
 
   SkColor background_color_ = SK_ColorWHITE;
-  const bool enable_viz_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
+
   // The surface for the delegated frame host, rendered into by the renderer
-  // process.
+  // process. Updated by OnNSViewWasResized.
   viz::LocalSurfaceId delegated_frame_host_surface_id_;
+  gfx::Size delegated_frame_host_size_pixels_;
+  gfx::Size delegated_frame_host_size_dip_;
+  float delegated_frame_host_scale_factor_ = 1.f;
+
   // The surface for the ui::Compositor, which will embed
-  // |delegated_frame_host_surface_id_| into its tree.
+  // |delegated_frame_host_surface_id_| into its tree. Updated to match the
+  // delegated frame host values when attached and at OnFirstSurfaceActivation.
   viz::LocalSurfaceId compositor_surface_id_;
+  gfx::Size compositor_size_pixels_;
+  float compositor_scale_factor_ = 1.f;
+
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;

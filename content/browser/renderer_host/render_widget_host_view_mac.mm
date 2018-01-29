@@ -1089,7 +1089,7 @@ void RenderWidgetHostViewMac::SetTooltipText(
 }
 
 void RenderWidgetHostViewMac::OnSynchronizedDisplayPropertiesChanged() {
-  browser_compositor_->WasResized();
+  browser_compositor_->OnNSViewWasResized();
 }
 
 void RenderWidgetHostViewMac::DidNavigate() {
@@ -1445,8 +1445,10 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
 
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
-  browser_compositor_->SubmitCompositorFrame(local_surface_id,
-                                             std::move(frame));
+
+  browser_compositor_->GetDelegatedFrameHost()->SubmitCompositorFrame(
+      local_surface_id, std::move(frame), nullptr);
+
   UpdateDisplayVSyncParameters();
 }
 
@@ -2852,8 +2854,12 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
     renderWidgetHostView_->render_widget_host_->delegate()->SendScreenRects();
   else
     renderWidgetHostView_->render_widget_host_->SendScreenRects();
+
+  // RenderWidgetHostImpl will query BrowserCompositorMac for the dimensions
+  // to send to the renderer, so it is required that BrowserCompositorMac be
+  // updated first.
+  renderWidgetHostView_->browser_compositor_->OnNSViewWasResized();
   renderWidgetHostView_->render_widget_host_->WasResized();
-  renderWidgetHostView_->browser_compositor_->WasResized();
 
   // Wait for the frame that WasResize might have requested. If the view is
   // being made visible at a new size, then this call will have no effect
