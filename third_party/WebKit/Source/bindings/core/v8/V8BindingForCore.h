@@ -73,6 +73,16 @@ class LocalDOMWindow;
 class LocalFrame;
 class XPathNSResolver;
 
+// Determines how a V8 -> C++ union conversion should be performed: when the
+// JavaScript value being converted is either undefined or null, kNullable will
+// stop the conversion attempt and the union's IsNull() method will return true.
+// If kNotNullable is used, the other conversion steps listed in
+// https://heycam.github.io/webidl/#es-union will continue being attempted.
+enum class UnionTypeConversionMode {
+  kNullable,
+  kNotNullable,
+};
+
 template <typename CallbackInfo>
 inline void V8SetReturnValue(const CallbackInfo& callback_info,
                              DOMWindow* impl) {

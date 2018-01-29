@@ -10,11 +10,6 @@
 
 namespace blink {
 
-enum class UnionTypeConversionMode {
-  kNullable,
-  kNotNullable,
-};
-
 template <typename T>
 class Nullable {
   DISALLOW_NEW();
