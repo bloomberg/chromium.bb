@@ -1606,8 +1606,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  TransformationMatrix&) const;
 
   bool CreatesGroup() const {
-    return IsTransparent() || HasMask() || HasFilterInducingProperty() ||
-           Style()->HasBlendMode();
+    return IsTransparent() || HasMask() || HasClipPath() ||
+           HasFilterInducingProperty() || Style()->HasBlendMode();
   }
 
   // Collects rectangles that the outline of this object would be drawing along

@@ -405,15 +405,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   // Stack-allocated-varibles are destructed in the reverse order of
   // construction, so they are nested properly.
   Optional<ClipPathClipper> clip_path_clipper;
-  // Clip-path, like border radius, must not be applied to the contents of a
-  // composited-scrolling container.  It must, however, still be applied to the
-  // mask layer, so that the compositor can properly mask the
-  // scrolling contents and scrollbars.
-  if (paint_layer_.GetLayoutObject().HasClipPath() &&
-      (!paint_layer_.NeedsCompositedScrolling() ||
-       (paint_flags & (kPaintLayerPaintingChildClippingMaskPhase |
-                       kPaintLayerPaintingAncestorClippingMaskPhase)))) {
-    painting_info.ancestor_has_clip_path_clipping = true;
+  bool should_paint_clip_path =
+      paint_layer_.GetLayoutObject().HasClipPath() &&
+      (paint_flags & kPaintLayerPaintingCompositingMaskPhase);
+  if (should_paint_clip_path) {
     LayoutPoint visual_offset_from_root =
         paint_layer_.EnclosingPaginationLayer()
             ? paint_layer_.VisualOffsetFromAncestor(
@@ -658,6 +653,23 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     PaintMaskForFragments(layer_fragments, context, local_painting_info,
                           paint_flags);
   }
+  bool is_painting_composited_mask_layer =
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      !(painting_info.GetGlobalPaintFlags() &
+        kGlobalPaintFlattenCompositingLayers) &&
+      paint_layer_.GetCompositedLayerMapping() &&
+      paint_layer_.GetCompositedLayerMapping()->MaskLayer() &&
+      (paint_flags & kPaintLayerPaintingCompositingMaskPhase);
+  if (is_painting_composited_mask_layer && !should_paint_mask) {
+    // In SPv1 it is possible for CompositedLayerMapping to create a mask layer
+    // for just CSS clip-path but without a CSS mask. In that case we need to
+    // paint a fully filled mask (which will subsequently clipped by the
+    // clip-path), otherwise the mask layer will be empty.
+    FillMaskingFragment(context, layer_fragments[0].background_rect,
+                        *paint_layer_.GetCompositedLayerMapping()->MaskLayer());
+  }
+
+  clip_path_clipper = WTF::nullopt;
 
   if (should_paint_content && !selection_only) {
     // Paint the border radius mask for the fragments.
@@ -897,8 +909,6 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
   PaintLayerPaintingInfo transformed_painting_info(
       &paint_layer_, LayoutRect(LayoutRect::InfiniteIntRect()),
       painting_info.GetGlobalPaintFlags(), new_sub_pixel_accumulation);
-  transformed_painting_info.ancestor_has_clip_path_clipping =
-      painting_info.ancestor_has_clip_path_clipping;
 
   if (&paint_layer_ != painting_info.root_layer) {
     // Remove skip root background flag when we're painting with a new root.

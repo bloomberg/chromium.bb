@@ -53,6 +53,8 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
+#include "core/paint/CSSMaskPainter.h"
+#include "core/paint/ClipPathClipper.h"
 #include "core/paint/FramePaintTiming.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/ObjectPaintInvalidator.h"
@@ -771,68 +773,44 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   // that's plugged into another GraphicsLayer that is part of the hierarchy.
   // It has no parent or child GraphicsLayer. For that reason, we process it
   // here, after the hierarchy has been updated.
-  bool mask_layer_changed = UpdateMaskLayer(layout_object.HasMask());
-  if (mask_layer_changed)
+  bool has_mask =
+      CSSMaskPainter::MaskBoundingBox(GetLayoutObject(), LayoutPoint())
+          .has_value();
+  bool has_clip_path =
+      ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject()).has_value();
+  if (UpdateMaskLayer(has_mask || has_clip_path)) {
     graphics_layer_->SetMaskLayer(mask_layer_.get());
+    layer_config_changed = true;
+  }
 
-  bool has_child_clipping_layer =
-      compositor->ClipsCompositingDescendants(&owning_layer_) &&
-      (HasClippingLayer() || HasScrollingLayer());
-  // If we have a border radius or clip path on a scrolling layer, we need a
-  // clipping mask to properly clip the scrolled contents, even if there are no
-  // composited descendants.
-  bool has_clip_path = style.ClipPath();
-  bool needs_child_clipping_mask_for_border_radius =
-      style.HasBorderRadius() &&
-      (has_child_clipping_layer || IsAcceleratedContents(layout_object) ||
-       HasScrollingLayer());
+  // If we have a border radius on a scrolling layer, we need a clipping mask
+  // to properly clip the scrolled contents, even if there are no composited
+  // descendants.
+  bool is_accelerated_contents = IsAcceleratedContents(layout_object);
+  bool has_children_subject_to_overflow_clip =
+      HasClippingLayer() || HasScrollingLayer() || is_accelerated_contents;
   bool needs_child_clipping_mask =
-      has_clip_path || needs_child_clipping_mask_for_border_radius;
-
-  GraphicsLayer* layer_to_apply_child_clipping_mask = nullptr;
-  bool should_apply_child_clipping_mask_on_contents = false;
-  if (needs_child_clipping_mask) {
-    if (has_clip_path) {
-      // Clip path clips the entire subtree, including scrollbars. It must be
-      // attached directly onto the main m_graphicsLayer.
-      layer_to_apply_child_clipping_mask = graphics_layer_.get();
-    } else if (HasClippingLayer()) {
-      layer_to_apply_child_clipping_mask = ClippingLayer();
-    } else if (HasScrollingLayer()) {
-      layer_to_apply_child_clipping_mask = ScrollingLayer();
-    } else if (IsAcceleratedContents(layout_object)) {
-      should_apply_child_clipping_mask_on_contents = true;
+      style.HasBorderRadius() && has_children_subject_to_overflow_clip;
+  if (UpdateChildClippingMaskLayer(needs_child_clipping_mask))
+    layer_config_changed = true;
+  {
+    // Attach child clipping mask layer to the first layer that can be applied
+    // and clear the rest.
+    // TODO(trchen): Verify if the 3 cases are mutually exclusive.
+    GraphicsLayer* first_come_first_served = child_clipping_mask_layer_.get();
+    if (HasClippingLayer()) {
+      ClippingLayer()->SetMaskLayer(first_come_first_served);
+      first_come_first_served = nullptr;
+    }
+    if (HasScrollingLayer()) {
+      ScrollingLayer()->SetMaskLayer(first_come_first_served);
+      first_come_first_served = nullptr;
+    }
+    if (is_accelerated_contents) {
+      graphics_layer_->SetContentsClippingMaskLayer(first_come_first_served);
+      first_come_first_served = nullptr;
     }
   }
-
-  UpdateChildClippingMaskLayer(needs_child_clipping_mask);
-
-  if (layer_to_apply_child_clipping_mask == graphics_layer_.get()) {
-    if (graphics_layer_->MaskLayer() != child_clipping_mask_layer_.get()) {
-      graphics_layer_->SetMaskLayer(child_clipping_mask_layer_.get());
-      mask_layer_changed = true;
-    }
-  } else if (graphics_layer_->MaskLayer() &&
-             graphics_layer_->MaskLayer() != mask_layer_.get()) {
-    graphics_layer_->SetMaskLayer(nullptr);
-    mask_layer_changed = true;
-  }
-  if (HasClippingLayer()) {
-    ClippingLayer()->SetMaskLayer(layer_to_apply_child_clipping_mask ==
-                                          ClippingLayer()
-                                      ? child_clipping_mask_layer_.get()
-                                      : nullptr);
-  }
-  if (HasScrollingLayer()) {
-    ScrollingLayer()->SetMaskLayer(layer_to_apply_child_clipping_mask ==
-                                           ScrollingLayer()
-                                       ? child_clipping_mask_layer_.get()
-                                       : nullptr);
-  }
-  graphics_layer_->SetContentsClippingMaskLayer(
-      should_apply_child_clipping_mask_on_contents
-          ? child_clipping_mask_layer_.get()
-          : nullptr);
 
   UpdateBackgroundColor();
 
@@ -876,7 +854,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
       layer_config_changed = true;
   }
 
-  if (layer_config_changed || mask_layer_changed) {
+  if (layer_config_changed) {
     // Changes to either the internal hierarchy or the mask layer have an impact
     // on painting phases, so we need to update when either are updated.
     UpdatePaintingPhases();
@@ -978,11 +956,29 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
   // transformed by a non-translation transform.
   owning_layer_.SetSubpixelAccumulation(subpixel_accumulation);
 
-  // Move the bounds by the subpixel accumulation so that it pixel-snaps
-  // relative to absolute pixels instead of local coordinates.
-  LayoutRect local_raw_compositing_bounds = CompositedBounds();
-  local_raw_compositing_bounds.Move(subpixel_accumulation);
-  local_bounds = PixelSnappedIntRect(local_raw_compositing_bounds);
+  Optional<IntRect> mask_bounding_box = CSSMaskPainter::MaskBoundingBox(
+      GetLayoutObject(), LayoutPoint(subpixel_accumulation));
+  Optional<FloatRect> clip_path_bounding_box =
+      ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject());
+  if (clip_path_bounding_box)
+    clip_path_bounding_box->MoveBy(FloatPoint(subpixel_accumulation));
+
+  // Override graphics layer size to the bound of mask layer, this is because
+  // the compositor implementation requires mask layer bound to match its
+  // host layer.
+  if (mask_bounding_box) {
+    local_bounds = *mask_bounding_box;
+    if (clip_path_bounding_box)
+      local_bounds.Intersect(EnclosingIntRect(*clip_path_bounding_box));
+  } else if (clip_path_bounding_box) {
+    local_bounds = EnclosingIntRect(*clip_path_bounding_box);
+  } else {
+    // Move the bounds by the subpixel accumulation so that it pixel-snaps
+    // relative to absolute pixels instead of local coordinates.
+    LayoutRect local_raw_compositing_bounds = CompositedBounds();
+    local_raw_compositing_bounds.Move(subpixel_accumulation);
+    local_bounds = PixelSnappedIntRect(local_raw_compositing_bounds);
+  }
 
   compositing_bounds_relative_to_composited_ancestor = local_bounds;
   compositing_bounds_relative_to_composited_ancestor.MoveBy(
@@ -2499,18 +2495,20 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
   return layer_changed;
 }
 
-void CompositedLayerMapping::UpdateChildClippingMaskLayer(
+bool CompositedLayerMapping::UpdateChildClippingMaskLayer(
     bool needs_child_clipping_mask_layer) {
-  if (needs_child_clipping_mask_layer) {
-    if (!child_clipping_mask_layer_) {
-      child_clipping_mask_layer_ =
-          CreateGraphicsLayer(CompositingReason::kLayerForClippingMask);
-      child_clipping_mask_layer_->SetPaintingPhase(
-          kGraphicsLayerPaintChildClippingMask);
-    }
-    return;
+  if (needs_child_clipping_mask_layer && !child_clipping_mask_layer_) {
+    child_clipping_mask_layer_ =
+        CreateGraphicsLayer(CompositingReason::kLayerForClippingMask);
+    child_clipping_mask_layer_->SetPaintingPhase(
+        kGraphicsLayerPaintChildClippingMask);
+    return true;
   }
-  child_clipping_mask_layer_ = nullptr;
+  if (!needs_child_clipping_mask_layer && child_clipping_mask_layer_) {
+    child_clipping_mask_layer_ = nullptr;
+    return true;
+  }
+  return false;
 }
 
 bool CompositedLayerMapping::UpdateScrollingLayers(

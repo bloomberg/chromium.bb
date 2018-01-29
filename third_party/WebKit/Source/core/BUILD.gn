@@ -2011,6 +2011,7 @@ jumbo_source_set("unit_tests") {
     "page/scrolling/SnapCoordinatorTest.cpp",
     "paint/BlockPainterTest.cpp",
     "paint/BoxPaintInvalidatorTest.cpp",
+    "paint/CSSMaskPainterTest.cpp",
     "paint/FirstMeaningfulPaintDetectorTest.cpp",
     "paint/FragmentDataTest.cpp",
     "paint/HTMLCanvasPainterTest.cpp",

@@ -80,9 +80,13 @@ crbug.com/769942 svg/foreignObject/clip.html [ Failure ]
 crbug.com/769942 svg/transforms/svg-css-transforms-clip-path.xhtml [ Failure ]
 crbug.com/769942 svg/transforms/transformed-text-fill-pattern.html [ Failure ]
 crbug.com/769942 svg/zoom/page/zoom-clip-path.html [ Failure ]
-crbug.com/769942 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Failure ]
 crbug.com/769942 virtual/gpu-rasterization/images/color-profile-svg-foreign-object.html [ Failure ]
 crbug.com/769942 virtual/exotic-color-space/images/color-profile-svg-foreign-object.html [ Failure ]
+
+# DCHECK failure in CompositingLayerPropertyUpdater::Update(), because we don't create mask nodes for clip-path yet.
+crbug.com/769942 fast/clip/clip-path-inline-element-crash.html [ Skip ]
+crbug.com/769942 hittesting/image-with-clip-path.html [ Skip ]
+crbug.com/769942 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Skip ]
 
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]

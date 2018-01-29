@@ -469,12 +469,19 @@ LayoutObject* LayoutObject::NextInPreOrder() const {
 }
 
 bool LayoutObject::HasClipRelatedProperty() const {
-  // TODO(trchen): CSS clip-path is really a stacking context effect instead
-  // of a clip. A bunch of call sites, e.g. CompositingRequirementsUpdater rely
-  // on returning false positives here to work properly. We should fix those
-  // call sites and remove HasClipPath() here.
-  if (HasClip() || HasOverflowClip() || HasClipPath() ||
-      Style()->ContainsPaint())
+  // TODO(trchen): Refactor / remove this function.
+  // This function detects a bunch of properties that can potentially affect
+  // clip inheritance chain. However such generalization is practially useless
+  // because these properties change clip inheritance in different way that
+  // needs to be handled explicitly.
+  // CSS clip applies clip to the current element and all descendants.
+  // CSS overflow clip applies only to containg-block descendants.
+  // CSS contain:paint applies to all descendants by making itself a containing
+  // block for all descendants.
+  // CSS clip-path/mask/filter induces a stacking context and applies inherited
+  // clip to that stacking context, while resetting clip for descendants. This
+  // special behavior is already handled elsewhere.
+  if (HasClip() || HasOverflowClip() || Style()->ContainsPaint())
     return true;
   if (IsBox() && ToLayoutBox(this)->HasControlClip())
     return true;

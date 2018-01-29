@@ -22,6 +22,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/CSSMaskPainter.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -604,53 +605,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   }
 }
 
-static bool ComputeMaskParameters(const LayoutObject& object,
-                                  const LayoutPoint& paint_offset,
-                                  IntRect& mask_clip,
-                                  ColorFilter& mask_color_filter) {
-  DCHECK(object.IsBoxModelObject() || object.IsSVGChild());
-  const ComputedStyle& style = object.StyleRef();
-
-  if (object.IsSVGChild()) {
-    SVGResources* resources =
-        SVGResourcesCache::CachedResourcesForLayoutObject(&object);
-    LayoutSVGResourceMasker* masker = resources ? resources->Masker() : nullptr;
-    if (!masker)
-      return false;
-    mask_clip = EnclosingIntRect(object.ObjectBoundingBox());
-    mask_color_filter = masker->Style()->SvgStyle().MaskType() == MT_LUMINANCE
-                            ? kColorFilterLuminanceToAlpha
-                            : kColorFilterNone;
-    return true;
-  }
-
-  if (!style.HasMask())
-    return false;
-
-  LayoutRect maximum_mask_region;
-  // For HTML/CSS objects, the extent of the mask is known as "mask
-  // painting area", which is determined by CSS mask-clip property.
-  // We don't implement mask-clip:margin-box or no-clip currently,
-  // so the maximum we can get is border-box.
-  if (object.IsBox()) {
-    maximum_mask_region = ToLayoutBox(object).BorderBoxRect();
-  } else {
-    // For inline elements, depends on the value of box-decoration-break
-    // there could be one box in multiple fragments or multiple boxes.
-    // Either way here we are only interested in the bounding box of them.
-    DCHECK(object.IsLayoutInline());
-    maximum_mask_region = ToLayoutInline(object).LinesBoundingBox();
-    if (object.HasFlippedBlocksWritingMode())
-      object.ContainingBlock()->FlipForWritingMode(maximum_mask_region);
-  }
-  if (style.HasMaskBoxImageOutsets())
-    maximum_mask_region.Expand(style.MaskBoxImageOutsets());
-  maximum_mask_region.MoveBy(paint_offset);
-  mask_clip = PixelSnappedIntRect(maximum_mask_region);
-  mask_color_filter = kColorFilterNone;
-  return true;
-}
-
 static bool NeedsEffect(const LayoutObject& object) {
   const ComputedStyle& style = object.StyleRef();
 
@@ -721,22 +675,21 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         compositing_reasons = CompositingReason::kActiveOpacityAnimation;
       }
 
-      IntRect mask_clip;
-      ColorFilter mask_color_filter;
-      bool has_mask = ComputeMaskParameters(
-          object_, context_.current.paint_offset, mask_clip, mask_color_filter);
-      if (has_mask &&
+      Optional<IntRect> mask_clip = CSSMaskPainter::MaskBoundingBox(
+          object_, context_.current.paint_offset);
+      ColorFilter mask_color_filter = CSSMaskPainter::MaskColorFilter(object_);
+      if (mask_clip &&
           // TODO(crbug.com/768691): Remove the following condition after mask
           // clip doesn't fail fast/borders/inline-mask-overlay-image-outset-
           // vertical-rl.html.
           RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        FloatRoundedRect rounded_mask_clip(mask_clip);
+        FloatRoundedRect rounded_mask_clip(*mask_clip);
         if (properties_->MaskClip() &&
             rounded_mask_clip != properties_->MaskClip()->ClipRect())
           local_clip_changed = true;
         auto result = properties_->UpdateMaskClip(context_.current.clip,
                                                   context_.current.transform,
-                                                  FloatRoundedRect(mask_clip));
+                                                  rounded_mask_clip);
         local_clip_added_or_removed |= result.NewNodeCreated();
         output_clip = properties_->MaskClip();
       } else {
@@ -756,7 +709,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimary));
       full_context_.force_subtree_update |= result.NewNodeCreated();
-      if (has_mask) {
+      if (mask_clip) {
         auto result = properties_->UpdateMask(
             properties_->Effect(), context_.current.transform, output_clip,
             mask_color_filter, CompositorFilterOperations(), 1.f,

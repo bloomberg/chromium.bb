@@ -58,17 +58,9 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 # Slimming paint V1.75
 crbug.com/771643 [ Mac Win Android ] virtual/spv175/ [ Skip ]
 
-crbug.com/769942 virtual/spv175/compositing/clip-path-with-composited-descendants.html [ Failure ]
-crbug.com/769942 virtual/spv175/compositing/images/direct-image-clip-path.html [ Failure ]
-crbug.com/769942 virtual/spv175/compositing/images/direct-image-dynamic-clip-path.html [ Failure ]
-crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path-text.html [ Failure ]
-crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path.html [ Failure ]
-crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-reference.html [ Failure ]
 crbug.com/769942 virtual/spv175/fast/borders/border-image-fill-inline-no-border.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/clipath/clip-path-bigger-than-border-box-visual-rect.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/clipath/clip-path-bigger-than-visual-overflow.html [ Failure ]
-crbug.com/769942 virtual/spv175/paint/clipath/clip-path-with-background-and-box-behind.html [ Failure ]
-crbug.com/769942 virtual/spv175/paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/clip/clip-path-resize.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/clip-path-child-changes.svg [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/clip-path-href-changes.svg [ Failure ]
@@ -79,6 +71,18 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-and-obje
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-creation.svg [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/resource-invalidate-on-target-update.svg [ Failure ]
+
+# DCHECK failure in CompositingLayerPropertyUpdater::Update(), because we don't create mask nodes for clip-path yet.
+crbug.com/769942 virtual/spv175/compositing/clip-path-with-composited-descendants.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/images/direct-image-clip-path.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/images/direct-image-dynamic-clip-path.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path-text.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-reference.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/overflow/ancestor-with-clip-path.html [ Skip ]
+crbug.com/769942 virtual/spv175/compositing/overflow/descendant-with-clip-path.html [ Skip ]
+crbug.com/769942 virtual/spv175/paint/clipath/clip-path-with-background-and-box-behind.html [ Skip ]
+crbug.com/769942 virtual/spv175/paint/invalidation/clip/clip-path-constant-repaint.html [ Skip ]
 
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/multicol/border-radius-clipped-layer.html [ Failure ]

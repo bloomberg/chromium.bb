@@ -414,7 +414,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool UpdateBackgroundLayer(bool needs_background_layer);
   bool UpdateDecorationOutlineLayer(bool needs_decoration_outline_layer);
   bool UpdateMaskLayer(bool needs_mask_layer);
-  void UpdateChildClippingMaskLayer(bool needs_child_clipping_mask_layer);
+  bool UpdateChildClippingMaskLayer(bool needs_child_clipping_mask_layer);
   bool RequiresHorizontalScrollbarLayer() const {
     return owning_layer_.GetScrollableArea() &&
            owning_layer_.GetScrollableArea()->HorizontalScrollbar();

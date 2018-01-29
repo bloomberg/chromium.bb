@@ -13,8 +13,7 @@
       "backgroundColor": "#FF0000E6",
       "maskLayer": [
         {
-          "name": "Child Clipping Mask Layer",
-          "position": [8, 8],
+          "name": "Mask Layer",
           "bounds": [800, 300]
         }
       ],
