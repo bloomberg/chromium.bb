@@ -806,10 +806,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
       ScrollingLayer()->SetMaskLayer(first_come_first_served);
       first_come_first_served = nullptr;
     }
-    if (is_accelerated_contents) {
-      graphics_layer_->SetContentsClippingMaskLayer(first_come_first_served);
-      first_come_first_served = nullptr;
-    }
+    graphics_layer_->SetContentsClippingMaskLayer(first_come_first_served);
   }
 
   UpdateBackgroundColor();
