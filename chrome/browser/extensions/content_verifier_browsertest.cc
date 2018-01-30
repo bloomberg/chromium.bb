@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -114,56 +113,6 @@ class RegistryObserver : public ExtensionRegistryObserver {
   ScopedObserver<ExtensionRegistry, RegistryObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryObserver);
-};
-
-// Helper for forcing ContentVerifyJob's to return an error.
-class JobDelegate : public ContentVerifyJob::TestDelegate {
- public:
-  JobDelegate()
-      : fail_next_read_(false),
-        fail_next_done_(false),
-        bytes_read_failed_(0),
-        done_reading_failed_(0) {}
-
-  ~JobDelegate() override {}
-
-  void set_id(const ExtensionId& id) { id_ = id; }
-  void fail_next_read() { fail_next_read_ = true; }
-  void fail_next_done() { fail_next_done_ = true; }
-
-  // Return the number of BytesRead/DoneReading calls we actually failed,
-  // respectively.
-  int bytes_read_failed() { return bytes_read_failed_; }
-  int done_reading_failed() { return done_reading_failed_; }
-
-  ContentVerifyJob::FailureReason BytesRead(const ExtensionId& id,
-                                            int count,
-                                            const char* data) override {
-    if (id == id_ && fail_next_read_) {
-      fail_next_read_ = false;
-      bytes_read_failed_++;
-      return ContentVerifyJob::HASH_MISMATCH;
-    }
-    return ContentVerifyJob::NONE;
-  }
-
-  ContentVerifyJob::FailureReason DoneReading(const ExtensionId& id) override {
-    if (id == id_ && fail_next_done_) {
-      fail_next_done_ = false;
-      done_reading_failed_++;
-      return ContentVerifyJob::HASH_MISMATCH;
-    }
-    return ContentVerifyJob::NONE;
-  }
-
- private:
-  ExtensionId id_;
-  bool fail_next_read_;
-  bool fail_next_done_;
-  int bytes_read_failed_;
-  int done_reading_failed_;
-
-  DISALLOW_COPY_AND_ASSIGN(JobDelegate);
 };
 
 class JobObserver : public ContentVerifyJob::TestObserver {
@@ -449,19 +398,6 @@ class ForceInstallProvider : public ManagementPolicy::Provider {
   DISALLOW_COPY_AND_ASSIGN(ForceInstallProvider);
 };
 
-class ScopedContentVerifyJobDelegateOverride {
- public:
-  explicit ScopedContentVerifyJobDelegateOverride(JobDelegate* delegate) {
-    ContentVerifyJob::SetDelegateForTests(delegate);
-  }
-  ~ScopedContentVerifyJobDelegateOverride() {
-    ContentVerifyJob::SetDelegateForTests(nullptr);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedContentVerifyJobDelegateOverride);
-};
-
 }  // namespace
 
 class ContentVerifierTest : public ExtensionBrowserTest {
@@ -477,32 +413,6 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 
   bool ShouldEnableContentVerification() override { return true; }
-
-  virtual void OpenPageAndWaitForUnload() {
-    ScopedContentVerifyJobDelegateOverride scoped_delegate(&delegate_);
-    std::string id = "npnbmohejbjohgpjnmjagbafnjhkmgko";
-    delegate_.set_id(id);
-
-    // |unload_observer| needs to destroy before the ExtensionRegistry gets
-    // deleted, which happens before TearDownOnMainThread is called.
-    RegistryObserver unload_observer(ExtensionRegistry::Get(profile()));
-    const Extension* extension = InstallExtensionFromWebstore(
-        test_data_dir_.AppendASCII("content_verifier/v1.crx"), 1);
-    ASSERT_TRUE(extension);
-    ASSERT_EQ(id, extension->id());
-    page_url_ = extension->GetResourceURL("page.html");
-    // Wait for 0 navigations to complete because with PlzNavigate it's racy
-    // when the didstop IPC arrives relative to the tab being closed. The
-    // wait call below is what the tests care about.
-    ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
-        browser(), page_url_, 0, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
-
-    EXPECT_TRUE(unload_observer.WaitForUnload(id));
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-    int reasons = prefs->GetDisableReasons(id);
-    EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
-  }
 
   void TestContentScriptExtension(const std::string& crx_relpath,
                                   const std::string& id,
@@ -553,23 +463,8 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 
  protected:
-  JobDelegate delegate_;
   GURL page_url_;
 };
-
-IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnRead) {
-  EXPECT_EQ(0, delegate_.bytes_read_failed());
-  delegate_.fail_next_read();
-  OpenPageAndWaitForUnload();
-  EXPECT_EQ(1, delegate_.bytes_read_failed());
-}
-
-IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnDone) {
-  EXPECT_EQ(0, delegate_.done_reading_failed());
-  delegate_.fail_next_done();
-  OpenPageAndWaitForUnload();
-  EXPECT_EQ(1, delegate_.done_reading_failed());
-}
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   JobObserver job_observer;

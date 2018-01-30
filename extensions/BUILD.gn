@@ -71,6 +71,8 @@ static_library("test_support") {
     "browser/api_unittest.h",
     "browser/app_window/test_app_window_contents.cc",
     "browser/app_window/test_app_window_contents.h",
+    "browser/content_verifier/test_utils.cc",
+    "browser/content_verifier/test_utils.h",
     "browser/extension_error_test_util.cc",
     "browser/extension_error_test_util.h",
     "browser/extensions_test.cc",
