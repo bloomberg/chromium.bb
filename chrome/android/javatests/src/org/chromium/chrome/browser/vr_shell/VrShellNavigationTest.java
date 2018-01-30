@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
@@ -105,7 +104,7 @@ public class VrShellNavigationTest {
 
     private void enterFullscreenOrFail(ContentViewCore cvc)
             throws InterruptedException, TimeoutException {
-        DOMUtils.clickNode(cvc, "fullscreen");
+        DOMUtils.clickNode(cvc, "fullscreen", false /* goThroughRootAndroidView */);
         VrTestFramework.waitOnJavaScriptStep(cvc.getWebContents());
         Assert.assertTrue(DOMUtils.isFullscreen(cvc.getWebContents()));
     }
@@ -179,7 +178,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened 2D to a WebVR page.
      */
     @Test
-    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     public void test2dFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -228,7 +226,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a presenting WebVR to a 2D page.
      */
     @Test
-    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrPresentingTo2d()
@@ -246,7 +243,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a presenting WebVR to a WebVR page.
      */
     @Test
-    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrPresentingToWebVr()
@@ -264,7 +260,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened WebVR to a 2D page.
      */
     @Test
-    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrFullscreenTo2d()
@@ -282,7 +277,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened WebVR to a WebVR page.
      */
     @Test
-    @DisabledTest(message = "crbug.com/804808")
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrFullscreenToWebVr()

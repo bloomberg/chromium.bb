@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.graphics.Rect;
 import android.util.JsonReader;
+import android.view.View;
 
 import org.junit.Assert;
 
@@ -233,10 +234,32 @@ public class DOMUtils {
      */
     public static boolean clickNode(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
+        return clickNode(viewCore, nodeId, true /* goThroughRootAndroidView */);
+    }
+
+    /**
+     * Click a DOM node by its id, scrolling it into view first.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param nodeId The id of the node.
+     * @param goThroughRootAndroidView Whether the input should be routed through the Root View for
+     *        the CVC.
+     */
+    public static boolean clickNode(final ContentViewCore viewCore, String nodeId,
+            boolean goThroughRootAndroidView) throws InterruptedException, TimeoutException {
         scrollNodeIntoView(viewCore.getWebContents(), nodeId);
         int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
-        return TouchCommon.singleClickView(
-                viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+        if (goThroughRootAndroidView) {
+            return TouchCommon.singleClickView(
+                    viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+        } else {
+            // TODO(mthiesse): It should be sufficient to use viewCore.getContainerView() here
+            // directly, but content offsets are only updated in the EventForwarder when the
+            // CompositorViewHolder intercepts touch events.
+            View target =
+                    viewCore.getContainerView().getRootView().findViewById(android.R.id.content);
+            return TouchCommon.singleClickViewThroughTarget(
+                    viewCore.getContainerView(), target, clickTarget[0], clickTarget[1]);
+        }
     }
 
     /**
@@ -256,8 +279,7 @@ public class DOMUtils {
      * @param viewCore The ContentViewCore in which the node lives.
      * @param rect The rect to click.
      */
-    public static boolean clickRect(final ContentViewCore viewCore, Rect rect)
-            throws InterruptedException, TimeoutException {
+    public static boolean clickRect(final ContentViewCore viewCore, Rect rect) {
         int[] clickTarget = getClickTargetForBounds(viewCore, rect);
         return TouchCommon.singleClickView(
                 viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
@@ -280,7 +302,7 @@ public class DOMUtils {
      * <p>Note that content view should be located in the current position for a foreseeable
      * amount of time because this involves sleep to simulate touch to long press transition.
      * @param viewCore The ContentViewCore in which the node lives.
-     * @param nodeId The id of the node.
+     * @param jsCode js code that returns an element.
      */
     public static void longPressNodeByJs(final ContentViewCore viewCore, String jsCode)
             throws InterruptedException, TimeoutException {
