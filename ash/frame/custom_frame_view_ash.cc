@@ -89,7 +89,8 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     if (window_state_->IsFullscreen())
       return;
 
-    if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars()) {
+    if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
+            nullptr)) {
       immersive_fullscreen_controller_->SetEnabled(
           ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
     }
@@ -131,7 +132,8 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override {
     if (Shell::Get()->tablet_mode_controller() &&
-        Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars()) {
+        Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
+            nullptr)) {
       DCHECK(immersive_fullscreen_controller_);
       if (window_state->IsMinimized() &&
           immersive_fullscreen_controller_->IsEnabled()) {
@@ -549,8 +551,7 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
 
   const bool should_hide_titlebar_in_tablet_mode =
       Shell::Get()->tablet_mode_controller() &&
-      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars() &&
-      frame_->IsMaximized();
+      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(frame_);
 
   if (should_hide_titlebar_in_tablet_mode)
     return 0;

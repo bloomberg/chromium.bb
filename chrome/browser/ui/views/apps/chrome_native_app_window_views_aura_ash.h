@@ -113,6 +113,9 @@ class ChromeNativeAppWindowViewsAuraAsh
   void DestroyAnyExclusiveAccessBubble() override;
   bool CanTriggerOnMouse() const override;
 
+  // WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            ImmersiveWorkFlow);
@@ -133,8 +136,8 @@ class ChromeNativeAppWindowViewsAuraAsh
   void OnMenuClosed();
 
   // Helper function which returns true if in tablet mode, the auto hide
-  // titlebars feature is turned on, and the widget is maximizable.
-  bool CanAutohideTitlebarsInTabletMode() const;
+  // titlebars feature is turned on, and the widget is resizable.
+  bool ShouldUseImmersiveMode() const;
 
   // Used to put non-frameless windows into immersive fullscreen on ChromeOS. In
   // immersive fullscreen, the window header (title bar and window controls)

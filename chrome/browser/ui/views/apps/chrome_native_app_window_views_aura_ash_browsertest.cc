@@ -60,6 +60,21 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   tablet_mode_controller->EnableTabletModeWindowManager(false);
   tablet_mode_controller->FlushForTesting();
   EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
+  window->SetFullscreen(extensions::AppWindow::FULLSCREEN_TYPE_NONE);
+
+  // Verify that minimized windows do not have immersive mode enabled.
+  window->Minimize();
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  window->Show();
+  EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
+  window->Minimize();
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
 
   CloseAppWindow(app_window);
 }
