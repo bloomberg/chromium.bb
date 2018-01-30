@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/test/controllable_http_response.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -30,6 +29,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
@@ -759,7 +759,8 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
   const char* const kBodyContents = "This is the data as you requested.";
 
   net::EmbeddedTestServer server;
-  ControllableHttpResponse response_controller(&server, kPath);
+  net::test_server::ControllableHttpResponse response_controller(&server,
+                                                                 kPath);
   ASSERT_TRUE(server.Start());
 
   network::ResourceRequest request =
@@ -816,7 +817,8 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   const char* const kBodyContentsSecondHalf = "This is the second half.";
 
   net::EmbeddedTestServer server;
-  ControllableHttpResponse response_controller(&server, kPath);
+  net::test_server::ControllableHttpResponse response_controller(&server,
+                                                                 kPath);
   ASSERT_TRUE(server.Start());
 
   network::ResourceRequest request =
@@ -862,7 +864,8 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   const char* const kBodyContentsFirstHalf = "This is the first half.";
 
   net::EmbeddedTestServer server;
-  ControllableHttpResponse response_controller(&server, kPath);
+  net::test_server::ControllableHttpResponse response_controller(&server,
+                                                                 kPath);
   ASSERT_TRUE(server.Start());
 
   network::ResourceRequest request =
@@ -902,7 +905,8 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   const char* const kBodyContentsSecondHalf = "This is the second half.";
 
   net::EmbeddedTestServer server;
-  ControllableHttpResponse response_controller(&server, kPath);
+  net::test_server::ControllableHttpResponse response_controller(&server,
+                                                                 kPath);
   ASSERT_TRUE(server.Start());
 
   network::ResourceRequest request =

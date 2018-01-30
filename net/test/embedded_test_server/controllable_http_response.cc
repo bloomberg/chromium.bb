@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/controllable_http_response.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace content {
+namespace net {
 
-class ControllableHttpResponse::Interceptor
-    : public net::test_server::HttpResponse {
+namespace test_server {
+
+class ControllableHttpResponse::Interceptor : public HttpResponse {
  public:
   explicit Interceptor(
       base::WeakPtr<ControllableHttpResponse> controller,
@@ -20,9 +21,8 @@ class ControllableHttpResponse::Interceptor
   ~Interceptor() override {}
 
  private:
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const SendBytesCallback& send,
+                    const SendCompleteCallback& done) override {
     controller_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&ControllableHttpResponse::OnRequest, controller_,
@@ -36,7 +36,7 @@ class ControllableHttpResponse::Interceptor
 };
 
 ControllableHttpResponse::ControllableHttpResponse(
-    net::test_server::EmbeddedTestServer* embedded_test_server,
+    EmbeddedTestServer* embedded_test_server,
     const std::string& relative_url)
     : weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -85,8 +85,8 @@ void ControllableHttpResponse::Done() {
 void ControllableHttpResponse::OnRequest(
     scoped_refptr<base::SingleThreadTaskRunner>
         embedded_test_server_task_runner,
-    const net::test_server::SendBytesCallback& send,
-    const net::test_server::SendCompleteCallback& done) {
+    const SendBytesCallback& send,
+    const SendCompleteCallback& done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!embedded_test_server_task_runner_)
       << "A ControllableHttpResponse can only handle one request at a time";
@@ -98,13 +98,12 @@ void ControllableHttpResponse::OnRequest(
 
 // Helper function used in the ControllableHttpResponse constructor.
 // static
-std::unique_ptr<net::test_server::HttpResponse>
-ControllableHttpResponse::RequestHandler(
+std::unique_ptr<HttpResponse> ControllableHttpResponse::RequestHandler(
     base::WeakPtr<ControllableHttpResponse> controller,
     scoped_refptr<base::SingleThreadTaskRunner> controller_task_runner,
     bool* available,
     const std::string& relative_url,
-    const net::test_server::HttpRequest& request) {
+    const HttpRequest& request) {
   if (*available && request.relative_url == relative_url) {
     *available = false;
     return std::make_unique<ControllableHttpResponse::Interceptor>(
@@ -113,4 +112,6 @@ ControllableHttpResponse::RequestHandler(
   return nullptr;
 }
 
-}  // namespace content
+}  // namespace test_server
+
+}  // namespace net

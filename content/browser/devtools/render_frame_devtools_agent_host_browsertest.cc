@@ -14,10 +14,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 
 namespace content {
 
@@ -49,8 +49,10 @@ class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
 // See https://crbug.com/695203.
 IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
                        CancelCrossOriginNavigationAfterReadyToCommit) {
-  ControllableHttpResponse response_b(embedded_test_server(), "/response_b");
-  ControllableHttpResponse response_c(embedded_test_server(), "/response_c");
+  net::test_server::ControllableHttpResponse response_b(embedded_test_server(),
+                                                        "/response_b");
+  net::test_server::ControllableHttpResponse response_c(embedded_test_server(),
+                                                        "/response_c");
   EXPECT_TRUE(embedded_test_server()->Start());
 
   // 1) Loads a document.
