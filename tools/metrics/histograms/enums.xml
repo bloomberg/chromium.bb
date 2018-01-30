@@ -39408,6 +39408,7 @@ Called by update_net_trust_anchors.py.-->
     Signout including the primary account.
   </int>
   <int value="2" label="SignoutSecondary">Signout only secondary accounts.</int>
+  <int value="3" label="EnableSync">Enable Sync after signin.</int>
 </enum>
 
 <enum name="SigninDiceTokenFetchResult">
