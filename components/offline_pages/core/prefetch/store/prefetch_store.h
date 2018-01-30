@@ -86,7 +86,7 @@ class PrefetchStore {
     }
 
     TRACE_EVENT_ASYNC_BEGIN1(
-        "offline_pages", "Prefetch Store: Command execution", this,
+        "offline_pages", "Prefetch Store: task execution", this,
         "is store loaded",
         initialization_status_ == InitializationStatus::SUCCESS);
     // Ensure that any scheduled close operations are canceled.
@@ -128,10 +128,16 @@ class PrefetchStore {
         base::BindOnce(&PrefetchStore::CloseInternal,
                        closing_weak_ptr_factory_.GetWeakPtr()),
         kClosingDelay);
-    TRACE_EVENT_ASYNC_END0("offline_pages", "Prefetch Store: Command execution",
-                           this);
 
+    // Note: the time recorded for this trace step will include thread hop wait
+    // times to the background thread and back.
+    TRACE_EVENT_ASYNC_STEP_PAST0(
+        "offline_pages", "Prefetch Store: task execution", this, "Task");
     std::move(result_callback).Run(std::move(result));
+    TRACE_EVENT_ASYNC_STEP_PAST0(
+        "offline_pages", "Prefetch Store: task execution", this, "Callback");
+    TRACE_EVENT_ASYNC_END0("offline_pages", "Prefetch Store: task execution",
+                           this);
   }
 
   // Internal function initiating the closing.

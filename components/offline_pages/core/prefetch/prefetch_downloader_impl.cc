@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/offline_pages/core/offline_event_logger.h"
@@ -146,6 +147,15 @@ void PrefetchDownloaderImpl::OnDownloadServiceReady(
         success_downloads) {
   DCHECK_EQ(DownloadServiceStatus::INITIALIZING, download_service_status_);
   download_service_status_ = DownloadServiceStatus::STARTED;
+  // Given the imposed simultaneous downloads limits, outstanding_download_ids
+  // will only ever contain a handful of elements and so only a negligible
+  // performance impact is expected from the trace-only loop below.
+  for (const std::string& outstanding_download_id : outstanding_download_ids) {
+    TRACE_EVENT_ASYNC_BEGIN2(
+        "offline_pages", "PrefetchDownloaderImpl: downloading article",
+        std::hash<std::string>{}(outstanding_download_id), "download_id",
+        outstanding_download_id, "resumed after restart", "true");
+  }
 
   prefetch_service_->GetLogger()->RecordActivity("Downloader: Service ready.");
 
@@ -177,6 +187,9 @@ void PrefetchDownloaderImpl::OnDownloadSucceeded(
     const std::string& download_id,
     const base::FilePath& file_path,
     int64_t file_size) {
+  TRACE_EVENT_ASYNC_END1(
+      "offline_pages", "PrefetchDownloaderImpl: downloading article",
+      std::hash<std::string>{}(download_id), "succeeded", "true");
   prefetch_service_->GetLogger()->RecordActivity(
       "Downloader: Download succeeded, download_id=" + download_id);
   NotifyDispatcher(prefetch_service_,
@@ -184,6 +197,9 @@ void PrefetchDownloaderImpl::OnDownloadSucceeded(
 }
 
 void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {
+  TRACE_EVENT_ASYNC_END1(
+      "offline_pages", "PrefetchDownloaderImpl: downloading article",
+      std::hash<std::string>{}(download_id), "succeeded", "false");
   PrefetchDownloadResult result;
   result.download_id = download_id;
   prefetch_service_->GetLogger()->RecordActivity(
@@ -206,8 +222,13 @@ void PrefetchDownloaderImpl::OnStartDownload(
   // to simplify the control flow since this situation should rarely happen. The
   // Download.Service.Request.StartResult.OfflinePage histogram tracks these
   // cases and would signal the need to revisit this decision.
-  if (result != download::DownloadParams::StartResult::ACCEPTED)
+  if (result != download::DownloadParams::StartResult::ACCEPTED) {
     OnDownloadFailed(download_id);
+  } else {
+    TRACE_EVENT_ASYNC_BEGIN1(
+        "offline_pages", "PrefetchDownloaderImpl: downloading article",
+        std::hash<std::string>{}(download_id), "download_id", download_id);
+  }
 }
 
 void PrefetchDownloaderImpl::CleanupDownloads(

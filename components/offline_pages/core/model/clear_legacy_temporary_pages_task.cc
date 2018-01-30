@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -128,6 +129,8 @@ ClearLegacyTemporaryPagesTask::ClearLegacyTemporaryPagesTask(
 ClearLegacyTemporaryPagesTask::~ClearLegacyTemporaryPagesTask() {}
 
 void ClearLegacyTemporaryPagesTask::Run() {
+  TRACE_EVENT_ASYNC_BEGIN0("offline_pages",
+                           "ClearLegacyTemporaryPagesTask running", this);
   std::vector<std::string> temp_namespaces =
       policy_controller_->GetNamespacesRemovedOnCacheReset();
   store_->Execute(
@@ -145,6 +148,9 @@ void ClearLegacyTemporaryPagesTask::OnClearLegacyTemporaryPagesDone(
   // indicating which part failed.
   DVLOG(1) << "ClearLegacyTemporaryPagesTask returns with result: " << result;
   TaskComplete();
+  TRACE_EVENT_ASYNC_END1("offline_pages",
+                         "ClearLegacyTemporaryPagesTask running", this,
+                         "result", result);
 }
 
 }  // namespace offline_pages
