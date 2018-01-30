@@ -93,6 +93,12 @@ void GeoNotifier::TimerFired(TimerBase*) {
   // TODO(yukishiino): Remove this check once we understand the cause.
   // https://crbug.com/792604
   CHECK(!geolocation_->GetExecutionContext()->IsContextDestroyed());
+  // As the timer fires asynchronously, it's possible that |geolocation_|
+  // no longer owns this notifier, i.e. |geolocation_| is no longer performing
+  // wrapper-tracing. In that case, the underlying V8 function may not be alive.
+  if (!geolocation_->DoesOwnNotifier(this)) {
+    return;  // Do not invoke anything because of no owner geolocation.
+  }
 
   // Test for fatal error first. This is required for the case where the
   // LocalFrame is disconnected and requests are cancelled.

@@ -99,6 +99,9 @@ class MODULES_EXPORT Geolocation final
   // Discards the notifier if it is a oneshot because it timed it.
   void RequestTimedOut(GeoNotifier*);
 
+  // Returns true if this geolocation still owns the given notifier.
+  bool DoesOwnNotifier(GeoNotifier*) const;
+
   // Inherited from PageVisibilityObserver.
   void PageVisibilityChanged() override;
 
