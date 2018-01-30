@@ -11,12 +11,15 @@
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/test/events_test_utils.h"
+#include "ui/events/test/keyboard_layout.h"
 #include "ui/events/test/test_event_target.h"
 #include "ui/gfx/transform.h"
 
@@ -1122,5 +1125,123 @@ TEST(EventTest, UpdateForRootTransformation) {
     EXPECT_EQ(gfx::Point(40, 40), targeted.root_location());
   }
 }
+
+#if defined(OS_WIN)
+namespace {
+
+const struct AltGraphEventTestCase {
+  KeyboardCode key_code;
+  KeyboardLayout layout;
+  std::vector<KeyboardCode> modifier_key_codes;
+  int expected_flags;
+} kAltGraphEventTestCases[] = {
+    // US English -> AltRight never behaves as AltGraph.
+    {VKEY_C,
+     KEYBOARD_LAYOUT_ENGLISH_US,
+     {VKEY_RMENU, VKEY_LCONTROL, VKEY_MENU, VKEY_CONTROL},
+     EF_ALT_DOWN | EF_CONTROL_DOWN},
+    {VKEY_E,
+     KEYBOARD_LAYOUT_ENGLISH_US,
+     {VKEY_RMENU, VKEY_LCONTROL, VKEY_MENU, VKEY_CONTROL},
+     EF_ALT_DOWN | EF_CONTROL_DOWN},
+
+    // French -> Always expect AltGraph if VKEY_RMENU is pressed.
+    {VKEY_C,
+     KEYBOARD_LAYOUT_FRENCH,
+     {VKEY_RMENU, VKEY_LCONTROL, VKEY_MENU, VKEY_CONTROL},
+     EF_ALTGR_DOWN},
+    {VKEY_E,
+     KEYBOARD_LAYOUT_FRENCH,
+     {VKEY_RMENU, VKEY_LCONTROL, VKEY_MENU, VKEY_CONTROL},
+     EF_ALTGR_DOWN},
+
+    // French -> Expect Control+Alt is AltGraph on AltGraph-shifted keys.
+    {VKEY_C,
+     KEYBOARD_LAYOUT_FRENCH,
+     {VKEY_LMENU, VKEY_LCONTROL, VKEY_MENU, VKEY_CONTROL},
+     EF_ALT_DOWN | EF_CONTROL_DOWN},
+    {VKEY_E,
+     KEYBOARD_LAYOUT_FRENCH,
+     {VKEY_LMENU, VKEY_LCONTROL, VKEY_MENU, VKEY_CONTROL},
+     EF_ALTGR_DOWN},
+};
+
+class AltGraphEventTest : public testing::TestWithParam<
+                              std::tr1::tuple<UINT, AltGraphEventTestCase>> {
+ public:
+  AltGraphEventTest()
+      : msg_({nullptr, message_type(),
+              static_cast<WPARAM>(test_case().key_code)}) {
+    // Save the current keyboard layout and state, to restore later.
+    CHECK(GetKeyboardState(original_keyboard_state_));
+    original_keyboard_layout_ = GetKeyboardLayout(0);
+
+    // Configure specified layout, and update keyboard state for specified
+    // modifier keys.
+    CHECK(ActivateKeyboardLayout(GetPlatformKeyboardLayout(test_case().layout),
+                                 0));
+    BYTE test_keyboard_state[256] = {};
+    for (const auto& key_code : test_case().modifier_key_codes)
+      test_keyboard_state[key_code] = 0x80;
+    CHECK(SetKeyboardState(test_keyboard_state));
+  }
+
+  ~AltGraphEventTest() {
+    // Restore the original keyboard layout & key states.
+    CHECK(ActivateKeyboardLayout(original_keyboard_layout_, 0));
+    CHECK(SetKeyboardState(original_keyboard_state_));
+  }
+
+ protected:
+  UINT message_type() const { return std::tr1::get<0>(GetParam()); }
+  const AltGraphEventTestCase& test_case() const {
+    return std::tr1::get<1>(GetParam());
+  }
+
+  const MSG msg_;
+  base::test::ScopedFeatureList feature_list_;
+  BYTE original_keyboard_state_[256] = {};
+  HKL original_keyboard_layout_ = nullptr;
+};
+
+}  // namespace
+
+TEST_P(AltGraphEventTest, OldKeyEventAltGraphModifier) {
+  feature_list_.InitFromCommandLine("", "FixAltGraph");
+
+  // Old behaviour always sets AltGraph modifier whenever both Control and Alt
+  // are pressed.
+  KeyEvent event(msg_);
+  EXPECT_EQ(event.flags() & (EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN),
+            EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN);
+}
+
+TEST_P(AltGraphEventTest, KeyEventAltGraphModifer) {
+  feature_list_.InitFromCommandLine("FixAltGraph", "");
+
+  KeyEvent event(msg_);
+  if (message_type() == WM_CHAR) {
+    // By definition, if we receive a WM_CHAR message when Control and Alt are
+    // pressed, it indicates AltGraph.
+    EXPECT_EQ(event.flags() & (EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN),
+              EF_ALTGR_DOWN);
+  } else {
+    EXPECT_EQ(event.flags() & (EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN),
+              test_case().expected_flags);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    WM_KEY,
+    AltGraphEventTest,
+    ::testing::Combine(::testing::Values(WM_KEYDOWN, WM_KEYUP),
+                       ::testing::ValuesIn(kAltGraphEventTestCases)));
+INSTANTIATE_TEST_CASE_P(
+    WM_CHAR,
+    AltGraphEventTest,
+    ::testing::Combine(::testing::Values(WM_CHAR),
+                       ::testing::ValuesIn(kAltGraphEventTestCases)));
+
+#endif  // defined(OS_WIN)
 
 }  // namespace ui

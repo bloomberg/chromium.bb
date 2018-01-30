@@ -65,10 +65,6 @@ bool HasControlAndAlt(int flags) {
   return (flags & kControlAndAltFlags) == kControlAndAltFlags;
 }
 
-int SetControlAndAltToAltGraph(int flags) {
-  return (flags & ~kControlAndAltFlags) | EF_ALTGR_DOWN;
-}
-
 int ReplaceAltGraphWithControlAndAlt(int flags) {
   return (flags & EF_ALTGR_DOWN)
              ? ((flags & ~EF_ALTGR_DOWN) | kControlAndAltFlags)
@@ -322,12 +318,10 @@ DomKey PlatformKeyMap::DomKeyFromKeyboardCodeImpl(KeyboardCode key_code,
     if (it != printable_keycode_to_key_.end()) {
       key = it->second;
       if (key != DomKey::NONE) {
-        // TODO(25503): Map Ctrl+Alt to AltGraph if new behaviour is enabled.
-        if (HasControlAndAlt(try_flags) &&
-            base::FeatureList::IsEnabled(kFixAltGraphModifier)) {
-          // Printable character generated via Control+Alt means AltGraph.
-          *flags = SetControlAndAltToAltGraph(*flags);
-        }
+        // If we find a character with |try_flags| including Control and Alt
+        // then this is an AltGraph-shifted event.
+        if (HasControlAndAlt(try_flags))
+          *flags = ReplaceControlAndAltWithAltGraph(*flags);
         return key;
       }
     }
@@ -359,6 +353,15 @@ DomKey PlatformKeyMap::DomKeyFromKeyboardCode(KeyboardCode key_code,
   HKL current_layout = ::GetKeyboardLayout(0);
   platform_key_map->UpdateLayout(current_layout);
   return platform_key_map->DomKeyFromKeyboardCodeImpl(key_code, flags);
+}
+
+// static
+int PlatformKeyMap::ReplaceControlAndAltWithAltGraph(int flags) {
+  if (!HasControlAndAlt(flags))
+    return flags;
+  if (!IsFixAltGraphEnabled())
+    return flags;
+  return (flags & ~kControlAndAltFlags) | EF_ALTGR_DOWN;
 }
 
 // static
