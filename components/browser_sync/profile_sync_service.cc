@@ -605,7 +605,7 @@ void ProfileSyncService::OnGetTokenFailure(
         UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError", AUTH_ERROR_ENCOUNTERED,
                                   AUTH_ERROR_LIMIT);
       }
-      // Fallthrough.
+      FALLTHROUGH;
     }
     default: {
       if (error.state() != GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
