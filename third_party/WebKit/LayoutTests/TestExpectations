@@ -649,6 +649,10 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 # Found 2061 tests; running 2060, skipping 1.
 # 2060 tests ran as expected (1968 passed, 92 didn't).
 
+# The outofblink-cors version of fetch-event.https.html, below, is also timeout-flaky.
+crbug.com/807014 external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
+crbug.com/807014 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
+
 # Crashing tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Failure Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event.https.html [ Crash Timeout ]
