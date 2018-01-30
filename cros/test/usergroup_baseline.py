@@ -62,6 +62,10 @@ USER_BASELINE_JETSTREAM = dict((e.user, e) for e in (
     UserEntry(user='ap-monitor', uid=1102, gid=1103),
 ))
 
+USER_BASELINE_TERMINA = dict((e.user, e) for e in (
+    UserEntry(user='lxd', uid=298, gid=298),
+))
+
 USER_BOARD_BASELINES = {
     'lakitu': USER_BASELINE_LAKITU,
     'lakitu-gpu': USER_BASELINE_LAKITU,
@@ -72,6 +76,8 @@ USER_BOARD_BASELINES = {
     'gale': USER_BASELINE_JETSTREAM,
     'storm': USER_BASELINE_JETSTREAM,
     'whirlwind': USER_BASELINE_JETSTREAM,
+    'tael': USER_BASELINE_TERMINA,
+    'tatl': USER_BASELINE_TERMINA,
 }
 
 GROUP_BASELINE = dict((e.group, e) for e in (
@@ -185,6 +191,10 @@ GROUP_BASELINE_RIALTO = dict((e.group, e) for e in (
     GroupEntry(group='rialtod', gid=400, users={'rialto'}),
 ))
 
+GROUP_BASELINE_TERMINA = dict((e.group, e) for e in (
+    GroupEntry(group='lxd', gid=298, users={'lxd', 'chronos'}),
+))
+
 GROUP_BOARD_BASELINES = {
     'lakitu': GROUP_BASELINE_LAKITU,
     'lakitu-gpu': GROUP_BASELINE_LAKITU,
@@ -196,4 +206,6 @@ GROUP_BOARD_BASELINES = {
     'storm': GROUP_BASELINE_JETSTREAM,
     'whirlwind': GROUP_BASELINE_JETSTREAM,
     'veyron_rialto': GROUP_BASELINE_RIALTO,
+    'tael': GROUP_BASELINE_TERMINA,
+    'tatl': GROUP_BASELINE_TERMINA,
 }
