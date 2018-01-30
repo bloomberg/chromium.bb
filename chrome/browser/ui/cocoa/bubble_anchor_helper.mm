@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/bubble_anchor_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
@@ -47,9 +48,13 @@ NSPoint GetPageInfoAnchorPointForBrowser(Browser* browser,
     // Position the bubble on the left of the screen if there is no page info
     // button to point at.
     NSRect contentFrame = [[parentWindow contentView] frame];
-    anchor = NSMakePoint(
-        NSMinX(contentFrame) + bubble_anchor_util::kNoToolbarLeftOffset,
-        NSMaxY(contentFrame));
+    CGFloat x_offset =
+        NSMinX(contentFrame) + bubble_anchor_util::kNoToolbarLeftOffset;
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+      x_offset =
+          NSMaxX(contentFrame) - bubble_anchor_util::kNoToolbarLeftOffset;
+    }
+    anchor = NSMakePoint(x_offset, NSMaxY(contentFrame));
   }
 
   return ui::ConvertPointFromWindowToScreen(parentWindow, anchor);
