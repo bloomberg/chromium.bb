@@ -49,6 +49,39 @@ int ChromeMain(int argc, const char** argv);
 }
 #endif
 
+namespace {
+
+#if BUILDFLAG(ENABLE_MUS)
+void ConfigureMus(content::ContentMainParams* params) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+#if defined(OS_CHROMEOS)
+  // --mash implies --mus, so check it first.
+  if (command_line->HasSwitch(switches::kMash)) {
+    params->create_discardable_memory = false;
+    params->env_mode = aura::Env::Mode::MUS;
+    // Don't add --mus if the user had both --mash and --mus.
+    if (!command_line->HasSwitch(switches::kMus))
+      command_line->AppendSwitch(switches::kMus);
+    command_line->AppendSwitch(switches::kMusHostingViz);
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  // In config==mus the ui service runs in process and is shut down well before
+  // the rest of Chrome. Have Chrome create the DiscardableSharedMemoryManager
+  // to ensure the DiscardableSharedMemoryManager is destroyed later on. Doing
+  // this avoids lifetime issues when internal implementation details of
+  // DiscardableSharedMemoryManager assume DiscardableSharedMemoryManager is
+  // long lived.
+  if (command_line->HasSwitch(switches::kMus)) {
+    params->create_discardable_memory = true;
+    params->env_mode = aura::Env::Mode::MUS;
+  }
+}
+#endif  // BUILDFLAG(ENABLE_MUS)
+
+}  // namespace
+
 #if defined(OS_WIN)
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
@@ -105,26 +138,8 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_MUS)
-  // In config==mus the ui service runs in process and is shut down well before
-  // the rest of Chrome. Have Chrome create the DiscardableSharedMemoryManager
-  // to ensure the DiscardableSharedMemoryManager is destroyed later on. Doing
-  // this avoids lifetime issues when internal implementation details of
-  // DiscardableSharedMemoryManager assume DiscardableSharedMemoryManager is
-  // long lived.
-  if (command_line->HasSwitch(switches::kMus)) {
-    params.create_discardable_memory = true;
-    params.env_mode = aura::Env::Mode::MUS;
-  }
-#if defined(OS_CHROMEOS)
-  if (command_line->HasSwitch(switches::kMash)) {
-    params.create_discardable_memory = false;
-    params.env_mode = aura::Env::Mode::MUS;
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMus);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kMusHostingViz);
-  }
-#endif  // defined(OS_CHROMEOS)
-#endif  // BUILDFLAG(ENABLE_MUS)
+  ConfigureMus(&params);
+#endif
 
   int rv = content::ContentMain(params);
 
