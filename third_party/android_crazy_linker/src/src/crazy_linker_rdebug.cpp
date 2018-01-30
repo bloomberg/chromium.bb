@@ -411,7 +411,7 @@ void RDebug::WriteLinkMapField(link_map_t** link_pointer, link_map_t* entry) {
 }
 
 void RDebug::AddEntryImpl(link_map_t* entry) {
-  ScopedGlobalLock lock;
+  ScopedLockedGlobals globals;  // TODO(digit): Remove this lock.
   LOG("Adding: %s", entry->l_name);
   if (!init_)
     Init();
@@ -469,7 +469,7 @@ void RDebug::AddEntryImpl(link_map_t* entry) {
 }
 
 void RDebug::DelEntryImpl(link_map_t* entry) {
-  ScopedGlobalLock lock;
+  ScopedLockedGlobals globals;  // TODO(digit): Remove this lock.
   LOG("Deleting: %s", entry->l_name);
   if (!r_debug_)
     return;

@@ -12,10 +12,11 @@ namespace crazy {
 
 TEST(Globals, Get) {
   SystemMock sys;
-  ASSERT_TRUE(Globals::Get());
-  ASSERT_TRUE(Globals::GetLibraries());
-  ASSERT_TRUE(Globals::GetSearchPaths());
-  ASSERT_TRUE(Globals::GetRDebug());
+  Globals* globals = Globals::Get();
+  ASSERT_TRUE(globals);
+  ASSERT_TRUE(globals->libraries());
+  ASSERT_TRUE(globals->search_path_list());
+  ASSERT_TRUE(globals->rdebug());
 }
 
 }  // namespace crazy
