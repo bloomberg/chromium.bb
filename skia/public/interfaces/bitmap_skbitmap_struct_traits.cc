@@ -74,8 +74,8 @@ skia::mojom::ColorType SkColorTypeToMojo(SkColorType type) {
       return skia::mojom::ColorType::BGRA_8888;
     case kGray_8_SkColorType:
       return skia::mojom::ColorType::GRAY_8;
-    case kRGBA_F16_SkColorType:
-      // these are unsupported
+    default:
+      // Skia has color types not used by Chrome.
       break;
   }
   NOTREACHED();
