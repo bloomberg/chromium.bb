@@ -41,13 +41,7 @@ class BASE_EXPORT HistogramSnapshotManager final {
   // |Histogram::kNoFlags|.
   void PrepareDeltas(const std::vector<HistogramBase*>& histograms,
                      HistogramBase::Flags flags_to_set,
-                     HistogramBase::Flags required_flags) {
-    for (HistogramBase* const histogram : histograms) {
-      histogram->SetFlags(flags_to_set);
-      if ((histogram->flags() & required_flags) == required_flags)
-        PrepareDelta(histogram);
-    }
-  }
+                     HistogramBase::Flags required_flags);
 
   // When the collection is not so simple as can be done using a single
   // iterator, the steps can be performed separately. Call PerpareDelta()
