@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -109,10 +110,6 @@ enum class ConnectionInitializationStatusCode {
   NUM_ITEMS
 };
 
-int ClampInt(int value, int low, int hi) {
-  return std::max(std::min(value, hi), low);
-}
-
 base::string16 CreateNotificationTitle(
     const message_center::Notification& notification) {
   base::string16 title;
@@ -164,8 +161,8 @@ gfx::Image ResizeImageToFdoMaxSize(const gfx::Image& image) {
   const SkBitmap* image_bitmap = image.ToSkBitmap();
   double scale = std::min(static_cast<double>(kMaxImageWidth) / width,
                           static_cast<double>(kMaxImageHeight) / height);
-  width = ClampInt(scale * width, 1, kMaxImageWidth);
-  height = ClampInt(scale * height, 1, kMaxImageHeight);
+  width = base::ClampToRange<int>(scale * width, 1, kMaxImageWidth);
+  height = base::ClampToRange<int>(scale * height, 1, kMaxImageHeight);
   return gfx::Image(
       gfx::ImageSkia::CreateFrom1xBitmap(skia::ImageOperations::Resize(
           *image_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, width,
