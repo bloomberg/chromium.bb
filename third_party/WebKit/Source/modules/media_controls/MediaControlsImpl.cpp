@@ -610,23 +610,27 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
 }
 
 MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
-  if (is_scrubbing_)
+  HTMLMediaElement::NetworkState network_state =
+      MediaElement().getNetworkState();
+  HTMLMediaElement::ReadyState ready_state = MediaElement().getReadyState();
+
+  if (is_scrubbing_ && ready_state != HTMLMediaElement::kHaveNothing)
     return ControlsState::kScrubbing;
 
-  switch (MediaElement().getNetworkState()) {
+  switch (network_state) {
     case HTMLMediaElement::kNetworkEmpty:
     case HTMLMediaElement::kNetworkNoSource:
       return ControlsState::kNoSource;
     case HTMLMediaElement::kNetworkLoading:
-      if (MediaElement().getReadyState() == HTMLMediaElement::kHaveNothing)
+      if (ready_state == HTMLMediaElement::kHaveNothing)
         return ControlsState::kLoadingMetadata;
       if (!MediaElement().paused() &&
-          MediaElement().getReadyState() != HTMLMediaElement::kHaveEnoughData) {
+          ready_state != HTMLMediaElement::kHaveEnoughData) {
         return ControlsState::kBuffering;
       }
       break;
     case HTMLMediaElement::kNetworkIdle:
-      if (MediaElement().getReadyState() == HTMLMediaElement::kHaveNothing)
+      if (ready_state == HTMLMediaElement::kHaveNothing)
         return ControlsState::kNotLoaded;
       break;
   }
