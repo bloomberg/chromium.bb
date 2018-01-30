@@ -17,7 +17,7 @@ void Error::Set(const char* message) {
     message = "";
   strlcpy(buff_, message, sizeof(buff_));
 
-  LOG("--- ERROR: %s\n", buff_);
+  LOG("--- ERROR: %s", buff_);
 }
 
 void Error::Append(const char* message) {
@@ -25,7 +25,7 @@ void Error::Append(const char* message) {
     return;
   strlcat(buff_, message, sizeof(buff_));
 
-  LOG("--- ERROR: %s\n", buff_);
+  LOG("--- ERROR: %s", buff_);
 }
 
 void Error::Format(const char* fmt, ...) {
@@ -34,7 +34,7 @@ void Error::Format(const char* fmt, ...) {
   vsnprintf(buff_, sizeof(buff_), fmt, args);
   va_end(args);
 
-  LOG("--- ERROR: %s\n", buff_);
+  LOG("--- ERROR: %s", buff_);
 }
 
 void Error::AppendFormat(const char* fmt, ...) {
@@ -44,7 +44,7 @@ void Error::AppendFormat(const char* fmt, ...) {
   vsnprintf(buff_ + buff_len, sizeof(buff_) - buff_len, fmt, args);
   va_end(args);
 
-  LOG("--- ERROR: %s\n", buff_);
+  LOG("--- ERROR: %s", buff_);
 }
 
 }  // namespace crazy

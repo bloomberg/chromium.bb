@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 namespace crazy {
 
@@ -20,47 +21,75 @@ namespace crazy {
 
 namespace {
 
-void LogArgs(const char* fmt, va_list args, bool print_error, int error) {
-  const size_t buffer_size = 4096;
-  char* buffer = reinterpret_cast<char*>(::malloc(buffer_size));
-  int ret;
+struct LogBuffer {
+  LogBuffer() = default;
 
-  ret = vsnprintf(buffer, buffer_size, fmt, args);
-  if (ret >= static_cast<int>(buffer_size))
-    ret = static_cast<int>(buffer_size) - 1;
-
-  if (print_error) {
-    strlcat(buffer, ": ", buffer_size);
-    strlcat(buffer, strerror(error), buffer_size);
+  void Append(const char* str) {
+    int avail = kSize - pos_;
+    int ret = snprintf(buffer_ + pos_, avail, "%s", str);
+    if (ret >= avail) {
+      pos_ = kSize - 1;
+    } else {
+      pos_ += ret;
+    }
   }
 
-  // First, send to stderr.
-  fprintf(stderr, "%.*s", ret, buffer);
+  void AppendV(const char* fmt, va_list args) {
+    int avail = kSize - pos_;
+    int ret = vsnprintf(buffer_ + pos_, kSize - pos_, fmt, args);
+    if (ret >= avail) {
+      pos_ = kSize - 1;
+    } else {
+      pos_ += ret;
+    }
+  }
+
+  void Print() {
+    // First, send to stderr.
+    fprintf(stderr, "%.*s\n", pos_, buffer_);
 
 #ifdef __ANDROID__
-  // Then to the Android log.
-  __android_log_write(ANDROID_LOG_INFO, "crazy_linker", buffer);
+    // Then to the Android log.
+    __android_log_write(ANDROID_LOG_INFO, "crazy_linker", buffer_);
 #endif
+  }
 
-  ::free(buffer);
-}
+ private:
+  static constexpr int kSize = 4096;
+  int pos_ = 0;
+  char buffer_[kSize];
+};
 
 }  // namespace
 
-void Log(const char* fmt, ...) {
+void Log(const char* location, const char* fmt, ...) {
   int old_errno = errno;
   va_list args;
   va_start(args, fmt);
-  LogArgs(fmt, args, false, -1);
+  {
+    LogBuffer log;
+    log.Append(location);
+    log.Append(": ");
+    log.AppendV(fmt, args);
+    log.Print();
+  }
   va_end(args);
   errno = old_errno;
 }
 
-void LogErrno(const char* fmt, ...) {
+void LogErrno(const char* location, const char* fmt, ...) {
   int old_errno = errno;
   va_list args;
   va_start(args, fmt);
-  LogArgs(fmt, args, true, old_errno);
+  {
+    LogBuffer log;
+    log.Append(location);
+    log.Append(": ");
+    log.AppendV(fmt, args);
+    log.Append(": ");
+    log.Append(strerror(old_errno));
+    log.Print();
+  }
   va_end(args);
   errno = old_errno;
 }

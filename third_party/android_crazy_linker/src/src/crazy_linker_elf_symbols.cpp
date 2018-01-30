@@ -27,13 +27,13 @@ unsigned ElfHash(const char* name) {
 }  // namespace
 
 bool ElfSymbols::Init(const ElfView* view) {
-  LOG("%s: Parsing dynamic table\n", __FUNCTION__);
+  LOG("Parsing dynamic table");
   ElfView::DynamicIterator dyn(view);
   for (; dyn.HasNext(); dyn.GetNext()) {
     uintptr_t dyn_addr = dyn.GetAddress(view->load_bias());
     switch (dyn.GetTag()) {
       case DT_HASH:
-        LOG("  DT_HASH addr=%p\n", dyn_addr);
+        LOG("  DT_HASH addr=%p", dyn_addr);
         {
           ELF::Word* data = reinterpret_cast<ELF::Word*>(dyn_addr);
           hash_bucket_size_ = data[0];
@@ -43,11 +43,11 @@ bool ElfSymbols::Init(const ElfView* view) {
         }
         break;
       case DT_STRTAB:
-        LOG("  DT_STRTAB addr=%p\n", dyn_addr);
+        LOG("  DT_STRTAB addr=%p", dyn_addr);
         string_table_ = reinterpret_cast<const char*>(dyn_addr);
         break;
       case DT_SYMTAB:
-        LOG("  DT_SYMTAB addr=%p\n", dyn_addr);
+        LOG("  DT_SYMTAB addr=%p", dyn_addr);
         symbol_table_ = reinterpret_cast<const ELF::Sym*>(dyn_addr);
         break;
       default:

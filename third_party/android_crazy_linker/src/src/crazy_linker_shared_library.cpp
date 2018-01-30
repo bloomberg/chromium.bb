@@ -82,7 +82,7 @@ typedef void (*JNI_OnUnloadFunctionPtr)(void* vm, void* reserved);
 void CallFunction(linker_function_t func, const char* func_type) {
   uintptr_t func_address = reinterpret_cast<uintptr_t>(func);
 
-  LOG("%s: %p %s\n", __FUNCTION__, func, func_type);
+  LOG("%p %s", func, func_type);
   if (func_address != 0 && func_address != uintptr_t(-1))
     func();
 }
@@ -124,7 +124,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
     //   https://code.google.com/p/android/issues/detail?id=74255
     for (size_t n = 0; n < preloads_->GetCount(); ++n) {
       LibraryView* wrap = (*preloads_)[n];
-      // LOG("%s: Looking into preload %p (%s)\n", __FUNCTION__, wrap,
+      // LOG("Looking into preload %p (%s)", wrap,
       // wrap->GetName());
       address = LookupInWrap(symbol_name, wrap);
       if (address)
@@ -139,7 +139,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
     // Then look inside the dependencies.
     for (size_t n = 0; n < dependencies_->GetCount(); ++n) {
       LibraryView* wrap = (*dependencies_)[n];
-      // LOG("%s: Looking into dependency %p (%s)\n", __FUNCTION__, wrap,
+      // LOG("Looking into dependency %p (%s)", wrap,
       // wrap->GetName());
       address = LookupInWrap(symbol_name, wrap);
       if (address)
@@ -208,7 +208,7 @@ bool SharedLibrary::Load(const char* full_path,
                          size_t file_offset,
                          Error* error) {
   // First, record the path.
-  LOG("%s: full path '%s'\n", __FUNCTION__, full_path);
+  LOG("full path '%s'", full_path);
 
   size_t full_path_len = strlen(full_path);
   if (full_path_len >= sizeof(full_path_)) {
@@ -220,7 +220,7 @@ bool SharedLibrary::Load(const char* full_path,
   base_name_ = GetBaseNamePtr(full_path_);
 
   // Load the ELF binary in memory.
-  LOG("%s: Loading ELF segments for %s\n", __FUNCTION__, base_name_);
+  LOG("Loading ELF segments for %s", base_name_);
 
   {
     ElfLoader loader;
@@ -251,12 +251,12 @@ bool SharedLibrary::Load(const char* full_path,
   }
 
 #ifdef __arm__
-  LOG("%s: Extracting ARM.exidx table for %s\n", __FUNCTION__, base_name_);
+  LOG("Extracting ARM.exidx table for %s", base_name_);
   (void)phdr_table_get_arm_exidx(
       phdr(), phdr_count(), load_bias(), &arm_exidx_, &arm_exidx_count_);
 #endif
 
-  LOG("%s: Parsing dynamic table for %s\n", __FUNCTION__, base_name_);
+  LOG("Parsing dynamic table for %s", base_name_);
   ElfView::DynamicIterator dyn(&view_);
   for (; dyn.HasNext(); dyn.GetNext()) {
     ELF::Addr dyn_value = dyn.GetValue();
@@ -269,45 +269,42 @@ bool SharedLibrary::Load(const char* full_path,
         }
         break;
       case DT_INIT:
-        LOG("  DT_INIT addr=%p\n", dyn_addr);
+        LOG("  DT_INIT addr=%p", dyn_addr);
         init_func_ = reinterpret_cast<linker_function_t>(dyn_addr);
         break;
       case DT_FINI:
-        LOG("  DT_FINI addr=%p\n", dyn_addr);
+        LOG("  DT_FINI addr=%p", dyn_addr);
         fini_func_ = reinterpret_cast<linker_function_t>(dyn_addr);
         break;
       case DT_INIT_ARRAY:
-        LOG("  DT_INIT_ARRAY addr=%p\n", dyn_addr);
+        LOG("  DT_INIT_ARRAY addr=%p", dyn_addr);
         init_array_ = reinterpret_cast<linker_function_t*>(dyn_addr);
         break;
       case DT_INIT_ARRAYSZ:
         init_array_count_ = dyn_value / sizeof(ELF::Addr);
-        LOG("  DT_INIT_ARRAYSZ value=%p count=%p\n",
-            dyn_value,
+        LOG("  DT_INIT_ARRAYSZ value=%p count=%p", dyn_value,
             init_array_count_);
         break;
       case DT_FINI_ARRAY:
-        LOG("  DT_FINI_ARRAY addr=%p\n", dyn_addr);
+        LOG("  DT_FINI_ARRAY addr=%p", dyn_addr);
         fini_array_ = reinterpret_cast<linker_function_t*>(dyn_addr);
         break;
       case DT_FINI_ARRAYSZ:
         fini_array_count_ = dyn_value / sizeof(ELF::Addr);
-        LOG("  DT_FINI_ARRAYSZ value=%p count=%p\n",
-            dyn_value,
+        LOG("  DT_FINI_ARRAYSZ value=%p count=%p", dyn_value,
             fini_array_count_);
         break;
       case DT_PREINIT_ARRAY:
-        LOG("  DT_PREINIT_ARRAY addr=%p\n", dyn_addr);
+        LOG("  DT_PREINIT_ARRAY addr=%p", dyn_addr);
         preinit_array_ = reinterpret_cast<linker_function_t*>(dyn_addr);
         break;
       case DT_PREINIT_ARRAYSZ:
         preinit_array_count_ = dyn_value / sizeof(ELF::Addr);
-        LOG("  DT_PREINIT_ARRAYSZ value=%p count=%p\n",
-            dyn_value,
+        LOG("  DT_PREINIT_ARRAYSZ value=%p count=%p", dyn_value,
             preinit_array_count_);
         break;
       case DT_SYMBOLIC:
-        LOG("  DT_SYMBOLIC\n");
+        LOG("  DT_SYMBOLIC");
         has_DT_SYMBOLIC_ = true;
         break;
       case DT_FLAGS:
@@ -325,7 +322,7 @@ bool SharedLibrary::Load(const char* full_path,
     }
   }
 
-  LOG("%s: Load complete for %s\n", __FUNCTION__, base_name_);
+  LOG("Load complete for %s", base_name_);
   return true;
 }
 
@@ -334,7 +331,7 @@ bool SharedLibrary::Relocate(LibraryList* lib_list,
                              Vector<LibraryView*>* dependencies,
                              Error* error) {
   // Apply relocations.
-  LOG("%s: Applying relocations to %s\n", __FUNCTION__, base_name_);
+  LOG("Applying relocations to %s", base_name_);
 
   ElfRelocations relocations;
 
@@ -345,7 +342,7 @@ bool SharedLibrary::Relocate(LibraryList* lib_list,
   if (!relocations.ApplyAll(&symbols_, &resolver, error))
     return false;
 
-  LOG("%s: Relocations applied for %s\n", __FUNCTION__, base_name_);
+  LOG("Relocations applied for %s", base_name_);
   return true;
 }
 
@@ -394,11 +391,8 @@ bool SharedLibrary::UseSharedRelro(size_t relro_start,
                                    size_t relro_size,
                                    int relro_fd,
                                    Error* error) {
-  LOG("%s: relro_start=%p relro_size=%p relro_fd=%d\n",
-      __FUNCTION__,
-      (void*)relro_start,
-      (void*)relro_size,
-      relro_fd);
+  LOG("relro_start=%p relro_size=%p relro_fd=%d", (void*)relro_start,
+      (void*)relro_size, relro_fd);
 
   if (relro_fd < 0 || relro_size == 0) {
     // Nothing to do here.

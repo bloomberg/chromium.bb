@@ -36,7 +36,7 @@ const char* SearchPathList::FindFile(const char* file_name) {
   if (!file_name || !*file_name)
     return NULL;
 
-  LOG("%s: Looking for %s\n", __FUNCTION__, file_name);
+  LOG("Looking for %s", file_name);
 
   // Build full list by appending the env_list_ after the regular one.
   String full_list = list_;
@@ -71,10 +71,10 @@ const char* SearchPathList::FindFile(const char* file_name) {
     full_path_ += file_name;
 
     if (PathIsFile(full_path_.c_str())) {
-      LOG("    FOUND %s\n", full_path_.c_str());
+      LOG("    FOUND %s", full_path_.c_str());
       return full_path_.c_str();
     } else
-      LOG("    skip  %s\n", full_path_.c_str());
+      LOG("    skip  %s", full_path_.c_str());
   }
 
   return NULL;
