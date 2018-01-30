@@ -39,14 +39,6 @@ class NET_EXPORT CookieStore {
     INSERTED,
     // The cookie was changed directly by a consumer's action.
     EXPLICIT,
-    // The following four values have the same meaning as EXPLICIT, but are
-    // being used to track down where a bug is coming from.
-    // TODO(nharper): Remove the following four values once the one of interest
-    // has been found.  See http://crbug.com/548423.
-    EXPLICIT_DELETE_BETWEEN,
-    EXPLICIT_DELETE_PREDICATE,
-    EXPLICIT_DELETE_SINGLE,
-    EXPLICIT_DELETE_CANONICAL,
     // The cookie was deleted, but no more details are known.
     UNKNOWN_DELETION,
     // The cookie was automatically removed due to an insert operation that
