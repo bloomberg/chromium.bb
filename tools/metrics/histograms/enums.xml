@@ -34085,6 +34085,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="IPv6 BestConnection."/>
 </enum>
 
+<enum name="PeerConnectionKeyProtocol">
+  <int value="0" label="DTLS"/>
+  <int value="1" label="SDES"/>
+</enum>
+
 <enum name="PeerConnectionRtcpMux">
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled"/>
