@@ -4,12 +4,12 @@
 
 #include "platform/bindings/DOMWrapperWorld.h"
 
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -52,8 +52,9 @@ Vector<scoped_refptr<DOMWrapperWorld>> CreateWorlds(v8::Isolate* isolate) {
   return worlds;
 }
 
-void WorkerThreadFunc(WorkerBackingThread* thread,
-                      scoped_refptr<WebTaskRunner> main_thread_task_runner) {
+void WorkerThreadFunc(
+    WorkerBackingThread* thread,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   thread->InitializeOnBackingThread(
       WorkerBackingThreadStartupData::CreateDefault());
 
@@ -118,7 +119,7 @@ TEST(DOMWrapperWorldTest, Basic) {
   // Start a worker thread and create worlds on that.
   std::unique_ptr<WorkerBackingThread> thread = WorkerBackingThread::Create(
       WebThreadCreationParams("DOMWrapperWorld test thread"));
-  scoped_refptr<WebTaskRunner> main_thread_task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       Platform::Current()->CurrentThread()->GetWebTaskRunner();
   thread->BackingThread().PostTask(
       FROM_HERE,
