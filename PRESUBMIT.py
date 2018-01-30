@@ -1570,6 +1570,7 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
       '*.aidl',
       # Blink uses a different file naming convention:
       '*EnumTraits*.*',
+      "*MojomTraits*.*",
       '*StructTraits*.*',
       '*TypeConverter*.*',
   ]
