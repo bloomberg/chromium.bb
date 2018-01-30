@@ -14,6 +14,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +43,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       false,
       // Storage path for http cache and cookie storage.
       "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
@@ -145,6 +148,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       false,
       // Storage path for http cache and cookie storage.
       "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
@@ -197,6 +202,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       false,
       // Storage path for http cache and cookie storage.
       "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
@@ -254,6 +261,8 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
       false,
       // Storage path for http cache and cookie storage.
       "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
@@ -306,6 +315,8 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
       false,
       // Storage path for http cache and cookie storage.
       "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
@@ -357,6 +368,8 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
       false,
       // Storage path for http cache and cookie storage.
       "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
@@ -392,6 +405,56 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
   client_connection_options.push_back(net::kTBBR);
   client_connection_options.push_back(net::k1RTT);
   EXPECT_EQ(client_connection_options, params->quic_client_connection_options);
+}
+
+TEST(URLURLRequestContextConfigTest, SetAcceptLanguageAndUserAgent) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  URLRequestContextConfig config(
+      // Enable QUIC.
+      true,
+      // QUIC User Agent ID.
+      "Default QUIC User Agent ID",
+      // Enable SPDY.
+      true,
+      // Enable Brotli.
+      false,
+      // Type of http cache.
+      URLRequestContextConfig::HttpCacheType::DISK,
+      // Max size of http cache in bytes.
+      1024000,
+      // Disable caching for HTTP responses. Other information may be stored in
+      // the cache.
+      false,
+      // Storage path for http cache and cookie storage.
+      "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
+      // User-Agent request header field.
+      "fake agent",
+      // JSON encoded experimental options.
+      "{}",
+      // MockCertVerifier to use for testing purposes.
+      std::unique_ptr<net::CertVerifier>(),
+      // Enable network quality estimator.
+      false,
+      // Enable Public Key Pinning bypass for local trust anchors.
+      true,
+      // Certificate verifier cache data.
+      "");
+
+  net::URLRequestContextBuilder builder;
+  net::NetLog net_log;
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  // Set a ProxyConfigService to avoid DCHECK failure when building.
+  builder.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateDirect()));
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
+  EXPECT_EQ("foreign-language",
+            context->http_user_agent_settings()->GetAcceptLanguage());
+  EXPECT_EQ("fake agent", context->http_user_agent_settings()->GetUserAgent());
 }
 
 // See stale_host_resolver_unittest.cc for test of StaleDNS options.

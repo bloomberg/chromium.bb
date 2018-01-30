@@ -174,6 +174,70 @@ interface Executor {
 };
 
 /**
+ * Runtime result code returned by Engine and UrlRequest. Equivalent to
+ * runtime exceptions in Android Java API. All results except SUCCESS trigger
+ * native crash (via SIGABRT triggered by CHECK failure) unless
+ * EngineParams.enableCheckResult is set to false.
+ */
+enum RESULT {
+  /**
+   * Operation completed successfully
+   */
+  SUCCESS = 0,
+
+  /**
+   * Illegal argument
+   */
+  ILLEGAL_ARGUMENT = -100,
+  /**
+   * Storage path must be set to existing directory
+   */
+  ILLEGAL_ARGUMENT_STORAGE_PATH_MUST_EXIST = -101,
+  /**
+   * Public key pin is invalid
+   */
+  ILLEGAL_ARGUMENT_INVALID_PIN = -102,
+  /**
+   * Host name is invalid
+   */
+  ILLEGAL_ARGUMENT_INVALID_HOSTNAME = -103,
+
+  /**
+   * Illegal state
+   */
+  ILLEGAL_STATE = -200,
+  /**
+   * Storage path is used by another engine
+   */
+  ILLEGAL_STATE_STORAGE_PATH_IN_USE = -201,
+  /**
+   * Cannot shutdown engine from network thread
+   */
+  ILLEGAL_STATE_CANNOT_SHUTDOWN_ENGINE_FROM_NETWORK_THREAD = -202,
+  /**
+   * The engine has already started
+   */
+  ILLEGAL_STATE_ENGINE_ALREADY_STARTED = -203,
+
+  /**
+   * Null pointer or empty data
+   */
+  NULL_POINTER = -300,
+  /**
+   * The hostname cannot be null
+   */
+  NULL_POINTER_HOSTNAME = -301,
+  /**
+   * The set of SHA256 pins cannot be null
+   */
+  NULL_POINTER_SHA256_PINS = -302,
+  /**
+   * The pin expiration date cannot be null
+   */
+  NULL_POINTER_EXPIRATION_DATE = -303,
+};
+
+/**
  * An engine to process UrlRequests, which uses the best HTTP stack
  * available on the current platform. An instance of this class can be started
  * using StartWithParams.
@@ -183,13 +247,15 @@ interface Engine {
    * Starts Engine using given |params|. The engine must be started once
    * and only once before other methods can be used.
    */
-  StartWithParams(EngineParams params);
+  [Sync]
+  StartWithParams(EngineParams params) => (RESULT result);
 
   /**
    * Starts NetLog logging to a file. The NetLog will contain events emitted
    * by all live Engines. The NetLog is useful for debugging.
    * The file can be viewed using a Chrome browser navigated to
    * chrome://net-internals/#import
+   * Returns |true| if netlog has started successfully, |false| otherwise.
    * @param fileName the complete file path. It must not be empty. If the file
    *            exists, it is truncated before starting. If actively logging,
    *            this method is ignored.
@@ -199,26 +265,41 @@ interface Engine {
    *    only be used with the user's consent and in situations where the log
    *    won't be public.  {@code false} to just include basic events.
    */
-  StartNetLogToFile(string fileName, bool logAll);
+  [Sync]
+  StartNetLogToFile(string fileName, bool logAll) => (bool started);
 
   /**
    * Stops NetLog logging and flushes file to disk. If a logging session is
-   * not in progress, this call is ignored.
+   * not in progress, this call is ignored. This method blocks until the log is
+   * closed to ensure that log file is complete and available.
    */
-  StopNetLog();
+  [Sync]
+  StopNetLog() => ();
+
+  /**
+   * Shuts down the Engine if there are no active requests,
+   * otherwise throws an exception.
+   *
+   * Cannot be called on network thread - the thread Cronet calls into
+   * Executor on (which is different from the thread the Executor invokes
+   * callbacks on). This method blocks until all the Engine's resources have
+   * been cleaned up.
+   */
+  [Sync]
+  Shutdown() => (RESULT result);
 
   /**
    * Returns a human-readable version string of the engine.
    */
   [Sync]
-  GetVersionString() => (string version_string);
+  GetVersionString() => (string versionString);
 
   /**
    * Returns default human-readable version string of the engine. Can be used
    * before StartWithParams() is called.
    */
   [Sync]
-  GetDefaultUserAgent() => (string default_user_agent);
+  GetDefaultUserAgent() => (string defaultUserAgent);
 };
 
 /**
@@ -263,18 +344,23 @@ struct PublicKeyPins {
 
   /**
    * An array of pins. Each pin is the SHA-256 cryptographic
-   * hash of the DER-encoded ASN.1 representation of the Subject Public
-   * Key Info (SPKI) of the host's X.509 certificate.
+   * hash (in the form of "sha256/<base64-hash-value>") of the DER-encoded ASN.1
+   * representation of the Subject Public Key Info (SPKI) of the host's X.509 certificate.
    * Although, the method does not mandate the presence of the backup pin
    * that can be used if the control of the primary private key has been
    * lost, it is highly recommended to supply one.
    */
-  array<handle> pinsSha256;
+  array<string> pinsSha256;
 
   /**
    * Indicates whether the pinning policy should be applied to subdomains of |host|.
    */
   bool includeSubdomains = false;
+
+  /**
+   * The expiration date for the pins in milliseconds since epoch (as in java.util.Date).
+   */
+  int64 expirationDate;
 };
 
 /**
@@ -284,10 +370,23 @@ struct PublicKeyPins {
  */
 struct EngineParams {
   /**
+   * Override strict result checking for all operations that return RESULT.
+   * If set to true, then failed result will cause native crash via SIGABORT.
+   */
+  bool enableCheckResult = true;
+
+  /**
    * Override of the User-Agent header for all requests. An explicitly
    * set User-Agent header will override a value set using this param.
    */
   string userAgent;
+
+  /**
+   * Sets a default value for the Accept-Language header value for UrlRequests
+   * created by this engine. Explicitly setting the Accept-Language header
+   * value for individual UrlRequests will override this value.
+   */
+  string acceptLanguage;
 
   /**
    * Directory for HTTP Cache and Prefs Storage. The directory must exist.
@@ -369,6 +468,11 @@ struct EngineParams {
    * https://www.chromium.org/Home/chromium-security/security-faq
    */
   bool enablePublicKeyPinningBypassForLocalTrustAnchors = true;
+
+  /**
+   * JSON formatted experimental options to be used in Cronet Engine.
+   */
+  string experimentalOptions;
 };
 
 /**
@@ -587,7 +691,6 @@ interface UrlRequestStatusListener {
  */
 [Abstract]
 interface UrlRequestCallback {
-
   /**
    * Invoked whenever a redirect is encountered. This will only be invoked
    * between the call to UrlRequest.start() and
@@ -772,7 +875,6 @@ interface UploadDataProvider {
  * Note: All methods must be called on the Executor passed to InitWithParams().
  */
 interface UrlRequest {
-
   /**
    * Initialized UrlRequest to |url| with |params|. All methods of |callback| for
    * request will be invoked on |executor|. The |executor| must not run tasks on

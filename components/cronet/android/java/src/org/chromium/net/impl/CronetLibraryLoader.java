@@ -13,6 +13,7 @@ import android.os.Looper;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -121,6 +122,49 @@ public class CronetLibraryLoader {
         } else {
             new Handler(sInitThread.getLooper()).post(r);
         }
+    }
+
+    /**
+     * Called from native library to get default user agent constructed
+     * using application context. May be called on any thread.
+     *
+     * Expects that ContextUtils.initApplicationContext() was called already
+     * either by some testing framework or an embedder constructing a Java
+     * CronetEngine via CronetEngine.Builder.build().
+     */
+    @CalledByNative
+    private static String getDefaultUserAgent() {
+        return UserAgent.from(ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * Called from native library to ensure that library is initialized.
+     * May be called on any thread, but initialization is performed on
+     * this.sInitThread.
+     *
+     * Expects that ContextUtils.initApplicationContext() was called already
+     * either by some testing framework or an embedder constructing a Java
+     * CronetEngine via CronetEngine.Builder.build().
+     *
+     * TODO(mef): In the long term this should be changed to some API with
+     * lower overhead like CronetEngine.Builder.loadNativeCronet().
+     */
+    @CalledByNative
+    private static void ensureInitializedFromNative() {
+        // Called by native, so native library is already loaded.
+        // It is possible that loaded native library is not regular
+        // "libcronet.xyz.so" but test library that statically links
+        // native code like "libcronet_unittests.so".
+        synchronized (sLoadLock) {
+            sLibraryLoaded = true;
+            sWaitForLibLoad.open();
+        }
+
+        // The application context must already be initialized
+        // using ContextUtils.initApplicationContext().
+        Context applicationContext = ContextUtils.getApplicationContext();
+        assert applicationContext != null;
+        ensureInitialized(applicationContext, null);
     }
 
     // Native methods are implemented in cronet_library_loader.cc.

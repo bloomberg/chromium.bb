@@ -6,8 +6,6 @@ import("//build/buildflag_header.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/mac/symbols.gni")
 import("//build/mac/tweak_info_plist.gni")
-import("//build/util/process_version.gni")
-import("//build/util/version.gni")
 import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
@@ -18,18 +16,6 @@ assert(!is_component_build, "Cronet requires static library build.")
 group("cronet_consumer_group") {
   deps = [
     "//components/cronet/ios/cronet_consumer",
-  ]
-}
-
-process_version("cronet_version_header") {
-  template_file = "//components/cronet/version.h.in"
-  sources = [
-    "//chrome/VERSION",
-  ]
-  output = "$target_gen_dir/version.h"
-  extra_args = [
-    "-e",
-    "VERSION_FULL=\"%s.%s.%s.%s\" % (MAJOR,MINOR,BUILD,PATCH)",
   ]
 }
 
@@ -51,13 +37,12 @@ config("cronet_static_config") {
 }
 
 _cronet_deps = [
-  ":cronet_version_header",
   ":generate_accept_languages",
   "//base:base",
+  "//components/cronet:cronet_common",
+  "//components/cronet:cronet_version_header",
   "//components/cronet/native:cronet_native_impl",
   "//components/grpc_support",
-  "//components/metrics:metrics",
-  "//third_party/metrics_proto",
   "//components/prefs:prefs",
   "//ios/net:net",
   "//ios/web/public:user_agent",
@@ -67,20 +52,11 @@ _cronet_deps = [
 ]
 
 _cronet_sources = [
-  "../cronet_prefs_manager.cc",
-  "../cronet_prefs_manager.h",
-  "../histogram_manager.cc",
-  "../histogram_manager.h",
-  "../host_cache_persistence_manager.cc",
-  "../host_cache_persistence_manager.h",
-  "../stale_host_resolver.cc",
-  "../stale_host_resolver.h",
-  "../url_request_context_config.cc",
-  "../url_request_context_config.h",
   "Cronet.h",
   "Cronet.mm",
   "cronet_environment.h",
   "cronet_environment.mm",
+  "cronet_global_state_ios.mm",
   "cronet_metrics.h",
   "cronet_metrics.mm",
 ]
@@ -154,17 +130,13 @@ ios_framework_bundle("cronet_framework") {
 test("cronet_unittests_ios") {
   testonly = true
 
-  sources = [
-    "//components/cronet/histogram_manager_unittest.cc",
-    "//components/cronet/run_all_unittests.cc",
-    "//components/cronet/stale_host_resolver_unittest.cc",
-    "//components/cronet/url_request_context_config_unittest.cc",
-  ]
+  sources = []
 
   deps = [
     ":cronet_sources_with_global_state",
     "//base",
     "//base/test:test_support",
+    "//components/cronet:cronet_common_unittests",
     "//components/cronet/native:cronet_native_unittests",
     "//components/metrics",
     "//net",

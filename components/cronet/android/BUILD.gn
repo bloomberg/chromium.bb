@@ -499,7 +499,6 @@ shared_library("cronet_tests") {
     "//base:i18n",
     "//base/test:test_support",
     "//components/cronet:cronet_version_header",
-    "//components/cronet/native:cronet_native_tests",
     "//components/prefs",
     "//net",
     "//net:simple_quic_tools",
@@ -843,10 +842,12 @@ test("cronet_unittests") {
 
   deps = [
     ":cronet_android_cert_proto",
+    ":cronet_impl_native_java",
     ":cronet_static",
     "//base",
     "//base/test:test_support",
     "//components/cronet:cronet_common_unittests",
+    "//components/cronet/native:cronet_native_tests",
     "//components/cronet/native:cronet_native_unittests",
     "//components/metrics",
     "//components/prefs:test_support",

@@ -23,7 +23,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/cronet/cronet_prefs_manager.h"
 #include "components/cronet/histogram_manager.h"
-#include "components/cronet/ios/version.h"
 #include "components/prefs/pref_filter.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
@@ -145,22 +144,6 @@ net::URLRequestContext* CronetEnvironment::GetURLRequestContext() const {
 net::URLRequestContextGetter* CronetEnvironment::GetURLRequestContextGetter()
     const {
   return main_context_getter_.get();
-}
-
-// static
-void CronetEnvironment::Initialize() {
-  // This method must be called once from the main thread.
-  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
-
-  ios_global_state::CreateParams create_params;
-  create_params.install_at_exit_manager = true;
-  ios_global_state::Create(create_params);
-  ios_global_state::StartTaskScheduler(/*init_params=*/nullptr);
-
-  url::Initialize();
-
-  ios_global_state::BuildMessageLoop();
-  ios_global_state::CreateNetworkChangeNotifier();
 }
 
 bool CronetEnvironment::StartNetLog(base::FilePath::StringType file_name,
@@ -349,6 +332,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   context_config_builder.http_cache = http_cache_;      // Set HTTP cache.
   context_config_builder.storage_path =
       storage_path.value();  // Storage path for http cache and prefs storage.
+  context_config_builder.accept_language =
+      accept_language_;  // Accept-Language request header field.
   context_config_builder.user_agent =
       user_agent_;  // User-Agent request header field.
   context_config_builder.experimental_options =
@@ -361,8 +346,6 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   config->pkp_list = std::move(pkp_list_);
 
   net::URLRequestContextBuilder context_builder;
-
-  context_builder.set_accept_language(accept_language_);
 
   // Explicitly disable the persister for Cronet to avoid persistence of dynamic
   // HPKP.  This is a safety measure ensuring that nobody enables the
