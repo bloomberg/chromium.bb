@@ -13,11 +13,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/real_time_domain.h"
+#include "platform/scheduler/child/features.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
@@ -262,6 +264,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
   RendererSchedulerImplTest()
       : fake_task_(TaskQueue::PostedTask(base::Bind([] {}), FROM_HERE),
                    base::TimeTicks()) {
+    feature_list_.InitAndEnableFeature(kHighPriorityInput);
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -715,6 +718,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
     return scheduler->ThrottleableTaskQueue();
   }
 
+  base::test::ScopedFeatureList feature_list_;
   base::SimpleTestTickClock clock_;
   TaskQueue::Task fake_task_;
   scoped_refptr<MainThreadTaskQueue> fake_queue_;
@@ -893,10 +897,11 @@ TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
 
   EnableIdleTasks();
   RunUntilIdle();
+  // High-priority input is enabled and input tasks are processed first.
   EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                     std::string("P1"), std::string("C1"),
-                                     std::string("D2"), std::string("P2"),
+              ::testing::ElementsAre(std::string("P1"), std::string("P2"),
+                                     std::string("L1"), std::string("D1"),
+                                     std::string("C1"), std::string("D2"),
                                      std::string("C2"), std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::kNone, CurrentUseCase());
 }
@@ -905,14 +910,16 @@ TEST_F(RendererSchedulerImplTest, TestDefaultPolicyWithSlowCompositor) {
   RunSlowCompositorTask();
 
   std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+  PostTestTasks(&run_order, "L1 I1 D1 C1 P1 D2 C2");
 
   EnableIdleTasks();
   RunUntilIdle();
+  // Even with slow compositor input tasks are handled first.
   EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                     std::string("C1"), std::string("D2"),
-                                     std::string("C2"), std::string("I1")));
+              ::testing::ElementsAre(std::string("P1"), std::string("L1"),
+                                     std::string("D1"), std::string("C1"),
+                                     std::string("D2"), std::string("C2"),
+                                     std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::kNone, CurrentUseCase());
 }
 

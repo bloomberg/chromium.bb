@@ -649,6 +649,26 @@
             ]
         }
     ],
+    "BlinkSchedulerHighPriorityInput": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "BlinkSchedulerHighPriorityInput",
+                    "enable_features": [
+                        "BlinkSchedulerHighPriorityInput"
+                    ]
+                }
+            ]
+        }
+    ],
     "BookmarkInProductHelp": [
         {
             "platforms": [
