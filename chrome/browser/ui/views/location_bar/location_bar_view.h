@@ -206,17 +206,6 @@ class LocationBarView : public LocationBar,
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
   const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
 
-  // Returns the position and width that the popup should be, and also the left
-  // edge that the results should align themselves to (which will leave some
-  // border on the left of the popup). |top_edge_overlap| specifies the number
-  // of pixels the top edge of the popup should overlap the bottom edge of
-  // the toolbar.
-  void GetOmniboxPopupPositioningInfo(gfx::Point* top_left_screen_coord,
-                                      int* popup_width,
-                                      int* left_margin,
-                                      int* right_margin,
-                                      int top_edge_overlap);
-
   // Updates the controller, and, if |contents| is non-null, restores saved
   // state that the tab holds.
   void Update(const content::WebContents* contents);

@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -57,7 +56,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/prefs/pref_service.h"
@@ -373,33 +371,6 @@ views::View* LocationBarView::GetSecurityBubbleAnchorView() {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     return this;
   return location_icon_view()->GetImageView();
-}
-
-void LocationBarView::GetOmniboxPopupPositioningInfo(
-    gfx::Point* top_left_screen_coord,
-    int* popup_width,
-    int* left_margin,
-    int* right_margin,
-    int top_edge_overlap) {
-  // The popup contents are always sized matching the location bar size.
-  const int popup_contents_left = x();
-  const int popup_contents_right = bounds().right();
-
-  // The popup itself may either be the same width as the contents, or as wide
-  // as the toolbar.
-  bool narrow_popup =
-      base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
-  const int popup_left = narrow_popup ? popup_contents_left : 0;
-  const int popup_right =
-      narrow_popup ? popup_contents_right : parent()->width();
-
-  *top_left_screen_coord =
-      gfx::Point(popup_left, parent()->height() - top_edge_overlap);
-  views::View::ConvertPointToScreen(parent(), top_left_screen_coord);
-
-  *popup_width = popup_right - popup_left;
-  *left_margin = popup_contents_left - popup_left;
-  *right_margin = popup_right - popup_contents_right;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
