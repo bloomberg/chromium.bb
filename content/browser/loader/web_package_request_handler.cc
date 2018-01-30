@@ -38,7 +38,7 @@ void WebPackageRequestHandler::MaybeCreateLoader(
   // WebPackagePrefetcher.
 
   if (!web_package_loader_) {
-    std::move(callback).Run(StartLoaderCallback());
+    std::move(callback).Run({});
     return;
   }
 

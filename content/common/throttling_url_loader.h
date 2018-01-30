@@ -25,10 +25,6 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-namespace mojom {
-class URLLoaderFactory;
-}
-
 // ThrottlingURLLoader is a wrapper around the
 // network::mojom::URLLoader[Factory] interfaces. It applies a list of
 // URLLoaderThrottle instances which could defer, resume or cancel the URL
@@ -46,22 +42,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      network::ResourceRequest* url_request,
-      network::mojom::URLLoaderClient* client,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  using StartLoaderCallback =
-      base::OnceCallback<void(network::mojom::URLLoaderRequest request,
-                              network::mojom::URLLoaderClientPtr client)>;
-
-  // Similar to the method above, but uses a |start_loader_callback| instead of
-  // a network::mojom::URLLoaderFactory to start the loader. The callback must
-  // be safe to call during the lifetime of the returned object.
-  static std::unique_ptr<ThrottlingURLLoader> CreateLoaderAndStart(
-      StartLoaderCallback start_loader_callback,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      int32_t routing_id,
       network::ResourceRequest* url_request,
       network::mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -92,14 +72,10 @@ class CONTENT_EXPORT ThrottlingURLLoader
       network::mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
-  // Either of the two sets of arguments below is valid but not both:
-  // - |factory|, |routing_id|, |request_id| and |options|;
-  // - |start_loader_callback|.
   void Start(scoped_refptr<SharedURLLoaderFactory> factory,
              int32_t routing_id,
              int32_t request_id,
              uint32_t options,
-             StartLoaderCallback start_loader_callback,
              network::ResourceRequest* url_request,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -107,7 +83,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
                 int32_t routing_id,
                 int32_t request_id,
                 uint32_t options,
-                StartLoaderCallback start_loader_callback,
                 network::ResourceRequest* url_request,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -192,7 +167,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
               int32_t in_routing_id,
               int32_t in_request_id,
               uint32_t in_options,
-              StartLoaderCallback in_start_loader_callback,
               network::ResourceRequest* in_url_request,
               scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
     ~StartInfo();
@@ -201,8 +175,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
     int32_t routing_id;
     int32_t request_id;
     uint32_t options;
-
-    StartLoaderCallback start_loader_callback;
 
     network::ResourceRequest url_request;
     // |task_runner_| is used to set up |client_binding_|.

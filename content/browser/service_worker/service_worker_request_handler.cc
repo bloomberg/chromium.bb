@@ -265,7 +265,7 @@ void ServiceWorkerRequestHandler::MaybeCreateLoader(
     ResourceContext* resource_context,
     LoaderCallback callback) {
   NOTREACHED();
-  std::move(callback).Run(StartLoaderCallback());
+  std::move(callback).Run({});
 }
 
 void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(

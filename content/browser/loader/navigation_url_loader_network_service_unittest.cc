@@ -33,6 +33,7 @@
 namespace content {
 
 namespace {
+
 class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
  public:
   explicit TestURLLoaderRequestHandler(
@@ -45,8 +46,8 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                          ResourceContext* resource_context,
                          LoaderCallback callback) override {
     std::move(callback).Run(
-        base::Bind(&TestURLLoaderRequestHandler::StartLoader,
-                   base::Unretained(this), resource_request));
+        base::BindOnce(&TestURLLoaderRequestHandler::StartLoader,
+                       base::Unretained(this), resource_request));
   }
 
   void StartLoader(network::ResourceRequest resource_request,

@@ -51,6 +51,7 @@ class CONTENT_EXPORT SharedURLLoaderFactory
     // Skip appcache and service worker if this flag is set to true.
     bool bypass_custom_network_loader = false;
   };
+
   static scoped_refptr<SharedURLLoaderFactory> Create(
       std::unique_ptr<SharedURLLoaderFactoryInfo> info);
 
@@ -62,7 +63,7 @@ class CONTENT_EXPORT SharedURLLoaderFactory
       const network::ResourceRequest& request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const Constraints& constaints = kDefaultConstraints) = 0;
+      const Constraints& constraints = kDefaultConstraints) = 0;
 
   virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
 
