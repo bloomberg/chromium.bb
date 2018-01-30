@@ -212,6 +212,7 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
       // Internal pages on desktop have their own UI implementations which
       // should never call this function.
       NOTREACHED();
+      FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
@@ -296,7 +297,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
         button_text_ids = kPermissionButtonTextIDDefaultSetting;
         break;
       }
-    // Fallthrough.
+      FALLTHROUGH;
     case content_settings::SETTING_SOURCE_POLICY:
     case content_settings::SETTING_SOURCE_EXTENSION:
       button_text_ids = kPermissionButtonTextIDUserManaged;
