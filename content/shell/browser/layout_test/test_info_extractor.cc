@@ -28,28 +28,6 @@ namespace content {
 
 namespace {
 
-#if defined(OS_ANDROID)
-// On Android, all passed tests will be paths to a local temporary directory.
-// However, because we can't transfer all test files to the device, translate
-// those paths to a local, forwarded URL so the host can serve them.
-bool GetTestUrlForAndroid(std::string& path_or_url, GURL* url) {
-  // Path to search for when translating a layout test path to an URL.
-  const char kAndroidLayoutTestPath[] =
-      "/data/local/tmp/third_party/WebKit/LayoutTests/";
-  // The base URL from which layout tests are being served on Android.
-  const char kAndroidLayoutTestBase[] = "http://127.0.0.1:8000/all-tests/";
-
-  if (path_or_url.find(kAndroidLayoutTestPath) == std::string::npos)
-    return false;
-
-  std::string test_location(kAndroidLayoutTestBase);
-  test_location.append(path_or_url.substr(strlen(kAndroidLayoutTestPath)));
-
-  *url = GURL(test_location);
-  return true;
-}
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_FUCHSIA)
 // Fuchsia doesn't support stdin stream for packaged apps. This means that when
 // running content_shell on Fuchsia it's not possible to use stdin to pass list
@@ -106,15 +84,7 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
   const bool enable_pixel_dumping =
       (pixel_switch == "--pixel-test" || pixel_switch == "-p");
 
-  GURL test_url;
-#if defined(OS_ANDROID)
-  if (GetTestUrlForAndroid(path_or_url, &test_url)) {
-    return std::make_unique<TestInfo>(test_url, enable_pixel_dumping,
-                                      expected_pixel_hash, base::FilePath());
-  }
-#endif
-
-  test_url = GURL(path_or_url);
+  GURL test_url(path_or_url);
   if (!(test_url.is_valid() && test_url.has_scheme())) {
     // We're outside of the message loop here, and this is a test.
     base::ScopedAllowBlockingForTesting allow_blocking;
