@@ -94,6 +94,7 @@ base::string16 GetLocalizedTitle(const base::string16& title,
         return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_RENDERER_PREFIX,
                                           result_title);
       }
+      FALLTHROUGH;
     }
     // These types don't need display names or get them from elsewhere.
     case content::PROCESS_TYPE_BROWSER:
