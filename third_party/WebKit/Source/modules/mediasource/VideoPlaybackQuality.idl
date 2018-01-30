@@ -30,7 +30,7 @@
 [
     RuntimeEnabled=MediaSourceExperimental
 ] interface VideoPlaybackQuality {
-    readonly attribute double creationTime;
+    readonly attribute DOMHighResTimeStamp creationTime;
     readonly attribute unsigned long totalVideoFrames;
     readonly attribute unsigned long droppedVideoFrames;
     readonly attribute unsigned long corruptedVideoFrames;
