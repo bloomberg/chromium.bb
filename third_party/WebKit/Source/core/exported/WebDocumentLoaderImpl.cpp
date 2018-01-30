@@ -34,7 +34,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/SubresourceFilter.h"
-#include "platform/network/NetworkUtils.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebURL.h"
@@ -43,35 +42,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 
 namespace blink {
-
-namespace {
-
-bool IsHttpOrHttpsOrigin(const WebSecurityOrigin& origin) {
-  return origin.Protocol() == "http" || origin.Protocol() == "https";
-}
-
-}  // anonymous namespace
-
-// static
-bool WebDocumentLoader::ShouldPersistUserActivation(
-    const WebSecurityOrigin& previous_origin,
-    const WebSecurityOrigin& new_origin) {
-  if (previous_origin.IsNull() || new_origin.IsNull())
-    return false;
-
-  if (!IsHttpOrHttpsOrigin(previous_origin) || !IsHttpOrHttpsOrigin(new_origin))
-    return false;
-
-  if (previous_origin.Host() == new_origin.Host())
-    return true;
-
-  String previous_domain = NetworkUtils::GetDomainAndRegistry(
-      previous_origin.Host(), NetworkUtils::kIncludePrivateRegistries);
-  String new_domain = NetworkUtils::GetDomainAndRegistry(
-      new_origin.Host(), NetworkUtils::kIncludePrivateRegistries);
-
-  return !previous_domain.IsEmpty() && previous_domain == new_domain;
-}
 
 WebDocumentLoaderImpl* WebDocumentLoaderImpl::Create(
     LocalFrame* frame,

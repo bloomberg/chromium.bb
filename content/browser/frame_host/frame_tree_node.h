@@ -375,6 +375,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // applied to the frame.
   void UpdateActiveSandboxFlags(blink::WebSandboxFlags sandbox_flags);
 
+  // Returns whether the frame received a user gesture.
+  bool has_received_user_gesture() const {
+    return replication_state_.has_received_user_gesture;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
                            ContainerPolicyDynamic);

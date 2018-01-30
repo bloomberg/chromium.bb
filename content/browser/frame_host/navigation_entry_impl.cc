@@ -271,13 +271,10 @@ NavigationEntryImpl::NavigationEntryImpl(
       should_clear_history_list_(false),
       can_load_local_resources_(false),
       frame_tree_node_id_(-1),
+      has_user_gesture_(false),
       reload_type_(ReloadType::NONE),
       started_from_context_menu_(false),
-      ssl_error_(false) {
-#if defined(OS_ANDROID)
-  has_user_gesture_ = false;
-#endif
-}
+      ssl_error_(false) {}
 
 NavigationEntryImpl::~NavigationEntryImpl() {
 }
@@ -653,9 +650,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: should_clear_history_list_
   // ResetForCommit: frame_tree_node_id_
   // ResetForCommit: intent_received_timestamp_
-#if defined(OS_ANDROID)
   copy->has_user_gesture_ = has_user_gesture_;
-#endif
   // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
   copy->replaced_entry_data_ = replaced_entry_data_;
@@ -675,13 +670,11 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
   FrameMsg_UILoadMetricsReportType::Value report_type =
       FrameMsg_UILoadMetricsReportType::NO_REPORT;
   base::TimeTicks ui_timestamp = base::TimeTicks();
-  bool user_gesture = false;
 
 #if defined(OS_ANDROID)
   if (!intent_received_timestamp().is_null())
     report_type = FrameMsg_UILoadMetricsReportType::REPORT_INTENT;
   ui_timestamp = intent_received_timestamp();
-  user_gesture = has_user_gesture();
 #endif
 
   std::string method;
@@ -700,7 +693,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       navigation_start, method, post_body ? post_body : post_data_,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
-      has_started_from_context_menu(), user_gesture, suggested_filename_);
+      has_started_from_context_menu(), has_user_gesture(), suggested_filename_);
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(

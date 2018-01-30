@@ -178,11 +178,10 @@ class NavigationController {
     // the original intent that prompted the load (in milliseconds active time
     // since boot).
     int64_t intent_received_timestamp;
-
-    // When Chrome launches the intent chooser, user can select Chrome itself to
-    // open the intent. In this case, we should carry over the user gesture.
-    bool has_user_gesture;
 #endif
+
+    // Indicates that the navigation was triggered by a user gesture.
+    bool has_user_gesture;
 
     // Indicates that during this navigation, the session history should be
     // cleared such that the resulting page is the first and only entry of the

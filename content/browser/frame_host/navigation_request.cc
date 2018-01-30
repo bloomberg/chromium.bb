@@ -52,6 +52,7 @@
 #include "content/public/common/web_preferences.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
@@ -199,6 +200,28 @@ void AddAdditionalRequestHeaders(
 // blink::SchemeRegistry::ShouldTreatURLSchemeAsLegacy.
 bool ShouldTreatURLSchemeAsLegacy(const GURL& url) {
   return url.SchemeIs(url::kFtpScheme) || url.SchemeIs(url::kGopherScheme);
+}
+
+bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
+                                   const url::Origin& new_origin) {
+  if ((previous_origin.scheme() != "http" &&
+       previous_origin.scheme() != "https") ||
+      (new_origin.scheme() != "http" && new_origin.scheme() != "https")) {
+    return false;
+  }
+
+  if (previous_origin.host() == new_origin.host())
+    return true;
+
+  std::string previous_domain =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          previous_origin.host(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  std::string new_domain =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          new_origin.host(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  return !previous_domain.empty() && previous_domain == new_domain;
 }
 
 }  // namespace
@@ -772,6 +795,42 @@ void NavigationRequest::OnResponseStarted(
       navigation_handle_->appcache_handle()
           ? navigation_handle_->appcache_handle()->appcache_host_id()
           : kAppCacheNoHostId;
+
+  // A navigation is user activated if it contains a user gesture or the frame
+  // received a gesture and the navigation is renderer initiated. If the
+  // navigation is browser initiated, it has to come from the context menu.
+  // In all cases, the previous and new URLs have to match the
+  // `ShouldPropagateUserActivation` requirements (same eTLD+1).
+  // There are two different checks:
+  // 1. if the `frame_tree_node_` has an origin and is following the rules above
+  //    with the target URL, it is used and the bit is set iif the navigation is
+  //    renderer initiated and the `frame_tree_node_` had a gesture. This should
+  //    apply to same page navigations and is preferred over using the referrer
+  //    as it can be changed.
+  // 2. if referrer and the target url are following the rules above, two
+  //    conditions will set the bit: navigation comes from a gesture and is
+  //    renderer initiated (middle click/ctrl+click) or it is coming from a
+  //    context menu. This should apply to pages that open in a new tab and we
+  //    have to follow the referrer. It means that the activation might not be
+  //    transmitted if it should have.
+  request_params_.was_activated = false;
+  if (navigation_handle_->IsRendererInitiated() &&
+      frame_tree_node_->has_received_user_gesture() &&
+      ShouldPropagateUserActivation(
+          frame_tree_node_->current_origin(),
+          url::Origin::Create(navigation_handle_->GetURL()))) {
+    request_params_.was_activated = true;
+    // TODO(805871): the next check is relying on
+    // navigation_handle_->GetReferrer() but should ideally use a more reliable
+    // source for the originating URL when the navigation is renderer initiated.
+  } else if (((navigation_handle_->HasUserGesture() &&
+               navigation_handle_->IsRendererInitiated()) ||
+              navigation_handle_->WasStartedFromContextMenu()) &&
+             ShouldPropagateUserActivation(
+                 url::Origin::Create(navigation_handle_->GetReferrer().url),
+                 url::Origin::Create(navigation_handle_->GetURL()))) {
+    request_params_.was_activated = true;
+  }
 
   // Update the previews state of the request.
   common_params_.previews_state =
