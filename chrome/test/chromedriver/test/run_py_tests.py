@@ -84,12 +84,7 @@ _NEGATIVE_FILTER = [
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
-_VERSION_SPECIFIC_FILTER['HEAD'] = [
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=764519
-    'MobileEmulationCapabilityTest.testDeviceName',
-    'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
-    'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
-]
+_VERSION_SPECIFIC_FILTER['HEAD'] = []
 
 _VERSION_SPECIFIC_FILTER['65'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
