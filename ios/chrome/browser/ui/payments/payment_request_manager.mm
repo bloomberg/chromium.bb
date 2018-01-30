@@ -283,11 +283,6 @@ struct PendingPaymentResponse {
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   if (_activeWebState) {
     _paymentRequestJsManager = nil;

@@ -33,11 +33,6 @@
   return _userContentController;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithUserContentController:
     (WKUserContentController*)userContentController {
   DCHECK(userContentController);

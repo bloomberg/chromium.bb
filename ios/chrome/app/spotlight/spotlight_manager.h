@@ -35,6 +35,8 @@ class ChromeBrowserState;
 // by the subclasses and de-activate the instance.
 - (void)shutdown;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_APP_SPOTLIGHT_SPOTLIGHT_MANAGER_H_

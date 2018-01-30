@@ -25,11 +25,6 @@
 
 @implementation UIActivityImageSource
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithImage:(UIImage*)image {
   DCHECK(image);
   self = [super init];
@@ -71,11 +66,6 @@
 
 @synthesize shareURL = _shareURL;
 @synthesize passwordManagerURL = _passwordManagerURL;
-
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
 
 - (instancetype)initWithShareURL:(NSURL*)shareURL
               passwordManagerURL:(NSURL*)passwordManagerURL

@@ -47,11 +47,6 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (geolocation::AuthorizationState)authorizationState {
   int authorizationState =
       [self intForPath:prefs::kOmniboxGeolocationAuthorizationState];

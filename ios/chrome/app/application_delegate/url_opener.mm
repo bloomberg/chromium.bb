@@ -25,11 +25,6 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
 
 @implementation URLOpener
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 #pragma mark - ApplicationDelegate - URL Opening methods
 
 + (BOOL)openURL:(NSURL*)url

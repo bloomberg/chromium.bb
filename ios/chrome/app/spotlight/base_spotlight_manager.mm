@@ -87,11 +87,6 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   DCHECK(_shutdownCalled);
 }

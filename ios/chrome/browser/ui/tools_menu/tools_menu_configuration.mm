@@ -39,11 +39,6 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (UIEdgeInsets)toolsButtonInsets {
   return self.toolsMenuButton ? [self.toolsMenuButton imageEdgeInsets]
                               : UIEdgeInsetsZero;

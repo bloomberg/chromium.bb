@@ -111,11 +111,6 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (BOOL)isMIMETypePassKitType:(NSString*)MIMEType {
   return [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
 }
