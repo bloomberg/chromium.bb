@@ -119,7 +119,8 @@ HTMLElement* CustomElement::CreateCustomElementSync(
     const QualifiedName& tag_name,
     CustomElementDefinition* definition) {
   DCHECK(ShouldCreateCustomElement(tag_name) ||
-         ShouldCreateCustomizedBuiltinElement(tag_name));
+         ShouldCreateCustomizedBuiltinElement(tag_name))
+      << tag_name;
   HTMLElement* element;
 
   if (definition && definition->Descriptor().IsAutonomous()) {
