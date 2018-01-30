@@ -706,7 +706,7 @@ class GoogleMapsStory(_BrowsingStory):
     action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
     action_runner.WaitForJavaScriptCondition(
         self._CHECK_RESTAURANTS_UPDATED,
-        old_restaurant=prev_restaurant_hash)
+        old_restaurant=prev_restaurant_hash, timeout=90)
     # This wait is required to fetch the data for all the tiles in the map.
     action_runner.Wait(1)
 
@@ -715,7 +715,7 @@ class GoogleMapsStory(_BrowsingStory):
     action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
     action_runner.WaitForJavaScriptCondition(
         self._CHECK_RESTAURANTS_UPDATED,
-        old_restaurant=prev_restaurant_hash)
+        old_restaurant=prev_restaurant_hash, timeout=90)
     # This wait is required to fetch the data for all the tiles in the map.
     action_runner.Wait(1)
 
@@ -730,7 +730,7 @@ class GoogleMapsStory(_BrowsingStory):
         repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
     action_runner.WaitForJavaScriptCondition(
         self._CHECK_RESTAURANTS_UPDATED,
-        old_restaurant=prev_restaurant_hash)
+        old_restaurant=prev_restaurant_hash, timeout=90)
 
     prev_restaurant_hash = action_runner.EvaluateJavaScript(
         self._GET_RESTAURANT_RESPONSE_HASH)
@@ -739,7 +739,7 @@ class GoogleMapsStory(_BrowsingStory):
         repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
     action_runner.WaitForJavaScriptCondition(
         self._CHECK_RESTAURANTS_UPDATED,
-        old_restaurant=prev_restaurant_hash)
+        old_restaurant=prev_restaurant_hash, timeout=90)
 
     # To make the recording more realistic.
     action_runner.Wait(1)
