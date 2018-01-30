@@ -83,14 +83,21 @@ class ProcessProfilesTestCase(unittest.TestCase):
     processor = TestSymbolOffsetProcessor(symbol_infos)
     self.assertDictEqual({8: symbol_infos[1]}, processor.OffsetToPrimaryMap())
 
-
   def testMatchSymbols(self):
-    symbols_b = [SymbolInfo('W', 30, 10),
+    symbols = [SymbolInfo('W', 30, 10),
                  SymbolInfo('Y', 60, 5),
                  SymbolInfo('X', 100, 10)]
-    processor_b = TestSymbolOffsetProcessor(symbols_b)
-    self.assertListEqual(symbols_b[1:3],
-                         processor_b.MatchSymbolNames(['Y', 'X']))
+    processor = TestSymbolOffsetProcessor(symbols)
+    self.assertListEqual(symbols[1:3],
+                         processor.MatchSymbolNames(['Y', 'X']))
+
+  def testOffsetsPrimarySize(self):
+    symbols = [SymbolInfo('W', 10, 1),
+               SymbolInfo('X', 20, 2),
+               SymbolInfo('Y', 30, 4),
+               SymbolInfo('Z', 40, 8)]
+    processor = TestSymbolOffsetProcessor(symbols)
+    self.assertEqual(13, processor.OffsetsPrimarySize([10, 30, 40]))
 
   def testMedian(self):
     self.assertEquals(None, process_profiles._Median([]))
@@ -154,6 +161,15 @@ class ProcessProfilesTestCase(unittest.TestCase):
     offsets_list = mgr.GetRunGroupOffsets()
     self.assertEquals(2, len(offsets_list))
     self.assertListEqual([5, 6, 7, 1, 2, 3, 4], offsets_list[0])
+
+  def testPhases(self):
+    mgr = TestProfileManager({
+        self.File(40, 0): [],
+        self.File(150, 0): [],
+        self.File(30, 1): [],
+        self.File(30, 2): [],
+        self.File(30, 0): []})
+    self.assertEquals(set([0,1,2]), mgr.GetPhases())
 
 
 if __name__ == '__main__':

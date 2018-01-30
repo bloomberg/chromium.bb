@@ -111,6 +111,17 @@ class SymbolOffsetProcessor(object):
 
     return self._offset_to_primary
 
+  def OffsetsPrimarySize(self, offsets):
+    """Computes the total primary size of a set of offsets.
+
+    Args:
+      offsets (int iterable) a set of offsets.
+
+    Returns
+      int The sum of the primary size of the offsets.
+    """
+    return sum(self.OffsetToPrimaryMap()[x].size for x in offsets)
+
   def GetReachedOffsetsFromDump(self, dump):
     """Find the symbol offsets from a list of binary offsets.
 
@@ -220,7 +231,6 @@ class ProfileManager(object):
     time. This files can be grouped into run sets that are within 30 seconds of
     each other. Each run set is then grouped into phases as before.
   """
-
   class _RunGroup(object):
     RUN_GROUP_THRESHOLD_NS = 30e9
 
@@ -250,6 +260,14 @@ class ProfileManager(object):
     """
     self._filenames = sorted(filenames, key=self._Timestamp)
     self._run_groups = None
+
+  def GetPhases(self):
+    """Return the set of phases of all orderfiles.
+
+    Returns:
+      set(int)
+    """
+    return set(self._Phase(f) for f in self._filenames)
 
   def GetMergedOffsets(self, phase=None):
     """Merges files, as if from a single dump.
