@@ -297,6 +297,7 @@ jumbo_source_set("unit_tests") {
     "push_messaging/PushMessageDataTest.cpp",
     "push_messaging/PushSubscriptionTest.cpp",
     "remoteplayback/RemotePlaybackTest.cpp",
+    "screen_orientation/ScreenOrientationDelegateTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "serviceworkers/WebEmbeddedWorkerImplTest.cpp",
     "wake_lock/ScreenWakeLockTest.cpp",
@@ -323,6 +324,7 @@ jumbo_source_set("unit_tests") {
   deps = [
     ":modules",
     ":modules_testing",
+    "//device/screen_orientation/public/interfaces:interfaces_blink",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

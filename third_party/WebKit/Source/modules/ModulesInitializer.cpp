@@ -168,8 +168,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
       *frame.DomWindow()->navigator(),
       NavigatorContentUtilsClient::Create(web_frame));
 
-  ScreenOrientationControllerImpl::ProvideTo(
-      frame, client->GetWebScreenOrientationClient());
+  ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
     PresentationController::ProvideTo(frame, client->PresentationClient());
   if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {

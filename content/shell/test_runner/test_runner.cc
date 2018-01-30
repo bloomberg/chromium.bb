@@ -1577,6 +1577,8 @@ void TestRunner::Install(
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
                               frame, is_web_platform_tests_mode());
+  mock_screen_orientation_client_->OverrideAssociatedInterfaceProviderForFrame(
+      frame);
 }
 
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {

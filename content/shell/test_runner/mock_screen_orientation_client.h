@@ -10,8 +10,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/shell/test_runner/test_runner_export.h"
+#include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
@@ -22,7 +24,7 @@ class WebLocalFrame;
 namespace test_runner {
 
 class TEST_RUNNER_EXPORT MockScreenOrientationClient
-    : public blink::WebScreenOrientationClient {
+    : public device::mojom::ScreenOrientation {
  public:
   explicit MockScreenOrientationClient();
   ~MockScreenOrientationClient() override;
@@ -36,15 +38,17 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
   bool IsDisabled() const { return is_disabled_; }
   void SetDisabled(bool disabled);
 
- private:
-  // From blink::WebScreenOrientationClient.
-  void LockOrientation(
-      blink::WebScreenOrientationLockType orientation,
-      std::unique_ptr<blink::WebLockOrientationCallback> callback) override;
+  void AddBinding(mojo::ScopedInterfaceEndpointHandle handle);
+  void OverrideAssociatedInterfaceProviderForFrame(blink::WebLocalFrame* frame);
+
+  // device::mojom::ScreenOrientation implementation.
+  void LockOrientation(blink::WebScreenOrientationLockType orientation,
+                       LockOrientationCallback callback) override;
   void UnlockOrientation() override;
 
+ private:
   void UpdateLockSync(blink::WebScreenOrientationLockType,
-                      std::unique_ptr<blink::WebLockOrientationCallback>);
+                      LockOrientationCallback callback);
   void ResetLockSync();
 
   void UpdateScreenOrientation(blink::WebScreenOrientationType);
@@ -57,6 +61,7 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
   blink::WebScreenOrientationType device_orientation_;
   blink::WebScreenOrientationType current_orientation_;
   bool is_disabled_;
+  mojo::AssociatedBindingSet<device::mojom::ScreenOrientation> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScreenOrientationClient);
 };

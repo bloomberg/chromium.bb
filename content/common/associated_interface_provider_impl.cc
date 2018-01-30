@@ -52,7 +52,7 @@ AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl(
 }
 
 AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl()
-    : local_provider_(new LocalProvider(&proxy_)) {}
+    : local_provider_(std::make_unique<LocalProvider>(&proxy_)) {}
 
 AssociatedInterfaceProviderImpl::~AssociatedInterfaceProviderImpl() {}
 
@@ -66,7 +66,11 @@ void AssociatedInterfaceProviderImpl::GetInterface(
 void AssociatedInterfaceProviderImpl::OverrideBinderForTesting(
     const std::string& name,
     const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>& binder) {
-  DCHECK(local_provider_);
+  if (!local_provider_) {
+    DCHECK(proxy_.is_bound());
+    proxy_.reset();
+    local_provider_ = std::make_unique<LocalProvider>(&proxy_);
+  }
   local_provider_->SetBinderForName(name, binder);
 }
 

@@ -7,6 +7,7 @@ include_rules = [
   "+modules/media_controls",
   "+modules/remoteplayback",
   "+modules/screen_orientation",
+  "+mojo/public/cpp/bindings",
   "+services/device/public/interfaces/constants.mojom-blink.h",
   "+services/service_manager/public/cpp",
 ]
