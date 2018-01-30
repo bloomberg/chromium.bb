@@ -436,9 +436,16 @@ void HTMLCanvasElement::FinalizeFrame() {
   did_notify_listeners_for_current_frame_ = false;
 }
 
-void HTMLCanvasElement::DisableAcceleration() {
+void HTMLCanvasElement::DisableAcceleration(
+    std::unique_ptr<Canvas2DLayerBridge>
+        unaccelerated_bridge_used_for_testing) {
   // Create and configure an unaccelerated Canvas2DLayerBridge.
-  std::unique_ptr<Canvas2DLayerBridge> bridge = CreateUnaccelerated2dBuffer();
+  std::unique_ptr<Canvas2DLayerBridge> bridge;
+  if (unaccelerated_bridge_used_for_testing) {
+    bridge = std::move(unaccelerated_bridge_used_for_testing);
+  } else {
+    bridge = CreateUnaccelerated2dBuffer();
+  }
 
   if (bridge && canvas2d_bridge_) {
     ReplaceExistingCanvas2DBuffer(std::move(bridge));
@@ -1542,10 +1549,11 @@ void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
     // functional.
     if (!image)
       return;
-    new_buffer->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
+    new_buffer->DrawFullImage(image->PaintImageForCurrentFrame());
   }
 
   RestoreCanvasMatrixClipStack(new_buffer->Canvas());
+  new_buffer->DidRestoreCanvasMatrixClipStack(new_buffer->Canvas());
   canvas2d_bridge_ = std::move(new_buffer);
 }
 
