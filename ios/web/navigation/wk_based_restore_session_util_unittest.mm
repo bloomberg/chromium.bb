@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#include "ios/web/test/test_url_constants.h"
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -23,10 +24,17 @@ TEST_F(WKBasedRestoreSessionUtilTest, CreateRestoreSessionUrl) {
   item0->SetTitle(base::ASCIIToUTF16("Test Website 0"));
   auto item1 = std::make_unique<NavigationItemImpl>();
   item1->SetURL(GURL("http://www.1.com"));
+  // Create an App-specific URL
+  auto item2 = std::make_unique<NavigationItemImpl>();
+  GURL url2("http://webui");
+  GURL::Replacements scheme_replacements;
+  scheme_replacements.SetSchemeStr(kTestWebUIScheme);
+  item2->SetURL(url2.ReplaceComponents(scheme_replacements));
 
   std::vector<std::unique_ptr<NavigationItem>> items;
   items.push_back(std::move(item0));
   items.push_back(std::move(item1));
+  items.push_back(std::move(item2));
 
   GURL restore_session_url =
       CreateRestoreSessionUrl(0 /* last_committed_item_index */, items);
@@ -36,8 +44,9 @@ TEST_F(WKBasedRestoreSessionUtilTest, CreateRestoreSessionUrl) {
   net::GetValueForKeyInQuery(restore_session_url,
                              kRestoreSessionSessionQueryKey, &session_json);
   EXPECT_EQ(
-      "{\"offset\":-1,\"titles\":[\"Test Website 0\",\"\"],"
-      "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
+      "{\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
+      "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
+      "\"about:blank?for=testwebui%3A%2F%2Fwebui%2F\"]}",
       session_json);
 }
 

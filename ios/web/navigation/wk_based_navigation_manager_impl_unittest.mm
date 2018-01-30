@@ -579,7 +579,7 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   items.push_back(std::move(item0));
   items.push_back(std::move(item1));
 
-  manager_->Restore(0 /* last_committed_item_index */, std::move(items));
+  manager_->Restore(1 /* last_committed_item_index */, std::move(items));
 
   NavigationItem* pending_item = manager_->GetPendingItem();
   ASSERT_TRUE(pending_item != nullptr);
@@ -592,7 +592,7 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   net::GetValueForKeyInQuery(pending_url, kRestoreSessionSessionQueryKey,
                              &session_json);
   EXPECT_EQ(
-      "{\"offset\":-1,\"titles\":[\"Test Website 0\",\"\"],"
+      "{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
       "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
       session_json);
 }
