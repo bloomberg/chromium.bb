@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "chrome/browser/android/history_report/usage_report_util.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -139,6 +141,29 @@ std::string UsageReportsBufferBackend::Dump() {
   dump.append(base::IntToString(num_entries));
   dump.append("]");
   return dump;
+}
+
+bool UsageReportsBufferBackend::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!db_)
+    return true;
+
+  // leveldb_env::DBTracker already records memory usage. Add ownership edge
+  // to the dump.
+  auto* tracker_dump =
+      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
+  if (!tracker_dump)
+    return true;
+
+  auto* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("history/usage_reports_buffer/leveldb_0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(db_.get())));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  tracker_dump->GetSizeInternal());
+  pmd->AddOwnershipEdge(dump->guid(), tracker_dump->guid());
+  return true;
 }
 
 }  // namespace history_report

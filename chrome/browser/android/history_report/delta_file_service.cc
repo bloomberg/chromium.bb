@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "chrome/browser/android/history_report/delta_file_backend_leveldb.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,6 +62,12 @@ void DoDump(history_report::DeltaFileBackend* backend,
   finished->Signal();
 }
 
+void DoUnregisterMDP(
+    std::unique_ptr<history_report::DeltaFileBackend> backend) {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      backend.get());
+}
+
 }  // namespace
 
 namespace history_report {
@@ -70,9 +77,19 @@ using content::BrowserThread;
 DeltaFileService::DeltaFileService(const base::FilePath& dir)
     : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      delta_file_backend_(new DeltaFileBackend(dir)) {}
+      delta_file_backend_(new DeltaFileBackend(dir)) {
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          delta_file_backend_.get(), "HistoryReport", task_runner_,
+          base::trace_event::MemoryDumpProvider::Options());
+}
 
-DeltaFileService::~DeltaFileService() {}
+DeltaFileService::~DeltaFileService() {
+  // Unregister should happen on task runner.
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DoUnregisterMDP,
+                                base::Passed(std::move(delta_file_backend_))));
+}
 
 void DeltaFileService::PageAdded(const GURL& url) {
   task_runner_->PostTask(
