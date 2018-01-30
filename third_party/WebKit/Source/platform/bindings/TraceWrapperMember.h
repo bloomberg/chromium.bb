@@ -89,13 +89,21 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   }
 }
 
+// HeapVectorBacking<TraceWrapperMember<T>> need to map to
+// HeapVectorBacking<Member<T>> for performing the swap method below.
+template <typename T, typename Traits>
+struct GCInfoTrait<HeapVectorBacking<TraceWrapperMember<T>, Traits>>
+    : public GCInfoTrait<
+          HeapVectorBacking<Member<T>, WTF::VectorTraits<Member<T>>>> {};
+
 // Swaps two HeapVectors, one containing TraceWrapperMember and one with
 // regular Members. The custom swap function is required as TraceWrapperMember
 // potentially requires emitting a write barrier.
 template <typename T>
 void swap(HeapVector<TraceWrapperMember<T>>& a, HeapVector<Member<T>>& b) {
   // HeapVector<Member<T>> and HeapVector<TraceWrapperMember<T>> have the
-  // same size and semantics.
+  // same size and semantics. This cast and swap assumes that GCInfo for both
+  // TraceWrapperMember and Member match in vector backings.
   HeapVector<Member<T>>& a_ = reinterpret_cast<HeapVector<Member<T>>&>(a);
   a_.swap(b);
   if (ThreadState::Current()->WrapperTracingInProgress()) {
