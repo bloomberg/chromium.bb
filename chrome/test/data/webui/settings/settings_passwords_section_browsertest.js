@@ -15,6 +15,9 @@ GEN_INCLUDE(
 GEN_INCLUDE([ROOT_PATH +
     'chrome/test/data/webui/settings/passwords_and_autofill_fake_data.js']);
 
+// Mock timer.
+GEN_INCLUDE([ROOT_PATH + 'chrome/test/data/webui/mock_timer.js']);
+
 /**
  * @constructor
  * @extends {PolymerTest}
@@ -169,7 +172,18 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    * @return {!Object}
    * @private
    */
-  function createExportPasswordsDialog() {
+  function createExportPasswordsDialog(passwordManager) {
+    passwordManager.requestExportProgressStatus = callback => {
+      callback(chrome.passwordsPrivate.ExportProgressStatus.NOT_STARTED);
+    };
+    passwordManager.addPasswordsFileExportProgressListener = callback => {
+      passwordManager.progressCallback = callback;
+    };
+    passwordManager.removePasswordsFileExportProgressListener = () => {};
+    passwordManager.exportPasswords = (callback) => {
+      callback();
+    };
+
     const dialog = document.createElement('passwords-export-dialog');
     document.body.appendChild(dialog);
     Polymer.dom.flush();
@@ -571,17 +585,6 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       MockInteractions.tap(passwordListItem.$$('#showPasswordButton'));
     });
 
-    // Test that tapping "Export passwords..." notifies the browser accordingly
-    test('startExport', function(done) {
-      const exportDialog = createExportPasswordsDialog();
-
-      passwordManager.exportPasswords = () => {
-        done();
-      };
-
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
-    });
-
     test('closingPasswordsSectionHidesUndoToast', function(done) {
       const passwordEntry = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       const passwordsSection =
@@ -601,6 +604,113 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertFalse(passwordsSection.$.undoToast.open);
 
       done();
+    });
+
+    // Test that tapping "Export passwords..." notifies the browser accordingly
+    test('startExport', function(done) {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+
+      passwordManager.exportPasswords = (callback) => {
+        callback();
+        done();
+      };
+
+      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+    });
+
+    // Test the export flow. If exporting is fast, we should skip the
+    // in-progress view altogether.
+    test('exportFlowFast', function(done) {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const progressCallback = passwordManager.progressCallback;
+
+      // Use this to freeze the delayed progress bar and avoid flakiness.
+      let mockTimer = new MockTimer();
+      mockTimer.install();
+
+      assertTrue(exportDialog.$.dialog_start.open);
+      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      assertTrue(exportDialog.$.dialog_start.open);
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+
+      // When we are done, the export dialog closes completely.
+      assertFalse(exportDialog.$.dialog_start.open);
+      assertFalse(exportDialog.$.dialog_error.open);
+      assertFalse(exportDialog.$.dialog_progress.open);
+      done();
+
+      mockTimer.uninstall();
+    });
+
+    // The error view is shown when an error occurs.
+    test('exportFlowError', function(done) {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const progressCallback = passwordManager.progressCallback;
+
+      // Use this to freeze the delayed progress bar and avoid flakiness.
+      let mockTimer = new MockTimer();
+      mockTimer.install();
+
+      assertTrue(exportDialog.$.dialog_start.open);
+      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      assertTrue(exportDialog.$.dialog_start.open);
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      progressCallback({
+        status:
+            chrome.passwordsPrivate.ExportProgressStatus.FAILED_WRITE_FAILED,
+        folderName: 'tmp',
+      });
+
+      assertTrue(exportDialog.$.dialog_error.open);
+      done();
+
+      mockTimer.uninstall();
+    });
+
+    // Test the export flow. If exporting is slow, Chrome should show the
+    // in-progress dialog for at least 2000ms.
+    test('exportFlowSlow', function(done) {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const progressCallback = passwordManager.progressCallback;
+
+      let mockTimer = new MockTimer();
+      mockTimer.install();
+
+      // The initial dialog remains open for 100ms after export enters the
+      // in-progress state.
+      assertTrue(exportDialog.$.dialog_start.open);
+      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      assertTrue(exportDialog.$.dialog_start.open);
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      assertTrue(exportDialog.$.dialog_start.open);
+
+      // After 100ms of not having completed, the dialog switches to the
+      // progress bar. Chrome will continue to show the progress bar for 2000ms,
+      // despite a completion event.
+      mockTimer.tick(99);
+      assertTrue(exportDialog.$.dialog_start.open);
+      mockTimer.tick(1);
+      assertTrue(exportDialog.$.dialog_progress.open);
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+      assertTrue(exportDialog.$.dialog_progress.open);
+
+      // After 2000ms, Chrome will display the completion event.
+      mockTimer.tick(1999);
+      assertTrue(exportDialog.$.dialog_progress.open);
+      mockTimer.tick(1);
+      // On SUCCEEDED the dialog closes completely.
+      assertFalse(exportDialog.$.dialog_progress.open);
+      assertFalse(exportDialog.$.dialog_start.open);
+      assertFalse(exportDialog.$.dialog_error.open);
+      done();
+
+      mockTimer.uninstall();
     });
   });
 
