@@ -229,11 +229,11 @@ bool FindElfBinaryForAddress(void* address,
     if (entry.vma_start <= addr && addr < entry.vma_end) {
       *load_address = entry.vma_start;
       if (!entry.path) {
-        LOG("Could not find ELF binary path!?\n");
+        LOG("Could not find ELF binary path!?");
         return false;
       }
       if (entry.path_len >= path_buffer_len) {
-        LOG("ELF binary path too long: '%s'\n", entry.path);
+        LOG("ELF binary path too long: '%s'", entry.path);
         return false;
       }
       memcpy(path_buffer, entry.path, entry.path_len);

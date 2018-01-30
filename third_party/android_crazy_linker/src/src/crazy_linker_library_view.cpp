@@ -12,7 +12,7 @@
 namespace crazy {
 
 LibraryView::~LibraryView() {
-  LOG("%s: Destroying %s\n", __FUNCTION__, name_.c_str());
+  LOG("Destroying %s", name_.c_str());
   if (type_ == TYPE_SYSTEM) {
     ::dlclose(system_);
     system_ = NULL;

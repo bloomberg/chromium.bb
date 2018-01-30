@@ -76,11 +76,7 @@ bool ElfLoader::LoadAt(const char* lib_path,
                        off_t file_offset,
                        uintptr_t wanted_address,
                        Error* error) {
-
-  LOG("%s: lib_path='%s', file_offset=%p, load_address=%p\n",
-      __FUNCTION__,
-      lib_path,
-      file_offset,
+  LOG("lib_path='%s', file_offset=%p, load_address=%p", lib_path, file_offset,
       wanted_address);
 
   // Check that the load address is properly page-aligned.
@@ -243,11 +239,11 @@ bool ElfLoader::ReserveAddressSpace(Error* error) {
     if (wanted_load_address_) {
       addr -= min_vaddr;
     }
-    LOG("%s: added %d to size, for Breakpad guard\n", __FUNCTION__, min_vaddr);
+    LOG("added %d to size, for Breakpad guard", min_vaddr);
   }
 #endif
 
-  LOG("%s: address=%p size=%p\n", __FUNCTION__, addr, reserved_size_);
+  LOG("address=%p size=%p", addr, reserved_size_);
   void* start = mmap(addr, reserved_size_, PROT_NONE, mmap_flags, -1, 0);
   if (start == MAP_FAILED) {
     error->Format("Could not reserve %d bytes of address space",
@@ -261,7 +257,7 @@ bool ElfLoader::ReserveAddressSpace(Error* error) {
   }
 
   reserved_start_ = start;
-  LOG("%s: reserved start=%p\n", __FUNCTION__, reserved_start_);
+  LOG("reserved start=%p", reserved_start_);
 
   load_start_ = start;
   load_bias_ = reinterpret_cast<ELF::Addr>(start) - min_vaddr;
@@ -276,11 +272,11 @@ bool ElfLoader::ReserveAddressSpace(Error* error) {
     load_start_ = reinterpret_cast<void*>(
         reinterpret_cast<uintptr_t>(load_start_) + min_vaddr);
     load_bias_ += min_vaddr;
-    LOG("%s: moved map by %d, for Breakpad guard\n", __FUNCTION__, min_vaddr);
+    LOG("moved map by %d, for Breakpad guard", min_vaddr);
   }
 #endif
 
-  LOG("%s: load start=%p, bias=%p\n", __FUNCTION__, load_start_, load_bias_);
+  LOG("load start=%p, bias=%p", load_start_, load_bias_);
   return true;
 }
 
@@ -364,11 +360,8 @@ bool ElfLoader::LoadSegments(Error* error) {
     ELF::Addr file_page_start = PAGE_START(file_start);
     ELF::Addr file_length = file_end - file_page_start;
 
-    LOG("%s: file_offset=%p file_length=%p start_address=%p end_address=%p\n",
-        __FUNCTION__,
-        file_offset_ + file_page_start,
-        file_length,
-        seg_page_start,
+    LOG("file_offset=%p file_length=%p start_address=%p end_address=%p",
+        file_offset_ + file_page_start, file_length, seg_page_start,
         seg_page_start + PAGE_END(file_length));
 
     if (file_length != 0) {

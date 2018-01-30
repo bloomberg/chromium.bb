@@ -31,11 +31,11 @@ namespace crazy {
 
 #if CRAZY_DEBUG
 
-void Log(const char* fmt, ...);
-void LogErrno(const char* fmt, ...);
+void Log(const char* location, const char* fmt, ...);
+void LogErrno(const char* location, const char* fmt, ...);
 
-#define LOG(...) ::crazy::Log(__VA_ARGS__)
-#define LOG_ERRNO(...) ::crazy::LogErrno(__VA_ARGS__)
+#define LOG(...) ::crazy::Log(__PRETTY_FUNCTION__, __VA_ARGS__)
+#define LOG_ERRNO(...) ::crazy::LogErrno(__PRETTY_FUNCTION__, __VA_ARGS__)
 
 #else
 

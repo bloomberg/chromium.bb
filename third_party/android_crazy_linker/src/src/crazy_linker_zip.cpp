@@ -74,8 +74,7 @@ class ScopedMMap {
   ScopedMMap(void* mem, uint32_t len) : mem_(mem), len_(len) {}
   ~ScopedMMap() {
     if (munmap(mem_, len_) == -1) {
-      LOG_ERRNO("%s: munmap failed when trying to unmap zip file\n",
-                __FUNCTION__);
+      LOG_ERRNO("munmap failed when trying to unmap zip file");
     }
   }
  private:
@@ -107,30 +106,26 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   // Open the file
   FileDescriptor fd;
   if (!fd.OpenReadOnly(zip_file)) {
-    LOG_ERRNO("%s: open failed trying to open zip file %s\n",
-              __FUNCTION__, zip_file);
+    LOG_ERRNO("open failed trying to open zip file %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
   // Find the length of the file.
   struct stat stat_buf;
   if (stat(zip_file, &stat_buf) == -1) {
-    LOG_ERRNO("%s: stat failed trying to stat zip file %s\n",
-              __FUNCTION__, zip_file);
+    LOG_ERRNO("stat failed trying to stat zip file %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
   if (stat_buf.st_size > kMaxZipFileLength) {
-    LOG("%s: The size %ld of %s is too large to map\n",
-        __FUNCTION__, stat_buf.st_size, zip_file);
+    LOG("The size %ld of %s is too large to map", stat_buf.st_size, zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
   // Map the file into memory.
   void* mem = fd.Map(NULL, stat_buf.st_size, PROT_READ, MAP_PRIVATE, 0);
   if (mem == MAP_FAILED) {
-    LOG_ERRNO("%s: mmap failed trying to mmap zip file %s\n",
-              __FUNCTION__, zip_file);
+    LOG_ERRNO("mmap failed trying to mmap zip file %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
   ScopedMMap scoped_mmap(mem, stat_buf.st_size);
@@ -147,8 +142,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
     }
   }
   if (off == -1) {
-    LOG("%s: Failed to find end of central directory in %s\n",
-        __FUNCTION__, zip_file);
+    LOG("Failed to find end of central directory in %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
@@ -161,15 +155,15 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
       mem_bytes, off + kOffsetOfStartOfCentralDirInEndOfCentralDirectory);
 
   if (start_of_central_dir > off) {
-    LOG("%s: Found out of range offset %u for start of directory in %s\n",
-        __FUNCTION__, start_of_central_dir, zip_file);
+    LOG("Found out of range offset %u for start of directory in %s",
+        start_of_central_dir, zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
   uint32_t end_of_central_dir = start_of_central_dir + length_of_central_dir;
   if (end_of_central_dir > off) {
-    LOG("%s: Found out of range offset %u for end of directory in %s\n",
-        __FUNCTION__, end_of_central_dir, zip_file);
+    LOG("Found out of range offset %u for end of directory in %s",
+        end_of_central_dir, zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
@@ -183,8 +177,8 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   for (; n < num_entries && off < end_of_central_dir; ++n) {
     uint32_t marker = ReadUInt32(mem_bytes, off);
     if (marker != kCentralDirHeaderMarker) {
-      LOG("%s: Failed to find central directory header marker in %s. "
-          "Found 0x%x but expected 0x%x\n", __FUNCTION__,
+      LOG("Failed to find central directory header marker in %s. "
+          "Found 0x%x but expected 0x%x",
           zip_file, marker, kCentralDirHeaderMarker);
       return CRAZY_OFFSET_FAILED;
     }
@@ -208,8 +202,8 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
       // Filename matches. Read the local header and compute the offset.
       uint32_t marker = ReadUInt32(mem_bytes, local_header_offset);
       if (marker != kLocalHeaderMarker) {
-        LOG("%s: Failed to find local file header marker in %s. "
-            "Found 0x%x but expected 0x%x\n", __FUNCTION__,
+        LOG("Failed to find local file header marker in %s. "
+            "Found 0x%x but expected 0x%x",
             zip_file, marker, kLocalHeaderMarker);
         return CRAZY_OFFSET_FAILED;
       }
@@ -219,8 +213,8 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
               mem_bytes,
               local_header_offset + kOffsetCompressionMethodInLocalHeader);
       if (compression_method != kCompressionMethodStored) {
-        LOG("%s: %s is compressed within %s. "
-            "Found compression method %u but expected %u\n", __FUNCTION__,
+        LOG("%s is compressed within %s. "
+            "Found compression method %u but expected %u",
             filename, zip_file, compression_method, kCompressionMethodStored);
         return CRAZY_OFFSET_FAILED;
       }
@@ -243,16 +237,17 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   }
 
   if (n < num_entries) {
-    LOG("%s: Did not find all the expected entries in the central directory. "
-        "Found %d but expected %d\n", __FUNCTION__, n, num_entries);
+    LOG("Did not find all the expected entries in the central directory. "
+        "Found %d but expected %d",
+        n, num_entries);
   }
 
   if (off < end_of_central_dir) {
-    LOG("%s: There are %d extra bytes at the end of the central directory.\n",
-        __FUNCTION__, end_of_central_dir - off);
+    LOG("There are %d extra bytes at the end of the central directory.",
+        end_of_central_dir - off);
   }
 
-  LOG("%s: Did not find %s in %s\n", __FUNCTION__, filename, zip_file);
+  LOG("Did not find %s in %s", filename, zip_file);
   return CRAZY_OFFSET_FAILED;
 }
 

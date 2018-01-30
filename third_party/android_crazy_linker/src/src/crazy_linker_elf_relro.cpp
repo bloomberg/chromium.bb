@@ -156,26 +156,23 @@ bool SharedRelro::InitFrom(size_t relro_start,
   // Create temporary mapping of the ashmem region.
   ScopedMemoryMapping fd_map;
 
-  LOG("%s: Entering addr=%p size=%p fd=%d\n",
-      __FUNCTION__,
-      (void*)relro_start,
-      (void*)relro_size,
+  LOG("Entering addr=%p size=%p fd=%d", (void*)relro_start, (void*)relro_size,
       ashmem_fd);
 
   // Sanity check: Ashmem file descriptor must be read-only.
   if (!AshmemRegion::CheckFileDescriptorIsReadOnly(ashmem_fd)) {
-    error->Format("Ashmem file descriptor is not read-only: %s\n",
+    error->Format("Ashmem file descriptor is not read-only: %s",
                   strerror(errno));
     return false;
   }
 
   if (!fd_map.Allocate(NULL, relro_size, MemoryMapping::CAN_READ, ashmem_fd)) {
-    error->Format("Cannot map RELRO ashmem region as read-only: %s\n",
+    error->Format("Cannot map RELRO ashmem region as read-only: %s",
                   strerror(errno));
     return false;
   }
 
-  LOG("%s: mapping allocated at %p\n", __FUNCTION__, fd_map.Get());
+  LOG("mapping allocated at %p", fd_map.Get());
 
   char* cur_page = reinterpret_cast<char*>(relro_start);
   char* fd_page = static_cast<char*>(fd_map.Get());
@@ -197,10 +194,7 @@ bool SharedRelro::InitFrom(size_t relro_start,
 
     if (p2 > p) {
       // Swap pages between |pos| and |pos2|.
-      LOG("%s: Swap pages at %p-%p\n",
-          __FUNCTION__,
-          cur_page + p,
-          cur_page + p2);
+      LOG("Swap pages at %p-%p", cur_page + p, cur_page + p2);
       if (!SwapPagesFromFd(cur_page + p, p2 - p, ashmem_fd, p, error))
         return false;
 
@@ -210,11 +204,8 @@ bool SharedRelro::InitFrom(size_t relro_start,
     p = p2;
   } while (p < size);
 
-  LOG("%s: Swapped %d pages over %d (%d %%, %d KB not shared)\n",
-      __FUNCTION__,
-      similar_size / PAGE_SIZE,
-      size / PAGE_SIZE,
-      similar_size * 100 / size,
+  LOG("Swapped %d pages over %d (%d %%, %d KB not shared)",
+      similar_size / PAGE_SIZE, size / PAGE_SIZE, similar_size * 100 / size,
       (size - similar_size) / 4096);
 
   if (similar_size == 0) {
