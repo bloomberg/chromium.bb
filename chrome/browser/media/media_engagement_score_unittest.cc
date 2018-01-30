@@ -343,10 +343,9 @@ TEST_F(MediaEngagementScoreTest, EngagementScoreCalculation) {
   EXPECT_EQ(0, score_->actual_score());
   UpdateScore(score_);
 
-  // Check that the score is zero even with 1 visit.
-  EXPECT_EQ(0.0, score_->actual_score());
+  // Check that the score increases when there is one visit.
+  EXPECT_EQ(0.05, score_->actual_score());
 
-  EXPECT_EQ(0, score_->actual_score());
   SetScore(20, 8);
   EXPECT_EQ(0.4, score_->actual_score());
 
@@ -429,9 +428,9 @@ TEST_F(MediaEngagementScoreTest, OverrideFieldTrial) {
   EXPECT_FALSE(score_->high_score());
   EXPECT_EQ(0.85, MediaEngagementScore::GetHighScoreLowerThreshold());
 
-  // Raise the minimum visits, the score will now be zero as it does not meet
-  // the threshold requirements.
+  // Raise the minimum visits, the score will now be relative to this new
+  // visits requirements.
   OverrideFieldTrial(25, 0.85, 0.9);
-  EXPECT_EQ(0.0, score_->actual_score());
+  EXPECT_EQ(0.64, score_->actual_score());
   EXPECT_EQ(25, MediaEngagementScore::GetScoreMinVisits());
 }
