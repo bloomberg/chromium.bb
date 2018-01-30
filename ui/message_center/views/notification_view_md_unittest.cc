@@ -313,8 +313,7 @@ TEST_F(NotificationViewMDTest, CreateOrUpdateTest) {
   EXPECT_EQ(nullptr, notification_view()->title_view_);
   EXPECT_EQ(nullptr, notification_view()->message_view_);
   EXPECT_EQ(nullptr, notification_view()->image_container_view_);
-  // We still expect an icon view for all layouts.
-  EXPECT_NE(nullptr, notification_view()->icon_view_);
+  EXPECT_EQ(nullptr, notification_view()->icon_view_);
 }
 
 TEST_F(NotificationViewMDTest, TestIconSizing) {
@@ -744,24 +743,43 @@ TEST_F(NotificationViewMDTest, UseImageAsIcon) {
   UpdateNotificationViews();
   EXPECT_FALSE(notification_view()->expanded_);
   EXPECT_TRUE(notification_view()->icon_view_->visible());
+  EXPECT_TRUE(notification_view()->right_content_->visible());
 
   // Icon on the right side is still visible when expanded.
   notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->expanded_);
   EXPECT_TRUE(notification_view()->icon_view_->visible());
+  EXPECT_TRUE(notification_view()->right_content_->visible());
 
   notification_view()->ToggleExpanded();
   EXPECT_FALSE(notification_view()->expanded_);
 
-  // Test notification with use_image_as_icon e.g. screenshot preview.
+  // Test notification with |use_image_for_icon| e.g. screenshot preview.
   notification()->set_icon(gfx::Image());
   UpdateNotificationViews();
   EXPECT_TRUE(notification_view()->icon_view_->visible());
+  EXPECT_TRUE(notification_view()->right_content_->visible());
 
   // Icon on the right side is not visible when expanded.
   notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->expanded_);
-  EXPECT_FALSE(notification_view()->icon_view_->visible());
+  EXPECT_TRUE(notification_view()->icon_view_->visible());
+  EXPECT_FALSE(notification_view()->right_content_->visible());
+}
+
+TEST_F(NotificationViewMDTest, NotificationWithoutIcon) {
+  notification()->set_icon(gfx::Image());
+  notification()->set_image(gfx::Image());
+  UpdateNotificationViews();
+
+  // If the notification has no icon, |icon_view_| shouldn't be created.
+  EXPECT_FALSE(notification_view()->icon_view_);
+  EXPECT_FALSE(notification_view()->right_content_->visible());
+
+  // Toggling should not affect the icon.
+  notification_view()->ToggleExpanded();
+  EXPECT_FALSE(notification_view()->icon_view_);
+  EXPECT_FALSE(notification_view()->right_content_->visible());
 }
 
 TEST_F(NotificationViewMDTest, InlineSettings) {

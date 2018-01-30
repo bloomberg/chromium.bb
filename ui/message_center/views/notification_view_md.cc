@@ -1020,8 +1020,13 @@ void NotificationViewMD::CreateOrUpdateListItemViews(
 
 void NotificationViewMD::CreateOrUpdateIconView(
     const Notification& notification) {
+  const bool use_image_for_icon = notification.icon().IsEmpty();
+
+  gfx::ImageSkia icon = use_image_for_icon ? notification.image().AsImageSkia()
+                                           : notification.icon().AsImageSkia();
+
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
-      notification.type() == NOTIFICATION_TYPE_MULTIPLE) {
+      notification.type() == NOTIFICATION_TYPE_MULTIPLE || icon.isNull()) {
     DCHECK(!icon_view_ || right_content_->Contains(icon_view_));
     delete icon_view_;
     icon_view_ = nullptr;
@@ -1033,12 +1038,6 @@ void NotificationViewMD::CreateOrUpdateIconView(
     right_content_->AddChildView(icon_view_);
   }
 
-  const bool use_image_for_icon = notification.icon().IsEmpty();
-  gfx::ImageSkia icon;
-  if (use_image_for_icon)
-    icon = notification.image().AsImageSkia();
-  else
-    icon = notification.icon().AsImageSkia();
   icon_view_->SetImage(icon, icon.size());
 
   // Hide the icon on the right side when the notification is expanded.
@@ -1223,10 +1222,9 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
       list_items_count_ -
       (expanded ? item_views_.size() : kMaxLinesForMessageView));
 
-  if (icon_view_)
-    icon_view_->SetVisible(!hide_icon_on_expanded_ || !expanded);
-
-  if (icon_view_ && icon_view_->visible()) {
+  right_content_->SetVisible(icon_view_ &&
+                             (!hide_icon_on_expanded_ || !expanded));
+  if (right_content_->visible()) {
     left_content_->SetBorder(
         views::CreateEmptyBorder(kLeftContentPaddingWithIcon));
 
