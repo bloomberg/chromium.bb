@@ -51,6 +51,39 @@ def CopyPagesWithNewBrowserArgsAndPrefix(pages, browser_args, prefix):
     p.CopyWithNewBrowserArgsAndPrefix(browser_args, prefix) for p in pages]
 
 
+# TODO(kbr): consider refactoring this into pixel_integration_test.py.
+SCALE_FACTOR_OVERRIDES = {
+  "comment": "scale factor overrides",
+  "scale_factor_overrides": [
+    {
+      "device_type": "Nexus 5",
+      "scale_factor": 1.105
+    },
+    {
+      "device_type": "Nexus 5X",
+      "scale_factor": 1.105
+    },
+    {
+      "device_type": "Nexus 6",
+      "scale_factor": 1.47436
+    },
+    {
+      "device_type": "Nexus 6P",
+      "scale_factor": 1.472
+    },
+    {
+      "device_type": "Nexus 9",
+      "scale_factor": 1.566
+    },
+    {
+      "comment": "NVIDIA Shield",
+      "device_type": "sb_na_wf",
+      "scale_factor": 1.226
+    }
+  ]
+}
+
+
 def DefaultPages(base_name):
   return [
     PixelTestPage(
@@ -160,38 +193,7 @@ def DefaultPages(base_name):
       test_rect=[0, 0, 150, 150],
       revision=0, # This is not used.
       expected_colors=[
-        # TODO(kbr): if this works, then factor it out so it applies
-        # to all pixel tests that use programmatic expectations.
-        {
-          "comment": "scale factor overrides",
-          "scale_factor_overrides": [
-            {
-              "device_type": "Nexus 5",
-              "scale_factor": 1.105
-            },
-            {
-              "device_type": "Nexus 5X",
-              "scale_factor": 1.105
-            },
-            {
-              "device_type": "Nexus 6",
-              "scale_factor": 1.47436
-            },
-            {
-              "device_type": "Nexus 6P",
-              "scale_factor": 1.472
-            },
-            {
-              "device_type": "Nexus 9",
-              "scale_factor": 1.566
-            },
-            {
-              "comment": "NVIDIA Shield",
-              "device_type": "sb_na_wf",
-              "scale_factor": 1.226
-            }
-          ]
-        },
+        SCALE_FACTOR_OVERRIDES,
         {
           'comment': 'brown',
           'location': [1, 1],
@@ -211,38 +213,7 @@ def DefaultPages(base_name):
       test_rect=[0, 0, 200, 200],
       revision=0, # This is not used.
       expected_colors=[
-        # TODO(kbr): if this works, then factor it out so it applies
-        # to all pixel tests that use programmatic expectations.
-        {
-          "comment": "scale factor overrides",
-          "scale_factor_overrides": [
-            {
-              "device_type": "Nexus 5",
-              "scale_factor": 1.105
-            },
-            {
-              "device_type": "Nexus 5X",
-              "scale_factor": 1.105
-            },
-            {
-              "device_type": "Nexus 6",
-              "scale_factor": 1.47436
-            },
-            {
-              "device_type": "Nexus 6P",
-              "scale_factor": 1.472
-            },
-            {
-              "device_type": "Nexus 9",
-              "scale_factor": 1.566
-            },
-            {
-              "comment": "NVIDIA Shield",
-              "device_type": "sb_na_wf",
-              "scale_factor": 1.226
-            }
-          ]
-        },
+        SCALE_FACTOR_OVERRIDES,
         {
           'comment': 'green',
           'location': [1, 1],
@@ -258,38 +229,7 @@ def DefaultPages(base_name):
       test_rect=[0, 0, 200, 200],
       revision=0, # This is not used.
       expected_colors=[
-        # TODO(kbr): if this works, then factor it out so it applies
-        # to all pixel tests that use programmatic expectations.
-        {
-          "comment": "scale factor overrides",
-          "scale_factor_overrides": [
-            {
-              "device_type": "Nexus 5",
-              "scale_factor": 1.105
-            },
-            {
-              "device_type": "Nexus 5X",
-              "scale_factor": 1.105
-            },
-            {
-              "device_type": "Nexus 6",
-              "scale_factor": 1.47436
-            },
-            {
-              "device_type": "Nexus 6P",
-              "scale_factor": 1.472
-            },
-            {
-              "device_type": "Nexus 9",
-              "scale_factor": 1.566
-            },
-            {
-              "comment": "NVIDIA Shield",
-              "device_type": "sb_na_wf",
-              "scale_factor": 1.226
-            }
-          ]
-        },
+        SCALE_FACTOR_OVERRIDES,
         {
           'comment': 'green',
           'location': [1, 1],
@@ -652,6 +592,11 @@ def MacSpecificPages(base_name):
 
   non_chromium_image_args = ['--disable-webgl-image-chromium']
 
+  # This disables the Core Animation compositor, falling back to the
+  # old GLRenderer path, but continuing to allocate IOSurfaces for
+  # WebGL's back buffer.
+  no_overlays_args = ['--disable-mac-overlays']
+
   return [
     # On macOS, test the IOSurface 2D Canvas compositing path.
     PixelTestPage(
@@ -705,7 +650,29 @@ def MacSpecificPages(base_name):
       test_rect=[0, 0, 300, 300],
       revision=7,
       tolerance=10,
-      browser_args=['--disable-mac-overlays']),
+      browser_args=no_overlays_args),
+
+    # Test WebGL's premultipliedAlpha:false without the CA compositor.
+    PixelTestPage(
+      'pixel_webgl_premultiplied_alpha_false.html',
+      base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
+      test_rect=[0, 0, 150, 150],
+      revision=0, # This is not used.
+      browser_args=no_overlays_args,
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'brown',
+          'location': [1, 1],
+          'size': [148, 148],
+          # This is the color on an NVIDIA based MacBook Pro if the
+          # sRGB profile's applied correctly.
+          'color': [102, 77, 0],
+          # This is the color if it isn't.
+          # 'color': [101, 76, 12],
+          'tolerance': 3
+        },
+      ]),
   ]
 
 def DirectCompositionPages(base_name):

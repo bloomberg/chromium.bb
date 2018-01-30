@@ -848,10 +848,17 @@ WebLayer* DrawingBuffer::PlatformLayer() {
     layer_->SetOpaque(!want_alpha_channel_);
     layer_->SetBlendBackgroundColor(want_alpha_channel_);
     // If premultiplied_alpha_false_texture_ exists, then premultiplied_alpha_
-    // has already been handled via CopySubTextureCHROMIUM, and does not need
-    // to be handled by the compositor.
-    layer_->SetPremultipliedAlpha(premultiplied_alpha_ &&
-                                  !premultiplied_alpha_false_texture_);
+    // has already been handled via CopySubTextureCHROMIUM -- the alpha channel
+    // has been multiplied into the color channels. In this case, or if
+    // premultiplied_alpha_ is true, then the layer should consider its contents
+    // to be premultiplied.
+    //
+    // The only situation where the layer should consider its contents
+    // un-premultiplied is when premultiplied_alpha_ is false, and
+    // premultiplied_alpha_false_texture_ does not exist.
+    DCHECK(!(premultiplied_alpha_ && premultiplied_alpha_false_texture_));
+    layer_->SetPremultipliedAlpha(premultiplied_alpha_ ||
+                                  premultiplied_alpha_false_texture_);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
     GraphicsLayer::RegisterContentsLayer(layer_->Layer());
   }
