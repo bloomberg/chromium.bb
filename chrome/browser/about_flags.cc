@@ -3685,6 +3685,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDisplayZoomSettingName,
      flag_descriptions::kEnableDisplayZoomSettingDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableDisplayZoomSetting)},
+
+    {"ash-enable-new-overview-ui",
+     flag_descriptions::kAshEnableNewOverviewUiName,
+     flag_descriptions::kAshEnableNewOverviewUiDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewOverviewUi)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
