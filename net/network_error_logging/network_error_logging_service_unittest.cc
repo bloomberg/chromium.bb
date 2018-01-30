@@ -153,6 +153,10 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const std::string kHeader_ = "{\"report-to\":\"group\",\"max-age\":86400}";
   const std::string kHeaderIncludeSubdomains_ =
       "{\"report-to\":\"group\",\"max-age\":86400,\"includeSubdomains\":true}";
+  const std::string kHeaderFailureFraction0_ =
+      "{\"report-to\":\"group\",\"max-age\":86400,\"failure-fraction\":0.0}";
+  const std::string kHeaderFailureFractionHalf_ =
+      "{\"report-to\":\"group\",\"max-age\":86400,\"failure-fraction\":0.5}";
   const std::string kHeaderMaxAge0_ = "{\"max-age\":0}";
 
   const std::string kGroup_ = "group";
@@ -165,6 +169,14 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   std::unique_ptr<NetworkErrorLoggingService> service_;
   std::unique_ptr<TestReportingService> reporting_service_;
 };
+
+void ExpectDictDoubleValue(double expected_value,
+                           const base::DictionaryValue& value,
+                           const std::string& key) {
+  double double_value = 0.0;
+  EXPECT_TRUE(value.GetDouble(key, &double_value)) << key;
+  EXPECT_DOUBLE_EQ(expected_value, double_value) << key;
+}
 
 TEST_F(NetworkErrorLoggingServiceTest, CreateService) {
   // Service is created by default in the test fixture..
@@ -214,6 +226,8 @@ TEST_F(NetworkErrorLoggingServiceTest, ReportQueued) {
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   // TODO(juliatuttle): Extract these constants.
+  ExpectDictDoubleValue(1.0, *body,
+                        NetworkErrorLoggingService::kSamplingFractionKey);
   base::ExpectDictStringValue("0.0.0.0", *body,
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
@@ -234,6 +248,45 @@ TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
   service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, FailureFraction0) {
+  service()->OnHeader(kOrigin_, kHeaderFailureFraction0_);
+
+  // Each network error has a 0% chance of being reported.  Fire off several and
+  // verify that no reports are produced.
+  constexpr size_t kReportCount = 100;
+  for (size_t i = 0; i < kReportCount; ++i)
+    service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, FailureFractionHalf) {
+  service()->OnHeader(kOrigin_, kHeaderFailureFractionHalf_);
+
+  // Each network error has a 50% chance of being reported.  Fire off several
+  // and verify that some requests were reported and some weren't.  (We can't
+  // verify exact counts because each decision is made randomly.)
+  constexpr size_t kReportCount = 100;
+  for (size_t i = 0; i < kReportCount; ++i)
+    service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
+
+  // If our random selection logic is correct, there is a 2^-100 chance that
+  // every single report above was skipped.  If this check fails, it's much more
+  // likely that our code is wrong.
+  EXPECT_FALSE(reports().empty());
+
+  // There's also a 2^-100 chance that every single report was logged.  Same as
+  // above, that's much more likely to be a code error.
+  EXPECT_GT(kReportCount, reports().size());
+
+  for (const auto& report : reports()) {
+    const base::DictionaryValue* body;
+    ASSERT_TRUE(report.body->GetAsDictionary(&body));
+    ExpectDictDoubleValue(0.5, *body,
+                          NetworkErrorLoggingService::kSamplingFractionKey);
+  }
 }
 
 TEST_F(NetworkErrorLoggingServiceTest,

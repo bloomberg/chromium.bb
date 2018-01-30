@@ -45,6 +45,7 @@ class NET_EXPORT NetworkErrorLoggingService
 
   static const char kUriKey[];
   static const char kReferrerKey[];
+  static const char kSamplingFractionKey[];
   static const char kServerIpKey[];
   static const char kProtocolKey[];
   static const char kStatusCodeKey[];
@@ -80,6 +81,8 @@ class NET_EXPORT NetworkErrorLoggingService
 
     base::TimeTicks expires;
 
+    double success_fraction;
+    double failure_fraction;
     bool include_subdomains;
   };
 
@@ -114,6 +117,7 @@ class NET_EXPORT NetworkErrorLoggingService
                                  const OriginPolicy* policy);
   std::unique_ptr<const base::Value> CreateReportBody(
       const std::string& type,
+      double sampling_fraction,
       const ErrorDetails& details) const;
 
   base::TickClock* tick_clock_;
