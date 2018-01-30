@@ -32,6 +32,7 @@
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSCubicBezierTimingFunctionValue : public CSSValue {
  public:
@@ -135,6 +136,7 @@ class CSSFramesTimingFunctionValue : public CSSValue {
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFramesTimingFunctionValue,
                             IsFramesTimingFunctionValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif

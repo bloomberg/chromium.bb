@@ -458,8 +458,8 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
   }
 
   if (value.IsCubicBezierTimingFunctionValue()) {
-    const CSSCubicBezierTimingFunctionValue& cubic_timing_function =
-        ToCSSCubicBezierTimingFunctionValue(value);
+    const cssvalue::CSSCubicBezierTimingFunctionValue& cubic_timing_function =
+        cssvalue::ToCSSCubicBezierTimingFunctionValue(value);
     return CubicBezierTimingFunction::Create(
         cubic_timing_function.X1(), cubic_timing_function.Y1(),
         cubic_timing_function.X2(), cubic_timing_function.Y2());
@@ -469,14 +469,14 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
     return CSSTimingData::InitialTimingFunction();
 
   if (value.IsFramesTimingFunctionValue()) {
-    const CSSFramesTimingFunctionValue& frames_timing_function =
-        ToCSSFramesTimingFunctionValue(value);
+    const cssvalue::CSSFramesTimingFunctionValue& frames_timing_function =
+        cssvalue::ToCSSFramesTimingFunctionValue(value);
     return FramesTimingFunction::Create(
         frames_timing_function.NumberOfFrames());
   }
 
-  const CSSStepsTimingFunctionValue& steps_timing_function =
-      ToCSSStepsTimingFunctionValue(value);
+  const cssvalue::CSSStepsTimingFunctionValue& steps_timing_function =
+      cssvalue::ToCSSStepsTimingFunctionValue(value);
   if (steps_timing_function.GetStepPosition() ==
       StepsTimingFunction::StepPosition::MIDDLE) {
     if (!allow_step_middle) {

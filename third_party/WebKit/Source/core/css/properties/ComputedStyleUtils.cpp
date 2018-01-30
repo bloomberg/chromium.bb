@@ -1466,7 +1466,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
         }
         return CSSIdentifierValue::Create(value_id);
       }
-      return CSSCubicBezierTimingFunctionValue::Create(
+      return cssvalue::CSSCubicBezierTimingFunctionValue::Create(
           bezier_timing_function->X1(), bezier_timing_function->Y1(),
           bezier_timing_function->X2(), bezier_timing_function->Y2());
     }
@@ -1481,7 +1481,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
              position == StepsTimingFunction::StepPosition::END);
 
       if (steps > 1)
-        return CSSStepsTimingFunctionValue::Create(steps, position);
+        return cssvalue::CSSStepsTimingFunctionValue::Create(steps, position);
       CSSValueID value_id = position == StepsTimingFunction::StepPosition::START
                                 ? CSSValueStepStart
                                 : CSSValueStepEnd;
@@ -1492,7 +1492,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
       const FramesTimingFunction* frames_timing_function =
           ToFramesTimingFunction(timing_function);
       int frames = frames_timing_function->NumberOfFrames();
-      return CSSFramesTimingFunctionValue::Create(frames);
+      return cssvalue::CSSFramesTimingFunctionValue::Create(frames);
     }
 
     default:
