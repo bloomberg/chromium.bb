@@ -475,13 +475,13 @@ void AppCacheRequestHandler::OnMainResponseFound(
 // NetworkService loading:
 void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
     LoaderCallback callback,
-    StartLoaderCallback start_loader_callback) {
+    SingleRequestURLLoaderFactory::RequestHandler handler) {
   // For now let |this| always also return the subresource loader
   // if (and only if) this returns a non-null |start_loader_callback|
   // for handling the main resource.
-  if (start_loader_callback)
+  if (handler)
     should_create_subresource_loader_ = true;
-  std::move(callback).Run(std::move(start_loader_callback));
+  std::move(callback).Run(std::move(handler));
 }
 
 // Sub-resource handling ----------------------------------------------
@@ -591,10 +591,9 @@ void AppCacheRequestHandler::MaybeCreateLoader(
   MaybeLoadResource(nullptr);
   // If a job is created, the job assumes ownership of the callback and
   // the responsibility to call it. If no job is created, we call it with
-  // an empty StartLoaderCallback to let our client we have no loader for
-  // this resource request.
+  // a null callback to let our client know we have no loader for this request.
   if (loader_callback_)
-    std::move(loader_callback_).Run(StartLoaderCallback());
+    std::move(loader_callback_).Run({});
 }
 
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
@@ -610,12 +609,12 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
   loader_callback_ = base::BindOnce(
       [](network::mojom::URLLoaderPtr* loader,
          network::mojom::URLLoaderClientRequest* client_request,
-         bool* was_called, StartLoaderCallback start_function) {
+         bool* was_called,
+         SingleRequestURLLoaderFactory::RequestHandler handler) {
         *was_called = true;
         network::mojom::URLLoaderClientPtr client;
         *client_request = mojo::MakeRequest(&client);
-        std::move(start_function)
-            .Run(mojo::MakeRequest(loader), std::move(client));
+        std::move(handler).Run(mojo::MakeRequest(loader), std::move(client));
       },
       loader, client_request, &was_called);
   request_->AsURLLoaderRequest()->set_response(response);
@@ -662,7 +661,7 @@ void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(
   request_->AsURLLoaderRequest()->set_response(response);
   MaybeLoadFallbackForResponse(nullptr);
   if (loader_callback_)
-    std::move(loader_callback_).Run(StartLoaderCallback());
+    std::move(loader_callback_).Run({});
 }
 
 void AppCacheRequestHandler::MaybeFallbackForSubresourceRedirect(
@@ -673,7 +672,7 @@ void AppCacheRequestHandler::MaybeFallbackForSubresourceRedirect(
   loader_callback_ = std::move(loader_callback);
   MaybeLoadFallbackForRedirect(nullptr, redirect_info.new_url);
   if (loader_callback_)
-    std::move(loader_callback_).Run(StartLoaderCallback());
+    std::move(loader_callback_).Run({});
 }
 
 void AppCacheRequestHandler::MaybeFollowSubresourceRedirect(
@@ -685,7 +684,7 @@ void AppCacheRequestHandler::MaybeFollowSubresourceRedirect(
   request_->AsURLLoaderRequest()->UpdateWithRedirectInfo(redirect_info);
   MaybeLoadResource(nullptr);
   if (loader_callback_)
-    std::move(loader_callback_).Run(StartLoaderCallback());
+    std::move(loader_callback_).Run({});
 }
 
 // static

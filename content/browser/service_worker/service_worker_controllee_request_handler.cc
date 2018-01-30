@@ -205,7 +205,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 
   if (!context_ || !provider_host_) {
     // We can't do anything other than to fall back to network.
-    std::move(callback).Run(StartLoaderCallback());
+    std::move(callback).Run({});
     return;
   }
 
@@ -217,7 +217,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   // Fall back for the subsequent offline page interceptor to load the offline
   // snapshot of the page if required.
   if (ShouldFallbackToLoadOfflinePage(resource_request.headers)) {
-    std::move(callback).Run(StartLoaderCallback());
+    std::move(callback).Run({});
     return;
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)

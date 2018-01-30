@@ -72,7 +72,7 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
   // We signal our caller with an empy callback that it needs to perform
   // the network load.
   DCHECK(loader_callback_ && !binding_.is_bound());
-  std::move(loader_callback_).Run(StartLoaderCallback());
+  std::move(loader_callback_).Run({});
   weak_factory_.InvalidateWeakPtrs();
   is_deleting_soon_ = true;
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -138,7 +138,7 @@ void AppCacheURLLoaderJob::Start(network::mojom::URLLoaderRequest request,
 AppCacheURLLoaderJob::AppCacheURLLoaderJob(
     AppCacheURLLoaderRequest* appcache_request,
     AppCacheStorage* storage,
-    LoaderCallback loader_callback)
+    URLLoaderRequestHandler::LoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
       start_time_tick_(base::TimeTicks::Now()),
       cache_id_(kAppCacheNoCacheId),

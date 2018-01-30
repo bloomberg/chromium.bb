@@ -6,10 +6,12 @@
 #define CONTENT_BROWSER_LOADER_URL_LOADER_REQUEST_HANDLER_H_
 
 #include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "content/common/single_request_url_loader_factory.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -21,12 +23,6 @@ struct ResourceRequest;
 struct SubresourceLoaderParams;
 class ThrottlingURLLoader;
 
-using StartLoaderCallback =
-    base::OnceCallback<void(network::mojom::URLLoaderRequest request,
-                            network::mojom::URLLoaderClientPtr client)>;
-
-using LoaderCallback = base::OnceCallback<void(StartLoaderCallback)>;
-
 // An instance of this class is a per-request object and kept around during
 // the lifetime of a request (including multiple redirect legs) on IO thread.
 class CONTENT_EXPORT URLLoaderRequestHandler {
@@ -34,8 +30,13 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
   URLLoaderRequestHandler() = default;
   virtual ~URLLoaderRequestHandler() = default;
 
-  // Calls |callback| with a non-null StartLoaderCallback if this handler
-  // can handle the request, calls it with null callback otherwise.
+  using LoaderCallback =
+      base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
+
+  // Asks this handler to handle this resource load request.
+  // The handler must invoke |callback| eventually with either a non-null
+  // RequestHandler indicating its willingness to handle the request, or a null
+  // RequestHandler to indicate that someone else should handle the request.
   virtual void MaybeCreateLoader(
       const network::ResourceRequest& resource_request,
       ResourceContext* resource_context,

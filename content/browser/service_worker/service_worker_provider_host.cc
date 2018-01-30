@@ -99,7 +99,7 @@ class ServiceWorkerURLTrackingRequestHandler
     provider_host_->SetDocumentUrl(stripped_url);
     provider_host_->SetTopmostFrameUrl(resource_request.site_for_cookies);
     // Fall back to network.
-    std::move(callback).Run(StartLoaderCallback());
+    std::move(callback).Run({});
   }
 
  private:
