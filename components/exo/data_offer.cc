@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/exo/data_offer_delegate.h"
@@ -50,6 +51,49 @@ void WriteFileDescriptor(base::ScopedFD fd,
                                  reinterpret_cast<const char*>(memory->front()),
                                  memory->size()))
     DLOG(ERROR) << "Failed to write drop data";
+}
+
+// Gets a comma-separated list of urls extracted from |data|->file.
+bool GetUrlListFromDataFile(FileHelper* file_helper,
+                            const ui::OSExchangeData& data,
+                            base::string16* url_list_string) {
+  if (!data.HasFile())
+    return false;
+  std::vector<ui::FileInfo> files;
+  if (data.GetFilenames(&files)) {
+    for (const auto& info : files) {
+      GURL url;
+      // TODO(niwa): Need to fill the correct app_id.
+      if (file_helper->GetUrlFromPath(/* app_id */ "", info.path, &url)) {
+        if (!url_list_string->empty())
+          *url_list_string += base::UTF8ToUTF16(kUriListSeparator);
+        *url_list_string += base::UTF8ToUTF16(url.spec());
+      }
+    }
+  }
+  return !url_list_string->empty();
+}
+
+// Gets a comma-separated list of urls extracted from |data|->pickle.
+bool GetUrlListFromDataPickle(FileHelper* file_helper,
+                              const ui::OSExchangeData& data,
+                              base::string16* url_list_string) {
+  static const char kFormatString[] = "chromium/x-file-system-files";
+  CR_DEFINE_STATIC_LOCAL(ui::Clipboard::FormatType, formatType,
+                         (ui::Clipboard::GetFormatType(kFormatString)));
+  base::Pickle pickle;
+  if (!data.GetPickledData(formatType, &pickle))
+    return false;
+  std::vector<GURL> app_urls;
+  // TODO(niwa): Need to fill the correct app_id.
+  if (file_helper->GetUrlsFromPickle(/* app_id */ "", pickle, &app_urls)) {
+    for (const GURL& app_url : app_urls) {
+      if (!url_list_string->empty())
+        *url_list_string += base::UTF8ToUTF16(kUriListSeparator);
+      *url_list_string += base::UTF8ToUTF16(app_url.spec());
+    }
+  }
+  return !url_list_string->empty();
 }
 
 }  // namespace
@@ -102,28 +146,19 @@ void DataOffer::SetSourceActions(
 void DataOffer::SetDropData(FileHelper* file_helper,
                             const ui::OSExchangeData& data) {
   DCHECK_EQ(0u, data_.size());
-  if (data.HasString()) {
+
+  base::string16 url_list_string;
+  bool found_urls =
+      GetUrlListFromDataFile(file_helper, data, &url_list_string) ||
+      GetUrlListFromDataPickle(file_helper, data, &url_list_string);
+  if (found_urls) {
+    data_.emplace(file_helper->GetMimeTypeForUriList(),
+                  RefCountedString16::TakeString(std::move(url_list_string)));
+  } else if (data.HasString()) {
     base::string16 string_content;
     if (data.GetString(&string_content)) {
       data_.emplace(std::string(ui::Clipboard::kMimeTypeText),
                     RefCountedString16::TakeString(std::move(string_content)));
-    }
-  }
-  if (data.HasFile()) {
-    std::vector<ui::FileInfo> files;
-    if (data.GetFilenames(&files)) {
-      base::string16 url_list;
-      for (const auto& info : files) {
-        GURL url;
-        // TODO(hirono): Need to fill the corret app_id.
-        if (file_helper->GetUrlFromPath(/* app_id */ "", info.path, &url)) {
-          if (!url_list.empty())
-            url_list += base::UTF8ToUTF16(kUriListSeparator);
-          url_list += base::UTF8ToUTF16(url.spec());
-        }
-      }
-      data_.emplace(file_helper->GetMimeTypeForUriList(),
-                    RefCountedString16::TakeString(std::move(url_list)));
     }
   }
   for (const auto& pair : data_) {

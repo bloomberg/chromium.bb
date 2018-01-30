@@ -14,19 +14,43 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/drop_data.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
 namespace {
 
 constexpr char kMimeTypeArcUriList[] = "application/x-arc-uri-list";
+
+storage::FileSystemContext* GetFileSystemContext() {
+  // Obtains the primary profile.
+  if (!user_manager::UserManager::IsInitialized())
+    return nullptr;
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    return nullptr;
+  Profile* primary_profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  if (!primary_profile)
+    return nullptr;
+
+  return file_manager::util::GetFileSystemContextForExtensionId(
+      primary_profile, file_manager::kFileManagerAppId);
+}
 
 class ChromeFileHelper : public exo::FileHelper {
  public:
@@ -42,10 +66,30 @@ class ChromeFileHelper : public exo::FileHelper {
                       GURL* out) override {
     return file_manager::util::ConvertPathToArcUrl(path, out);
   }
-  bool GetUrlFromFileSystemUrl(const std::string& app_id,
-                               const GURL& url,
-                               GURL* out) override {
-    return false;
+  bool GetUrlsFromPickle(const std::string& app_id,
+                         const base::Pickle& pickle,
+                         std::vector<GURL>* out_urls) override {
+    storage::FileSystemContext* file_system_context = GetFileSystemContext();
+    if (!file_system_context)
+      return false;
+
+    std::vector<content::DropData::FileSystemFileInfo> file_system_files;
+    if (!content::DropData::FileSystemFileInfo::ReadFileSystemFilesFromPickle(
+            pickle, &file_system_files))
+      return false;
+
+    for (const auto& file_system_file : file_system_files) {
+      const storage::FileSystemURL file_system_url =
+          file_system_context->CrackURL(file_system_file.url);
+      GURL out_url;
+      // TODO(niwa): Check that app_id is an Arc app once the caller
+      //             (exo::DataOffer) starts filling app_id.
+      if (file_manager::util::ConvertPathToArcUrl(file_system_url.path(),
+                                                  &out_url)) {
+        out_urls->push_back(out_url);
+      }
+    }
+    return !out_urls->empty();
   }
 };
 
