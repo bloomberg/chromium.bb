@@ -262,9 +262,7 @@ class ServiceWorkerMetrics {
   // Counts the number of page loads controlled by a Service Worker.
   static void CountControlledPageLoad(Site site,
                                       const GURL& url,
-                                      bool is_main_frame_load,
-                                      ui::PageTransition page_transition,
-                                      size_t redirect_chain_length);
+                                      bool is_main_frame_load);
 
   // Records the result of trying to start a worker. |is_installed| indicates
   // whether the version has been installed.

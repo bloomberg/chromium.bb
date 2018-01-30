@@ -58460,6 +58460,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.ServiceWorker.PageTransition"
+    enum="CorePageTransition">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The core transition type for main frame page loads controlled by a service
+    worker.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Clients.SubresourceFilter.ActivationDecision"
     enum="SubresourceFilterActivationDecision">
   <owner>bmcquade@chromium.org</owner>
@@ -79621,6 +79630,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.MainFramePageLoad.CoreTransition"
     enum="CorePageTransition">
+  <obsolete>
+    Deprecated 2018-01 in favor of
+    PageLoad.Clients.ServiceWorker.PageTransition.
+  </obsolete>
   <owner>horo@chromium.org</owner>
   <summary>
     The transition type for main frame page loads controlled by a service
@@ -79630,6 +79643,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.MainFramePageLoad.RedirectChainLength"
     units="urls">
+  <obsolete>
+    Deprecated 2018-01.
+  </obsolete>
   <owner>horo@chromium.org</owner>
   <summary>
     Total length of the server redirects during main frame page loads controlled

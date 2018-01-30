@@ -61,27 +61,6 @@ bool ServiceWorkerURLJobWrapper::ShouldFallbackToNetwork() {
   }
 }
 
-ui::PageTransition ServiceWorkerURLJobWrapper::GetPageTransition() {
-  if (url_loader_job_) {
-    return url_loader_job_->GetPageTransition();
-  } else {
-    const ResourceRequestInfo* info =
-        ResourceRequestInfo::ForRequest(url_request_job_->request());
-    // ResourceRequestInfo may not be set in some tests.
-    if (!info)
-      return ui::PAGE_TRANSITION_LINK;
-    return info->GetPageTransition();
-  }
-}
-
-size_t ServiceWorkerURLJobWrapper::GetURLChainSize() const {
-  if (url_loader_job_) {
-    return url_loader_job_->GetURLChainSize();
-  } else {
-    return url_request_job_->request()->url_chain().size();
-  }
-}
-
 void ServiceWorkerURLJobWrapper::FailDueToLostController() {
   if (url_loader_job_) {
     url_loader_job_->FailDueToLostController();
