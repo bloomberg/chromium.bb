@@ -96,13 +96,17 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void DoPaintInvalidation(const FloatRect& dirty_rect);
   WebLayer* Layer();
   bool Restore();
-  virtual void WillOverwriteCanvas();  // virtual for unit testing
   void DisableDeferral(DisableDeferralReason);
   void SetFilterQuality(SkFilterQuality);
 
+  // virtual for unit testing
+  virtual void WillOverwriteCanvas();
+  virtual void DrawFullImage(const cc::PaintImage&);
+  virtual void DidRestoreCanvasMatrixClipStack(cc::PaintCanvas*) {}
+  virtual bool IsAccelerated() const;
+
   PaintCanvas* Canvas();
   bool IsValid() const;
-  virtual bool IsAccelerated() const;  // virtual for unit testing
   bool WritePixels(const SkImageInfo&,
                    const void* pixels,
                    size_t row_bytes,

@@ -205,7 +205,8 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetNeedsCompositingUpdate() override;
   void UpdateMemoryUsage() override;
 
-  void DisableAcceleration();
+  void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
+                               unaccelerated_bridge_used_for_testing = nullptr);
 
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override;
