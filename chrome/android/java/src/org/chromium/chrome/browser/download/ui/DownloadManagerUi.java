@@ -22,6 +22,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -212,6 +213,7 @@ public class DownloadManagerUi
     public DownloadManagerUi(Activity activity, boolean isOffTheRecord,
             ComponentName parentComponent, boolean isSeparateActivity,
             SnackbarManager snackbarManager) {
+        TraceEvent.startAsync("DownloadManagerUi shown", hashCode());
         mActivity = activity;
         ChromeApplication application = (ChromeApplication) activity.getApplication();
         mBackendProvider = sProviderForTests == null
@@ -302,6 +304,7 @@ public class DownloadManagerUi
         mBackendProvider.destroy();
 
         mSelectableListLayout.onDestroyed();
+        TraceEvent.finishAsync("DownloadManagerUi shown", hashCode());
     }
 
     /**

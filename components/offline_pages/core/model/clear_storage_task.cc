@@ -16,6 +16,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
@@ -240,6 +241,7 @@ ClearStorageTask::ClearStorageTask(OfflinePageMetadataStoreSQL* store,
 ClearStorageTask::~ClearStorageTask() {}
 
 void ClearStorageTask::Run() {
+  TRACE_EVENT_ASYNC_BEGIN0("offline_pages", "ClearStorageTask running", this);
   archive_manager_->GetStorageStats(
       base::Bind(&ClearStorageTask::OnGetStorageStatsDone,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -272,6 +274,9 @@ void ClearStorageTask::InformClearStorageDone(size_t pages_cleared,
                                               ClearStorageResult result) {
   std::move(callback_).Run(pages_cleared, result);
   TaskComplete();
+  TRACE_EVENT_ASYNC_END2("offline_pages", "ClearStorageTask running", this,
+                         "result", static_cast<int>(result), "pages_cleared",
+                         pages_cleared);
 }
 
 }  // namespace offline_pages
