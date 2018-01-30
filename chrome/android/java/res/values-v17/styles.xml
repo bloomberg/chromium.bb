@@ -98,7 +98,9 @@
     </style>
 
     <!-- Web app themes -->
-    <style name="WebappTheme" parent="MainTheme">
+    <!-- Extend MainThemeBase rather than MainTheme to avoid values-v27 navigation bar colors from
+         being applied -->
+    <style name="WebappTheme" parent="MainThemeBase">
         <item name="android:windowBackground">@null</item>
         <item name="android:windowDisablePreview">true</item>
     </style>
