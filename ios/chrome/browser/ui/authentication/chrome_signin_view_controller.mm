@@ -840,10 +840,10 @@ enum AuthenticationState {
 }
 
 - (void)layoutButtons:(const AuthenticationViewConstants&)constants {
-  [_primaryButton titleLabel].font =
+  UIFont* font =
       [[MDCTypography fontLoader] mediumFontOfSize:constants.SecondaryFontSize];
-  [_secondaryButton titleLabel].font =
-      [[MDCTypography fontLoader] mediumFontOfSize:constants.SecondaryFontSize];
+  [_primaryButton setTitleFont:font forState:UIControlStateNormal];
+  [_secondaryButton setTitleFont:font forState:UIControlStateNormal];
 
   LayoutRect primaryButtonLayout = LayoutRectZero;
   primaryButtonLayout.boundingWidth = CGRectGetWidth(self.view.bounds);
