@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -55,12 +54,8 @@ class TabActivityWatcher : public TabStripModelObserver,
   // Called from WebContentsData when a tab has stopped loading.
   void OnDidStopLoading(content::WebContents* web_contents);
 
-  // Logs the tab with |web_contents| if the tab hasn't been logged for the same
-  // source ID within a timeout window.
+  // Logs the tab with |web_contents|, unless it is being destroyed.
   void MaybeLogTab(content::WebContents* web_contents);
-
-  // Forces logging even when a timeout would have prevented it.
-  void DisableLogTimeoutForTesting();
 
   // Resets internal state.
   void ResetForTesting();
@@ -70,9 +65,6 @@ class TabActivityWatcher : public TabStripModelObserver,
   // Manages registration of this class as an observer of all TabStripModels as
   // browsers are created and destroyed.
   BrowserTabStripTracker browser_tab_strip_tracker_;
-
-  // Time before a tab with the same SourceId can be logged again.
-  base::TimeDelta per_source_log_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcher);
 };

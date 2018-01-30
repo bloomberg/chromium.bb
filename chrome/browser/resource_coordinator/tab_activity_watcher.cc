@@ -4,14 +4,11 @@
 
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
-#include "base/metrics/field_trial_params.h"
-#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/window_activity_watcher.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -27,18 +24,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
 
 namespace resource_coordinator {
 
-namespace {
-
-// Default time before a tab with the same SourceId can be logged again.
-constexpr base::TimeDelta kDefaultPerSourceLogTimeout =
-    base::TimeDelta::FromSeconds(10);
-
-// Fieldtrial param to override the default per-source log timeout above.
-constexpr char kPerSourceLogTimeoutMsecParamName[] =
-    "per_source_log_timeout_msec";
-
-}  // namespace
-
 // Per-WebContents helper class that observes its WebContents, notifying
 // TabActivityWatcher when interesting events occur. Also provides
 // per-WebContents data that TabActivityWatcher uses to log the tab.
@@ -49,19 +34,10 @@ class TabActivityWatcher::WebContentsData
  public:
   ~WebContentsData() override = default;
 
-  // Call after logging to update |last_log_time_for_source_|.
-  void DidLog(base::TimeTicks log_time) {
-    last_log_time_for_source_ = log_time;
-  }
-
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
   const TabMetricsLogger::TabMetrics& tab_metrics() const {
     return tab_metrics_;
-  }
-
-  base::TimeTicks last_log_time_for_source() const {
-    return last_log_time_for_source_;
   }
 
  private:
@@ -96,9 +72,6 @@ class TabActivityWatcher::WebContentsData
         << "Expected a unique Source ID for the navigation";
     ukm_source_id_ = new_source_id;
 
-    // Clear the per-SourceId last log time.
-    last_log_time_for_source_ = base::TimeTicks();
-
     // Reset the per-page data.
     tab_metrics_.page_metrics = {};
 
@@ -128,9 +101,6 @@ class TabActivityWatcher::WebContentsData
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
 
-  // Used to throttle event logging per SourceId.
-  base::TimeTicks last_log_time_for_source_;
-
   // Stores current stats for the tab.
   TabMetricsLogger::TabMetrics tab_metrics_;
 
@@ -140,10 +110,6 @@ class TabActivityWatcher::WebContentsData
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLoggerImpl>()),
       browser_tab_strip_tracker_(this, this, nullptr) {
-  per_source_log_timeout_ =
-      base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kTabMetricsLogging, kPerSourceLogTimeoutMsecParamName,
-          kDefaultPerSourceLogTimeout.InMilliseconds()));
   browser_tab_strip_tracker_.Init();
 
   // TabMetrics UKMs reference WindowMetrics UKM entries, so ensure the
@@ -193,21 +159,9 @@ void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
       TabActivityWatcher::WebContentsData::FromWebContents(web_contents);
   DCHECK(web_contents_data);
 
-  // TODO(michaelpg): Convert to resource_coordinator::NowTicks().
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (now - web_contents_data->last_log_time_for_source() <
-      per_source_log_timeout_) {
-    return;
-  }
-
   ukm::SourceId ukm_source_id = web_contents_data->ukm_source_id();
   tab_metrics_logger_->LogBackgroundTab(ukm_source_id,
                                         web_contents_data->tab_metrics());
-  web_contents_data->DidLog(now);
-}
-
-void TabActivityWatcher::DisableLogTimeoutForTesting() {
-  per_source_log_timeout_ = base::TimeDelta();
 }
 
 void TabActivityWatcher::ResetForTesting() {
