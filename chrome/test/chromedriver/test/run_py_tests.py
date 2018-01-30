@@ -2713,9 +2713,16 @@ if __name__ == '__main__':
 
   options, args = parser.parse_args()
 
+  if options.chromedriver is None:
+    parser.error('--chromedriver is required.\n' +
+                 'Please run "%s --help" for help' % __file__)
   options.chromedriver = util.GetAbsolutePathOfUserPath(options.chromedriver)
-  if not options.chromedriver or not os.path.exists(options.chromedriver):
-    parser.error('chromedriver is required or the given path is invalid.' +
+  if (not os.path.exists(options.chromedriver) and
+      util.GetPlatformName() == 'win' and
+      not options.chromedriver.lower().endswith('.exe')):
+    options.chromedriver = options.chromedriver + '.exe'
+  if not os.path.exists(options.chromedriver):
+    parser.error('Path given by --chromedriver is invalid.\n' +
                  'Please run "%s --help" for help' % __file__)
 
   global _CHROMEDRIVER_BINARY

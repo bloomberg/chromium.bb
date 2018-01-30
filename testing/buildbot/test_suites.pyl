@@ -1788,7 +1788,13 @@
     'vr_platform_specific_non_clang_win_chromium_gtests',
   ],
 
-  'chromium_isolated_scripts': [
+  'chromium_dbg_isolated_scripts': [
+    'desktop_chromium_isolated_scripts',
+    'telemetry_perf_unittests_isolated_scripts',
+  ],
+
+  'chromium_rel_isolated_scripts': [
+    'chromedriver_py_tests_isolated_scripts',
     'desktop_chromium_isolated_scripts',
     'telemetry_perf_unittests_isolated_scripts',
   ],
@@ -1953,7 +1959,7 @@
     'viz_gtests',
   ],
 
-  'chromium_linux_isolated_scripts': [
+  'chromium_linux_dbg_isolated_scripts': [
     'desktop_chromium_isolated_scripts',
     'linux_specific_chromium_isolated_scripts',
     'telemetry_perf_unittests_isolated_scripts',

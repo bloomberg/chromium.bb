@@ -738,7 +738,7 @@
       'ToTMac': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_clang_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'ToTMacASan': {
@@ -897,7 +897,7 @@
       'Chromium Mac 10.11': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
         'use_swarming': False,
       },
@@ -910,7 +910,7 @@
       'Chromium Mac 10.13': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Chromium Win 10 GCE Tests': {
@@ -1149,7 +1149,7 @@
       'Out of Process Profiling Mac': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Out of Process Profiling Windows': {
@@ -1401,13 +1401,13 @@
       'Linux Tests (dbg)(1)': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_isolated_scripts',
+          'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
       'Linux Tests (dbg)(1)(32)': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_isolated_scripts',
+          'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
       'Ozone Linux': {
@@ -1531,32 +1531,32 @@
       'Mac10.10 Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Mac10.11 Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Mac10.12 Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Mac10.9 Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
           'scripts': 'chromium_scripts',
         },
       },
       'Mac10.9 Tests (dbg)': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
       },
     },
@@ -1647,7 +1647,7 @@
         # exceptions that Linux Tests doesn't also have.
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_isolated_scripts',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
           'scripts': 'chromium_linux_scripts',
         },
       },
@@ -1981,7 +1981,7 @@
       'Win 7 Tests x64 (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Win10 Tests x64': {
@@ -1997,14 +1997,14 @@
       'Win7 Tests (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
           'scripts': 'chromium_scripts',
         },
       },
       'Win7 Tests (dbg)(1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_isolated_scripts',
+          'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
       },
     },
