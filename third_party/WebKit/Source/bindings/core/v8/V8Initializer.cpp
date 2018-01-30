@@ -254,8 +254,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
 
   DCHECK_EQ(data.GetEvent(), v8::kPromiseRejectWithNoHandler);
 
-  v8::Local<v8::Promise> promise = data.GetPromise();
-  v8::Isolate* isolate = promise->GetIsolate();
+  v8::Isolate* isolate = script_state->GetIsolate();
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   v8::Local<v8::Value> exception = data.GetValue();
