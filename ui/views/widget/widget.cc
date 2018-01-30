@@ -525,6 +525,8 @@ void Widget::SetBoundsConstrained(const gfx::Rect& bounds) {
   if (work_area.IsEmpty()) {
     SetBounds(bounds);
   } else {
+    // TODO(https://crbug.com/806936): The following code doesn't actually do
+    // what the comment describing this function says it should.
     // Inset the work area slightly.
     work_area.Inset(10, 10, 10, 10);
     work_area.AdjustToFit(bounds);
