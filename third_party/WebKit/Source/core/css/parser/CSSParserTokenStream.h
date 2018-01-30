@@ -65,7 +65,9 @@ class CORE_EXPORT CSSParserTokenStream {
   static constexpr size_t InitialBufferSize() { return 128; }
 
   explicit CSSParserTokenStream(CSSTokenizer& tokenizer)
-      : buffer_(InitialBufferSize()), tokenizer_(tokenizer), next_(kEOFToken) {}
+      : tokenizer_(tokenizer), next_(kEOFToken) {
+    buffer_.ReserveInitialCapacity(InitialBufferSize());
+  }
 
   CSSParserTokenStream(CSSParserTokenStream&&) = default;
 
@@ -141,7 +143,7 @@ class CORE_EXPORT CSSParserTokenStream {
   CSSParserTokenRange ConsumeUntilPeekedTypeIs() {
     EnsureLookAhead();
 
-    buffer_.clear();
+    buffer_.Shrink(0);
     while (!UncheckedAtEnd() &&
            !detail::IsTokenTypeOneOf<Types...>(UncheckedPeek().GetType())) {
       // Have to use internal consume/peek in here because they can read past
@@ -158,35 +160,10 @@ class CORE_EXPORT CSSParserTokenStream {
       } while (!PeekInternal().IsEOF() && nesting_level);
     }
 
-    return buffer_.Range();
+    return CSSParserTokenRange(buffer_);
   }
 
  private:
-  // Used to store tokens for CSSParserTokenRanges.
-  // FIXME: Determine if this improves speed at all compared to allocating a
-  // fresh vector each time.
-  class TokenBuffer {
-   public:
-    TokenBuffer(size_t capacity) { tokens_.ReserveInitialCapacity(capacity); }
-
-    void clear() { size_ = 0; }
-    void push_back(const CSSParserToken& token) {
-      if (size_ < tokens_.size())
-        tokens_[size_] = token;
-      else
-        tokens_.push_back(token);
-      ++size_;
-    }
-    CSSParserTokenRange Range() const {
-      return CSSParserTokenRange(tokens_).MakeSubRange(tokens_.begin(),
-                                                       tokens_.begin() + size_);
-    }
-
-   private:
-    Vector<CSSParserToken, 32> tokens_;
-    size_t size_ = 0;
-  };
-
   const CSSParserToken& PeekInternal() {
     EnsureLookAhead();
     return UncheckedPeekInternal();
@@ -211,7 +188,7 @@ class CORE_EXPORT CSSParserTokenStream {
 
   void UncheckedSkipToEndOfBlock();
 
-  TokenBuffer buffer_;
+  Vector<CSSParserToken, 32> buffer_;
   CSSTokenizer& tokenizer_;
   CSSParserToken next_;
   size_t offset_ = 0;
