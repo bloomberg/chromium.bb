@@ -865,6 +865,9 @@ crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Fail
 crbug.com/778784 http/tests/devtools/tracing/decode-resize.js [ Failure Timeout Pass ]
 crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Timeout Pass ]
 
+crbug.com/807055 [ Win10 ] virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Failure ]
+crbug.com/807055 [ Win10 ] virtual/gpu-rasterization/images/pixelated-canvas.html [ Failure ]
+
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 
