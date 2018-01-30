@@ -1322,70 +1322,82 @@ TEST(TimeDelta, NumericOperators) {
   constexpr double d = 0.5;
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (TimeDelta::FromMilliseconds(1000) * d));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
-            (TimeDelta::FromMilliseconds(1000) / d));
+  static_assert(TimeDelta::FromMilliseconds(2000) ==
+                    (TimeDelta::FromMilliseconds(1000) / d),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (TimeDelta::FromMilliseconds(1000) *= d));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
-            (TimeDelta::FromMilliseconds(1000) /= d));
+  static_assert(TimeDelta::FromMilliseconds(2000) ==
+                    (TimeDelta::FromMilliseconds(1000) /= d),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (d * TimeDelta::FromMilliseconds(1000)));
 
   constexpr float f = 0.5;
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (TimeDelta::FromMilliseconds(1000) * f));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
-            (TimeDelta::FromMilliseconds(1000) / f));
+  static_assert(TimeDelta::FromMilliseconds(2000) ==
+                    (TimeDelta::FromMilliseconds(1000) / f),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (TimeDelta::FromMilliseconds(1000) *= f));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
-            (TimeDelta::FromMilliseconds(1000) /= f));
+  static_assert(TimeDelta::FromMilliseconds(2000) ==
+                    (TimeDelta::FromMilliseconds(1000) /= f),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (f * TimeDelta::FromMilliseconds(1000)));
 
   constexpr int i = 2;
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (TimeDelta::FromMilliseconds(1000) * i));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
-            (TimeDelta::FromMilliseconds(1000) / i));
+  static_assert(TimeDelta::FromMilliseconds(500) ==
+                    (TimeDelta::FromMilliseconds(1000) / i),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (TimeDelta::FromMilliseconds(1000) *= i));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
-            (TimeDelta::FromMilliseconds(1000) /= i));
+  static_assert(TimeDelta::FromMilliseconds(500) ==
+                    (TimeDelta::FromMilliseconds(1000) /= i),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (i * TimeDelta::FromMilliseconds(1000)));
 
   constexpr int64_t i64 = 2;
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (TimeDelta::FromMilliseconds(1000) * i64));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
-            (TimeDelta::FromMilliseconds(1000) / i64));
+  static_assert(TimeDelta::FromMilliseconds(500) ==
+                    (TimeDelta::FromMilliseconds(1000) / i64),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (TimeDelta::FromMilliseconds(1000) *= i64));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
-            (TimeDelta::FromMilliseconds(1000) /= i64));
+  static_assert(TimeDelta::FromMilliseconds(500) ==
+                    (TimeDelta::FromMilliseconds(1000) /= i64),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (i64 * TimeDelta::FromMilliseconds(1000)));
 
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (TimeDelta::FromMilliseconds(1000) * 0.5));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
-            (TimeDelta::FromMilliseconds(1000) / 0.5));
+  static_assert(TimeDelta::FromMilliseconds(2000) ==
+                    (TimeDelta::FromMilliseconds(1000) / 0.5),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (TimeDelta::FromMilliseconds(1000) *= 0.5));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
-            (TimeDelta::FromMilliseconds(1000) /= 0.5));
+  static_assert(TimeDelta::FromMilliseconds(2000) ==
+                    (TimeDelta::FromMilliseconds(1000) /= 0.5),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
             (0.5 * TimeDelta::FromMilliseconds(1000)));
 
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (TimeDelta::FromMilliseconds(1000) * 2));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
-            (TimeDelta::FromMilliseconds(1000) / 2));
+  static_assert(TimeDelta::FromMilliseconds(500) ==
+                    (TimeDelta::FromMilliseconds(1000) / 2),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (TimeDelta::FromMilliseconds(1000) *= 2));
-  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
-            (TimeDelta::FromMilliseconds(1000) /= 2));
+  static_assert(TimeDelta::FromMilliseconds(500) ==
+                    (TimeDelta::FromMilliseconds(1000) /= 2),
+                "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
             (2 * TimeDelta::FromMilliseconds(1000)));
 }
