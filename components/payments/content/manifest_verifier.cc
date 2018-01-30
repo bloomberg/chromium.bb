@@ -178,13 +178,29 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
   GURL method_manifest_url = it->second;
   cache_request_handles_.erase(it);
 
-  const std::vector<std::string>& supported_origin_strings =
+  const std::vector<std::string>& cached_strings =
       (static_cast<const WDResult<std::vector<std::string>>*>(result.get()))
           ->GetValue();
-  bool all_origins_supported = std::find(supported_origin_strings.begin(),
-                                         supported_origin_strings.end(),
-                                         kAllOriginsSupportedIndicator) !=
-                               supported_origin_strings.end();
+
+  bool all_origins_supported = false;
+  std::vector<std::string> native_app_ids;
+  std::vector<std::string> supported_origin_strings;
+  for (const auto& origin_or_id : cached_strings) {
+    // The string could be "*", origin or native payment app package Id on
+    // Android.
+    if (origin_or_id == kAllOriginsSupportedIndicator) {
+      all_origins_supported = true;
+      continue;
+    }
+
+    if (base::IsStringUTF8(origin_or_id) && GURL(origin_or_id).is_valid()) {
+      supported_origin_strings.emplace_back(origin_or_id);
+    } else {
+      native_app_ids.emplace_back(origin_or_id);
+    }
+  }
+  cached_supported_native_app_ids_[method_manifest_url] = native_app_ids;
+
   EnableMethodManifestUrlForSupportedApps(
       method_manifest_url, supported_origin_strings, all_origins_supported,
       manifest_url_to_app_origins_map_[method_manifest_url], &apps_,
@@ -256,6 +272,15 @@ void ManifestVerifier::OnPaymentMethodManifestParsed(
 
   if (all_origins_supported)
     supported_origin_strings.emplace_back(kAllOriginsSupportedIndicator);
+
+  // Keep Android native payment app Ids in cache.
+  std::map<GURL, std::vector<std::string>>::const_iterator it =
+      cached_supported_native_app_ids_.find(method_manifest_url);
+  if (it != cached_supported_native_app_ids_.end()) {
+    supported_origin_strings.insert(supported_origin_strings.end(),
+                                    it->second.begin(), it->second.end());
+  }
+
   cache_->AddPaymentMethodManifest(method_manifest_url.spec(),
                                    supported_origin_strings);
 
