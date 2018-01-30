@@ -468,10 +468,17 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
 
 // Tests that the device refuses to start if the WebContents target was
 // destroyed before the device could start.
-// TODO(crbug/754872): To be re-enabled in separate change.
-IN_PROC_BROWSER_TEST_F(
-    WebContentsVideoCaptureDeviceBrowserTest,
-    DISABLED_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
+// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
+// use-of-uninit-value errors.
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart \
+  DISABLED_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart
+#else
+#define MAYBE_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart \
+  ErrorsOutIfWebContentsHasGoneBeforeDeviceStart
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+                       MAYBE_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
   auto* const main_frame = shell()->web_contents()->GetMainFrame();
   const auto render_process_id = main_frame->GetProcess()->GetID();
   const auto render_frame_id = main_frame->GetRoutingID();
@@ -503,9 +510,17 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests that the device starts, captures a frame, and then gracefully
 // errors-out because the WebContents is destroyed before the device is stopped.
-// TODO(crbug/754872): To be re-enabled in separate change.
+// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
+// use-of-uninit-value errors.
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_ErrorsOutWhenWebContentsIsDestroyed \
+  DISABLED_ErrorsOutWhenWebContentsIsDestroyed
+#else
+#define MAYBE_ErrorsOutWhenWebContentsIsDestroyed \
+  ErrorsOutWhenWebContentsIsDestroyed
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       DISABLED_ErrorsOutWhenWebContentsIsDestroyed) {
+                       MAYBE_ErrorsOutWhenWebContentsIsDestroyed) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -525,9 +540,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
-// TODO(crbug/754872): To be re-enabled in separate change.
+// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
+// use-of-uninit-value errors.
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_SuspendsAndResumes DISABLED_SuspendsAndResumes
+#else
+#define MAYBE_SuspendsAndResumes SuspendsAndResumes
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       DISABLED_SuspendsAndResumes) {
+                       MAYBE_SuspendsAndResumes) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -559,9 +580,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
-// TODO(crbug/754872): To be re-enabled in separate change.
+// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
+// use-of-uninit-value errors.
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_DeliversRefreshFramesUponRequest \
+  DISABLED_DeliversRefreshFramesUponRequest
+#else
+#define MAYBE_DeliversRefreshFramesUponRequest DeliversRefreshFramesUponRequest
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       DISABLED_DeliversRefreshFramesUponRequest) {
+                       MAYBE_DeliversRefreshFramesUponRequest) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Set the page content to a known color.
@@ -615,9 +643,15 @@ INSTANTIATE_TEST_CASE_P(
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, and whether the WebContents is visible/hidden or
 // occluded/unoccluded.
-// TODO(crbug/754872): To be re-enabled in separate change.
+// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
+// use-of-uninit-value errors.
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_CapturesContentChanges DISABLED_CapturesContentChanges
+#else
+#define MAYBE_CapturesContentChanges CapturesContentChanges
+#endif
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       DISABLED_CapturesContentChanges) {
+                       MAYBE_CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (use_software_compositing() ? "Software Compositing"
