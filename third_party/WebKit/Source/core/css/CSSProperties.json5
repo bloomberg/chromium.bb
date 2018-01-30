@@ -577,7 +577,6 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       inherited: true,
-      runtime_flag: "CSSVariableFonts",
       font: true,
       name_for_methods: "VariationSettings",
       converter: "ConvertFontVariationSettings",

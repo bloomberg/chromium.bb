@@ -1294,7 +1294,6 @@ static inline bool IsValidCueStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextDecorationSkipInk:
       return true;
     case CSSPropertyFontVariationSettings:
-      DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
       return true;
     default:
       break;
@@ -1398,7 +1397,6 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyWordSpacing:
       return true;
     case CSSPropertyFontVariationSettings:
-      DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
       return true;
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextDecorationLine:
