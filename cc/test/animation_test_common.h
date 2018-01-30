@@ -13,15 +13,13 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/element_id.h"
 
-namespace cc {
-class AnimationPlayer;
-}
-
 namespace gfx {
 class ScrollOffset;
 }
 
 namespace cc {
+
+class SingleTickerAnimationPlayer;
 
 class FakeFloatAnimationCurve : public FloatAnimationCurve {
  public:
@@ -75,33 +73,33 @@ class FakeFloatTransition : public FloatAnimationCurve {
   float to_;
 };
 
-int AddScrollOffsetAnimationToPlayer(AnimationPlayer* player,
+int AddScrollOffsetAnimationToPlayer(SingleTickerAnimationPlayer* player,
                                      gfx::ScrollOffset initial_value,
                                      gfx::ScrollOffset target_value,
                                      bool impl_only);
 
-int AddAnimatedTransformToPlayer(AnimationPlayer* player,
+int AddAnimatedTransformToPlayer(SingleTickerAnimationPlayer* player,
                                  double duration,
                                  int delta_x,
                                  int delta_y);
 
-int AddAnimatedTransformToPlayer(AnimationPlayer* player,
+int AddAnimatedTransformToPlayer(SingleTickerAnimationPlayer* player,
                                  double duration,
                                  TransformOperations start_operations,
                                  TransformOperations operations);
 
-int AddOpacityTransitionToPlayer(AnimationPlayer* player,
+int AddOpacityTransitionToPlayer(SingleTickerAnimationPlayer* player,
                                  double duration,
                                  float start_opacity,
                                  float end_opacity,
                                  bool use_timing_function);
 
-int AddAnimatedFilterToPlayer(AnimationPlayer* player,
+int AddAnimatedFilterToPlayer(SingleTickerAnimationPlayer* player,
                               double duration,
                               float start_brightness,
                               float end_brightness);
 
-int AddOpacityStepsToPlayer(AnimationPlayer* player,
+int AddOpacityStepsToPlayer(SingleTickerAnimationPlayer* player,
                             double duration,
                             float start_opacity,
                             float end_opacity,
