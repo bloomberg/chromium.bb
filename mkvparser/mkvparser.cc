@@ -23,6 +23,7 @@
 #include "common/webmids.h"
 
 namespace mkvparser {
+const long long kStringElementSizeLimit = 20 * 1000 * 1000;
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const long long Colour::kValueNotPresent = LLONG_MAX;
 const float Projection::kValueNotPresent = FLT_MAX;
@@ -325,7 +326,7 @@ long UnserializeString(IMkvReader* pReader, long long pos, long long size,
   delete[] str;
   str = NULL;
 
-  if (size >= LONG_MAX || size < 0)
+  if (size >= LONG_MAX || size < 0 || size > kStringElementSizeLimit)
     return E_FILE_FORMAT_INVALID;
 
   // +1 for '\0' terminator
