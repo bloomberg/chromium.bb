@@ -1091,7 +1091,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   // 3. Let definition be result of lookup up custom element definition
   CustomElementDefinition* definition = nullptr;
-  if (is_v1) {
+  if (is_v1 && namespace_uri == HTMLNames::xhtmlNamespaceURI) {
     const CustomElementDescriptor desc =
         RuntimeEnabledFeatures::CustomElementsBuiltinEnabled()
             ? CustomElementDescriptor(name, qualified_name)
@@ -1110,7 +1110,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   // 5. Let element be the result of creating an element
   Element* element;
 
-  if (CustomElement::ShouldCreateCustomElement(q_name) || create_v1_builtin) {
+  if (definition) {
     element = CustomElement::CreateCustomElementSync(*this, q_name, definition);
   } else if (V0CustomElement::IsValidName(q_name.LocalName()) &&
              RegistrationContext()) {
