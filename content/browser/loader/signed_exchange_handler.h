@@ -29,7 +29,7 @@ namespace content {
 // logic nor verifying logic. It just behaves as if the passed body is a signed
 // HTTP exchange which contains a request to "https://example.com/test.html" and
 // a response with a payload which is equal to the original body.
-// TODO(https://crbug.com/80374): Implement CBOR parsing logic and verifying
+// TODO(https://crbug.com/803774): Implement CBOR parsing logic and verifying
 // logic.
 class SignedExchangeHandler final
     : public mojo::common::DataPipeDrainer::Client {
@@ -44,15 +44,15 @@ class SignedExchangeHandler final
       base::OnceCallback<void(const network::URLLoaderCompletionStatus&)>;
 
   // The passed |body| will be read to parse the signed HTTP exchange.
-  // TODO(https://crbug.com/80374): Consider making SignedExchangeHandler
+  // TODO(https://crbug.com/803774): Consider making SignedExchangeHandler
   // independent from DataPipe to make it easy to port it in //net.
   explicit SignedExchangeHandler(mojo::ScopedDataPipeConsumerHandle body);
 
   ~SignedExchangeHandler() override;
 
-  // TODO(https://crbug.com/80374): Currently SignedExchangeHandler always calls
-  // found_callback and then calls finish_callback after reading the all buffer.
-  // Need to redesign this callback model when we will introduce
+  // TODO(https://crbug.com/803774): Currently SignedExchangeHandler always
+  // calls found_callback and then calls finish_callback after reading the all
+  // buffer. Need to redesign this callback model when we will introduce
   // SignedExchangeHandler::Reader class to read the body and introduce the
   // cert verification.
   void GetHTTPExchange(ExchangeFoundCallback found_callback,

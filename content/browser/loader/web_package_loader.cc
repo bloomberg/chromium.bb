@@ -128,7 +128,7 @@ void WebPackageLoader::OnReceiveCachedMetadata(
 }
 
 void WebPackageLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  // TODO(https://crbug.com/80374): Implement this to progressively update the
+  // TODO(https://crbug.com/803774): Implement this to progressively update the
   // encoded data length in DevTools.
 }
 
@@ -145,8 +145,8 @@ void WebPackageLoader::OnStartLoadingResponseBody(
 
 void WebPackageLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  // TODO(https://crbug.com/80374): Copy the data length information and pass to
-  // |client_| when OnHTTPExchangeFinished() is called.
+  // TODO(https://crbug.com/803774): Copy the data length information and pass
+  // to |client_| when OnHTTPExchangeFinished() is called.
 }
 
 void WebPackageLoader::FollowRedirect() {
@@ -167,15 +167,15 @@ void WebPackageLoader::ProceedWithResponse() {
 
 void WebPackageLoader::SetPriority(net::RequestPriority priority,
                                    int intra_priority_value) {
-  // TODO(https://crbug.com/80374): Implement this.
+  // TODO(https://crbug.com/803774): Implement this.
 }
 
 void WebPackageLoader::PauseReadingBodyFromNet() {
-  // TODO(https://crbug.com/80374): Implement this.
+  // TODO(https://crbug.com/803774): Implement this.
 }
 
 void WebPackageLoader::ResumeReadingBodyFromNet() {
-  // TODO(https://crbug.com/80374): Implement this.
+  // TODO(https://crbug.com/803774): Implement this.
 }
 
 void WebPackageLoader::ConnectToClient(
@@ -191,7 +191,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
     const network::ResourceResponseHead& resource_response,
     base::Optional<net::SSLInfo> ssl_info,
     mojo::ScopedDataPipeConsumerHandle body) {
-  // TODO(https://crbug.com/80374): Handle no-GET request_method as a error.
+  // TODO(https://crbug.com/803774): Handle no-GET request_method as a error.
   DCHECK(original_response_timing_info_);
   forwarding_client_->OnReceiveRedirect(
       CreateRedirectInfo(request_url),
