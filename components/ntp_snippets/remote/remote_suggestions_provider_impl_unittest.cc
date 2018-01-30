@@ -569,6 +569,19 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   }
 
   RemoteSuggestionsFetcher::SnippetsAvailableCallback
+  FetchSuggestionsAndGetResponseCallback(
+      RemoteSuggestionsProviderImpl* provider,
+      bool interactive_request) {
+    RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
+    EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
+        .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+        .RetiresOnSaturation();
+    provider->FetchSuggestions(
+        interactive_request, RemoteSuggestionsProvider::FetchStatusCallback());
+    return snippets_callback;
+  }
+
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback
   RefetchWhileDisplayingAndGetResponseCallback(
       RemoteSuggestionsProviderImpl* provider) {
     RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
@@ -2450,6 +2463,65 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsSchedulerWhenSignedOut) {
   EXPECT_CALL(*scheduler(), OnSuggestionsCleared());
   provider->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
                             RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       RestartsFetchWhenSignedInWhileFetching) {
+  auto provider =
+      MakeSuggestionsProviderWithoutInitializationWithStrictScheduler();
+  // Initiate the provider so that it is already READY.
+  EXPECT_CALL(*scheduler(), OnProviderActivated());
+  WaitForSuggestionsProviderInitialization(provider.get());
+
+  // Initiate the fetch.
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
+  EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
+      .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+      .RetiresOnSaturation();
+  provider->FetchSuggestions(/*interactive_request=*/false,
+                             RemoteSuggestionsProvider::FetchStatusCallback());
+
+  // The scheduler should be notified of clearing the suggestions.
+  EXPECT_CALL(*scheduler(), OnSuggestionsCleared());
+  provider->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
+                            RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
+
+  // Once we signal the first fetch to be finished (calling snippets_callback
+  // below), a new fetch should get triggered.
+  EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _)).Times(1);
+  std::move(snippets_callback)
+      .Run(Status::Success(), std::vector<FetchedCategory>());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       IgnoresResultsWhenHistoryClearedWhileFetching) {
+  auto provider =
+      MakeSuggestionsProviderWithoutInitializationWithStrictScheduler();
+  // Initiate the provider so that it is already READY.
+  EXPECT_CALL(*scheduler(), OnProviderActivated());
+  WaitForSuggestionsProviderInitialization(provider.get());
+
+  // Initiate the fetch.
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback =
+      FetchSuggestionsAndGetResponseCallback(provider.get(),
+                                             /*interactive_request=*/false);
+
+  // The scheduler should be notified of clearing the history.
+  EXPECT_CALL(*scheduler(), OnHistoryCleared());
+  provider->ClearHistory(GetDefaultCreationTime(), GetDefaultExpirationTime(),
+                         base::RepeatingCallback<bool(const GURL& url)>());
+
+  // Once the fetch finishes, the returned suggestions are ignored.
+  FetchedCategoryBuilder category_builder;
+  category_builder.SetCategory(articles_category());
+  category_builder.AddSuggestionViaBuilder(
+      RemoteSuggestionBuilder().AddId(base::StringPrintf("http://abc.com")));
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(category_builder.Build());
+  std::move(snippets_callback)
+      .Run(Status::Success(), std::move(fetched_categories));
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(0));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
