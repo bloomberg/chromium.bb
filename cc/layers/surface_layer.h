@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
+#include "cc/layers/deadline_policy.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -21,7 +22,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
   static scoped_refptr<SurfaceLayer> Create();
 
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
-                           base::Optional<uint32_t> deadline_in_frames);
+                           const DeadlinePolicy& deadline_policy);
   void SetFallbackSurfaceId(const viz::SurfaceId& surface_id);
 
   // When stretch_content_to_fill_bounds is true, the scale of the embedded
@@ -39,6 +40,10 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   const viz::SurfaceId& fallback_surface_id() const {
     return fallback_surface_id_;
+  }
+
+  base::Optional<uint32_t> deadline_in_frames() const {
+    return deadline_in_frames_;
   }
 
  protected:
