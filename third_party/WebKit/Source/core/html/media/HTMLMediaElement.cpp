@@ -3861,7 +3861,8 @@ void HTMLMediaElement::SetAudioSourceNode(
   DCHECK(IsMainThread());
   audio_source_node_ = source_node;
 
-  AudioSourceProviderClientLockScope scope(*this);
+  // No need to lock the |audio_source_node| because it locks itself when
+  // setFormat() is invoked.
   GetAudioSourceProvider().SetClient(audio_source_node_);
 }
 
