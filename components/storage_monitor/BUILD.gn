@@ -62,6 +62,8 @@ static_library("storage_monitor") {
     sources += [
       "media_transfer_protocol_device_observer_chromeos.cc",
       "media_transfer_protocol_device_observer_chromeos.h",
+      "storage_info_utils.cc",
+      "storage_info_utils.h",
     ]
   }
 
