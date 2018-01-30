@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../vr/resources/fake-vr-displays.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
-<script src="../vr/resources/mock-vr-service.js"></script>
-<script src="../vr/resources/test-constants.js"></script>
+<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
-<script src="../vr/resources/presentation-setup.js"></script>
+
 <script>
-let fakeDisplays = fakeVRDisplays();
+let fakeDevices = fakeXRDevices();
 
-let displayLeftEye = fakeDisplays["Pixel"].leftEye;
-let displayRightEye = fakeDisplays["Pixel"].rightEye;
+let displayLeftEye = fakeDevices["FakeGooglePixelPhone"].leftEye;
+let displayRightEye = fakeDevices["FakeGooglePixelPhone"].rightEye;
 
-xr_session_test( (t, session, mockService) => {
+xr_session_promise_test( (session) => {
   // Session must have a baseLayer or frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
-  session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
-    let counter = 0;
+  return session.requestFrameOfReference("eyeLevel")
+    .then((frameOfRef) => new Promise((resolve) =>{
+      let counter = 0;
 
-    function onFrame(time, xrFrame) {
-      let leftView = xrFrame.views[0];
-      let rightView = xrFrame.views[1];
+      function onFrame(time, xrFrame) {
+        let leftView = xrFrame.views[0];
+        let rightView = xrFrame.views[1];
 
-      if (counter == 0) {
-        session.requestAnimationFrame(onFrame);
+        if (counter == 0) {
+          session.requestAnimationFrame(onFrame);
 
-        t.step( () => {
           let expectedLeftProjection = perspectiveFromFieldOfView(
               displayLeftEye.fieldOfView, session.depthNear, session.depthFar);
           let expectedRightProjection = perspectiveFromFieldOfView(
@@ -45,9 +45,7 @@ xr_session_test( (t, session, mockService) => {
           // account the new session depth values this frame.
           assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
           assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
-        }, "Projection matrices do not update within the same frame");
-      } else {
-        t.step( () => {
+        } else {
           // New depth values should be retained between frames.
           assert_equals(session.depthNear, 1.0);
           assert_equals(session.depthFar, 100.0);
@@ -60,15 +58,14 @@ xr_session_test( (t, session, mockService) => {
           // Projection matricies should now reflect the new depth values
           assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
           assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
-        }, "Projection matrices do update on subsequent frames");
-        t.done();
+          resolve();
+        }
+        counter++;
       }
-      counter++;
-    }
 
-    session.requestAnimationFrame(onFrame);
-  });
-}, fakeDisplays["Pixel"], { exclusive: true },
+      session.requestAnimationFrame(onFrame);
+  }));
+}, fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
 "XRView projection matrices update near and far depths on the next frame");
 
 </script>

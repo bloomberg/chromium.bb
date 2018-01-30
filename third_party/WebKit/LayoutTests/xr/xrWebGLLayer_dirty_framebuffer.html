@@ -1,51 +1,52 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../vr/resources/fake-vr-displays.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
-<script src="../vr/resources/mock-vr-service.js"></script>
-<script src="../vr/resources/test-constants.js"></script>
+<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
-<script src="../vr/resources/presentation-setup.js"></script>
-<script>
-let fakeDisplays = fakeVRDisplays();
 
-xr_session_test( (t, session, mockService) => {
+<script>
+let fakeDevices = fakeXRDevices();
+
+xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or else frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
   session.baseLayer = webglLayer;
-  let mockDisplay = mockService.mockVRDisplays_[0];
+
   function onSkipFrame(time, xrFrame) {
-    // No GL commands issued
+    // No GL commands issued.
     session.requestAnimationFrame(onDrawToCanvas);
   }
+
   function onDrawToCanvas(time, xrFrame) {
-    // Ensure the previous step did not submit a frame
-    t.step( () => {
-      assert_equals(mockDisplay.getSubmitFrameCount(), 0);
-    }, "Expecting no frame was submitted during onSkipFrame");
-    // Clear the canvas
+    // Ensure the previous step did not submit a frame.
+    assert_equals(getSubmitFrameCount(), 0);
+
+    // Clear the canvas.
     gl.clear(gl.COLOR_BUFFER_BIT);
     session.requestAnimationFrame(onDrawToFramebuffer);
   }
+
   function onDrawToFramebuffer(time, xrFrame) {
-    // Ensure the previous step did not submit a frame
-    t.step( () => {
-      assert_equals(mockDisplay.getSubmitFrameCount(), 0);
-    }, "Expecting no frame was submitted during onDrawToCanvas");
-    // Clear the VRWebGLLayer framebuffer
+    // Ensure the previous step did not submit a frame.
+    assert_equals(getSubmitFrameCount(), 0);
+
+    // Clear the VRWebGLLayer framebuffer.
     gl.bindFramebuffer(gl.FRAMEBUFFER, webglLayer.framebuffer);
     gl.clear(gl.COLOR_BUFFER_BIT);
+
     // After the function returns ensure the frame was submitted.
     window.setTimeout(() => {
-      t.step( () => {
-        assert_equals(mockDisplay.getSubmitFrameCount(), 1);
-      }, "Expecting one frame was submitted during onDrawToFramebuffer");
-      t.done();
+      assert_equals(getSubmitFrameCount(), 1);
+      // Finished test.
+      resolve();
     }, 100);
   }
+
   session.requestAnimationFrame(onSkipFrame);
-}, fakeDisplays["Pixel"], { exclusive: true },
+}), fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
 "A frame should be submitted if the base layer was written to during requestAnimationFrame");
 </script>
