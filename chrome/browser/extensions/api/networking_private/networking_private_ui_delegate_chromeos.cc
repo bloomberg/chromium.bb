@@ -20,11 +20,5 @@ void NetworkingPrivateUIDelegateChromeOS::ShowAccountDetails(
   chromeos::NetworkConnect::Get()->ShowMobileSetup(guid);
 }
 
-bool NetworkingPrivateUIDelegateChromeOS::HandleConnectFailed(
-    const std::string& guid,
-    const std::string error) const {
-  return chromeos::NetworkConnect::Get()->MaybeShowConfigureUI(guid, error);
-}
-
 }  // namespace extensions
 }  // namespace chromeos

@@ -55,6 +55,7 @@ class NetworkDropdownHandler : public BaseWebUIHandler,
   void HandleLaunchInternetDetailDialog();
   void HandleLaunchAddWiFiNetworkDialog();
   void HandleShowNetworkDetails(const base::ListValue* args);
+  void HandleShowNetworkConfig(const base::ListValue* args);
 
   std::unique_ptr<NetworkDropdown> dropdown_;
 

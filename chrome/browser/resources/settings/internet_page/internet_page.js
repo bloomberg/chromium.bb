@@ -586,19 +586,25 @@ Polymer({
    */
   onNetworkConnect_: function(event) {
     const properties = event.detail.networkProperties;
+    const name = CrOnc.getNetworkName(properties);
     if (!event.detail.bypassConnectionDialog &&
         CrOnc.shouldShowTetherDialogBeforeConnection(properties)) {
       const params = new URLSearchParams;
       params.append('guid', properties.GUID);
       params.append('type', properties.Type);
-      params.append('name', CrOnc.getNetworkName(properties));
+      params.append('name', name);
       params.append('showConfigure', true.toString());
 
       settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
       return;
     }
 
-    this.networkingPrivate.startConnect(properties.GUID, function() {
+    if (properties.Connectable === false || properties.ErrorState) {
+      this.showConfig_(properties.Type, properties.GUID, name);
+      return;
+    }
+
+    this.networkingPrivate.startConnect(properties.GUID, () => {
       if (chrome.runtime.lastError) {
         const message = chrome.runtime.lastError.message;
         if (message == 'connecting' || message == 'connect-canceled' ||
@@ -606,8 +612,9 @@ Polymer({
           return;
         }
         console.error(
-            'Unexpected networkingPrivate.startConnect error: ' + message +
+            'networkingPrivate.startConnect error: ' + message +
             ' For: ' + properties.GUID);
+        this.showConfig_(properties.Type, properties.GUID, name);
       }
     });
   },

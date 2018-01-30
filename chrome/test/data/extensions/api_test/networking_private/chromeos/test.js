@@ -139,35 +139,27 @@ var availableTests = [
         }));
   },
   function startActivate() {
-    // Must connect to a network before we can activate it.
-    chrome.networkingPrivate.startConnect(
-        kCellularGuid, callbackPass(function() {
-          chrome.networkingPrivate.startActivate(
-              kCellularGuid, callbackPass(function() {
-                // For non Sprint networks, startActivate will delegate
-                // showing the activation UI to the browser host and not
-                // immediately activate the network.
-                chrome.networkingPrivate.getState(
-                    kCellularGuid, callbackPass(function(state) {
-                      assertEq(ActivationStateType.NOT_ACTIVATED,
-                               state.Cellular.ActivationState);
-                    }));
-              }));
-        }));
+    chrome.networkingPrivate.startActivate(
+      kCellularGuid, callbackPass(function() {
+        // For non Sprint networks, startActivate will delegate
+        // showing the activation UI to the browser host and not
+        // immediately activate the network.
+        chrome.networkingPrivate.getState(
+          kCellularGuid, callbackPass(function(state) {
+            assertEq(ActivationStateType.NOT_ACTIVATED,
+                     state.Cellular.ActivationState);
+          }));
+      }));
   },
   function startActivateSprint() {
-    // Must connect to a network before we can activate it.
-    chrome.networkingPrivate.startConnect(
-        kCellularGuid, callbackPass(function() {
-          chrome.networkingPrivate.startActivate(
-              kCellularGuid, callbackPass(function() {
-                chrome.networkingPrivate.getState(
-                    kCellularGuid, callbackPass(function(state) {
-                      assertEq(ActivationStateType.ACTIVATED,
-                               state.Cellular.ActivationState);
-                    }));
-              }));
-        }));
+    chrome.networkingPrivate.startActivate(
+      kCellularGuid, callbackPass(function() {
+        chrome.networkingPrivate.getState(
+          kCellularGuid, callbackPass(function(state) {
+            assertEq(ActivationStateType.ACTIVATED,
+                     state.Cellular.ActivationState);
+          }));
+      }));
   },
   function startConnectNonexistent() {
     chrome.networkingPrivate.startConnect(

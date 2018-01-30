@@ -50,12 +50,19 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 }  // namespace
 
 // static
-void InternetConfigDialog::ShowDialogForNetworkState(
-    const NetworkState* network_state) {
+void InternetConfigDialog::ShowDialogForNetworkId(
+    const std::string& network_id) {
+  const NetworkState* network_state =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          network_id);
+  if (!network_state) {
+    LOG(ERROR) << "Network not found: " << network_id;
+    return;
+  }
   std::string network_type =
       chromeos::network_util::TranslateShillTypeToONC(network_state->type());
   InternetConfigDialog* dialog =
-      new InternetConfigDialog(network_type, network_state->guid());
+      new InternetConfigDialog(network_type, network_id);
   dialog->ShowSystemDialog();
 }
 

@@ -342,7 +342,7 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   }
 
   if (chromeos::switches::IsNetworkSettingsConfigEnabled())
-    chromeos::InternetConfigDialog::ShowDialogForNetworkState(network_state);
+    chromeos::InternetConfigDialog::ShowDialogForNetworkId(network_id);
   else
     chromeos::NetworkConfigView::ShowForNetworkId(network_id);
 }
