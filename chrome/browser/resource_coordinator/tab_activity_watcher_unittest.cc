@@ -72,7 +72,6 @@ blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
 class TabActivityWatcherTest : public TabActivityTestBase {
  protected:
   TabActivityWatcherTest() {
-    TabActivityWatcher::GetInstance()->DisableLogTimeoutForTesting();
     TabActivityWatcher::GetInstance()->ResetForTesting();
   }
 
