@@ -508,6 +508,10 @@ const char kOobeSkipToLogin[] = "oobe-skip-to-login";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
+// If set to "true", the profile requires policy during restart (policy load
+// must succeed, otherwise session restart should fail).
+const char kProfileRequiresPolicy[] = "profile-requires-policy";
+
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.
@@ -555,6 +559,14 @@ const char kTetherStub[] = "tether-stub";
 
 // List of locales supported by voice interaction.
 const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
+
+// Used to tell the policy infrastructure to not let profile initialization
+// complete until policy is manually set by a test. This is used to provide
+// backward compatibility with a few tests that incorrectly use the
+// synchronously-initialized login profile to run their tests - do not add new
+// uses of this flag.
+const char kWaitForInitialPolicyFetchForTest[] =
+    "wait-for-initial-policy-fetch-for-test";
 
 // Enables wake on wifi packet feature, which wakes the device on the receipt
 // of network packets from whitelisted sources.

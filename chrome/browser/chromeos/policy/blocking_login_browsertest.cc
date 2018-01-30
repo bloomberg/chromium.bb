@@ -26,6 +26,7 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -82,7 +83,7 @@ struct BlockingLoginTestParam {
   const bool enroll_device;
 };
 
-// TODO(atwilson): This test is completely broken - it originally was built
+// TODO(poromov): This test is completely broken - it originally was built
 // when we made an entirely different set of network calls on startup. As a
 // result it generates random failures in startup network requests, then waits
 // to see if the profile finishes loading which is not at all what it is
@@ -101,9 +102,6 @@ class BlockingLoginTest
     command_line->AppendSwitchASCII(
         policy::switches::kDeviceManagementUrl,
         embedded_test_server()->GetURL("/device_management").spec());
-
-    command_line->AppendSwitch(
-        chromeos::switches::kAllowFailedPolicyFetchForTest);
   }
 
   void SetUpOnMainThread() override {
@@ -338,7 +336,9 @@ const BlockingLoginTestParam kBlockinLoginTestCases[] = {
     {5, kUsernameOtherDomain, true},
 };
 
-INSTANTIATE_TEST_CASE_P(BlockingLoginTestInstance,
+// TODO(poromov): Disabled because it has become flaky due to incorrect mock
+// network requests - re-enable this when https://crbug.com/580537 is fixed.
+INSTANTIATE_TEST_CASE_P(DISABLED_BlockingLoginTestInstance,
                         BlockingLoginTest,
                         testing::ValuesIn(kBlockinLoginTestCases));
 

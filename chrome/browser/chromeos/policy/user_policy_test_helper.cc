@@ -94,6 +94,7 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
   UserCloudPolicyManagerChromeOS* const policy_manager =
       UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
           profile);
+  DCHECK(!policy_manager->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // Give a bogus OAuth token to the |policy_manager|. This should make its
   // CloudPolicyClient fetch the DMToken.
