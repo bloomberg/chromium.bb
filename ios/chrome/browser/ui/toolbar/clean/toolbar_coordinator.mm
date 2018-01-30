@@ -10,14 +10,10 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/omnibox/browser/autocomplete_input.h"
-#include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -139,8 +135,7 @@
            buttonFactory:factory
            buttonUpdater:self.buttonUpdater
           omniboxFocuser:self.locationBarCoordinator];
-  self.toolbarViewController.locationBarView =
-      self.locationBarCoordinator.locationBarView;
+  self.toolbarViewController.locationBarView = self.locationBarCoordinator.view;
   self.toolbarViewController.dispatcher = self.dispatcher;
 
   if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
@@ -196,17 +191,31 @@
   return self.locationBarCoordinator;
 }
 
+- (id<VoiceSearchControllerDelegate>)voiceSearchControllerDelegate {
+  return self.locationBarCoordinator;
+}
+
+- (id<QRScannerResultLoading>)QRScannerResultLoader {
+  return self.locationBarCoordinator;
+}
+
+- (void)updateToolbarState {
+  // TODO(crbug.com/803383): This should be done inside the location bar.
+  // Updates the omnibox.
+  [self.locationBarCoordinator updateOmniboxState];
+}
+
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
   BOOL isNTP = IsVisibleUrlNewTabPage(webState);
 
   // Don't do anything for a live non-ntp tab.
   if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
-    [self.locationBarCoordinator.locationBarView setHidden:NO];
+    [self.locationBarCoordinator.view setHidden:NO];
     return;
   }
 
   self.viewController.view.hidden = NO;
-  [self.locationBarCoordinator.locationBarView setHidden:YES];
+  [self.locationBarCoordinator.view setHidden:YES];
   [self.mediator updateConsumerForWebState:webState];
   [self.toolbarViewController updateForSideSwipeSnapshotOnNTP:isNTP];
 }
@@ -214,7 +223,7 @@
 - (void)resetToolbarAfterSideSwipeSnapshot {
   [self.mediator
       updateConsumerForWebState:self.webStateList->GetActiveWebState()];
-  [self.locationBarCoordinator.locationBarView setHidden:NO];
+  [self.locationBarCoordinator.view setHidden:NO];
   [self.toolbarViewController resetAfterSideSwipeSnapshot];
 }
 
@@ -235,8 +244,7 @@
 }
 
 - (BOOL)isOmniboxFirstResponder {
-  return
-      [self.locationBarCoordinator.locationBarView.textField isFirstResponder];
+  return [self.locationBarCoordinator isOmniboxFirstResponder];
 }
 
 - (BOOL)showingOmniboxPopup {
@@ -318,34 +326,6 @@
   self.viewController.view.hidden = NO;
 }
 
-#pragma mark - VoiceSearchControllerDelegate
-
-- (void)receiveVoiceSearchResult:(NSString*)result {
-  DCHECK(result);
-  [self loadURLForQuery:result];
-}
-
-#pragma mark - QRScannerResultLoading
-
-- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
-  DCHECK(result);
-  if (load) {
-    [self loadURLForQuery:result];
-  } else {
-    [self.locationBarCoordinator focusOmnibox];
-    [self.locationBarCoordinator.locationBarView.textField
-        insertTextWhileEditing:result];
-    // The call to |setText| shouldn't be needed, but without it the "Go" button
-    // of the keyboard is disabled.
-    [self.locationBarCoordinator.locationBarView.textField setText:result];
-    // Notify the accessibility system to start reading the new contents of the
-    // Omnibox.
-    UIAccessibilityPostNotification(
-        UIAccessibilityScreenChangedNotification,
-        self.locationBarCoordinator.locationBarView.textField);
-  }
-}
-
 #pragma mark - ToolsMenuPresentationProvider
 
 - (UIButton*)presentingButtonForToolsMenuCoordinator:
@@ -418,30 +398,6 @@
 
 #pragma mark - Private
 
-// Navigate to |query| from omnibox.
-- (void)loadURLForQuery:(NSString*)query {
-  GURL searchURL;
-  metrics::OmniboxInputType type = AutocompleteInput::Parse(
-      base::SysNSStringToUTF16(query), std::string(),
-      AutocompleteSchemeClassifierImpl(), nullptr, nullptr, &searchURL);
-  if (type != metrics::OmniboxInputType::URL || !searchURL.is_valid()) {
-    searchURL = GetDefaultSearchURLForSearchTerms(
-        ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState),
-        base::SysNSStringToUTF16(query));
-  }
-  if (searchURL.is_valid()) {
-    // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
-    // transition type is so that query-in-the-omnibox is triggered for the
-    // URL.
-    ui::PageTransition transition = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    [self.URLLoader loadURL:GURL(searchURL)
-                   referrer:web::Referrer()
-                 transition:transition
-          rendererInitiated:NO];
-  }
-}
-
 // Animates |_toolbar| and |_locationBarView| for omnibox expansion. If
 // |animated| is NO the animation will happen instantly.
 - (void)expandOmniboxAnimated:(BOOL)animated {
@@ -460,9 +416,8 @@
     [completionAnimator startAnimationAfterDelay:ios::material::kDuration4];
   }];
 
-  [self.locationBarCoordinator.locationBarView
-      addExpandOmniboxAnimations:animator
-              completionAnimator:completionAnimator];
+  [self.locationBarCoordinator addExpandOmniboxAnimations:animator
+                                       completionAnimator:completionAnimator];
   [self.toolbarViewController addToolbarExpansionAnimations:animator
                                          completionAnimator:completionAnimator];
   [animator startAnimation];
@@ -483,8 +438,7 @@
                  curve:UIViewAnimationCurveEaseInOut
             animations:^{
             }];
-  [self.locationBarCoordinator.locationBarView
-      addContractOmniboxAnimations:animator];
+  [self.locationBarCoordinator addContractOmniboxAnimations:animator];
   [self.toolbarViewController addToolbarContractionAnimations:animator];
   [animator startAnimation];
 }
