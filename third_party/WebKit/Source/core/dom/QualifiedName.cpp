@@ -149,4 +149,11 @@ void QualifiedName::CreateStatic(void* target_address, StringImpl* name) {
       QualifiedName(g_null_atom, AtomicString(name), g_null_atom, true);
 }
 
+std::ostream& operator<<(std::ostream& ostream, const QualifiedName& qname) {
+  ostream << "QualifiedName(local=" << qname.LocalName()
+          << " ns=" << qname.NamespaceURI() << " prefix=" << qname.Prefix()
+          << ")";
+  return ostream;
+}
+
 }  // namespace blink
