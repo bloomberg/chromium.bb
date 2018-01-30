@@ -427,6 +427,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableCodeCacheAfterExecute(
       base::FeatureList::IsEnabled(features::kCodeCacheAfterExecute));
+
+  if (base::FeatureList::IsEnabled(features::kUnifiedTouchAdjustment))
+    WebRuntimeFeatures::EnableUnifiedTouchAdjustment(true);
 };
 
 }  // namespace content

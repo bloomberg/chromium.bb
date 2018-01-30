@@ -381,6 +381,11 @@ const base::Feature kTurnOff2DAndOpacityCompositorAnimations{
     "TurnOff2DAndOpacityCompositorAnimations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables unified touch adjustment which adjusts touch events target to a best
+// nearby node.
+const base::Feature kUnifiedTouchAdjustment{"UnifiedTouchAdjustment",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use Feature Policy to gate the use of permission features like midi,
 // geolocation, camera, microphone, etc.
 const base::Feature kUseFeaturePolicyForPermissions{

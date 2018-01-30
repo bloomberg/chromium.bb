@@ -21928,6 +21928,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TouchAdjustment.AdjustToSameNode" enum="Boolean">
+  <owner>eirage@chromium.org</owner>
+  <summary>
+    Records if doing touch adjustment on touchstart have same hit test node as
+    doing touch adjustment on GestureTap. True for same node, false for
+    different node. This only records GestureTap events.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram name="Event.Touch.TouchDispositionsAfterPageLoad"
     enum="TouchEventDispatchResultType">
   <obsolete>
