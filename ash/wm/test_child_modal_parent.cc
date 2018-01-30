@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/child_modal_window.h"
+#include "ash/wm/test_child_modal_parent.h"
 
 #include <memory>
 
@@ -20,7 +20,6 @@
 using views::Widget;
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -48,13 +47,6 @@ const SkColor kModalParentColor = SK_ColorWHITE;
 const SkColor kChildColor = SK_ColorWHITE;
 
 }  // namespace
-
-void CreateChildModalParent(aura::Window* context) {
-  Widget::CreateWindowWithContextAndBounds(
-      new ChildModalParent(context), context,
-      gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))
-      ->Show();
-}
 
 class ChildModalWindow : public views::WidgetDelegateView {
  public:
@@ -103,7 +95,15 @@ ui::ModalType ChildModalWindow::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-ChildModalParent::ChildModalParent(aura::Window* context)
+// static
+void TestChildModalParent::Create(aura::Window* context) {
+  Widget::CreateWindowWithContextAndBounds(
+      new TestChildModalParent(context), context,
+      gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))
+      ->Show();
+}
+
+TestChildModalParent::TestChildModalParent(aura::Window* context)
     : widget_(std::make_unique<Widget>()),
       button_(new views::LabelButton(
           this,
@@ -123,25 +123,25 @@ ChildModalParent::ChildModalParent(aura::Window* context)
   AddChildView(host_);
 }
 
-ChildModalParent::~ChildModalParent() = default;
+TestChildModalParent::~TestChildModalParent() = default;
 
-void ChildModalParent::ShowChild() {
+void TestChildModalParent::ShowChild() {
   if (!child_)
     child_ = CreateChild();
   child_->Show();
 }
 
-aura::Window* ChildModalParent::GetModalParent() const {
+aura::Window* TestChildModalParent::GetModalParent() const {
   return widget_->GetNativeView();
 }
 
-aura::Window* ChildModalParent::GetChild() const {
+aura::Window* TestChildModalParent::GetChild() const {
   if (child_)
     return child_->GetNativeView();
   return nullptr;
 }
 
-Widget* ChildModalParent::CreateChild() {
+Widget* TestChildModalParent::CreateChild() {
   Widget* child = Widget::CreateWindowWithParent(new ChildModalWindow,
                                                  GetWidget()->GetNativeView());
   wm::SetModalParent(child->GetNativeView(), GetModalParent());
@@ -150,15 +150,15 @@ Widget* ChildModalParent::CreateChild() {
   return child;
 }
 
-base::string16 ChildModalParent::GetWindowTitle() const {
+base::string16 TestChildModalParent::GetWindowTitle() const {
   return base::ASCIIToUTF16("Examples: Child Modal Parent");
 }
 
-bool ChildModalParent::CanResize() const {
+bool TestChildModalParent::CanResize() const {
   return false;
 }
 
-void ChildModalParent::DeleteDelegate() {
+void TestChildModalParent::DeleteDelegate() {
   if (child_) {
     child_->RemoveObserver(this);
     child_->Close();
@@ -168,7 +168,7 @@ void ChildModalParent::DeleteDelegate() {
   delete this;
 }
 
-void ChildModalParent::Layout() {
+void TestChildModalParent::Layout() {
   int running_y = y();
   button_->SetBounds(x(), running_y, width(), kButtonHeight);
   running_y += kButtonHeight;
@@ -177,7 +177,7 @@ void ChildModalParent::Layout() {
   host_->SetBounds(x(), running_y, width(), height() - running_y);
 }
 
-void ChildModalParent::ViewHierarchyChanged(
+void TestChildModalParent::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
     host_->Attach(widget_->GetNativeWindow());
@@ -185,8 +185,8 @@ void ChildModalParent::ViewHierarchyChanged(
   }
 }
 
-void ChildModalParent::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
+void TestChildModalParent::ButtonPressed(views::Button* sender,
+                                         const ui::Event& event) {
   if (sender == button_) {
     if (!child_)
       child_ = CreateChild();
@@ -197,12 +197,11 @@ void ChildModalParent::ButtonPressed(views::Button* sender,
   }
 }
 
-void ChildModalParent::OnWidgetDestroying(Widget* widget) {
+void TestChildModalParent::OnWidgetDestroying(Widget* widget) {
   if (child_) {
     DCHECK_EQ(child_, widget);
     child_ = NULL;
   }
 }
 
-}  // namespace test
 }  // namespace ash

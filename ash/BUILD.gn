@@ -1814,10 +1814,6 @@ static_library("test_support_common") {
     "test/ash_test_suite.h",
     "test/ash_test_views_delegate.cc",
     "test/ash_test_views_delegate.h",
-
-    # TODO(jamescook): Rename to TestChildModalWindow and move to //ash/wm
-    "test/child_modal_window.cc",
-    "test/child_modal_window.h",
     "test/ui_controls_factory_ash.cc",
     "test/ui_controls_factory_ash.h",
     "test_media_client.cc",
@@ -1836,6 +1832,8 @@ static_library("test_support_common") {
     "wm/lock_state_controller_test_api.h",
     "wm/test_activation_delegate.cc",
     "wm/test_activation_delegate.h",
+    "wm/test_child_modal_parent.cc",
+    "wm/test_child_modal_parent.h",
     "wm/test_overlay_delegate.cc",
     "wm/test_overlay_delegate.h",
     "wm/test_session_state_animator.cc",
