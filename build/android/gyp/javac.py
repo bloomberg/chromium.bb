@@ -326,10 +326,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       # Pass classpath and source paths as response files to avoid extremely
       # long command lines that are tedius to debug.
       if classpath:
-        classpath_rsp_path = os.path.join(temp_dir, 'classpath.txt')
-        with open(classpath_rsp_path, 'w') as f:
-          f.write(':'.join(classpath))
-        cmd += ['-classpath', '@' + classpath_rsp_path]
+        cmd += ['-classpath', ':'.join(classpath)]
 
       java_files_rsp_path = os.path.join(temp_dir, 'files_list.txt')
       with open(java_files_rsp_path, 'w') as f:
