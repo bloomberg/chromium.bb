@@ -744,6 +744,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
     if (IsExpandable()) {
+      set_manually_expanded_or_collapsed();
       ToggleExpanded();
       Layout();
       SchedulePaint();

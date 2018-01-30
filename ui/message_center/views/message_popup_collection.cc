@@ -129,6 +129,31 @@ void MessagePopupCollection::UpdateWidgets() {
       alignment_delegate_->IsPrimaryDisplayForNotification();
 #endif
 
+  // Check if the popups contain a new notification.
+  bool has_new_toasts = false;
+  for (auto* popup : popups) {
+    if (!FindToast(popup->id())) {
+      has_new_toasts = true;
+      break;
+    }
+  }
+
+  // If a new notification is found, collapse all existing notifications
+  // beforehand.
+  if (has_new_toasts) {
+    for (Toasts::const_iterator iter = toasts_.begin();
+         iter != toasts_.end();) {
+      // SetExpanded() may fire PreferredSizeChanged(), which may end up
+      // removing the toast in OnNotificationUpdated(). So we have to increment
+      // the iterator in a way that is safe even if the current iterator is
+      // invalidated during the loop.
+      MessageView* view = (*iter++)->message_view();
+      if (view->IsMouseHovered() || view->manually_expanded_or_collapsed())
+        continue;
+      view->SetExpanded(false);
+    }
+  }
+
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
