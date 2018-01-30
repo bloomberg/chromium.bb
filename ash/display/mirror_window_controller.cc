@@ -305,15 +305,15 @@ void MirrorWindowController::CloseIfNotNecessary() {
 }
 
 void MirrorWindowController::Close(bool delay_host_deletion) {
-  for (auto& info : mirroring_host_info_map_)
-    CloseAndDeleteHost(info.second, delay_host_deletion);
-
-  mirroring_host_info_map_.clear();
   if (reflector_) {
     aura::Env::GetInstance()->context_factory_private()->RemoveReflector(
         reflector_.get());
     reflector_.reset();
   }
+
+  for (auto& info : mirroring_host_info_map_)
+    CloseAndDeleteHost(info.second, delay_host_deletion);
+  mirroring_host_info_map_.clear();
 }
 
 void MirrorWindowController::OnHostResized(aura::WindowTreeHost* host) {
