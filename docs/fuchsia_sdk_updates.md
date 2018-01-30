@@ -4,7 +4,7 @@
    job](https://luci-scheduler.appspot.com/jobs/fuchsia/sdk-x86_64-linux) for a
    recent green archive. On the "SUCCEEDED" link, copy the SHA-1 from the
    `gsutil.upload` link of the `upload fuchsia-sdk` step.
-0. Put that into Chromium's src.git DEPS in the `fuchsia_sdk` step.
+0. Put that into Chromium's src.git `build/fuchsia/update_sdk.py` as `SDK_HASH`.
 0. `gclient sync && ninja ...` and make sure things go OK locally.
 0. Upload the roll CL, making sure to include the `fuchsia` trybot. Tag the roll
    with `Bug: 707030`.
