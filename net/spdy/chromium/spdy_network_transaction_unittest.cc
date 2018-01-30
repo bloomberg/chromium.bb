@@ -4468,8 +4468,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   auto ssl_provider0 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   // Expect HTTP/2 protocols too in SSLConfig.
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  ssl_provider0->next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
   // Force SPDY.
   ssl_provider0->next_proto = kProtoHTTP2;
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
@@ -4488,7 +4488,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   // Expect only HTTP/1.1 protocol in SSLConfig.
-  ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  ssl_provider1->next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP11};
   // Force HTTP/1.1.
   ssl_provider1->next_proto = kProtoHTTP11;
   helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
@@ -4542,8 +4543,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 
   auto ssl_provider0 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   // Expect HTTP/2 protocols too in SSLConfig.
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  ssl_provider0->next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
   // Force SPDY.
   ssl_provider0->next_proto = kProtoHTTP2;
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
@@ -4572,7 +4573,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 
   auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   // Expect only HTTP/1.1 protocol in SSLConfig.
-  ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  ssl_provider1->next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP11};
   // Force HTTP/1.1.
   ssl_provider1->next_proto = kProtoHTTP11;
   helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));

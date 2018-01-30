@@ -760,13 +760,13 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
   SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
-  if (!next_ssl_data->next_protos_expected_in_ssl_config.empty()) {
-    EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.size(),
+  if (next_ssl_data->next_protos_expected_in_ssl_config.has_value()) {
+    EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.value().size(),
               ssl_config.alpn_protos.size());
-    EXPECT_TRUE(
-        std::equal(next_ssl_data->next_protos_expected_in_ssl_config.begin(),
-                   next_ssl_data->next_protos_expected_in_ssl_config.end(),
-                   ssl_config.alpn_protos.begin()));
+    EXPECT_TRUE(std::equal(
+        next_ssl_data->next_protos_expected_in_ssl_config.value().begin(),
+        next_ssl_data->next_protos_expected_in_ssl_config.value().end(),
+        ssl_config.alpn_protos.begin()));
   }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(transport_socket), host_and_port, ssl_config, next_ssl_data));
