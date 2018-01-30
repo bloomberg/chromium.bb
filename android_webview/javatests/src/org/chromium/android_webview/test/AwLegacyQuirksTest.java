@@ -16,6 +16,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -36,6 +37,7 @@ public class AwLegacyQuirksTest {
     @RetryOnFailure
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/746264")
     public void testTargetDensityDpi() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -79,6 +81,7 @@ public class AwLegacyQuirksTest {
     @RetryOnFailure
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/746264")
     public void testWideViewportInitialScaleDoesNotExpandFixedLayoutWidth() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -109,6 +112,7 @@ public class AwLegacyQuirksTest {
     @RetryOnFailure
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/746264")
     public void testZeroValuesQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
