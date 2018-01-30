@@ -1373,6 +1373,7 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
         break;
       case history::SOURCE_SYNCED:
         sources |= 0x4;
+        break;
       default:
         break;
     }
