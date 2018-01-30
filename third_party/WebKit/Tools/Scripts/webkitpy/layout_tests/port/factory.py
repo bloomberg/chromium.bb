@@ -38,11 +38,12 @@ from webkitpy.common.path_finder import PathFinder
 class PortFactory(object):
     PORT_CLASSES = (
         'android.AndroidPort',
+        'fuchsia.FuchsiaPort',
         'linux.LinuxPort',
         'mac.MacPort',
-        'win.WinPort',
         'mock_drt.MockDRTPort',
         'test.TestPort',
+        'win.WinPort',
     )
 
     def __init__(self, host):

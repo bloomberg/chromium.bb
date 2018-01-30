@@ -367,7 +367,10 @@ class Manager(object):
         # Create the output directory if it doesn't already exist.
         self._port.host.filesystem.maybe_make_directory(self._results_directory)
 
-        self._port.setup_test_run()
+        exit_code = self._port.setup_test_run()
+        if exit_code:
+            _log.error('Build setup failed')
+            return exit_code
 
         # Check that the system dependencies (themes, fonts, ...) are correct.
         if not self._options.nocheck_sys_deps:

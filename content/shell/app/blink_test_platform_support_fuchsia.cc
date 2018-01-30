@@ -7,12 +7,11 @@
 namespace content {
 
 bool CheckLayoutSystemDeps() {
-  return false;
+  return true;
 }
 
 bool BlinkTestPlatformInitialize() {
-  // TODO(fuchsia): Support Blink's layout test platform (crbug.com/778467).
-  return false;
+  return true;
 }
 
 }  // namespace content

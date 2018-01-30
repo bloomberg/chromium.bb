@@ -114,6 +114,22 @@ def parse_args(args):
         ]))
 
     option_group_definitions.append(
+        ('Fuchsia-specific Options', [
+            optparse.make_option(
+                '--zircon-logging',
+                dest='zircon_logging',
+                action='store_true',
+                default=True,
+                help=('Log Zircon debug messages (enabled by default).')),
+            optparse.make_option(
+                '--no-zircon-logging',
+                dest='zircon_logging',
+                action='store_false',
+                default=True,
+                help=('Do not log Zircon debug messages.')),
+        ]))
+
+    option_group_definitions.append(
         ('Results Options', [
             optparse.make_option(
                 '--add-platform-exceptions',
