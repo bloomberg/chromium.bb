@@ -12,6 +12,9 @@ Polymer({
     /** @type {?print_preview.DestinationStore} */
     destinationStore: Object,
 
+    /** @type {!Array<!print_preview.RecentDestination>} */
+    recentDestinations: Array,
+
     /** @type {!print_preview.UserInfo} */
     userInfo: Object,
 
