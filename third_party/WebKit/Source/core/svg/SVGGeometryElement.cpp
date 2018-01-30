@@ -142,15 +142,25 @@ float SVGGeometryElement::PathLengthScaleFactor() const {
   if (!pathLength()->IsSpecified())
     return 1;
   float author_path_length = pathLength()->CurrentValue()->Value();
+  // https://svgwg.org/svg2-draft/paths.html#PathLengthAttribute
+  // "A negative value is an error"
   if (author_path_length < 0)
     return 1;
-  if (!author_path_length)
-    return 0;
   DCHECK(GetLayoutObject());
+  // If the computed path length is zero, then the scale factor will
+  // always be zero except if the author path length is also zero - in
+  // which case performing the division would yield a NaN. Avoid the
+  // division in this case and always return zero.
   float computed_path_length = ComputePathLength();
   if (!computed_path_length)
-    return 1;
-  return computed_path_length / author_path_length;
+    return 0;
+  // "A value of zero is valid and must be treated as a scaling factor
+  //  of infinity. A value of zero scaled infinitely must remain zero,
+  //  while any value greater than zero must become +Infinity."
+  // However, since 0 * Infinity is not zero (but rather NaN) per
+  // IEEE, we need to make sure to clamp the result below - avoiding
+  // the actual Infinity (and using max()) instead.
+  return clampTo<float>(computed_path_length / author_path_length);
 }
 
 LayoutObject* SVGGeometryElement::CreateLayoutObject(const ComputedStyle&) {
