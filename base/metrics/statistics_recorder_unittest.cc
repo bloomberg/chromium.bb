@@ -54,7 +54,6 @@ class OddRecordHistogramChecker : public base::RecordHistogramChecker {
 
 namespace base {
 
-using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
@@ -142,7 +141,8 @@ TEST_P(StatisticsRecorderTest, NotInitialized) {
   EXPECT_EQ(StatisticsRecorder::RegisterOrDeleteDuplicate(histogram),
             histogram);
   EXPECT_TRUE(HasGlobalRecorder());
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(), ElementsAre(histogram));
+  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
+              UnorderedElementsAre(histogram));
 
   UninitializeStatisticsRecorder();
   EXPECT_FALSE(HasGlobalRecorder());
@@ -202,19 +202,22 @@ TEST_P(StatisticsRecorderTest, RegisterHistogram) {
   // Register the Histogram.
   EXPECT_EQ(histogram1,
             StatisticsRecorder::RegisterOrDeleteDuplicate(histogram1));
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(), ElementsAre(histogram1));
+  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
+              UnorderedElementsAre(histogram1));
 
   // Register the same Histogram again.
   EXPECT_EQ(histogram1,
             StatisticsRecorder::RegisterOrDeleteDuplicate(histogram1));
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(), ElementsAre(histogram1));
+  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
+              UnorderedElementsAre(histogram1));
 
   // Register another Histogram with the same name.
   Histogram* const histogram2 = CreateHistogram("TestHistogram1", 1, 1000, 10);
   EXPECT_NE(histogram1, histogram2);
   EXPECT_EQ(histogram1,
             StatisticsRecorder::RegisterOrDeleteDuplicate(histogram2));
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(), ElementsAre(histogram1));
+  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
+              UnorderedElementsAre(histogram1));
 
   // Register another Histogram with a different name.
   Histogram* const histogram3 = CreateHistogram("TestHistogram0", 1, 1000, 10);
@@ -222,7 +225,7 @@ TEST_P(StatisticsRecorderTest, RegisterHistogram) {
   EXPECT_EQ(histogram3,
             StatisticsRecorder::RegisterOrDeleteDuplicate(histogram3));
   EXPECT_THAT(StatisticsRecorder::GetHistograms(),
-              ElementsAre(histogram3, histogram1));
+              UnorderedElementsAre(histogram1, histogram3));
 }
 
 TEST_P(StatisticsRecorderTest, FindHistogram) {
@@ -259,14 +262,17 @@ TEST_P(StatisticsRecorderTest, FindHistogram) {
   EXPECT_FALSE(StatisticsRecorder::FindHistogram("TestHistogram"));
 }
 
-TEST_P(StatisticsRecorderTest, GetSnapshot) {
+TEST_P(StatisticsRecorderTest, WithName) {
   Histogram::FactoryGet("TestHistogram1", 1, 1000, 10, Histogram::kNoFlags);
   Histogram::FactoryGet("TestHistogram2", 1, 1000, 10, Histogram::kNoFlags);
   Histogram::FactoryGet("TestHistogram3", 1, 1000, 10, Histogram::kNoFlags);
 
-  EXPECT_THAT(StatisticsRecorder::GetSnapshot("Test"), SizeIs(3));
-  EXPECT_THAT(StatisticsRecorder::GetSnapshot("1"), SizeIs(1));
-  EXPECT_THAT(StatisticsRecorder::GetSnapshot("hello"), IsEmpty());
+  const auto histograms = StatisticsRecorder::GetHistograms();
+  EXPECT_THAT(histograms, SizeIs(3));
+  EXPECT_THAT(StatisticsRecorder::WithName(histograms, ""), SizeIs(3));
+  EXPECT_THAT(StatisticsRecorder::WithName(histograms, "Test"), SizeIs(3));
+  EXPECT_THAT(StatisticsRecorder::WithName(histograms, "1"), SizeIs(1));
+  EXPECT_THAT(StatisticsRecorder::WithName(histograms, "hello"), IsEmpty());
 }
 
 TEST_P(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
@@ -275,25 +281,27 @@ TEST_P(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   // Create a histogram.
   HistogramBase* const histogram1 = Histogram::FactoryGet(
       "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(), ElementsAre(histogram1));
+  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
+              UnorderedElementsAre(histogram1));
 
   // Get an existing histogram.
   HistogramBase* const histogram2 = Histogram::FactoryGet(
       "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   EXPECT_EQ(histogram1, histogram2);
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(), ElementsAre(histogram1));
+  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
+              UnorderedElementsAre(histogram1));
 
   // Create a LinearHistogram.
   HistogramBase* const histogram3 = LinearHistogram::FactoryGet(
       "TestLinearHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   EXPECT_THAT(StatisticsRecorder::GetHistograms(),
-              ElementsAre(histogram1, histogram3));
+              UnorderedElementsAre(histogram1, histogram3));
 
   // Create a BooleanHistogram.
   HistogramBase* const histogram4 = BooleanHistogram::FactoryGet(
       "TestBooleanHistogram", HistogramBase::kNoFlags);
   EXPECT_THAT(StatisticsRecorder::GetHistograms(),
-              ElementsAre(histogram4, histogram1, histogram3));
+              UnorderedElementsAre(histogram1, histogram3, histogram4));
 
   // Create a CustomHistogram.
   std::vector<int> custom_ranges;
@@ -301,8 +309,9 @@ TEST_P(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   custom_ranges.push_back(5);
   HistogramBase* const histogram5 = CustomHistogram::FactoryGet(
       "TestCustomHistogram", custom_ranges, HistogramBase::kNoFlags);
-  EXPECT_THAT(StatisticsRecorder::GetHistograms(),
-              ElementsAre(histogram4, histogram5, histogram1, histogram3));
+  EXPECT_THAT(
+      StatisticsRecorder::GetHistograms(),
+      UnorderedElementsAre(histogram1, histogram3, histogram4, histogram5));
 }
 
 TEST_P(StatisticsRecorderTest, RegisterHistogramWithMacros) {
@@ -402,9 +411,10 @@ TEST_P(StatisticsRecorderTest, IterationTest) {
   Histogram::FactoryGet("IterationTest1", 1, 64, 16, HistogramBase::kNoFlags);
   Histogram::FactoryGet("IterationTest2", 1, 64, 16, HistogramBase::kNoFlags);
 
-  EXPECT_THAT(StatisticsRecorder::GetKnownHistograms(true), SizeIs(2));
-  EXPECT_THAT(StatisticsRecorder::GetKnownHistograms(false),
-              SizeIs(use_persistent_histogram_allocator_ ? 0 : 2));
+  auto histograms = StatisticsRecorder::GetHistograms();
+  EXPECT_THAT(histograms, SizeIs(2));
+  histograms = StatisticsRecorder::NonPersistent(std::move(histograms));
+  EXPECT_THAT(histograms, SizeIs(use_persistent_histogram_allocator_ ? 0 : 2));
 
   // Create a new global allocator using the same memory as the old one. Any
   // old one is kept around so the memory doesn't get released.
@@ -420,12 +430,10 @@ TEST_P(StatisticsRecorderTest, IterationTest) {
   UninitializeStatisticsRecorder();
   InitializeStatisticsRecorder();
 
-  StatisticsRecorder::ImportGlobalPersistentHistograms();
-  EXPECT_THAT(StatisticsRecorder::GetKnownHistograms(true),
-              SizeIs(use_persistent_histogram_allocator_ ? 2 : 0));
-
-  StatisticsRecorder::ImportGlobalPersistentHistograms();
-  EXPECT_THAT(StatisticsRecorder::GetKnownHistograms(false), IsEmpty());
+  histograms = StatisticsRecorder::GetHistograms();
+  EXPECT_THAT(histograms, SizeIs(use_persistent_histogram_allocator_ ? 2 : 0));
+  histograms = StatisticsRecorder::NonPersistent(std::move(histograms));
+  EXPECT_THAT(histograms, IsEmpty());
 }
 
 namespace {
