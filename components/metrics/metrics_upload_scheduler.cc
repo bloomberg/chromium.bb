@@ -15,13 +15,6 @@
 
 namespace metrics {
 
-// This feature moves the upload schedule to a seperate schedule from the
-// log rotation schedule.  This may change upload timing slightly, but
-// would allow some compartmentalization of uploader logic to allow more
-// code reuse between different metrics services.
-const base::Feature kUploadSchedulerFeature{"UMAUploadScheduler",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 
 // When uploading metrics to the server fails, we progressively wait longer and
@@ -51,24 +44,16 @@ base::TimeDelta BackOffUploadInterval(base::TimeDelta interval) {
   return interval;
 }
 
-// Gets a time interval in seconds from a variations parameter.
-base::TimeDelta GetTimeParameterSeconds(const std::string& param_name,
-                                        int default_seconds) {
-  int seconds = base::GetFieldTrialParamByFeatureAsInt(
-      kUploadSchedulerFeature, param_name, default_seconds);
-  return base::TimeDelta::FromSeconds(seconds);
-}
-
 // Time delay after a log is uploaded successfully before attempting another.
 // On mobile, keeping the radio on is very expensive, so prefer to keep this
 // short and send in bursts.
 base::TimeDelta GetUnsentLogsInterval() {
-  return GetTimeParameterSeconds("UnsentLogsIntervalSeconds", 3);
+  return base::TimeDelta::FromSeconds(3);
 }
 
 // Inital time delay after a log uploaded fails before retrying it.
 base::TimeDelta GetInitialBackoffInterval() {
-  return GetTimeParameterSeconds("InitialBackoffIntervalSeconds", 15);
+  return base::TimeDelta::FromSeconds(15);
 }
 
 }  // namespace
