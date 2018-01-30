@@ -840,7 +840,16 @@ double Biquad::TailFrame(int coef_index, double max_frame) {
       DCHECK(std::isfinite(c2));
 
       tail_frame = 1 + log(kMaxTailAmplitude / (c1 + c2)) / log(r);
-      DCHECK(std::isfinite(tail_frame));
+      if (c1 == 0 && c2 == 0) {
+        // If c1 = c2 = 0, then H(z) = b0.  Hence, there's no tail
+        // because this is just a wire from input to output.
+        tail_frame = 0;
+      } else {
+        // Otherwise, check that the tail has finite length.  Not
+        // strictly necessary, but we want to know if this ever
+        // happens.
+        DCHECK(std::isfinite(tail_frame));
+      }
     }
   } else {
     // Repeated roots.  This should be pretty rare because all the
