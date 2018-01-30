@@ -1031,6 +1031,7 @@ void CheckClientDownloadRequest::FinishRequest(
     // so we may be deleted now.
   } else {
     callback_.Run(DownloadCheckResult::UNKNOWN);
+    item_ = NULL;
   }
 }
 
