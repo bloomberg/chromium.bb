@@ -357,8 +357,10 @@ void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   }
 
   // Reset the target bundle if it is the one being destroyed.
-  if (target_surface_bundle_->overlay.get() == overlay)
+  if (target_surface_bundle_ &&
+      target_surface_bundle_->overlay.get() == overlay) {
     target_surface_bundle_ = surface_texture_bundle_;
+  }
 
   // Transition the codec away from the overlay if necessary.
   if (SurfaceTransitionPending())
