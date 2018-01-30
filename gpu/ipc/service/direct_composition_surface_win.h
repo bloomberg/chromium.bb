@@ -18,6 +18,10 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 
+namespace gl {
+class GLSurfacePresentationHelper;
+}
+
 namespace gpu {
 
 class DCLayerTree;
@@ -107,6 +111,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool is_hdr_ = false;
   bool has_alpha_ = true;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+  std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
 
