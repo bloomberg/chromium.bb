@@ -8,9 +8,10 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
-#include "ios/chrome/browser/ui/location_bar/location_bar_view.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
+#include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -22,11 +23,13 @@ class WebStateList;
 @protocol ToolbarCoordinatorDelegate;
 @protocol UrlLoader;
 
-@interface LocationBarCoordinator
-    : NSObject<LocationBarURLLoader, OmniboxFocuser, LocationBarDelegate>
+@interface LocationBarCoordinator : NSObject<LocationBarURLLoader,
+                                             OmniboxFocuser,
+                                             VoiceSearchControllerDelegate,
+                                             QRScannerResultLoading>
 
-// LocationBarView containing the omnibox.
-@property(nonatomic, strong) LocationBarView* locationBarView;
+// View containing the omnibox.
+@property(nonatomic, strong, readonly) UIView* view;
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
@@ -55,6 +58,24 @@ class WebStateList;
 // Focuses the omnibox and sets the caret visibility as if it was called from
 // the fakebox on NTP.
 - (void)focusOmniboxFromFakebox;
+
+// Indicates when the omnibox is the first responder.
+- (BOOL)isOmniboxFirstResponder;
+
+// Perform animations for expanding the omnibox. This animation can be seen on
+// an iPhone when the omnibox is focused. It involves sliding the leading button
+// out and fading its alpha.
+// The trailing button is faded-in in the |completionAnimator| animations.
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+                completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
+
+// Perform animations for expanding the omnibox. This animation can be seen on
+// an iPhone when the omnibox is defocused. It involves sliding the leading
+// button in and fading its alpha.
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
+
+// Updates omnibox state, including the displayed text and the cursor position.
+- (void)updateOmniboxState;
 
 @end
 
