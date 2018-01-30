@@ -44,6 +44,17 @@ Parsing url: http://foo@example.com/foo/bar/baz.html?queryParam1=value1&queryPar
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: /foo/bar
   lastPathComponent: baz.html
+Parsing url: http://[::]/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+  isValid: true
+  scheme: http
+  user: undefined
+  host: [::]
+  port: undefined
+  path: /
+  queryParams: queryParam1=value1&queryParam2=value2
+  fragment: fragmentWith/Many//Slashes
+  folderPathComponents: 
+  lastPathComponent: 
 Parsing url: http://example.com//?queryParam1=value1
   isValid: true
   scheme: http

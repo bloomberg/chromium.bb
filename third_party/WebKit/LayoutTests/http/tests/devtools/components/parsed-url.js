@@ -12,6 +12,9 @@
   parseAndDumpURL(
       'http://foo@example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes');
 
+  // support IPv6 localhost
+  parseAndDumpURL('http://[::]/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes');
+
   // Test how double (and more than double) slashes are parsed.
   parseAndDumpURL('http://example.com//?queryParam1=value1');
   parseAndDumpURL('http://example.com//foo.html');
