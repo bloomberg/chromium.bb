@@ -33,5 +33,6 @@ source_set("ntp_snippets") {
     "//ios/chrome/common",
     "//ios/web",
     "//net",
+    "//services/identity/public/cpp",
   ]
 }
