@@ -102,6 +102,8 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   PaintWorkletGlobalScopeProxy* proxy =
       PaintWorkletGlobalScopeProxy::From(FindAvailableGlobalScope());
   CSSPaintDefinition* paint_definition = proxy->FindDefinition(name);
+  if (!paint_definition)
+    return nullptr;
   return paint_definition->Paint(observer, container_size, data);
 }
 
