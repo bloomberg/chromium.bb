@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TABS_TAB_METRICS_LOGGER_H_
-#define CHROME_BROWSER_UI_TABS_TAB_METRICS_LOGGER_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_H_
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -48,4 +48,4 @@ class TabMetricsLogger {
                                 const TabMetrics& tab_metrics) = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_TABS_TAB_METRICS_LOGGER_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_H_

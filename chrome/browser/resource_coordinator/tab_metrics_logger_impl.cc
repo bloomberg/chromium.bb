@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_metrics_logger_impl.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
 
 #include <algorithm>
 #include <string>
@@ -223,7 +223,7 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
       .SetHasFormEntry(
           web_contents->GetPageImportanceSignals().had_form_interaction)
       // TODO(michaelpg): This dependency should be reversed during the
-      // resource_coordinator refactor: crbug.com/775644.
+      // resource_coordinator refactor: https://crbug.com/775644.
       .SetIsExtensionProtected(!tab_manager->IsTabAutoDiscardable(web_contents))
       .SetIsPinned(tab_strip_model->IsTabPinned(index))
       .SetNavigationEntryCount(web_contents->GetController().GetEntryCount())

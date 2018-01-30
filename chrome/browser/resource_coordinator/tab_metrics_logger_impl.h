@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TABS_TAB_METRICS_LOGGER_IMPL_H_
-#define CHROME_BROWSER_UI_TABS_TAB_METRICS_LOGGER_IMPL_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_IMPL_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_IMPL_H_
 
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/tabs/tab_metrics_event.pb.h"
-#include "chrome/browser/ui/tabs/tab_metrics_logger.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 
 // Logs a TabManager.TabMetrics UKM for a tab when requested. Includes
 // information relevant to the tab and its WebContents.
@@ -39,4 +39,4 @@ class TabMetricsLoggerImpl : public TabMetricsLogger {
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLoggerImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_TABS_TAB_METRICS_LOGGER_IMPL_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_IMPL_H_
