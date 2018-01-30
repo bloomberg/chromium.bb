@@ -1161,8 +1161,8 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
                                     clickCount:0
                                       pressure:0];
   WebMouseEvent web_event = WebMouseEventBuilder::Build(event, cocoa_view_);
-  if (showing)
-    web_event.SetType(WebInputEvent::kMouseLeave);
+  web_event.SetModifiers(web_event.GetModifiers() |
+                         WebInputEvent::kRelativeMotionEvent);
   ForwardMouseEvent(web_event);
 }
 
