@@ -5,6 +5,8 @@
 #ifndef CDM_CONTENT_DECRYPTION_MODULE_H_
 #define CDM_CONTENT_DECRYPTION_MODULE_H_
 
+#include <type_traits>
+
 #include "content_decryption_module_export.h"
 #include "content_decryption_module_proxy.h"
 
@@ -29,6 +31,19 @@ typedef __int64 int64_t;
 #define BUILD_ENTRYPOINT(name, version) \
   BUILD_ENTRYPOINT_NO_EXPANSION(name, version)
 #define BUILD_ENTRYPOINT_NO_EXPANSION(name, version) name##_##version
+
+// Macro to check that |type| does the following:
+// 1. is a standard layout.
+// 2. is trivial.
+// 3. sizeof(type) matches the expected size in bytes. As some types contain
+//    pointers, the size is specified for both 32 and 64 bit.
+#define CHECK_TYPE(type, size_32, size_64)                           \
+  static_assert(std::is_standard_layout<type>(),                     \
+                #type " not standard_layout");                       \
+  static_assert(std::is_trivial<type>(), #type " not trivial");      \
+  static_assert((sizeof(void*) == 4 && sizeof(type) == size_32) ||   \
+                    (sizeof(void*) == 8 && sizeof(type) == size_64), \
+                #type " size mismatch")
 
 extern "C" {
 CDM_API void INITIALIZE_CDM_MODULE();
@@ -66,7 +81,7 @@ class CDM_CLASS_API Host_8;
 class CDM_CLASS_API Host_9;
 class CDM_CLASS_API Host_10;
 
-enum Status {
+enum Status : uint32_t {
   kSuccess = 0,
   kNeedMoreData,  // Decoder needs more data to produce a decoded frame/sample.
   kNoKey,         // The required decryption key is not available.
@@ -75,6 +90,7 @@ enum Status {
   kDecodeError,            // Error decoding audio or video.
   kDeferredInitialization  // Decoder is not ready for initialization.
 };
+CHECK_TYPE(Status, 4, 4);
 
 // This must at least contain the exceptions defined in the spec:
 // https://w3c.github.io/encrypted-media/#exceptions
@@ -82,7 +98,7 @@ enum Status {
 // http://www.w3.org/TR/dom/#domexception
 // Some DOM4 exceptions are not included as they are not expected to be used.
 // Should only be used on Host_8 and before.
-enum Error {
+enum Error : uint32_t {
   kNotSupportedError = 9,
   kInvalidStateError = 11,
   kInvalidAccessError = 15,
@@ -97,15 +113,17 @@ enum Error {
   kClientError = 100,
   kOutputError = 101
 };
+CHECK_TYPE(Error, 4, 4);
 
 // Exceptions used by the CDM to reject promises.
 // https://w3c.github.io/encrypted-media/#exceptions
-enum Exception {
+enum Exception : uint32_t {
   kExceptionTypeError,
   kExceptionNotSupportedError,
   kExceptionInvalidStateError,
   kExceptionQuotaExceededError
 };
+CHECK_TYPE(Exception, 4, 4);
 
 // Time is defined as the number of seconds since the Epoch
 // (00:00:00 UTC, January 1, 1970), not including any added leap second.
@@ -136,57 +154,37 @@ typedef double Time;
 // |   clear1   | decrypted1|  clear2  |  decrypted2 | clear3 |   decrypted3  |
 //
 struct SubsampleEntry {
-  SubsampleEntry(uint32_t clear_bytes, uint32_t cipher_bytes)
-      : clear_bytes(clear_bytes), cipher_bytes(cipher_bytes) {}
-
   uint32_t clear_bytes;
   uint32_t cipher_bytes;
 };
+CHECK_TYPE(SubsampleEntry, 8, 8);
 
 // Represents an input buffer to be decrypted (and possibly decoded). It does
 // not own any pointers in this struct. If |iv_size| = 0, the data is
 // unencrypted.
 struct InputBuffer {
-  InputBuffer()
-      : data(nullptr),
-        data_size(0),
-        key_id(nullptr),
-        key_id_size(0),
-        iv(nullptr),
-        iv_size(0),
-        subsamples(nullptr),
-        num_subsamples(0),
-        timestamp(0) {}
-
   const uint8_t* data;  // Pointer to the beginning of the input data.
-  uint32_t data_size;  // Size (in bytes) of |data|.
+  uint32_t data_size;   // Size (in bytes) of |data|.
 
   const uint8_t* key_id;  // Key ID to identify the decryption key.
-  uint32_t key_id_size;  // Size (in bytes) of |key_id|.
+  uint32_t key_id_size;   // Size (in bytes) of |key_id|.
 
   const uint8_t* iv;  // Initialization vector.
-  uint32_t iv_size;  // Size (in bytes) of |iv|.
+  uint32_t iv_size;   // Size (in bytes) of |iv|.
 
   const struct SubsampleEntry* subsamples;
   uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
+CHECK_TYPE(InputBuffer, 40, 72);
 
 struct AudioDecoderConfig {
-  enum AudioCodec {
+  enum AudioCodec : uint32_t {
     kUnknownAudioCodec = 0,
     kCodecVorbis,
     kCodecAac
   };
-
-  AudioDecoderConfig()
-      : codec(kUnknownAudioCodec),
-        channel_count(0),
-        bits_per_channel(0),
-        samples_per_second(0),
-        extra_data(nullptr),
-        extra_data_size(0) {}
 
   AudioCodec codec;
   int32_t channel_count;
@@ -198,21 +196,23 @@ struct AudioDecoderConfig {
   uint8_t* extra_data;
   uint32_t extra_data_size;
 };
+CHECK_TYPE(AudioDecoderConfig, 24, 32);
 
 // Supported sample formats for AudioFrames.
-enum AudioFormat {
+enum AudioFormat : uint32_t {
   kUnknownAudioFormat = 0,  // Unknown format value. Used for error reporting.
-  kAudioFormatU8,  // Interleaved unsigned 8-bit w/ bias of 128.
-  kAudioFormatS16,  // Interleaved signed 16-bit.
-  kAudioFormatS32,  // Interleaved signed 32-bit.
-  kAudioFormatF32,  // Interleaved float 32-bit.
-  kAudioFormatPlanarS16,  // Signed 16-bit planar.
-  kAudioFormatPlanarF32,  // Float 32-bit planar.
+  kAudioFormatU8,           // Interleaved unsigned 8-bit w/ bias of 128.
+  kAudioFormatS16,          // Interleaved signed 16-bit.
+  kAudioFormatS32,          // Interleaved signed 32-bit.
+  kAudioFormatF32,          // Interleaved float 32-bit.
+  kAudioFormatPlanarS16,    // Signed 16-bit planar.
+  kAudioFormatPlanarF32,    // Float 32-bit planar.
 };
+CHECK_TYPE(AudioFormat, 4, 4);
 
 // Surface formats based on FOURCC labels, see: http://www.fourcc.org/yuv.php
 // Values are chosen to be consistent with Chromium's VideoPixelFormat values.
-enum VideoFormat {
+enum VideoFormat : uint32_t {
   kUnknownVideoFormat = 0,  // Unknown format value. Used for error reporting.
   kYv12 = 1,                // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
   kI420 = 2,                // 12bpp YUV planar 1x1 Y, 2x2 UV samples.
@@ -231,24 +231,23 @@ enum VideoFormat {
   kYUV422P12 = 23,
   kYUV444P12 = 24,
 };
+CHECK_TYPE(VideoFormat, 4, 4);
 
 struct Size {
-  Size() : width(0), height(0) {}
-  Size(int32_t width, int32_t height) : width(width), height(height) {}
-
   int32_t width;
   int32_t height;
 };
+CHECK_TYPE(Size, 8, 8);
 
 struct VideoDecoderConfig {
-  enum VideoCodec {
+  enum VideoCodec : uint32_t {
     kUnknownVideoCodec = 0,
     kCodecVp8,
     kCodecH264,
     kCodecVp9
   };
 
-  enum VideoCodecProfile {
+  enum VideoCodecProfile : uint32_t {
     kUnknownVideoCodecProfile = 0,
     kProfileNotNeeded,
     kH264ProfileBaseline,
@@ -265,13 +264,6 @@ struct VideoDecoderConfig {
     kVP9Profile3
   };
 
-  VideoDecoderConfig()
-      : codec(kUnknownVideoCodec),
-        profile(kUnknownVideoCodecProfile),
-        format(kUnknownVideoFormat),
-        extra_data(nullptr),
-        extra_data_size(0) {}
-
   VideoCodec codec;
   VideoCodecProfile profile;
   VideoFormat format;
@@ -285,11 +277,10 @@ struct VideoDecoderConfig {
   uint8_t* extra_data;
   uint32_t extra_data_size;
 };
+CHECK_TYPE(VideoDecoderConfig, 28, 40);
 
-enum StreamType {
-  kStreamTypeAudio = 0,
-  kStreamTypeVideo = 1
-};
+enum StreamType : uint32_t { kStreamTypeAudio = 0, kStreamTypeVideo = 1 };
+CHECK_TYPE(StreamType, 4, 4);
 
 // Structure provided to ContentDecryptionModule::OnPlatformChallengeResponse()
 // after a platform challenge was initiated via Host::SendPlatformChallenge().
@@ -308,17 +299,11 @@ struct PlatformChallengeResponse {
   const uint8_t* platform_key_certificate;
   uint32_t platform_key_certificate_length;
 };
-
-// Used when passing arrays of binary data. Does not own the referenced data.
-struct BinaryData {
-  BinaryData() : data(nullptr), length(0) {}
-  const uint8_t* data;
-  uint32_t length;
-};
+CHECK_TYPE(PlatformChallengeResponse, 24, 48);
 
 // The current status of the associated key. The valid types are defined in the
 // spec: https://w3c.github.io/encrypted-media/#idl-def-MediaKeyStatus
-enum KeyStatus {
+enum KeyStatus : uint32_t {
   kUsable = 0,
   kInternalError = 1,
   kExpired = 2,
@@ -327,31 +312,29 @@ enum KeyStatus {
   kStatusPending = 5,
   kReleased = 6
 };
+CHECK_TYPE(KeyStatus, 4, 4);
 
 // Used when passing arrays of key information. Does not own the referenced
 // data. |system_code| is an additional error code for unusable keys and
 // should be 0 when |status| == kUsable.
 struct KeyInformation {
-  KeyInformation()
-      : key_id(nullptr),
-        key_id_size(0),
-        status(kInternalError),
-        system_code(0) {}
   const uint8_t* key_id;
   uint32_t key_id_size;
   KeyStatus status;
   uint32_t system_code;
 };
+CHECK_TYPE(KeyInformation, 16, 24);
 
 // Supported output protection methods for use with EnableOutputProtection() and
 // returned by OnQueryOutputProtectionStatus().
-enum OutputProtectionMethods {
+enum OutputProtectionMethods : uint32_t {
   kProtectionNone = 0,
   kProtectionHDCP = 1 << 0
 };
+CHECK_TYPE(OutputProtectionMethods, 4, 4);
 
 // Connected output link types returned by OnQueryOutputProtectionStatus().
-enum OutputLinkTypes {
+enum OutputLinkTypes : uint32_t {
   kLinkTypeNone = 0,
   kLinkTypeUnknown = 1 << 0,
   kLinkTypeInternal = 1 << 1,
@@ -361,32 +344,29 @@ enum OutputLinkTypes {
   kLinkTypeDisplayPort = 1 << 5,
   kLinkTypeNetwork = 1 << 6
 };
+CHECK_TYPE(OutputLinkTypes, 4, 4);
 
 // Result of the QueryOutputProtectionStatus() call.
-enum QueryResult {
-  kQuerySucceeded = 0,
-  kQueryFailed
-};
+enum QueryResult : uint32_t { kQuerySucceeded = 0, kQueryFailed };
+CHECK_TYPE(QueryResult, 4, 4);
 
 // The Initialization Data Type. The valid types are defined in the spec:
 // http://w3c.github.io/encrypted-media/initdata-format-registry.html#registry
-enum InitDataType {
-  kCenc = 0,
-  kKeyIds = 1,
-  kWebM = 2
-};
+enum InitDataType : uint32_t { kCenc = 0, kKeyIds = 1, kWebM = 2 };
+CHECK_TYPE(InitDataType, 4, 4);
 
 // The type of session to create. The valid types are defined in the spec:
 // https://w3c.github.io/encrypted-media/#idl-def-SessionType
-enum SessionType {
+enum SessionType : uint32_t {
   kTemporary = 0,
   kPersistentLicense = 1,
   kPersistentKeyRelease = 2
 };
+CHECK_TYPE(SessionType, 4, 4);
 
 // The type of the message event.  The valid types are defined in the spec:
 // https://w3c.github.io/encrypted-media/#idl-def-MediaKeyMessageType
-enum MessageType {
+enum MessageType : uint32_t {
   kLicenseRequest = 0,
   kLicenseRenewal = 1,
   kLicenseRelease = 2,
@@ -395,8 +375,9 @@ enum MessageType {
   // other message type.
   kIndividualizationRequest = 3
 };
+CHECK_TYPE(MessageType, 4, 4);
 
-enum HdcpVersion {
+enum HdcpVersion : uint32_t {
   kHdcpVersionNone,
   kHdcpVersion1_0,
   kHdcpVersion1_1,
@@ -407,12 +388,12 @@ enum HdcpVersion {
   kHdcpVersion2_1,
   kHdcpVersion2_2
 };
+CHECK_TYPE(HdcpVersion, 4, 4);
 
 struct Policy {
-  Policy() : min_hdcp_version(kHdcpVersionNone) {}
-
   HdcpVersion min_hdcp_version;
 };
+CHECK_TYPE(Policy, 4, 4);
 
 // FileIO interface provides a way for the CDM to store data in a file in
 // persistent storage. This interface aims only at providing basic read/write
@@ -466,11 +447,7 @@ class CDM_CLASS_API FileIO {
 // still call Close() to destroy the FileIO object.
 class CDM_CLASS_API FileIOClient {
  public:
-  enum Status {
-    kSuccess = 0,
-    kInUse,
-    kError
-  };
+  enum Status : uint32_t { kSuccess = 0, kInUse, kError };
 
   // Response to a FileIO::Open() call with the open |status|.
   virtual void OnOpenComplete(Status status) = 0;
@@ -1576,7 +1553,7 @@ class CDM_CLASS_API DecryptedBlock {
 
 class CDM_CLASS_API VideoFrame {
  public:
-  enum VideoPlane {
+  enum VideoPlane : uint32_t {
     kYPlane = 0,
     kUPlane = 1,
     kVPlane = 2,
