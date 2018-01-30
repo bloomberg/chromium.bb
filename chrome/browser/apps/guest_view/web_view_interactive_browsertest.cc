@@ -1245,7 +1245,14 @@ IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
 
 // https://crbug.com/754890: The embedder could become out of sync and think
 // that the guest is not focused when the guest actually was.
-IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginInteractiveTest, EnsureFocusSynced) {
+// TODO(crbug.com/807116): Flaky on the Linux MSAN bot.
+#if defined(OS_LINUX)
+#define MAYBE_EnsureFocusSynced DISABLED_EnsureFocusSynced
+#else
+#define MAYBE_EnsureFocusSynced EnsureFocusSynced
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginInteractiveTest,
+                       MAYBE_EnsureFocusSynced) {
   LoadAndLaunchPlatformApp("web_view/focus_sync", "WebViewTest.LAUNCHED");
 
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
