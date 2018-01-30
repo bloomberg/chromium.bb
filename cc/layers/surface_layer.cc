@@ -24,15 +24,15 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
 }
 
-void SurfaceLayer::SetPrimarySurfaceId(
-    const viz::SurfaceId& surface_id,
-    base::Optional<uint32_t> deadline_in_frames) {
+void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
+                                       const DeadlinePolicy& deadline_policy) {
   if (primary_surface_id_ == surface_id &&
-      deadline_in_frames_ == deadline_in_frames) {
+      deadline_policy.use_existing_deadline()) {
     return;
   }
   primary_surface_id_ = surface_id;
-  deadline_in_frames_ = deadline_in_frames;
+  if (!deadline_policy.use_existing_deadline())
+    deadline_in_frames_ = deadline_policy.deadline_in_frames();
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }

@@ -82,8 +82,11 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   viz::SurfaceId primary_id(
       kArbitraryFrameSinkId,
       viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
-  layer->SetPrimarySurfaceId(primary_id, 1u);
-  layer->SetPrimarySurfaceId(primary_id, 2u);
+  layer->SetPrimarySurfaceId(primary_id,
+                             DeadlinePolicy::UseSpecifiedDeadline(1u));
+  layer->SetPrimarySurfaceId(primary_id,
+                             DeadlinePolicy::UseSpecifiedDeadline(2u));
+  layer->SetPrimarySurfaceId(primary_id, DeadlinePolicy::UseExistingDeadline());
   layer->SetFallbackSurfaceId(primary_id);
   layer->SetBackgroundColor(SK_ColorBLUE);
   layer->SetStretchContentToFillBounds(true);
@@ -152,14 +155,16 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   // animation is done.
   scoped_refptr<SurfaceLayer> layer1 = SurfaceLayer::Create();
   layer1->SetLayerTreeHost(layer_tree_host_.get());
-  layer1->SetPrimarySurfaceId(old_surface_id, base::nullopt);
+  layer1->SetPrimarySurfaceId(old_surface_id,
+                              DeadlinePolicy::UseDefaultDeadline());
   layer1->SetFallbackSurfaceId(old_surface_id);
 
   // This layer will eventually be switched be switched to show the new surface
   // id and will be retained when animation is done.
   scoped_refptr<SurfaceLayer> layer2 = SurfaceLayer::Create();
   layer2->SetLayerTreeHost(layer_tree_host_.get());
-  layer2->SetPrimarySurfaceId(old_surface_id, base::nullopt);
+  layer2->SetPrimarySurfaceId(old_surface_id,
+                              DeadlinePolicy::UseDefaultDeadline());
   layer2->SetFallbackSurfaceId(old_surface_id);
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl1 =
@@ -179,7 +184,8 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
       viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
 
   // Switch the new layer to use |new_surface_id|.
-  layer2->SetPrimarySurfaceId(new_surface_id, base::nullopt);
+  layer2->SetPrimarySurfaceId(new_surface_id,
+                              DeadlinePolicy::UseDefaultDeadline());
   layer2->SetFallbackSurfaceId(new_surface_id);
 
   SynchronizeTrees();
@@ -213,7 +219,7 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
 
   scoped_refptr<SurfaceLayer> layer1 = SurfaceLayer::Create();
   layer1->SetLayerTreeHost(layer_tree_host_.get());
-  layer1->SetPrimarySurfaceId(surface_id, base::nullopt);
+  layer1->SetPrimarySurfaceId(surface_id, DeadlinePolicy::UseDefaultDeadline());
   layer1->SetFallbackSurfaceId(surface_id);
 
   // Verify the surface id is in SurfaceLayerIds() and needs_surface_ids_sync()
@@ -231,7 +237,7 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   // Create the second layer that is a clone of the first.
   scoped_refptr<SurfaceLayer> layer2 = SurfaceLayer::Create();
   layer2->SetLayerTreeHost(layer_tree_host_.get());
-  layer2->SetPrimarySurfaceId(surface_id, base::nullopt);
+  layer2->SetPrimarySurfaceId(surface_id, DeadlinePolicy::UseDefaultDeadline());
   layer2->SetFallbackSurfaceId(surface_id);
 
   // Verify that after creating the second layer with the same surface id that
