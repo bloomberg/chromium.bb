@@ -26109,6 +26109,7 @@ from previous Chrome versions.
   <int value="67639499" label="stop-loading-in-background:disabled"/>
   <int value="70878462" label="WebAssembly:disabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
+  <int value="75237697" label="ash-enable-new-overview-ui"/>
   <int value="75747474" label="disable-webview-signin-flow"/>
   <int value="78998551" label="disable-hosted-app-shim-creation"/>
   <int value="79094339" label="VrLaunchIntents:enabled"/>

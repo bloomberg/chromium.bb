@@ -2933,6 +2933,10 @@ const char kAshEnableMirroredScreenDescription[] =
     "Enable the mirrored screen mode. This mode flips the screen image "
     "horizontally.";
 
+const char kAshEnableNewOverviewUiName[] = "Enable new overview UI.";
+const char kAshEnableNewOverviewUiDescription[] =
+    "Enables the new overview mode UI.";
+
 const char kAshEnablePersistentWindowBoundsName[] =
     "Enable persistent window bounds in multi-displays scenario.";
 const char kAshEnablePersistentWindowBoundsDescription[] =
