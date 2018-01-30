@@ -86,6 +86,12 @@ void DropdownBarHost::Show(bool animate) {
 
   SetDialogPosition(GetDialogPosition(gfx::Rect()));
 
+  // If we're in the middle of a close animation, stop it and skip to the end.
+  // This ensures that the state is consistent and prepared to show the drop-
+  // down bar.
+  if (animation_->IsClosing())
+    StopAnimation();
+
   host_->Show();
 
   bool was_visible = is_visible_;
