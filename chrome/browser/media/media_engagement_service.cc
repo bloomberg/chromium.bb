@@ -290,6 +290,11 @@ std::vector<MediaEngagementScore> MediaEngagementService::GetAllStoredScores()
                                   content_settings::ResourceIdentifier(),
                                   &content_settings);
 
+  // `GetSettingsForOneType` mixes incognito and non-incognito results in
+  // incognito profiles creating duplicates. The incognito results are first so
+  // we should discard the results following.
+  std::map<GURL, const ContentSettingPatternSource*> filtered_results;
+
   for (const auto& site : content_settings) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid()) {
@@ -297,8 +302,21 @@ std::vector<MediaEngagementScore> MediaEngagementService::GetAllStoredScores()
       continue;
     }
 
+    const auto& result = filtered_results.find(origin);
+    if (result != filtered_results.end()) {
+      DCHECK(result->second->incognito && !site.incognito);
+      continue;
+    }
+
+    filtered_results[origin] = &site;
+  }
+
+  for (const auto& it : filtered_results) {
+    const auto& origin = it.first;
+    auto* const site = it.second;
+
     std::unique_ptr<base::Value> clone =
-        std::make_unique<base::Value>(site.setting_value->Clone());
+        std::make_unique<base::Value>(site->setting_value->Clone());
 
     data.push_back(MediaEngagementScore(
         clock_, origin, base::DictionaryValue::From(std::move(clone)),
