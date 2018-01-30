@@ -674,7 +674,7 @@ TEST_F(MediaEngagementContentsObserverTest, InteractionsRecorded) {
   Navigate(url);
   SimulateAudible();
   SimulateSignificantPlaybackTimeForPage();
-  ExpectScores(url, 0.0, 2, 1, 0, 0);
+  ExpectScores(url, 0.05, 2, 1, 0, 0);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
@@ -734,7 +734,7 @@ TEST_F(MediaEngagementContentsObserverTest, RecordScoreOnPlayback) {
   Navigate(url3);
   SimulateAudioVideoPlaybackStarted(0);
   tester.ExpectBucketCount(
-      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0, 1);
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 20, 1);
   tester.ExpectTotalCount(
       MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 4);
 
@@ -915,11 +915,11 @@ TEST_F(MediaEngagementContentsObserverTest, RecordAudiblePlayers_OnDestroy) {
   SimulateSignificantPlaybackTimeForPlayer(0);
   SimulateSignificantPlaybackTimeForPlayer(1);
   SimulateSignificantPlaybackTimeForPlayer(2);
-  ExpectScores(url, 0, 1, 1, 0, 0);
+  ExpectScores(url, 0.05, 1, 1, 0, 0);
 
   // Test that when we destroy the audible players the scores are recorded.
   SimulateDestroy();
-  ExpectScores(url, 0, 1, 1, 3, 3);
+  ExpectScores(url, 0.05, 1, 1, 3, 3);
 }
 
 TEST_F(MediaEngagementContentsObserverTest, RecordAudiblePlayers_OnNavigate) {
@@ -947,18 +947,18 @@ TEST_F(MediaEngagementContentsObserverTest, RecordAudiblePlayers_OnNavigate) {
   SimulateSignificantPlaybackTimeForPlayer(0);
   SimulateSignificantPlaybackTimeForPlayer(1);
   SimulateSignificantPlaybackTimeForPlayer(2);
-  ExpectScores(url, 0, 1, 1, 0, 0);
+  ExpectScores(url, 0.05, 1, 1, 0, 0);
 
   // Navigate to a sub page and continue watching.
   Navigate(GURL("https://www.google.com/test"));
   SimulateSignificantAudioPlayer(1);
   SimulateLongMediaPlayback(1);
-  ExpectScores(url, 0, 1, 1, 0, 0);
+  ExpectScores(url, 0.05, 1, 1, 0, 0);
 
   // Test that when we navigate to a new origin the audible players the scores
   // are recorded.
   Navigate(GURL("https://www.google.co.uk"));
-  ExpectScores(url, 0, 1, 1, 4, 3);
+  ExpectScores(url, 0.05, 1, 1, 4, 3);
 }
 
 TEST_F(MediaEngagementContentsObserverTest, TimerSpecificToPlayer) {

@@ -548,7 +548,7 @@ TEST_F(MediaEngagementSessionTest, RecordUkmMetrics) {
                      ukm_entry, Entry::kPlaybacks_TotalName));
     EXPECT_EQ(1, *test_ukm_recorder().GetEntryMetric(ukm_entry,
                                                      Entry::kVisits_TotalName));
-    EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(
+    EXPECT_EQ(5, *test_ukm_recorder().GetEntryMetric(
                      ukm_entry, Entry::kEngagement_ScoreName));
     EXPECT_EQ(1, *test_ukm_recorder().GetEntryMetric(
                      ukm_entry, Entry::kPlaybacks_DeltaName));
@@ -581,8 +581,8 @@ TEST_F(MediaEngagementSessionTest, RecordUkmMetrics) {
                      ukm_entry, Entry::kPlaybacks_TotalName));
     EXPECT_EQ(1, *test_ukm_recorder().GetEntryMetric(ukm_entry,
                                                      Entry::kVisits_TotalName));
-    EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(
-                     ukm_entry, Entry::kEngagement_ScoreName));
+    EXPECT_EQ(10, *test_ukm_recorder().GetEntryMetric(
+                      ukm_entry, Entry::kEngagement_ScoreName));
     EXPECT_EQ(1, *test_ukm_recorder().GetEntryMetric(
                      ukm_entry, Entry::kPlaybacks_DeltaName));
     EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(

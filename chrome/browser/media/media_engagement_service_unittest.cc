@@ -259,19 +259,19 @@ TEST_F(MediaEngagementServiceTest,
   GURL url1("https://www.google.com");
   ExpectScores(url1, 0.0, 0, 0, TimeNotSet());
   RecordVisitAndPlaybackAndAdvanceClock(url1);
-  ExpectScores(url1, 0.0, 1, 1, Now());
+  ExpectScores(url1, 0.05, 1, 1, Now());
 
   RecordVisit(url1);
-  ExpectScores(url1, 0.0, 2, 1, Now());
+  ExpectScores(url1, 0.05, 2, 1, Now());
 
   RecordPlayback(url1);
-  ExpectScores(url1, 0.0, 2, 2, Now());
+  ExpectScores(url1, 0.1, 2, 2, Now());
   base::Time url1_time = Now();
 
   GURL url2("https://www.google.co.uk");
   RecordVisitAndPlaybackAndAdvanceClock(url2);
-  ExpectScores(url2, 0.0, 1, 1, Now());
-  ExpectScores(url1, 0.0, 2, 2, url1_time);
+  ExpectScores(url2, 0.05, 1, 1, Now());
+  ExpectScores(url1, 0.1, 2, 2, url1_time);
 }
 
 TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
@@ -286,8 +286,8 @@ TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
 
   MediaEngagementService* incognito_service =
       MediaEngagementService::Get(profile()->GetOffTheRecordProfile());
-  ExpectScores(incognito_service, url1, 0.0, 1, 1, url1_time);
-  ExpectScores(incognito_service, url2, 0.0, 1, 1, Now());
+  ExpectScores(incognito_service, url1, 0.05, 1, 1, url1_time);
+  ExpectScores(incognito_service, url2, 0.05, 1, 1, Now());
   ExpectScores(incognito_service, url3, 0.0, 0, 0, TimeNotSet());
 
   incognito_service->RecordVisit(url3);
@@ -295,17 +295,17 @@ TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
   ExpectScores(url3, 0.0, 0, 0, TimeNotSet());
 
   incognito_service->RecordVisit(url2);
-  ExpectScores(incognito_service, url2, 0.0, 2, 1, Now());
-  ExpectScores(url2, 0.0, 1, 1, Now());
+  ExpectScores(incognito_service, url2, 0.05, 2, 1, Now());
+  ExpectScores(url2, 0.05, 1, 1, Now());
 
   RecordVisitAndPlaybackAndAdvanceClock(url3);
   ExpectScores(incognito_service, url3, 0.0, 1, 0, TimeNotSet());
-  ExpectScores(url3, 0.0, 1, 1, Now());
+  ExpectScores(url3, 0.05, 1, 1, Now());
 
   ExpectScores(incognito_service, url4, 0.0, 0, 0, TimeNotSet());
   RecordVisitAndPlaybackAndAdvanceClock(url4);
-  ExpectScores(incognito_service, url4, 0.0, 1, 1, Now());
-  ExpectScores(url4, 0.0, 1, 1, Now());
+  ExpectScores(incognito_service, url4, 0.05, 1, 1, Now());
+  ExpectScores(url4, 0.05, 1, 1, Now());
 }
 
 TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
@@ -368,7 +368,7 @@ TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
   // values.
   {
     std::vector<std::pair<GURL, double>> kExpectedResults = {
-        {kUrl2, 0.0}, {kUrl1, 1.0 / 21.0},
+        {kUrl2, 0.05}, {kUrl1, 1.0 / 21.0},
     };
 
     const auto& scores = GetAllStoredScores(incognito_service);
@@ -420,14 +420,14 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   // Check that the scores are valid at the beginning.
   ExpectScores(origin1, 7.0 / 11.0,
                MediaEngagementScore::GetScoreMinVisits() + 2, 14, TimeNotSet());
-  EXPECT_TRUE(GetActualScore(origin1));
-  ExpectScores(origin2, 0.0, 2, 1, TimeNotSet());
-  EXPECT_FALSE(GetActualScore(origin2));
-  ExpectScores(origin3, 0.0, 2, 1, TimeNotSet());
-  EXPECT_FALSE(GetActualScore(origin3));
+  EXPECT_EQ(14.0 / 22.0, GetActualScore(origin1));
+  ExpectScores(origin2, 0.05, 2, 1, TimeNotSet());
+  EXPECT_EQ(1 / 20.0, GetActualScore(origin2));
+  ExpectScores(origin3, 0.05, 2, 1, TimeNotSet());
+  EXPECT_EQ(1 / 20.0, GetActualScore(origin3));
   ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                TimeNotSet());
-  EXPECT_TRUE(GetActualScore(origin4));
+  EXPECT_EQ(0.5, GetActualScore(origin4));
 
   {
     base::HistogramTester histogram_tester;
@@ -446,9 +446,9 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // visits. origin4 should have the old score.
     ExpectScores(origin1, 0.6, MediaEngagementScore::GetScoreMinVisits(), 12,
                  TimeNotSet());
-    EXPECT_TRUE(GetActualScore(origin1));
+    EXPECT_EQ(12.0 / 20.0, GetActualScore(origin1));
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
-    EXPECT_FALSE(GetActualScore(origin2));
+    EXPECT_EQ(0, GetActualScore(origin2));
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
@@ -456,7 +456,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 3);
     histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0, 2);
+        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 5, 2);
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 4, 1);
   }
@@ -478,7 +478,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     waiter.Wait();
 
     // origin1's score should have changed but the rest should remain the same.
-    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits() - 1,
+    ExpectScores(origin1, 0.55, MediaEngagementScore::GetScoreMinVisits() - 1,
                  11, TimeNotSet());
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
@@ -488,7 +488,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 1);
     histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 60, 1);
+        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 5, 1);
   }
 
   {
@@ -510,7 +510,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // origin3's score should be removed but the rest should remain the same.
     std::map<GURL, double> scores = GetScoreMapForTesting();
     EXPECT_TRUE(scores.find(origin3) == scores.end());
-    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits() - 1,
+    ExpectScores(origin1, 0.55, MediaEngagementScore::GetScoreMinVisits() - 1,
                  11, TimeNotSet());
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
@@ -536,7 +536,7 @@ TEST_F(MediaEngagementServiceTest,
 
   ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
                        today - base::TimeDelta::FromDays(1));
-  ExpectScores(origin, 0.0, 1, 1, today);
+  ExpectScores(origin, 0.05, 1, 1, today);
 }
 
 TEST_F(MediaEngagementServiceTest,
@@ -555,8 +555,8 @@ TEST_F(MediaEngagementServiceTest,
   SetLastMediaPlaybackTime(origin2, two_days_ago);
 
   ClearDataBetweenTime(two_days_ago, yesterday);
-  ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
-  ExpectScores(origin2, 0.0, 0, 0, TimeNotSet());
+  ExpectScores(origin1, 0, 0, 0, TimeNotSet());
+  ExpectScores(origin2, 0, 0, 0, TimeNotSet());
 }
 
 TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
@@ -583,7 +583,7 @@ TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
 
   ExpectScores(url1, 5.0 / 6.0, 24, 20, TimeNotSet());
   ExpectScores(url2, 0.5, 24, 12, TimeNotSet());
-  ExpectScores(url3, 0.0, 1, 1, Now());
+  ExpectScores(url3, 0.05, 1, 1, Now());
 
   base::HistogramTester histogram_tester;
   std::unique_ptr<MediaEngagementService> new_service =
@@ -594,7 +594,7 @@ TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
   histogram_tester.ExpectTotalCount(
       MediaEngagementService::kHistogramScoreAtStartupName, 3);
   histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramScoreAtStartupName, 0, 1);
+      MediaEngagementService::kHistogramScoreAtStartupName, 5, 1);
   histogram_tester.ExpectBucketCount(
       MediaEngagementService::kHistogramScoreAtStartupName, 50, 1);
   histogram_tester.ExpectBucketCount(
@@ -635,6 +635,6 @@ TEST_F(MediaEngagementServiceTest, SchemaVersion_Same) {
       base::WrapUnique<MediaEngagementService>(
           StartNewMediaEngagementService());
 
-  ExpectScores(new_service.get(), url, 0.0, 1, 2, TimeNotSet());
+  ExpectScores(new_service.get(), url, 0.1, 1, 2, TimeNotSet());
   new_service->Shutdown();
 }
