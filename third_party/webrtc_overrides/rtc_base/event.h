@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace rtc {
 
@@ -29,6 +30,11 @@ class Event {
   base::WaitableEvent event_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(Event);
 };
+
+// Pull ScopedAllowBaseSyncPrimitives into the rtc namespace.
+// Managing what types in WebRTC are allowed to use
+// ScopedAllowBaseSyncPrimitives, is done via thread_restrictions.h.
+using base::ScopedAllowBaseSyncPrimitives;
 
 }  // namespace rtc
 
