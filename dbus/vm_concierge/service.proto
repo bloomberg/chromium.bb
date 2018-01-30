@@ -17,6 +17,15 @@ message VirtualMachineSpec {
   string rootfs = 2;
 }
 
+// The type of disk image.
+enum DiskImageType {
+  // A raw file.
+  DISK_IMAGE_RAW = 0;
+
+  // A qcow2-compatible disk image.
+  DISK_IMAGE_QCOW2 = 1;
+}
+
 // Describes any additional disk images that should be mounted inside the VM.
 message DiskImage {
   // Path to the disk image on the host.
@@ -40,6 +49,9 @@ message DiskImage {
 
   // If true, the disk image will be mounted.
   bool do_mount = 7;
+
+  // Image type of the disk.
+  DiskImageType image_type = 8;
 }
 
 // Information about a particular VM.
@@ -125,4 +137,59 @@ message StartLxdResponse {
 
   // The failure_reason if the requested VM could not start lxd.
   string failure_reason = 2;
+}
+
+// The type of storage location for a disk image.
+enum StorageLocation {
+  // Subdirectory under /home/root/<id>/crosvm.
+  STORAGE_CRYPTOHOME_ROOT = 0;
+
+  // The user's Downloads directory, under /home/user/<id>/Downloads.
+  STORAGE_CRYPTOHOME_DOWNLOADS = 1;
+}
+
+enum DiskImageStatus {
+  // Unknown status.
+  DISK_STATUS_UNKNOWN = 0;
+
+  // The disk image was created.
+  DISK_STATUS_CREATED = 1;
+
+  // The disk already existed.
+  DISK_STATUS_EXISTS = 2;
+
+  // Unable to create the disk image.
+  DISK_STATUS_FAILED = 3;
+}
+
+// Request to concierge to create a disk image.
+message CreateDiskImageRequest {
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 1;
+
+  // The path to the disk image. This must be a relative path, and any
+  // directories must already exist.
+  string disk_path = 2;
+
+  // The logical size of the new disk image, in bytes.
+  uint64 disk_size = 3;
+
+  // The type of disk image to be created.
+  DiskImageType image_type = 4;
+
+  // The storage location for the disk image.
+  StorageLocation storage_location = 5;
+}
+
+// Response to a CreateDiskImageRequest.
+message CreateDiskImageResponse {
+  // If true, the disk image has been successfully created.
+  DiskImageStatus status = 1;
+
+  // The absolute path to the created disk image, if it was successfully
+  // created or already existed.
+  string disk_path = 2;
+
+  // The failure reason if the disk image could not be created or doesn't exist.
+  string failure_reason = 3;
 }
