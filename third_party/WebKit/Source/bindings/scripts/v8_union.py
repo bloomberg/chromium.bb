@@ -15,9 +15,9 @@ UNION_H_INCLUDES = frozenset([
     'bindings/core/v8/Dictionary.h',
     'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/NativeValueTraits.h',
-    'bindings/core/v8/Nullable.h',
     'bindings/core/v8/V8BindingForCore.h',
     'platform/heap/Handle.h',
+    'platform/wtf/Optional.h',
 ])
 
 

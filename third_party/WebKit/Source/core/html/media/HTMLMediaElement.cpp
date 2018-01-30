@@ -2324,13 +2324,13 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
   play_promise_resolvers_.push_back(resolver);
 
-  Nullable<ExceptionCode> code = Play();
-  if (!code.IsNull()) {
+  Optional<ExceptionCode> code = Play();
+  if (code) {
     DCHECK(!play_promise_resolvers_.IsEmpty());
     play_promise_resolvers_.pop_back();
 
     String message;
-    switch (code.Get()) {
+    switch (code.value()) {
       case kNotAllowedError:
         message = "play() can only be initiated by a user gesture.";
         RecordPlayPromiseRejected(
@@ -2343,24 +2343,24 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
       default:
         NOTREACHED();
     }
-    resolver->Reject(DOMException::Create(code.Get(), message));
+    resolver->Reject(DOMException::Create(code.value(), message));
     return promise;
   }
 
   return promise;
 }
 
-Nullable<ExceptionCode> HTMLMediaElement::Play() {
+Optional<ExceptionCode> HTMLMediaElement::Play() {
   BLINK_MEDIA_LOG << "play(" << (void*)this << ")";
 
-  Nullable<ExceptionCode> exception_code = autoplay_policy_->RequestPlay();
+  Optional<ExceptionCode> exception_code = autoplay_policy_->RequestPlay();
 
   if (exception_code == kNotAllowedError) {
     // If we're already playing, then this play would do nothing anyway.
     // Call playInternal to handle scheduling the promise resolution.
     if (!paused_) {
       PlayInternal();
-      return nullptr;
+      return WTF::nullopt;
     }
     return exception_code;
   }
@@ -2370,11 +2370,11 @@ Nullable<ExceptionCode> HTMLMediaElement::Play() {
   if (error_ && error_->code() == MediaError::kMediaErrSrcNotSupported)
     return kNotSupportedError;
 
-  DCHECK(exception_code.IsNull());
+  DCHECK(!exception_code.has_value());
 
   PlayInternal();
 
-  return nullptr;
+  return WTF::nullopt;
 }
 
 void HTMLMediaElement::PlayInternal() {

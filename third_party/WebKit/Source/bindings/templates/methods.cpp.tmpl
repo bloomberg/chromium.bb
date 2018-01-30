@@ -303,7 +303,7 @@ DCHECK(!result || DOMDataStore::GetWrapper(result, info.GetIsolate()).IsEmpty())
 {{generate_constructor_wrapper(method)}}
 {%- elif v8_set_return_value %}
 {% if method.is_explicit_nullable %}
-if (result.IsNull())
+if (!result)
   V8SetReturnValueNull(info);
 else
   {{v8_set_return_value}};

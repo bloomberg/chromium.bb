@@ -26,7 +26,6 @@
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 
 #include <memory>
-#include "bindings/core/v8/Nullable.h"
 #include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -35,6 +34,7 @@
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
+#include "platform/wtf/Optional.h"
 
 using blink::WebIDBDatabase;
 
@@ -88,10 +88,10 @@ void IDBOpenDBRequest::EnqueueBlocked(int64_t old_version) {
   IDB_TRACE("IDBOpenDBRequest::onBlocked()");
   if (!ShouldEnqueueEvent())
     return;
-  Nullable<unsigned long long> new_version_nullable =
-      (version_ == IDBDatabaseMetadata::kDefaultVersion)
-          ? Nullable<unsigned long long>()
-          : Nullable<unsigned long long>(version_);
+  Optional<unsigned long long> new_version_nullable;
+  if (version_ != IDBDatabaseMetadata::kDefaultVersion) {
+    new_version_nullable = version_;
+  }
   EnqueueEvent(IDBVersionChangeEvent::Create(
       EventTypeNames::blocked, old_version, new_version_nullable));
 }
@@ -173,8 +173,8 @@ void IDBOpenDBRequest::EnqueueResponse(int64_t old_version) {
     old_version = IDBDatabaseMetadata::kDefaultVersion;
   }
   SetResult(IDBAny::CreateUndefined());
-  EnqueueEvent(IDBVersionChangeEvent::Create(
-      EventTypeNames::success, old_version, Nullable<unsigned long long>()));
+  EnqueueEvent(IDBVersionChangeEvent::Create(EventTypeNames::success,
+                                             old_version, WTF::nullopt));
   metrics_.RecordAndReset();
 }
 

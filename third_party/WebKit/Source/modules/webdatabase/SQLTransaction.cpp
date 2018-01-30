@@ -313,14 +313,14 @@ void SQLTransaction::executeSql(ScriptState* script_state,
 
 void SQLTransaction::executeSql(ScriptState* script_state,
                                 const String& sql_statement,
-                                const Nullable<Vector<ScriptValue>>& arguments,
+                                const Optional<Vector<ScriptValue>>& arguments,
                                 SQLStatementCallback* callback,
                                 SQLStatementErrorCallback* callback_error,
                                 ExceptionState& exception_state) {
   Vector<SQLValue> sql_values;
-  if (!arguments.IsNull()) {
-    sql_values.ReserveInitialCapacity(arguments.Get().size());
-    for (const ScriptValue& value : arguments.Get()) {
+  if (arguments) {
+    sql_values.ReserveInitialCapacity(arguments.value().size());
+    for (const ScriptValue& value : arguments.value()) {
       sql_values.UncheckedAppend(NativeValueTraits<SQLValue>::NativeValue(
           script_state->GetIsolate(), value.V8Value(), exception_state));
       // Historically, no exceptions were thrown if the conversion failed.

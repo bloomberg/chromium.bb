@@ -5,10 +5,10 @@
 #ifndef AutoplayPolicy_h
 #define AutoplayPolicy_h
 
-#include "bindings/core/v8/Nullable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Request the playback via play() method. This method will check the autoplay
   // restrictions and record metrics. This method can only be called once
   // per call of play().
-  Nullable<ExceptionCode> RequestPlay();
+  Optional<ExceptionCode> RequestPlay();
 
   // Returns whether an umute action should pause an autoplaying element. The
   // method will check autoplay restrictions and record metrics. This method can

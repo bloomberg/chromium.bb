@@ -939,8 +939,8 @@ V8_SET_RETURN_VALUE = {
     'Dictionary': 'V8SetReturnValue(info, {cpp_value})',
     'DictionaryStatic': '#error not implemented yet',
     # Nullable dictionaries
-    'NullableDictionary': 'V8SetReturnValue(info, result.Get())',
-    'NullableDictionaryStatic': 'V8SetReturnValue(info, result.Get(), info.GetIsolate()->GetCurrentContext()->Global())',
+    'NullableDictionary': 'V8SetReturnValue(info, result.value())',
+    'NullableDictionaryStatic': 'V8SetReturnValue(info, result.value(), info.GetIsolate()->GetCurrentContext()->Global())',
     # Union types or dictionaries
     'DictionaryOrUnion': 'V8SetReturnValue(info, result)',
     'DictionaryOrUnionStatic': 'V8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global())',
@@ -1120,7 +1120,7 @@ def is_implicit_nullable(idl_type):
 
 def is_explicit_nullable(idl_type):
     # Nullable type that isn't implicit nullable (see above.) For such types,
-    # we use Nullable<T> or similar explicit ways to represent a null value.
+    # we use WTF::Optional<T> or similar explicit ways to represent a null value.
     return idl_type.is_nullable and not idl_type.is_implicit_nullable
 
 IdlTypeBase.is_implicit_nullable = property(is_implicit_nullable)

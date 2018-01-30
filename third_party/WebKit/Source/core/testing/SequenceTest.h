@@ -5,11 +5,11 @@
 #ifndef SequenceTest_h
 #define SequenceTest_h
 
-#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/double_or_double_sequence.h"
 #include "core/dom/Element.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -27,8 +27,8 @@ class SequenceTest final : public ScriptWrappable {
   Vector<double> identityDoubleSequence(const Vector<double>& arg) const;
   Vector<String> identityFoodEnumSequence(const Vector<String>& arg) const;
   Vector<int32_t> identityLongSequence(const Vector<int32_t>& arg) const;
-  Nullable<Vector<uint8_t>> identityOctetSequenceOrNull(
-      const Nullable<Vector<uint8_t>>& arg) const;
+  Optional<Vector<uint8_t>> identityOctetSequenceOrNull(
+      const Optional<Vector<uint8_t>>& arg) const;
 
   HeapVector<Member<Element>> getElementSequence() const;
   void setElementSequence(const HeapVector<Member<Element>>& arg);

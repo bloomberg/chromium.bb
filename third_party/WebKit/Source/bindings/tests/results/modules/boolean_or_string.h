@@ -14,10 +14,10 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
