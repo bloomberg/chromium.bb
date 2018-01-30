@@ -2032,8 +2032,6 @@ static TX_SIZE av1_get_transform_size(
 typedef struct AV1_DEBLOCKING_PARAMETERS {
   // length of the filter applied to the outer edge
   uint32_t filter_length;
-  // length of the filter applied to the inner edge
-  uint32_t filter_length_internal;
   // deblocking limits
   const uint8_t *lim;
   const uint8_t *mblim;
@@ -2047,7 +2045,6 @@ static void set_lpf_parameters(
     const struct macroblockd_plane *const plane_ptr) {
   // reset to initial values
   params->filter_length = 0;
-  params->filter_length_internal = 0;
 
   // no deblocking is required
   const uint32_t width = plane_ptr->dst.width;
@@ -2171,7 +2168,7 @@ static void set_lpf_parameters(
       }
 
       // prepare common parameters
-      if (params->filter_length || params->filter_length_internal) {
+      if (params->filter_length) {
         const loop_filter_thresh *const limits = cm->lf_info.lfthr + level;
         params->lim = limits->lim;
         params->mblim = limits->mblim;
@@ -2260,16 +2257,6 @@ static void av1_filter_block_plane_vert(
           break;
         // no filtering
         default: break;
-      }
-      // process the internal edge
-      if (params.filter_length_internal) {
-        if (cm->use_highbitdepth)
-          aom_highbd_lpf_vertical_4(CONVERT_TO_SHORTPTR(p + 4), dst_stride,
-                                    params.mblim, params.lim, params.hev_thr,
-                                    cm->bit_depth);
-        else
-          aom_lpf_vertical_4(p + 4, dst_stride, params.mblim, params.lim,
-                             params.hev_thr);
       }
       // advance the destination pointer
       p += MI_SIZE;
@@ -2362,16 +2349,6 @@ static void av1_filter_block_plane_horz(
           break;
         // no filtering
         default: break;
-      }
-      // process the internal edge
-      if (params.filter_length_internal) {
-        if (cm->use_highbitdepth)
-          aom_highbd_lpf_horizontal_4(CONVERT_TO_SHORTPTR(p + 4 * dst_stride),
-                                      dst_stride, params.mblim, params.lim,
-                                      params.hev_thr, cm->bit_depth);
-        else
-          aom_lpf_horizontal_4(p + 4 * dst_stride, dst_stride, params.mblim,
-                               params.lim, params.hev_thr);
       }
       // advance the destination pointer
       p += MI_SIZE;
