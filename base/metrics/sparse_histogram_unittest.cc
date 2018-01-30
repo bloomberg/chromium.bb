@@ -206,7 +206,7 @@ TEST_P(SparseHistogramTest, MacroInLoopTest) {
   }
 
   const StatisticsRecorder::Histograms histograms =
-      StatisticsRecorder::GetHistograms();
+      StatisticsRecorder::Sort(StatisticsRecorder::GetHistograms());
   ASSERT_THAT(histograms, testing::SizeIs(2));
   EXPECT_STREQ(histograms[0]->histogram_name(), "Sparse0");
   EXPECT_STREQ(histograms[1]->histogram_name(), "Sparse1");

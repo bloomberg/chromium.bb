@@ -137,7 +137,8 @@ const BucketRanges* StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
 // static
 void StatisticsRecorder::WriteHTMLGraph(const std::string& query,
                                         std::string* output) {
-  for (const HistogramBase* const histogram : GetSnapshot(query)) {
+  for (const HistogramBase* const histogram :
+       Sort(WithName(GetHistograms(), query))) {
     histogram->WriteHTMLGraph(output);
     *output += "<br><hr><br>";
   }
@@ -151,7 +152,8 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
   else
     output->append("Collections of all histograms\n");
 
-  for (const HistogramBase* const histogram : GetSnapshot(query)) {
+  for (const HistogramBase* const histogram :
+       Sort(WithName(GetHistograms(), query))) {
     histogram->WriteAscii(output);
     output->append("\n");
   }
@@ -161,7 +163,7 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
 std::string StatisticsRecorder::ToJSON(JSONVerbosityLevel verbosity_level) {
   std::string output = "{\"histograms\":[";
   const char* sep = "";
-  for (const HistogramBase* const histogram : GetHistograms()) {
+  for (const HistogramBase* const histogram : Sort(GetHistograms())) {
     output += sep;
     sep = ",";
     std::string json;
@@ -221,8 +223,11 @@ void StatisticsRecorder::PrepareDeltas(
     HistogramBase::Flags flags_to_set,
     HistogramBase::Flags required_flags,
     HistogramSnapshotManager* snapshot_manager) {
-  snapshot_manager->PrepareDeltas(GetKnownHistograms(include_persistent),
-                                  flags_to_set, required_flags);
+  Histograms histograms = GetHistograms();
+  if (!include_persistent)
+    histograms = NonPersistent(std::move(histograms));
+  snapshot_manager->PrepareDeltas(Sort(std::move(histograms)), flags_to_set,
+                                  required_flags);
 }
 
 // static
@@ -323,9 +328,7 @@ bool StatisticsRecorder::ShouldRecordHistogram(uint64_t histogram_hash) {
 }
 
 // static
-template <typename Predicate>
-StatisticsRecorder::Histograms StatisticsRecorder::GetHistogramsWithPredicate(
-    const Predicate predicate) {
+StatisticsRecorder::Histograms StatisticsRecorder::GetHistograms() {
   // This must be called *before* the lock is acquired below because it will
   // call back into this object to register histograms. Those called methods
   // will acquire the lock at that time.
@@ -333,46 +336,47 @@ StatisticsRecorder::Histograms StatisticsRecorder::GetHistogramsWithPredicate(
 
   Histograms out;
 
-  {
-    const AutoLock auto_lock(lock_.Get());
-    EnsureGlobalRecorderWhileLocked();
-    out.reserve(top_->histograms_.size());
-    for (const auto& entry : top_->histograms_) {
-      const HistogramBase* const histogram = entry.second;
-      DCHECK(histogram);
-      if (predicate(*histogram))
-        out.push_back(entry.second);
-    }
-  }
+  const AutoLock auto_lock(lock_.Get());
+  EnsureGlobalRecorderWhileLocked();
 
-  std::sort(out.begin(), out.end(), &HistogramNameLesser);
+  out.reserve(top_->histograms_.size());
+  for (const auto& entry : top_->histograms_)
+    out.push_back(entry.second);
+
   return out;
 }
 
 // static
-StatisticsRecorder::Histograms StatisticsRecorder::GetHistograms() {
-  return GetHistogramsWithPredicate([](const HistogramBase&) { return true; });
+StatisticsRecorder::Histograms StatisticsRecorder::Sort(Histograms histograms) {
+  std::sort(histograms.begin(), histograms.end(), &HistogramNameLesser);
+  return histograms;
 }
 
 // static
-StatisticsRecorder::Histograms StatisticsRecorder::GetKnownHistograms(
-    bool include_persistent) {
-  return GetHistogramsWithPredicate(
-      [include_persistent](const HistogramBase& histogram) {
-        return include_persistent ||
-               (histogram.flags() & HistogramBase::kIsPersistent) == 0;
-      });
-}
-
-// static
-StatisticsRecorder::Histograms StatisticsRecorder::GetSnapshot(
+StatisticsRecorder::Histograms StatisticsRecorder::WithName(
+    Histograms histograms,
     const std::string& query) {
   // Need a C-string query for comparisons against C-string histogram name.
   const char* const query_string = query.c_str();
-  return GetHistogramsWithPredicate(
-      [query_string](const HistogramBase& histogram) {
-        return strstr(histogram.histogram_name(), query_string) != nullptr;
-      });
+  histograms.erase(std::remove_if(histograms.begin(), histograms.end(),
+                                  [query_string](const HistogramBase* const h) {
+                                    return !strstr(h->histogram_name(),
+                                                   query_string);
+                                  }),
+                   histograms.end());
+  return histograms;
+}
+
+// static
+StatisticsRecorder::Histograms StatisticsRecorder::NonPersistent(
+    Histograms histograms) {
+  histograms.erase(
+      std::remove_if(histograms.begin(), histograms.end(),
+                     [](const HistogramBase* const h) {
+                       return (h->flags() & HistogramBase::kIsPersistent) != 0;
+                     }),
+      histograms.end());
+  return histograms;
 }
 
 // static
