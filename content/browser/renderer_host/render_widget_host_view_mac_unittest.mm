@@ -1111,6 +1111,21 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {
             GetPointerType(events));
 }
 
+TEST_F(RenderWidgetHostViewMacTest, SendMouseMoveOnShowingContextMenu) {
+  rwhv_mac_->SetShowingContextMenu(true);
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      host_->GetAndResetDispatchedMessages();
+  ASSERT_EQ("MouseMove", GetMessageNames(events));
+
+  events.clear();
+
+  rwhv_mac_->SetShowingContextMenu(false);
+  base::RunLoop().RunUntilIdle();
+  events = host_->GetAndResetDispatchedMessages();
+  ASSERT_EQ("MouseMove", GetMessageNames(events));
+}
+
 void RenderWidgetHostViewMacTest::
     IgnoreEmptyUnhandledWheelEventWithWheelGestures() {
   // Add a delegate to the view.
