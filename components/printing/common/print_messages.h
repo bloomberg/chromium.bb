@@ -64,6 +64,7 @@ struct PrintMsg_Print_Params {
   base::string16 footer_template;
   bool should_print_backgrounds;
   printing::SkiaDocumentType printed_doc_type;
+  bool prefer_css_page_size;
 };
 
 struct PrintMsg_PrintPages_Params {
@@ -190,6 +191,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // The document type of printed page(s) from render.
   IPC_STRUCT_TRAITS_MEMBER(printed_doc_type)
+
+  // True if page size defined by css should be preferred.
+  IPC_STRUCT_TRAITS_MEMBER(prefer_css_page_size)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)

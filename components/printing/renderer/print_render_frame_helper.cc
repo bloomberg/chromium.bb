@@ -1503,7 +1503,10 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
     if (!self)
       return;
 
-    print_settings.params.print_scaling_option = scaling_option;
+    print_settings.params.print_scaling_option =
+        print_settings.params.prefer_css_page_size
+            ? blink::kWebPrintScalingOptionSourceSize
+            : scaling_option;
     SetPrintPagesParams(print_settings);
     if (print_settings.params.dpi.IsEmpty() ||
         !print_settings.params.document_cookie) {
