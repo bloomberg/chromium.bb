@@ -90,22 +90,28 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
 
   bool has_content = false;
   if (fragment->IsBox()) {
+    const auto* box = ToNGPhysicalBoxFragment(fragment);
     if (flags & NGPhysicalFragment::DumpType) {
       builder->Append("Box");
       String box_type = StringForBoxType(*fragment);
+      has_content = true;
       if (!box_type.IsEmpty()) {
         builder->Append(" (");
         builder->Append(box_type);
         builder->Append(")");
       }
-      has_content = true;
+      if (flags & NGPhysicalFragment::DumpSelfPainting &&
+          box->HasSelfPaintingLayer()) {
+        if (box_type.IsEmpty())
+          builder->Append(" ");
+        builder->Append("(self paint)");
+      }
     }
     has_content =
         AppendFragmentOffsetAndSize(fragment, builder, flags, has_content);
 
     builder->Append("\n");
 
-    const auto* box = ToNGPhysicalBoxFragment(fragment);
     if (flags & NGPhysicalFragment::DumpSubtree) {
       const auto& children = box->Children();
       for (unsigned i = 0; i < children.size(); i++)
