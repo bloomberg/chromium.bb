@@ -79,6 +79,12 @@
 </if>
   <command id="delete-command" shortcut="Delete Backspace">
   <command id="slash-command" shortcut="/">
+<if expr="is_macosx">
+  <command id="select-all-command" shortcut="Meta|a">
+</if>
+<if expr="not is_macosx">
+  <command id="select-all-command" shortcut="Ctrl|a">
+</if>
 
   <link rel="import" href="chrome://resources/html/util.html">
   <link rel="import" href="chrome://resources/html/load_time_data.html">
