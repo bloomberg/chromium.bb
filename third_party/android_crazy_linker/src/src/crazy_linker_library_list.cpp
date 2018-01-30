@@ -63,7 +63,10 @@ struct SymbolLookupState {
 }  // namespace
 
 LibraryList::LibraryList() : head_(0), has_error_(false) {
-  const int sdk_build_version = *Globals::GetSDKBuildVersion();
+  // NOTE: This constructor is called from the Globals::Globals() constructor,
+  // hence it is important that Globals::sdk_build_version is a static member
+  // that can be set before Globals::Get() is called for the first time.
+  const int sdk_build_version = Globals::sdk_build_version;
 
   // If SDK version is Lollipop or earlier, we need to load anything
   // listed in LD_PRELOAD explicitly, because dlsym() on the main executable

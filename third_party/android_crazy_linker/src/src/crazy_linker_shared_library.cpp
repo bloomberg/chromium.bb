@@ -258,6 +258,7 @@ bool SharedLibrary::Load(const char* full_path,
 
   LOG("Parsing dynamic table for %s", base_name_);
   ElfView::DynamicIterator dyn(&view_);
+  RDebug* rdebug = Globals::GetRDebug();
   for (; dyn.HasNext(); dyn.GetNext()) {
     ELF::Addr dyn_value = dyn.GetValue();
     uintptr_t dyn_addr = dyn.GetAddress(load_bias());
@@ -265,7 +266,7 @@ bool SharedLibrary::Load(const char* full_path,
       case DT_DEBUG:
         if (view_.dynamic_flags() & PF_W) {
           *dyn.GetValuePointer() =
-              reinterpret_cast<uintptr_t>(Globals::GetRDebug()->GetAddress());
+              reinterpret_cast<uintptr_t>(rdebug->GetAddress());
         }
         break;
       case DT_INIT:
@@ -314,7 +315,7 @@ bool SharedLibrary::Load(const char* full_path,
 #if defined(__mips__)
       case DT_MIPS_RLD_MAP:
         *dyn.GetValuePointer() =
-            reinterpret_cast<ELF::Addr>(Globals::GetRDebug()->GetAddress());
+            reinterpret_cast<ELF::Addr>(rdebug->GetAddress());
         break;
 #endif
       default:
