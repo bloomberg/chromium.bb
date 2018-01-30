@@ -968,11 +968,6 @@ class CORE_EXPORT LocalFrameView final
   // scrollable area, or gains/loses a composited layer.
   void ScrollableAreasDidChange();
 
-  // Records a UKM metric for the current URL. metric_name is a metric
-  // that must be defined in ukm.xml; metric_value is in usec.
-  void RecordUkmPerformanceMetric(const char* metric_name,
-                                  int64_t metric_value);
-
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);
