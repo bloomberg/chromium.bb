@@ -134,6 +134,12 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // used.
   std::set<GURL> cached_manifest_urls_;
 
+  // The mapping of payment method names to cached native payment app Ids.
+  // Note that the supported native payment app Ids have been cached for a
+  // payment method in the same cache in PaymentManifestVerifier.java. Do not
+  // override them since we do not refresh them in this class.
+  std::map<GURL, std::vector<std::string>> cached_supported_native_app_ids_;
+
   // The number of manifests that have not been verified yet. A manifest can be
   // either be retrieved from cache or downloaded for verification. Once this
   // number reaches 0, the verification callback is invoked.
