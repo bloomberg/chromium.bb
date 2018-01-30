@@ -12,8 +12,22 @@
 #include <stdlib.h>
 #include "aom_dsp/inv_txfm.h"
 #include "av1/common/av1_inv_txfm1d.h"
-#if CONFIG_COEFFICIENT_RANGE_CHECKING
 
+int32_t range_check_value(int32_t value, int8_t bit) {
+#if CONFIG_COEFFICIENT_RANGE_CHECKING
+  const int64_t maxValue = (1LL << (bit - 1)) - 1;
+  const int64_t minValue = -(1LL << (bit - 1));
+  if (value < minValue || value > maxValue) {
+    fprintf(stderr, "coeff out of bit range, value: %d bit %d\n", value, bit);
+    assert(0);
+  }
+#else
+  (void)bit;
+#endif
+  return value;
+}
+
+#if CONFIG_COEFFICIENT_RANGE_CHECKING
 void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
                       int32_t size, int8_t bit) {
   const int64_t maxValue = (1LL << (bit - 1)) - 1;
@@ -71,6 +85,15 @@ void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
   }
 }
 #endif
+
+int32_t clamp_value(int32_t value, int8_t bit) {
+  if (bit <= 16) {
+    const int32_t maxValue = (1 << 15) - 1;
+    const int32_t minValue = -(1 << 15);
+    return clamp(value, minValue, maxValue);
+  }
+  return value;
+}
 
 // TODO(angiebird): Make 1-d txfm functions static
 void av1_idct4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -757,30 +780,47 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
     return;
   }
 
-  s0 = sinpi[1] * x0;
-  s1 = sinpi[2] * x0;
-  s2 = sinpi[3] * x1;
-  s3 = sinpi[4] * x2;
-  s4 = sinpi[1] * x2;
-  s5 = sinpi[2] * x3;
-  s6 = sinpi[4] * x3;
-  s7 = x0 - x2 + x3;
+  // stage 1
+  s0 = range_check_value(sinpi[1] * x0, stage_range[1]);
+  s1 = range_check_value(sinpi[2] * x0, stage_range[1]);
+  s2 = range_check_value(sinpi[3] * x1, stage_range[1]);
+  s3 = range_check_value(sinpi[4] * x2, stage_range[1]);
+  s4 = range_check_value(sinpi[1] * x2, stage_range[1]);
+  s5 = range_check_value(sinpi[2] * x3, stage_range[1]);
+  s6 = range_check_value(sinpi[4] * x3, stage_range[1]);
+  s7 = clamp_value(x0 - x2, stage_range[1]);
 
-  s0 = s0 + s3 + s5;
-  s1 = s1 - s4 - s6;
-  s3 = s2;
-  s2 = sinpi[3] * s7;
+  // stage 2
+  s7 = clamp_value(s7 + x3, stage_range[2]);
+
+  // stage 3
+  s0 = range_check_value(s0 + s3, stage_range[3] + bit);
+  s1 = range_check_value(s1 - s4, stage_range[3] + bit);
+  s3 = range_check_value(s2, stage_range[3] + bit);
+  s2 = range_check_value(sinpi[3] * s7, stage_range[3] + bit);
+
+  // stage 4
+  s0 = range_check_value(s0 + s5, stage_range[4] + bit);
+  s1 = range_check_value(s1 - s6, stage_range[4] + bit);
+
+  // stage 5
+  x0 = range_check_value(s0 + s3, stage_range[5] + bit);
+  x1 = range_check_value(s1 + s3, stage_range[5] + bit);
+  x2 = range_check_value(s2, stage_range[5] + bit);
+  x3 = range_check_value(s0 + s1, stage_range[5] + bit);
+
+  // stage 6
+  x3 = range_check_value(x3 - s3, stage_range[6] + bit);
 
   // 1-D transform scaling factor is sqrt(2).
   // The overall dynamic range is 14b (input) + 14b (multiplication scaling)
   // + 1b (addition) = 29b.
   // Hence the output bit depth is 15b.
-  stage = 3;
-  output[0] = round_shift(s0 + s3, bit);
-  output[1] = round_shift(s1 + s3, bit);
-  output[2] = round_shift(s2, bit);
-  output[3] = round_shift(s0 + s1 - s3, bit);
-  apply_range(stage, input, output, size, stage_range[stage]);
+  output[0] = round_shift(x0, bit);
+  output[1] = round_shift(x1, bit);
+  output[2] = round_shift(x2, bit);
+  output[3] = round_shift(x3, bit);
+  apply_range(6, input, output, size, stage_range[6]);
 }
 
 void av1_iadst8_new(const int32_t *input, int32_t *output, int8_t cos_bit,

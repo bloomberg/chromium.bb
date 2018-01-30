@@ -58,8 +58,8 @@ static const int8_t inv_shift_32x32[2] = { -2, -4 };
 #if CONFIG_TX64X64
 static const int8_t inv_shift_64x64[2] = { -2, -4 };
 #endif
-static const int8_t inv_shift_4x8[2] = { -1, -3 };
-static const int8_t inv_shift_8x4[2] = { -1, -3 };
+static const int8_t inv_shift_4x8[2] = { 0, -4 };
+static const int8_t inv_shift_8x4[2] = { 0, -4 };
 static const int8_t inv_shift_8x16[2] = { -1, -4 };
 static const int8_t inv_shift_16x8[2] = { -1, -4 };
 static const int8_t inv_shift_16x32[2] = { -1, -4 };
@@ -104,12 +104,14 @@ const int8_t inv_cos_bit_col[MAX_TXWH_IDX /*txw_idx*/]
 
 const int8_t inv_cos_bit_row[MAX_TXWH_IDX /*txw_idx*/]
                             [MAX_TXWH_IDX /*txh_idx*/] = {
-                              { 13, 13, 13, 0, 0 },
+                              { 13, 13, 12, 0, 0 },
                               { 13, 13, 12, 12, 0 },
                               { 12, 12, 12, 12, 12 },
                               { 0, 12, 12, 12, 12 },
                               { 0, 0, 12, 12, 12 }
                             };
+
+const int8_t iadst4_range[7] = { 0, 1, 0, 0, 0, 0, 0 };
 
 void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg) {
@@ -127,7 +129,13 @@ void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
   cfg->cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
   cfg->cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
   cfg->txfm_type_col = av1_txfm_type_ls[txh_idx][tx_type_1d_col];
+  if (cfg->txfm_type_col == TXFM_TYPE_ADST4) {
+    memcpy(cfg->stage_range_col, iadst4_range, sizeof(iadst4_range));
+  }
   cfg->txfm_type_row = av1_txfm_type_ls[txw_idx][tx_type_1d_row];
+  if (cfg->txfm_type_row == TXFM_TYPE_ADST4) {
+    memcpy(cfg->stage_range_row, iadst4_range, sizeof(iadst4_range));
+  }
   cfg->stage_num_col = av1_txfm_stage_num_list[cfg->txfm_type_col];
   cfg->stage_num_row = av1_txfm_stage_num_list[cfg->txfm_type_row];
 }

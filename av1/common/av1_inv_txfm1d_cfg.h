@@ -22,8 +22,8 @@ static const int8_t inv_start_range[TX_SIZES_ALL] = {
 #if CONFIG_TX64X64
   7,    // 64x64 transform
 #endif  // CONFIG_TX64X64
-  6,    // 4x8 transform
-  6,    // 8x4 transform
+  5,    // 4x8 transform
+  5,    // 8x4 transform
   6,    // 8x16 transform
   6,    // 16x8 transform
   6,    // 16x32 transform

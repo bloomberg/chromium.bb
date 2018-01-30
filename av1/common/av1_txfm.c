@@ -44,7 +44,7 @@ const int8_t av1_txfm_stage_num_list[TXFM_TYPES] = {
   8,   // TXFM_TYPE_DCT16
   10,  // TXFM_TYPE_DCT32
   12,  // TXFM_TYPE_DCT64
-  6,   // TXFM_TYPE_ADST4
+  7,   // TXFM_TYPE_ADST4
   8,   // TXFM_TYPE_ADST8
   10,  // TXFM_TYPE_ADST16
   12,  // TXFM_TYPE_ADST32

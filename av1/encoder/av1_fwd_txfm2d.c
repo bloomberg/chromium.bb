@@ -474,7 +474,7 @@ const int8_t fwd_cos_bit_col[MAX_TXWH_IDX /*txw_idx*/]
 
 const int8_t fwd_cos_bit_row[MAX_TXWH_IDX /*txw_idx*/]
                             [MAX_TXWH_IDX /*txh_idx*/] = {
-                              { 13, 13, 13, 0, 0 },
+                              { 13, 13, 12, 0, 0 },
                               { 13, 13, 13, 12, 0 },
                               { 13, 13, 12, 13, 12 },
                               { 0, 12, 13, 12, 11 },
@@ -488,7 +488,7 @@ const int8_t fdct32_range_mult2[10] = { 0, 2, 4, 6, 8, 9, 9, 9, 9, 9 };
 const int8_t fdct64_range_mult2[12] = { 0,  2,  4,  6,  8,  10,
                                         11, 11, 11, 11, 11, 11 };
 
-const int8_t fadst4_range_mult2[6] = { 0, 0, 1, 3, 3, 3 };
+const int8_t fadst4_range_mult2[7] = { 0, 2, 4, 3, 3, 3, 3 };
 const int8_t fadst8_range_mult2[8] = { 0, 0, 1, 3, 3, 5, 5, 5 };
 const int8_t fadst16_range_mult2[10] = { 0, 0, 1, 3, 3, 5, 5, 7, 7, 7 };
 const int8_t fadst32_range_mult2[12] = { 0, 0, 1, 3, 3, 5, 5, 7, 7, 9, 9, 9 };
