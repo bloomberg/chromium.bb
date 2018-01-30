@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../vr/resources/fake-vr-displays.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
-<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 <script>
-let fakeDisplays = fakeVRDisplays();
+promise_test((t) => {
+  setFakeDevices([fakeXRDevices()["FakeGooglePixelPhone"]]);
 
-vr_test((t, mockService) => {
   let watcherDone = new Event("watcherdone");
   let eventWatcher = new EventWatcher(t, navigator.xr, ["devicechange",
                                                         "watcherdone"]);
-  eventWatcher.wait_for(["devicechange", "watcherdone"])
-    .then( () => {
-      t.done();
-    });
 
   // The event should fire when a listener is added even if the devices are not
   // explicity queried with navigator.xr.requestDevice().
   function onDeviceChange() {
-    t.step( () => {
-      navigator.xr.dispatchEvent(watcherDone);
-    });
-  }
+    navigator.xr.dispatchEvent(watcherDone);
+  };
+
   navigator.xr.addEventListener("devicechange", onDeviceChange, false);
 
-}, [fakeDisplays["Pixel"]],
-"Test devicechange fires when devices are connected.");
+  return eventWatcher.wait_for(["devicechange", "watcherdone"]);
+
+}, "Test devicechange fires when devices are connected.");
 
 </script>

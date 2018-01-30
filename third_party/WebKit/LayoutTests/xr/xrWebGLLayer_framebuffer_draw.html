@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../vr/resources/fake-vr-displays.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
-<script src="../vr/resources/mock-vr-service.js"></script>
-<script src="../vr/resources/test-constants.js"></script>
+<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
-<script src="../vr/resources/presentation-setup.js"></script>
+
 <script>
-let fakeDisplays = fakeVRDisplays();
+let fakeDevices = fakeXRDevices();
 
 // Very simple program setup with no error checking.
 function setupProgram(gl, vertexSrc, fragmentSrc) {
@@ -31,7 +31,7 @@ function setupProgram(gl, vertexSrc, fragmentSrc) {
   return program;
 }
 
-xr_session_test( (t, session, mockService) => {
+xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   // Setup simple WebGL geometry to draw with.
   let program = setupProgram(gl,
     "attribute vec4 vPosition; void main() { gl_Position = vPosition; }",
@@ -40,7 +40,10 @@ xr_session_test( (t, session, mockService) => {
 
   let vertexObject = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexObject);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0.5,0, -0.5,-0.5,0, 0.5,-0.5,0 ]), gl.STATIC_DRAW);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([ 0,0.5,0, -0.5,-0.5,0, 0.5,-0.5,0 ]),
+    gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0);
   gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
@@ -54,44 +57,36 @@ xr_session_test( (t, session, mockService) => {
 
   let xrFramebuffer = webglLayer.framebuffer;
 
-  function runDrawTests(t, expectedError) {
-    t.step( () => {
-      // Make sure we're starting with a clean error slate.
-      assert_equals(gl.getError(), gl.NO_ERROR);
+  function runDrawTests(expectedError) {
+    // Make sure we're starting with a clean error slate.
+    assert_equals(gl.getError(), gl.NO_ERROR);
 
-      gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
-      assert_equals(gl.getError(), gl.NO_ERROR);
-    }, "Framebuffer must be bindable");
+    gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
+    assert_equals(gl.getError(), gl.NO_ERROR);
 
-    t.step( () => {
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      assert_equals(gl.getError(), gl[expectedError]);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    assert_equals(gl.getError(), gl[expectedError]);
 
-      gl.clear(gl.DEPTH_BUFFER_BIT);
-      assert_equals(gl.getError(), gl[expectedError]);
-    }, `Test clearing the framebuffer, expect ${expectedError}`);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    assert_equals(gl.getError(), gl[expectedError]);
 
-    t.step( () => {
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      assert_equals(gl.getError(), gl[expectedError]);
-    }, `Test drawArrays, expect ${expectedError}`);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    assert_equals(gl.getError(), gl[expectedError]);
 
-    t.step( () => {
-      gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
-      assert_equals(gl.getError(), gl[expectedError]);
-    }, `Test drawElements, expect ${expectedError}`);
+    gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
+    assert_equals(gl.getError(), gl[expectedError]);
   }
 
   // Drawing operations outside of a XR frame should fail.
-  runDrawTests(t, "INVALID_FRAMEBUFFER_OPERATION");
+  runDrawTests("INVALID_FRAMEBUFFER_OPERATION");
 
   // Drawing operations within a XR frame should succeed.
   session.requestAnimationFrame((time, xrFrame) => {
-    runDrawTests(t, "NO_ERROR");
-    t.done();
+    runDrawTests("NO_ERROR");
+    resolve();
   });
 
-}, fakeDisplays["Pixel"], { exclusive: true },
+}), fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
 "Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame");
 
 </script>

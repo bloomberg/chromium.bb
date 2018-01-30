@@ -1,32 +1,19 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../vr/resources/fake-vr-displays.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
-<script src="../vr/resources/mock-vr-service.js"></script>
-<script src="../vr/resources/test-constants.js"></script>
+<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
 <script>
-let fakeDisplays = fakeVRDisplays();
+let fakeDevices = fakeXRDevices();
 
-vr_test( (t) => {
-  return navigator.xr.requestDevice().then( (device) => {
-
-    device.supportsSession().then( () => {
-      t.step( () => {
-        assert_unreached("supportsSession unexpectedly allowed non-exclusive session without an output context");
-      });
-    }).catch( () => {
-      // Expected result, test is finished.
-      t.done();
-    });
-
-  }, (err) => {
-    t.step( () => {
-      assert_unreached("requestDevice rejected");
-    });
-  });
-}, [fakeDisplays["Pixel"]],
-"supportsSession properly identifies supported non-exclusive sessions");
+promise_test( (t) => {
+  setFakeDevices([fakeDevices["FakeGooglePixelPhone"]]);
+  return navigator.xr.requestDevice().then( (device) =>
+    promise_rejects(t, 'NotSupportedError', device.supportsSession())
+  );
+}, "supportsSession properly identifies supported non-exclusive sessions");
 
 </script>
