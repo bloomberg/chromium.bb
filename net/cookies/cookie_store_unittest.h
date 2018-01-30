@@ -1717,8 +1717,7 @@ TYPED_TEST_P(CookieStoreTest, GlobalChangeTracking_Delete) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, cookie_changes.size());
   EXPECT_EQ(this->http_www_foo_.url().host(), cookie_changes[0].first.Domain());
-  EXPECT_EQ(CookieStore::ChangeCause::EXPLICIT_DELETE_CANONICAL,
-            cookie_changes[0].second);
+  EXPECT_EQ(CookieStore::ChangeCause::EXPLICIT, cookie_changes[0].second);
   EXPECT_EQ("C", cookie_changes[0].first.Name());
   EXPECT_EQ("D", cookie_changes[0].first.Value());
 }

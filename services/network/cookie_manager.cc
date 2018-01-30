@@ -126,10 +126,6 @@ network::mojom::CookieChangeCause ChangeCauseTranslation(
     case net::CookieStore::ChangeCause::INSERTED:
       return network::mojom::CookieChangeCause::INSERTED;
     case net::CookieStore::ChangeCause::EXPLICIT:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_BETWEEN:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_PREDICATE:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_SINGLE:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_CANONICAL:
       return network::mojom::CookieChangeCause::EXPLICIT;
     case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
       return network::mojom::CookieChangeCause::UNKNOWN_DELETION;

@@ -253,14 +253,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // and to provide a public cause for onCookieChange notifications.
   //
   // If you add or remove causes from this list, please be sure to also update
-  // the CookieStore::ChangeCause mapping inside ChangeCauseMapping.
-  // Moreover, these are used as array indexes, so avoid reordering to keep the
-  // histogram buckets consistent. New items (if necessary) should be added
-  // at the end of the list, before DELETE_COOKIE_LAST_ENTRY and the temporary
-  // values added for debugging.
+  // the CookieStore::ChangeCause mapping inside ChangeCauseMapping. New items
+  // (if necessary) should be added at the end of the list, just before
+  // DELETE_COOKIE_LAST_ENTRY.
   enum DeletionCause {
-    // DELETE_COOKIE_EXPLICIT is temporarily unused (except for logging to the
-    // histogram) - see values 13-16 below.
     DELETE_COOKIE_EXPLICIT = 0,
     DELETE_COOKIE_OVERWRITE = 1,
     DELETE_COOKIE_EXPIRED = 2,
@@ -292,18 +288,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
     // right after expired cookies.
     DELETE_COOKIE_NON_SECURE = 12,
 
-    // The following values are temporary and being used to track down a bug.
-    // They should be treated the same as DELETE_COOKIE_EXPLICIT, and are logged
-    // to the histogram as DELETE_COOKIE_EXPLICIT.
-    DELETE_COOKIE_CREATED_BETWEEN = 13,
-    DELETE_COOKIE_CREATED_BETWEEN_WITH_PREDICATE = 14,
-    DELETE_COOKIE_SINGLE = 15,
-    DELETE_COOKIE_CANONICAL = 16,
-
-    // Do not add new values between DELETE_COOKIE_CREATED_BETWEEN and
-    // DELETE_COOKIE_LAST_ENTRY, as the above values are temporary. Instead, new
-    // values should go before DELETE_COOKIE_CREATED_BETWEEN.
-    DELETE_COOKIE_LAST_ENTRY = 17
+    DELETE_COOKIE_LAST_ENTRY = 13
   };
 
   // This enum is used to generate a histogramed bitmask measureing the types
