@@ -66,7 +66,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
   WebFrameScheduler::FrameType GetFrameType() const override;
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   WebViewScheduler* GetWebViewScheduler() const override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,

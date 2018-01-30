@@ -9,12 +9,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
 class OffscreenCanvasFrameDispatcher;
 class StaticBitmapImage;
-class WebTaskRunner;
 
 class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:

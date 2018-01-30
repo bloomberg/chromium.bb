@@ -115,8 +115,8 @@ SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()
   return idle_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebThreadImplForWorkerScheduler::GetWebTaskRunner()
-    const {
+base::SingleThreadTaskRunner*
+WebThreadImplForWorkerScheduler::GetWebTaskRunner() const {
   return web_task_runner_.Get();
 }
 

@@ -17,7 +17,6 @@ class GLES2Interface;
 namespace blink {
 
 class WebGL2RenderingContextBase;
-class WebTaskRunner;
 
 class WebGLQuery : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();

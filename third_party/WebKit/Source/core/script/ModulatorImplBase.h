@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/script/Modulator.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -20,7 +21,6 @@ class ModuleMap;
 class ModuleScriptLoaderRegistry;
 class ModuleTreeLinkerRegistry;
 class ScriptState;
-class WebTaskRunner;
 
 // ModulatorImplBase is the base implementation of Modulator interface, which
 // represents "environment settings object" concept for module scripts.

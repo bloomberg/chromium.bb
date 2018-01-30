@@ -37,6 +37,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/SecurityContext.h"
 #include "platform/Supplementable.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"

@@ -38,9 +38,9 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
                     WebThread::IdleTask task) override;
   void PostNonNestableIdleTask(const base::Location& location,
                                WebThread::IdleTask task) override;
-  WebTaskRunner* TimerTaskRunner() override;
-  WebTaskRunner* V8TaskRunner() override;
-  WebTaskRunner* CompositorTaskRunner() override;
+  base::SingleThreadTaskRunner* TimerTaskRunner() override;
+  base::SingleThreadTaskRunner* V8TaskRunner() override;
+  base::SingleThreadTaskRunner* CompositorTaskRunner() override;
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) override;

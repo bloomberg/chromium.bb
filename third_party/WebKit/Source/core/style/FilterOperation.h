@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/style/ShadowData.h"
 #include "platform/Length.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/Color.h"

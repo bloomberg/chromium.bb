@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
 namespace scheduler {

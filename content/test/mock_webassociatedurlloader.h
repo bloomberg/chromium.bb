@@ -6,6 +6,7 @@
 #define CONTENT_TEST_MOCK_WEBASSOCIATEDURLLOADER_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
 
@@ -22,7 +23,7 @@ class MockWebAssociatedURLLoader : public blink::WebAssociatedURLLoader {
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD1(SetDefersLoading, void(bool value));
   MOCK_METHOD1(SetLoadingTaskRunner,
-               void(blink::WebTaskRunner* loading_task_runner));
+               void(base::SingleThreadTaskRunner* loading_task_runner));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebAssociatedURLLoader);

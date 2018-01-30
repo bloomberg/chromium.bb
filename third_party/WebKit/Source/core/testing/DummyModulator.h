@@ -7,13 +7,13 @@
 
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/script/Modulator.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class ModuleScriptLoaderClient;
 class ScriptModuleResolver;
-class WebTaskRunner;
 class ModuleScriptFetchRequest;
 
 // DummyModulator provides empty Modulator interface implementation w/

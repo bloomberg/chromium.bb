@@ -9,9 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/wtf/Functional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

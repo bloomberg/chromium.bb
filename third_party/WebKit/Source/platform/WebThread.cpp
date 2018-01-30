@@ -6,7 +6,6 @@
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Assertions.h"
 
 #if defined(OS_WIN)

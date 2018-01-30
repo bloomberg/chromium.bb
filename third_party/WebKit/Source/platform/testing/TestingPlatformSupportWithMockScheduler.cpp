@@ -11,6 +11,7 @@
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/scheduler/child/webthread_base.h"
 
 namespace blink {

@@ -30,6 +30,7 @@
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/weborigin/SecurityOrigin.h"

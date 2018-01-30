@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
@@ -3899,7 +3898,7 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   scheduler_->TimerTaskQueue()->PostTask(FROM_HERE, base::Bind(NullTask));
 
   loading_task_runner_->PostDelayedTask(FROM_HERE, base::BindOnce(NullTask),
-                                        TimeDelta::FromMilliseconds(10));
+                                        base::TimeDelta::FromMilliseconds(10));
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> value =
       scheduler_->AsValue(base::TimeTicks());

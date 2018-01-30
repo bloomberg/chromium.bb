@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

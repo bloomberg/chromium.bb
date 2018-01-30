@@ -63,15 +63,15 @@ void WebSchedulerImpl::PostNonNestableIdleTask(
       base::BindOnce(&WebSchedulerImpl::RunIdleTask, std::move(task)));
 }
 
-blink::WebTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
+base::SingleThreadTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
   return timer_web_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebSchedulerImpl::V8TaskRunner() {
+base::SingleThreadTaskRunner* WebSchedulerImpl::V8TaskRunner() {
   return v8_web_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
+base::SingleThreadTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
   return nullptr;
 }
 

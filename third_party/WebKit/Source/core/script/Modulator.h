@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/CoreExport.h"
 #include "core/script/ModuleImportMeta.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/V8PerContextData.h"
 #include "platform/heap/Handle.h"
@@ -31,7 +32,6 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
 class SecurityOrigin;
-class WebTaskRunner;
 
 // A SingleModuleClient is notified when single module script node (node as in a
 // module tree graph) load is complete and its corresponding entry is created in

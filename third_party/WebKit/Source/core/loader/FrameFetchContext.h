@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/BaseFetchContext.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -54,7 +55,6 @@ class ResourceError;
 class ResourceResponse;
 class Settings;
 struct WebEnabledClientHints;
-class WebTaskRunner;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:

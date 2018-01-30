@@ -29,6 +29,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "modules/webaudio/AudioNode.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/audio/MultiChannelResampler.h"
 #include "platform/wtf/ThreadingPrimitives.h"
