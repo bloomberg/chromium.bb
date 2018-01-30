@@ -117,6 +117,7 @@ void ThemeSource::StartDataRequest(
       case version_info::Channel::BETA:
       case version_info::Channel::STABLE:
         NOTREACHED();
+        FALLTHROUGH;
 #endif
       case version_info::Channel::UNKNOWN:
         resource_id = IDR_PRODUCT_LOGO_32;
