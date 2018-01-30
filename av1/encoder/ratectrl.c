@@ -1367,6 +1367,10 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi) {
     rc->source_alt_ref_pending = USE_ALTREF_FOR_ONE_PASS;
     rc->gfu_boost = DEFAULT_GF_BOOST;
   }
+
+  if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
+    av1_cyclic_refresh_update_parameters(cpi);
+
   if (cm->frame_type == KEY_FRAME)
     target = calc_iframe_target_size_one_pass_vbr(cpi);
   else
