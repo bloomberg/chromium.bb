@@ -41,3 +41,24 @@ if (is_android) {
     flag_name = "--chromium-output-directory"
   }
 }
+
+# Temporary group for running benchmarks without building Chrome
+# Will be removed as a part of crbug.com/758632
+group("perf_experimental") {
+  testonly = true
+  deps = [
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_experimental",
+  ]
+
+  data = [
+    "//tools/perf/",
+
+    # Field trial config
+    "//tools/variations/",
+    "//testing/variations/",
+
+    # Field trial dependencies
+    "//tools/json_comment_eater/",
+    "//tools/json_to_struct/",
+  ]
+}

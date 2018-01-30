@@ -277,17 +277,17 @@
     "isolated_scripts": [
       {
         "args": [
-          "smoothness.maps",
+          "dummy_benchmark.histogram_benchmark_1",
           "-v",
           "--output-format=histograms",
           "--output-format=json-test-results",
           "--xvfb",
-          "--browser=release"
+          "--browser=reference"
         ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "benchmark1 smoothness.maps",
+        "isolate_name": "telemetry_perf_tests_experimental",
+        "name": "benchmark1 dummy_benchmark.histogram_benchmark_1",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "telemetry_perf_tests_experimental"
         ],
         "merge": {
           "args": [
@@ -310,17 +310,17 @@
       },
       {
         "args": [
-          "blink_perf.css",
+          "dummy_benchmark.stable_benchmark_1",
           "-v",
           "--output-format=histograms",
           "--output-format=json-test-results",
           "--xvfb",
-          "--browser=release"
+          "--browser=reference"
         ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "benchmark2 blink_perf.css",
+        "isolate_name": "telemetry_perf_tests_experimental",
+        "name": "benchmark2 dummy_benchmark.stable_benchmark_1",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "telemetry_perf_tests_experimental"
         ],
         "merge": {
           "args": [
@@ -347,7 +347,7 @@
           "--output-format=histograms",
           "--output-format=json-test-results",
           "--xvfb",
-          "--browser=release"
+          "--browser=reference"
         ],
         "isolate_name": "performance_test_suite",
         "name": "performance_test_suite",
