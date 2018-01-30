@@ -29,8 +29,11 @@ typedef DWORD PST_KEY;
 typedef DWORD PST_ACCESSMODE;
 #define PST_E_OK _HRESULT_TYPEDEF_(0x00000000L)
 
-interface IEnumPStoreItems : public IUnknown
-{
+interface
+#ifdef __clang__
+    [[clang::lto_visibility_public]]
+#endif
+    IEnumPStoreItems : public IUnknown {
  public:
   virtual HRESULT STDMETHODCALLTYPE Next(
       DWORD celt,
@@ -45,8 +48,11 @@ interface IEnumPStoreItems : public IUnknown
       IEnumPStoreItems __RPC_FAR *__RPC_FAR *ppenum) = 0;
 };
 
-interface IPStore : public IUnknown
-{
+interface
+#ifdef __clang__
+    [[clang::lto_visibility_public]]
+#endif
+    IPStore : public IUnknown {
  public:
   virtual HRESULT STDMETHODCALLTYPE GetInfo(
       PST_PROVIDERINFO* __RPC_FAR *ppProperties) = 0;
