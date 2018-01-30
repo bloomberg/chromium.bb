@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -30,6 +31,8 @@ namespace {
 const char kReportToKey[] = "report-to";
 const char kMaxAgeKey[] = "max-age";
 const char kIncludeSubdomainsKey[] = "includeSubdomains";
+const char kSuccessFractionKey[] = "success-fraction";
+const char kFailureFractionKey[] = "failure-fraction";
 
 // Returns the superdomain of a given domain, or the empty string if the given
 // domain is just a single label. Note that this does not take into account
@@ -110,6 +113,8 @@ bool GetTypeFromNetError(Error error, std::string* type_out) {
 const char NetworkErrorLoggingService::kReportType[] = "network-error";
 const char NetworkErrorLoggingService::kUriKey[] = "uri";
 const char NetworkErrorLoggingService::kReferrerKey[] = "referrer";
+const char NetworkErrorLoggingService::kSamplingFractionKey[] =
+    "sampling-fraction";
 const char NetworkErrorLoggingService::kServerIpKey[] = "server-ip";
 const char NetworkErrorLoggingService::kProtocolKey[] = "protocol";
 const char NetworkErrorLoggingService::kStatusCodeKey[] = "status-code";
@@ -182,8 +187,14 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
   if (!GetTypeFromNetError(details.type, &type_string))
     return;
 
-  reporting_service_->QueueReport(details.uri, policy->report_to, kReportType,
-                                  CreateReportBody(type_string, details));
+  // TODO(dcreager): Report successful requests, too.
+  double sampling_fraction = policy->failure_fraction;
+  if (base::RandDouble() >= sampling_fraction)
+    return;
+
+  reporting_service_->QueueReport(
+      details.uri, policy->report_to, kReportType,
+      CreateReportBody(type_string, sampling_fraction, details));
 }
 
 void NetworkErrorLoggingService::RemoveBrowsingData(
@@ -243,6 +254,16 @@ bool NetworkErrorLoggingService::ParseHeader(const std::string& json_value,
   // GetBoolean fails.
   dict->GetBoolean(kIncludeSubdomainsKey, &include_subdomains);
 
+  double success_fraction = 0.0;
+  // success-fraction is optional and defaults to 0.0, so it's okay if
+  // GetDouble fails.
+  dict->GetDouble(kSuccessFractionKey, &success_fraction);
+
+  double failure_fraction = 1.0;
+  // failure-fraction is optional and defaults to 1.0, so it's okay if
+  // GetDouble fails.
+  dict->GetDouble(kFailureFractionKey, &failure_fraction);
+
   policy_out->report_to = report_to;
   if (max_age_sec > 0) {
     policy_out->expires =
@@ -251,6 +272,8 @@ bool NetworkErrorLoggingService::ParseHeader(const std::string& json_value,
     policy_out->expires = base::TimeTicks();
   }
   policy_out->include_subdomains = include_subdomains;
+  policy_out->success_fraction = success_fraction;
+  policy_out->failure_fraction = failure_fraction;
 
   return true;
 }
@@ -334,11 +357,13 @@ void NetworkErrorLoggingService::MaybeRemoveWildcardPolicy(
 
 std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
     const std::string& type,
+    double sampling_fraction,
     const NetworkErrorLoggingDelegate::ErrorDetails& details) const {
   auto body = std::make_unique<base::DictionaryValue>();
 
   body->SetString(kUriKey, details.uri.spec());
   body->SetString(kReferrerKey, details.referrer.spec());
+  body->SetDouble(kSamplingFractionKey, sampling_fraction);
   body->SetString(kServerIpKey, details.server_ip.ToString());
   std::string protocol = NextProtoToString(details.protocol);
   if (protocol == "unknown")
