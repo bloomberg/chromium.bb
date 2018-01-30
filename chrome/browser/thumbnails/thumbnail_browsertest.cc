@@ -26,7 +26,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/controllable_http_response.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -203,12 +203,12 @@ class ThumbnailTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ThumbnailTest,
                        ShouldCaptureOnNavigatingAwayExplicitWait) {
-  content::ControllableHttpResponse response_red(embedded_test_server(),
-                                                 "/red.html");
-  content::ControllableHttpResponse response_yellow(embedded_test_server(),
-                                                    "/yellow.html");
-  content::ControllableHttpResponse response_green(embedded_test_server(),
-                                                   "/green.html");
+  net::test_server::ControllableHttpResponse response_red(
+      embedded_test_server(), "/red.html");
+  net::test_server::ControllableHttpResponse response_yellow(
+      embedded_test_server(), "/yellow.html");
+  net::test_server::ControllableHttpResponse response_green(
+      embedded_test_server(), "/green.html");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL about_blank_url("about:blank");

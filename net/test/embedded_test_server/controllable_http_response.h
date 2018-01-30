@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_CONTROLLABLE_HTTP_RESPONSE_H_
-#define CONTENT_PUBLIC_TEST_CONTROLLABLE_HTTP_RESPONSE_H_
+#ifndef NET_TEST_EMBEDDED_TEST_SERVER_CONTROLLABLE_HTTP_RESPONSE_H_
+#define NET_TEST_EMBEDDED_TEST_SERVER_CONTROLLABLE_HTTP_RESPONSE_H_
 
 #include <memory>
 #include <string>
@@ -18,7 +18,9 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-namespace content {
+namespace net {
+
+namespace test_server {
 
 // A response that can be manually controlled on the current test thread. It is
 // used for waiting for a connection, sending data and closing it. It will
@@ -27,9 +29,8 @@ namespace content {
 // order they were created.
 class ControllableHttpResponse {
  public:
-  ControllableHttpResponse(
-      net::test_server::EmbeddedTestServer* embedded_test_server,
-      const std::string& relative_path);
+  ControllableHttpResponse(EmbeddedTestServer* embedded_test_server,
+                           const std::string& relative_path);
   ~ControllableHttpResponse();
 
   // These method are intented to be used in order.
@@ -50,21 +51,21 @@ class ControllableHttpResponse {
 
   void OnRequest(scoped_refptr<base::SingleThreadTaskRunner>
                      embedded_test_server_task_runner,
-                 const net::test_server::SendBytesCallback& send,
-                 const net::test_server::SendCompleteCallback& done);
+                 const SendBytesCallback& send,
+                 const SendCompleteCallback& done);
 
-  static std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
+  static std::unique_ptr<HttpResponse> RequestHandler(
       base::WeakPtr<ControllableHttpResponse> controller,
       scoped_refptr<base::SingleThreadTaskRunner> controller_task_runner,
       bool* available,
       const std::string& relative_url,
-      const net::test_server::HttpRequest& request);
+      const HttpRequest& request);
 
   State state_ = State::WAITING_FOR_REQUEST;
   base::RunLoop loop_;
   scoped_refptr<base::SingleThreadTaskRunner> embedded_test_server_task_runner_;
-  net::test_server::SendBytesCallback send_;
-  net::test_server::SendCompleteCallback done_;
+  SendBytesCallback send_;
+  SendCompleteCallback done_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ControllableHttpResponse> weak_ptr_factory_;
@@ -72,6 +73,8 @@ class ControllableHttpResponse {
   DISALLOW_COPY_AND_ASSIGN(ControllableHttpResponse);
 };
 
-}  // namespace content
+}  // namespace test_server
 
-#endif  //  CONTENT_PUBLIC_TEST_CONTROLLABLE_HTTP_RESPONSE_H_
+}  // namespace net
+
+#endif  //  NET_TEST_EMBEDDED_TEST_SERVER_CONTROLLABLE_HTTP_RESPONSE_H_

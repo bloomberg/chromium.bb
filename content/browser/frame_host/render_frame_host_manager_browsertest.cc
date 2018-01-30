@@ -47,13 +47,13 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -1488,8 +1488,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     return;
   const std::string kVictimPath = "/victim.html";
   const std::string kAttackPath = "/attack.html";
-  ControllableHttpResponse victim_response(embedded_test_server(), kVictimPath);
-  ControllableHttpResponse attack_response(embedded_test_server(), kAttackPath);
+  net::test_server::ControllableHttpResponse victim_response(
+      embedded_test_server(), kVictimPath);
+  net::test_server::ControllableHttpResponse attack_response(
+      embedded_test_server(), kAttackPath);
   EXPECT_TRUE(embedded_test_server()->Start());
 
   const GURL kVictimURL = embedded_test_server()->GetURL("a.com", kVictimPath);
@@ -1586,16 +1588,16 @@ IN_PROC_BROWSER_TEST_F(
   const std::string kOriginalPath = "/original.html";
   const std::string kFirstRedirectPath = "/redirect1.html";
   const std::string kSecondRedirectPath = "/reidrect2.html";
-  ControllableHttpResponse original_response1(embedded_test_server(),
-                                              kOriginalPath);
-  ControllableHttpResponse original_response2(embedded_test_server(),
-                                              kOriginalPath);
-  ControllableHttpResponse original_response3(embedded_test_server(),
-                                              kOriginalPath);
-  ControllableHttpResponse first_redirect_response(embedded_test_server(),
-                                                   kFirstRedirectPath);
-  ControllableHttpResponse second_redirect_response(embedded_test_server(),
-                                                    kSecondRedirectPath);
+  net::test_server::ControllableHttpResponse original_response1(
+      embedded_test_server(), kOriginalPath);
+  net::test_server::ControllableHttpResponse original_response2(
+      embedded_test_server(), kOriginalPath);
+  net::test_server::ControllableHttpResponse original_response3(
+      embedded_test_server(), kOriginalPath);
+  net::test_server::ControllableHttpResponse first_redirect_response(
+      embedded_test_server(), kFirstRedirectPath);
+  net::test_server::ControllableHttpResponse second_redirect_response(
+      embedded_test_server(), kSecondRedirectPath);
   EXPECT_TRUE(embedded_test_server()->Start());
 
   const GURL kOriginalURL =
@@ -1704,12 +1706,12 @@ IN_PROC_BROWSER_TEST_F(
     DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2) {
   const std::string kOriginalPath = "/original.html";
   const std::string kRedirectPath = "/redirect.html";
-  ControllableHttpResponse original_response1(embedded_test_server(),
-                                              kOriginalPath);
-  ControllableHttpResponse original_response2(embedded_test_server(),
-                                              kOriginalPath);
-  ControllableHttpResponse redirect_response(embedded_test_server(),
-                                             kRedirectPath);
+  net::test_server::ControllableHttpResponse original_response1(
+      embedded_test_server(), kOriginalPath);
+  net::test_server::ControllableHttpResponse original_response2(
+      embedded_test_server(), kOriginalPath);
+  net::test_server::ControllableHttpResponse redirect_response(
+      embedded_test_server(), kRedirectPath);
   EXPECT_TRUE(embedded_test_server()->Start());
 
   const GURL kOriginalURL =
