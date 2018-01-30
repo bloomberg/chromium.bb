@@ -1006,5 +1006,10 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(ZEUS_ON_EARTH.getUserName())).check(matches(isDisplayed()));
         Espresso.onView(withText(PHOBOS_AT_OLYMP.getUserName())).check(doesNotExist());
         Espresso.onView(withText(HADES_AT_UNDERWORLD.getUrl())).check(doesNotExist());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        // The search bar should still be open and still display the search query.
+        Espresso.onView(withId(R.id.search_src_text)).check(matches(isDisplayed()));
+        Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
     }
 }
