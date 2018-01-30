@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.input.SelectPopup;
-import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -44,14 +43,6 @@ public class TestContentViewCore implements ContentViewCore {
     public WindowAndroid getWindowAndroid() {
         return null;
     }
-
-    @Override
-    public TextSuggestionHost getTextSuggestionHostForTesting() {
-        return null;
-    }
-
-    @Override
-    public void setTextSuggestionHostForTesting(TextSuggestionHost textSuggestionHost) {}
 
     @Override
     public void initialize(ViewAndroidDelegate viewDelegate,

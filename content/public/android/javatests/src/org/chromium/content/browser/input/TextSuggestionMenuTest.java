@@ -55,7 +55,7 @@ public class TextSuggestionMenuTest {
     public void testDeleteWordMarkedWithSuggestionMarker()
             throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
-        WebContents webContents = cvc.getWebContents();
+        WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
 
@@ -66,22 +66,22 @@ public class TextSuggestionMenuTest {
         mRule.commitText(textToCommit, 1);
 
         DOMUtils.clickNode(cvc, "div");
-        waitForMenuToShow(cvc);
+        waitForMenuToShow(webContents);
 
-        TouchCommon.singleClickView(getDeleteButton(cvc));
+        TouchCommon.singleClickView(getDeleteButton(webContents));
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div").equals("");
+                    return DOMUtils.getNodeContents(webContents, "div").equals("");
                 } catch (InterruptedException | TimeoutException e) {
                     return false;
                 }
             }
         });
 
-        waitForMenuToHide(cvc);
+        waitForMenuToHide(webContents);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class TextSuggestionMenuTest {
     public void testDeleteWordMarkedWithSpellingMarker()
             throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
-        WebContents webContents = cvc.getWebContents();
+        WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
 
@@ -121,29 +121,29 @@ public class TextSuggestionMenuTest {
                         + "internals.setMarker(document, range, 'spelling');");
 
         DOMUtils.clickNode(cvc, "div");
-        waitForMenuToShow(cvc);
+        waitForMenuToShow(webContents);
 
-        TouchCommon.singleClickView(getDeleteButton(cvc));
+        TouchCommon.singleClickView(getDeleteButton(webContents));
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div").equals("");
+                    return DOMUtils.getNodeContents(mRule.getWebContents(), "div").equals("");
                 } catch (InterruptedException | TimeoutException e) {
                     return false;
                 }
             }
         });
 
-        waitForMenuToHide(cvc);
+        waitForMenuToHide(webContents);
     }
 
     @Test
     @LargeTest
     public void testApplySuggestion() throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
-        WebContents webContents = cvc.getWebContents();
+        WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
 
@@ -187,27 +187,27 @@ public class TextSuggestionMenuTest {
         });
 
         DOMUtils.clickNode(cvc, "span");
-        waitForMenuToShow(cvc);
+        waitForMenuToShow(webContents);
 
         // There should be 5 child views: 4 suggestions plus the list footer.
-        Assert.assertEquals(5, getSuggestionList(cvc).getChildCount());
+        Assert.assertEquals(5, getSuggestionList(webContents).getChildCount());
 
-        Assert.assertEquals(
-                "hello suggestion1", ((TextView) getSuggestionButton(cvc, 0)).getText().toString());
-        Assert.assertEquals(
-                "hello suggestion2", ((TextView) getSuggestionButton(cvc, 1)).getText().toString());
-        Assert.assertEquals(
-                "suggestion3", ((TextView) getSuggestionButton(cvc, 2)).getText().toString());
-        Assert.assertEquals(
-                "suggestion4", ((TextView) getSuggestionButton(cvc, 3)).getText().toString());
+        Assert.assertEquals("hello suggestion1",
+                ((TextView) getSuggestionButton(webContents, 0)).getText().toString());
+        Assert.assertEquals("hello suggestion2",
+                ((TextView) getSuggestionButton(webContents, 1)).getText().toString());
+        Assert.assertEquals("suggestion3",
+                ((TextView) getSuggestionButton(webContents, 2)).getText().toString());
+        Assert.assertEquals("suggestion4",
+                ((TextView) getSuggestionButton(webContents, 3)).getText().toString());
 
-        TouchCommon.singleClickView(getSuggestionButton(cvc, 2));
+        TouchCommon.singleClickView(getSuggestionButton(webContents, 2));
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div")
+                    return DOMUtils.getNodeContents(mRule.getWebContents(), "div")
                             .equals("suggestion3");
                 } catch (InterruptedException | TimeoutException e) {
                     return false;
@@ -215,7 +215,7 @@ public class TextSuggestionMenuTest {
             }
         });
 
-        waitForMenuToHide(cvc);
+        waitForMenuToHide(webContents);
     }
 
     @Test
@@ -223,7 +223,7 @@ public class TextSuggestionMenuTest {
     public void testApplyMisspellingSuggestion()
             throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
-        WebContents webContents = cvc.getWebContents();
+        WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
 
@@ -237,21 +237,21 @@ public class TextSuggestionMenuTest {
         mRule.commitText(textToCommit, 1);
 
         DOMUtils.clickNode(cvc, "span");
-        waitForMenuToShow(cvc);
+        waitForMenuToShow(webContents);
 
         // There should be 2 child views: 1 suggestion plus the list footer.
-        Assert.assertEquals(2, getSuggestionList(cvc).getChildCount());
+        Assert.assertEquals(2, getSuggestionList(webContents).getChildCount());
 
-        Assert.assertEquals(
-                "replacement", ((TextView) getSuggestionButton(cvc, 0)).getText().toString());
+        Assert.assertEquals("replacement",
+                ((TextView) getSuggestionButton(webContents, 0)).getText().toString());
 
-        TouchCommon.singleClickView(getSuggestionButton(cvc, 0));
+        TouchCommon.singleClickView(getSuggestionButton(webContents, 0));
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div")
+                    return DOMUtils.getNodeContents(mRule.getWebContents(), "div")
                             .equals("replacement");
                 } catch (InterruptedException | TimeoutException e) {
                     return false;
@@ -259,7 +259,7 @@ public class TextSuggestionMenuTest {
             }
         });
 
-        waitForMenuToHide(cvc);
+        waitForMenuToHide(webContents);
 
         // Verify that the suggestion marker was replaced.
         Assert.assertEquals("0",
@@ -272,7 +272,7 @@ public class TextSuggestionMenuTest {
     @LargeTest
     public void suggestionMenuDismissal() throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
-        WebContents webContents = cvc.getWebContents();
+        WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
 
@@ -283,24 +283,24 @@ public class TextSuggestionMenuTest {
         mRule.commitText(textToCommit, 1);
 
         DOMUtils.clickNode(cvc, "div");
-        waitForMenuToShow(cvc);
+        waitForMenuToShow(webContents);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                cvc.getTextSuggestionHostForTesting()
+                TextSuggestionHost.fromWebContents(webContents)
                         .getTextSuggestionsPopupWindowForTesting()
                         .dismiss();
             }
         });
-        waitForMenuToHide(cvc);
+        waitForMenuToHide(webContents);
     }
 
-    private void waitForMenuToShow(ContentViewCore cvc) {
+    private void waitForMenuToShow(WebContents webContents) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                View deleteButton = getDeleteButton(cvc);
+                View deleteButton = getDeleteButton(webContents);
                 if (deleteButton == null) {
                     return false;
                 }
@@ -314,32 +314,35 @@ public class TextSuggestionMenuTest {
         });
     }
 
-    private void waitForMenuToHide(ContentViewCore cvc) {
+    private void waitForMenuToHide(WebContents webContents) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 SuggestionsPopupWindow suggestionsPopupWindow =
-                        cvc.getTextSuggestionHostForTesting()
+                        TextSuggestionHost.fromWebContents(webContents)
                                 .getTextSuggestionsPopupWindowForTesting();
 
                 SuggestionsPopupWindow spellCheckPopupWindow =
-                        cvc.getTextSuggestionHostForTesting().getSpellCheckPopupWindowForTesting();
+                        TextSuggestionHost.fromWebContents(webContents)
+                                .getSpellCheckPopupWindowForTesting();
 
                 return suggestionsPopupWindow == null && spellCheckPopupWindow == null;
             }
         });
     }
 
-    private View getContentView(ContentViewCore cvc) {
+    private View getContentView(WebContents webContents) {
         SuggestionsPopupWindow suggestionsPopupWindow =
-                cvc.getTextSuggestionHostForTesting().getTextSuggestionsPopupWindowForTesting();
+                TextSuggestionHost.fromWebContents(webContents)
+                        .getTextSuggestionsPopupWindowForTesting();
 
         if (suggestionsPopupWindow != null) {
             return suggestionsPopupWindow.getContentViewForTesting();
         }
 
         SuggestionsPopupWindow spellCheckPopupWindow =
-                cvc.getTextSuggestionHostForTesting().getSpellCheckPopupWindowForTesting();
+                TextSuggestionHost.fromWebContents(webContents)
+                        .getSpellCheckPopupWindowForTesting();
 
         if (spellCheckPopupWindow != null) {
             return spellCheckPopupWindow.getContentViewForTesting();
@@ -348,17 +351,17 @@ public class TextSuggestionMenuTest {
         return null;
     }
 
-    private ListView getSuggestionList(ContentViewCore cvc) {
-        View contentView = getContentView(cvc);
+    private ListView getSuggestionList(WebContents webContents) {
+        View contentView = getContentView(webContents);
         return (ListView) contentView.findViewById(R.id.suggestionContainer);
     }
 
-    private View getSuggestionButton(ContentViewCore cvc, int suggestionIndex) {
-        return getSuggestionList(cvc).getChildAt(suggestionIndex);
+    private View getSuggestionButton(WebContents webContents, int suggestionIndex) {
+        return getSuggestionList(webContents).getChildAt(suggestionIndex);
     }
 
-    private View getDeleteButton(ContentViewCore cvc) {
-        View contentView = getContentView(cvc);
+    private View getDeleteButton(WebContents webContents) {
+        View contentView = getContentView(webContents);
         if (contentView == null) {
             return null;
         }

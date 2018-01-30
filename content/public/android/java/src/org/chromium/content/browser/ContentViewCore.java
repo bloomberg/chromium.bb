@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.input.SelectPopup;
-import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -377,15 +376,6 @@ public interface ContentViewCore {
     void setFullscreenRequiredForOrientationLock(boolean value);
 
     // Test-only methods
-
-    /**
-     * @return The TextSuggestionHost that handles displaying the text suggestion menu.
-     */
-    @VisibleForTesting
-    TextSuggestionHost getTextSuggestionHostForTesting();
-
-    @VisibleForTesting
-    void setTextSuggestionHostForTesting(TextSuggestionHost textSuggestionHost);
 
     /**
      * @return The amount of the top controls height if controls are in the state

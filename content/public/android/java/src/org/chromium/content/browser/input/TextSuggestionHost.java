@@ -13,6 +13,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
+import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -24,9 +26,9 @@ import org.chromium.ui.base.WindowAndroid;
 @JNINamespace("content")
 public class TextSuggestionHost implements WindowEventObserver, WindowAndroidChangedObserver {
     private long mNativeTextSuggestionHost;
-    private final Context mContext;
     private final WebContentsImpl mWebContents;
 
+    private Context mContext;
     private View mContainerView;
     private boolean mIsAttachedToWindow;
     private WindowAndroid mWindowAndroid;
@@ -34,13 +36,58 @@ public class TextSuggestionHost implements WindowEventObserver, WindowAndroidCha
     private SpellCheckPopupWindow mSpellCheckPopupWindow;
     private TextSuggestionsPopupWindow mTextSuggestionsPopupWindow;
 
-    public TextSuggestionHost(
-            Context context, WebContentsImpl webContents, WindowAndroid windowAndroid, View view) {
+    private boolean mInitialized;
+
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<TextSuggestionHost> INSTANCE = TextSuggestionHost::new;
+    }
+
+    /**
+     * Create {@link TextSuggestionHost} instance.
+     * @param context Context for action mode.
+     * @param webContents WebContents instance.
+     * @param windowAndroid The current WindowAndroid instance.
+     * @param view Container view.
+     */
+    public static TextSuggestionHost create(
+            Context context, WebContents webContents, WindowAndroid windowAndroid, View view) {
+        TextSuggestionHost host = WebContentsUserData.fromWebContents(
+                webContents, TextSuggestionHost.class, UserDataFactoryLazyHolder.INSTANCE);
+        assert host != null;
+        assert !host.initialized();
+        host.init(context, windowAndroid, view);
+        return host;
+    }
+
+    /**
+     * Get {@link TextSuggestionHost} object used for the give WebContents.
+     * {@link #create()} should precede any calls to this.
+     * @param webContents {@link WebContents} object.
+     * @return {@link TextSuggestionHost} object. {@code null} if not available because
+     *         {@link #create()} is not called yet.
+     */
+    public static TextSuggestionHost fromWebContents(WebContents webContents) {
+        return WebContentsUserData.fromWebContents(webContents, TextSuggestionHost.class, null);
+    }
+
+    /**
+     * Create {@link TextSuggestionHost} instance.
+     * @param webContents WebContents instance.
+     */
+    public TextSuggestionHost(WebContents webContents) {
+        mWebContents = (WebContentsImpl) webContents;
+    }
+
+    private void init(Context context, WindowAndroid windowAndroid, View view) {
         mContext = context;
-        mWebContents = webContents;
         mWindowAndroid = windowAndroid;
         mContainerView = view;
-        mNativeTextSuggestionHost = nativeInit(webContents);
+        mNativeTextSuggestionHost = nativeInit(mWebContents);
+        mInitialized = true;
+    }
+
+    private boolean initialized() {
+        return mInitialized;
     }
 
     private float getContentOffsetYPix() {
