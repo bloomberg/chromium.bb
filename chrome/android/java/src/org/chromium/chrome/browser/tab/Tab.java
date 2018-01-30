@@ -116,6 +116,7 @@ import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -1823,9 +1824,10 @@ public class Tab
             mNativePage = null;
             destroyNativePageInternal(previousNativePage);
 
-            if (mContentViewCore != null) {
-                mContentViewCore.setObscuredByAnotherView(false);
-                mContentViewCore.getWebContents().setImportance(ChildProcessImportance.NORMAL);
+            WebContents oldWebContents = getWebContents();
+            if (oldWebContents != null) {
+                oldWebContents.setImportance(ChildProcessImportance.NORMAL);
+                getWebContentsAccessibility(oldWebContents).setObscuredByAnotherView(false);
             }
 
             mContentViewCore = cvc;
@@ -1871,7 +1873,7 @@ public class Tab
             // For browser tabs, we want to set accessibility focus to the page
             // when it loads. This is not the default behavior for embedded
             // web views.
-            mContentViewCore.setShouldSetAccessibilityFocusOnPageLoad(true);
+            getWebContentsAccessibility(getWebContents()).setShouldFocusOnPageLoad(true);
 
             ImeAdapter.fromWebContents(mContentViewCore.getWebContents())
                     .addEventObserver(new ImeEventObserver() {
@@ -1910,6 +1912,10 @@ public class Tab
             mGestureStateListener = createGestureStateListener();
         }
         GestureListenerManager.fromWebContents(webContents).addListener(mGestureStateListener);
+    }
+
+    private static WebContentsAccessibility getWebContentsAccessibility(WebContents webContents) {
+        return webContents != null ? WebContentsAccessibility.fromWebContents(webContents) : null;
     }
 
     /**
@@ -3168,11 +3174,11 @@ public class Tab
             }
         }
 
-        ContentViewCore cvc = getContentViewCore();
-        if (cvc != null) {
+        WebContentsAccessibility wcax = getWebContentsAccessibility(getWebContents());
+        if (wcax != null) {
             boolean isWebContentObscured = isObscuredByAnotherViewForAccessibility()
                     || isShowingSadTab();
-            cvc.setObscuredByAnotherView(isWebContentObscured);
+            wcax.setObscuredByAnotherView(isWebContentObscured);
         }
     }
 
