@@ -69,19 +69,6 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   // Call once when finished adding bytes via BytesRead.
   void DoneReading();
 
-  class TestDelegate {
-   public:
-    virtual ~TestDelegate() {}
-
-    // These methods will be called inside BytesRead/DoneReading respectively.
-    // If either return something other than NONE, then the failure callback
-    // will be dispatched with that reason.
-    virtual FailureReason BytesRead(const std::string& extension_id,
-                                    int count,
-                                    const char* data) = 0;
-    virtual FailureReason DoneReading(const std::string& extension_id) = 0;
-  };
-
   class TestObserver {
    public:
     virtual void JobStarted(const std::string& extension_id,
@@ -92,9 +79,9 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
                              FailureReason failure_reason) = 0;
   };
 
-  // Note: having interleaved delegates is not supported.
-  static void SetDelegateForTests(TestDelegate* delegate);
+  static void SetIgnoreVerificationForTests(bool value);
 
+  // Note: having interleaved observer is not supported.
   static void SetObserverForTests(TestObserver* observer);
 
  private:

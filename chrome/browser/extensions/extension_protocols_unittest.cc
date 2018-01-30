@@ -29,11 +29,13 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
+#include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/base/request_priority.h"
@@ -55,14 +57,11 @@ base::FilePath GetTestPath(const std::string& name) {
   return path.AppendASCII("extensions").AppendASCII(name);
 }
 
-// Helper function that creates a file at |relative_path| within |directory|
-// and fills it with |content|.
-bool AddFileToDirectory(const base::FilePath& directory,
-                        const base::FilePath& relative_path,
-                        const std::string& content) {
-  base::FilePath full_path = directory.Append(relative_path);
-  int result = base::WriteFile(full_path, content.data(), content.size());
-  return static_cast<size_t>(result) == content.size();
+base::FilePath GetContentVerifierTestPath() {
+  base::FilePath path;
+  EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &path));
+  return path.AppendASCII("content_hash_fetcher")
+      .AppendASCII("different_sized_files");
 }
 
 scoped_refptr<Extension> CreateTestExtension(const std::string& name,
@@ -119,60 +118,6 @@ scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }
-
-// A ContentVerifyJob::TestDelegate that observes DoneReading().
-class JobDelegate : public ContentVerifyJob::TestDelegate {
- public:
-  explicit JobDelegate(const std::string& expected_contents)
-      : expected_contents_(expected_contents), run_loop_(new base::RunLoop()) {
-    ContentVerifyJob::SetDelegateForTests(this);
-  }
-  ~JobDelegate() override { ContentVerifyJob::SetDelegateForTests(nullptr); }
-
-  ContentVerifyJob::FailureReason BytesRead(const ExtensionId& id,
-                                            int count,
-                                            const char* data) override {
-    read_contents_.append(data, count);
-    return ContentVerifyJob::NONE;
-  }
-
-  ContentVerifyJob::FailureReason DoneReading(const ExtensionId& id) override {
-    seen_done_reading_extension_ids_.insert(id);
-    if (waiting_for_extension_id_ == id)
-      run_loop_->Quit();
-
-    if (!base::StartsWith(expected_contents_, read_contents_,
-                          base::CompareCase::SENSITIVE)) {
-      ADD_FAILURE() << "Unexpected read, expected: " << expected_contents_
-                    << ", but found: " << read_contents_;
-    }
-    return ContentVerifyJob::NONE;
-  }
-
-  void WaitForDoneReading(const ExtensionId& id) {
-    ASSERT_FALSE(waiting_for_extension_id_);
-    if (seen_done_reading_extension_ids_.count(id))
-      return;
-    waiting_for_extension_id_ = id;
-    run_loop_->Run();
-  }
-
-  void Reset() {
-    read_contents_.clear();
-    waiting_for_extension_id_.reset();
-    seen_done_reading_extension_ids_.clear();
-    run_loop_ = std::make_unique<base::RunLoop>();
-  }
-
- private:
-  std::string expected_contents_;
-  std::string read_contents_;
-  std::set<ExtensionId> seen_done_reading_extension_ids_;
-  base::Optional<ExtensionId> waiting_for_extension_id_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(JobDelegate);
-};
 
 }  // namespace
 
@@ -516,101 +461,121 @@ TEST_F(ExtensionProtocolsTest, MetadataFolder) {
 // Tests that unreadable files and deleted files correctly go through
 // ContentVerifyJob.
 TEST_F(ExtensionProtocolsTest, VerificationSeenForFileAccessErrors) {
-  const char kFooJsContents[] = "hello world.";
-  JobDelegate test_job_delegate(kFooJsContents);
   SetProtocolHandler(false);
 
-  const std::string kFooJs("foo.js");
-  // Create a temporary directory that a fake extension will live in and fill
-  // it with some test files.
+  // Unzip extension containing verification hashes to a temporary directory.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath foo_js(FILE_PATH_LITERAL("foo.js"));
-  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), foo_js, kFooJsContents))
-      << "Failed to write " << temp_dir.GetPath().value() << "/"
-      << foo_js.value();
-
-  ExtensionBuilder builder;
-  builder
-      .SetManifest(DictionaryBuilder()
-                       .Set("name", "Foo")
-                       .Set("version", "1.0")
-                       .Set("manifest_version", 2)
-                       .Set("update_url",
-                            "https://clients2.google.com/service/update2/crx")
-                       .Build())
-      .SetID(crx_file::id_util::GenerateId("whatever"))
-      .SetPath(temp_dir.GetPath())
-      .SetLocation(Manifest::INTERNAL);
-  scoped_refptr<Extension> extension(builder.Build());
-
+  base::FilePath unzipped_path = temp_dir.GetPath();
+  scoped_refptr<Extension> extension =
+      content_verifier_test_utils::UnzipToDirAndLoadExtension(
+          GetContentVerifierTestPath().AppendASCII("source.zip"),
+          unzipped_path);
   ASSERT_TRUE(extension.get());
-  content_verifier_->OnExtensionLoaded(testing_profile_.get(), extension.get());
-  // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
-  content::RunAllPendingInMessageLoop();
+  ExtensionId extension_id = extension->id();
 
-  // Valid and readable foo.js.
-  EXPECT_EQ(net::OK, DoRequest(*extension, kFooJs));
-  test_job_delegate.WaitForDoneReading(extension->id());
+  const std::string kJs("1024.js");
+  base::FilePath kRelativePath(FILE_PATH_LITERAL("1024.js"));
 
-  // chmod -r foo.js.
-  base::FilePath foo_path = temp_dir.GetPath().AppendASCII(kFooJs);
-  ASSERT_TRUE(base::MakeFileUnreadable(foo_path));
-  test_job_delegate.Reset();
-  EXPECT_EQ(net::ERR_ACCESS_DENIED, DoRequest(*extension, kFooJs));
-  test_job_delegate.WaitForDoneReading(extension->id());
+  // Valid and readable 1024.js.
+  {
+    TestContentVerifyJobObserver observer(extension_id, kRelativePath);
 
-  // Delete foo.js.
-  ASSERT_TRUE(base::DieFileDie(foo_path, false));
-  test_job_delegate.Reset();
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, DoRequest(*extension, kFooJs));
-  test_job_delegate.WaitForDoneReading(extension->id());
+    content_verifier_->OnExtensionLoaded(testing_profile_.get(),
+                                         extension.get());
+    // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
+    content::RunAllPendingInMessageLoop();
+
+    EXPECT_EQ(net::OK, DoRequest(*extension, kJs));
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+  }
+
+  // chmod -r 1024.js.
+  {
+    TestContentVerifyJobObserver observer(extension->id(), kRelativePath);
+    base::FilePath file_path = unzipped_path.AppendASCII(kJs);
+    ASSERT_TRUE(base::MakeFileUnreadable(file_path));
+    EXPECT_EQ(net::ERR_ACCESS_DENIED, DoRequest(*extension, kJs));
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
+              observer.WaitAndGetFailureReason());
+    // NOTE: In production, hash mismatch would have disabled |extension|, but
+    // since UnzipToDirAndLoadExtension() doesn't add the extension to
+    // ExtensionRegistry, ChromeContentVerifierDelegate won't disable it.
+    // TODO(lazyboy): We may want to update this to more closely reflect the
+    // real flow.
+  }
+
+  // Delete 1024.js.
+  {
+    TestContentVerifyJobObserver observer(extension_id, kRelativePath);
+    base::FilePath file_path = unzipped_path.AppendASCII(kJs);
+    ASSERT_TRUE(base::DieFileDie(file_path, false));
+    EXPECT_EQ(net::ERR_FILE_NOT_FOUND, DoRequest(*extension, kJs));
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
+              observer.WaitAndGetFailureReason());
+  }
 }
 
 // Tests that zero byte files correctly go through ContentVerifyJob.
 TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
-  const char kFooJsContents[] = "";  // Empty.
-  JobDelegate test_job_delegate(kFooJsContents);
   SetProtocolHandler(false);
 
-  const std::string kFooJs("foo.js");
-  // Create a temporary directory that a fake extension will live in and fill
-  // it with some test files.
+  const std::string kEmptyJs("empty.js");
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath foo_js(FILE_PATH_LITERAL("foo.js"));
-  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), foo_js, kFooJsContents))
-      << "Failed to write " << temp_dir.GetPath().value() << "/"
-      << foo_js.value();
+  base::FilePath unzipped_path = temp_dir.GetPath();
 
-  // Sanity check foo.js.
-  base::FilePath foo_path = temp_dir.GetPath().AppendASCII(kFooJs);
+  scoped_refptr<Extension> extension =
+      content_verifier_test_utils::UnzipToDirAndLoadExtension(
+          GetContentVerifierTestPath().AppendASCII("source.zip"),
+          unzipped_path);
+  ASSERT_TRUE(extension.get());
+
+  base::FilePath kRelativePath(FILE_PATH_LITERAL("empty.js"));
+  ExtensionId extension_id = extension->id();
+
+  // Sanity check empty.js.
+  base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
   int64_t foo_file_size = -1;
-  ASSERT_TRUE(base::GetFileSize(foo_path, &foo_file_size));
+  ASSERT_TRUE(base::GetFileSize(file_path, &foo_file_size));
   ASSERT_EQ(0, foo_file_size);
 
-  ExtensionBuilder builder;
-  builder
-      .SetManifest(DictionaryBuilder()
-                       .Set("name", "Foo")
-                       .Set("version", "1.0")
-                       .Set("manifest_version", 2)
-                       .Set("update_url",
-                            "https://clients2.google.com/service/update2/crx")
-                       .Build())
-      .SetID(crx_file::id_util::GenerateId("whatever"))
-      .SetPath(temp_dir.GetPath())
-      .SetLocation(Manifest::INTERNAL);
-  scoped_refptr<Extension> extension(builder.Build());
+  // Request empty.js.
+  {
+    TestContentVerifyJobObserver observer(extension_id, kRelativePath);
 
-  ASSERT_TRUE(extension.get());
-  content_verifier_->OnExtensionLoaded(testing_profile_.get(), extension.get());
-  // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
-  content::RunAllPendingInMessageLoop();
+    content_verifier_->OnExtensionLoaded(testing_profile_.get(),
+                                         extension.get());
+    // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
+    content::RunAllPendingInMessageLoop();
 
-  // Request foo.js.
-  EXPECT_EQ(net::OK, DoRequest(*extension, kFooJs));
-  test_job_delegate.WaitForDoneReading(extension->id());
+    EXPECT_EQ(net::OK, DoRequest(*extension, kEmptyJs));
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+  }
+
+  // chmod -r empty.js.
+  // Unreadable empty file doesn't generate hash mismatch. Note that this is the
+  // current behavior of ContentVerifyJob.
+  // TODO(lazyboy): The behavior is probably incorrect.
+  {
+    TestContentVerifyJobObserver observer(extension->id(), kRelativePath);
+    base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
+    ASSERT_TRUE(base::MakeFileUnreadable(file_path));
+    EXPECT_EQ(net::ERR_ACCESS_DENIED, DoRequest(*extension, kEmptyJs));
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+  }
+
+  // rm empty.js.
+  // Deleted empty file doesn't generate hash mismatch. Note that this is the
+  // current behavior of ContentVerifyJob.
+  // TODO(lazyboy): The behavior is probably incorrect.
+  {
+    TestContentVerifyJobObserver observer(extension_id, kRelativePath);
+    base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
+    ASSERT_TRUE(base::DieFileDie(file_path, false));
+    EXPECT_EQ(net::ERR_FILE_NOT_FOUND, DoRequest(*extension, kEmptyJs));
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+  }
 }
 
 // Tests that mime types are properly set for returned extension resources.
