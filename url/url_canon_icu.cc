@@ -13,6 +13,7 @@
 #include "third_party/icu/source/common/unicode/ucnv.h"
 #include "third_party/icu/source/common/unicode/ucnv_cb.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
 #include "url/url_canon_icu.h"
 #include "url/url_canon_internal.h"  // for _itoa_s
 
@@ -101,7 +102,8 @@ struct UIDNAWrapper {
     // registrars, search engines) converge toward a consensus.
     value = uidna_openUTS46(UIDNA_CHECK_BIDI, &err);
     if (U_FAILURE(err)) {
-      CHECK(false) << "failed to open UTS46 data with error: " << err
+      CHECK(false) << "failed to open UTS46 data with error: "
+                   << u_errorName(err)
                    << ". If you see this error message in a test environment "
                    << "your test environment likely lacks the required data "
                    << "tables for libicu. See https://crbug.com/778929.";

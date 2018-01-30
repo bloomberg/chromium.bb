@@ -8,10 +8,20 @@
 #include <string>
 #include <vector>
 
+#include "base/at_exit.h"
+#include "base/i18n/icu_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/import/password_csv_reader.h"
 
 namespace password_manager {
+
+struct IcuEnvironment {
+  IcuEnvironment() { CHECK(base::i18n::InitializeICU()); }
+  // used by ICU integration.
+  base::AtExitManager at_exit_manager;
+};
+
+IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<autofill::PasswordForm> passwords;
