@@ -58,8 +58,7 @@ void ChromeAppListModelUpdater::MoveItemToFolder(const std::string& id,
   model_->MoveItemToFolder(item, folder_id);
 }
 
-void ChromeAppListModelUpdater::SetStatus(
-    app_list::AppListModel::Status status) {
+void ChromeAppListModelUpdater::SetStatus(ash::AppListModelStatus status) {
   model_->SetStatus(status);
 }
 

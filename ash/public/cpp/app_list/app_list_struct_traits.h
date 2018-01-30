@@ -47,6 +47,34 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
   }
 };
 
+template <>
+struct EnumTraits<ash::mojom::AppListModelStatus, ash::AppListModelStatus> {
+  static ash::mojom::AppListModelStatus ToMojom(ash::AppListModelStatus input) {
+    switch (input) {
+      case ash::AppListModelStatus::kStatusNormal:
+        return ash::mojom::AppListModelStatus::kStatusNormal;
+      case ash::AppListModelStatus::kStatusSyncing:
+        return ash::mojom::AppListModelStatus::kStatusSyncing;
+    }
+    NOTREACHED();
+    return ash::mojom::AppListModelStatus::kStatusNormal;
+  }
+
+  static bool FromMojom(ash::mojom::AppListModelStatus input,
+                        ash::AppListModelStatus* out) {
+    switch (input) {
+      case ash::mojom::AppListModelStatus::kStatusNormal:
+        *out = ash::AppListModelStatus::kStatusNormal;
+        return true;
+      case ash::mojom::AppListModelStatus::kStatusSyncing:
+        *out = ash::AppListModelStatus::kStatusSyncing;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_STRUCT_TRAITS_H_

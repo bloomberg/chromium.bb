@@ -5,4 +5,7 @@
 mojom = "//ash/public/interfaces/app_list.mojom"
 public_headers = [ "//ash/public/cpp/app_list/app_list_types.h" ]
 traits_headers = [ "//ash/public/cpp/app_list/app_list_struct_traits.h" ]
-type_mappings = [ "ash.mojom.AppListState=ash::AppListState" ]
+type_mappings = [
+  "ash.mojom.AppListState=ash::AppListState",
+  "ash.mojom.AppListModelStatus=ash::AppListModelStatus",
+]

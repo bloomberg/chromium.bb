@@ -25,3 +25,9 @@ enum AppListState {
   kStateSearchResults,
   kStateStart,
 };
+
+// The status of the app list model.
+enum AppListModelStatus {
+  kStatusNormal,
+  kStatusSyncing,  // Syncing apps or installing synced apps.
+};

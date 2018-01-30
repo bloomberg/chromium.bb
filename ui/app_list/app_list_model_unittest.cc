@@ -105,14 +105,14 @@ class AppListModelTest : public testing::Test {
 };
 
 TEST_F(AppListModelTest, SetStatus) {
-  EXPECT_EQ(AppListModel::STATUS_NORMAL, model_.status());
-  model_.SetStatus(AppListModel::STATUS_SYNCING);
+  EXPECT_EQ(ash::AppListModelStatus::kStatusNormal, model_.status());
+  model_.SetStatus(ash::AppListModelStatus::kStatusSyncing);
   EXPECT_EQ(1, observer_.status_changed_count());
-  EXPECT_EQ(AppListModel::STATUS_SYNCING, model_.status());
-  model_.SetStatus(AppListModel::STATUS_NORMAL);
+  EXPECT_EQ(ash::AppListModelStatus::kStatusSyncing, model_.status());
+  model_.SetStatus(ash::AppListModelStatus::kStatusNormal);
   EXPECT_EQ(2, observer_.status_changed_count());
   // Set the same status, no change is expected.
-  model_.SetStatus(AppListModel::STATUS_NORMAL);
+  model_.SetStatus(ash::AppListModelStatus::kStatusNormal);
   EXPECT_EQ(2, observer_.status_changed_count());
 }
 
