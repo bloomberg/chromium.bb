@@ -48,7 +48,7 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
   LockOrientationResultHolder* results_;
 };
 
-class ScreenOrientationDelegateTest : public testing::Test {
+class ScreenOrientationDelegateTest : public ::testing::Test {
  protected:
   void SetUp() override {
     delegate_.reset(new ScreenOrientationDelegate(nullptr));
