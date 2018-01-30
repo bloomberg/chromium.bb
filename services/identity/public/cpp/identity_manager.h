@@ -11,12 +11,19 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
+#if !defined(OS_CHROMEOS)
+#include "components/signin/core/browser/signin_manager.h"
+#endif
+
 namespace identity {
 
 // Primary client-side interface to the Identity Service, encapsulating a
 // connection to a remote implementation of mojom::IdentityManager. See
 // ./README.md for detailed documentation.
 class IdentityManager : public SigninManagerBase::Observer,
+#if !defined(OS_CHROMEOS)
+                        public SigninManager::DiagnosticsClient,
+#endif
                         public OAuth2TokenService::DiagnosticsObserver {
  public:
   class Observer {
@@ -103,6 +110,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
+
+#if !defined(OS_CHROMEOS)
+  // SigninManagerBase::DiagnosticsClient:
+  void WillFireGoogleSigninSucceeded(const AccountInfo& account_info) override;
+  void WillFireGoogleSignedOut(const AccountInfo& account_info) override;
+#endif
 
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(

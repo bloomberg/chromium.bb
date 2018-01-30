@@ -61,6 +61,59 @@ class CustomFakeProfileOAuth2TokenService
   base::OnceClosure on_access_token_invalidated_callback_;
 };
 
+class TestSigninManagerObserver : public SigninManagerBase::Observer {
+ public:
+  explicit TestSigninManagerObserver(SigninManagerBase* signin_manager)
+      : signin_manager_(signin_manager) {
+    signin_manager_->AddObserver(this);
+  }
+  ~TestSigninManagerObserver() override {
+    signin_manager_->RemoveObserver(this);
+  }
+
+  void set_identity_manager(IdentityManager* identity_manager) {
+    identity_manager_ = identity_manager;
+  }
+
+  void set_on_google_signin_succeeded_callback(base::OnceClosure callback) {
+    on_google_signin_succeeded_callback_ = std::move(callback);
+  }
+  void set_on_google_signed_out_callback(base::OnceClosure callback) {
+    on_google_signed_out_callback_ = std::move(callback);
+  }
+
+  const AccountInfo& primary_account_from_signin_callback() {
+    return primary_account_from_signin_callback_;
+  }
+  const AccountInfo& primary_account_from_signout_callback() {
+    return primary_account_from_signout_callback_;
+  }
+
+ private:
+  // SigninManager::Observer:
+  void GoogleSigninSucceeded(const AccountInfo& account_info) override {
+    ASSERT_TRUE(identity_manager_);
+    primary_account_from_signin_callback_ =
+        identity_manager_->GetPrimaryAccountInfo();
+    if (on_google_signin_succeeded_callback_)
+      std::move(on_google_signin_succeeded_callback_).Run();
+  }
+  void GoogleSignedOut(const AccountInfo& account_info) override {
+    ASSERT_TRUE(identity_manager_);
+    primary_account_from_signout_callback_ =
+        identity_manager_->GetPrimaryAccountInfo();
+    if (on_google_signed_out_callback_)
+      std::move(on_google_signed_out_callback_).Run();
+  }
+
+  SigninManagerBase* signin_manager_;
+  IdentityManager* identity_manager_;
+  base::OnceClosure on_google_signin_succeeded_callback_;
+  base::OnceClosure on_google_signed_out_callback_;
+  AccountInfo primary_account_from_signin_callback_;
+  AccountInfo primary_account_from_signout_callback_;
+};
+
 class TestIdentityManagerObserver : IdentityManager::Observer {
  public:
   explicit TestIdentityManagerObserver(IdentityManager* identity_manager)
@@ -177,12 +230,7 @@ class IdentityManagerTest : public testing::Test {
 
     signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
 
-    identity_manager_.reset(
-        new IdentityManager(&signin_manager_, &token_service_));
-    identity_manager_observer_.reset(
-        new TestIdentityManagerObserver(identity_manager_.get()));
-    identity_manager_diagnostics_observer_.reset(
-        new TestIdentityManagerDiagnosticsObserver(identity_manager_.get()));
+    RecreateIdentityManager();
   }
 
   IdentityManager* identity_manager() { return identity_manager_.get(); }
@@ -197,6 +245,24 @@ class IdentityManagerTest : public testing::Test {
   SigninManagerForTest* signin_manager() { return &signin_manager_; }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
+  }
+
+  // Used by some tests that need to re-instantiate IdentityManager after
+  // performing some other setup.
+  void RecreateIdentityManager() {
+    // Reset them all to null first to ensure that they're destroyed, as
+    // otherwise SigninManager ends up getting a new DiagnosticsObserver added
+    // before the old one is removed.
+    identity_manager_observer_.reset();
+    identity_manager_diagnostics_observer_.reset();
+    identity_manager_.reset();
+
+    identity_manager_.reset(
+        new IdentityManager(&signin_manager_, &token_service_));
+    identity_manager_observer_.reset(
+        new TestIdentityManagerObserver(identity_manager_.get()));
+    identity_manager_diagnostics_observer_.reset(
+        new TestIdentityManagerDiagnosticsObserver(identity_manager_.get()));
   }
 
  private:
@@ -355,5 +421,57 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   EXPECT_EQ(scopes,
             identity_manager_diagnostics_observer()->token_requestor_scopes());
 }
+
+#if !defined(OS_CHROMEOS)
+TEST_F(IdentityManagerTest,
+       IdentityManagerGetsSignInEventBeforeSigninManagerObserver) {
+  signin_manager()->ForceSignOut();
+
+  base::RunLoop run_loop;
+  TestSigninManagerObserver signin_manager_observer(signin_manager());
+  signin_manager_observer.set_on_google_signin_succeeded_callback(
+      run_loop.QuitClosure());
+
+  // NOTE: For this test to be meaningful, TestSigninManagerObserver
+  // needs to be created before the IdentityManager instance that it's
+  // interacting with. Otherwise, even an implementation where they're
+  // both SigninManager::Observers would work as IdentityManager would
+  // get notified first during the observer callbacks.
+  RecreateIdentityManager();
+  signin_manager_observer.set_identity_manager(identity_manager());
+
+  signin_manager()->SignIn(kTestGaiaId, kTestEmail, "password");
+  run_loop.Run();
+
+  AccountInfo primary_account_from_signin_callback =
+      signin_manager_observer.primary_account_from_signin_callback();
+  EXPECT_EQ(kTestGaiaId, primary_account_from_signin_callback.gaia);
+  EXPECT_EQ(kTestEmail, primary_account_from_signin_callback.email);
+}
+
+TEST_F(IdentityManagerTest,
+       IdentityManagerGetsSignOutEventBeforeSigninManagerObserver) {
+  base::RunLoop run_loop;
+  TestSigninManagerObserver signin_manager_observer(signin_manager());
+  signin_manager_observer.set_on_google_signed_out_callback(
+      run_loop.QuitClosure());
+
+  // NOTE: For this test to be meaningful, TestSigninManagerObserver
+  // needs to be created before the IdentityManager instance that it's
+  // interacting with. Otherwise, even an implementation where they're
+  // both SigninManager::Observers would work as IdentityManager would
+  // get notified first during the observer callbacks.
+  RecreateIdentityManager();
+  signin_manager_observer.set_identity_manager(identity_manager());
+
+  signin_manager()->ForceSignOut();
+  run_loop.Run();
+
+  AccountInfo primary_account_from_signout_callback =
+      signin_manager_observer.primary_account_from_signout_callback();
+  EXPECT_EQ(std::string(), primary_account_from_signout_callback.gaia);
+  EXPECT_EQ(std::string(), primary_account_from_signout_callback.email);
+}
+#endif
 
 }  // namespace identity

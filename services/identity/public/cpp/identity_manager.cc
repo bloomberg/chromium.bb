@@ -13,11 +13,17 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
     : signin_manager_(signin_manager), token_service_(token_service) {
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
   signin_manager_->AddObserver(this);
+#if !defined(OS_CHROMEOS)
+  static_cast<SigninManager*>(signin_manager_)->set_diagnostics_client(this);
+#endif
   token_service_->AddDiagnosticsObserver(this);
 }
 
 IdentityManager::~IdentityManager() {
   signin_manager_->RemoveObserver(this);
+#if !defined(OS_CHROMEOS)
+  static_cast<SigninManager*>(signin_manager_)->set_diagnostics_client(nullptr);
+#endif
   token_service_->RemoveDiagnosticsObserver(this);
 }
 
@@ -96,10 +102,27 @@ void IdentityManager::SetPrimaryAccountSynchronouslyForTests(
                                     refresh_token);
 }
 
+#if !defined(OS_CHROMEOS)
+void IdentityManager::WillFireGoogleSigninSucceeded(
+    const AccountInfo& account_info) {
+  primary_account_info_ = account_info;
+}
+
+void IdentityManager::WillFireGoogleSignedOut(const AccountInfo& account_info) {
+  DCHECK(account_info.account_id == primary_account_info_.account_id);
+  DCHECK(account_info.gaia == primary_account_info_.gaia);
+  DCHECK(account_info.email == primary_account_info_.email);
+  primary_account_info_ = AccountInfo();
+}
+#endif
+
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   // Fire observer callbacks asynchronously to mimic this callback itself coming
   // in asynchronously from the Identity Service rather than synchronously from
   // SigninManager.
+  DCHECK(account_info.account_id == primary_account_info_.account_id);
+  DCHECK(account_info.gaia == primary_account_info_.gaia);
+  DCHECK(account_info.email == primary_account_info_.email);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&IdentityManager::HandleGoogleSigninSucceeded,
                                 base::Unretained(this), account_info));
@@ -109,6 +132,7 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
   // Fire observer callbacks asynchronously to mimic this callback itself coming
   // in asynchronously from the Identity Service rather than synchronously from
   // SigninManager.
+  DCHECK(!HasPrimaryAccount());
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&IdentityManager::HandleGoogleSignedOut,
                                 base::Unretained(this), account_info));
@@ -129,17 +153,12 @@ void IdentityManager::OnAccessTokenRequested(
 
 void IdentityManager::HandleGoogleSigninSucceeded(
     const AccountInfo& account_info) {
-  primary_account_info_ = account_info;
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
   }
 }
 
 void IdentityManager::HandleGoogleSignedOut(const AccountInfo& account_info) {
-  DCHECK(account_info.account_id == primary_account_info_.account_id);
-  DCHECK(account_info.gaia == primary_account_info_.gaia);
-  DCHECK(account_info.email == primary_account_info_.email);
-  primary_account_info_ = AccountInfo();
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
   }
