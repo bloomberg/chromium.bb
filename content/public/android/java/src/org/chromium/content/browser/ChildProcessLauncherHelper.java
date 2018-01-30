@@ -233,11 +233,6 @@ public class ChildProcessLauncherHelper {
         sSpareSandboxedConnection = new SpareChildConnection(context, allocator, serviceBundle);
     }
 
-    public static String getPackageNameForService(boolean sandboxed) {
-        return sandboxed ? ChildProcessCreationParams.getPackageNameForSandboxedService()
-                         : ContextUtils.getApplicationContext().getPackageName();
-    }
-
     /**
      * Starts the moderate binding management that adjust a process priority in response to various
      * signals (app sent to background/foreground for example).
@@ -314,7 +309,7 @@ public class ChildProcessLauncherHelper {
     @VisibleForTesting
     static ChildConnectionAllocator getConnectionAllocator(Context context, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        final String packageName = getPackageNameForService(sandboxed);
+        final String packageName = ChildProcessCreationParams.getPackageNameForService();
         boolean bindToCaller = ChildProcessCreationParams.getBindToCallerCheck();
         boolean bindAsExternalService =
                 sandboxed && ChildProcessCreationParams.getIsSandboxedServiceExternal();
@@ -484,7 +479,7 @@ public class ChildProcessLauncherHelper {
         }
 
         final Context context = ContextUtils.getApplicationContext();
-        final String packageName = ChildProcessCreationParams.getPackageNameForSandboxedService();
+        final String packageName = ChildProcessCreationParams.getPackageNameForService();
         try {
             return ChildConnectionAllocator.getNumberOfServices(
                     context, packageName, NUM_SANDBOXED_SERVICES_KEY);
