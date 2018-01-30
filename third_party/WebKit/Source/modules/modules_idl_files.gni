@@ -415,6 +415,7 @@ modules_idl_files =
           "xr/XRDevicePose.idl",
           "xr/XRFrameOfReference.idl",
           "xr/XRLayer.idl",
+          "xr/XRPresentationContext.idl",
           "xr/XRPresentationFrame.idl",
           "xr/XRSession.idl",
           "xr/XRSessionEvent.idl",

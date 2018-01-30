@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageBitmapRenderingContext_h
-#define ImageBitmapRenderingContext_h
+#ifndef XRPresentationContext_h
+#define XRPresentationContext_h
 
 #include "base/memory/scoped_refptr.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
@@ -12,9 +12,7 @@
 
 namespace blink {
 
-class ImageBitmap;
-
-class MODULES_EXPORT ImageBitmapRenderingContext final
+class MODULES_EXPORT XRPresentationContext final
     : public ImageBitmapRenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -23,42 +21,38 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
     WTF_MAKE_NONCOPYABLE(Factory);
 
    public:
-    Factory() = default;
-    ~Factory() override = default;
+    Factory() {}
+    ~Factory() override {}
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
         const CanvasContextCreationAttributes&) override;
     CanvasRenderingContext::ContextType GetContextType() const override {
-      return CanvasRenderingContext::kContextImageBitmap;
+      return CanvasRenderingContext::kContextXRPresent;
     }
   };
 
-  // Script API
-  void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
-
   // CanvasRenderingContext implementation
   ContextType GetContextType() const override {
-    return CanvasRenderingContext::kContextImageBitmap;
+    return CanvasRenderingContext::kContextXRPresent;
   }
-
   void SetCanvasGetContextResult(RenderingContext&) final;
 
-  virtual ~ImageBitmapRenderingContext();
+  virtual ~XRPresentationContext();
 
  private:
-  ImageBitmapRenderingContext(CanvasRenderingContextHost*,
-                              const CanvasContextCreationAttributes&);
+  XRPresentationContext(CanvasRenderingContextHost*,
+                        const CanvasContextCreationAttributes&);
 };
 
-DEFINE_TYPE_CASTS(ImageBitmapRenderingContext,
+DEFINE_TYPE_CASTS(XRPresentationContext,
                   CanvasRenderingContext,
                   context,
                   context->GetContextType() ==
-                      CanvasRenderingContext::kContextImageBitmap,
+                      CanvasRenderingContext::kContextXRPresent,
                   context.GetContextType() ==
-                      CanvasRenderingContext::kContextImageBitmap);
+                      CanvasRenderingContext::kContextXRPresent);
 
 }  // namespace blink
 
-#endif
+#endif  // XRPresentationContext_h

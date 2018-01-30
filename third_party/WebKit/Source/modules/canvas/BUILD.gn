@@ -29,6 +29,8 @@ blink_modules_sources("canvas") {
     "htmlcanvas/HTMLCanvasElementModule.h",
     "imagebitmap/ImageBitmapRenderingContext.cpp",
     "imagebitmap/ImageBitmapRenderingContext.h",
+    "imagebitmap/ImageBitmapRenderingContextBase.cpp",
+    "imagebitmap/ImageBitmapRenderingContextBase.h",
     "offscreencanvas/OffscreenCanvasModule.cpp",
     "offscreencanvas/OffscreenCanvasModule.h",
     "offscreencanvas2d/OffscreenCanvasRenderingContext2D.cpp",

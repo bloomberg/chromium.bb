@@ -8932,6 +8932,10 @@ interface XRFrameOfReference : XRCoordinateSystem
 interface XRLayer
     attribute @@toStringTag
     method constructor
+interface XRPresentationContext
+    attribute @@toStringTag
+    getter canvas
+    method constructor
 interface XRPresentationFrame
     attribute @@toStringTag
     getter session
