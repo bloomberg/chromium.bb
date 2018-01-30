@@ -25,6 +25,7 @@
 #include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -338,8 +339,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   }
 
   PrefService* pref_service = profile->GetPrefs();
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   UrlLanguageHistogram* language_histogram =
       UrlLanguageHistogramFactory::GetForBrowserContext(profile);
 
@@ -375,8 +376,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
   auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
-      signin_manager, token_service, request_context, pref_service,
-      language_histogram,
+      identity_manager, request_context, pref_service, language_histogram,
       base::Bind(
           &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
@@ -454,6 +454,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   DependsOn(OfflinePageModelFactory::GetInstance());
