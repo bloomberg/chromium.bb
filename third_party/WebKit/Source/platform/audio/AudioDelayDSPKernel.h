@@ -61,9 +61,6 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
   AudioFloatArray buffer_;
   double max_delay_time_;
   int write_index_;
-  double current_delay_time_;
-  double smoothing_rate_;
-  bool first_time_;
   double desired_delay_frames_;
 
   AudioFloatArray delay_times_;
