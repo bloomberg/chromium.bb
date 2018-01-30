@@ -69,6 +69,10 @@ void SoundContentSettingObserver::MuteOrUnmuteIfNecessary() {
   if (!mute && reason == TabMutedReason::MEDIA_CAPTURE)
     return;
 
+  // Do not unmute if we're muted due to audio indicator.
+  if (!mute && reason == TabMutedReason::AUDIO_INDICATOR)
+    return;
+
   // Do not override the decisions of an extension.
   if (reason == TabMutedReason::EXTENSION)
     return;
