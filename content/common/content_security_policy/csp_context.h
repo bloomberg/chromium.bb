@@ -108,6 +108,7 @@ struct CONTENT_EXPORT CSPViolationParams {
                      const std::string& console_message,
                      const GURL& blocked_url,
                      const std::vector<std::string>& report_endpoints,
+                     bool use_reporting_api,
                      const std::string& header,
                      const blink::WebContentSecurityPolicyType& disposition,
                      bool after_redirect,
@@ -128,9 +129,14 @@ struct CONTENT_EXPORT CSPViolationParams {
   // The URL that was blocked by the policy.
   GURL blocked_url;
 
-  // The set of URI where a JSON-formatted report of the violation should be
-  // sent.
+  // The set of endpoints where a report of the violation should be sent.
+  // Based on 'use_reporting_api' it can be either a set of group_names (when
+  // 'use_reporting_api' = true) or a set of URLs. This means that it's not
+  // possible to use both methods of reporting. This is by design.
   std::vector<std::string> report_endpoints;
+
+  // Whether to use the reporting api or not.
+  bool use_reporting_api;
 
   // The raw content security policy header that was violated.
   std::string header;

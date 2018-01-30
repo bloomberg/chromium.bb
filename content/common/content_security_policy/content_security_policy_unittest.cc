@@ -48,7 +48,7 @@ TEST(ContentSecurityPolicy, NoDirective) {
   CSPContextTest context;
   std::vector<std::string> report_end_points;  // empty
   ContentSecurityPolicy policy(EmptyCspHeader(), std::vector<CSPDirective>(),
-                               report_end_points);
+                               report_end_points, false);
 
   EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FormAction,
                                            GURL("http://www.example.com"),
@@ -65,8 +65,8 @@ TEST(ContentSecurityPolicy, ReportViolation) {
   CSPSourceList source_list(false, false, {source});
   CSPDirective directive(CSPDirective::FormAction, source_list);
   std::vector<std::string> report_end_points;  // empty
-  ContentSecurityPolicy policy(EmptyCspHeader(), {directive},
-                               report_end_points);
+  ContentSecurityPolicy policy(EmptyCspHeader(), {directive}, report_end_points,
+                               false);
 
   EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FormAction,
                                             GURL("http://www.not-example.com"),
@@ -93,7 +93,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
     ContentSecurityPolicy policy(
         EmptyCspHeader(),
         {CSPDirective(CSPDirective::DefaultSrc, source_list_a)},
-        report_end_points);
+        report_end_points, false);
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                               GURL("http://b.com"), false,
                                               &context, SourceLocation()));
@@ -112,7 +112,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
     CSPContextTest context;
     ContentSecurityPolicy policy(
         EmptyCspHeader(), {CSPDirective(CSPDirective::ChildSrc, source_list_a)},
-        report_end_points);
+        report_end_points, false);
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                               GURL("http://b.com"), false,
                                               &context, SourceLocation()));
@@ -134,7 +134,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         EmptyCspHeader(),
         {CSPDirective(CSPDirective::FrameSrc, {source_list_a}),
          CSPDirective(CSPDirective::ChildSrc, {source_list_b})},
-        report_end_points);
+        report_end_points, false);
     EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                              GURL("http://a.com"), false,
                                              &context, SourceLocation()));
@@ -158,7 +158,7 @@ TEST(ContentSecurityPolicy, RequestsAllowedWhenBypassingCSP) {
   CSPSourceList source_list(false, false, {source});
   ContentSecurityPolicy policy(
       EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
-      report_end_points);
+      report_end_points, false);
 
   EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                            GURL("https://example.com/"), false,
@@ -186,7 +186,7 @@ TEST(ContentSecurityPolicy, FilesystemAllowedWhenBypassingCSP) {
   CSPSourceList source_list(false, false, {source});
   ContentSecurityPolicy policy(
       EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
-      report_end_points);
+      report_end_points, false);
 
   EXPECT_FALSE(ContentSecurityPolicy::Allow(
       policy, CSPDirective::FrameSrc,
@@ -218,7 +218,7 @@ TEST(ContentSecurityPolicy, BlobAllowedWhenBypassingCSP) {
   CSPSourceList source_list(false, false, {source});
   ContentSecurityPolicy policy(
       EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
-      report_end_points);
+      report_end_points, false);
 
   EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                             GURL("blob:https://example.com/"),
@@ -245,7 +245,7 @@ TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
   CSPSourceList source_list(false, false, {source});
   ContentSecurityPolicy policy(
       EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
-      report_end_points);
+      report_end_points, false);
 
   EXPECT_FALSE(ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy));
 

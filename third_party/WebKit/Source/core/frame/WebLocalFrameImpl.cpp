@@ -2137,20 +2137,16 @@ void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
   for (const WebString& end_point : violation.report_endpoints)
     report_endpoints.push_back(end_point);
   document->GetContentSecurityPolicy()->ReportViolation(
-      violation.directive, /* directiveText */
-      ContentSecurityPolicy::GetDirectiveType(
-          violation.effective_directive), /* effectiveType */
-      violation.console_message,          /* consoleMessage */
-      violation.blocked_url,              /* blockedUrl */
-      report_endpoints,                   /* reportEndpoints */
-      false,                              /* don't use the reporting api yet*/
-      violation.header,                   /* header */
+      violation.directive,
+      ContentSecurityPolicy::GetDirectiveType(violation.effective_directive),
+      violation.console_message, violation.blocked_url, report_endpoints,
+      violation.use_reporting_api, violation.header,
       static_cast<ContentSecurityPolicyHeaderType>(violation.disposition),
-      ContentSecurityPolicy::ViolationType::kURLViolation, /* ViolationType */
-      std::move(source_location), nullptr,                 /* LocalFrame */
+      ContentSecurityPolicy::ViolationType::kURLViolation,
+      std::move(source_location), nullptr /* LocalFrame */,
       violation.after_redirect ? RedirectStatus::kFollowedRedirect
                                : RedirectStatus::kNoRedirect,
-      nullptr); /* Element */
+      nullptr /* Element */);
 }
 
 bool WebLocalFrameImpl::IsLoading() const {

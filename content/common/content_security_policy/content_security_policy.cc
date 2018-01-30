@@ -86,8 +86,9 @@ void ReportViolation(CSPContext* context,
   context->ReportContentSecurityPolicyViolation(CSPViolationParams(
       CSPDirective::NameToString(directive.name),
       CSPDirective::NameToString(directive_name), message.str(), safe_url,
-      policy.report_endpoints, policy.header.header_value, policy.header.type,
-      is_redirect, safe_source_location));
+      policy.report_endpoints, policy.use_reporting_api,
+      policy.header.header_value, policy.header.type, is_redirect,
+      safe_source_location));
 }
 
 bool AllowDirective(CSPContext* context,
@@ -123,21 +124,21 @@ bool ShouldBypassContentSecurityPolicy(CSPContext* context, const GURL& url) {
 
 }  // namespace
 
-ContentSecurityPolicy::ContentSecurityPolicy()
-    : header(std::string(),
-             blink::kWebContentSecurityPolicyTypeEnforce,
-             blink::kWebContentSecurityPolicySourceHTTP) {}
+ContentSecurityPolicy::ContentSecurityPolicy() = default;
 
 ContentSecurityPolicy::ContentSecurityPolicy(
     const ContentSecurityPolicyHeader& header,
     const std::vector<CSPDirective>& directives,
-    const std::vector<std::string>& report_endpoints)
+    const std::vector<std::string>& report_endpoints,
+    bool use_reporting_api)
     : header(header),
       directives(directives),
-      report_endpoints(report_endpoints) {}
+      report_endpoints(report_endpoints),
+      use_reporting_api(use_reporting_api) {}
 
-ContentSecurityPolicy::ContentSecurityPolicy(const ContentSecurityPolicy&) =
-    default;
+ContentSecurityPolicy::ContentSecurityPolicy(
+    const ContentSecurityPolicy& other) = default;
+
 ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 
 // static

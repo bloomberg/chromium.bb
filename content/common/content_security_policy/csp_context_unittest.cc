@@ -61,7 +61,7 @@ ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
                                   blink::kWebContentSecurityPolicyTypeEnforce,
                                   blink::kWebContentSecurityPolicySourceHTTP),
       {CSPDirective(directive_name, CSPSourceList(false, false, sources))},
-      std::vector<std::string>());  // report_end_points
+      std::vector<std::string>(), false);  // report_end_points
 }
 
 }  // namespace

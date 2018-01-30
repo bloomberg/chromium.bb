@@ -70,6 +70,7 @@ struct WebContentSecurityPolicy {
   WebVector<WebContentSecurityPolicyDirective> directives;
   WebVector<WebString> report_endpoints;
   WebString header;
+  bool use_reporting_api;
 };
 
 struct WebContentSecurityPolicyViolation {
@@ -86,9 +87,14 @@ struct WebContentSecurityPolicyViolation {
   // The URL that was blocked by the policy.
   WebURL blocked_url;
 
-  // The set of URI where a JSON-formatted report of the violation should be
-  // sent.
+  // The set of endpoints where a report of the violation should be sent.
+  // Based on 'use_reporting_api' it can be either a set of group_names (when
+  // 'use_reporting_api' = true) or a set of URLs. This means that it's not
+  // possible to use both methods of reporting. This is by design.
   WebVector<WebString> report_endpoints;
+
+  // Whether to use the reporting api or not.
+  bool use_reporting_api;
 
   // The raw content security policy header that was infringed.
   WebString header;
