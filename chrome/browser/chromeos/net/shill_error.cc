@@ -110,6 +110,15 @@ base::string16 GetShillErrorString(const std::string& error,
                                     base::UTF8ToUTF16(error));
 }
 
+bool IsConfigurationError(const std::string& error) {
+  if (error.empty())
+    return false;
+  return error == shill::kErrorPinMissing ||
+         error == shill::kErrorBadPassphrase ||
+         error == shill::kErrorResultInvalidPassphrase ||
+         error == shill::kErrorBadWEPKey;
+}
+
 }  // namespace shill_error
 
 }  // namespace chromeos

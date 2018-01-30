@@ -15,6 +15,9 @@ namespace shill_error {
 base::string16 GetShillErrorString(const std::string& error,
                                    const std::string& network_id);
 
+// Returns true if |error| is known to be a configuration error.
+bool IsConfigurationError(const std::string& error);
+
 }  // namespace shill_error
 }  // namespace chromeos
 
