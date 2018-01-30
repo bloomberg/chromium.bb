@@ -150,6 +150,17 @@ class CxxDependencyTest(unittest.TestCase):
             errors = self.runCheck(filename, ['// %s' % item])
             self.assertEqual([], errors)
 
+    # References in Test files should never be checked.
+    def testCheckTestsIgnored(self):
+        filename = 'third_party/WebKit/Source/core/frame/FrameTest.cc'
+        for item in self.allow_list:
+            errors = self.runCheck(filename, ['// %s' % item])
+            self.assertEqual([], errors)
+
+        for item in self.disallow_list:
+            errors = self.runCheck(filename, ['// %s' % item])
+            self.assertEqual([], errors)
+
     # core, modules, public, et cetera should all have dependency enforcement.
     def testCheckCoreEnforcement(self):
         filename = 'third_party/WebKit/Source/core/frame/frame.cc'
