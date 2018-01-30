@@ -8,8 +8,8 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_delegate.h"
-#include "cc/animation/animation_player.h"
 #include "cc/animation/scroll_timeline.h"
+#include "cc/animation/single_ticker_animation_player.h"
 #include "cc/animation/worklet_animation_player.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
@@ -37,10 +37,11 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
       const String& name,
       std::unique_ptr<CompositorScrollTimeline>);
 
-  explicit CompositorAnimationPlayer(scoped_refptr<cc::AnimationPlayer>);
+  explicit CompositorAnimationPlayer(
+      scoped_refptr<cc::SingleTickerAnimationPlayer>);
   ~CompositorAnimationPlayer();
 
-  cc::AnimationPlayer* CcAnimationPlayer() const;
+  cc::SingleTickerAnimationPlayer* CcAnimationPlayer() const;
 
   // An animation delegate is notified when animations are started and stopped.
   // The CompositorAnimationPlayer does not take ownership of the delegate, and
@@ -73,7 +74,7 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
                                base::TimeTicks animation_start_time,
                                std::unique_ptr<cc::AnimationCurve>) override;
 
-  scoped_refptr<cc::AnimationPlayer> animation_player_;
+  scoped_refptr<cc::SingleTickerAnimationPlayer> animation_player_;
   CompositorAnimationDelegate* delegate_;
 };
 

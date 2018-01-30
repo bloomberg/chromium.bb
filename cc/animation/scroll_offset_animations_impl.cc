@@ -6,9 +6,9 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/single_ticker_animation_player.h"
 #include "cc/animation/timing_function.h"
 
 namespace cc {
@@ -18,8 +18,8 @@ ScrollOffsetAnimationsImpl::ScrollOffsetAnimationsImpl(
     : animation_host_(animation_host),
       scroll_offset_timeline_(
           AnimationTimeline::Create(AnimationIdProvider::NextTimelineId())),
-      scroll_offset_animation_player_(
-          AnimationPlayer::Create(AnimationIdProvider::NextPlayerId())) {
+      scroll_offset_animation_player_(SingleTickerAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId())) {
   scroll_offset_timeline_->set_is_impl_only(true);
   scroll_offset_animation_player_->set_animation_delegate(this);
 
@@ -66,7 +66,7 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
     base::TimeTicks frame_monotonic_time,
     base::TimeDelta delayed_by) {
   DCHECK(scroll_offset_animation_player_);
-  if (!scroll_offset_animation_player_->element_animations())
+  if (!scroll_offset_animation_player_->has_element_animations())
     return false;
 
   DCHECK_EQ(element_id, scroll_offset_animation_player_->element_id());
@@ -112,7 +112,7 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
   if (element_id != scroll_offset_animation_player_->element_id())
     return;
 
-  if (!scroll_offset_animation_player_->element_animations())
+  if (!scroll_offset_animation_player_->has_element_animations())
     return;
 
   Animation* animation = scroll_offset_animation_player_->GetAnimation(

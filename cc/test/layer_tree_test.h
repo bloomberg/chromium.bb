@@ -24,12 +24,12 @@ class TestLayerTreeFrameSink;
 namespace cc {
 
 class AnimationHost;
-class AnimationPlayer;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostForTesting;
 class LayerTreeTestLayerTreeFrameSinkClient;
 class Proxy;
+class SingleTickerAnimationPlayer;
 class TestContextProvider;
 class TestTaskGraphRunner;
 
@@ -73,11 +73,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void EndTestAfterDelayMs(int delay_milliseconds);
 
   void PostAddAnimationToMainThreadPlayer(
-      AnimationPlayer* player_to_receive_animation);
+      SingleTickerAnimationPlayer* player_to_receive_animation);
   void PostAddInstantAnimationToMainThreadPlayer(
-      AnimationPlayer* player_to_receive_animation);
+      SingleTickerAnimationPlayer* player_to_receive_animation);
   void PostAddLongAnimationToMainThreadPlayer(
-      AnimationPlayer* player_to_receive_animation);
+      SingleTickerAnimationPlayer* player_to_receive_animation);
   void PostSetLocalSurfaceIdToMainThread(
       const viz::LocalSurfaceId& local_surface_id);
   void PostSetDeferCommitsToMainThread(bool defer_commits);
@@ -167,7 +167,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
  private:
   virtual void DispatchAddAnimationToPlayer(
-      AnimationPlayer* player_to_receive_animation,
+      SingleTickerAnimationPlayer* player_to_receive_animation,
       double animation_duration);
   void DispatchSetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
   void DispatchSetDeferCommits(bool defer_commits);
