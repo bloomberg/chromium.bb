@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -29,14 +30,14 @@ class MockFileStream : public FileStream {
   ~MockFileStream() override;
 
   // FileStream methods.
-  int Seek(int64_t offset, const Int64CompletionCallback& callback) override;
+  int Seek(int64_t offset, Int64CompletionOnceCallback callback) override;
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override;
-  int Flush(const CompletionCallback& callback) override;
+            CompletionOnceCallback callback) override;
+  int Flush(CompletionOnceCallback callback) override;
 
   void set_forced_error_async(int error) {
     forced_error_ = error;
@@ -83,18 +84,18 @@ class MockFileStream : public FileStream {
 
   // Wrappers for callbacks to make them honor ThrottleCallbacks and
   // ReleaseCallbacks.
-  void DoCallback(const CompletionCallback& callback, int result);
-  void DoCallback64(const Int64CompletionCallback& callback, int64_t result);
+  void DoCallback(CompletionOnceCallback callback, int result);
+  void DoCallback64(Int64CompletionOnceCallback callback, int64_t result);
 
   // Depending on |async_error_|, either synchronously returns |forced_error_|
   // asynchronously calls |callback| with |async_error_|.
-  int ErrorCallback(const CompletionCallback& callback);
-  int64_t ErrorCallback64(const Int64CompletionCallback& callback);
+  int ErrorCallback(CompletionOnceCallback callback);
+  int64_t ErrorCallback64(Int64CompletionOnceCallback callback);
 
   int forced_error_;
   bool async_error_;
   bool throttled_;
-  base::Closure throttled_task_;
+  base::OnceClosure throttled_task_;
   base::FilePath path_;
 
   base::WeakPtrFactory<MockFileStream> weak_factory_;

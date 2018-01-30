@@ -108,6 +108,7 @@ component("net") {
     "base/auth.cc",
     "base/auth.h",
     "base/completion_callback.h",
+    "base/completion_once_callback.h",
     "base/escape.cc",
     "base/escape.h",
     "base/hash_value.cc",

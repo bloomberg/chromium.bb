@@ -22,20 +22,21 @@ FileStream::~FileStream() {
   context_.release()->Orphan();
 }
 
-int FileStream::Open(const base::FilePath& path, int open_flags,
-                     const CompletionCallback& callback) {
+int FileStream::Open(const base::FilePath& path,
+                     int open_flags,
+                     CompletionOnceCallback callback) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
     return ERR_UNEXPECTED;
   }
 
   DCHECK(open_flags & base::File::FLAG_ASYNC);
-  context_->Open(path, open_flags, callback);
+  context_->Open(path, open_flags, std::move(callback));
   return ERR_IO_PENDING;
 }
 
-int FileStream::Close(const CompletionCallback& callback) {
-  context_->Close(callback);
+int FileStream::Close(CompletionOnceCallback callback) {
+  context_->Close(std::move(callback));
   return ERR_IO_PENDING;
 }
 
@@ -43,50 +44,50 @@ bool FileStream::IsOpen() const {
   return context_->IsOpen();
 }
 
-int FileStream::Seek(int64_t offset, const Int64CompletionCallback& callback) {
+int FileStream::Seek(int64_t offset, Int64CompletionOnceCallback callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  context_->Seek(offset, callback);
+  context_->Seek(offset, std::move(callback));
   return ERR_IO_PENDING;
 }
 
 int FileStream::Read(IOBuffer* buf,
                      int buf_len,
-                     const CompletionCallback& callback) {
+                     CompletionOnceCallback callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
   // read(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 
-  return context_->Read(buf, buf_len, callback);
+  return context_->Read(buf, buf_len, std::move(callback));
 }
 
 int FileStream::Write(IOBuffer* buf,
                       int buf_len,
-                      const CompletionCallback& callback) {
+                      CompletionOnceCallback callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
   DCHECK_GE(buf_len, 0);
-  return context_->Write(buf, buf_len, callback);
+  return context_->Write(buf, buf_len, std::move(callback));
 }
 
 int FileStream::GetFileInfo(base::File::Info* file_info,
-                            const CompletionCallback& callback) {
+                            CompletionOnceCallback callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  context_->GetFileInfo(file_info, callback);
+  context_->GetFileInfo(file_info, std::move(callback));
   return ERR_IO_PENDING;
 }
 
-int FileStream::Flush(const CompletionCallback& callback) {
+int FileStream::Flush(CompletionOnceCallback callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  context_->Flush(callback);
+  context_->Flush(std::move(callback));
   return ERR_IO_PENDING;
 }
 

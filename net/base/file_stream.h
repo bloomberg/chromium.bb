@@ -16,7 +16,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -56,14 +56,15 @@ class NET_EXPORT FileStream {
   // automatically closed when FileStream is destructed in an asynchronous
   // manner (i.e. the file stream is closed in the background but you don't
   // know when).
-  virtual int Open(const base::FilePath& path, int open_flags,
-                   const CompletionCallback& callback);
+  virtual int Open(const base::FilePath& path,
+                   int open_flags,
+                   CompletionOnceCallback callback);
 
   // Returns ERR_IO_PENDING and closes the file asynchronously, calling
   // |callback| when done.
   // It is invalid to request any asynchronous operations while there is an
   // in-flight asynchronous operation.
-  virtual int Close(const CompletionCallback& callback);
+  virtual int Close(CompletionOnceCallback callback);
 
   // Returns true if Open succeeded and Close has not been called.
   virtual bool IsOpen() const;
@@ -74,7 +75,7 @@ class NET_EXPORT FileStream {
   // position relative to the start of the file.  Otherwise, an error code is
   // returned. It is invalid to request any asynchronous operations while there
   // is an in-flight asynchronous operation.
-  virtual int Seek(int64_t offset, const Int64CompletionCallback& callback);
+  virtual int Seek(int64_t offset, Int64CompletionOnceCallback callback);
 
   // Call this method to read data from the current stream position
   // asynchronously. Up to buf_len bytes will be copied into buf.  (In
@@ -96,8 +97,7 @@ class NET_EXPORT FileStream {
   // in-flight asynchronous operation.
   //
   // This method must not be called if the stream was opened WRITE_ONLY.
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback);
+  virtual int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
 
   // Call this method to write data at the current stream position
   // asynchronously.  Up to buf_len bytes will be written from buf. (In
@@ -121,8 +121,9 @@ class NET_EXPORT FileStream {
   // This method must not be called if the stream was opened READ_ONLY.
   //
   // Zero byte writes are not allowed.
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback);
+  virtual int Write(IOBuffer* buf,
+                    int buf_len,
+                    CompletionOnceCallback callback);
 
   // Gets status information about File. May fail synchronously, but never
   // succeeds synchronously.
@@ -132,7 +133,7 @@ class NET_EXPORT FileStream {
   //
   // |file_info| must remain valid until |callback| is invoked.
   virtual int GetFileInfo(base::File::Info* file_info,
-                          const CompletionCallback& callback);
+                          CompletionOnceCallback callback);
 
   // Forces out a filesystem sync on this file to make sure that the file was
   // written out to disk and is not currently sitting in the buffer. This does
@@ -153,7 +154,7 @@ class NET_EXPORT FileStream {
   // in-flight asynchronous operation.
   //
   // This method should not be called if the stream was opened READ_ONLY.
-  virtual int Flush(const CompletionCallback& callback);
+  virtual int Flush(CompletionOnceCallback callback);
 
  private:
   class Context;

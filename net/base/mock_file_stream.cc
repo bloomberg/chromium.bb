@@ -35,45 +35,44 @@ MockFileStream::MockFileStream(
 
 MockFileStream::~MockFileStream() = default;
 
-int MockFileStream::Seek(int64_t offset,
-                         const Int64CompletionCallback& callback) {
-  Int64CompletionCallback wrapped_callback =
-      base::Bind(&MockFileStream::DoCallback64,
-                 weak_factory_.GetWeakPtr(), callback);
+int MockFileStream::Seek(int64_t offset, Int64CompletionOnceCallback callback) {
+  Int64CompletionOnceCallback wrapped_callback =
+      base::BindOnce(&MockFileStream::DoCallback64, weak_factory_.GetWeakPtr(),
+                     std::move(callback));
   if (forced_error_ == OK)
-    return FileStream::Seek(offset, wrapped_callback);
-  return ErrorCallback64(wrapped_callback);
+    return FileStream::Seek(offset, std::move(wrapped_callback));
+  return ErrorCallback64(std::move(wrapped_callback));
 }
 
 int MockFileStream::Read(IOBuffer* buf,
                          int buf_len,
-                         const CompletionCallback& callback) {
-  CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
-                                                   weak_factory_.GetWeakPtr(),
-                                                   callback);
+                         CompletionOnceCallback callback) {
+  CompletionOnceCallback wrapped_callback =
+      base::BindOnce(&MockFileStream::DoCallback, weak_factory_.GetWeakPtr(),
+                     std::move(callback));
   if (forced_error_ == OK)
-    return FileStream::Read(buf, buf_len, wrapped_callback);
-  return ErrorCallback(wrapped_callback);
+    return FileStream::Read(buf, buf_len, std::move(wrapped_callback));
+  return ErrorCallback(std::move(wrapped_callback));
 }
 
 int MockFileStream::Write(IOBuffer* buf,
                           int buf_len,
-                          const CompletionCallback& callback) {
-  CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
-                                                   weak_factory_.GetWeakPtr(),
-                                                   callback);
+                          CompletionOnceCallback callback) {
+  CompletionOnceCallback wrapped_callback =
+      base::BindOnce(&MockFileStream::DoCallback, weak_factory_.GetWeakPtr(),
+                     std::move(callback));
   if (forced_error_ == OK)
-    return FileStream::Write(buf, buf_len, wrapped_callback);
-  return ErrorCallback(wrapped_callback);
+    return FileStream::Write(buf, buf_len, std::move(wrapped_callback));
+  return ErrorCallback(std::move(wrapped_callback));
 }
 
-int MockFileStream::Flush(const CompletionCallback& callback) {
-  CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
-                                                   weak_factory_.GetWeakPtr(),
-                                                   callback);
+int MockFileStream::Flush(CompletionOnceCallback callback) {
+  CompletionOnceCallback wrapped_callback =
+      base::BindOnce(&MockFileStream::DoCallback, weak_factory_.GetWeakPtr(),
+                     std::move(callback));
   if (forced_error_ == OK)
-    return FileStream::Flush(wrapped_callback);
-  return ErrorCallback(wrapped_callback);
+    return FileStream::Flush(std::move(wrapped_callback));
+  return ErrorCallback(std::move(wrapped_callback));
 }
 
 void MockFileStream::ThrottleCallbacks() {
@@ -86,37 +85,35 @@ void MockFileStream::ReleaseCallbacks() {
   throttled_ = false;
 
   if (!throttled_task_.is_null()) {
-    base::Closure throttled_task = throttled_task_;
-    throttled_task_.Reset();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, throttled_task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(throttled_task_));
   }
 }
 
-void MockFileStream::DoCallback(const CompletionCallback& callback,
-                                int result) {
+void MockFileStream::DoCallback(CompletionOnceCallback callback, int result) {
   if (!throttled_) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
   CHECK(throttled_task_.is_null());
-  throttled_task_ = base::Bind(callback, result);
+  throttled_task_ = base::BindOnce(std::move(callback), result);
 }
 
-void MockFileStream::DoCallback64(const Int64CompletionCallback& callback,
+void MockFileStream::DoCallback64(Int64CompletionOnceCallback callback,
                                   int64_t result) {
   if (!throttled_) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
   CHECK(throttled_task_.is_null());
-  throttled_task_ = base::Bind(callback, result);
+  throttled_task_ = base::BindOnce(std::move(callback), result);
 }
 
-int MockFileStream::ErrorCallback(const CompletionCallback& callback) {
+int MockFileStream::ErrorCallback(CompletionOnceCallback callback) {
   CHECK_NE(OK, forced_error_);
   if (async_error_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, forced_error_));
+        FROM_HERE, base::BindOnce(std::move(callback), forced_error_));
     clear_forced_error();
     return ERR_IO_PENDING;
   }
@@ -125,12 +122,11 @@ int MockFileStream::ErrorCallback(const CompletionCallback& callback) {
   return ret;
 }
 
-int64_t MockFileStream::ErrorCallback64(
-    const Int64CompletionCallback& callback) {
+int64_t MockFileStream::ErrorCallback64(Int64CompletionOnceCallback callback) {
   CHECK_NE(OK, forced_error_);
   if (async_error_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, forced_error_));
+        FROM_HERE, base::BindOnce(std::move(callback), forced_error_));
     clear_forced_error();
     return ERR_IO_PENDING;
   }
