@@ -408,8 +408,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void DidReceiveResponse(ResourceLoader* loader,
                           network::ResourceResponse* response) override;
   void DidFinishLoading(ResourceLoader* loader) override;
-  std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
-      ResourceLoader* loader) override;
 
   // An init helper that runs on the IO thread.
   void OnInit();

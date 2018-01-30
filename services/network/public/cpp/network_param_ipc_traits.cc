@@ -160,6 +160,42 @@ void ParamTraits<net::OCSPVerifyResult>::Log(const param_type& p,
   l->append("<OCSPVerifyResult>");
 }
 
+void ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, p != nullptr);
+  if (p) {
+    WriteParam(m, p->host_and_port);
+    WriteParam(m, p->is_proxy);
+    WriteParam(m, p->cert_authorities);
+    WriteParam(m, p->cert_key_types);
+  }
+}
+
+bool ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (!has_object) {
+    *r = nullptr;
+    return true;
+  }
+  *r = new net::SSLCertRequestInfo();
+  return ReadParam(m, iter, &(*r)->host_and_port) &&
+         ReadParam(m, iter, &(*r)->is_proxy) &&
+         ReadParam(m, iter, &(*r)->cert_authorities) &&
+         ReadParam(m, iter, &(*r)->cert_key_types);
+}
+
+void ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<SSLCertRequestInfo>");
+}
+
 void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.is_valid());
   if (!p.is_valid())

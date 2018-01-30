@@ -274,9 +274,6 @@
 
 # http://crbug.com/783996
 # Add support for TLS client auth.
--PrerenderBrowserTest.PrerenderSSLClientCertIframe
--PrerenderBrowserTest.PrerenderSSLClientCertSubresource
--PrerenderBrowserTest.PrerenderSSLClientCertTopLevel
 -SSLUITestWithClientCert.TestWSSClientCert
 
 # http://crbug.com/721414

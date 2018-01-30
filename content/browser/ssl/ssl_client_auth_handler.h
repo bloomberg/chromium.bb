@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/ssl_cert_request_info.h"
 
 namespace net {
 class ClientCertStore;
 class SSLPrivateKey;
-class URLRequest;
 class X509Certificate;
 }  // namespace net
 
@@ -53,11 +53,12 @@ class SSLClientAuthHandler {
   };
 
   // Creates a new SSLClientAuthHandler. The caller ensures that the handler
-  // does not outlive |request| or |delegate|.
-  SSLClientAuthHandler(std::unique_ptr<net::ClientCertStore> client_cert_store,
-                       net::URLRequest* request,
-                       net::SSLCertRequestInfo* cert_request_info,
-                       Delegate* delegate);
+  // does not outlive |delegate|.
+  SSLClientAuthHandler(
+      std::unique_ptr<net::ClientCertStore> client_cert_store,
+      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      net::SSLCertRequestInfo* cert_request_info,
+      Delegate* delegate);
   ~SSLClientAuthHandler();
 
   // Selects a certificate and resumes the URL request with that certificate.
@@ -86,8 +87,7 @@ class SSLClientAuthHandler {
   // ClientCertStore is in progress.
   scoped_refptr<Core> core_;
 
-  // The net::URLRequest that triggered this client auth.
-  net::URLRequest* request_;
+  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 
   // The certs to choose from.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;

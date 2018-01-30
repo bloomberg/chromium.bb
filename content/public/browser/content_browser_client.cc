@@ -25,6 +25,7 @@
 #include "media/media_features.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -645,6 +646,11 @@ bool ContentBrowserClient::ShouldPermitIndividualAttestationForWebauthnRPID(
     content::BrowserContext* browser_context,
     const std::string& rp_id) {
   return false;
+}
+
+std::unique_ptr<net::ClientCertStore>
+ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
+  return nullptr;
 }
 
 }  // namespace content

@@ -101,7 +101,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
-#include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -691,12 +690,6 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 
   // Destroy the ResourceLoader.
   RemovePendingRequest(info->GetChildID(), info->GetRequestID());
-}
-
-std::unique_ptr<net::ClientCertStore>
-    ResourceDispatcherHostImpl::CreateClientCertStore(ResourceLoader* loader) {
-  return delegate_->CreateClientCertStore(
-      loader->GetRequestInfo()->GetContext());
 }
 
 void ResourceDispatcherHostImpl::OnInit() {
@@ -2122,8 +2115,9 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     return;
   }
 
+  ResourceContext* resource_context = info->GetContext();
   std::unique_ptr<ResourceLoader> loader(new ResourceLoader(
-      std::move(request), std::move(handler), this));
+      std::move(request), std::move(handler), this, resource_context));
 
   GlobalFrameRoutingId id(info->GetChildID(), info->GetRenderFrameID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);

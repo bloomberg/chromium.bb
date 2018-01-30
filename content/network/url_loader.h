@@ -18,6 +18,7 @@
 #include "net/http/http_raw_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace net {
@@ -91,6 +92,11 @@ class CONTENT_EXPORT URLLoader : public network::mojom::URLLoader,
   void OnUploadProgressACK();
   void OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
                                      int net_error);
+  void OnCertificateRequestedResponse(
+      const scoped_refptr<net::X509Certificate>& x509_certificate,
+      const std::vector<uint16_t>& algorithm_preferences,
+      network::mojom::SSLPrivateKeyPtr ssl_private_key,
+      bool cancel_certificate_selection);
 
   NetworkContext* context_;
   int32_t options_;
@@ -137,6 +143,8 @@ class CONTENT_EXPORT URLLoader : public network::mojom::URLLoader,
   // -1, we still need to check whether it is from network before reporting it
   // as BodyReadFromNetBeforePaused.
   int64_t body_read_before_paused_ = -1;
+
+  network::mojom::SSLPrivateKeyPtr ssl_private_key_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 
