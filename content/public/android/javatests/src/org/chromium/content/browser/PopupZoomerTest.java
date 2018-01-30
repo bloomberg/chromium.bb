@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -108,8 +107,6 @@ public class PopupZoomerTest {
                 mPopupZoomer = createPopupZoomerForTest(
                         InstrumentationRegistry.getTargetContext(), containerView);
                 TapDisambiguator.fromWebContents(webContents).setPopupZoomerForTest(mPopupZoomer);
-                mContentViewCore.setTextSuggestionHostForTesting(new TextSuggestionHost(
-                        context, (WebContentsImpl) webContents, null, containerView));
             }
         });
     }
