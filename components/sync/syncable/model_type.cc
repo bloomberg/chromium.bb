@@ -236,6 +236,7 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case SUPERVISED_USER_SHARED_SETTINGS:
       specifics->mutable_managed_user_shared_setting();
+      break;
     case ARTICLES:
       specifics->mutable_article();
       break;
