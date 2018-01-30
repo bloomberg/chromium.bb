@@ -493,7 +493,7 @@ public class LocationBarLayout extends FrameLayout
             mSuggestionDefinitionHeight = context.getResources().getDimensionPixelOffset(
                     R.dimen.omnibox_suggestion_definition_height);
 
-            int paddingTop = mBottomSheet != null
+            int paddingTop = useModernDesign()
                     ? 0
                     : context.getResources().getDimensionPixelOffset(
                               R.dimen.omnibox_suggestion_list_padding_top);
