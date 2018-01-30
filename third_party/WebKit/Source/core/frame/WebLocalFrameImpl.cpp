@@ -2079,7 +2079,8 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
     // When replacing a failed back/forward provisional navigation with an error
     // page, retain the HistoryItem for the failed provisional navigation
     // and reuse it for the error page navigation.
-    if (provisional_document_loader->LoadType() == kFrameLoadTypeBackForward) {
+    if (provisional_document_loader->LoadType() == kFrameLoadTypeBackForward &&
+        provisional_document_loader->GetHistoryItem()) {
       history_item = provisional_document_loader->GetHistoryItem();
       web_frame_load_type = WebFrameLoadType::kBackForward;
     }
