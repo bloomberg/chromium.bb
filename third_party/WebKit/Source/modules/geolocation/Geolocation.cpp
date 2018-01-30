@@ -140,7 +140,6 @@ LocalFrame* Geolocation::GetFrame() const {
 }
 
 void Geolocation::ContextDestroyed(ExecutionContext*) {
-  geolocation_service_.reset();
   CancelAllRequests();
   StopUpdating();
   last_position_ = nullptr;
@@ -484,10 +483,12 @@ void Geolocation::UpdateGeolocationConnection() {
   if (geolocation_)
     return;
 
+  InterfaceInvalidator* invalidator =
+      GetExecutionContext()->GetInterfaceInvalidator();
   GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&geolocation_service_));
+      MakeRequest(&geolocation_service_, invalidator));
   geolocation_service_->CreateGeolocation(
-      mojo::MakeRequest(&geolocation_),
+      MakeRequest(&geolocation_, invalidator),
       Frame::HasTransientUserActivation(GetFrame()));
 
   geolocation_.set_connection_error_handler(WTF::Bind(
