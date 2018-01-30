@@ -42,6 +42,23 @@ enum PreferPlugInsForImagesOption {
   kShouldNotPreferPlugInsForImages
 };
 
+class PluginParameters {
+ public:
+  PluginParameters() {}
+  PluginParameters(Vector<String>& param_names, Vector<String>& param_values)
+      : names_(param_names), values_(param_values) {}
+
+  const Vector<String>& Names() const;
+  const Vector<String>& Values() const;
+  void AppendAttribute(const Attribute&);
+  void AppendNameWithValue(const String& name, const String& value);
+  int FindStringInNames(const String&);
+
+ private:
+  Vector<String> names_;
+  Vector<String> values_;
+};
+
 class CORE_EXPORT HTMLPlugInElement
     : public HTMLFrameOwnerElement,
       public ActiveScriptWrappable<HTMLPlugInElement> {
@@ -116,8 +133,7 @@ class CORE_EXPORT HTMLPlugInElement
   bool IsImageType();
   LayoutEmbeddedObject* GetLayoutEmbeddedObject() const;
   bool AllowedToLoadFrameURL(const String& url);
-  bool RequestObject(const Vector<String>& param_names,
-                     const Vector<String>& param_values);
+  bool RequestObject(const PluginParameters& plugin_params);
 
   void DispatchErrorEvent();
   bool IsErrorplaceholder();
@@ -163,8 +179,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   bool LoadPlugin(const KURL&,
                   const String& mime_type,
-                  const Vector<String>& param_names,
-                  const Vector<String>& param_values,
+                  const PluginParameters& plugin_params,
                   bool use_fallback,
                   bool require_layout_object);
   // Perform checks after we have determined that a plugin will be used to
@@ -183,8 +198,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   void SetPersistedPlugin(WebPluginContainerImpl*);
 
-  bool RequestObjectInternal(const Vector<String>& param_names,
-                             const Vector<String>& param_values);
+  bool RequestObjectInternal(const PluginParameters& plugin_params);
 
   v8::Global<v8::Object> plugin_wrapper_;
   bool needs_plugin_update_;
