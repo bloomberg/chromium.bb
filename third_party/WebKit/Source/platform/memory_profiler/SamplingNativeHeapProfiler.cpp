@@ -114,8 +114,11 @@ unsigned SamplingNativeHeapProfiler::BatchMallocFn(
     void** results,
     unsigned num_requested,
     void* context) {
-  CHECK(false) << "Not implemented.";
-  return 0;
+  unsigned num_allocated = self->next->batch_malloc_function(
+      self->next, size, results, num_requested, context);
+  for (unsigned i = 0; i < num_allocated; ++i)
+    MaybeRecordAlloc(results[i], size);
+  return num_allocated;
 }
 
 // static
@@ -123,16 +126,20 @@ void SamplingNativeHeapProfiler::BatchFreeFn(const AllocatorDispatch* self,
                                              void** to_be_freed,
                                              unsigned num_to_be_freed,
                                              void* context) {
-  CHECK(false) << "Not implemented.";
+  for (unsigned i = 0; i < num_to_be_freed; ++i)
+    MaybeRecordFree(to_be_freed[i]);
+  self->next->batch_free_function(self->next, to_be_freed, num_to_be_freed,
+                                  context);
 }
 
 // static
 void SamplingNativeHeapProfiler::FreeDefiniteSizeFn(
     const AllocatorDispatch* self,
-    void* ptr,
+    void* address,
     size_t size,
     void* context) {
-  CHECK(false) << "Not implemented.";
+  MaybeRecordFree(address);
+  self->next->free_definite_size_function(self->next, address, size, context);
 }
 
 AllocatorDispatch SamplingNativeHeapProfiler::allocator_dispatch_ = {
