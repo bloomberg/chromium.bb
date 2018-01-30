@@ -47,9 +47,6 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
   const int w1 = conv_params->bck_offset;
   const __m128i wt0 = _mm_set_epi32(w0, w0, w0, w0);
   const __m128i wt1 = _mm_set_epi32(w1, w1, w1, w1);
-  const int jnt_round_const = 1 << (DIST_PRECISION_BITS - 2);
-  const __m128i jnt_r = _mm_set_epi32(jnt_round_const, jnt_round_const,
-                                      jnt_round_const, jnt_round_const);
 
   /* Horizontal filter */
   {
@@ -207,18 +204,14 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
           if (do_average) {
             _mm_storeu_si128(
                 p + 0, _mm_srai_epi32(
-                           _mm_add_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0),
-                                                       _mm_mullo_epi32(
-                                                           res_lo_round, wt1)),
-                                         jnt_r),
+                           _mm_add_epi32(_mm_loadu_si128(p + 0),
+                                         _mm_mullo_epi32(res_lo_round, wt1)),
                            DIST_PRECISION_BITS - 1));
 
             _mm_storeu_si128(
                 p + 1, _mm_srai_epi32(
-                           _mm_add_epi32(_mm_add_epi32(_mm_loadu_si128(p + 1),
-                                                       _mm_mullo_epi32(
-                                                           res_hi_round, wt1)),
-                                         jnt_r),
+                           _mm_add_epi32(_mm_loadu_si128(p + 1),
+                                         _mm_mullo_epi32(res_hi_round, wt1)),
                            DIST_PRECISION_BITS - 1));
           } else {
             _mm_storeu_si128(p + 0, _mm_mullo_epi32(res_lo_round, wt0));

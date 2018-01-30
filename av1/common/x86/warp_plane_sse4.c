@@ -39,8 +39,6 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
   const int w1 = conv_params->bck_offset;
   const __m128i wt0 = _mm_set1_epi32(w0);
   const __m128i wt1 = _mm_set1_epi32(w1);
-  const int jnt_round_const = 1 << (DIST_PRECISION_BITS - 2);
-  const __m128i jnt_r = _mm_set1_epi32(jnt_round_const);
 #endif  // CONFIG_JNT_COMP
 
   /* Note: For this code to work, the left/right frame borders need to be
@@ -317,8 +315,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
             if (comp_avg) {
               const __m128i sum = _mm_add_epi32(_mm_loadu_si128(p),
                                                 _mm_mullo_epi32(res_lo, wt1));
-              const __m128i sum_round = _mm_add_epi32(sum, jnt_r);
-              res_lo = _mm_srai_epi32(sum_round, DIST_PRECISION_BITS - 1);
+              res_lo = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
             } else {
               res_lo = _mm_mullo_epi32(res_lo, wt0);
             }
@@ -340,8 +337,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
               if (comp_avg) {
                 const __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 1),
                                                   _mm_mullo_epi32(res_hi, wt1));
-                const __m128i sum_round = _mm_add_epi32(sum, jnt_r);
-                res_hi = _mm_srai_epi32(sum_round, DIST_PRECISION_BITS - 1);
+                res_hi = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
               } else {
                 res_hi = _mm_mullo_epi32(res_hi, wt0);
               }

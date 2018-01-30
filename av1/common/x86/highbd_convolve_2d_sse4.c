@@ -39,8 +39,6 @@ void av1_highbd_jnt_convolve_2d_sse4_1(
   const int w1 = conv_params->bck_offset;
   const __m128i wt0 = _mm_set1_epi32(w0);
   const __m128i wt1 = _mm_set1_epi32(w1);
-  const int jnt_round_const = 1 << (DIST_PRECISION_BITS - 2);
-  const __m128i jnt_r = _mm_set1_epi32(jnt_round_const);
 
   // Check that, even with 12-bit input, the intermediate values will fit
   // into an unsigned 15-bit intermediate array.
@@ -202,12 +200,10 @@ void av1_highbd_jnt_convolve_2d_sse4_1(
                 _mm_loadu_si128(p + 0), _mm_mullo_epi32(res_lo_round, wt1));
             const __m128i jnt_sum_hi = _mm_add_epi32(
                 _mm_loadu_si128(p + 1), _mm_mullo_epi32(res_hi_round, wt1));
-            const __m128i jnt_round_res_lo = _mm_add_epi32(jnt_sum_lo, jnt_r);
-            const __m128i jnt_round_res_hi = _mm_add_epi32(jnt_sum_hi, jnt_r);
             const __m128i final_lo =
-                _mm_srai_epi32(jnt_round_res_lo, DIST_PRECISION_BITS - 1);
+                _mm_srai_epi32(jnt_sum_lo, DIST_PRECISION_BITS - 1);
             const __m128i final_hi =
-                _mm_srai_epi32(jnt_round_res_hi, DIST_PRECISION_BITS - 1);
+                _mm_srai_epi32(jnt_sum_hi, DIST_PRECISION_BITS - 1);
 
             _mm_storeu_si128(p + 0, final_lo);
             _mm_storeu_si128(p + 1, final_hi);

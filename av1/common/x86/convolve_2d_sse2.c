@@ -676,8 +676,6 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
   const int w1 = conv_params->bck_offset;
   const __m128i wt0 = _mm_set1_epi32(w0);
   const __m128i wt1 = _mm_set1_epi32(w1);
-  const int jnt_round_const = 1 << (DIST_PRECISION_BITS - 2);
-  const __m128i jnt_r = _mm_set1_epi32(jnt_round_const);
 
   if (!(w % 16)) {
     for (i = 0; i < h; ++i) {
@@ -697,26 +695,22 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
 
             mul = _mm_mullo_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 1), weighted_res);
-            d32_1 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
 
             mul = _mm_mullo_epi16(d32_2, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 2), weighted_res);
-            d32_2 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_2 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
 
             mul = _mm_mullo_epi16(d32_3, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 3), weighted_res);
-            d32_3 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_3 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
             d32_1 = _mm_sll_epi32(_mm_mullo_epi16(d32_1, wt0), left_shift);
@@ -763,14 +757,12 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
 
             mul = _mm_mullo_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 1), weighted_res);
-            d32_1 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
             d32_1 = _mm_sll_epi32(_mm_mullo_epi16(d32_1, wt0), left_shift);
@@ -806,8 +798,7 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
           }
@@ -838,8 +829,7 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadl_epi64(p), weighted_res);
-            d32_0 = _mm_srai_epi32(_mm_add_epi32(sum, jnt_r),
-                                   DIST_PRECISION_BITS - 1);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
           }
