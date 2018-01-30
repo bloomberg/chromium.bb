@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -27,6 +28,11 @@ struct TestKey {
   const char* shift_capslock;
   const char* shift_altgr;
   const char* altgr_capslock;
+};
+
+struct DomKeyAndFlags {
+  DomKey key;
+  int flags;
 };
 
 }  // anonymous namespace
@@ -85,6 +91,16 @@ class PlatformKeyMapTest : public testing::Test {
                                     KeyboardCode key_code,
                                     int flags) {
     return keymap.DomKeyFromKeyboardCodeImpl(key_code, &flags);
+  }
+
+  // Returns the DomKey and |flags| in a struct, for use in tests verifying
+  // that the API correctly modifies the |flags| in/out parameter.
+  DomKeyAndFlags DomKeyAndFlagsFromKeyboardCode(const PlatformKeyMap& keymap,
+                                                KeyboardCode key_code,
+                                                int flags) {
+    DomKeyAndFlags result = {DomKey(), flags};
+    result.key = keymap.DomKeyFromKeyboardCodeImpl(key_code, &result.flags);
+    return result;
   }
 
  private:
@@ -326,7 +342,7 @@ TEST_F(PlatformKeyMapTest, JapaneseSpecificKeys) {
   }
 }
 
-TEST_F(PlatformKeyMapTest, AltGraph) {
+TEST_F(PlatformKeyMapTest, AltGraphDomKey) {
   PlatformKeyMap us_keymap(
       GetPlatformKeyboardLayout(KEYBOARD_LAYOUT_ENGLISH_US));
   EXPECT_EQ(DomKey::ALT,
@@ -342,5 +358,76 @@ TEST_F(PlatformKeyMapTest, AltGraph) {
             DomKeyFromKeyboardCodeImpl(fr_keymap, VKEY_MENU,
                                        EF_ALTGR_DOWN | EF_IS_EXTENDED_KEY));
 }
+
+namespace {
+
+const struct AltGraphModifierTestCase {
+  // Test-case Virtual Keycode and modifier flags.
+  KeyboardCode key_code;
+  int flags;
+
+  // Whether or not this case generates an AltGraph-shifted key under FR-fr
+  // layout.
+  bool expect_alt_graph;
+} kAltGraphModifierTestCases[] = {
+    {VKEY_C, EF_NONE, false},
+    {VKEY_C, EF_ALTGR_DOWN, false},
+    {VKEY_C, EF_CONTROL_DOWN | EF_ALT_DOWN, false},
+    {VKEY_C, EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN, false},
+    {VKEY_E, EF_NONE, false},
+    {VKEY_E, EF_ALTGR_DOWN, true},
+    {VKEY_E, EF_CONTROL_DOWN | EF_ALT_DOWN, true},
+    {VKEY_E, EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN, true},
+};
+
+class AltGraphModifierTest
+    : public PlatformKeyMapTest,
+      public testing::WithParamInterface<KeyboardLayout> {
+ public:
+  AltGraphModifierTest() : keymap_(GetPlatformKeyboardLayout(GetParam())) {}
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  PlatformKeyMap keymap_;
+};
+
+TEST_P(AltGraphModifierTest, OldAltGraphModifierBehaviour) {
+  feature_list_.InitFromCommandLine("", "FixAltGraph");
+
+  // Regardless of the keyboard layout, modifier flags should be unchanged.
+  for (const auto& test_case : kAltGraphModifierTestCases) {
+    DomKeyAndFlags result = DomKeyAndFlagsFromKeyboardCode(
+        keymap_, test_case.key_code, test_case.flags);
+    EXPECT_EQ(test_case.flags, result.flags)
+        << " for key_code=" << test_case.key_code;
+  }
+}
+
+TEST_P(AltGraphModifierTest, AltGraphModifierBehaviour) {
+  feature_list_.InitFromCommandLine("FixAltGraph", "");
+
+  // If the key generates a character under AltGraph then |result| should
+  // report AltGraph, but not Control or Alt.
+  for (const auto& test_case : kAltGraphModifierTestCases) {
+    DomKeyAndFlags result = DomKeyAndFlagsFromKeyboardCode(
+        keymap_, test_case.key_code, test_case.flags);
+    if (GetParam() == KEYBOARD_LAYOUT_FRENCH && test_case.expect_alt_graph) {
+      EXPECT_EQ(EF_ALTGR_DOWN, result.flags)
+          << " for key_code=" << test_case.key_code
+          << " flags=" << test_case.flags;
+    } else {
+      EXPECT_EQ(test_case.flags, result.flags)
+          << " for key_code=" << test_case.key_code
+          << " flags=" << test_case.flags;
+    }
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(VerifyAltGraph,
+                        AltGraphModifierTest,
+                        ::testing::Values(KEYBOARD_LAYOUT_ENGLISH_US,
+                                          KEYBOARD_LAYOUT_FRENCH));
+
+}  // namespace
 
 }  // namespace ui
