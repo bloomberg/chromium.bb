@@ -32,7 +32,8 @@ class PaintChunksToCcLayerTest : public ::testing::Test,
 };
 
 // A simple matcher that only looks for a few ops, ignoring all else.
-// Recognized ops: ClipRect, Concat, DrawRecord, Save, SaveLayer, Restore.
+// Recognized ops:
+//   ClipPath, ClipRect, Concat, DrawRecord, Save, SaveLayer, Restore.
 class PaintRecordMatcher
     : public ::testing::MatcherInterface<const cc::PaintOpBuffer&> {
  public:
@@ -51,6 +52,7 @@ class PaintRecordMatcher
     for (cc::PaintOpBuffer::Iterator it(&buffer); it; ++it, ++op_idx) {
       cc::PaintOpType op = (*it)->GetType();
       switch (op) {
+        case cc::PaintOpType::ClipPath:
         case cc::PaintOpType::ClipRect:
         case cc::PaintOpType::Concat:
         case cc::PaintOpType::DrawRecord:
@@ -520,6 +522,30 @@ TEST_F(PaintChunksToCcLayerTest, VisualRect) {
                    cc::PaintOpType::DrawRecord,   // <p0/>
                    cc::PaintOpType::Restore,      // </layer_transform>
                    cc::PaintOpType::Restore})));  // </layer_offset>
+}
+
+TEST_F(PaintChunksToCcLayerTest, NoncompositedClipPath) {
+  scoped_refptr<RefCountedPath> clip_path = base::AdoptRef(new RefCountedPath);
+  auto c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(25.f, 25.f, 100.f, 100.f), nullptr,
+      clip_path);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c1.get(), e0());
+
+  auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
+      cc::DisplayItemList::kTopLevelDisplayItemList);
+  PaintChunksToCcLayer::ConvertInto(chunks.GetChunkList(),
+                                    PropertyTreeState(t0(), c0(), e0()),
+                                    gfx::Vector2dF(), chunks.items, *cc_list);
+
+  EXPECT_THAT(cc_list->ReleaseAsRecord(),
+              Pointee(PaintRecordMatcher::Make(
+                  {cc::PaintOpType::Save,         //
+                   cc::PaintOpType::ClipRect,     //
+                   cc::PaintOpType::ClipPath,     // <clip_path>
+                   cc::PaintOpType::DrawRecord,   // <p0/>
+                   cc::PaintOpType::Restore})));  // </clip_path>
 }
 
 }  // namespace

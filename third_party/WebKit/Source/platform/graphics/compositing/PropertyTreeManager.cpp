@@ -481,7 +481,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   Vector<const ClipPaintPropertyNode*> pending_clips;
   for (; target_clip != current_clip_; target_clip = target_clip->Parent()) {
     DCHECK(target_clip);
-    bool should_synthesize = target_clip->ClipRect().IsRounded();
+    bool should_synthesize =
+        target_clip->ClipRect().IsRounded() || target_clip->ClipPath();
     if (should_synthesize)
       pending_clips.push_back(target_clip);
   }

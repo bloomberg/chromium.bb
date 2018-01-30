@@ -544,11 +544,11 @@ TEST_F(PaintArtifactCompositorTest, OneClip) {
 TEST_F(PaintArtifactCompositorTest, NestedClips) {
   scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(100, 100, 700, 700), nullptr,
+      FloatRoundedRect(100, 100, 700, 700), nullptr, nullptr,
       CompositingReason::kOverflowScrollingTouch);
   scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
       clip1, TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(200, 200, 700, 700), nullptr,
+      FloatRoundedRect(200, 200, 700, 700), nullptr, nullptr,
       CompositingReason::kOverflowScrollingTouch);
 
   TestPaintArtifact artifact;
@@ -2590,7 +2590,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, nullptr,
+      c0(), t0(), rrect, nullptr, nullptr,
       CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2635,6 +2635,65 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
 }
 
+TEST_F(PaintArtifactCompositorTest,
+       SynthesizedClipIndirectlyCompositedClipPath) {
+  // This tests the case that a clip node needs to be synthesized due to
+  // applying clip path to a composited effect.
+  FloatRoundedRect clip_rect(50, 50, 300, 200);
+  scoped_refptr<RefCountedPath> clip_path = base::AdoptRef(new RefCountedPath);
+  scoped_refptr<ClipPaintPropertyNode> c1 =
+      ClipPaintPropertyNode::Create(c0(), t0(), clip_rect, nullptr, clip_path);
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+      e0(), t0(), c1, ColorFilter(), CompositorFilterOperations(), 1,
+      SkBlendMode::kSrcOver, CompositingReason::kWillChangeCompositingHint);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c1, e1)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //   l0         l1
+  // [ e1 ][ mask_effect_0 ]
+  // [  mask_isolation_0   ]
+  // [         e0          ]
+  // One content layer, one clip mask.
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(1u, SynthesizedClipLayerCount());
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+
+  constexpr int c0_id = 1;
+  constexpr int e0_id = 1;
+
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+  int e1_id = content0->effect_tree_index();
+  const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+  EXPECT_EQ(c1_id, cc_e1.clip_id);
+  int mask_isolation_0_id = cc_e1.parent_id;
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(c1_id, mask_isolation_0.clip_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+
+  EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
+  EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
+  int mask_effect_0_id = clip_mask0->effect_tree_index();
+  const cc::EffectNode& mask_effect_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
+  ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
+  EXPECT_EQ(c1_id, mask_effect_0.clip_id);
+  EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
+}
+
 TEST_F(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   // This tests the case that a two back-to-back composited layers having
   // the same composited rounded clip can share the synthesized mask.
@@ -2647,7 +2706,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, nullptr,
+      c0(), t0(), rrect, nullptr, nullptr,
       CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2719,7 +2778,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, nullptr,
+      c0(), t0(), rrect, nullptr, nullptr,
       CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2809,7 +2868,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, nullptr,
+      c0(), t0(), rrect, nullptr, nullptr,
       CompositingReason::kWillChangeCompositingHint);
 
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
@@ -2882,7 +2941,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, nullptr,
+      c0(), t0(), rrect, nullptr, nullptr,
       CompositingReason::kWillChangeCompositingHint);
 
   CompositorFilterOperations non_trivial_filter;
@@ -2989,7 +3048,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, nullptr,
+      c0(), t0(), rrect, nullptr, nullptr,
       CompositingReason::kWillChangeCompositingHint);
 
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
