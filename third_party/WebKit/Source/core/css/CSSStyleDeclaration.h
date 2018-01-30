@@ -89,7 +89,7 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
                                    SecureContextMode,
                                    ExceptionState&) = 0;
 
-  virtual bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
+  virtual bool CssPropertyMatches(CSSPropertyID, const CSSValue&) const = 0;
   virtual CSSStyleSheet* ParentStyleSheet() const { return nullptr; }
 
  protected:

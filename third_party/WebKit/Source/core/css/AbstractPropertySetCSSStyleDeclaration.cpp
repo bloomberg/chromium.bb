@@ -227,8 +227,8 @@ StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::ContextStyleSheet()
 
 bool AbstractPropertySetCSSStyleDeclaration::CssPropertyMatches(
     CSSPropertyID property_id,
-    const CSSValue* property_value) const {
-  return PropertySet().PropertyMatches(property_id, *property_value);
+    const CSSValue& property_value) const {
+  return PropertySet().PropertyMatches(property_id, property_value);
 }
 
 void AbstractPropertySetCSSStyleDeclaration::Trace(blink::Visitor* visitor) {

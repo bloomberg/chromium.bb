@@ -577,7 +577,7 @@ void MutableCSSPropertyValueSet::RemoveEquivalentProperties(
   unsigned size = property_vector_.size();
   for (unsigned i = 0; i < size; ++i) {
     PropertyReference property = PropertyAt(i);
-    if (style->CssPropertyMatches(property.Id(), &property.Value()))
+    if (style->CssPropertyMatches(property.Id(), property.Value()))
       properties_to_remove.push_back(property.Id());
   }
   // FIXME: This should use mass removal.

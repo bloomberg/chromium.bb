@@ -120,7 +120,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
                            SecureContextMode,
                            ExceptionState&) override;
 
-  bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
+  bool CssPropertyMatches(CSSPropertyID, const CSSValue&) const override;
 
   Member<Node> node_;
   PseudoId pseudo_element_specifier_;

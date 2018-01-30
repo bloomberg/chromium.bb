@@ -389,10 +389,10 @@ String CSSComputedStyleDeclaration::item(unsigned i) const {
 
 bool CSSComputedStyleDeclaration::CssPropertyMatches(
     CSSPropertyID property_id,
-    const CSSValue* property_value) const {
+    const CSSValue& property_value) const {
   if (property_id == CSSPropertyFontSize &&
-      (property_value->IsPrimitiveValue() ||
-       property_value->IsIdentifierValue()) &&
+      (property_value.IsPrimitiveValue() ||
+       property_value.IsIdentifierValue()) &&
       node_) {
     node_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     const ComputedStyle* style =
@@ -400,13 +400,13 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
     if (style && style->GetFontDescription().KeywordSize()) {
       CSSValueID size_value = CssIdentifierForFontSizeKeyword(
           style->GetFontDescription().KeywordSize());
-      if (property_value->IsIdentifierValue() &&
-          ToCSSIdentifierValue(property_value)->GetValueID() == size_value)
+      if (property_value.IsIdentifierValue() &&
+          ToCSSIdentifierValue(property_value).GetValueID() == size_value)
         return true;
     }
   }
   const CSSValue* value = GetPropertyCSSValue(CSSProperty::Get(property_id));
-  return DataEquivalent(value, property_value);
+  return DataEquivalent(value, &property_value);
 }
 
 MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyProperties()
