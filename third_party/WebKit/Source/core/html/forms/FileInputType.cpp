@@ -339,6 +339,7 @@ void FileInputType::SetFiles(FileList* files) {
   if (files_changed) {
     // This call may cause destruction of this instance.
     // input instance is safe since it is ref-counted.
+    GetElement().DispatchInputEvent();
     GetElement().DispatchChangeEvent();
   }
 }
