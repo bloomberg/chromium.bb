@@ -185,7 +185,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   self.didTapPrivacyLink = YES;
   NSString* title = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_PRIVACY_TITLE);
   NSURL* privacyUrl = net::NSURLWithGURL(
-      GURL("https://www.google.com/chrome/browser/privacy/"));
+      GURL("https://www.google.com/chrome/privacy-plain.html"));
   [self openStaticFileWithURL:privacyUrl title:title];
   [self.navigationController setDelegate:self];
 }
