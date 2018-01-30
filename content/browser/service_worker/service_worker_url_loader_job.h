@@ -79,8 +79,6 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob
   void ForwardToServiceWorker();
   bool ShouldFallbackToNetwork();
   void FailDueToLostController();
-  ui::PageTransition GetPageTransition();
-  size_t GetURLChainSize() const;
   void Cancel();
   bool WasCanceled() const;
 

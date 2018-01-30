@@ -76,14 +76,6 @@ class ServiceWorkerURLJobWrapper {
   // if needed later.
   void FailDueToLostController();
 
-  // Determines from the ResourceRequestInfo (or similar) the type of page
-  // transition used (for metrics purposes).
-  ui::PageTransition GetPageTransition();
-
-  // Determines the number of redirects used to handle the job (for metrics
-  // purposes).
-  size_t GetURLChainSize() const;
-
   // Returns true if the underlying job has been canceled or destroyed.
   bool WasCanceled() const;
 
