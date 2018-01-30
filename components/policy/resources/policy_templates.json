@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 412
+#   For your editing convenience: highest ID currently used: 413
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -5280,6 +5280,27 @@
       Note that this is not recommended, as this may allow bypassing the nameConstraints extension that restricts the hostnames that a given certificate can be authorized for.
 
       If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.''',
+    },
+    {
+      'name': 'EnableSymantecLegacyInfrastructure',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-', 'android:66-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 413,
+      'caption': '''Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure''',
+      'tags': ['system-security'],
+      'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows certificates issued by Symantec Corporation's Legacy PKI operations to be trusted if they otherwise successfully validate and chain to a recognized CA certificate.
+
+      Note that this policy depends on the operating system still recognizing certificates from Symantec's legacy infrastructure. If an OS update changes the OS handling of such certificates, this policy no longer has effect.  Further, this policy is intended as a temporary workaround to give enterprises more time to transition away from legacy Symantec certificates.  This policy will be removed on or around January 1st 2019.
+
+      If this policy is not set, or it is set to false, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> follows the publicly announced deprecation schedule.
+
+      See https://g.co/chrome/symantecpkicerts for more details on this deprecation.''',
     },
     {
       'name': 'ForceEphemeralProfiles',

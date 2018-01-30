@@ -754,6 +754,16 @@
     "note": "This policy is deprecated and removed since Chrome 66."
   },
 
+  "EnableSymantecLegacyInfrastructure": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "EnableSymantecLegacyInfrastructure": true },
+    "pref_mappings": [
+      { "pref": "ssl.enable_symantec_legacy_infrastructure",
+        "local_state": true
+      }
+    ]
+  },
+
   "AuthSchemes": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },
