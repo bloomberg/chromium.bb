@@ -26,6 +26,6 @@ PASS StylePropertyMap interface: operation set(DOMString, [object Object],[objec
 PASS StylePropertyMap interface: operation update(DOMString, UpdateFunction)
 PASS Element interface: operation computedStyleMap()
 PASS Element interface: attribute attributeStyleMap
-PASS CSSStyleRule interface: attribute attributeStyleMap
+PASS CSSStyleRule interface: attribute styleMap
 Harness: the test ran to completion.
 

@@ -19,7 +19,7 @@ class StyleRule;
 // The declared StylePropertyMap retrieves styles specified by a CSS style rule
 // and returns them as CSSStyleValues. The IDL for this class is in
 // StylePropertyMap.idl. The declared StylePropertyMap for an element is
-// accessed via CSSStyleRule.attributeStyleMap (see CSSStyleRule.idl)
+// accessed via CSSStyleRule.styleMap (see CSSStyleRule.idl)
 class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
   WTF_MAKE_NONCOPYABLE(DeclaredStylePropertyMap);
 

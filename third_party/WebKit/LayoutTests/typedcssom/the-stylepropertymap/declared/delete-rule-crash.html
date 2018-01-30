@@ -12,7 +12,7 @@
 <script>
 test(() => {
   var sheet = document.styleSheets[0];
-  var styleMap = sheet.cssRules[0].attributeStyleMap;
+  var styleMap = sheet.cssRules[0].styleMap;
   sheet.deleteRule(0);
   gc();
 
