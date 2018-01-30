@@ -52,8 +52,12 @@ scoped_refptr<TaskQueue> MainThreadSchedulerHelper::ControlTaskQueue() {
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
     const MainThreadTaskQueue::QueueCreationParams& params) {
-  return task_queue_manager_->CreateTaskQueue<MainThreadTaskQueue>(
-      params.spec, params, renderer_scheduler_);
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      task_queue_manager_->CreateTaskQueue<MainThreadTaskQueue>(
+          params.spec, params, renderer_scheduler_);
+  if (params.used_for_important_tasks)
+    task_queue->SetQueuePriority(TaskQueue::QueuePriority::kHighPriority);
+  return task_queue;
 }
 
 }  // namespace scheduler

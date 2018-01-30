@@ -44,6 +44,7 @@ blink_platform_sources("scheduler") {
     "child/compositor_metrics_helper.h",
     "child/compositor_worker_scheduler.cc",
     "child/compositor_worker_scheduler.h",
+    "child/features.h",
     "child/idle_canceled_delayed_task_sweeper.cc",
     "child/idle_canceled_delayed_task_sweeper.h",
     "child/idle_helper.cc",

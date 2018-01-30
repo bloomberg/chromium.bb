@@ -7,6 +7,7 @@
 #include <memory>
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
@@ -25,6 +26,7 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
+#include "platform/scheduler/child/features.h"
 #include "platform/scheduler/child/process_state.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
@@ -194,6 +196,10 @@ const char* OptionalTaskDescriptionToString(
   return MainThreadTaskQueue::NameForQueueType(opt_desc->queue_type);
 }
 
+bool IsUnconditionalHighPriorityInputEnabled() {
+  return base::FeatureList::IsEnabled(kHighPriorityInput);
+}
+
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -214,10 +220,12 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                                    MainThreadTaskQueue::QueueType::kCompositor)
                                    .SetShouldMonitorQuiescence(true))),
-      input_task_queue_(
-          helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                                   MainThreadTaskQueue::QueueType::kInput)
-                                   .SetShouldMonitorQuiescence(true))),
+      input_task_queue_(helper_.NewTaskQueue(
+          MainThreadTaskQueue::QueueCreationParams(
+              MainThreadTaskQueue::QueueType::kInput)
+              .SetShouldMonitorQuiescence(true)
+              .SetUsedForImportantTasks(
+                  IsUnconditionalHighPriorityInputEnabled()))),
       compositor_task_queue_enabled_voter_(
           compositor_task_queue_->CreateQueueEnabledVoter()),
       input_task_queue_enabled_voter_(
@@ -696,7 +704,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
           .SetCanBePaused(true)
           .SetCanBeStopped(StopLoadingInBackgroundEnabled())
           .SetCanBeDeferred(true)
-          .SetUsedForControlTasks(
+          .SetUsedForImportantTasks(
               queue_type ==
               MainThreadTaskQueue::QueueType::kFrameLoadingControl));
 }
@@ -2118,8 +2126,8 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 
 TaskQueue::QueuePriority RendererSchedulerImpl::TaskQueuePolicy::GetPriority(
     MainThreadTaskQueue* task_queue) const {
-  return task_queue->UsedForControlTasks() ? TaskQueue::kHighPriority
-                                           : priority;
+  return task_queue->UsedForImportantTasks() ? TaskQueue::kHighPriority
+                                             : priority;
 }
 
 RendererSchedulerImpl::TimeDomainType
