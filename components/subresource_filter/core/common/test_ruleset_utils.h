@@ -19,6 +19,11 @@ namespace testing {
 // the resource URL ends with |suffix|.
 url_pattern_index::proto::UrlRule CreateSuffixRule(base::StringPiece suffix);
 
+// Creates a white URL rule which targets subresources of any type such that
+// the resource URL ends with |suffix|.
+url_pattern_index::proto::UrlRule CreateWhitelistSuffixRule(
+    base::StringPiece suffix);
+
 // Same as CreateUrlRule(pattern, proto::URL_PATTERN_TYPE_WILDCARDED), but the
 // rule applies to the specified |activation_types|, and to no element types.
 // Additionally, it is restricted to a set of |domains| (if provided).
