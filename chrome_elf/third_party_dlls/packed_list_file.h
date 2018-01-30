@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_WHITELIST_WHITELIST_FILE_H_
-#define CHROME_ELF_WHITELIST_WHITELIST_FILE_H_
+#ifndef CHROME_ELF_THIRD_PARTY_DLLS_PACKED_LIST_FILE_H_
+#define CHROME_ELF_THIRD_PARTY_DLLS_PACKED_LIST_FILE_H_
 
-#include "windows.h"
+#include <windows.h>
 
 #include <string>
 
-namespace whitelist {
+namespace third_party_dlls {
 
 // "static_cast<int>(FileStatus::value)" to access underlying value.
 enum class FileStatus {
@@ -28,7 +28,7 @@ enum class FileStatus {
 };
 
 // Look up a binary based on the required data points.
-// - Returns true if match found in the blacklist.  I.E. Block if true.
+// - Returns true if match found in the list.
 bool IsModuleListed(const std::string& basename,
                     DWORD image_size,
                     DWORD time_date_stamp);
@@ -36,7 +36,7 @@ bool IsModuleListed(const std::string& basename,
 // Get the full path of the blacklist file used.
 std::wstring GetBlFilePathUsed();
 
-// Initialize internal whitelist from file.
+// Initialize internal module list from file.
 FileStatus InitFromFile();
 
 // Overrides the blacklist path for use by tests.
@@ -45,6 +45,6 @@ void OverrideFilePathForTesting(const std::wstring& new_bl_path);
 // Removes initialization for use by tests.
 void DeinitFromFileForTesting();
 
-}  // namespace whitelist
+}  // namespace third_party_dlls
 
-#endif  // CHROME_ELF_WHITELIST_WHITELIST_FILE_H_
+#endif  // CHROME_ELF_THIRD_PARTY_DLLS_PACKED_LIST_FILE_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_packed_format.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 
 #include <stddef.h>
 
-namespace whitelist {
+namespace third_party_dlls {
 
 // Subdir relative to install_static::GetUserDataDirectory().
 const wchar_t kFileSubdir[] =
@@ -27,4 +27,4 @@ uint32_t GetLogEntrySize(uint32_t path_len) {
   return ((offsetof(LogEntry, path) + path_len + 4) & ~3U);
 }
 
-}  // namespace whitelist
+}  // namespace third_party_dlls

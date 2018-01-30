@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_file.h"
+#include "chrome_elf/third_party_dlls/packed_list_file.h"
 
-#include "windows.h"
+#include <windows.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -14,17 +14,17 @@
 
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/sha1/sha1.h"
-#include "chrome_elf/whitelist/whitelist_packed_format.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 namespace {
 
 // No concern about concurrency control in chrome_elf.
 bool g_initialized = false;
 
 // This will hold a packed blacklist module array, read directly from a
-// data file during InitComponent().
-PackedWhitelistModule* g_bl_module_array = nullptr;
+// data file during InitFromFile().
+PackedListModule* g_bl_module_array = nullptr;
 size_t g_bl_module_array_size = 0;
 
 // NOTE: this "global" is only initialized once during InitComponent().
@@ -40,8 +40,8 @@ std::wstring& GetBlFilePath() {
 
 // Binary predicate compare function for use with
 // std::equal_range/std::is_sorted. Must return TRUE if lhs < rhs.
-bool HashBinaryPredicate(const PackedWhitelistModule& lhs,
-                         const PackedWhitelistModule& rhs) {
+bool HashBinaryPredicate(const PackedListModule& lhs,
+                         const PackedListModule& rhs) {
   return elf_sha1::CompareHashes(lhs.basename_hash, rhs.basename_hash) < 0;
 }
 
@@ -50,18 +50,18 @@ bool HashBinaryPredicate(const PackedWhitelistModule& lhs,
 // - Returns kSuccess or kArraySizeZero on success.
 FileStatus ReadInArray(HANDLE file,
                        size_t* array_size,
-                       PackedWhitelistModule** array_ptr) {
-  PackedWhitelistMetadata metadata;
+                       PackedListModule** array_ptr) {
+  PackedListMetadata metadata;
   DWORD bytes_read = 0;
 
-  if (!::ReadFile(file, &metadata, sizeof(PackedWhitelistMetadata), &bytes_read,
+  if (!::ReadFile(file, &metadata, sizeof(PackedListMetadata), &bytes_read,
                   FALSE) ||
-      bytes_read != sizeof(PackedWhitelistMetadata)) {
+      bytes_read != sizeof(PackedListMetadata)) {
     return FileStatus::kMetadataReadFail;
   }
 
   // Careful of versioning.  For now, only support the latest version.
-  if (metadata.version != PackedWhitelistVersion::kCurrent)
+  if (metadata.version != PackedListVersion::kCurrent)
     return FileStatus::kInvalidFormatVersion;
 
   *array_size = metadata.module_count;
@@ -71,15 +71,14 @@ FileStatus ReadInArray(HANDLE file,
 
   // Sanity check the array fits in a DWORD.
   if (*array_size >
-      (std::numeric_limits<DWORD>::max() / sizeof(PackedWhitelistModule))) {
+      (std::numeric_limits<DWORD>::max() / sizeof(PackedListModule))) {
     assert(false);
     return FileStatus::kArrayTooBig;
   }
 
   DWORD buffer_size =
-      static_cast<DWORD>(*array_size * sizeof(PackedWhitelistModule));
-  *array_ptr =
-      reinterpret_cast<PackedWhitelistModule*>(new uint8_t[buffer_size]);
+      static_cast<DWORD>(*array_size * sizeof(PackedListModule));
+  *array_ptr = reinterpret_cast<PackedListModule*>(new uint8_t[buffer_size]);
 
   // Read in the array.
   // NOTE: Ignore the rest of the file - other data could be stored at the end.
@@ -178,7 +177,7 @@ bool IsModuleListed(const std::string& basename,
   std::string code_id(buffer);
   code_id = elf_sha1::SHA1HashString(code_id);
   std::string basename_hash = elf_sha1::SHA1HashString(basename);
-  PackedWhitelistModule target = {};
+  PackedListModule target = {};
   ::memcpy(target.basename_hash, basename_hash.data(), elf_sha1::kSHA1Length);
   ::memcpy(target.code_id_hash, code_id.data(), elf_sha1::kSHA1Length);
 
@@ -189,7 +188,7 @@ bool IsModuleListed(const std::string& basename,
                                target, HashBinaryPredicate);
 
   // Search for secondary hash.
-  for (PackedWhitelistModule* i = pair.first; i != pair.second; ++i) {
+  for (PackedListModule* i = pair.first; i != pair.second; ++i) {
     if (!elf_sha1::CompareHashes(target.code_id_hash, i->code_id_hash))
       return true;
   }
@@ -202,7 +201,7 @@ std::wstring GetBlFilePathUsed() {
   return GetBlFilePath();
 }
 
-// Grab the latest whitelist and blacklist.
+// Grab the latest module list(s) from file.
 FileStatus InitFromFile() {
   // Debug check: InitFromFile should not be called more than once.
   assert(!g_initialized);
@@ -232,4 +231,4 @@ void DeinitFromFileForTesting() {
   g_initialized = false;
 }
 
-}  // namespace whitelist
+}  // namespace third_party_dlls

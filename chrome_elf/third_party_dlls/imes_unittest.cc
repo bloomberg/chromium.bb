@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_ime.h"
+#include "chrome_elf/third_party_dlls/imes.h"
 
 #include <windows.h>
 
@@ -13,7 +13,7 @@
 #include "sandbox/win/src/nt_internals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 namespace {
 
 constexpr wchar_t kNewGuid[] = L"{12345678-1234-1234-1234-123456789ABC}";
@@ -96,11 +96,11 @@ bool AddClassDllPath(const wchar_t* new_guid, const std::wstring& dll_path) {
 }
 
 //------------------------------------------------------------------------------
-// Whitelist IME tests
+// Third-party IME tests
 //------------------------------------------------------------------------------
 
 // Test initialization with whatever IMEs are on the current machine.
-TEST(Whitelist, IMEInitExisting) {
+TEST(ThirdParty, IMEInitExisting) {
   // Init IME!
   EXPECT_EQ(InitIMEs(), IMEStatus::kSuccess);
   DeinitIMEsForTesting();
@@ -110,7 +110,7 @@ TEST(Whitelist, IMEInitExisting) {
 // non-Microsoft-provided IMEs.
 //
 // Note: Uses registry test override to protect machine from registry writes.
-TEST(Whitelist, IMEInitNonMs) {
+TEST(ThirdParty, IMEInitNonMs) {
   // 1. Read in any real registry info needed.
   // 2. Enable reg override for test net.
   // 3. Write fake registry data.
@@ -140,4 +140,4 @@ TEST(Whitelist, IMEInitNonMs) {
 }
 
 }  // namespace
-}  // namespace whitelist
+}  // namespace third_party_dlls

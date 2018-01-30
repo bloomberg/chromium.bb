@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_log.h"
+#include "chrome_elf/third_party_dlls/logs.h"
 
 #include <windows.h>
 
@@ -12,7 +12,7 @@
 
 #include "chrome_elf/sha1/sha1.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 namespace {
 
 enum { kMaxLogEntries = 100, kMaxMutexWaitMs = 5000 };
@@ -204,14 +204,14 @@ void DeinitLogsForTesting() {
   g_log_mutex = nullptr;
 }
 
-}  // namespace whitelist
+}  // namespace third_party_dlls
 
 //------------------------------------------------------------------------------
 // Exports
-// - Function definition in whitelist_packed_format.h
+// - Function definition in third_party_packed_list_format.h
 // - Export declared in chrome_elf_[x64|x86].def
 //------------------------------------------------------------------------------
-using namespace whitelist;
+using namespace third_party_dlls;
 
 uint32_t DrainLog(uint8_t* buffer,
                   uint32_t buffer_size,

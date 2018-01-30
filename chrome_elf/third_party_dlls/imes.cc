@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_ime.h"
+#include "chrome_elf/third_party_dlls/imes.h"
 
 #include <assert.h>
 #include <string.h>
@@ -14,7 +14,7 @@
 
 #include "chrome_elf/nt_registry/nt_registry.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 namespace {
 
 // Holds third-party IME information.
@@ -287,4 +287,4 @@ void DeinitIMEsForTesting() {
   GetImeVector()->clear();
 }
 
-}  // namespace whitelist
+}  // namespace third_party_dlls

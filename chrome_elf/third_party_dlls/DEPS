@@ -8,7 +8,7 @@ include_rules = [
   "-chrome_elf",
   "+chrome_elf/nt_registry/nt_registry.h",
   "+chrome_elf/sha1/sha1.h",
-  "+chrome_elf/whitelist",
+  "+chrome_elf/third_party_dlls",
 ]
 specific_include_rules = {
   ".*_unittest\.cc": [
