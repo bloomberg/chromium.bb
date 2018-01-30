@@ -257,7 +257,7 @@ class TestServerThread(threading.Thread):
     if self.is_ready:
       port_map = [(0, self.host_port)]
       if self.host_ocsp_port:
-        port_map.append([(0, self.host_ocsp_port)])
+        port_map.extend([(0, self.host_ocsp_port)])
       self.port_forwarder.Map(port_map)
 
       self.forwarder_device_port = \
