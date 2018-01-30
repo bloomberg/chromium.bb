@@ -27,6 +27,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -277,7 +278,8 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   }
 
   void EnableS13nServiceWorker() {
-    scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
     network::mojom::URLLoaderFactoryPtr fake_loader_factory;
     fake_loader_factory_.AddBinding(MakeRequest(&fake_loader_factory));
     loader_factory_ = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(

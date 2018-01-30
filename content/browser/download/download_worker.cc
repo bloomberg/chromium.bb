@@ -10,6 +10,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 namespace {
@@ -44,7 +45,7 @@ CreateUrlDownloadHandler(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =
         CreateResourceRequest(params.get());
     return std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>(

@@ -55,6 +55,7 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -66,7 +67,7 @@ namespace content {
 namespace {
 
 bool IsRequestHandlerEnabled() {
-  return base::FeatureList::IsEnabled(features::kNetworkService) ||
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
 }
 
@@ -279,7 +280,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     if (is_main_frame)
       options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       options |= network::mojom::kURLLoadOptionSniffMimeType;
     } else {
       // TODO(arthursonzogni): This is a temporary option. Remove this as soon
@@ -300,7 +301,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       network::mojom::URLLoaderRequest url_loader,
       network::mojom::URLLoaderClientPtr url_loader_client) {
-    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     default_loader_used_ = true;
@@ -336,7 +337,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data) {
-    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);
     started_ = true;
@@ -367,7 +368,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
       std::unique_ptr<service_manager::Connector> connector) {
-    DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);
     global_request_id_ = MakeGlobalRequestID();
@@ -464,7 +465,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(start_loader_callback),
-          base::FeatureList::IsEnabled(features::kNetworkService)
+          base::FeatureList::IsEnabled(network::features::kNetworkService)
               ? GetContentClient()->browser()->CreateURLLoaderThrottles(
                     web_contents_getter_, navigation_ui_data_.get())
               : std::vector<std::unique_ptr<content::URLLoaderThrottle>>(),
@@ -855,7 +856,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
                                         allow_download_);
   }
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);
     request_controller_ = std::make_unique<URLLoaderRequestController>(
         /* initial_handlers = */

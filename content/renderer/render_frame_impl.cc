@@ -156,6 +156,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -3115,7 +3116,7 @@ void RenderFrameImpl::CommitNavigation(
   // cross-document navigations with the Network Service enabled.
   DCHECK(is_same_document ||
          common_params.url.SchemeIs(url::kJavaScriptScheme) ||
-         !base::FeatureList::IsEnabled(features::kNetworkService) ||
+         !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories));

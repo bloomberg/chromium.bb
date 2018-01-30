@@ -20,9 +20,9 @@
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/common/navigation_subresource_loader_params.h"
-#include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -180,7 +180,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
 
   // We don't fallback for responses that we delivered.
   if (job_.get()) {
-    if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       DCHECK(!job_->IsDeliveringNetworkResponse());
       return nullptr;
     } else if (job_->IsDeliveringAppCacheResponse() ||
@@ -347,7 +347,7 @@ void AppCacheRequestHandler::OnPrepareToRestartURLRequest() {
 std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
     net::NetworkDelegate* network_delegate) {
   std::unique_ptr<AppCacheJob> job;
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     job.reset(new AppCacheURLLoaderJob(request_->AsURLLoaderRequest(),
                                        storage(), std::move(loader_callback_)));
   } else {

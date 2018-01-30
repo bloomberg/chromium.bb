@@ -92,6 +92,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/cookie_manager.mojom.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/network_service_test.mojom.h"
@@ -2393,14 +2394,14 @@ WebContents* GetEmbedderForGuest(content::WebContents* guest) {
 }
 
 bool IsNetworkServiceRunningInProcess() {
-  return base::FeatureList::IsEnabled(features::kNetworkService) &&
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
          (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess) ||
           base::FeatureList::IsEnabled(features::kNetworkServiceInProcess));
 }
 
 void SimulateNetworkServiceCrash() {
-  CHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   CHECK(!IsNetworkServiceRunningInProcess())
       << "Can't crash the network service if it's running in-process!";
   network::mojom::NetworkServiceTestPtr network_service_test;

@@ -11,6 +11,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace android_webview {
@@ -20,7 +21,7 @@ AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(
     : type_(type) {
   DETACH_FROM_THREAD(thread_checker_);
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     content::RenderThread::Get()->GetConnector()->BindInterface(
         content::mojom::kBrowserServiceName,
         mojo::MakeRequest(&safe_browsing_info_));
@@ -41,7 +42,7 @@ AwURLLoaderThrottleProvider::CreateThrottles(
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
 
   bool network_service_enabled =
-      base::FeatureList::IsEnabled(features::kNetworkService);
+      base::FeatureList::IsEnabled(network::features::kNetworkService);
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
   bool is_frame_resource = content::IsResourceTypeFrame(resource_type);

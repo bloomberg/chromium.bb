@@ -27,6 +27,7 @@
 #include "crypto/sha2.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -525,7 +526,7 @@ void DownloadFileImpl::Resume() {
   DCHECK(is_paused_);
   is_paused_ = false;
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
   for (auto& stream : source_streams_) {
@@ -539,7 +540,8 @@ void DownloadFileImpl::Resume() {
 void DownloadFileImpl::StreamActive(SourceStream* source_stream,
                                     MojoResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::FeatureList::IsEnabled(features::kNetworkService) && is_paused_)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      is_paused_)
     return;
 
   base::TimeTicks start(base::TimeTicks::Now());

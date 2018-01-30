@@ -20,6 +20,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -104,7 +105,8 @@ class WebUIDataSource : public URLDataSource {
 class NetworkServiceBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
     EXPECT_TRUE(embedded_test_server()->Start());
 
     WebUIControllerFactory::RegisterFactory(&factory_);
@@ -172,7 +174,7 @@ class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceInProcessBrowserTest() {
     std::vector<base::Feature> features;
-    features.push_back(features::kNetworkService);
+    features.push_back(network::features::kNetworkService);
     features.push_back(features::kNetworkServiceInProcess);
     scoped_feature_list_.InitWithFeatures(features,
                                           std::vector<base::Feature>());
