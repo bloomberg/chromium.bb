@@ -46,7 +46,7 @@ class AppListModelUpdater {
   virtual void RemoveUninstalledItem(const std::string& id) {}
   virtual void MoveItemToFolder(const std::string& id,
                                 const std::string& folder_id) {}
-  virtual void SetStatus(app_list::AppListModel::Status status) {}
+  virtual void SetStatus(ash::AppListModelStatus status) {}
   virtual void SetState(ash::AppListState state) {}
   virtual void HighlightItemInstalledFromUI(const std::string& id) {}
   // For SearchModel:

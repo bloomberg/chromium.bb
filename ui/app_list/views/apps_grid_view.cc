@@ -1030,7 +1030,9 @@ void AppsGridView::UpdatePulsingBlockViews() {
   const int available_slots =
       TilesPerPage(current_page) - existing_items % TilesPerPage(current_page);
   const int desired =
-      model_->status() == AppListModel::STATUS_SYNCING ? available_slots : 0;
+      model_->status() == ash::AppListModelStatus::kStatusSyncing
+          ? available_slots
+          : 0;
 
   if (pulsing_blocks_model_.view_size() == desired)
     return;

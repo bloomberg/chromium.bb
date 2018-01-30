@@ -30,7 +30,7 @@ void AppListModel::RemoveObserver(AppListModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void AppListModel::SetStatus(Status status) {
+void AppListModel::SetStatus(ash::AppListModelStatus status) {
   if (status_ == status)
     return;
 

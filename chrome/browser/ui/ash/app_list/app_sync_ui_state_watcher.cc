@@ -24,7 +24,7 @@ AppSyncUIStateWatcher::~AppSyncUIStateWatcher() {
 
 void AppSyncUIStateWatcher::OnAppSyncUIStatusChanged() {
   if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
-    model_updater_->SetStatus(app_list::AppListModel::STATUS_SYNCING);
+    model_updater_->SetStatus(ash::AppListModelStatus::kStatusSyncing);
   else
-    model_updater_->SetStatus(app_list::AppListModel::STATUS_NORMAL);
+    model_updater_->SetStatus(ash::AppListModelStatus::kStatusNormal);
 }
