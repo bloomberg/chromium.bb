@@ -296,6 +296,10 @@ void Geolocation::RequestTimedOut(GeoNotifier* notifier) {
     StopUpdating();
 }
 
+bool Geolocation::DoesOwnNotifier(GeoNotifier* notifier) const {
+  return one_shots_.Contains(notifier) || watchers_.Contains(notifier);
+}
+
 bool Geolocation::HaveSuitableCachedPosition(const PositionOptions& options) {
   if (!last_position_)
     return false;
