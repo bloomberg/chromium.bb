@@ -6,7 +6,7 @@
     root.innerHTML = '<style title="not-preferred">div { color: red }</style><style title="ignored">div { color: green }</style><div>Should be green</div>';
 </script>
 <style>#alternate { color: green }</style>
-<link rel="alternate stylesheet" title="not-preferred" href="data:text/css,#alternate { color: red }">
+<link rel="alternate stylesheet" title="not-preferred" href="data:text/css,%23alternate { color: red }">
 </style>
 <div id="alternate">Should be green</div>
 <script>
