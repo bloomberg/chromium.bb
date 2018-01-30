@@ -35,6 +35,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
 
@@ -196,6 +197,11 @@ class PLATFORM_EXPORT Path {
   SkPath StrokePath(const StrokeData&) const;
 
   SkPath path_;
+};
+
+class PLATFORM_EXPORT RefCountedPath : public Path,
+                                       public RefCounted<RefCountedPath> {
+  USING_FAST_MALLOC(RefCountedPath);
 };
 
 // Only used for DCHECKs

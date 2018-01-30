@@ -28,6 +28,9 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
     json->SetString("rectExcludingOverlayScrollbars",
                     clip_rect_excluding_overlay_scrollbars_.ToString());
   }
+  if (clip_path_) {
+    json->SetBoolean("hasClipPath", true);
+  }
   if (direct_compositing_reasons_ != CompositingReason::kNone) {
     json->SetString("directCompositingReasons",
                     CompositingReason::ToString(direct_compositing_reasons_));

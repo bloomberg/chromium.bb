@@ -224,6 +224,10 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
       cc_list_.push<cc::ClipRRectOp>(static_cast<SkRRect>(sub_clip->ClipRect()),
                                      SkClipOp::kIntersect, true);
     }
+    if (sub_clip->ClipPath()) {
+      cc_list_.push<cc::ClipPathOp>(sub_clip->ClipPath()->GetSkPath(),
+                                    SkClipOp::kIntersect, true);
+    }
     cc_list_.EndPaintOfPairedBegin();
 
     // Step 3b: Adjust state and push previous state onto clip stack.
