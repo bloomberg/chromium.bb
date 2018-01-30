@@ -1449,6 +1449,79 @@ TEST_P(RootScrollerSimTest, ImplicitRootScrollerIframe) {
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
+// Tests that we don't explode when a layout occurs and the effective
+// rootScroller no longer has a ContentFrame(). We setup the frame tree such
+// that the first iframe is the effective root scroller. The second iframe has
+// an unload handler that reaches back to the common parent and causes a
+// layout. This will cause us to recalculate the effective root scroller while
+// the current one is valid in all ways except that it no longer has a content
+// frame. This test passes if it doesn't crash. https://crbug.com/805317.
+TEST_P(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimRequest first_request("https://example.com/first.html", "text/html");
+  SimRequest second_request("https://example.com/second.html", "text/html");
+  SimRequest final_request("https://newdomain.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="first" src="https://example.com/first.html">
+          </iframe>
+          <iframe id="second" src="https://example.com/second.html">
+          </iframe>
+          <script>
+            // Dirty layout on unload
+            window.addEventListener('unload', function() {
+                document.getElementById("first").style.width="0";
+            });
+          </script>
+      )HTML");
+
+  first_request.Complete(R"HTML(
+          <!DOCTYPE html>
+      )HTML");
+
+  second_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <body></body>
+          <script>
+            window.addEventListener('unload', function() {
+                // This will do a layout.
+                window.top.document.getElementById("first").clientWidth;
+            });
+          </script>
+      )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("first");
+  GetDocument().GetRootScrollerController().Set(container);
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // This will unload first the root, then the first frame, then the second.
+  LoadURL("https://newdomain.com/test.html");
+  final_request.Complete(R"HTML(
+          <!DOCTYPE html>
+      )HTML");
+}
+
 class RootScrollerHitTest : public RootScrollerTest {
  public:
   void CheckHitTestAtBottomOfScreen() {
