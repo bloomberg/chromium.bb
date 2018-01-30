@@ -484,10 +484,15 @@ void GpuDataManagerImplPrivate::Initialize() {
 void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   bool sandboxed = gpu_info_.sandboxed;
   gpu_info_ = gpu_info;
-  // On certain platforms (for now, Windows), complete GPUInfo is
-  // collected through an unsandboxed GPU process, so the original
-  // |sandboxed| should be kept.
-  gpu_info_.sandboxed = sandboxed;
+#if defined(OS_WIN)
+  // On Windows, complete GPUInfo is collected through an unsandboxed
+  // GPU process. If the regular GPU process is sandboxed, it should
+  // not be overwritten.
+  if (sandboxed)
+    gpu_info_.sandboxed = true;
+#else
+  (void)sandboxed;
+#endif  // OS_WIN
 
   if (complete_gpu_info_already_requested_ &&
       !NeedsCompleteGpuInfoCollection()) {
