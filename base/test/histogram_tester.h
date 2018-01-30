@@ -25,6 +25,10 @@ class HistogramSamples;
 // HistogramTester provides a simple interface for examining histograms, UMA
 // or otherwise. Tests can use this interface to verify that histogram data is
 // getting logged as intended.
+//
+// Note: When using this class from a browser test, one might have to call
+// SubprocessMetricsProvider::MergeHistogramDeltasForTesting() to sync the
+// histogram data between the renderer and browser processes.
 class HistogramTester {
  public:
   using CountsMap = std::map<std::string, HistogramBase::Count>;

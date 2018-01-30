@@ -4,11 +4,13 @@
 
 #include <stddef.h>
 
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -23,6 +25,8 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
@@ -165,6 +169,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
   // behavior.  We want to change the old behavior - this would expectedly make
   // the assestion below fail and in this case we would need to tweak the test
   // to look-up another window (most likely a background page).
+  base::HistogramTester histogram_tester;
   std::string location_of_opened_window;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       tab1_popup,
@@ -172,6 +177,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
       "window.domAutomationController.send(w.location.href);",
       &location_of_opened_window));
   EXPECT_EQ(tab2->GetLastCommittedURL(), location_of_opened_window);
+
+  // Verify UMA got recorded as expected.
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.BrowsingInstanceViolation.ExtensionType"),
+              testing::ElementsAre(base::Bucket(Manifest::TYPE_EXTENSION, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.BrowsingInstanceViolation.SourceExtensionViewType"),
+      testing::ElementsAre(base::Bucket(VIEW_TYPE_TAB_CONTENTS, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.BrowsingInstanceViolation.TargetExtensionViewType"),
+      testing::ElementsAre(base::Bucket(VIEW_TYPE_TAB_CONTENTS, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.BrowsingInstanceViolation.IsBackgroundSourceOrTarget"),
+      testing::ElementsAre(base::Bucket(false, 1)));
 }
 
 }  // namespace extensions
