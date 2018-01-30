@@ -1252,6 +1252,12 @@ static jboolean JNI_PrefServiceBridge_IsBlockedLanguage(
   std::string language_code(ConvertJavaStringToUTF8(env, language));
   translate::ToTranslateLanguageSynonym(&language_code);
 
+  // Application language is always blocked.
+  std::string app_locale = g_browser_process->GetApplicationLocale();
+  translate::ToTranslateLanguageSynonym(&app_locale);
+  if (app_locale == language_code)
+    return true;
+
   return translate_prefs->IsBlockedLanguage(language_code);
 }
 
