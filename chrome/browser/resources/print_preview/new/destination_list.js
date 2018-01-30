@@ -18,10 +18,19 @@ Polymer({
     destinations: Array,
 
     /** @type {boolean} */
-    hasActionLink: Boolean,
+    hasActionLink: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @type {boolean} */
-    loadingDestinations: Boolean,
+    loadingDestinations: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @type {?RegExp} */
+    searchQuery: Object,
 
     /** @type {boolean} */
     title: String,
@@ -32,17 +41,52 @@ Polymer({
       value: false,
     },
 
+    /** @private {!Array<!print_preview.Destination>} */
+    displayedDestinations_: {
+      type: Array,
+      computed: 'computeDisplayedDestinations_(destinations, searchQuery)',
+    },
+
     /** @type {boolean} */
     footerHidden_: {
       type: Boolean,
-      computed: 'computeFooterHidden_(destinations, showAll_)',
+      computed: 'computeFooterHidden_(displayedDestinations_, showAll_)',
     },
 
     /** @private {boolean} */
     hasDestinations_: {
       type: Boolean,
-      computed: 'computeHasDestinations_(destinations)',
+      computed: 'computeHasDestinations_(displayedDestinations_)',
     },
+  },
+
+  /**
+   * @return {!Array<!print_preview.Destination>}
+   * @private
+   */
+  computeDisplayedDestinations_: function() {
+    if (!this.searchQuery)
+      return assert(this.destinations);
+    return this.destinations.filter(destination => {
+      return destination.matches(assert(this.searchQuery));
+    });
+  },
+
+  /**
+   * @param {!print_preview.Destination} destination The destination to get the
+   *     search hint for.
+   * @return {string} The property or properties matching the search query.
+   * @private
+   */
+  getSearchHint_: function(destination) {
+    if (!this.searchQuery)
+      return '';
+    let hint = '';
+    destination.extraPropertiesToMatch.some(property => {
+      if (property.match(this.searchQuery))
+        hint += property;
+    });
+    return hint;
   },
 
   /**
@@ -50,7 +94,7 @@ Polymer({
    * @private
    */
   computeFooterHidden_: function() {
-    return this.destinations.length < SHORT_DESTINATION_LIST_SIZE ||
+    return this.displayedDestinations_.length < SHORT_DESTINATION_LIST_SIZE ||
         this.showAll_;
   },
 
@@ -59,7 +103,7 @@ Polymer({
    * @private
    */
   computeHasDestinations_: function() {
-    return this.destinations.length != 0;
+    return this.displayedDestinations_.length > 0;
   },
 
   /**
@@ -81,11 +125,6 @@ Polymer({
     return offlineOrInvalid ? 'stale' : '';
   },
 
-  /** @private string */
-  totalDestinations_: function() {
-    return this.i18n('destinationCount', this.destinations.length.toString());
-  },
-
   /** @private */
   onActionLinkTap_: function() {
     print_preview.NativeLayer.getInstance().managePrinters();
@@ -94,6 +133,19 @@ Polymer({
   /** @private */
   onShowAllTap_: function() {
     this.showAll_ = true;
+  },
+
+  /**
+   * @param {!Event} e Event containing the destination that was selected.
+   * @private
+   */
+  onDestinationSelected_: function(e) {
+    this.fire(
+        'destination-selected', /** @type {!{model: Object}} */ (e).model.item);
+  },
+
+  reset: function() {
+    this.showAll_ = false;
   },
 });
 })();

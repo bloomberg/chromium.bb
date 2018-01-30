@@ -11,6 +11,11 @@
 <dom-module id="print-preview-destination-list">
   <template>
     <style include="print-preview-shared action-link cr-hidden-style throbber">
+      :host {
+        padding: 0 14px 18px;
+        user-select: none;
+      }
+
       :host > header {
         -webkit-padding-end: 19px;
         -webkit-padding-start: 0;
@@ -64,7 +69,7 @@
         padding: 0;
       }
 
-      :host .destination-list-item {
+      :host .list-item {
         -webkit-padding-end: 2px;
         -webkit-padding-start: 18px;
         cursor: default;
@@ -73,22 +78,22 @@
         padding-top: 3px;
       }
 
-      :not(.moving).destination-list-item {
+      :not(.moving).list-item {
         transition: background-color 150ms;
       }
 
-      .destination-list-item:hover,
-      .destination-list-item:focus {
+      .list-item:hover,
+      .list-item:focus {
         background-color: rgb(228, 236, 247);
       }
 
-      .destination-list-item:focus {
+      .list-item:focus {
         outline: none;
       }
 
-      .destination-list-item.stale :-webkit-any(.destination-list-item-icon,
-                                                .destination-list-item-name,
-                                                .connection-status) {
+      .list-item.stale :-webkit-any(.destination-list-item-icon,
+                                    .destination-list-item-name,
+                                    .connection-status) {
         opacity: 0.4;
       }
 
@@ -102,7 +107,8 @@
         width: 24px;
       }
 
-      .destination-list-item-name {
+      .destination-list-item-name,
+      .search-hint {
         flex: 0 1 auto;
         line-height: 24px;
         overflow: hidden;
@@ -111,8 +117,14 @@
         white-space: nowrap;
       }
 
-      .destination-list-item .connection-status,
-      .destination-list-item .learn-more-link {
+      .list-item .search-hint {
+        -webkit-margin-start: 1em;
+        color: #999;
+        font-size: 75%;
+      }
+
+      .list-item .connection-status,
+      .list-item .learn-more-link {
         -webkit-margin-start: 1em;
         flex: 0 0 auto;
         font-size: 75%;
@@ -120,7 +132,7 @@
         vertical-align: middle;
       }
 
-      .destination-list-item .learn-more-link {
+      .list-item .learn-more-link {
         color: rgb(51, 103, 214);
       }
 
@@ -179,15 +191,15 @@
       </div>
     </header>
     <ul>
-      <template is="dom-repeat" items="[[destinations]]">
-        <li class$="destination-list-item
-                    [[getStaleCssClass_(item.isOfflineOrInvalid)]]"
-            hidden$="[[isDestinationHidden_(index, showAll_)]]">
-          <img class="destination-list-item-icon" alt=""
+      <template is="dom-repeat" items="[[displayedDestinations_]]">
+        <li class$="list-item [[getStaleCssClass_(item.isOfflineOrInvalid)]]"
+             title="[[item.displayName]]"
+             hidden$="[[isDestinationHidden_(index, showAll_)]]"
+             on-tap="onDestinationSelected_">
+          <img class="destination-list-item-icon"
               src="[[item.iconUrl]]" srcset="[[item.srcSet]]">
-          <span class="destination-list-item-name">
-            [[item.displayName]]
-          </span>
+          <span class="destination-list-item-name">[[item.displayName]]</span>
+          <span class="search-hint">[[getSearchHint_(item, searchQuery)]]</span>
           <span class="connection-status"
               hidden$="[[!item.isOfflineOrInvalid]]">
             [[item.connectionStatusText]]
@@ -227,7 +239,9 @@
       <button class="show-all-button" on-tap="onShowAllTap_">
         $i18n{showAllButtonText}
       </button>
-      <span class="total">[[totalDestinations_(destinations)]]</span>
+      <span class="total">
+        [[i18n('destinationCount', displayedDestinations_.length)]]
+      </span>
     </footer>
   </template>
   <script src="destination_list.js"></script>
