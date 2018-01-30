@@ -320,15 +320,15 @@ int ChromiumSleep(sqlite3_vfs* vfs, int microseconds) {
   return wrapped_vfs->xSleep(wrapped_vfs, microseconds);
 }
 
-int ChromiumCurrentTime(sqlite3_vfs* vfs, double* pr_now) {
-  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-  return wrapped_vfs->xCurrentTime(wrapped_vfs, pr_now);
-}
-
 int ChromiumGetLastError(sqlite3_vfs* vfs, int n_buf, char* z_buf) {
   if (n_buf && z_buf)
     *z_buf = '\0';
   return 0;
+}
+
+int ChromiumCurrentTimeInt64(sqlite3_vfs* vfs, sqlite3_int64* now) {
+  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
+  return wrapped_vfs->xCurrentTimeInt64(wrapped_vfs, now);
 }
 
 }  // namespace
@@ -340,9 +340,9 @@ void SQLiteFileSystem::RegisterSQLiteVFS() {
   // TODO(shess): Implement local versions.
   DCHECK(wrapped_vfs->xRandomness);
   DCHECK(wrapped_vfs->xSleep);
-  DCHECK(wrapped_vfs->xCurrentTime);
+  DCHECK(wrapped_vfs->xCurrentTimeInt64);
 
-  static sqlite3_vfs chromium_vfs = {1,
+  static sqlite3_vfs chromium_vfs = {2,  // SQLite VFS API version.
                                      sizeof(chromiumVfsFile),
                                      wrapped_vfs->mxPathname,
                                      nullptr,
@@ -358,8 +358,9 @@ void SQLiteFileSystem::RegisterSQLiteVFS() {
                                      ChromiumDlClose,
                                      ChromiumRandomness,
                                      ChromiumSleep,
-                                     ChromiumCurrentTime,
-                                     ChromiumGetLastError};
+                                     nullptr,  // CurrentTime is deprecated.
+                                     ChromiumGetLastError,
+                                     ChromiumCurrentTimeInt64};
   sqlite3_vfs_register(&chromium_vfs, 0);
 }
 
