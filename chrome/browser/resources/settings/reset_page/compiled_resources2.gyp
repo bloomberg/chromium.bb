@@ -4,6 +4,14 @@
 {
   'targets': [
     {
+      'target_name': 'powerwash_dialog',
+      'dependencies': [
+        '../compiled_resources2.gyp:lifetime_browser_proxy',
+        'reset_browser_proxy',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'reset_page',
       'dependencies': [
         '../compiled_resources2.gyp:route',

@@ -59,8 +59,10 @@ void BrowserLifetimeHandler::HandleSignOutAndRestart(
 
 void BrowserLifetimeHandler::HandleFactoryReset(
     const base::ListValue* args) {
-  bool tpm_firmware_update_requested;
-  args->GetBoolean(0, &tpm_firmware_update_requested);
+  const base::Value::ListStorage& args_list = args->GetList();
+  CHECK_EQ(1U, args_list.size());
+  bool tpm_firmware_update_requested = args_list[0].GetBool();
+
   if (tpm_firmware_update_requested) {
     chromeos::tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
         base::BindOnce([](bool offer_update) {

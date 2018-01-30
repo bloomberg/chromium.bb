@@ -19,7 +19,7 @@ cr.define('settings', function() {
      * Triggers a factory reset. The parameter indicates whether to install a
      * TPM firmware update (if available) after the reset.
      *
-     * @param {boolean=} requestTpmFirmwareUpdate
+     * @param {boolean} requestTpmFirmwareUpdate
      */
     factoryReset(requestTpmFirmwareUpdate) {}
     // </if>

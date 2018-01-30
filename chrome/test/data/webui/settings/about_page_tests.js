@@ -491,7 +491,10 @@ cr.define('settings_about_page', function() {
             assertFalse(page.$.relaunchAndPowerwash.hidden);
 
             MockInteractions.tap(page.$.relaunchAndPowerwash);
-            return lifetimeBrowserProxy.whenCalled('factoryReset');
+            return lifetimeBrowserProxy.whenCalled('factoryReset')
+              .then((requestTpmFirmwareUpdate) => {
+                assertFalse(requestTpmFirmwareUpdate);
+              });
           });
         });
 
@@ -590,7 +593,7 @@ cr.define('settings_about_page', function() {
             assertTrue(dialog.$.dialog.open);
             MockInteractions.tap(dialog.$$('#powerwash'));
             return lifetimeBrowserProxy.whenCalled('factoryReset')
-                .then(function(requestTpmFirmwareUpdate) {
+                .then((requestTpmFirmwareUpdate) => {
                   assertTrue(requestTpmFirmwareUpdate);
                 });
           });
