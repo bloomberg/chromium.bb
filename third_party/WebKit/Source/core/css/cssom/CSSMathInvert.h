@@ -29,9 +29,6 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   String getOperator() const final { return "invert"; }
 
   void value(CSSNumberish& value) { value.SetCSSNumericValue(value_); }
-  void setValue(const CSSNumberish& value) {
-    value_ = CSSNumericValue::FromNumberish(value);
-  }
 
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kInvertType; }

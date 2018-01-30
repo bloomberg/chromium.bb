@@ -9,5 +9,5 @@
   Exposed=(Window,PaintWorklet),
   RuntimeEnabled=CSSTypedOM
 ] interface CSSMathNegate : CSSMathValue {
-  attribute CSSNumberish value;
+  readonly attribute CSSNumberish value;
 };
