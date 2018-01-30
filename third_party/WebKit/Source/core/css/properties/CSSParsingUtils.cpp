@@ -144,7 +144,8 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
     return nullptr;
 
   range = range_copy;
-  return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
+  return cssvalue::CSSStepsTimingFunctionValue::Create(steps->GetIntValue(),
+                                                       position);
 }
 
 CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
@@ -166,7 +167,7 @@ CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
     return nullptr;
 
   range = range_copy;
-  return CSSFramesTimingFunctionValue::Create(frames_int);
+  return cssvalue::CSSFramesTimingFunctionValue::Create(frames_int);
 }
 
 CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
@@ -186,7 +187,7 @@ CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
       CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args) &&
       CSSPropertyParserHelpers::ConsumeNumberRaw(args, y2) && args.AtEnd()) {
     range = range_copy;
-    return CSSCubicBezierTimingFunctionValue::Create(x1, y1, x2, y2);
+    return cssvalue::CSSCubicBezierTimingFunctionValue::Create(x1, y1, x2, y2);
   }
 
   return nullptr;
