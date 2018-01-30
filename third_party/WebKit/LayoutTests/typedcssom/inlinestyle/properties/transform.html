@@ -9,12 +9,12 @@
 
 function cssTransformWithRotate(angleValue) {
   return new CSSTransformValue([
-      new CSSRotation(angleValue)]);
+      new CSSRotate(angleValue)]);
 }
 
 function cssTransformWithRotate3D(x, y, z, angleValue) {
   return new CSSTransformValue([
-      new CSSRotation(x, y, z, angleValue)]);
+      new CSSRotate(x, y, z, angleValue)]);
 }
 
 runInlineStylePropertyMapTests( {

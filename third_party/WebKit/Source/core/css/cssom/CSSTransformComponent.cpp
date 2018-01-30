@@ -6,7 +6,7 @@
 
 #include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSPerspective.h"
-#include "core/css/cssom/CSSRotation.h"
+#include "core/css/cssom/CSSRotate.h"
 #include "core/css/cssom/CSSScale.h"
 #include "core/css/cssom/CSSSkew.h"
 #include "core/css/cssom/CSSTranslate.h"
@@ -30,7 +30,7 @@ CSSTransformComponent* CSSTransformComponent::FromCSSValue(
     case CSSValueRotateY:
     case CSSValueRotateZ:
     case CSSValueRotate3d:
-      return CSSRotation::FromCSSValue(function_value);
+      return CSSRotate::FromCSSValue(function_value);
     case CSSValueScale:
     case CSSValueScaleX:
     case CSSValueScaleY:

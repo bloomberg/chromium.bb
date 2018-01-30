@@ -87,7 +87,7 @@ core_idl_files =
                     "css/cssom/CSSPerspective.idl",
                     "css/cssom/CSSPositionValue.idl",
                     "css/cssom/CSSResourceValue.idl",
-                    "css/cssom/CSSRotation.idl",
+                    "css/cssom/CSSRotate.idl",
                     "css/cssom/CSSScale.idl",
                     "css/cssom/CSSSkew.idl",
                     "css/cssom/CSSStyleValue.idl",

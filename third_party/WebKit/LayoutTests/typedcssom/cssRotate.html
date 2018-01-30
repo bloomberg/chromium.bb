@@ -8,7 +8,7 @@ var EPSILON = 1e-6; // float epsilon
 
 var testParams = [
   {
-    input: new CSSRotation(new CSSUnitValue(0, 'deg')),
+    input: new CSSRotate(new CSSUnitValue(0, 'deg')),
     angle: 0,
     x: 0,
     y: 0,
@@ -18,7 +18,7 @@ var testParams = [
     asMatrix: new DOMMatrixReadOnly([1, 0, 0, 1, 0, 0])
   },
   {
-    input: new CSSRotation(new CSSUnitValue(10, 'deg')),
+    input: new CSSRotate(new CSSUnitValue(10, 'deg')),
     angle: 10,
     x: 0,
     y: 0,
@@ -28,7 +28,7 @@ var testParams = [
     asMatrix: new DOMMatrixReadOnly([0.9848077, 0.1736481, -0.1736481, 0.9848077, 0, 0])
   },
   {
-    input: new CSSRotation(new CSSUnitValue(-21, 'deg')),
+    input: new CSSRotate(new CSSUnitValue(-21, 'deg')),
     angle: -21,
     x: 0,
     y: 0,
@@ -38,7 +38,7 @@ var testParams = [
     asMatrix: new DOMMatrixReadOnly([0.9335804, -0.3583679, 0.3583679, 0.9335804, 0, 0])
   },
   {
-    input: new CSSRotation(new CSSUnitValue(3.2, 'deg')),
+    input: new CSSRotate(new CSSUnitValue(3.2, 'deg')),
     angle: 3.2,
     x: 0,
     y: 0,
@@ -48,7 +48,7 @@ var testParams = [
     asMatrix: new DOMMatrixReadOnly([0.9984407, 0.0558215, -0.0558215, 0.9984407, 0, 0])
   },
   {
-    input: new CSSRotation(0, 0, 1, new CSSUnitValue(90, 'deg')),
+    input: new CSSRotate(0, 0, 1, new CSSUnitValue(90, 'deg')),
     angle: 90,
     x: 0,
     y: 0,
@@ -58,7 +58,7 @@ var testParams = [
     asMatrix: new DOMMatrixReadOnly([0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
   },
   {
-    input: new CSSRotation(2.7, -3, 4.4, new CSSUnitValue(0, 'deg')),
+    input: new CSSRotate(2.7, -3, 4.4, new CSSUnitValue(0, 'deg')),
     angle: 0,
     x: 2.7,
     y: -3,
@@ -68,7 +68,7 @@ var testParams = [
     asMatrix: new DOMMatrixReadOnly([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
   },
   {
-    input: new CSSRotation(2, 3, 4, new CSSUnitValue(10, 'deg')),
+    input: new CSSRotate(2, 3, 4, new CSSUnitValue(10, 'deg')),
     angle: 10,
     x: 2,
     y: 3,
@@ -79,7 +79,7 @@ var testParams = [
       0.9895225, 0.0707777, 0, 0.1009279, -0.0582048, 0.9931896, 0, 0, 0, 0, 1])
   },
   {
-    input: new CSSRotation(2, 3.7, -4, new CSSUnitValue(-1.2, 'deg')),
+    input: new CSSRotate(2, 3.7, -4, new CSSUnitValue(-1.2, 'deg')),
     angle: -1.2,
     x: 2,
     y: 3.7,
@@ -90,7 +90,7 @@ var testParams = [
     0.9998698, -0.0073125, 0, -0.0134019, 0.0071198, 0.9998848, 0, 0, 0, 0, 1])
   },
   {
-    input: new CSSRotation(1, 0, 0, new CSSUnitValue(0.5, 'turn')),
+    input: new CSSRotate(1, 0, 0, new CSSUnitValue(0.5, 'turn')),
     angle: 0.5,
     x: 1,
     y: 0,
@@ -104,10 +104,10 @@ var testParams = [
 
 test(() => {
   // Wrong number of arguments.
-  assert_throws(new TypeError(), () => { new CSSRotation(); });
-  assert_throws(new TypeError(), () => { new CSSRotation(null); });
+  assert_throws(new TypeError(), () => { new CSSRotate(); });
+  assert_throws(new TypeError(), () => { new CSSRotate(null); });
   assert_throws(new TypeError(), () => {
-    new CSSRotation(1, 2, new CSSUnitValue(10, 'deg'));
+    new CSSRotate(1, 2, new CSSUnitValue(10, 'deg'));
   });
 }, "Invalid arguments to constructor should throw");
 
