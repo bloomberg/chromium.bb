@@ -42,19 +42,19 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   // wrapper function for binding. Note that calling distiller_js_service.get()
   // does not transfer ownership of the interface.
   BindFunctionToObject(
-      distiller_obj, "openSettings",
+      isolate, distiller_obj, "openSettings",
       base::Bind(
           &mojom::DistillerJavaScriptService::HandleDistillerOpenSettingsCall,
           base::Unretained(distiller_js_service_.get())));
 }
 
-template<typename Sig>
+template <typename Sig>
 void DistillerNativeJavaScript::BindFunctionToObject(
+    v8::Isolate* isolate,
     v8::Local<v8::Object> javascript_object,
     const std::string& name,
     const base::Callback<Sig> callback) {
   // Get the isolate associated with this object.
-  v8::Isolate* isolate = javascript_object->GetIsolate();
   javascript_object->Set(
       gin::StringToSymbol(isolate, name),
       gin::CreateFunctionTemplate(isolate, callback)->GetFunction());
