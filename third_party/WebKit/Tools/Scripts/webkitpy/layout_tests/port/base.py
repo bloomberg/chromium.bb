@@ -107,6 +107,15 @@ class Port(object):
         'android': ['kitkat'],
     }
 
+    # List of ports open on the host that the tests will connect to. When tests
+    # run on a separate machine (Android and Fuchsia) these ports need to be
+    # forwarded back to the host.
+    # 8000, 8080 and 8443 are for http/https tests;
+    # 8880 is for websocket tests (see apache_http.py and pywebsocket.py).
+    # 8001, 8081 and 8444 are for http/https WPT;
+    # 9001 and 9444 are for websocket WPT (see wptserve.py).
+    SERVER_PORTS = [8000, 8001, 8080, 8081, 8443, 8444, 8880, 9001, 9444]
+
     FALLBACK_PATHS = {}
 
     SUPPORTED_VERSIONS = []

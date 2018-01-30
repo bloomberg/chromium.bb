@@ -88,6 +88,7 @@ class ServerProcess(object):
         self._treat_no_data_as_crash = treat_no_data_as_crash
         self._logging = more_logging
         self._host = self._port.host
+        self._proc = None
         self._pid = None
         self._reset()
 
@@ -132,14 +133,19 @@ class ServerProcess(object):
             if self._env:
                 env_str += '\n'.join('%s=%s' % (k, v) for k, v in self._env.items()) + '\n'
             _log.info('CMD: \n%s%s\n', env_str, _quote_cmd(self._cmd))
-        self._proc = self._host.executive.popen(self._cmd, stdin=self._host.executive.PIPE,
-                                                stdout=self._host.executive.PIPE,
-                                                stderr=self._host.executive.PIPE,
-                                                close_fds=close_fds,
-                                                env=self._env)
+        proc = self._host.executive.popen(self._cmd, stdin=self._host.executive.PIPE,
+                                          stdout=self._host.executive.PIPE,
+                                          stderr=self._host.executive.PIPE,
+                                          close_fds=close_fds,
+                                          env=self._env)
+        self._set_proc(proc)
+
+    def _set_proc(self, proc):
+        assert not self._proc
+        self._proc = proc
         self._pid = self._proc.pid
-        fd = self._proc.stdout.fileno()
         if not self._use_win32_apis:
+            fd = self._proc.stdout.fileno()
             fl = fcntl.fcntl(fd, fcntl.F_GETFL)
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
             fd = self._proc.stderr.fileno()
