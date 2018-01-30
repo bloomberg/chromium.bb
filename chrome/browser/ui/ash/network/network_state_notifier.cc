@@ -478,7 +478,21 @@ void NetworkStateNotifier::ShowVpnDisconnectedNotification(
 void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
   if (!SystemTrayClient::Get())
     return;
-  SystemTrayClient::Get()->ShowNetworkSettings(network_id);
+  const NetworkState* network = GetNetworkStateForGuid(network_id);
+  if (!network)
+    return;
+  std::string error = network->GetErrorState();
+  if (!error.empty()) {
+    NET_LOG(ERROR) << "Notify ShowNetworkSettings: " << network_id
+                   << ": Error: " << error;
+  }
+  if (!NetworkTypePattern::Primitive(network->type())
+           .MatchesPattern(NetworkTypePattern::Mobile()) &&
+      shill_error::IsConfigurationError(error)) {
+    SystemTrayClient::Get()->ShowNetworkConfigure(network_id);
+  } else {
+    SystemTrayClient::Get()->ShowNetworkSettings(network_id);
+  }
 }
 
 }  // namespace chromeos
