@@ -61,6 +61,7 @@ crypto_test_sources = [
   "src/crypto/pool/pool_test.cc",
   "src/crypto/refcount_test.cc",
   "src/crypto/rsa_extra/rsa_test.cc",
+  "src/crypto/self_test.cc",
   "src/crypto/test/file_test_gtest.cc",
   "src/crypto/test/gtest_main.cc",
   "src/crypto/thread_test.cc",

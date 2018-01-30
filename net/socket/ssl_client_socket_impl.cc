@@ -80,15 +80,6 @@ const int kNoPendingResult = 1;
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
-// TLS extension number use for Token Binding.
-const unsigned int kTbExtNum = 24;
-
-// Token Binding ProtocolVersions supported.
-const uint8_t kTbProtocolVersionMajor = 0;
-const uint8_t kTbProtocolVersionMinor = 13;
-const uint8_t kTbMinProtocolVersionMajor = 0;
-const uint8_t kTbMinProtocolVersionMinor = 10;
-
 const base::Feature kPostQuantumPadding{"PostQuantumPadding",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -352,47 +343,6 @@ class SSLClientSocketImpl::SSLContext {
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
 
     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
-
-    if (!SSL_CTX_add_client_custom_ext(ssl_ctx_.get(), kTbExtNum,
-                                       &TokenBindingAddCallback,
-                                       &TokenBindingFreeCallback, nullptr,
-                                       &TokenBindingParseCallback, nullptr)) {
-      NOTREACHED();
-    }
-  }
-
-  static int TokenBindingAddCallback(SSL* ssl,
-                                     unsigned int extension_value,
-                                     const uint8_t** out,
-                                     size_t* out_len,
-                                     int* out_alert_value,
-                                     void* add_arg) {
-    DCHECK_EQ(extension_value, kTbExtNum);
-    SSLClientSocketImpl* socket =
-        SSLClientSocketImpl::SSLContext::GetInstance()->GetClientSocketFromSSL(
-            ssl);
-    return socket->TokenBindingAdd(out, out_len, out_alert_value);
-  }
-
-  static void TokenBindingFreeCallback(SSL* ssl,
-                                       unsigned extension_value,
-                                       const uint8_t* out,
-                                       void* add_arg) {
-    DCHECK_EQ(extension_value, kTbExtNum);
-    OPENSSL_free(const_cast<unsigned char*>(out));
-  }
-
-  static int TokenBindingParseCallback(SSL* ssl,
-                                       unsigned int extension_value,
-                                       const uint8_t* contents,
-                                       size_t contents_len,
-                                       int* out_alert_value,
-                                       void* parse_arg) {
-    DCHECK_EQ(extension_value, kTbExtNum);
-    SSLClientSocketImpl* socket =
-        SSLClientSocketImpl::SSLContext::GetInstance()->GetClientSocketFromSSL(
-            ssl);
-    return socket->TokenBindingParse(contents, contents_len, out_alert_value);
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
@@ -492,8 +442,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       cert_verifier_(context.cert_verifier),
       cert_transparency_verifier_(context.cert_transparency_verifier),
       channel_id_service_(context.channel_id_service),
-      tb_was_negotiated_(false),
-      tb_negotiated_param_(TB_PARAM_ECDSAP256),
       tb_signature_map_(10),
       transport_(std::move(transport_socket)),
       host_and_port_(host_and_port),
@@ -767,8 +715,10 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
   ssl_info->channel_id_sent = channel_id_sent_;
-  ssl_info->token_binding_negotiated = tb_was_negotiated_;
-  ssl_info->token_binding_key_param = tb_negotiated_param_;
+  ssl_info->token_binding_negotiated =
+      SSL_is_token_binding_negotiated(ssl_.get());
+  ssl_info->token_binding_key_param = static_cast<net::TokenBindingParam>(
+      SSL_get_negotiated_token_binding_param(ssl_.get()));
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
@@ -1016,6 +966,12 @@ int SSLClientSocketImpl::Init() {
     SSL_enable_tls_channel_id(ssl_.get());
   }
 
+  if (!ssl_config_.token_binding_params.empty()) {
+    std::vector<uint8_t> params(ssl_config_.token_binding_params.begin(),
+                                ssl_config_.token_binding_params.end());
+    SSL_set_token_binding_params(ssl_.get(), params.data(), params.size());
+  }
+
   if (!ssl_config_.alpn_protos.empty()) {
     std::vector<uint8_t> wire_protos =
         SerializeNextProtos(ssl_config_.alpn_protos);
@@ -1167,14 +1123,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   if (!ssl_session_cache_shard_.empty()) {
     SSLContext::GetInstance()->session_cache()->ResetLookupCount(
         GetSessionCacheKey());
-  }
-
-  // Check that if token binding was negotiated, then extended master secret
-  // and renegotiation indication must also be negotiated.
-  if (tb_was_negotiated_ &&
-      !(SSL_get_extms_support(ssl_.get()) &&
-        SSL_get_secure_renegotiation_support(ssl_.get()))) {
-    return ERR_SSL_PROTOCOL_ERROR;
   }
 
   const uint8_t* alpn_proto = NULL;
@@ -1794,7 +1742,7 @@ std::string SSLClientSocketImpl::GetSessionCacheKey() const {
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
-  if (tb_was_negotiated_)
+  if (SSL_is_token_binding_negotiated(ssl_.get()))
     return false;
 
   if (negotiated_protocol_ == kProtoUnknown)
@@ -1890,85 +1838,6 @@ void SSLClientSocketImpl::MessageCallback(int is_write,
     default:
       return;
   }
-}
-
-int SSLClientSocketImpl::TokenBindingAdd(const uint8_t** out,
-                                         size_t* out_len,
-                                         int* out_alert_value) {
-  if (ssl_config_.token_binding_params.empty()) {
-    return 0;
-  }
-  bssl::ScopedCBB output;
-  CBB parameters_list;
-  if (!CBB_init(output.get(), 7) ||
-      !CBB_add_u8(output.get(), kTbProtocolVersionMajor) ||
-      !CBB_add_u8(output.get(), kTbProtocolVersionMinor) ||
-      !CBB_add_u8_length_prefixed(output.get(), &parameters_list)) {
-    *out_alert_value = SSL_AD_INTERNAL_ERROR;
-    return -1;
-  }
-  for (size_t i = 0; i < ssl_config_.token_binding_params.size(); ++i) {
-    if (!CBB_add_u8(&parameters_list, ssl_config_.token_binding_params[i])) {
-      *out_alert_value = SSL_AD_INTERNAL_ERROR;
-      return -1;
-    }
-  }
-  // |*out| will be freed by TokenBindingFreeCallback.
-  if (!CBB_finish(output.get(), const_cast<uint8_t**>(out), out_len)) {
-    *out_alert_value = SSL_AD_INTERNAL_ERROR;
-    return -1;
-  }
-
-  return 1;
-}
-
-int SSLClientSocketImpl::TokenBindingParse(const uint8_t* contents,
-                                           size_t contents_len,
-                                           int* out_alert_value) {
-  if (completed_connect_) {
-    // Token Binding may only be negotiated on the initial handshake.
-    *out_alert_value = SSL_AD_ILLEGAL_PARAMETER;
-    return 0;
-  }
-
-  CBS extension;
-  CBS_init(&extension, contents, contents_len);
-
-  CBS parameters_list;
-  uint8_t version_major, version_minor, param;
-  if (!CBS_get_u8(&extension, &version_major) ||
-      !CBS_get_u8(&extension, &version_minor) ||
-      !CBS_get_u8_length_prefixed(&extension, &parameters_list) ||
-      !CBS_get_u8(&parameters_list, &param) || CBS_len(&parameters_list) > 0 ||
-      CBS_len(&extension) > 0) {
-    *out_alert_value = SSL_AD_DECODE_ERROR;
-    return 0;
-  }
-  // The server-negotiated version must be less than or equal to our version.
-  if (version_major > kTbProtocolVersionMajor ||
-      (version_minor > kTbProtocolVersionMinor &&
-       version_major == kTbProtocolVersionMajor)) {
-    *out_alert_value = SSL_AD_ILLEGAL_PARAMETER;
-    return 0;
-  }
-  // If the version the server negotiated is older than we support, don't fail
-  // parsing the extension, but also don't set |negotiated_|.
-  if (version_major < kTbMinProtocolVersionMajor ||
-      (version_minor < kTbMinProtocolVersionMinor &&
-       version_major == kTbMinProtocolVersionMajor)) {
-    return 1;
-  }
-
-  for (size_t i = 0; i < ssl_config_.token_binding_params.size(); ++i) {
-    if (param == ssl_config_.token_binding_params[i]) {
-      tb_negotiated_param_ = ssl_config_.token_binding_params[i];
-      tb_was_negotiated_ = true;
-      return 1;
-    }
-  }
-
-  *out_alert_value = SSL_AD_ILLEGAL_PARAMETER;
-  return 0;
 }
 
 void SSLClientSocketImpl::LogConnectEndEvent(int rv) {

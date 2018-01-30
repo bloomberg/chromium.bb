@@ -288,8 +288,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   // The service for retrieving Channel ID keys.  May be NULL.
   ChannelIDService* channel_id_service_;
-  bool tb_was_negotiated_;
-  TokenBindingParam tb_negotiated_param_;
   TokenBindingSignatureMap tb_signature_map_;
 
   // OpenSSL stuff
