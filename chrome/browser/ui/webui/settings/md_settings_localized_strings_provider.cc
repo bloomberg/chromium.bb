@@ -1304,7 +1304,17 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"passwordDeleted", IDS_SETTINGS_PASSWORD_DELETED_PASSWORD},
       {"exportPasswordsTitle", IDS_SETTINGS_PASSWORDS_EXPORT_TITLE},
       {"exportPasswordsDescription", IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION},
-      {"exportPasswords", IDS_SETTINGS_PASSWORDS_EXPORT}};
+      {"exportPasswords", IDS_SETTINGS_PASSWORDS_EXPORT},
+      {"exportingPasswordsTitle", IDS_SETTINGS_PASSWORDS_EXPORTING_TITLE},
+      {"exportPasswordsTryAgain", IDS_SETTINGS_PASSWORDS_EXPORT_TRY_AGAIN},
+      {"exportPasswordsFailTitle",
+       IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TITLE},
+      {"exportPasswordsFailTips",
+       IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIPS},
+      {"exportPasswordsFailTipsEnoughSpace",
+       IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ENOUGH_SPACE},
+      {"exportPasswordsFailTipsAnotherFolder",
+       IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ANOTHER_FOLDER}};
 
   html_source->AddString(
       "managePasswordsLabel",
