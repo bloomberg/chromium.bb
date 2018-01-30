@@ -41,11 +41,11 @@
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/child/worker_global_scope_scheduler.h"
-#include "platform/scheduler/util/thread_type.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Optional.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebThreadType.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 #include "v8/include/v8.h"
 
@@ -201,7 +201,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
  protected:
   WorkerThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 
-  virtual scheduler::ThreadType GetThreadType() const = 0;
+  virtual WebThreadType GetThreadType() const = 0;
 
   // Official moment of creation of worker: when the worker thread is created.
   // (https://w3c.github.io/hr-time/#time-origin)

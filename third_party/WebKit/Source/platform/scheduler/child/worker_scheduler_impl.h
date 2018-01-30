@@ -15,7 +15,7 @@
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
-#include "platform/scheduler/util/thread_type.h"
+#include "public/platform/WebThreadType.h"
 
 namespace blink {
 namespace scheduler {
@@ -57,7 +57,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 
-  void SetThreadType(ThreadType thread_type) override;
+  void SetThreadType(WebThreadType thread_type) override;
 
  protected:
   // IdleHelper::Delegate implementation:

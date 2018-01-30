@@ -63,8 +63,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 
-  scheduler::ThreadType GetThreadType() const override {
-    return scheduler::ThreadType::kServiceWorkerThread;
+  WebThreadType GetThreadType() const override {
+    return WebThreadType::kServiceWorkerThread;
   }
 
   Persistent<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;

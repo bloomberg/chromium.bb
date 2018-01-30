@@ -12,7 +12,7 @@
 #include "platform/scheduler/child/compositor_metrics_helper.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "platform/scheduler/util/task_duration_metric_reporter.h"
-#include "platform/scheduler/util/thread_type.h"
+#include "public/platform/WebThreadType.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 namespace base {
@@ -40,7 +40,7 @@ class PLATFORM_EXPORT CompositorWorkerScheduler
                        base::TimeTicks start,
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time) override;
-  void SetThreadType(ThreadType thread_type) override;
+  void SetThreadType(WebThreadType thread_type) override;
 
   // ChildScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;

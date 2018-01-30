@@ -57,8 +57,8 @@ class MultiThreadedTest : public ::testing::Test {
     Vector<std::unique_ptr<WaitableEvent>> waits;
 
     for (int i = 0; i < num_threads_; ++i) {
-      threads.push_back(
-          WebThreadSupportingGC::Create(WebThreadCreationParams("")));
+      threads.push_back(WebThreadSupportingGC::Create(
+          WebThreadCreationParams(WebThreadType::kTestThread)));
       waits.push_back(std::make_unique<WaitableEvent>());
     }
 

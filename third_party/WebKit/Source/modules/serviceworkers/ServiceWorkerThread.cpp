@@ -48,7 +48,7 @@ ServiceWorkerThread::ServiceWorkerThread(
     : WorkerThread(loading_context, *global_scope_proxy),
       global_scope_proxy_(global_scope_proxy),
       worker_backing_thread_(WorkerBackingThread::Create(
-          WebThreadCreationParams("ServiceWorker Thread"))),
+          WebThreadCreationParams(GetThreadType()))),
       installed_scripts_manager_(std::move(installed_scripts_manager)) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {

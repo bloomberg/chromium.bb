@@ -81,7 +81,7 @@ class WorkerThreadForTest : public WorkerThread {
                       WorkerReportingProxy& mock_worker_reporting_proxy)
       : WorkerThread(loading_context, mock_worker_reporting_proxy),
         worker_backing_thread_(WorkerBackingThread::CreateForTest(
-            WebThreadCreationParams("Test thread"))) {}
+            WebThreadCreationParams(WebThreadType::kTestThread))) {}
 
   ~WorkerThreadForTest() override = default;
 
@@ -130,8 +130,8 @@ class WorkerThreadForTest : public WorkerThread {
   }
 
  private:
-  scheduler::ThreadType GetThreadType() const override {
-    return scheduler::ThreadType::kUnspecifiedWorkerThread;
+  WebThreadType GetThreadType() const override {
+    return WebThreadType::kUnspecifiedWorkerThread;
   }
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;

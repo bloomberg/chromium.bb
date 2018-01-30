@@ -163,8 +163,8 @@ void Platform::Initialize(Platform* platform) {
 
   // Pre-create the File thread so multiple threads can call FileTaskRunner() in
   // a non racy way later.
-  g_platform->file_thread_ =
-      g_platform->CreateThread(WebThreadCreationParams("File"));
+  g_platform->file_thread_ = g_platform->CreateThread(
+      WebThreadCreationParams(WebThreadType::kFileThread));
 
   if (BlinkResourceCoordinatorBase::IsEnabled())
     RendererResourceCoordinator::Initialize();

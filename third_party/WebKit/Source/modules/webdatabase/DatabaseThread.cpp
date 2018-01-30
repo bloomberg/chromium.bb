@@ -60,7 +60,7 @@ void DatabaseThread::Start() {
   if (thread_)
     return;
   thread_ = WebThreadSupportingGC::Create(
-      WebThreadCreationParams("WebCore: Database"));
+      WebThreadCreationParams(WebThreadType::kDatabaseThread));
   thread_->PostTask(FROM_HERE,
                     CrossThreadBind(&DatabaseThread::SetupDatabaseThread,
                                     WrapCrossThreadPersistent(this)));

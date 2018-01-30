@@ -44,7 +44,7 @@ SharedWorkerThread::SharedWorkerThread(
     WorkerReportingProxy& worker_reporting_proxy)
     : WorkerThread(loading_context, worker_reporting_proxy),
       worker_backing_thread_(WorkerBackingThread::Create(
-          WebThreadCreationParams("SharedWorker Thread"))),
+          WebThreadCreationParams(GetThreadType()))),
       name_(name.IsolatedCopy()) {}
 
 SharedWorkerThread::~SharedWorkerThread() = default;

@@ -16,8 +16,14 @@
 
 namespace blink {
 
-WebThreadCreationParams::WebThreadCreationParams(const char* name)
-    : name(name) {}
+WebThreadCreationParams::WebThreadCreationParams(WebThreadType thread_type)
+    : thread_type(thread_type), name(GetNameForThreadType(thread_type)) {}
+
+WebThreadCreationParams& WebThreadCreationParams::SetThreadName(
+    const char* thread_name) {
+  name = thread_name;
+  return *this;
+}
 
 #if defined(OS_WIN)
 static_assert(sizeof(blink::PlatformThreadId) >= sizeof(DWORD),

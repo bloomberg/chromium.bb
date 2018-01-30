@@ -8,7 +8,7 @@ namespace blink {
 namespace scheduler {
 
 CompositorMetricsHelper::CompositorMetricsHelper()
-    : MetricsHelper(ThreadType::kCompositorThread) {}
+    : MetricsHelper(WebThreadType::kCompositorThread) {}
 
 CompositorMetricsHelper::~CompositorMetricsHelper() {}
 

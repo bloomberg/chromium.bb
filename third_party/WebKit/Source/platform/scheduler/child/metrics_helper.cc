@@ -19,7 +19,7 @@ constexpr base::TimeDelta kLongTaskDiscardingThreshold =
 
 }  // namespace
 
-MetricsHelper::MetricsHelper(ThreadType thread_type)
+MetricsHelper::MetricsHelper(WebThreadType thread_type)
     : thread_type_(thread_type),
       thread_task_duration_reporter_(
           "RendererScheduler.TaskDurationPerThreadType"),
@@ -80,7 +80,7 @@ void MetricsHelper::RecordCommonTaskMetrics(
   }
 }
 
-void MetricsHelper::SetThreadType(ThreadType thread_type) {
+void MetricsHelper::SetThreadType(WebThreadType thread_type) {
   thread_type_ = thread_type;
 }
 
