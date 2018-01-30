@@ -2460,6 +2460,8 @@ CSSValue* ConsumeBasicShape(CSSParserTokenRange& range,
     shape = ConsumeBasicShapeInset(args, context);
   if (!shape || !args.AtEnd())
     return nullptr;
+
+  context.Count(WebFeature::kCSSBasicShape);
   range = range_copy;
   return shape;
 }

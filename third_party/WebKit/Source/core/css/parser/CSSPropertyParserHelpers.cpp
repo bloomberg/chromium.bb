@@ -1479,6 +1479,16 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   }
   if (!result || !args.AtEnd())
     return nullptr;
+
+  WebFeature feature;
+  if (id == CSSValueWebkitCrossFade)
+    feature = WebFeature::kWebkitCrossFade;
+  else if (id == CSSValuePaint)
+    feature = WebFeature::kCSSPaintFunction;
+  else
+    feature = WebFeature::kCSSGradient;
+  context->Count(feature);
+
   range = range_copy;
   return result;
 }
