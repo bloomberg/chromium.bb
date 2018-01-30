@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
 
+#include "base/component_export.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_source.h"
@@ -17,8 +18,9 @@
 namespace mojo {
 
 template <>
-struct StructTraits<network::mojom::ProxyBypassRulesDataView,
-                    net::ProxyBypassRules> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::ProxyBypassRulesDataView,
+                 net::ProxyBypassRules> {
  public:
   static std::vector<std::string> rules(const net::ProxyBypassRules& r);
   static bool Read(network::mojom::ProxyBypassRulesDataView data,
@@ -26,7 +28,8 @@ struct StructTraits<network::mojom::ProxyBypassRulesDataView,
 };
 
 template <>
-struct StructTraits<network::mojom::ProxyListDataView, net::ProxyList> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::ProxyListDataView, net::ProxyList> {
  public:
   static std::vector<std::string> proxies(const net::ProxyList& r);
   static bool Read(network::mojom::ProxyListDataView data,
@@ -34,8 +37,9 @@ struct StructTraits<network::mojom::ProxyListDataView, net::ProxyList> {
 };
 
 template <>
-struct EnumTraits<network::mojom::ProxyRulesType,
-                  net::ProxyConfig::ProxyRules::Type> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    EnumTraits<network::mojom::ProxyRulesType,
+               net::ProxyConfig::ProxyRules::Type> {
  public:
   static network::mojom::ProxyRulesType ToMojom(
       net::ProxyConfig::ProxyRules::Type net_proxy_rules_type);
@@ -44,8 +48,9 @@ struct EnumTraits<network::mojom::ProxyRulesType,
 };
 
 template <>
-struct StructTraits<network::mojom::ProxyRulesDataView,
-                    net::ProxyConfig::ProxyRules> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::ProxyRulesDataView,
+                 net::ProxyConfig::ProxyRules> {
  public:
   static const net::ProxyBypassRules& bypass_rules(
       const net::ProxyConfig::ProxyRules& r) {
@@ -84,7 +89,8 @@ struct StructTraits<network::mojom::ProxyRulesDataView,
 };
 
 template <>
-struct EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource> {
  public:
   static network::mojom::ProxyConfigSource ToMojom(
       net::ProxyConfigSource net_proxy_config_source);
@@ -94,7 +100,8 @@ struct EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource> {
 };
 
 template <>
-struct StructTraits<network::mojom::ProxyConfigDataView, net::ProxyConfig> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::ProxyConfigDataView, net::ProxyConfig> {
  public:
   static bool auto_detect(const net::ProxyConfig& r) { return r.auto_detect(); }
   static const GURL& pac_url(const net::ProxyConfig& r) { return r.pac_url(); }

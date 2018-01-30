@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "services/network/public/interfaces/cors.mojom-shared.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
@@ -22,13 +23,17 @@ namespace cors {
 
 namespace header_names {
 
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowCredentials[];
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowOrigin[];
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowSuborigin[];
 
 }  // namespace header_names
 
 // Performs a CORS access check on the response parameters.
+COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<mojom::CORSError> CheckAccess(
     const GURL& response_url,
     const int response_status_code,
@@ -45,19 +50,23 @@ base::Optional<mojom::CORSError> CheckAccess(
 // TODO(toyoshim): Remove |skip_scheme_check| that is used when customized
 // scheme check runs in Blink side in the legacy mode.
 // See https://crbug.com/800669.
+COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
                                                        bool skip_scheme_check);
 
 // Performs the required CORS checks on the response to a preflight request.
 // Returns |kPreflightSuccess| if preflight response was successful.
+COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<mojom::CORSError> CheckPreflight(const int status_code);
 
 // Checks errors for the currently experimental "Access-Control-Allow-External:"
 // header. Shares error conditions with standard preflight checking.
 // See https://crbug.com/590714.
+COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<mojom::CORSError> CheckExternalPreflight(
     const base::Optional<std::string>& allow_external);
 
+COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode);
 
 }  // namespace cors

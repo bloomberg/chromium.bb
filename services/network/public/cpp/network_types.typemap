@@ -9,7 +9,7 @@ public_deps = [
 public_headers = [ "//net/nqe/effective_connection_type.h" ]
 traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
 deps = [
-  "//services/network/public/cpp:typemap_dependencies",
+  "//services/network/public/cpp:cpp_base",
 ]
 type_mappings =
     [ "network.mojom.EffectiveConnectionType=net::EffectiveConnectionType" ]

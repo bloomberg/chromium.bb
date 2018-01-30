@@ -10,18 +10,18 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "build/build_config.h"
 #include "services/network/public/cpp/data_element.h"
 #include "url/gurl.h"
 
 namespace network {
 
 // ResourceRequestBody represents body (i.e. upload data) of a HTTP request.
-class ResourceRequestBody
+class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
     : public base::RefCountedThreadSafe<ResourceRequestBody> {
  public:
   ResourceRequestBody();

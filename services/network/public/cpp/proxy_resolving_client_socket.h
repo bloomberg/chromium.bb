@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
 
@@ -9,6 +10,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -39,7 +41,8 @@ namespace network {
 // TODO(xunjieli): https://crbug.com/721401. This class should be private (i.e.
 // moved out of services/network/public/cpp). The functionalities will be
 // exposed only through a mojo interface.
-class ProxyResolvingClientSocket : public net::StreamSocket {
+class COMPONENT_EXPORT(NETWORK_CPP) ProxyResolvingClientSocket
+    : public net::StreamSocket {
  public:
   // Constructs a new ProxyResolvingClientSocket. |url|'s host and port specify
   // where a connection will be established to. The full URL will be only used

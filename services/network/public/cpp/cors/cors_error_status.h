@@ -5,13 +5,14 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
 
+#include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/interfaces/cors.mojom-shared.h"
 
 namespace network {
 
-struct CORSErrorStatus {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CORSErrorStatus {
   // This constructor is used by generated IPC serialization code.
   // Should not use this explicitly.
   // TODO(toyoshim, yhirano): Exploring a way to make this private, and allows

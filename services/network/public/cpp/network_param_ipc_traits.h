@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/pickle.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
@@ -36,13 +37,8 @@
 #ifndef INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
 #define INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
 
-// services/network/public/cpp is currently packaged as a static library,
-// so there's no need for export defines; it's linked directly into whatever
-// other components need it.
-// This redefinition is present for the IPC macros below, including in the
-// included header files.
 #undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 namespace network {
 struct HttpRawRequestResponseInfo;
@@ -51,7 +47,7 @@ struct HttpRawRequestResponseInfo;
 namespace IPC {
 
 template <>
-struct ParamTraits<net::CertVerifyResult> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::CertVerifyResult> {
   typedef net::CertVerifyResult param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -61,7 +57,7 @@ struct ParamTraits<net::CertVerifyResult> {
 };
 
 template <>
-struct ParamTraits<net::HashValue> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::HashValue> {
   typedef net::HashValue param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -71,7 +67,7 @@ struct ParamTraits<net::HashValue> {
 };
 
 template <>
-struct ParamTraits<net::HostPortPair> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -81,7 +77,7 @@ struct ParamTraits<net::HostPortPair> {
 };
 
 template <>
-struct ParamTraits<net::HttpRequestHeaders> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::HttpRequestHeaders> {
   typedef net::HttpRequestHeaders param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -91,7 +87,7 @@ struct ParamTraits<net::HttpRequestHeaders> {
 };
 
 template <>
-struct ParamTraits<net::OCSPVerifyResult> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::OCSPVerifyResult> {
   typedef net::OCSPVerifyResult param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -101,7 +97,8 @@ struct ParamTraits<net::OCSPVerifyResult> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<net::SSLCertRequestInfo>> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<net::SSLCertRequestInfo>> {
   typedef scoped_refptr<net::SSLCertRequestInfo> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -111,7 +108,7 @@ struct ParamTraits<scoped_refptr<net::SSLCertRequestInfo>> {
 };
 
 template <>
-struct ParamTraits<net::SSLInfo> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::SSLInfo> {
   typedef net::SSLInfo param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -121,7 +118,8 @@ struct ParamTraits<net::SSLInfo> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
   typedef scoped_refptr<net::ct::SignedCertificateTimestamp> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -131,7 +129,8 @@ struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>> {
   typedef scoped_refptr<network::HttpRawRequestResponseInfo> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -141,7 +140,8 @@ struct ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<net::HttpResponseHeaders>> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<net::HttpResponseHeaders>> {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -151,7 +151,8 @@ struct ParamTraits<scoped_refptr<net::HttpResponseHeaders>> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<net::X509Certificate>> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<net::X509Certificate>> {
   typedef scoped_refptr<net::X509Certificate> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -161,7 +162,7 @@ struct ParamTraits<scoped_refptr<net::X509Certificate>> {
 };
 
 template <>
-struct ParamTraits<net::LoadTimingInfo> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::LoadTimingInfo> {
   typedef net::LoadTimingInfo param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -171,7 +172,7 @@ struct ParamTraits<net::LoadTimingInfo> {
 };
 
 template <>
-struct ParamTraits<network::DataElement> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   typedef network::DataElement param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -181,7 +182,8 @@ struct ParamTraits<network::DataElement> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<network::ResourceRequestBody>> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<network::ResourceRequestBody>> {
   typedef scoped_refptr<network::ResourceRequestBody> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -191,7 +193,7 @@ struct ParamTraits<scoped_refptr<network::ResourceRequestBody>> {
 };
 
 template <>
-struct ParamTraits<url::Origin> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<url::Origin> {
   typedef url::Origin param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

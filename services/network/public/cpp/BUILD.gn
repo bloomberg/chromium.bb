@@ -4,10 +4,14 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-static_library("cpp") {
+component("cpp") {
+  output_name = "network_cpp"
+
   sources = [
     "cors/cors.cc",
     "cors/cors.h",
+    "features.cc",
+    "features.h",
     "ignore_errors_cert_verifier.cc",
     "ignore_errors_cert_verifier.h",
     "loader_util.cc",
@@ -29,8 +33,7 @@ static_library("cpp") {
   ]
 
   public_deps = [
-    ":network_features",
-    ":typemap_dependencies",
+    ":cpp_base",
     "//services/network/public/interfaces",
     "//url/ipc:url_ipc",
   ]
@@ -43,9 +46,13 @@ static_library("cpp") {
     "//net",
     "//services/proxy_resolver/public/interfaces",
   ]
+
+  defines = [ "IS_NETWORK_CPP_IMPL" ]
 }
 
-static_library("typemap_dependencies") {
+component("cpp_base") {
+  output_name = "network_cpp_base"
+
   sources = [
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
@@ -81,23 +88,7 @@ static_library("typemap_dependencies") {
     "//net",
     "//services/network/public/interfaces:interfaces_shared",
   ]
-}
-
-component("network_features") {
-  public = [
-    "features.h",
-  ]
-
-  sources = [
-    "features.cc",
-    "features_export.h",
-  ]
-
-  public_deps = [
-    "//base",
-  ]
-
-  defines = [ "NETWORK_FEATURES_IMPLEMENTATION" ]
+  defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
 }
 
 mojom("test_interfaces") {
