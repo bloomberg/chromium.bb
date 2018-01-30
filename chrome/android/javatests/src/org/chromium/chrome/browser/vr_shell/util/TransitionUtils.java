@@ -96,7 +96,7 @@ public class TransitionUtils {
      */
     public static void enterPresentation(ContentViewCore cvc) {
         try {
-            DOMUtils.clickNode(cvc, "webgl-canvas");
+            DOMUtils.clickNode(cvc, "webgl-canvas", false /* goThroughRootAndroidView */);
         } catch (InterruptedException | TimeoutException e) {
             Assert.fail("Failed to click canvas to enter presentation: " + e.toString());
         }

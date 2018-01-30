@@ -109,10 +109,26 @@ public class TouchCommon {
      * @param y Y coordinate, relative to v.
      */
     public static boolean singleClickView(View v, int x, int y) {
-        int windowXY[] = viewToWindowCoordinates(v, x, y);
+        return singleClickViewThroughTarget(v, v.getRootView(), x, y);
+    }
+
+    /**
+     * Sends a click event to the specified view, not going through the root view.
+     *
+     * This is mostly useful for tests in VR, where inputs to the root view are (in a sense)
+     * consumed by the platform, but the java test still wants to interact with, say, WebContents.
+     *
+     * @param view The view to be clicked.
+     * @param target The view to inject the input into.
+     * @param x X coordinate, relative to view.
+     * @param y Y coordinate, relative to view.
+     */
+    /* package */ static boolean singleClickViewThroughTarget(
+            View view, View target, int x, int y) {
+        int windowXY[] = viewToWindowCoordinates(view, x, y);
         int windowX = windowXY[0];
         int windowY = windowXY[1];
-        return singleClickInternal(v.getRootView(), windowX, windowY);
+        return singleClickInternal(target, windowX, windowY);
     }
 
     /**
