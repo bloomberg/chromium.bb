@@ -64,9 +64,12 @@
 -CaptivePortalWindowTest.*
 -SimpleWebViewDialogTest.*
 
-# Need pixel copy support. http://crbug.com/754864
+# Need pixel copy support. http://crbug.com/754864 http://crbug.com/754872
+-ArcAccessibilityHelperBridgeBrowserTest.*
+-CastStreamingApiTest.*
 -CastStreamingApiTestWithPixelOutput.*
 -TabCaptureApiPixelTest.*
+-TabCaptureApiTest.*
 
 # RefCounted check failed: CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.*
