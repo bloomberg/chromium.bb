@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSRotation.h"
+#include "core/css/cssom/CSSRotate.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSFunctionValue.h"
@@ -23,14 +23,14 @@ bool IsValidRotateAngle(const CSSNumericValue* value) {
          value->Type().MatchesBaseType(CSSNumericValueType::BaseType::kAngle);
 }
 
-CSSRotation* FromCSSRotate(const CSSFunctionValue& value) {
+CSSRotate* FromCSSRotate(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
   CSSNumericValue* angle =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
-  return CSSRotation::Create(angle);
+  return CSSRotate::Create(angle);
 }
 
-CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
+CSSRotate* FromCSSRotate3d(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 4UL);
 
   CSSNumericValue* x =
@@ -42,10 +42,10 @@ CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
   CSSNumericValue* angle =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(3)));
 
-  return CSSRotation::Create(x, y, z, angle);
+  return CSSRotate::Create(x, y, z, angle);
 }
 
-CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
+CSSRotate* FromCSSRotateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
 
   CSSNumericValue* angle =
@@ -53,17 +53,14 @@ CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
 
   switch (value.FunctionType()) {
     case CSSValueRotateX:
-      return CSSRotation::Create(CSSUnitValue::Create(1),
-                                 CSSUnitValue::Create(0),
-                                 CSSUnitValue::Create(0), angle);
+      return CSSRotate::Create(CSSUnitValue::Create(1), CSSUnitValue::Create(0),
+                               CSSUnitValue::Create(0), angle);
     case CSSValueRotateY:
-      return CSSRotation::Create(CSSUnitValue::Create(0),
-                                 CSSUnitValue::Create(1),
-                                 CSSUnitValue::Create(0), angle);
+      return CSSRotate::Create(CSSUnitValue::Create(0), CSSUnitValue::Create(1),
+                               CSSUnitValue::Create(0), angle);
     case CSSValueRotateZ:
-      return CSSRotation::Create(CSSUnitValue::Create(0),
-                                 CSSUnitValue::Create(0),
-                                 CSSUnitValue::Create(1), angle);
+      return CSSRotate::Create(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
+                               CSSUnitValue::Create(1), angle);
     default:
       NOTREACHED();
       return nullptr;
@@ -72,21 +69,21 @@ CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
 
 }  // namespace
 
-CSSRotation* CSSRotation::Create(CSSNumericValue* angle,
-                                 ExceptionState& exception_state) {
+CSSRotate* CSSRotate::Create(CSSNumericValue* angle,
+                             ExceptionState& exception_state) {
   if (!IsValidRotateAngle(angle)) {
-    exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
+    exception_state.ThrowTypeError("Must pass an angle to CSSRotate");
     return nullptr;
   }
-  return new CSSRotation(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
-                         CSSUnitValue::Create(1), angle, true /* is2D */);
+  return new CSSRotate(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
+                       CSSUnitValue::Create(1), angle, true /* is2D */);
 }
 
-CSSRotation* CSSRotation::Create(const CSSNumberish& x,
-                                 const CSSNumberish& y,
-                                 const CSSNumberish& z,
-                                 CSSNumericValue* angle,
-                                 ExceptionState& exception_state) {
+CSSRotate* CSSRotate::Create(const CSSNumberish& x,
+                             const CSSNumberish& y,
+                             const CSSNumberish& z,
+                             CSSNumericValue* angle,
+                             ExceptionState& exception_state) {
   CSSNumericValue* x_value = CSSNumericValue::FromNumberish(x);
   CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
   CSSNumericValue* z_value = CSSNumericValue::FromNumberish(z);
@@ -97,25 +94,25 @@ CSSRotation* CSSRotation::Create(const CSSNumberish& x,
     return nullptr;
   }
   if (!IsValidRotateAngle(angle)) {
-    exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
+    exception_state.ThrowTypeError("Must pass an angle to CSSRotate");
     return nullptr;
   }
-  return new CSSRotation(x_value, y_value, z_value, angle, false /* is2D */);
+  return new CSSRotate(x_value, y_value, z_value, angle, false /* is2D */);
 }
 
-CSSRotation* CSSRotation::Create(CSSNumericValue* angle) {
-  return new CSSRotation(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
-                         CSSUnitValue::Create(1), angle, true /* is2D */);
+CSSRotate* CSSRotate::Create(CSSNumericValue* angle) {
+  return new CSSRotate(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
+                       CSSUnitValue::Create(1), angle, true /* is2D */);
 }
 
-CSSRotation* CSSRotation::Create(CSSNumericValue* x,
-                                 CSSNumericValue* y,
-                                 CSSNumericValue* z,
-                                 CSSNumericValue* angle) {
-  return new CSSRotation(x, y, z, angle, false /* is2D */);
+CSSRotate* CSSRotate::Create(CSSNumericValue* x,
+                             CSSNumericValue* y,
+                             CSSNumericValue* z,
+                             CSSNumericValue* angle) {
+  return new CSSRotate(x, y, z, angle, false /* is2D */);
 }
 
-CSSRotation* CSSRotation::FromCSSValue(const CSSFunctionValue& value) {
+CSSRotate* CSSRotate::FromCSSValue(const CSSFunctionValue& value) {
   switch (value.FunctionType()) {
     case CSSValueRotate:
       return FromCSSRotate(value);
@@ -131,16 +128,16 @@ CSSRotation* CSSRotation::FromCSSValue(const CSSFunctionValue& value) {
   }
 }
 
-void CSSRotation::setAngle(CSSNumericValue* angle,
-                           ExceptionState& exception_state) {
+void CSSRotate::setAngle(CSSNumericValue* angle,
+                         ExceptionState& exception_state) {
   if (!IsValidRotateAngle(angle)) {
-    exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
+    exception_state.ThrowTypeError("Must pass an angle to CSSRotate");
     return;
   }
   angle_ = angle;
 }
 
-const DOMMatrix* CSSRotation::AsMatrix(ExceptionState& exception_state) const {
+const DOMMatrix* CSSRotate::AsMatrix(ExceptionState& exception_state) const {
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* y = y_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* z = z_->to(CSSPrimitiveValue::UnitType::kNumber);
@@ -161,7 +158,7 @@ const DOMMatrix* CSSRotation::AsMatrix(ExceptionState& exception_state) const {
   return matrix;
 }
 
-const CSSFunctionValue* CSSRotation::ToCSSValue() const {
+const CSSFunctionValue* CSSRotate::ToCSSValue() const {
   DCHECK(x_->to(CSSPrimitiveValue::UnitType::kNumber));
   DCHECK(y_->to(CSSPrimitiveValue::UnitType::kNumber));
   DCHECK(z_->to(CSSPrimitiveValue::UnitType::kNumber));
@@ -189,7 +186,7 @@ const CSSFunctionValue* CSSRotation::ToCSSValue() const {
   return result;
 }
 
-void CSSRotation::setX(const CSSNumberish& x, ExceptionState& exception_state) {
+void CSSRotate::setX(const CSSNumberish& x, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(x);
   if (!IsValidRotateCoord(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
@@ -198,7 +195,7 @@ void CSSRotation::setX(const CSSNumberish& x, ExceptionState& exception_state) {
   x_ = value;
 }
 
-void CSSRotation::setY(const CSSNumberish& y, ExceptionState& exception_state) {
+void CSSRotate::setY(const CSSNumberish& y, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(y);
   if (!IsValidRotateCoord(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
@@ -207,7 +204,7 @@ void CSSRotation::setY(const CSSNumberish& y, ExceptionState& exception_state) {
   y_ = value;
 }
 
-void CSSRotation::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
+void CSSRotate::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(z);
   if (!IsValidRotateCoord(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
@@ -216,11 +213,11 @@ void CSSRotation::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
   z_ = value;
 }
 
-CSSRotation::CSSRotation(CSSNumericValue* x,
-                         CSSNumericValue* y,
-                         CSSNumericValue* z,
-                         CSSNumericValue* angle,
-                         bool is2D)
+CSSRotate::CSSRotate(CSSNumericValue* x,
+                     CSSNumericValue* y,
+                     CSSNumericValue* z,
+                     CSSNumericValue* angle,
+                     bool is2D)
     : CSSTransformComponent(is2D), angle_(angle), x_(x), y_(y), z_(z) {
   DCHECK(IsValidRotateCoord(x));
   DCHECK(IsValidRotateCoord(y));

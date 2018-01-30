@@ -4,14 +4,14 @@
 
 // Represents a rotation value in a CSSTransformValue used for properties like
 // "transform".
-// Spec: https://drafts.css-houdini.org/css-typed-om/#cssrotation
+// Spec: https://drafts.css-houdini.org/css-typed-om/#cssrotate
 [
     Constructor(CSSNumericValue angleValue),
     Constructor(CSSNumberish x, CSSNumberish y, CSSNumberish z, CSSNumericValue angle),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
-] interface CSSRotation : CSSTransformComponent {
+] interface CSSRotate : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue angle;
     [RaisesException=Setter] attribute CSSNumberish x;
     [RaisesException=Setter] attribute CSSNumberish y;

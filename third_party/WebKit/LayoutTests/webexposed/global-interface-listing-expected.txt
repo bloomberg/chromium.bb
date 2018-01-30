@@ -724,7 +724,7 @@ interface CSSResourceValue : CSSStyleValue
     attribute @@toStringTag
     getter state
     method constructor
-interface CSSRotation : CSSTransformComponent
+interface CSSRotate : CSSTransformComponent
     attribute @@toStringTag
     getter angle
     getter x
