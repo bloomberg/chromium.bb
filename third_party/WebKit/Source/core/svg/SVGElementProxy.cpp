@@ -41,8 +41,8 @@ class SVGElementProxy::IdObserver : public IdTargetObserver {
   }
 
   void ContentChanged() {
-    DCHECK(Lifecycle().GetState() <= DocumentLifecycle::kCompositingClean ||
-           Lifecycle().GetState() >= DocumentLifecycle::kPaintClean);
+    DCHECK(Lifecycle().GetState() != DocumentLifecycle::kInPrePaint &&
+           Lifecycle().GetState() != DocumentLifecycle::kInPaint);
     HeapVector<Member<SVGResourceClient>> clients;
     CopyToVector(clients_, clients);
     for (SVGResourceClient* client : clients)
