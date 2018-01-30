@@ -6,10 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -29,6 +27,8 @@ namespace {
 const int kUdpReadBufferSize = 65536;
 // Socket receive buffer size.
 const int kUdpRecvSocketBufferSize = 65536;  // 64K
+// Socket send buffer size.
+const int kUdpSendSocketBufferSize = 65536;
 
 // Defines set of transient errors. These errors are ignored when we get them
 // from sendto() or recvfrom() calls.
@@ -106,7 +106,6 @@ P2PSocketHostUdp::P2PSocketHostUdp(
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
       throttler_(throttler),
-      send_buffer_size_(0),
       net_log_(net_log),
       socket_factory_(socket_factory) {}
 
@@ -124,23 +123,6 @@ P2PSocketHostUdp::~P2PSocketHostUdp() {
   if (state_ == STATE_OPEN) {
     DCHECK(socket_.get());
     socket_.reset();
-  }
-}
-
-void P2PSocketHostUdp::SetSendBufferSize() {
-  unsigned int send_buffer_size = 0;
-
-  base::StringToUint(
-      base::FieldTrialList::FindFullName("WebRTC-SystemUDPSendSocketSize"),
-      &send_buffer_size);
-
-  if (send_buffer_size > 0) {
-    if (!SetOption(P2P_SOCKET_OPT_SNDBUF, send_buffer_size)) {
-      LOG(WARNING) << "Failed to set socket send buffer size to "
-                   << send_buffer_size;
-    } else {
-      send_buffer_size_ = send_buffer_size;
-    }
   }
 }
 
@@ -182,6 +164,12 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
                  << kUdpRecvSocketBufferSize;
   }
 
+  // Setting socket send buffer size.
+  if (socket_->SetSendBufferSize(kUdpSendSocketBufferSize) != net::OK) {
+    LOG(WARNING) << "Failed to set socket send buffer size to "
+                 << kUdpSendSocketBufferSize;
+  }
+
   net::IPEndPoint address;
   result = socket_->GetLocalAddress(&address);
   if (result < 0) {
@@ -193,8 +181,6 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
   VLOG(1) << "Local address: " << address.ToString();
 
   state_ = STATE_OPEN;
-
-  SetSendBufferSize();
 
   // NOTE: Remote address will be same as what renderer provided.
   message_sender_->Send(new P2PMsg_OnSocketCreated(
@@ -441,11 +427,6 @@ bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
     case P2P_SOCKET_OPT_RCVBUF:
       return socket_->SetReceiveBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_SNDBUF:
-      // Ignore any following call to set the send buffer size if we're under
-      // experiment.
-      if (send_buffer_size_ > 0) {
-        return true;
-      }
       return socket_->SetSendBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_DSCP:
       return (net::OK == socket_->SetDiffServCodePoint(
