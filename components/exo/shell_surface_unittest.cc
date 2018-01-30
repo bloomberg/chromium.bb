@@ -34,9 +34,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/shadow.h"
-#include "ui/wm/core/shadow_controller.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {

@@ -50,8 +50,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/shadow.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
