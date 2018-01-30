@@ -105,14 +105,14 @@ TEST_F(CdmRegistryImplTest, MultipleVersions) {
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion2));
 }
 
-TEST_F(CdmRegistryImplTest, NewVersionInsertedFirst) {
+TEST_F(CdmRegistryImplTest, NewVersionInsertedLast) {
   Register(kTestCdmName, kVersion1, kTestPath, {}, false, kTestKeySystem);
   Register(kTestCdmName, kVersion2, "/bb/cc", {}, false, kTestKeySystem);
 
   const std::vector<std::string> versions = GetVersions(kTestCdmGuid);
   EXPECT_EQ(2u, versions.size());
-  EXPECT_EQ(kVersion2, versions[0]);
-  EXPECT_EQ(kVersion1, versions[1]);
+  EXPECT_EQ(kVersion1, versions[0]);
+  EXPECT_EQ(kVersion2, versions[1]);
 }
 
 }  // namespace content
