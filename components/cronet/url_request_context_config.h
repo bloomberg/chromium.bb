@@ -97,6 +97,8 @@ struct URLRequestContextConfig {
       bool load_disable_cache,
       // Storage path for http cache and cookie storage.
       const std::string& storage_path,
+      // Accept-Language request header field.
+      const std::string& accept_language,
       // User-Agent request header field.
       const std::string& user_agent,
       // JSON encoded experimental options.
@@ -133,6 +135,8 @@ struct URLRequestContextConfig {
   const bool load_disable_cache;
   // Storage path for http cache and cookie storage.
   const std::string storage_path;
+  // Accept-Language request header field.
+  const std::string accept_language;
   // User-Agent request header field.
   const std::string user_agent;
 
@@ -220,6 +224,8 @@ struct URLRequestContextConfigBuilder {
   bool load_disable_cache = false;
   // Storage path for http cache and cookie storage.
   std::string storage_path = "";
+  // Accept-Language request header field.
+  std::string accept_language = "";
   // User-Agent request header field.
   std::string user_agent = "";
   // Experimental options encoded as a string in a JSON format containing

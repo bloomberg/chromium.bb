@@ -77,9 +77,10 @@ struct Cronet_Engine {
   virtual void SetContext(Cronet_EngineContext context) = 0;
   virtual Cronet_EngineContext GetContext() = 0;
 
-  virtual void StartWithParams(Cronet_EngineParamsPtr params) = 0;
-  virtual void StartNetLogToFile(CharString fileName, bool logAll) = 0;
+  virtual Cronet_RESULT StartWithParams(Cronet_EngineParamsPtr params) = 0;
+  virtual bool StartNetLogToFile(CharString fileName, bool logAll) = 0;
   virtual void StopNetLog() = 0;
+  virtual Cronet_RESULT Shutdown() = 0;
   virtual CharString GetVersionString() = 0;
   virtual CharString GetDefaultUserAgent() = 0;
 

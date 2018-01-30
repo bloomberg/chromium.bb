@@ -67,6 +67,22 @@ typedef struct Cronet_UrlRequestParams Cronet_UrlRequestParams;
 typedef struct Cronet_UrlRequestParams* Cronet_UrlRequestParamsPtr;
 
 // Declare enums
+typedef enum Cronet_RESULT {
+  Cronet_RESULT_SUCCESS = 0,
+  Cronet_RESULT_ILLEGAL_ARGUMENT = -100,
+  Cronet_RESULT_ILLEGAL_ARGUMENT_STORAGE_PATH_MUST_EXIST = -101,
+  Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_PIN = -102,
+  Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_HOSTNAME = -103,
+  Cronet_RESULT_ILLEGAL_STATE = -200,
+  Cronet_RESULT_ILLEGAL_STATE_STORAGE_PATH_IN_USE = -201,
+  Cronet_RESULT_ILLEGAL_STATE_CANNOT_SHUTDOWN_ENGINE_FROM_NETWORK_THREAD = -202,
+  Cronet_RESULT_ILLEGAL_STATE_ENGINE_ALREADY_STARTED = -203,
+  Cronet_RESULT_NULL_POINTER = -300,
+  Cronet_RESULT_NULL_POINTER_HOSTNAME = -301,
+  Cronet_RESULT_NULL_POINTER_SHA256_PINS = -302,
+  Cronet_RESULT_NULL_POINTER_EXPIRATION_DATE = -303,
+} Cronet_RESULT;
+
 typedef enum Cronet_Exception_ERROR_CODE {
   Cronet_Exception_ERROR_CODE_ERROR_CALLBACK = 0,
   Cronet_Exception_ERROR_CODE_ERROR_HOSTNAME_NOT_RESOLVED = 1,
@@ -256,27 +272,30 @@ Cronet_Engine_GetContext(Cronet_EnginePtr self);
 // Concrete methods of Cronet_Engine implemented by Cronet.
 // The app calls them to manipulate Cronet_Engine.
 CRONET_EXPORT
-void Cronet_Engine_StartWithParams(Cronet_EnginePtr self,
-                                   Cronet_EngineParamsPtr params);
+Cronet_RESULT Cronet_Engine_StartWithParams(Cronet_EnginePtr self,
+                                            Cronet_EngineParamsPtr params);
 CRONET_EXPORT
-void Cronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
+bool Cronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
                                      CharString fileName,
                                      bool logAll);
 CRONET_EXPORT
 void Cronet_Engine_StopNetLog(Cronet_EnginePtr self);
+CRONET_EXPORT
+Cronet_RESULT Cronet_Engine_Shutdown(Cronet_EnginePtr self);
 CRONET_EXPORT
 CharString Cronet_Engine_GetVersionString(Cronet_EnginePtr self);
 CRONET_EXPORT
 CharString Cronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self);
 // Concrete interface Cronet_Engine is implemented by Cronet.
 // The app can implement these for testing / mocking.
-typedef void (*Cronet_Engine_StartWithParamsFunc)(
+typedef Cronet_RESULT (*Cronet_Engine_StartWithParamsFunc)(
     Cronet_EnginePtr self,
     Cronet_EngineParamsPtr params);
-typedef void (*Cronet_Engine_StartNetLogToFileFunc)(Cronet_EnginePtr self,
+typedef bool (*Cronet_Engine_StartNetLogToFileFunc)(Cronet_EnginePtr self,
                                                     CharString fileName,
                                                     bool logAll);
 typedef void (*Cronet_Engine_StopNetLogFunc)(Cronet_EnginePtr self);
+typedef Cronet_RESULT (*Cronet_Engine_ShutdownFunc)(Cronet_EnginePtr self);
 typedef CharString (*Cronet_Engine_GetVersionStringFunc)(Cronet_EnginePtr self);
 typedef CharString (*Cronet_Engine_GetDefaultUserAgentFunc)(
     Cronet_EnginePtr self);
@@ -286,6 +305,7 @@ CRONET_EXPORT Cronet_EnginePtr Cronet_Engine_CreateStub(
     Cronet_Engine_StartWithParamsFunc StartWithParamsFunc,
     Cronet_Engine_StartNetLogToFileFunc StartNetLogToFileFunc,
     Cronet_Engine_StopNetLogFunc StopNetLogFunc,
+    Cronet_Engine_ShutdownFunc ShutdownFunc,
     Cronet_Engine_GetVersionStringFunc GetVersionStringFunc,
     Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc);
 
@@ -626,20 +646,25 @@ void Cronet_PublicKeyPins_set_host(Cronet_PublicKeyPinsPtr self,
                                    CharString host);
 CRONET_EXPORT
 void Cronet_PublicKeyPins_add_pinsSha256(Cronet_PublicKeyPinsPtr self,
-                                         RawDataPtr pinsSha256);
+                                         CharString pinsSha256);
 CRONET_EXPORT
 void Cronet_PublicKeyPins_set_includeSubdomains(Cronet_PublicKeyPinsPtr self,
                                                 bool includeSubdomains);
+CRONET_EXPORT
+void Cronet_PublicKeyPins_set_expirationDate(Cronet_PublicKeyPinsPtr self,
+                                             int64_t expirationDate);
 // Cronet_PublicKeyPins getters.
 CRONET_EXPORT
 CharString Cronet_PublicKeyPins_get_host(Cronet_PublicKeyPinsPtr self);
 CRONET_EXPORT
 uint32_t Cronet_PublicKeyPins_get_pinsSha256Size(Cronet_PublicKeyPinsPtr self);
-RawDataPtr Cronet_PublicKeyPins_get_pinsSha256AtIndex(
+CharString Cronet_PublicKeyPins_get_pinsSha256AtIndex(
     Cronet_PublicKeyPinsPtr self,
     uint32_t index);
 CRONET_EXPORT
 bool Cronet_PublicKeyPins_get_includeSubdomains(Cronet_PublicKeyPinsPtr self);
+CRONET_EXPORT
+int64_t Cronet_PublicKeyPins_get_expirationDate(Cronet_PublicKeyPinsPtr self);
 
 ///////////////////////
 // Struct Cronet_EngineParams.
@@ -647,8 +672,14 @@ CRONET_EXPORT Cronet_EngineParamsPtr Cronet_EngineParams_Create();
 CRONET_EXPORT void Cronet_EngineParams_Destroy(Cronet_EngineParamsPtr self);
 // Cronet_EngineParams setters.
 CRONET_EXPORT
+void Cronet_EngineParams_set_enableCheckResult(Cronet_EngineParamsPtr self,
+                                               bool enableCheckResult);
+CRONET_EXPORT
 void Cronet_EngineParams_set_userAgent(Cronet_EngineParamsPtr self,
                                        CharString userAgent);
+CRONET_EXPORT
+void Cronet_EngineParams_set_acceptLanguage(Cronet_EngineParamsPtr self,
+                                            CharString acceptLanguage);
 CRONET_EXPORT
 void Cronet_EngineParams_set_storagePath(Cronet_EngineParamsPtr self,
                                          CharString storagePath);
@@ -679,9 +710,17 @@ CRONET_EXPORT
 void Cronet_EngineParams_set_enablePublicKeyPinningBypassForLocalTrustAnchors(
     Cronet_EngineParamsPtr self,
     bool enablePublicKeyPinningBypassForLocalTrustAnchors);
+CRONET_EXPORT
+void Cronet_EngineParams_set_experimentalOptions(
+    Cronet_EngineParamsPtr self,
+    CharString experimentalOptions);
 // Cronet_EngineParams getters.
 CRONET_EXPORT
+bool Cronet_EngineParams_get_enableCheckResult(Cronet_EngineParamsPtr self);
+CRONET_EXPORT
 CharString Cronet_EngineParams_get_userAgent(Cronet_EngineParamsPtr self);
+CRONET_EXPORT
+CharString Cronet_EngineParams_get_acceptLanguage(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
 CharString Cronet_EngineParams_get_storagePath(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
@@ -707,6 +746,9 @@ Cronet_PublicKeyPinsPtr Cronet_EngineParams_get_publicKeyPinsAtIndex(
     uint32_t index);
 CRONET_EXPORT
 bool Cronet_EngineParams_get_enablePublicKeyPinningBypassForLocalTrustAnchors(
+    Cronet_EngineParamsPtr self);
+CRONET_EXPORT
+CharString Cronet_EngineParams_get_experimentalOptions(
     Cronet_EngineParamsPtr self);
 
 ///////////////////////

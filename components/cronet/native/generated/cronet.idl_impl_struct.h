@@ -52,8 +52,9 @@ struct Cronet_PublicKeyPins {
   ~Cronet_PublicKeyPins();
 
   std::string host;
-  std::vector<RawDataPtr> pinsSha256;
+  std::vector<std::string> pinsSha256;
   bool includeSubdomains = false;
+  int64_t expirationDate;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_PublicKeyPins);
@@ -65,7 +66,9 @@ struct Cronet_EngineParams {
   Cronet_EngineParams();
   ~Cronet_EngineParams();
 
+  bool enableCheckResult = true;
   std::string userAgent;
+  std::string acceptLanguage;
   std::string storagePath;
   bool enableQuic = false;
   bool enableHttp2 = true;
@@ -76,6 +79,7 @@ struct Cronet_EngineParams {
   std::vector<std::unique_ptr<Cronet_QuicHint>> quicHints;
   std::vector<std::unique_ptr<Cronet_PublicKeyPins>> publicKeyPins;
   bool enablePublicKeyPinningBypassForLocalTrustAnchors = true;
+  std::string experimentalOptions;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineParams);

@@ -22,6 +22,16 @@ namespace cronet {
 // Only callable after initialization thread is started.
 bool OnInitThread();
 
+// Posts a task to run on initialization thread. Blocks until initialization
+// thread is started.
+void PostTaskToInitThread(const base::Location& posted_from,
+                          base::OnceClosure task);
+
+// Ensure that one time initialization of Cronet global state is done. Can be
+// called from any thread. The initialization is performed on initialization
+// thread.
+void EnsureInitialized();
+
 // Creates a proxy config service appropriate for this platform that fetches the
 // system proxy settings.
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
@@ -32,6 +42,10 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
 std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log);
+
+// Creates default User-Agent request value, combining optional
+// |partial_user_agent| with system-dependent values.
+std::string CreateDefaultUserAgent(const std::string& partial_user_agent);
 
 }  // namespace cronet
 

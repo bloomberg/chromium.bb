@@ -311,7 +311,6 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   DCHECK(!is_context_initialized_);
-  DCHECK(proxy_config_service);
 
   std::unique_ptr<URLRequestContextConfig> config(std::move(context_config_));
   network_task_runner_ = network_task_runner;
