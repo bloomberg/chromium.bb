@@ -129,11 +129,6 @@ message NetworkTrafficAnnotation {
   TrafficSemantics semantics = 3;
 
   message TrafficPolicy {
-    // Justification for an empty traffic policy.
-    // This can be used for network requests that do not have any traffic
-    // control policy, such as those inside the network stack.
-    string empty_policy_justification = 1;
-
     enum CookiesAllowed {
       // Do not use this value. It's just a placeholder for default value.
       UNSPECIFIED = 0;
@@ -143,7 +138,7 @@ message NetworkTrafficAnnotation {
       // correct).
       YES = 2;
     }
-    CookiesAllowed cookies_allowed = 2;
+    CookiesAllowed cookies_allowed = 1;
 
     // If a request sends or stores cookies/channel IDs/... (i.e. if
     // cookies_allowed is true), we want to know which cookie store is being
@@ -158,20 +153,20 @@ message NetworkTrafficAnnotation {
     //   io_thread()->system_url_request_context_getter()), put "system" here.
     // Otherwise, please explain (e.g. SafeBrowsing uses a separate cookie
     // store).
-    string cookies_store = 3;
+    string cookies_store = 2;
 
     // Human readable description of how to enable/disable a feature that
     // triggers this network request by a user (e.g. “Disable ‘Use a web service
     // to help resolve spelling errors.’ in settings under Advanced”).
-    string setting = 4;
+    string setting = 3;
 
     // Policy configuration(s) that disable or limit this network request.
     // This would be a text serialized protobuf of any enterprise policy.
     // see out/Debug/gen/components/policy/proto/chrome_settings.proto
-    repeated enterprise_management.ChromeSettingsProto chrome_policy = 5;
+    repeated enterprise_management.ChromeSettingsProto chrome_policy = 4;
 
     // Justification for not having a policy that disables this feature.
-    string policy_exception_justification = 6;
+    string policy_exception_justification = 5;
   }
 
   TrafficPolicy policy = 4;

@@ -123,9 +123,6 @@ Each network traffic annotation should specify the following items:
      points to `OTHER`.
 * `TrafficPolicy`: These set of fields specify the controls that a user may have
   on disabling or limiting the network request and its trace.
-   * `empty_policy_justification`: If traffic policy cannot be specified, like
-     when the request originates from inside network stack and none of the below
-     control policies applies to it, a plain text here can specify it.
    * `cookies_allowed`: Specifies if this request stores and uses cookies or
      not. Use values `YES` or `NO`.
    * `cookies_store`: If a request sends or stores cookies/channel IDs/... (i.e.
@@ -149,8 +146,7 @@ Each network traffic annotation should specify the following items:
      request. This would be a text serialized protobuf of any enterprise policy.
      See policy list or  chrome_settings.proto for the full list of policies.
    * `policy_exception_justification`: If there is no policy to disable or limit
-     this request, a justification can be presented here. In case ‘Empty Policy
-     Justification’ is presented, this field is not required.
+     this request, a justification can be presented here.
 * `comments`: If required, any human readable extra comments.
 
 ### Format and Examples
@@ -259,7 +255,6 @@ You can copy/paste the following template to define an annotation.
           destination: WEBSITE/GOOGLE_OWNED_SERVICE/OTHER
         }
         policy {
-          empty_policy_justification = "..."
           cookies_allowed: NO/YES
           cookies_store: "..."
           setting: "..."
