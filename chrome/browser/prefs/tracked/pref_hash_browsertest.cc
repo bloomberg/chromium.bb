@@ -688,18 +688,16 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
     // the previous one.
     switch (protection_level_) {
       case PROTECTION_ENABLED_ALL:
-        // Falls through.
       case PROTECTION_ENABLED_EXTENSIONS:
         ++num_protected_prefs;
-        // Falls through.
+        FALLTHROUGH;
       case PROTECTION_ENABLED_DSE:
         ++num_protected_prefs;
-        // Falls through.
+        FALLTHROUGH;
       case PROTECTION_ENABLED_BASIC:
         num_protected_prefs += num_tracked_prefs() - num_null_values - 2;
-        // Falls through.
+        FALLTHROUGH;
       case PROTECTION_DISABLED_FOR_GROUP:
-        // No protection. Falls through.
       case PROTECTION_DISABLED_ON_PLATFORM:
         // No protection.
         break;
