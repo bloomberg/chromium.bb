@@ -2659,9 +2659,6 @@ void TextureManager::DoCubeMapWorkaround(
     TextureRef* texture_ref,
     const char* function_name,
     const DoTexImageArguments& args) {
-  // This workaround code does not work with an unpack buffer bound.
-  ScopedResetPixelUnpackBuffer scoped_reset_pbo(state);
-
   std::vector<GLenum> undefined_faces;
   Texture* texture = texture_ref->texture();
   if (texture_state->force_cube_complete ||
@@ -2693,6 +2690,8 @@ void TextureManager::DoCubeMapWorkaround(
   DoTexImageArguments new_args = args;
   std::unique_ptr<char[]> zero(new char[args.pixels_size]);
   memset(zero.get(), 0, args.pixels_size);
+  // Need to clear PIXEL_UNPACK_BUFFER and UNPACK params for data uploading.
+  state->PushTextureUnpackState();
   for (GLenum face : undefined_faces) {
     new_args.target = face;
     new_args.pixels = zero.get();
@@ -2700,6 +2699,7 @@ void TextureManager::DoCubeMapWorkaround(
                function_name, texture_ref, new_args);
     texture->MarkLevelAsInternalWorkaround(face, args.level);
   }
+  state->RestoreUnpackState();
 }
 
 void TextureManager::ValidateAndDoTexImage(
