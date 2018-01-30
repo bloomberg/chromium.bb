@@ -610,7 +610,7 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
         base::FileDescriptor(handle_fd.release(), true));
     for (const auto& plane : planes) {
       gmb_handle.native_pixmap_handle.planes.emplace_back(plane.stride,
-                                                          plane.offset, 0, 0);
+                                                          plane.offset, 0);
     }
   }
 

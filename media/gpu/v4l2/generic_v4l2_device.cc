@@ -323,7 +323,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
   for (size_t p = 0; p < num_planes; ++p) {
     native_pixmap_handle.planes.emplace_back(
         VideoFrame::RowBytes(p, vf_format, size.width()), plane_offset,
-        VideoFrame::PlaneSize(vf_format, p, size).GetArea(), 0);
+        VideoFrame::PlaneSize(vf_format, p, size).GetArea());
 
     if (v4l2_plane + 1 < dmabuf_fds.size()) {
       ++v4l2_plane;
