@@ -137,10 +137,11 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content.browser.ContentVideoView;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -2114,13 +2115,10 @@ public class ChromeTabbedActivity
             mLayoutManager.showOverview(false);
             return;
         }
-        ContentViewCore contentViewCore = currentTab.getContentViewCore();
 
         if (!mLayoutManager.overviewVisible()) {
             getCompositorViewHolder().hideKeyboard(() -> mLayoutManager.showOverview(true));
-            if (contentViewCore != null) {
-                contentViewCore.setAccessibilityState(false);
-            }
+            updateAccessibilityState(false);
         } else {
             Layout activeLayout = mLayoutManager.getActiveLayout();
             if (activeLayout instanceof StackLayout) {
@@ -2129,15 +2127,16 @@ public class ChromeTabbedActivity
             if (getCurrentTabModel().getCount() != 0) {
                 // Don't hide overview if current tab stack is empty()
                 mLayoutManager.hideOverview(true);
-
-                // hideOverview could change the current tab.  Update the local variables.
-                currentTab = getActivityTab();
-                contentViewCore = currentTab != null ? currentTab.getContentViewCore() : null;
-
-                if (contentViewCore != null) {
-                    contentViewCore.setAccessibilityState(true);
-                }
+                updateAccessibilityState(true);
             }
+        }
+    }
+
+    private void updateAccessibilityState(boolean enabled) {
+        Tab currentTab = getActivityTab();
+        WebContents webContents = currentTab != null ? currentTab.getWebContents() : null;
+        if (webContents != null) {
+            WebContentsAccessibility.fromWebContents(webContents).setState(enabled);
         }
     }
 

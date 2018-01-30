@@ -27,27 +27,32 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
+import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsAccessibility;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
+ * Implementation of {@link WebContentsAccessibility} interface.
  * Native accessibility for a {@link WebContents}. Actual native instance is
  * created lazily upon the first request from Android framework on
  *{@link AccessibilityNodeProvider}, and shares the lifetime with {@link WebContents}.
  */
 @JNINamespace("content")
-public class WebContentsAccessibility extends AccessibilityNodeProvider
-        implements AccessibilityStateChangeListener, WindowEventObserver {
+public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
+        implements AccessibilityStateChangeListener, WebContentsAccessibility, WindowEventObserver {
     // Constants from AccessibilityNodeInfo defined in the K SDK.
     private static final int ACTION_COLLAPSE = 0x00080000;
     private static final int ACTION_EXPAND = 0x00040000;
@@ -72,17 +77,17 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
 
-    protected final AccessibilityManager mAccessibilityManager;
-    protected final Context mContext;
-    private final String mProductVersion;
-    private WebContentsImpl mWebContents;
+    private final WebContentsImpl mWebContents;
+    protected AccessibilityManager mAccessibilityManager;
+    protected Context mContext;
+    private String mProductVersion;
     protected long mNativeObj;
     private Rect mAccessibilityFocusRect;
     private boolean mIsHovering;
     private int mLastHoverId = View.NO_ID;
     protected int mCurrentRootId;
-    private final int[] mTempLocation = new int[2];
-    protected final ViewGroup mView;
+    private int[] mTempLocation = new int[2];
+    protected ViewGroup mView;
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mNotifyFrameInfoInitializedCalled;
@@ -110,35 +115,60 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
     // Accessibility touch exploration state.
     private boolean mTouchExplorationEnabled;
 
+    private boolean mInitialized;
+
     /**
-     * Create a WebContentsAccessibility object.
+     * Create a WebContentsAccessibilityImpl object.
      */
-    public static WebContentsAccessibility create(Context context, ViewGroup containerView,
-            WebContents webContents, String productVersion) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return new OWebContentsAccessibility(
-                    context, containerView, webContents, productVersion);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return new LollipopWebContentsAccessibility(
-                    context, containerView, webContents, productVersion);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return new KitKatWebContentsAccessibility(
-                    context, containerView, webContents, productVersion);
-        } else {
-            return new WebContentsAccessibility(
-                    context, containerView, webContents, productVersion);
+    private static class Factory implements UserDataFactory<WebContentsAccessibilityImpl> {
+        @Override
+        public WebContentsAccessibilityImpl create(WebContents webContents) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                return new OWebContentsAccessibility(webContents);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return new LollipopWebContentsAccessibility(webContents);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                return new KitKatWebContentsAccessibility(webContents);
+            } else {
+                return new WebContentsAccessibilityImpl(webContents);
+            }
         }
     }
 
-    protected WebContentsAccessibility(Context context, ViewGroup containerView,
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<WebContentsAccessibilityImpl> INSTANCE = new Factory();
+    }
+
+    public static WebContentsAccessibilityImpl create(Context context, ViewGroup containerView,
             WebContents webContents, String productVersion) {
-        mContext = context;
+        WebContentsAccessibilityImpl wcax = WebContentsUserData.fromWebContents(webContents,
+                WebContentsAccessibilityImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        assert wcax != null && !wcax.initialized();
+        wcax.init(context, containerView, productVersion);
+        return wcax;
+    }
+
+    public static WebContentsAccessibilityImpl fromWebContents(WebContents webContents) {
+        return WebContentsUserData.fromWebContents(
+                webContents, WebContentsAccessibilityImpl.class, null);
+    }
+
+    protected WebContentsAccessibilityImpl(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
+    }
+
+    private void init(Context context, ViewGroup containerView, String productVersion) {
+        mContext = context;
         mView = containerView;
         mProductVersion = productVersion;
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        mInitialized = true;
         // Native is initialized lazily, when node provider is actually requested.
+    }
+
+    private boolean initialized() {
+        return mInitialized;
     }
 
     /**
@@ -168,18 +198,39 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
     /**
      * Pretend that accessibility is enabled, for testing.
      */
+    @VisibleForTesting
     static void setAccessibilityEnabledForTesting() {
         sAccessibilityEnabledForTesting = true;
     }
 
+    // WindowEventObserver
+
+    @Override
+    public void onDetachedFromWindow() {
+        mAccessibilityManager.removeAccessibilityStateChangeListener(this);
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        mAccessibilityManager.addAccessibilityStateChangeListener(this);
+        refreshState();
+    }
+
     /**
-     * @return An AccessibilityNodeProvider.
+     * Refresh a11y state with that of {@link AccessibilityManager}.
      */
+    public void refreshState() {
+        setState(mAccessibilityManager.isEnabled());
+    }
+
+    // AccessibilityNodeProvider
+
+    @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         if (mIsObscuredByAnotherView) return null;
 
         if (!isNativeInitialized()) {
-            if (!mNativeAccessibilityAllowed || mWebContents == null) return null;
+            if (!mNativeAccessibilityAllowed) return null;
             mNativeObj = nativeInit(mWebContents);
             onNativeInit();
         }
@@ -232,6 +283,125 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
                 return true;
         }
         return false;
+    }
+
+    // AccessibilityStateChangeListener
+
+    @Override
+    public void onAccessibilityStateChanged(boolean enabled) {
+        setState(enabled);
+    }
+
+    // WebContentsAccessibility
+
+    @Override
+    public void setObscuredByAnotherView(boolean isObscured) {
+        if (isObscured != mIsObscuredByAnotherView) {
+            mIsObscuredByAnotherView = isObscured;
+            mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        }
+    }
+
+    @Override
+    public boolean isTouchExplorationEnabled() {
+        return mTouchExplorationEnabled;
+    }
+
+    @Override
+    public void setState(boolean state) {
+        if (!state) {
+            mNativeAccessibilityAllowed = false;
+            mTouchExplorationEnabled = false;
+        } else {
+            mNativeAccessibilityAllowed = true;
+            mTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
+        }
+    }
+
+    @Override
+    public void setShouldFocusOnPageLoad(boolean on) {
+        mShouldFocusOnPageLoad = on;
+    }
+
+    @Override
+    public boolean supportsAction(int action) {
+        // TODO(dmazzoni): implement this.
+        return false;
+    }
+
+    @Override
+    public boolean performAction(int action, Bundle arguments) {
+        // TODO(dmazzoni): implement this.
+        return false;
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public void onProvideVirtualStructure(
+            final ViewStructure structure, final boolean ignoreScrollOffset) {
+        // Do not collect accessibility tree in incognito mode
+        if (mWebContents.isIncognito()) {
+            structure.setChildCount(0);
+            return;
+        }
+        structure.setChildCount(1);
+        final ViewStructure viewRoot = structure.asyncNewChild(0);
+        mWebContents.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
+            @Override
+            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
+                viewRoot.setClassName("");
+                viewRoot.setHint(mProductVersion);
+                if (root == null) {
+                    viewRoot.asyncCommit();
+                    return;
+                }
+                createVirtualStructure(viewRoot, root, ignoreScrollOffset);
+            }
+        });
+    }
+
+    // When creating the View structure, the left and top are relative to the parent node.
+    @TargetApi(Build.VERSION_CODES.M)
+    private void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
+            final boolean ignoreScrollOffset) {
+        viewNode.setClassName(node.className);
+        if (node.hasSelection) {
+            viewNode.setText(node.text, node.startSelection, node.endSelection);
+        } else {
+            viewNode.setText(node.text);
+        }
+        RenderCoordinates renderCoordinates = mWebContents.getRenderCoordinates();
+        int left = (int) renderCoordinates.fromLocalCssToPix(node.x);
+        int top = (int) renderCoordinates.fromLocalCssToPix(node.y);
+        int width = (int) renderCoordinates.fromLocalCssToPix(node.width);
+        int height = (int) renderCoordinates.fromLocalCssToPix(node.height);
+
+        Rect boundsInParent = new Rect(left, top, left + width, top + height);
+        if (node.isRootNode) {
+            // Offset of the web content relative to the View.
+            boundsInParent.offset(0, (int) renderCoordinates.getContentOffsetYPix());
+            if (!ignoreScrollOffset) {
+                boundsInParent.offset(-(int) renderCoordinates.getScrollXPix(),
+                        -(int) renderCoordinates.getScrollYPix());
+            }
+        }
+
+        viewNode.setDimens(boundsInParent.left, boundsInParent.top, 0, 0, width, height);
+        viewNode.setChildCount(node.children.size());
+        if (node.hasStyle) {
+            // The text size should be in physical pixels, not CSS pixels.
+            float textSize = renderCoordinates.fromLocalCssToPix(node.textSize);
+
+            int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
+                    | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
+                    | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
+                    | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
+            viewNode.setTextStyle(textSize, node.color, node.bgcolor, style);
+        }
+        for (int i = 0; i < node.children.size(); i++) {
+            createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
+        }
+        viewNode.asyncCommit();
     }
 
     @Override
@@ -378,6 +548,7 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
         return false;
     }
 
+    @Override
     public void onAutofillPopupDisplayed(View autofillPopupView) {
         if (isAccessibilityEnabled()) {
             mAutofillPopupView = autofillPopupView;
@@ -385,6 +556,7 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
         }
     }
 
+    @Override
     public void onAutofillPopupDismissed() {
         if (isAccessibilityEnabled()) {
             nativeOnAutofillPopupDismissed(mNativeObj);
@@ -392,6 +564,7 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
         }
     }
 
+    @Override
     public void onAutofillPopupAccessibilityFocusCleared() {
         if (isAccessibilityEnabled()) {
             int id = nativeGetIdForElementAfterElementHostingAutofillPopup(mNativeObj);
@@ -1278,147 +1451,6 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
     protected int getAccessibilityServiceCapabilitiesMask() {
         // Implemented in KitKatWebContentsAccessibility.
         return 0;
-    }
-
-    // AccessibilityStateChangeListener
-
-    @Override
-    public void onAccessibilityStateChanged(boolean enabled) {
-        setState(enabled);
-    }
-
-    // Calls forwared from CVC.
-
-    public void setObscuredByAnotherView(boolean isObscured) {
-        if (isObscured != mIsObscuredByAnotherView) {
-            mIsObscuredByAnotherView = isObscured;
-            mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-        }
-    }
-
-    public boolean isTouchExplorationEnabled() {
-        return mTouchExplorationEnabled;
-    }
-
-    public void setState(boolean state) {
-        if (!state) {
-            mNativeAccessibilityAllowed = false;
-            mTouchExplorationEnabled = false;
-        } else {
-            mNativeAccessibilityAllowed = true;
-            mTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
-        }
-    }
-
-    /**
-     * Called by {@link ContentViewCore}
-     */
-    public void destroy() {
-        // WebContents is destroyed. Native a11y shall not be created afterwards.
-        // Have the state of WebContents seen by these two objects in sync.
-        mWebContents = null;
-    }
-
-    /**
-     * Refresh a11y state with that of {@link AccessibilityManager}.
-     */
-    public void refreshState() {
-        setState(mAccessibilityManager.isEnabled());
-    }
-
-    public void setShouldFocusOnPageLoad(boolean on) {
-        mShouldFocusOnPageLoad = on;
-    }
-
-    public boolean supportsAction(int action) {
-        // TODO(dmazzoni): implement this.
-        return false;
-    }
-
-    public boolean performAction(int action, Bundle arguments) {
-        // TODO(dmazzoni): implement this.
-        return false;
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    public void onProvideVirtualStructure(
-            final ViewStructure structure, final boolean ignoreScrollOffset) {
-        // Do not collect accessibility tree in incognito mode
-        if (mWebContents.isIncognito()) {
-            structure.setChildCount(0);
-            return;
-        }
-        structure.setChildCount(1);
-        final ViewStructure viewRoot = structure.asyncNewChild(0);
-        mWebContents.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
-            @Override
-            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
-                viewRoot.setClassName("");
-                viewRoot.setHint(mProductVersion);
-                if (root == null) {
-                    viewRoot.asyncCommit();
-                    return;
-                }
-                createVirtualStructure(viewRoot, root, ignoreScrollOffset);
-            }
-        });
-    }
-
-    // When creating the View structure, the left and top are relative to the parent node.
-    @TargetApi(Build.VERSION_CODES.M)
-    public void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
-            final boolean ignoreScrollOffset) {
-        viewNode.setClassName(node.className);
-        if (node.hasSelection) {
-            viewNode.setText(node.text, node.startSelection, node.endSelection);
-        } else {
-            viewNode.setText(node.text);
-        }
-        RenderCoordinates renderCoordinates = mWebContents.getRenderCoordinates();
-        int left = (int) renderCoordinates.fromLocalCssToPix(node.x);
-        int top = (int) renderCoordinates.fromLocalCssToPix(node.y);
-        int width = (int) renderCoordinates.fromLocalCssToPix(node.width);
-        int height = (int) renderCoordinates.fromLocalCssToPix(node.height);
-
-        Rect boundsInParent = new Rect(left, top, left + width, top + height);
-        if (node.isRootNode) {
-            // Offset of the web content relative to the View.
-            boundsInParent.offset(0, (int) renderCoordinates.getContentOffsetYPix());
-            if (!ignoreScrollOffset) {
-                boundsInParent.offset(-(int) renderCoordinates.getScrollXPix(),
-                        -(int) renderCoordinates.getScrollYPix());
-            }
-        }
-
-        viewNode.setDimens(boundsInParent.left, boundsInParent.top, 0, 0, width, height);
-        viewNode.setChildCount(node.children.size());
-        if (node.hasStyle) {
-            // The text size should be in physical pixels, not CSS pixels.
-            float textSize = renderCoordinates.fromLocalCssToPix(node.textSize);
-
-            int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
-                    | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
-                    | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
-                    | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
-            viewNode.setTextStyle(textSize, node.color, node.bgcolor, style);
-        }
-        for (int i = 0; i < node.children.size(); i++) {
-            createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
-        }
-        viewNode.asyncCommit();
-    }
-
-    // WindowEventObserver
-
-    @Override
-    public void onDetachedFromWindow() {
-        mAccessibilityManager.removeAccessibilityStateChangeListener(this);
-    }
-
-    @Override
-    public void onAttachedToWindow() {
-        mAccessibilityManager.addAccessibilityStateChangeListener(this);
-        refreshState();
     }
 
     private native long nativeInit(WebContents webContents);

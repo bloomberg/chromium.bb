@@ -30,6 +30,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 /**
@@ -174,7 +175,8 @@ public class AwContentsGarbageCollectionTest {
             mActivityTestRule.loadUrlAsync(
                     containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
             providers[i] = ThreadUtils.runOnUiThreadBlocking(() -> {
-                containerView.getContentViewCore().setAccessibilityState(true);
+                WebContentsAccessibility.fromWebContents(containerView.getWebContents())
+                        .setState(true);
                 return containerView.getAccessibilityNodeProvider();
             });
             Assert.assertNotNull(providers[i]);
