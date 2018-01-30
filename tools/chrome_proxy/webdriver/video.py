@@ -123,7 +123,7 @@ class Video(IntegrationTest):
   @Slow
   def testVideoMetrics(self):
     expected = {
-      'duration': 3.128,
+      'duration': 3.068,
       'webkitDecodedFrameCount': 54.0,
       'videoWidth': 1280.0,
       'videoHeight': 720.0
