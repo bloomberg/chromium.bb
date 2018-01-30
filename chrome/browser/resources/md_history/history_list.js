@@ -138,6 +138,25 @@ Polymer({
     this.fire('query-history', false);
   },
 
+  selectOrUnselectAll: function() {
+    if (this.historyData_.length == this.getSelectedItemCount())
+      this.unselectAllItems();
+    else
+      this.selectAllItems();
+  },
+
+  /**
+   * Select each item in |historyData|.
+   */
+  selectAllItems: function() {
+    if (this.historyData_.length == this.getSelectedItemCount())
+      return;
+
+    this.historyData_.forEach((item, index) => {
+      this.changeSelection_(index, true);
+    });
+  },
+
   /**
    * Deselect each item in |selectedItems|.
    */
@@ -205,6 +224,10 @@ Polymer({
         .then((items) => {
           this.removeItemsByIndex_(Array.from(this.selectedItems));
           this.fire('unselect-all');
+          if (this.historyData_.length == 0) {
+            // Try reloading if nothing is rendered.
+            this.fire('query-history', false);
+          }
         });
   },
 
