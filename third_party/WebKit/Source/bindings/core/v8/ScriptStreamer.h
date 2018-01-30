@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
@@ -45,7 +45,7 @@ class CORE_EXPORT ScriptStreamer final
                              Type,
                              Settings*,
                              ScriptState*,
-                             scoped_refptr<WebTaskRunner>);
+                             scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Returns false if we cannot stream the given encoding.
   static bool ConvertEncoding(const char* encoding_name,
@@ -97,7 +97,7 @@ class CORE_EXPORT ScriptStreamer final
                  Type,
                  ScriptState*,
                  v8::ScriptCompiler::CompileOptions,
-                 scoped_refptr<WebTaskRunner>);
+                 scoped_refptr<base::SingleThreadTaskRunner>);
 
   void StreamingComplete();
   void NotifyFinishedToClient();
@@ -136,7 +136,7 @@ class CORE_EXPORT ScriptStreamer final
   // Encoding of the streamed script. Saved for sanity checking purposes.
   v8::ScriptCompiler::StreamedSource::Encoding encoding_;
 
-  scoped_refptr<WebTaskRunner> loading_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 };
 
 }  // namespace blink

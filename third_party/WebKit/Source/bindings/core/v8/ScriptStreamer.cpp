@@ -506,7 +506,7 @@ ScriptStreamer::ScriptStreamer(
     Type script_type,
     ScriptState* script_state,
     v8::ScriptCompiler::CompileOptions compile_options,
-    scoped_refptr<WebTaskRunner> loading_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : pending_script_(script),
       detached_(false),
       stream_(nullptr),
@@ -568,7 +568,7 @@ void ScriptStreamer::StartStreaming(
     Type script_type,
     Settings* settings,
     ScriptState* script_state,
-    scoped_refptr<WebTaskRunner> loading_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
   DCHECK(IsMainThread());
   DCHECK(script_state->ContextIsValid());
   ScriptResource* resource = ToScriptResource(script->GetResource());

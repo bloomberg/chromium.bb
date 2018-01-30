@@ -115,7 +115,7 @@ class ScriptStreamingTest : public ::testing::Test {
     testing::RunPendingTasks();
   }
 
-  scoped_refptr<WebTaskRunner> loading_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   // The PendingScript where we stream from. These don't really
   // fetch any data outside the test; the test controls the data by calling
   // ScriptResource::AppendData.
