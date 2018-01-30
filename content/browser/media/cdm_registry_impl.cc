@@ -32,9 +32,12 @@ void CdmRegistryImpl::Init() {
 }
 
 void CdmRegistryImpl::RegisterCdm(const CdmInfo& info) {
-  // Always register new CDMs at the beginning of the list, so that
-  // subsequent requests get the latest.
-  cdms_.insert(cdms_.begin(), info);
+  // Always register new CDMs at the end of the list, so that the behavior is
+  // consistent across the browser process's lifetime. For example, we'll always
+  // use the same registered CDM for a given key system. This also means that
+  // some later registered CDMs (component updated) will not be used until
+  // browser restart, which is fine in most cases.
+  cdms_.push_back(info);
 }
 
 const std::vector<CdmInfo>& CdmRegistryImpl::GetAllRegisteredCdms() {
