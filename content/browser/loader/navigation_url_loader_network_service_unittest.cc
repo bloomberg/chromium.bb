@@ -16,7 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_browser_context.h"
@@ -26,6 +25,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_context.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
@@ -80,7 +80,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
  public:
   NavigationURLLoaderNetworkServiceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
-    feature_list_.InitAndEnableFeature(features::kNetworkService);
+    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
 
     // Because the network service is enabled we need a ServiceManagerConnection
     // or BrowserContext::GetDefaultStoragePartition will segfault when

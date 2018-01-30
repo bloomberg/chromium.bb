@@ -55,6 +55,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
@@ -1157,7 +1158,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     // If this is a download, intercept the navigation response and pass it to
     // DownloadManager, and cancel the navigation.
     if (is_download_ &&
-        base::FeatureList::IsEnabled(features::kNetworkService)) {
+        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       // TODO(arthursonzogni): Pass the real ResourceRequest. For the moment
       // only these 4 parameters will be used, but it may evolve quickly.
       auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -1183,7 +1184,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     // Call ProceedWithResponse()
     // Note: There is no need to call ProceedWithResponse() when the Network
     // Service is enabled. See https://crbug.com/791049.
-    if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       if (!IsNavigationMojoResponseEnabled()) {
         loader_->ProceedWithResponse();
       } else {

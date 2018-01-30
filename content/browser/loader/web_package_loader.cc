@@ -9,6 +9,7 @@
 #include "content/browser/loader/signed_exchange_handler.h"
 #include "content/public/common/content_features.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -71,7 +72,7 @@ WebPackageLoader::WebPackageLoader(
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
   url_loader_.Bind(std::move(endpoints->url_loader));
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // We don't propagate the response to the navigation request and its
     // throttles, therefore we need to call this here internally in order to
     // move it forward.
@@ -156,7 +157,7 @@ void WebPackageLoader::FollowRedirect() {
 void WebPackageLoader::ProceedWithResponse() {
   // TODO(https://crbug.com/791049): Remove this when NetworkService is
   // enabled by default.
-  DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(pending_body_.is_valid());
   DCHECK(client_);
   client_->OnStartLoadingResponseBody(std::move(pending_body_));
@@ -202,7 +203,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
   client_->OnReceiveResponse(resource_response, std::move(ssl_info),
                              nullptr /* downloaded_file */);
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Need to wait until ProceedWithResponse() is called.
     pending_body_ = std::move(body);
   } else {
@@ -213,7 +214,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
 void WebPackageLoader::OnHTTPExchangeFinished(
     const network::URLLoaderCompletionStatus& status) {
   if (pending_body_.is_valid()) {
-    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     // If ProceedWithResponse() was not called yet, need to call OnComplete()
     // after ProceedWithResponse() is called.
     pending_completion_status_ = status;

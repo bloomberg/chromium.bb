@@ -11,9 +11,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -23,7 +23,8 @@ namespace content {
 class ChromeNetworkServiceRestartBrowserTest : public InProcessBrowserTest {
  public:
   ChromeNetworkServiceRestartBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 

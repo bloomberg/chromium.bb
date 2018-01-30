@@ -18,6 +18,7 @@
 #include "content/public/common/origin_util.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -142,7 +143,7 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
 
 // static
 bool ServiceWorkerUtils::IsServicificationEnabled() {
-  return base::FeatureList::IsEnabled(features::kNetworkService) ||
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          base::FeatureList::IsEnabled(features::kServiceWorkerServicification);
 }
 

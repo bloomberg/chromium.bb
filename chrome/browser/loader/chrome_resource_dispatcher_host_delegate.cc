@@ -87,6 +87,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
@@ -697,7 +698,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     // TODO(jam): remove this throttle once http://crbug.com/740130 is fixed and
     // PrerendererURLLoaderThrottle can be used for frame requests in the
     // network-service-disabled mode.
-    if (!base::FeatureList::IsEnabled(features::kNetworkService) &&
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
         content::IsResourceTypeFrame(info->GetResourceType())) {
       throttles->push_back(
           base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
