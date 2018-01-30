@@ -39,6 +39,7 @@ SigninManager::SigninManager(SigninClient* client,
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       client_(client),
+      diagnostics_client_(nullptr),
       token_service_(token_service),
       cookie_manager_service_(cookie_manager_service),
       signin_manager_signed_in_(false),
@@ -434,6 +435,11 @@ void SigninManager::OnSignedIn() {
 }
 
 void SigninManager::FireGoogleSigninSucceeded() {
+  if (diagnostics_client_) {
+    diagnostics_client_->WillFireGoogleSigninSucceeded(
+        GetAuthenticatedAccountInfo());
+  }
+
   std::string account_id = GetAuthenticatedAccountId();
   std::string email = GetAuthenticatedAccountInfo().email;
   for (auto& observer : observer_list_) {
@@ -445,6 +451,10 @@ void SigninManager::FireGoogleSigninSucceeded() {
 
 void SigninManager::FireGoogleSignedOut(const std::string& account_id,
                                         const AccountInfo& account_info) {
+  if (diagnostics_client_) {
+    diagnostics_client_->WillFireGoogleSignedOut(account_info);
+  }
+
   for (auto& observer : observer_list_) {
     observer.GoogleSignedOut(account_id, account_info.email);
     observer.GoogleSignedOut(account_info);

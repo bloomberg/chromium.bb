@@ -47,6 +47,10 @@ class ProfileOAuth2TokenService;
 class SigninClient;
 class SigninErrorController;
 
+namespace identity {
+class IdentityManager;
+}
+
 class SigninManager : public SigninManagerBase,
                       public AccountTrackerService::Observer,
                       public OAuth2TokenService::Observer {
@@ -175,6 +179,23 @@ class SigninManager : public SigninManagerBase,
                          bool remove_all_accounts);
 
  private:
+  // Interface that gives information on internal SigninManager operations. Only
+  // for use by IdentityManager during the conversion of the codebase to use
+  // //services/identity/public/cpp.
+  class DiagnosticsClient {
+   public:
+    // Sent just before GoogleSigninSucceeded() is fired on observers.
+    virtual void WillFireGoogleSigninSucceeded(
+        const AccountInfo& account_info) = 0;
+    // Sent just before GoogleSignedOut() is fired on observers.
+    virtual void WillFireGoogleSignedOut(const AccountInfo& account_info) = 0;
+  };
+
+  void set_diagnostics_client(DiagnosticsClient* diagnostics_client) {
+    DCHECK(!diagnostics_client_ || !diagnostics_client);
+    diagnostics_client_ = diagnostics_client;
+  }
+
   enum SigninType {
     SIGNIN_TYPE_NONE,
     SIGNIN_TYPE_WITH_REFRESH_TOKEN,
@@ -183,6 +204,7 @@ class SigninManager : public SigninManagerBase,
 
   std::string SigninTypeToString(SigninType type);
   friend class FakeSigninManager;
+  friend class identity::IdentityManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
@@ -258,6 +280,9 @@ class SigninManager : public SigninManagerBase,
   // The SigninClient object associated with this object. Must outlive this
   // object.
   SigninClient* client_;
+
+  // The DiagnosticsClient object associated with this object. May be null.
+  DiagnosticsClient* diagnostics_client_;
 
   // The ProfileOAuth2TokenService instance associated with this object. Must
   // outlive this object.
