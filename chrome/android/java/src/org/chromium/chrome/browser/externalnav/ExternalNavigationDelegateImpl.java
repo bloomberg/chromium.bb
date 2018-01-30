@@ -254,11 +254,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos) {
-        return countSpecializedHandlers(infos) > 0;
-    }
-
-    @Override
     public boolean isWithinCurrentWebappScope(String url) {
         Context context = getAvailableContext();
         if (context instanceof WebappActivity) {

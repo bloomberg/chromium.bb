@@ -5,16 +5,20 @@
 package org.chromium.chrome.browser.externalnav;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 
 import org.junit.After;
@@ -27,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.banners.InstallerDelegateTest.TestPackageManager;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -34,13 +39,15 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
@@ -48,7 +55,7 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ExternalNavigationHandlerTest {
     @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     // Expectations
     private static final int IGNORE = 0x0;
@@ -89,6 +96,9 @@ public class ExternalNavigationHandlerTest {
             + ExternalNavigationHandler.EXTRA_MARKET_REFERRER + "="
             + ENCODED_MARKET_REFERRER + ";end";
     private static final String INTENT_APP_PACKAGE_NAME = "com.imdb.mobile";
+    private static final String YOUTUBE_URL = "http://youtube.com";
+    private static final String YOUTUBE_MOBILE_URL = "http://m.youtube.com";
+    private static final String YOUTUBE_PACKAGE_NAME = "youtube";
 
     private static final String PLUS_STREAM_URL = "https://plus.google.com/stream";
     private static final String CALENDAR_URL = "http://www.google.com/calendar";
@@ -100,20 +110,11 @@ public class ExternalNavigationHandlerTest {
     private static final String WEBAPK_SCOPE = "https://www.template.com";
     private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.template";
 
-    private static final String WEBAPK_WITH_NATIVE_APP_SCOPE =
-            "https://www.webapk.with.native.com";
-    private static final String WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME =
-            "org.chromium.webapk.with.native";
-    private static final String NATIVE_APP_PACKAGE_NAME = "com.webapk.with.native.android";
-
-    private static final String COUNTERFEIT_WEBAPK_SCOPE = "http://www.counterfeit.webapk.com";
-    private static final String COUNTERFEIT_WEBAPK_PACKAGE_NAME =
-            "org.chromium.webapk.counterfeit";
-
     private static final String[] SUPERVISOR_START_ACTIONS = {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
             "com.google.android.instantapps.nmr1.VIEW"};
 
+    private Context mContext;
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandler mUrlHandler;
 
@@ -124,8 +125,15 @@ public class ExternalNavigationHandlerTest {
 
     @Before
     public void setUp() {
-        mDelegate.mQueryIntentOverride = null;
         RecordHistogram.setDisabledForTests(true);
+        mContext = new TestContext(InstrumentationRegistry.getTargetContext(), mDelegate);
+        ContextUtils.initApplicationContextForTests(mContext);
+
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING, true);
+        ChromeFeatureList.setTestFeatures(features);
+
+        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
     }
 
     @After
@@ -136,9 +144,11 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testOrdinaryIncognitoUri() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // http://crbug.com/587306: Don't prompt the user for capturing URLs in incognito, just keep
         // it within the browser.
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -146,8 +156,10 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testChromeReferrer() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // http://crbug.com/159153: Don't override http or https URLs from the NTP or bookmarks.
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withReferrer("chrome://about")
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
         checkUrl("tel:012345678")
@@ -159,9 +171,11 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testForwardBackNavigation() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // http://crbug.com/164194. We shouldn't show the intent picker on
         // forwards or backwards navigations.
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.LINK | PageTransition.FORWARD_BACK)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -169,6 +183,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testRedirectFromFormSubmit() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
         // following a form submit. OAuth of native applications rely on this.
         checkUrl("market://1234")
@@ -184,7 +200,7 @@ public class ExternalNavigationHandlerTest {
 
         // If the page matches the referrer, then continue loading in Chrome.
         checkUrl("http://youtube.com://")
-                .withReferrer("http://youtube.com")
+                .withReferrer(YOUTUBE_URL)
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
@@ -236,23 +252,25 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testPageTransitionType() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // Non-link page transition type are ignored.
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
         // http://crbug.com/143118 - Don't show the picker for directly typed URLs, unless
         // the URL results in a redirect.
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.TYPED)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         // http://crbug.com/162106 - Don't show the picker on reload.
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.RELOAD)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -260,10 +278,11 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testInWebapp() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // Don't override if the URL is within the current webapp scope.
         mDelegate.setIsWithinCurrentWebappScope(true);
-        checkUrl("http://youtube.com/")
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        checkUrl(YOUTUBE_URL).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     @Test
@@ -292,7 +311,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testRedirectToMarketWithReferrer() {
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         checkUrl(INTENT_APP_NOT_INSTALLED_WITH_MARKET_REFERRER)
                 .withReferrer(KEEP_URL)
@@ -310,7 +329,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testRedirectToMarketWithoutReferrer() {
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         checkUrl(INTENT_APP_NOT_INSTALLED_DEFAULT_MARKET_REFERRER)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -356,15 +375,17 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testIncomingIntentRedirect() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         int transitionTypeIncomingIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
         // http://crbug.com/149218
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(transitionTypeIncomingIntent)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         // http://crbug.com/170925
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(transitionTypeIncomingIntent)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -391,6 +412,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testYouTubePairingCode() {
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
         int transitionTypeIncomingIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
         String url = "http://m.youtube.com/watch?v=1234&pairingCode=5678";
@@ -409,8 +432,11 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testInitialIntent() throws URISyntaxException {
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(new TestContext());
-        Intent ytIntent = Intent.parseUri("http://youtube.com/", Intent.URI_INTENT_SCHEME);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
+        Intent ytIntent = Intent.parseUri(YOUTUBE_URL, Intent.URI_INTENT_SCHEME);
         Intent fooIntent = Intent.parseUri("http://foo.com/", Intent.URI_INTENT_SCHEME);
         int transTypeLinkFromIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
@@ -420,7 +446,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateIntent(ytIntent);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
@@ -430,7 +456,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateIntent(fooIntent);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
@@ -452,10 +478,11 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testInitialIntentHeadingToChrome() throws URISyntaxException {
-        TestContext context = new TestContext();
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
         Intent fooIntent = Intent.parseUri("http://foo.com/", Intent.URI_INTENT_SCHEME);
-        fooIntent.setPackage(context.getPackageName());
+        fooIntent.setPackage(mContext.getPackageName());
         int transTypeLinkFromIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
 
@@ -463,7 +490,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateIntent(fooIntent);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
@@ -484,17 +511,18 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testIntentForCustomTab() throws URISyntaxException {
-        TestContext context = new TestContext();
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
         int transTypeLinkFromIntent = PageTransition.LINK | PageTransition.FROM_API;
 
         // In Custom Tabs, if the first url is not a redirect, stay in chrome.
-        Intent barIntent = Intent.parseUri("http://youtube.com/", Intent.URI_INTENT_SCHEME);
+        Intent barIntent = Intent.parseUri(YOUTUBE_URL, Intent.URI_INTENT_SCHEME);
         barIntent.putExtra(CustomTabsIntent.EXTRA_SESSION, "");
-        barIntent.setPackage(context.getPackageName());
+        barIntent.setPackage(mContext.getPackageName());
         redirectHandler.updateIntent(barIntent);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
@@ -502,11 +530,11 @@ public class ExternalNavigationHandlerTest {
         // In Custom Tabs, if the first url is a redirect, don't allow it to intent out.
         Intent fooIntent = Intent.parseUri("http://foo.com/", Intent.URI_INTENT_SCHEME);
         fooIntent.putExtra(CustomTabsIntent.EXTRA_SESSION, "");
-        fooIntent.setPackage(context.getPackageName());
+        fooIntent.setPackage(mContext.getPackageName());
         redirectHandler.updateIntent(fooIntent);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
@@ -514,30 +542,30 @@ public class ExternalNavigationHandlerTest {
 
         // In Custom Tabs, if the external handler extra is present, intent out if the first
         // url is a redirect.
-        Intent extraIntent2 = Intent.parseUri("http://youtube.com/", Intent.URI_INTENT_SCHEME);
+        Intent extraIntent2 = Intent.parseUri(YOUTUBE_URL, Intent.URI_INTENT_SCHEME);
         extraIntent2.putExtra(CustomTabsIntent.EXTRA_SESSION, "");
         extraIntent2.putExtra(
                 CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, true);
-        extraIntent2.setPackage(context.getPackageName());
+        extraIntent2.setPackage(mContext.getPackageName());
         redirectHandler.updateIntent(extraIntent2);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        Intent extraIntent3 = Intent.parseUri("http://youtube.com/", Intent.URI_INTENT_SCHEME);
+        Intent extraIntent3 = Intent.parseUri(YOUTUBE_URL, Intent.URI_INTENT_SCHEME);
         extraIntent3.putExtra(CustomTabsIntent.EXTRA_SESSION, "");
         extraIntent3.putExtra(
                 CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, true);
-        extraIntent3.setPackage(context.getPackageName());
+        extraIntent3.setPackage(mContext.getPackageName());
         redirectHandler.updateIntent(extraIntent3);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
@@ -550,7 +578,7 @@ public class ExternalNavigationHandlerTest {
         // Simulate a real user navigation.
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true,
                 SystemClock.elapsedRealtime() + 1, 0);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.LINK)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -560,8 +588,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testInstantAppsIntent_customTabRedirect() throws Exception {
-        TestContext context = new TestContext();
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
         int transTypeLinkFromIntent = PageTransition.LINK | PageTransition.FROM_API;
 
         // In Custom Tabs, if the first url is a redirect, don't allow it to intent out, unless
@@ -569,7 +596,7 @@ public class ExternalNavigationHandlerTest {
         Intent fooIntent = Intent.parseUri("http://foo.com/", Intent.URI_INTENT_SCHEME);
         fooIntent.putExtra(CustomTabsIntent.EXTRA_SESSION, "");
         fooIntent.putExtra(CustomTabsIntent.EXTRA_ENABLE_INSTANT_APPS, true);
-        fooIntent.setPackage(context.getPackageName());
+        fooIntent.setPackage(mContext.getPackageName());
         redirectHandler.updateIntent(fooIntent);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
@@ -585,10 +612,9 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testInstantAppsIntent_incomingIntentRedirect() throws Exception {
-        TestContext context = new TestContext();
         int transTypeLinkFromIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
         Intent fooIntent = Intent.parseUri("http://instantappenabled.com",
                 Intent.URI_INTENT_SCHEME);
         redirectHandler.updateIntent(fooIntent);
@@ -678,7 +704,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testFallbackUrl_IntentResolutionSucceeds() {
         // IMDB app is installed.
-        mDelegate.setCanResolveActivity(true);
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
 
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -697,7 +723,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testFallbackUrl_IntentResolutionSucceedsInIncognito() {
         // IMDB app is installed.
-        mDelegate.setCanResolveActivity(true);
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
 
         // Expect that the user is prompted to leave incognito mode.
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
@@ -714,7 +740,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testFallbackUrl_IntentResolutionFails() {
         // IMDB app isn't installed.
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         // When intent resolution fails, we should not start an activity, but instead clobber
         // the current tab.
@@ -731,7 +757,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testFallbackUrl_FallbackToMarketApp() {
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         String intent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
                 + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
@@ -764,8 +790,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testFallbackUrl_RedirectToIntentToMarket() {
-        TestContext context = new TestContext();
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
         checkUrl("http://goo.gl/abcdefg")
@@ -794,7 +819,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testFallbackUrl_IntentResolutionFailsWithoutPackageName() {
         // IMDB app isn't installed.
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         // Fallback URL should work even when package name isn't given.
         checkUrl(INTENT_URL_WITH_FALLBACK_URL_WITHOUT_PACKAGE_NAME)
@@ -811,7 +836,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testFallbackUrl_FallbackShouldNotWarnOnIncognito() {
         // IMDB app isn't installed.
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -828,7 +853,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testFallbackUrl_IgnoreJavascriptFallbackUrl() {
         // IMDB app isn't installed.
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         // Will be redirected market since package is given.
         checkUrl(INTENT_URL_WITH_JAVASCRIPT_FALLBACK_URL)
@@ -846,7 +871,9 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testFallback_UseFallbackUrlForRedirectionFromTypedInUrl() {
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
         checkUrl("http://goo.gl/abcdefg")
@@ -861,7 +888,7 @@ public class ExternalNavigationHandlerTest {
 
         // Now the user opens a link.
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 1);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -870,9 +897,9 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testIgnoreEffectiveRedirectFromIntentFallbackUrl() {
         // We cannot resolve any intent, so fall-back URL will be used.
-        mDelegate.setCanResolveActivity(false);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
         checkUrl(INTENT_URL_WITH_CHAIN_FALLBACK_URL)
@@ -904,23 +931,25 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testIgnoreEffectiveRedirectFromUserTyping() {
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(PageTransition.TYPED)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, false, 0, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(PageTransition.TYPED)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -928,21 +957,23 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testNavigationFromLinkWithoutUserGesture() {
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, false, 1, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 1);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -950,15 +981,17 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testChromeAppInBackground() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
         mDelegate.setIsChromeAppInForeground(false);
-        checkUrl("http://youtube.com/").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        checkUrl(YOUTUBE_URL).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     @Test
     @SmallTest
     public void testNotChromeAppInForegroundRequired() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
         mDelegate.setIsChromeAppInForeground(false);
-        checkUrl("http://youtube.com/")
+        checkUrl(YOUTUBE_URL)
                 .withChromeAppInForegroundRequired(false)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -967,11 +1000,13 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testCreatesIntentsToOpenInNewTab() {
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
         mUrlHandler = new ExternalNavigationHandler(mDelegate);
-        ExternalNavigationParams params = new ExternalNavigationParams.Builder(
-                "http://m.youtube.com", false)
-                .setOpenInNewTab(true)
-                .build();
+        ExternalNavigationParams params =
+                new ExternalNavigationParams.Builder(YOUTUBE_MOBILE_URL, false)
+                        .setOpenInNewTab(true)
+                        .build();
         OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
         Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, result);
         Assert.assertTrue(mDelegate.startActivityIntent != null);
@@ -982,10 +1017,11 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testCanExternalAppHandleUrl() {
-        mDelegate.setCanResolveActivity(true);
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+        mDelegate.add(new IntentActivity("some_app", "someapp"));
+
         Assert.assertTrue(mUrlHandler.canExternalAppHandleUrl("some_app://some_app.com/"));
 
-        mDelegate.setCanResolveActivity(false);
         Assert.assertTrue(mUrlHandler.canExternalAppHandleUrl("wtai://wp/mc;0123456789"));
         Assert.assertTrue(mUrlHandler.canExternalAppHandleUrl(
                 "intent:/#Intent;scheme=no_app;package=com.no_app;end"));
@@ -995,6 +1031,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testPlusAppRefresh() {
+        mDelegate.add(new IntentActivity(PLUS_STREAM_URL, "plus"));
+
         checkUrl(PLUS_STREAM_URL)
                 .withReferrer(PLUS_STREAM_URL)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
@@ -1003,6 +1041,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testSameDomainDifferentApps() {
+        mDelegate.add(new IntentActivity(CALENDAR_URL, "calendar"));
+
         checkUrl(CALENDAR_URL)
                 .withReferrer(KEEP_URL)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -1012,6 +1052,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testFormSubmitSameDomain() {
+        mDelegate.add(new IntentActivity(CALENDAR_URL, "calendar"));
+
         checkUrl(CALENDAR_URL)
                 .withReferrer(KEEP_URL)
                 .withPageTransition(PageTransition.FORM_SUBMIT)
@@ -1021,7 +1063,9 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testBackgroundTabNavigation() {
-        checkUrl("http://youtube.com/")
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
+        checkUrl(YOUTUBE_URL)
                 .withIsBackgroundTabNavigation(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -1029,6 +1073,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testPdfDownloadHappensInChrome() {
+        mDelegate.add(new IntentActivity(CALENDAR_URL, "calendar"));
+
         checkUrl(CALENDAR_URL + "/file.pdf")
             .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -1045,10 +1091,12 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testIntentWithMissingReferrer() {
+        mDelegate.add(new IntentActivity("http://refertest.com", "refertest"));
+        mDelegate.add(new IntentActivity("https://refertest.com", "refertest"));
+
         // http://crbug.com/702089: Don't override links within the same host/domain.
         // This is an issue for HTTPS->HTTP because there's no referrer, so we fall back on the
         // WebContents.lastCommittedUrl.
-        mDelegate.setCanResolveActivity(true);
 
         checkUrl("http://refertest.com")
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -1061,6 +1109,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testReferrerExtra() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         String referrer = "http://www.google.com";
         checkUrl("http://youtube.com:90/foo/bar")
                 .withReferrer(referrer)
@@ -1077,21 +1127,23 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testNavigationFromReload() {
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(PageTransition.RELOAD, false, false, 1, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, false, 1, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 1);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -1099,22 +1151,24 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testNavigationWithForwardBack() {
-        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+        mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
 
         redirectHandler.updateNewUrlLoading(
                 PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK, false, false, 1, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, false, 1, 0);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 1);
-        checkUrl("http://m.youtube.com/")
+        checkUrl(YOUTUBE_MOBILE_URL)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -1146,6 +1200,8 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testSms_DispatchIntentToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
+        mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
+        mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
         mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
 
         checkUrl("sms:+012345678?body=hello%20there")
@@ -1161,6 +1217,8 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testSms_DefaultSmsAppDoesNotHandleIntent() {
         final String referer = "https://www.google.com/";
+        mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
+        mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
         // Note that this package does not resolve the intent.
         mDelegate.defaultSmsPackageName = "text_app_3";
 
@@ -1177,6 +1235,8 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testSms_DispatchIntentSchemedUrlToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
+        mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
+        mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
         mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
 
         checkUrl("intent://012345678?body=hello%20there/#Intent;scheme=sms;end")
@@ -1195,6 +1255,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLeaveWebApk_LinkOutOfScope() {
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
@@ -1207,6 +1269,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_BypassIntentPicker() {
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
     }
@@ -1218,9 +1282,13 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerMultipleIntentHandlers() {
-        checkUrl(WEBAPK_WITH_NATIVE_APP_SCOPE)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
+        final String scope = "https://www.webapk.with.native.com";
+        mDelegate.add(
+                new IntentActivity(scope, "org.chromium.webapk.with.native").withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope, "com.webapk.with.native.android"));
+
+        checkUrl(scope).expecting(
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
     }
 
     /**
@@ -1230,9 +1298,17 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
-        checkUrl(WEBAPK_SCOPE)
-                .withReferrer(WEBAPK_WITH_NATIVE_APP_SCOPE)
-                .withWebApkPackageName(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)
+        final String scope1 = "https://www.webapk.with.native.com";
+        final String scope1WebApkPackageName = "org.chromium.webapk.with.native";
+        final String scope1NativeAppPackageName = "com.webapk.with.native.android";
+        final String scope2 = "https://www.template.com";
+        mDelegate.add(new IntentActivity(scope1, scope1WebApkPackageName).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope1, scope1NativeAppPackageName));
+        mDelegate.add(new IntentActivity(scope2, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+
+        checkUrl(scope2)
+                .withReferrer(scope1)
+                .withWebApkPackageName(scope1WebApkPackageName)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
     }
 
@@ -1244,7 +1320,8 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerInvalidWebApk() {
-        checkUrl(COUNTERFEIT_WEBAPK_SCOPE)
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(false));
+        checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
     }
@@ -1256,74 +1333,87 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_StayInSameWebApk() {
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+
         checkUrl(WEBAPK_SCOPE + "/new.html")
                 .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
-    private static ResolveInfo newResolveInfo(String packageName, String name) {
+    private static ResolveInfo newResolveInfo(String packageName) {
         ActivityInfo ai = new ActivityInfo();
         ai.packageName = packageName;
-        ai.name = name;
+        ai.name = "Name: " + packageName;
         ResolveInfo ri = new ResolveInfo();
         ri.activityInfo = ai;
         return ri;
+    }
+
+    private static class IntentActivity {
+        public String mUrlPrefix;
+        public String mPackageName;
+        public boolean mIsWebApk;
+
+        public IntentActivity(String urlPrefix, String packageName) {
+            mUrlPrefix = urlPrefix;
+            mPackageName = packageName;
+        }
+
+        public IntentActivity withIsWebApk(boolean isWebApk) {
+            mIsWebApk = isWebApk;
+            return this;
+        }
+
+        public String urlPrefix() {
+            return mUrlPrefix;
+        }
+
+        public String packageName() {
+            return mPackageName;
+        }
+
+        public boolean isWebApk() {
+            return mIsWebApk;
+        }
+
+        public boolean isSpecialized() {
+            // Specialized if URL prefix is more than just a scheme.
+            return Pattern.compile("[^:/]+://.+").matcher(mUrlPrefix).matches();
+        }
     }
 
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent) {
             List<ResolveInfo> list = new ArrayList<>();
-            // TODO(yfriedman): We shouldn't have a separate global override just for tests - we
-            // should mimic the appropriate intent resolution intead.
-            if (mQueryIntentOverride != null) {
-                if (mQueryIntentOverride.booleanValue()) {
-                    list.add(newResolveInfo(INTENT_APP_PACKAGE_NAME, INTENT_APP_PACKAGE_NAME));
-                } else {
-                    return list;
-                }
-            }
             String dataString = intent.getDataString();
             if (dataString.startsWith("http://") || dataString.startsWith("https://")) {
-                list.add(newResolveInfo("chrome", "chrome"));
+                list.add(newResolveInfo("chrome"));
             }
-            if (dataString.startsWith("http://m.youtube.com")
-                    || dataString.startsWith("http://youtube.com")) {
-                list.add(newResolveInfo("youtube", "youtube"));
-            } else if (dataString.startsWith(PLUS_STREAM_URL)) {
-                list.add(newResolveInfo("plus", "plus"));
-            } else if (dataString.startsWith(CALENDAR_URL)) {
-                list.add(newResolveInfo("calendar", "calendar"));
-            } else if (dataString.startsWith("http://refertest.com")
-                    || dataString.startsWith("https://refertest.com")) {
-                list.add(newResolveInfo("refertest", "refertest"));
-            } else if (dataString.startsWith("sms")) {
-                list.add(newResolveInfo(
-                        TEXT_APP_1_PACKAGE_NAME, TEXT_APP_1_PACKAGE_NAME + ".cls"));
-                list.add(newResolveInfo(
-                        TEXT_APP_2_PACKAGE_NAME, TEXT_APP_2_PACKAGE_NAME + ".cls"));
-            } else if (dataString.startsWith(WEBAPK_SCOPE)) {
-                list.add(newResolveInfo(WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME));
-            } else if (dataString.startsWith(WEBAPK_WITH_NATIVE_APP_SCOPE)) {
-                list.add(newResolveInfo(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME,
-                        WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME));
-                list.add(newResolveInfo(NATIVE_APP_PACKAGE_NAME, NATIVE_APP_PACKAGE_NAME));
-            } else if (dataString.startsWith(COUNTERFEIT_WEBAPK_SCOPE)) {
-                list.add(newResolveInfo(COUNTERFEIT_WEBAPK_PACKAGE_NAME, COUNTERFEIT_WEBAPK_SCOPE));
-            } else {
-                list.add(newResolveInfo("foo", "foo"));
+            for (IntentActivity intentActivity : mIntentActivities) {
+                if (dataString.startsWith(intentActivity.urlPrefix())) {
+                    list.add(newResolveInfo(intentActivity.packageName()));
+                }
+            }
+            if (list.isEmpty() && mCanResolveActivityForExternalSchemes) {
+                list.add(newResolveInfo(intent.getData().getScheme()));
             }
             return list;
         }
 
         @Override
         public boolean willChromeHandleIntent(Intent intent) {
-            return !isSpecializedHandlerAvailable(queryIntentActivities(intent));
-        }
+            String chromePackageName = ContextUtils.getApplicationContext().getPackageName();
+            if (chromePackageName.equals(intent.getPackage())
+                    || (intent.getComponent() != null
+                               && chromePackageName.equals(
+                                          intent.getComponent().getPackageName()))) {
+                return true;
+            }
 
-        @Override
-        public boolean isSpecializedHandlerAvailable(List<ResolveInfo> resolveInfos) {
-            return countSpecializedHandlers(resolveInfos) > 0;
+            List<ResolveInfo> resolveInfos = queryIntentActivities(intent);
+            return resolveInfos.size() == 1
+                    && resolveInfos.get(0).activityInfo.packageName.contains("chrome");
         }
 
         @Override
@@ -1332,42 +1422,39 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public int countSpecializedHandlers(List<ResolveInfo> resolveInfos) {
-            return getSpecializedHandlers(resolveInfos).size();
-        }
-
-        private ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
-            ArrayList<String> result = new ArrayList<>();
-            if (infos == null) {
-                return result;
-            }
-            for (ResolveInfo info : infos) {
-                String packageName = info.activityInfo.packageName;
-                if (packageName.equals("youtube") || packageName.equals("calendar")
-                        || packageName.equals(INTENT_APP_PACKAGE_NAME)
-                        || packageName.equals(COUNTERFEIT_WEBAPK_PACKAGE_NAME)
-                        || packageName.equals(NATIVE_APP_PACKAGE_NAME)
-                        || packageName.equals(WEBAPK_PACKAGE_NAME)
-                        || packageName.equals(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)) {
-                    result.add(packageName);
+        public int countSpecializedHandlers(List<ResolveInfo> infos) {
+            int count = 0;
+            List<IntentActivity> matchingIntentActivities = findMatchingIntentActivities(infos);
+            for (IntentActivity intentActivity : matchingIntentActivities) {
+                if (intentActivity.isSpecialized()) {
+                    ++count;
                 }
             }
-            return result;
+            return count;
         }
 
         @Override
         public String findWebApkPackageName(List<ResolveInfo> infos) {
-            if (infos == null) {
-                return null;
-            }
-            for (ResolveInfo info : infos) {
-                String packageName = info.activityInfo.packageName;
-                if (packageName.equals(WEBAPK_PACKAGE_NAME)
-                        || packageName.equals(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)) {
-                    return packageName;
+            List<IntentActivity> matchingIntentActivities = findMatchingIntentActivities(infos);
+            for (IntentActivity intentActivity : matchingIntentActivities) {
+                if (intentActivity.isWebApk()) {
+                    return intentActivity.packageName();
                 }
             }
             return null;
+        }
+
+        private ArrayList<IntentActivity> findMatchingIntentActivities(List<ResolveInfo> infos) {
+            ArrayList<IntentActivity> outList = new ArrayList<IntentActivity>();
+            for (ResolveInfo info : infos) {
+                String packageName = info.activityInfo.packageName;
+                for (IntentActivity intentActivity : mIntentActivities) {
+                    if (intentActivity.packageName().equals(packageName)) {
+                        outList.add(intentActivity);
+                    }
+                }
+            }
+            return outList;
         }
 
         @Override
@@ -1457,8 +1544,12 @@ public class ExternalNavigationHandlerTest {
             mCalledWithProxy = false;
         }
 
-        public void setCanResolveActivity(boolean value) {
-            mQueryIntentOverride = value;
+        public void add(IntentActivity handler) {
+            mIntentActivities.add(handler);
+        }
+
+        public void setCanResolveActivityForExternalSchemes(boolean value) {
+            mCanResolveActivityForExternalSchemes = value;
         }
 
         public String getNewUrlAfterClobbering() {
@@ -1492,9 +1583,8 @@ public class ExternalNavigationHandlerTest {
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
 
-        // This should not be reset for every run of check().
-        private Boolean mQueryIntentOverride;
-
+        public ArrayList<IntentActivity> mIntentActivities = new ArrayList<IntentActivity>();
+        private boolean mCanResolveActivityForExternalSchemes = true;
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         private boolean mCanHandleWithInstantApp;
@@ -1637,25 +1727,39 @@ public class ExternalNavigationHandlerTest {
     }
 
     private static class TestPackageManager extends MockPackageManager {
+        private ExternalNavigationDelegate mDelegate;
+
+        public TestPackageManager(ExternalNavigationDelegate delegate) {
+            mDelegate = delegate;
+        }
+
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-            List<ResolveInfo> resolves = new ArrayList<>();
-            if (intent.getDataString().startsWith("market:")) {
-                resolves.add(newResolveInfo("market", "market"));
-            } else if (intent.getDataString().startsWith("http://m.youtube.com")
-                    ||  intent.getDataString().startsWith("http://youtube.com")) {
-                resolves.add(newResolveInfo("youtube", "youtube"));
-            } else {
-                resolves.add(newResolveInfo("foo", "foo"));
-            }
-            return resolves;
+            return mDelegate.queryIntentActivities(intent);
         }
     }
 
-    private static class TestContext extends MockContext {
+    private static class TestContext extends ContextWrapper {
+        private PackageManager mPackageManager;
+
+        public TestContext(Context baseContext, ExternalNavigationDelegate delegate) {
+            super(baseContext);
+            mPackageManager = new TestPackageManager(delegate);
+        }
+
+        @Override
+        public Context getApplicationContext() {
+            return this;
+        }
+
+        @Override
+        public ApplicationInfo getApplicationInfo() {
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public PackageManager getPackageManager() {
-            return new TestPackageManager();
+            return mPackageManager;
         }
 
         @Override
@@ -1663,5 +1767,19 @@ public class ExternalNavigationHandlerTest {
             return "test.app.name";
         }
 
+        @Override
+        public void startActivities(Intent[] intents, Bundle options) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void startActivity(Intent intent) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void startActivity(Intent intent, Bundle options) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
