@@ -39,7 +39,6 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
     "shell/src/org/chromium/android_webview/shell/AwShellSwitches.java",
     "shell/src/org/chromium/android_webview/shell/DrawGL.java",
-    "shell/src/org/chromium/android_webview/test/AwInstrumentationTestRunner.java",
     "shell/src/org/chromium/android_webview/test/AwTestContainerView.java",
     "shell/src/org/chromium/android_webview/test/AwTestRunnerActivity.java",
     "shell/src/org/chromium/android_webview/test/AwJUnit4ClassRunner.java",
