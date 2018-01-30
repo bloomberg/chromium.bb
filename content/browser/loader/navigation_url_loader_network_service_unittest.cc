@@ -12,8 +12,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
-#include "content/network/network_context.h"
-#include "content/network/url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -27,6 +25,8 @@
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/network_context.h"
+#include "services/network/url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
@@ -38,7 +38,7 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
   explicit TestURLLoaderRequestHandler(
       base::Optional<network::ResourceRequest>* most_recent_resource_request)
       : most_recent_resource_request_(most_recent_resource_request),
-        context_(NetworkContext::CreateForTesting()) {}
+        context_(network::NetworkContext::CreateForTesting()) {}
   ~TestURLLoaderRequestHandler() override {}
 
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
@@ -54,10 +54,10 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
     // The URLLoader will delete itself upon completion.
-    new URLLoader(context_.get(), std::move(request), 0 /* options */,
-                  resource_request, false /* report_raw_headers */,
-                  std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS,
-                  0 /* process_id */);
+    new network::URLLoader(context_.get(), std::move(request), 0 /* options */,
+                           resource_request, false /* report_raw_headers */,
+                           std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS,
+                           0 /* process_id */);
   }
 
   bool MaybeCreateLoaderForResponse(
@@ -71,7 +71,7 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
  private:
   base::Optional<network::ResourceRequest>*
       most_recent_resource_request_;  // NOT OWNED.
-  std::unique_ptr<NetworkContext> context_;
+  std::unique_ptr<network::NetworkContext> context_;
 };
 
 }  // namespace

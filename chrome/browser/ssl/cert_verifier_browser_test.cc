@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "content/network/network_context.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -14,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_service_test_helper.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "services/network/network_context.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 CertVerifierBrowserTest::CertVerifier::CertVerifier(
@@ -99,7 +99,7 @@ void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
   ProfileIOData::SetCertVerifierForTesting(mock_cert_verifier_.get());
 
   if (content::IsNetworkServiceRunningInProcess()) {
-    content::NetworkContext::SetCertVerifierForTesting(
+    network::NetworkContext::SetCertVerifierForTesting(
         mock_cert_verifier_.get());
   }
 }
@@ -107,7 +107,7 @@ void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
 void CertVerifierBrowserTest::TearDownInProcessBrowserTestFixture() {
   ProfileIOData::SetCertVerifierForTesting(nullptr);
   if (content::IsNetworkServiceRunningInProcess())
-    content::NetworkContext::SetCertVerifierForTesting(nullptr);
+    network::NetworkContext::SetCertVerifierForTesting(nullptr);
 }
 
 CertVerifierBrowserTest::CertVerifier*

@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
-#include "content/network/upload_progress_tracker.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -23,6 +22,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/upload_progress_tracker.h"
 
 class GURL;
 
@@ -124,9 +124,10 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
 
   // These functions can be overriden only for tests.
   virtual void ReportBadMessage(const std::string& error);
-  virtual std::unique_ptr<UploadProgressTracker> CreateUploadProgressTracker(
+  virtual std::unique_ptr<network::UploadProgressTracker>
+  CreateUploadProgressTracker(
       const base::Location& from_here,
-      UploadProgressTracker::UploadProgressReportCallback callback);
+      network::UploadProgressTracker::UploadProgressReportCallback callback);
 
   void OnTransfer(network::mojom::URLLoaderRequest mojo_request,
                   network::mojom::URLLoaderClientPtr url_loader_client);
@@ -166,7 +167,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   scoped_refptr<SharedWriter> shared_writer_;
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
 
-  std::unique_ptr<UploadProgressTracker> upload_progress_tracker_;
+  std::unique_ptr<network::UploadProgressTracker> upload_progress_tracker_;
 
   base::WeakPtrFactory<MojoAsyncResourceHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandler);

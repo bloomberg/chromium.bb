@@ -10,6 +10,7 @@ namespace network {
 namespace switches {
 
 extern const char kHostResolverRules[];
+extern const char kIgnoreCertificateErrorsSPKIList[];
 extern const char kLogNetLog[];
 extern const char kNoReferrers[];
 

@@ -217,10 +217,10 @@ static_library("content_shell_lib") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/gpu",
-    "//content/public/network",
     "//content/public/renderer",
     "//content/public/utility",
     "//ipc",
+    "//services/network/public/cpp",
   ]
   deps = [
     ":content_shell_packaged_services_manifest_overlay",

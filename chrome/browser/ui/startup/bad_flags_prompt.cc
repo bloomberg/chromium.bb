@@ -32,6 +32,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -66,6 +67,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
   static const char* kBadFlags[] = {
+    network::switches::kIgnoreCertificateErrorsSPKIList,
     // These flags disable sandbox-related security.
     service_manager::switches::kDisableGpuSandbox,
     service_manager::switches::kDisableSeccompFilterSandbox,
@@ -88,7 +90,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kDisableWebRtcEncryption,
 #endif
     switches::kIgnoreCertificateErrors,
-    switches::kIgnoreCertificateErrorsSPKIList,
     invalidation::switches::kSyncAllowInsecureXmppConnection,
 
     // These flags change the URLs that handle PII.

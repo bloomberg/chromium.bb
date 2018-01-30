@@ -149,6 +149,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -1123,8 +1124,8 @@ class SSLUITestIgnoreCertErrorsBySPKIHTTPS : public SSLUITest {
         https_server_mismatched_.GetCertificate().get());
     // Browser will ignore certificate errors for chains matching one of the
     // public keys from the list.
-    command_line->AppendSwitchASCII(switches::kIgnoreCertificateErrorsSPKIList,
-                                    whitelist_flag);
+    command_line->AppendSwitchASCII(
+        network::switches::kIgnoreCertificateErrorsSPKIList, whitelist_flag);
   }
 };
 
@@ -1142,8 +1143,8 @@ class SSLUITestIgnoreCertErrorsBySPKIWSS : public SSLUITest {
         MakeCertSPKIFingerprint(wss_server_expired_.GetCertificate().get());
     // Browser will ignore certificate errors for chains matching one of the
     // public keys from the list.
-    command_line->AppendSwitchASCII(switches::kIgnoreCertificateErrorsSPKIList,
-                                    whitelist_flag);
+    command_line->AppendSwitchASCII(
+        network::switches::kIgnoreCertificateErrorsSPKIList, whitelist_flag);
   }
 };
 
@@ -6929,7 +6930,7 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, ManySubresources) {
   }
 }
 
-// Checks that SimpleURLLoader, which uses content/network/url_loader.cc, goes
+// Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes
 // through the new NetworkServiceClient interface to deliver cert error
 // notifications to the browser which then overrides the certificate error.
 IN_PROC_BROWSER_TEST_F(SSLUITestBase, SimpleURLLoaderCertError) {

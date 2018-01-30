@@ -28,7 +28,6 @@
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/network/url_request_context_owner.h"
 #include "extensions/features/features.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
@@ -37,6 +36,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/cpp/url_request_context_owner.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 
 class ChromeHttpUserAgentSettings;
@@ -610,7 +610,7 @@ class ProfileIOData {
   // content::NetworkContext class that owns |main_request_context_|.
   mutable std::unique_ptr<network::mojom::NetworkContext> main_network_context_;
   // When the network service is disabled, this owns |system_request_context|.
-  mutable content::URLRequestContextOwner main_request_context_owner_;
+  mutable network::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;
 
   // Pointed to by the TransportSecurityState (owned by

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/network/url_request_context_builder_mojo.h"
+#include "services/network/public/cpp/url_request_context_builder_mojo.h"
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -57,7 +57,7 @@ class URLRequestContextBuilderMojoTest : public PlatformTest {
   base::test::ScopedTaskEnvironment task_environment_;
   TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   net::EmbeddedTestServer test_server_;
-  URLRequestContextBuilderMojo builder_;
+  network::URLRequestContextBuilderMojo builder_;
 };
 
 TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {

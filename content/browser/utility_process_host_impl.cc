@@ -298,10 +298,10 @@ bool UtilityProcessHostImpl::StartProcess() {
     // Browser command-line switches to propagate to the utility process.
     static const char* const kSwitchNames[] = {
       network::switches::kHostResolverRules,
+      network::switches::kIgnoreCertificateErrorsSPKIList,
       network::switches::kLogNetLog,
       network::switches::kNoReferrers,
       switches::kIgnoreCertificateErrors,
-      switches::kIgnoreCertificateErrorsSPKIList,
       switches::kNoSandbox,
       switches::kOverrideUseSoftwareGLForTests,
       switches::kProxyServer,

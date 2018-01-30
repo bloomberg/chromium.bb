@@ -83,9 +83,9 @@ class DummyUploadDataStream : public net::UploadDataStream {
   DISALLOW_COPY_AND_ASSIGN(DummyUploadDataStream);
 };
 
-class FakeUploadProgressTracker : public UploadProgressTracker {
+class FakeUploadProgressTracker : public network::UploadProgressTracker {
  public:
-  using UploadProgressTracker::UploadProgressTracker;
+  using network::UploadProgressTracker::UploadProgressTracker;
 
   net::UploadProgress GetUploadProgress() const override {
     return upload_progress_;
@@ -254,9 +254,10 @@ class MojoAsyncResourceHandlerWithStubOperations
     has_received_bad_message_ = true;
   }
 
-  std::unique_ptr<UploadProgressTracker> CreateUploadProgressTracker(
+  std::unique_ptr<network::UploadProgressTracker> CreateUploadProgressTracker(
       const base::Location& from_here,
-      UploadProgressTracker::UploadProgressReportCallback callback) override {
+      network::UploadProgressTracker::UploadProgressReportCallback callback)
+      override {
     DCHECK(!upload_progress_tracker_);
 
     auto upload_progress_tracker = std::make_unique<FakeUploadProgressTracker>(

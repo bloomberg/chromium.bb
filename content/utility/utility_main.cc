@@ -20,7 +20,7 @@
 #include "services/service_manager/sandbox/sandbox.h"
 
 #if defined(OS_LINUX)
-#include "content/network/network_sandbox_hook_linux.h"
+#include "services/network/network_sandbox_hook_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
 
@@ -56,7 +56,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
       sandbox_type == service_manager::SANDBOX_TYPE_NETWORK) {
     service_manager::SandboxLinux::PreSandboxHook pre_sandbox_hook;
     if (sandbox_type == service_manager::SANDBOX_TYPE_NETWORK)
-      pre_sandbox_hook = base::BindOnce(&NetworkPreSandboxHook);
+      pre_sandbox_hook = base::BindOnce(&network::NetworkPreSandboxHook);
     service_manager::Sandbox::Initialize(
         sandbox_type, std::move(pre_sandbox_hook),
         service_manager::SandboxLinux::Options());

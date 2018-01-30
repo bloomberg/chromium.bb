@@ -63,9 +63,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
-#include "content/public/network/ignore_errors_cert_verifier.h"
-#include "content/public/network/network_service.h"
-#include "content/public/network/url_request_context_builder_mojo.h"
 #include "extensions/features/features.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
@@ -98,7 +95,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/ignore_errors_cert_verifier.h"
+#include "services/network/public/cpp/network_service.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/url_request_context_builder_mojo.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -743,7 +743,7 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
 }
 
 void IOThread::SetUpProxyService(
-    content::URLRequestContextBuilderMojo* builder) const {
+    network::URLRequestContextBuilderMojo* builder) const {
 #if defined(OS_CHROMEOS)
   builder->SetDhcpFetcherFactory(
       base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
@@ -761,8 +761,8 @@ certificate_transparency::TreeStateTracker* IOThread::ct_tree_tracker() const {
 }
 
 void IOThread::ConstructSystemRequestContext() {
-  std::unique_ptr<content::URLRequestContextBuilderMojo> builder =
-      base::MakeUnique<content::URLRequestContextBuilderMojo>();
+  std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
+      base::MakeUnique<network::URLRequestContextBuilderMojo>();
 
   builder->set_network_quality_estimator(
       globals_->network_quality_estimator.get());
@@ -800,11 +800,12 @@ void IOThread::ConstructSystemRequestContext() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   builder->SetCertVerifier(
-      content::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+      network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
           command_line, switches::kUserDataDir, std::move(cert_verifier)));
   UMA_HISTOGRAM_BOOLEAN(
       "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
-      command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
+      command_line.HasSwitch(
+          network::switches::kIgnoreCertificateErrorsSPKIList));
 
   std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
       base::MakeUnique<net::MultiLogCTVerifier>();

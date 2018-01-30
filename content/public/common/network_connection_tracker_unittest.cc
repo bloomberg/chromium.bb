@@ -9,8 +9,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/network/network_service.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "services/network/public/cpp/network_service.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -132,8 +132,8 @@ class NetworkConnectionTrackerTest : public testing::Test {
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
     network_service_ =
-        NetworkService::Create(std::move(network_service_request),
-                               /*netlog=*/nullptr);
+        network::NetworkService::Create(std::move(network_service_request),
+                                        /*netlog=*/nullptr);
     tracker_ = std::make_unique<NetworkConnectionTracker>();
     tracker_->Initialize(network_service_.get());
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
@@ -141,7 +141,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
 
   ~NetworkConnectionTrackerTest() override {}
 
-  NetworkService* network_service() { return network_service_.get(); }
+  network::NetworkService* network_service() { return network_service_.get(); }
 
   NetworkConnectionTracker* network_connection_tracker() {
     return tracker_.get();
@@ -165,7 +165,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::test::MockNetworkChangeNotifier mock_network_change_notifier_;
-  std::unique_ptr<NetworkService> network_service_;
+  std::unique_ptr<network::NetworkService> network_service_;
   std::unique_ptr<NetworkConnectionTracker> tracker_;
   std::unique_ptr<TestNetworkConnectionObserver> observer_;
 
@@ -222,8 +222,9 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
   network::mojom::NetworkServicePtr network_service_ptr;
   network::mojom::NetworkServiceRequest network_service_request =
       mojo::MakeRequest(&network_service_ptr);
-  std::unique_ptr<NetworkService> network_service =
-      NetworkService::Create(std::move(network_service_request), nullptr);
+  std::unique_ptr<network::NetworkService> network_service =
+      network::NetworkService::Create(std::move(network_service_request),
+                                      nullptr);
   NetworkConnectionTracker tracker;
   tracker.Initialize(network_service_ptr.get());
 
