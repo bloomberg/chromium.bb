@@ -182,7 +182,7 @@ class WebCoreLayoutUnitProvider:
         self.valobj = valobj
 
     def to_string(self):
-        return "%gpx" % (self.valobj.GetChildMemberWithName('value_').GetValueAsUnsigned(0) / 64.0)
+        return "%.14gpx" % (self.valobj.GetChildMemberWithName('value_').GetValueAsSigned(0) / 64.0)
 
 
 class WebCoreLayoutSizeProvider:
