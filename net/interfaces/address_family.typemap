@@ -4,9 +4,9 @@
 
 mojom = "//net/interfaces/address_family.mojom"
 public_headers = [ "//net/base/address_family.h" ]
-traits_headers = [ "//net/interfaces/address_family_traits.h" ]
+traits_headers = [ "//net/interfaces/address_family_mojom_traits.h" ]
 sources = [
-  "//net/interfaces/address_family_traits.cc",
+  "//net/interfaces/address_family_mojom_traits.cc",
 ]
 type_mappings = [ "net.interfaces.AddressFamily=net::AddressFamily" ]
 public_deps = [

@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "net/base/address_list.h"
-#include "net/interfaces/address_family_traits.h"
+#include "net/interfaces/address_family_mojom_traits.h"
 #include "net/interfaces/ip_endpoint_struct_traits.h"
 
 namespace mojo {

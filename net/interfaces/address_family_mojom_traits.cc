@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/interfaces/address_family_traits.h"
+#include "net/interfaces/address_family_mojom_traits.h"
 
 namespace mojo {
 
