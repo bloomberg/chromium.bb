@@ -181,6 +181,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override;
 
+  password_manager::StubPasswordManagerClient& client() { return client_; }
   password_manager::FakeFormFetcher& fetcher() { return fetcher_; }
   autofill::PasswordForm& test_local_form() { return test_local_form_; }
   autofill::PasswordForm& test_federated_form() { return test_federated_form_; }
@@ -427,6 +428,33 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
   variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleCancelled) {
+  // Test on the real controller.
+  std::unique_ptr<content::WebContents> web_content(CreateTestWebContents());
+  content::WebContentsTester::For(web_content.get())
+      ->NavigateAndCommit(GURL("http://example.com"));
+  ManagePasswordsUIController::CreateForWebContents(web_content.get());
+  ManagePasswordsUIController* controller =
+      ManagePasswordsUIController::FromWebContents(web_content.get());
+  controller->set_client(&client());
+
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  // The bubble is ready to open but the tab is inactive. Therefore, we don't
+  // call UpdateIconAndBubbleState here.
+  controller->OnPasswordSubmitted(std::move(test_form_manager));
+  EXPECT_TRUE(controller->IsAutomaticallyOpeningBubble());
+
+  // The tab navigated in background. Because the controller's state has changed
+  // the bubble shouldn't pop up anymore.
+  content::WebContentsTester::For(web_content.get())
+      ->NavigateAndCommit(GURL("http://google.com"));
+  EXPECT_FALSE(controller->IsAutomaticallyOpeningBubble());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSaved) {
