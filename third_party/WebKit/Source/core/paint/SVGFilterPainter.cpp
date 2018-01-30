@@ -42,7 +42,7 @@ sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
   paint_controller_->GetPaintArtifact().Replay(
       *context_, initial_context_.GetPaintController()
                      .CurrentPaintChunkProperties()
-                     .property_tree_state);
+                     .property_tree_state.GetPropertyTreeState());
 
   sk_sp<PaintRecord> content = context_->EndRecording();
   // Content is cached by the source graphic so temporaries can be freed.

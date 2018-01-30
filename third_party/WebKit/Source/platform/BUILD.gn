@@ -1218,6 +1218,8 @@ jumbo_component("platform") {
     "graphics/paint/PropertyTreeState.h",
     "graphics/paint/RasterInvalidationTracking.cpp",
     "graphics/paint/RasterInvalidationTracking.h",
+    "graphics/paint/RefCountedPropertyTreeState.cpp",
+    "graphics/paint/RefCountedPropertyTreeState.h",
     "graphics/paint/ScopedDisplayItemFragment.h",
     "graphics/paint/ScopedPaintChunkProperties.h",
     "graphics/paint/ScrollDisplayItem.cpp",

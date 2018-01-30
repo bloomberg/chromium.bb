@@ -127,8 +127,8 @@ void SVGPaintContext::ApplyPaintPropertyState() {
   if (const auto* properties = object_.FirstFragment().PaintProperties()) {
     if (const auto* effect = properties->Effect()) {
       auto& paint_controller = GetPaintInfo().context.GetPaintController();
-      PropertyTreeState state(
-          paint_controller.CurrentPaintChunkProperties().property_tree_state);
+      PropertyTreeState state(paint_controller.CurrentPaintChunkProperties()
+                                  .property_tree_state.GetPropertyTreeState());
       state.SetEffect(effect);
       if (const auto* mask_clip = properties->MaskClip())
         state.SetClip(mask_clip);

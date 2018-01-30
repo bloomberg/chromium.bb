@@ -7,7 +7,7 @@
 
 #include <iosfwd>
 #include "platform/PlatformExport.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/RefCountedPropertyTreeState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
@@ -33,7 +33,7 @@ struct PLATFORM_EXPORT PaintChunkProperties {
       : property_tree_state(nullptr, nullptr, nullptr),
         backface_hidden(false) {}
 
-  PropertyTreeState property_tree_state;
+  RefCountedPropertyTreeState property_tree_state;
   bool backface_hidden;
 
   String ToString() const;
