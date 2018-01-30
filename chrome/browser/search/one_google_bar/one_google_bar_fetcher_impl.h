@@ -37,7 +37,8 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
   OneGoogleBarFetcherImpl(net::URLRequestContextGetter* request_context,
                           GoogleURLTracker* google_url_tracker,
                           const std::string& application_locale,
-                          const base::Optional<std::string>& api_url_override);
+                          const base::Optional<std::string>& api_url_override,
+                          bool account_consistency_mirror_required);
   ~OneGoogleBarFetcherImpl() override;
 
   void Fetch(OneGoogleCallback callback) override;
@@ -56,6 +57,7 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
   GoogleURLTracker* google_url_tracker_;
   const std::string application_locale_;
   const base::Optional<std::string> api_url_override_;
+  const bool account_consistency_mirror_required_;
 
   std::vector<OneGoogleCallback> callbacks_;
   std::unique_ptr<AuthenticatedURLFetcher> pending_request_;

@@ -4,18 +4,24 @@
 
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
 
 // static
@@ -34,6 +40,7 @@ OneGoogleBarServiceFactory::OneGoogleBarServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "OneGoogleBarService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(CookieSettingsFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(GoogleURLTrackerFactory::GetInstance());
 }
@@ -57,9 +64,13 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
   if (!override_api_url_str.empty()) {
     override_api_url = override_api_url_str;
   }
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(profile).get();
   return new OneGoogleBarService(
       cookie_service,
       base::MakeUnique<OneGoogleBarFetcherImpl>(
           profile->GetRequestContext(), google_url_tracker,
-          g_browser_process->GetApplicationLocale(), override_api_url));
+          g_browser_process->GetApplicationLocale(), override_api_url,
+          AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&
+              signin::SettingsAllowSigninCookies(cookie_settings)));
 }
