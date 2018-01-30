@@ -93,7 +93,7 @@ core_idl_files =
                     "css/cssom/CSSStyleValue.idl",
                     "css/cssom/CSSTransformComponent.idl",
                     "css/cssom/CSSTransformValue.idl",
-                    "css/cssom/CSSTranslation.idl",
+                    "css/cssom/CSSTranslate.idl",
                     "css/cssom/CSSURLImageValue.idl",
                     "css/cssom/CSSUnitValue.idl",
                     "css/cssom/CSSUnparsedValue.idl",

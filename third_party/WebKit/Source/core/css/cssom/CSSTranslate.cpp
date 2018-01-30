@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSTranslation.h"
+#include "core/css/cssom/CSSTranslate.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -24,14 +24,14 @@ bool IsValidTranslateZ(const CSSNumericValue* value) {
          value->Type().MatchesBaseType(CSSNumericValueType::BaseType::kLength);
 }
 
-CSSTranslation* FromCSSTranslate(const CSSFunctionValue& value) {
+CSSTranslate* FromCSSTranslate(const CSSFunctionValue& value) {
   DCHECK_GT(value.length(), 0UL);
 
   CSSNumericValue* x =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
 
   if (value.length() == 1) {
-    return CSSTranslation::Create(
+    return CSSTranslate::Create(
         x, CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels));
   }
 
@@ -40,10 +40,10 @@ CSSTranslation* FromCSSTranslate(const CSSFunctionValue& value) {
   CSSNumericValue* y =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
 
-  return CSSTranslation::Create(x, y);
+  return CSSTranslate::Create(x, y);
 }
 
-CSSTranslation* FromCSSTranslateXYZ(const CSSFunctionValue& value) {
+CSSTranslate* FromCSSTranslateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
 
   CSSNumericValue* length =
@@ -51,15 +51,15 @@ CSSTranslation* FromCSSTranslateXYZ(const CSSFunctionValue& value) {
 
   switch (value.FunctionType()) {
     case CSSValueTranslateX:
-      return CSSTranslation::Create(
+      return CSSTranslate::Create(
           length,
           CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels));
     case CSSValueTranslateY:
-      return CSSTranslation::Create(
+      return CSSTranslate::Create(
           CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
           length);
     case CSSValueTranslateZ:
-      return CSSTranslation::Create(
+      return CSSTranslate::Create(
           CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
           CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
           length);
@@ -69,7 +69,7 @@ CSSTranslation* FromCSSTranslateXYZ(const CSSFunctionValue& value) {
   }
 }
 
-CSSTranslation* FromCSSTranslate3D(const CSSFunctionValue& value) {
+CSSTranslate* FromCSSTranslate3D(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 3UL);
 
   CSSNumericValue* x =
@@ -79,50 +79,50 @@ CSSTranslation* FromCSSTranslate3D(const CSSFunctionValue& value) {
   CSSNumericValue* z =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(2)));
 
-  return CSSTranslation::Create(x, y, z);
+  return CSSTranslate::Create(x, y, z);
 }
 
 }  // namespace
 
-CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
-                                       CSSNumericValue* y,
-                                       ExceptionState& exception_state) {
+CSSTranslate* CSSTranslate::Create(CSSNumericValue* x,
+                                   CSSNumericValue* y,
+                                   ExceptionState& exception_state) {
   if (!IsValidTranslateXY(x) || !IsValidTranslateXY(y)) {
     exception_state.ThrowTypeError(
-        "Must pass length or percentage to X and Y of CSSTranslation");
+        "Must pass length or percentage to X and Y of CSSTranslate");
     return nullptr;
   }
-  return new CSSTranslation(
+  return new CSSTranslate(
       x, y, CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
       true /* is2D */);
 }
 
-CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
-                                       CSSNumericValue* y,
-                                       CSSNumericValue* z,
-                                       ExceptionState& exception_state) {
+CSSTranslate* CSSTranslate::Create(CSSNumericValue* x,
+                                   CSSNumericValue* y,
+                                   CSSNumericValue* z,
+                                   ExceptionState& exception_state) {
   if (!IsValidTranslateXY(x) || !IsValidTranslateXY(y) ||
       !IsValidTranslateZ(z)) {
     exception_state.ThrowTypeError(
-        "Must pass length or percentage to X, Y and Z of CSSTranslation");
+        "Must pass length or percentage to X, Y and Z of CSSTranslate");
     return nullptr;
   }
-  return new CSSTranslation(x, y, z, false /* is2D */);
+  return new CSSTranslate(x, y, z, false /* is2D */);
 }
 
-CSSTranslation* CSSTranslation::Create(CSSNumericValue* x, CSSNumericValue* y) {
-  return new CSSTranslation(
+CSSTranslate* CSSTranslate::Create(CSSNumericValue* x, CSSNumericValue* y) {
+  return new CSSTranslate(
       x, y, CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
       true /* is2D */);
 }
 
-CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
-                                       CSSNumericValue* y,
-                                       CSSNumericValue* z) {
-  return new CSSTranslation(x, y, z, false /* is2D */);
+CSSTranslate* CSSTranslate::Create(CSSNumericValue* x,
+                                   CSSNumericValue* y,
+                                   CSSNumericValue* z) {
+  return new CSSTranslate(x, y, z, false /* is2D */);
 }
 
-CSSTranslation* CSSTranslation::FromCSSValue(const CSSFunctionValue& value) {
+CSSTranslate* CSSTranslate::FromCSSValue(const CSSFunctionValue& value) {
   switch (value.FunctionType()) {
     case CSSValueTranslateX:
     case CSSValueTranslateY:
@@ -138,34 +138,33 @@ CSSTranslation* CSSTranslation::FromCSSValue(const CSSFunctionValue& value) {
   }
 }
 
-void CSSTranslation::setX(CSSNumericValue* x, ExceptionState& exception_state) {
+void CSSTranslate::setX(CSSNumericValue* x, ExceptionState& exception_state) {
   if (!IsValidTranslateXY(x)) {
     exception_state.ThrowTypeError(
-        "Must pass length or percentage to X of CSSTranslation");
+        "Must pass length or percentage to X of CSSTranslate");
     return;
   }
   x_ = x;
 }
 
-void CSSTranslation::setY(CSSNumericValue* y, ExceptionState& exception_state) {
+void CSSTranslate::setY(CSSNumericValue* y, ExceptionState& exception_state) {
   if (!IsValidTranslateXY(y)) {
     exception_state.ThrowTypeError(
-        "Must pass length or percent to Y of CSSTranslation");
+        "Must pass length or percent to Y of CSSTranslate");
     return;
   }
   y_ = y;
 }
 
-void CSSTranslation::setZ(CSSNumericValue* z, ExceptionState& exception_state) {
+void CSSTranslate::setZ(CSSNumericValue* z, ExceptionState& exception_state) {
   if (!IsValidTranslateZ(z)) {
-    exception_state.ThrowTypeError("Must pass length to Z of CSSTranslation");
+    exception_state.ThrowTypeError("Must pass length to Z of CSSTranslate");
     return;
   }
   z_ = z;
 }
 
-const DOMMatrix* CSSTranslation::AsMatrix(
-    ExceptionState& exception_state) const {
+const DOMMatrix* CSSTranslate::AsMatrix(ExceptionState& exception_state) const {
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kPixels);
   CSSUnitValue* y = y_->to(CSSPrimitiveValue::UnitType::kPixels);
   CSSUnitValue* z = z_->to(CSSPrimitiveValue::UnitType::kPixels);
@@ -185,7 +184,7 @@ const DOMMatrix* CSSTranslation::AsMatrix(
   return matrix;
 }
 
-const CSSFunctionValue* CSSTranslation::ToCSSValue() const {
+const CSSFunctionValue* CSSTranslate::ToCSSValue() const {
   const CSSValue* x = x_->ToCSSValue();
   const CSSValue* y = y_->ToCSSValue();
 
@@ -200,10 +199,10 @@ const CSSFunctionValue* CSSTranslation::ToCSSValue() const {
   return result;
 }
 
-CSSTranslation::CSSTranslation(CSSNumericValue* x,
-                               CSSNumericValue* y,
-                               CSSNumericValue* z,
-                               bool is2D)
+CSSTranslate::CSSTranslate(CSSNumericValue* x,
+                           CSSNumericValue* y,
+                           CSSNumericValue* z,
+                           bool is2D)
     : CSSTransformComponent(is2D), x_(x), y_(y), z_(z) {
   DCHECK(IsValidTranslateXY(x));
   DCHECK(IsValidTranslateXY(y));

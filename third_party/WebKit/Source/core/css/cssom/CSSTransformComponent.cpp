@@ -9,7 +9,7 @@
 #include "core/css/cssom/CSSRotation.h"
 #include "core/css/cssom/CSSScale.h"
 #include "core/css/cssom/CSSSkew.h"
-#include "core/css/cssom/CSSTranslation.h"
+#include "core/css/cssom/CSSTranslate.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ CSSTransformComponent* CSSTransformComponent::FromCSSValue(
     case CSSValueTranslateY:
     case CSSValueTranslateZ:
     case CSSValueTranslate3d:
-      return CSSTranslation::FromCSSValue(function_value);
+      return CSSTranslate::FromCSSValue(function_value);
     default:
       return nullptr;
   }

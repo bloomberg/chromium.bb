@@ -4,14 +4,14 @@
 
 // Represents a translation value in a CSSTransformValue used for properties
 // like "transform".
-// Spec: https://drafts.css-houdini.org/css-typed-om/#csstranslation
+// Spec: https://drafts.css-houdini.org/css-typed-om/#csstranslate
 [
     Constructor(CSSNumericValue x, CSSNumericValue y,
         optional CSSNumericValue z),
     Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
-] interface CSSTranslation : CSSTransformComponent {
+] interface CSSTranslate : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue x;
     [RaisesException=Setter] attribute CSSNumericValue y;
     [RaisesException=Setter] attribute CSSNumericValue z;

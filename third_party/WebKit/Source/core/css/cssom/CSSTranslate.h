@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTranslation_h
-#define CSSTranslation_h
+#ifndef CSSTranslate_h
+#define CSSTranslate_h
 
 #include "base/macros.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -19,26 +19,26 @@ class ExceptionState;
 
 // Represents a translation value in a CSSTransformValue used for properties
 // like "transform".
-// See CSSTranslation.idl for more information about this class.
-class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
+// See CSSTranslate.idl for more information about this class.
+class CORE_EXPORT CSSTranslate final : public CSSTransformComponent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   // Constructors defined in the IDL.
-  static CSSTranslation* Create(CSSNumericValue* x,
-                                CSSNumericValue* y,
-                                CSSNumericValue* z,
-                                ExceptionState&);
-  static CSSTranslation* Create(CSSNumericValue* x,
-                                CSSNumericValue* y,
-                                ExceptionState&);
+  static CSSTranslate* Create(CSSNumericValue* x,
+                              CSSNumericValue* y,
+                              CSSNumericValue* z,
+                              ExceptionState&);
+  static CSSTranslate* Create(CSSNumericValue* x,
+                              CSSNumericValue* y,
+                              ExceptionState&);
 
-  // Blink-internal ways of creating CSSTranslations.
-  static CSSTranslation* Create(CSSNumericValue* x, CSSNumericValue* y);
-  static CSSTranslation* Create(CSSNumericValue* x,
-                                CSSNumericValue* y,
-                                CSSNumericValue* z);
-  static CSSTranslation* FromCSSValue(const CSSFunctionValue&);
+  // Blink-internal ways of creating CSSTranslates.
+  static CSSTranslate* Create(CSSNumericValue* x, CSSNumericValue* y);
+  static CSSTranslate* Create(CSSNumericValue* x,
+                              CSSNumericValue* y,
+                              CSSNumericValue* z);
+  static CSSTranslate* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for attributes defined in the IDL.
   CSSNumericValue* x() { return x_; }
@@ -61,15 +61,15 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   }
 
  private:
-  CSSTranslation(CSSNumericValue* x,
-                 CSSNumericValue* y,
-                 CSSNumericValue* z,
-                 bool is2D);
+  CSSTranslate(CSSNumericValue* x,
+               CSSNumericValue* y,
+               CSSNumericValue* z,
+               bool is2D);
 
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;
   Member<CSSNumericValue> z_;
-  DISALLOW_COPY_AND_ASSIGN(CSSTranslation);
+  DISALLOW_COPY_AND_ASSIGN(CSSTranslate);
 };
 
 }  // namespace blink
