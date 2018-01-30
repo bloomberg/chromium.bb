@@ -31,6 +31,9 @@ class MediaControlsResourceLoader
   // Returns the overlay play button stylesheet content as a string.
   static String GetOverlayPlayStyleSheet();
 
+  // Returns the specific stylesheet used for media related interstitials.
+  static String GetMediaInterstitialsStyleSheet();
+
   String GetUAStyleSheet() override;
 
   MediaControlsResourceLoader();
