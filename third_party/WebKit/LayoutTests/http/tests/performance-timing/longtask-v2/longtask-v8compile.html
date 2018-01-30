@@ -10,12 +10,20 @@
 <div id="log"></div>
 <script>
   async_test(function (t) {
+    const scriptURL = 'resources/makelongtask.js';
+    const lineColumn = '(0, 0)';
     const observer = new PerformanceObserver(
-      t.step_func(function (entryList) {
-        const entries = entryList.getEntries();
-        assert_equals(entries.length, 1,
-            'Exactly one entry is expected.');
-        const longtask = entries[0];
+      t.step_func(function(entryList) {
+        const longtaskEntries = entryList.getEntries().filter((e) => {
+          return e.attribution.find((a) => {
+            return a.scriptURL.includes(scriptURL);
+          });
+        });
+        if (longtaskEntries.length === 0) {
+          return;
+        }
+        assert_equals(longtaskEntries.length, 1);
+        const longtask = longtaskEntries[0];
         assert_equals(longtask.entryType, 'longtask');
         assert_equals(longtask.name, 'self');
         assert_greater_than(longtask.duration, 50);
@@ -23,17 +31,19 @@
         const currentTime = performance.now();
         assert_less_than_equal(longtask.startTime, currentTime);
 
-        const it = longtask.attribution.find(function(it) {
-          return it.name === 'script-compile';
+        const compileAttribution = longtask.attribution.filter((it) => {
+          return it.name === 'script-compile' &&
+              it.scriptURL.includes(scriptURL);
         });
-        assert_false(!it, 'script-compile is not captured.');
+        assert_equals(compileAttribution.length, 1);
+        const it = compileAttribution[0];
         assert_greater_than(it.startTime, 0);
         assert_equals(it.entryType, 'taskattribution');
         assert_equals(it.containerType, 'iframe');
         assert_equals(it.containerId, '');
         assert_equals(it.containerName, '');
         assert_equals(it.containerSrc, '');
-        assert_true(it.scriptURL.includes('resources/makelongtask.js(0, 0)'));
+        assert_true(it.scriptURL.includes(scriptURL + lineColumn));
         observer.disconnect();
         t.done();
       })
