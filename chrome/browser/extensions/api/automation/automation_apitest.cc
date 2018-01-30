@@ -120,7 +120,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
+// Disabled due to flakiness: https://crbug.com/807128.
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_Location DISABLED_Location
+#else
+#define MAYBE_Location Location
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Location) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "location.html"))
       << message_;
