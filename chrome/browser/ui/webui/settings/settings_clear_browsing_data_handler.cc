@@ -224,8 +224,10 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       case BrowsingDataType::BOOKMARKS:
         // Only implemented on Android.
         NOTREACHED();
+        break;
       case BrowsingDataType::NUM_TYPES:
         NOTREACHED();
+        break;
     }
   }
 
