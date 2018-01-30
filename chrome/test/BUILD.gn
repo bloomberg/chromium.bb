@@ -2075,12 +2075,28 @@ group("telemetry_perf_tests") {
   ]
 }
 
+# Temporary target for running benchmarks without building Chrome
+# Will be removed as a part of crbug.com/758632
+group("telemetry_perf_tests_experimental") {
+  testonly = true
+  deps = [
+    "//tools/perf/:perf_experimental",
+  ]
+
+  data = [
+    # Needed for isolate script to execute.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+  ]
+}
+
 # New target that will replace telemetry_perf_tests when testing
 # is done.
 group("performance_test_suite") {
   testonly = true
   deps = [
-    "//chrome/test:telemetry_perf_tests",
+    "//chrome/test:telemetry_perf_tests_experimental",
   ]
 
   data = [
