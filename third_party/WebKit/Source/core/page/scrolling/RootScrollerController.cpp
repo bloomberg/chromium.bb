@@ -221,26 +221,32 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
   if (!node.IsInTreeScope())
     return;
 
-  if (node.IsFrameOwnerElement()) {
-    HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(&node);
-    DCHECK(frame_owner->ContentFrame());
+  if (!node.IsFrameOwnerElement())
+    return;
 
-    if (frame_owner->ContentFrame()->IsLocalFrame()) {
-      LocalFrameView* frame_view =
-          ToLocalFrameView(frame_owner->OwnedEmbeddedContentView());
+  HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(&node);
 
-      bool is_root_scroller = &EffectiveRootScroller() == &node;
+  // The current effective root scroller may have lost its ContentFrame. If
+  // that's the case, there's nothing to be done. https://crbug.com/805317 for
+  // an example of how we get here.
+  if (!frame_owner->ContentFrame())
+    return;
 
-      // If we're making the Frame the root scroller, it must have a FrameView
-      // by now.
-      DCHECK(frame_view || !is_root_scroller);
-      if (frame_view) {
-        frame_view->SetLayoutSizeFixedToFrameSize(!is_root_scroller);
-        UpdateIFrameGeometryAndLayoutSize(*frame_owner);
-      }
-    } else {
-      // TODO(bokan): Make work with OOPIF. crbug.com/642378.
+  if (frame_owner->ContentFrame()->IsLocalFrame()) {
+    LocalFrameView* frame_view =
+        ToLocalFrameView(frame_owner->OwnedEmbeddedContentView());
+
+    bool is_root_scroller = &EffectiveRootScroller() == &node;
+
+    // If we're making the Frame the root scroller, it must have a FrameView
+    // by now.
+    DCHECK(frame_view || !is_root_scroller);
+    if (frame_view) {
+      frame_view->SetLayoutSizeFixedToFrameSize(!is_root_scroller);
+      UpdateIFrameGeometryAndLayoutSize(*frame_owner);
     }
+  } else {
+    // TODO(bokan): Make work with OOPIF. crbug.com/642378.
   }
 }
 
