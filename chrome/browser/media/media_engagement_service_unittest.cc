@@ -209,6 +209,15 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   void SetSchemaVersion(int version) { service_->SetSchemaVersion(version); }
 
+  std::vector<MediaEngagementScore> GetAllStoredScores(
+      const MediaEngagementService* service) const {
+    return service->GetAllStoredScores();
+  }
+
+  std::vector<MediaEngagementScore> GetAllStoredScores() const {
+    return GetAllStoredScores(service_.get());
+  }
+
  private:
   base::SimpleTestClock test_clock_;
 
@@ -297,6 +306,79 @@ TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
   RecordVisitAndPlaybackAndAdvanceClock(url4);
   ExpectScores(incognito_service, url4, 0.0, 1, 1, Now());
   ExpectScores(url4, 0.0, 1, 1, Now());
+}
+
+TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
+  const GURL kUrl1("https://example.org");
+  const GURL kUrl2("https://example.com");
+
+  SetScores(kUrl1, MediaEngagementScore::GetScoreMinVisits(), 1);
+  SetScores(kUrl2, 1, 0);
+
+  ExpectScores(kUrl1, 0.05, MediaEngagementScore::GetScoreMinVisits(), 1,
+               TimeNotSet());
+  ExpectScores(kUrl2, 0.0, 1, 0, TimeNotSet());
+
+  MediaEngagementService* incognito_service =
+      MediaEngagementService::Get(profile()->GetOffTheRecordProfile());
+  ExpectScores(incognito_service, kUrl1, 0.05,
+               MediaEngagementScore::GetScoreMinVisits(), 1, TimeNotSet());
+  ExpectScores(incognito_service, kUrl2, 0.0, 1, 0, TimeNotSet());
+
+  // Scores should be the same in incognito and regular profile.
+  {
+    std::vector<std::pair<GURL, double>> kExpectedResults = {
+        {kUrl2, 0.0}, {kUrl1, 0.05},
+    };
+
+    const auto& scores = GetAllStoredScores();
+    const auto& incognito_scores = GetAllStoredScores(incognito_service);
+
+    EXPECT_EQ(kExpectedResults.size(), scores.size());
+    EXPECT_EQ(kExpectedResults.size(), incognito_scores.size());
+
+    for (size_t i = 0; i < scores.size(); ++i) {
+      EXPECT_EQ(kExpectedResults[i].first, scores[i].origin());
+      EXPECT_EQ(kExpectedResults[i].second, scores[i].actual_score());
+
+      EXPECT_EQ(kExpectedResults[i].first, incognito_scores[i].origin());
+      EXPECT_EQ(kExpectedResults[i].second, incognito_scores[i].actual_score());
+    }
+  }
+
+  incognito_service->RecordVisit(kUrl1);
+  incognito_service->RecordPlayback(kUrl2);
+
+  // Score shouldn't have changed in regular profile.
+  {
+    std::vector<std::pair<GURL, double>> kExpectedResults = {
+        {kUrl2, 0.0}, {kUrl1, 0.05},
+    };
+
+    const auto& scores = GetAllStoredScores();
+    EXPECT_EQ(kExpectedResults.size(), scores.size());
+
+    for (size_t i = 0; i < scores.size(); ++i) {
+      EXPECT_EQ(kExpectedResults[i].first, scores[i].origin());
+      EXPECT_EQ(kExpectedResults[i].second, scores[i].actual_score());
+    }
+  }
+
+  // Incognito scores should have the same number of entries but have new
+  // values.
+  {
+    std::vector<std::pair<GURL, double>> kExpectedResults = {
+        {kUrl2, 0.0}, {kUrl1, 1.0 / 21.0},
+    };
+
+    const auto& scores = GetAllStoredScores(incognito_service);
+    EXPECT_EQ(kExpectedResults.size(), scores.size());
+
+    for (size_t i = 0; i < scores.size(); ++i) {
+      EXPECT_EQ(kExpectedResults[i].first, scores[i].origin());
+      EXPECT_EQ(kExpectedResults[i].second, scores[i].actual_score());
+    }
+  }
 }
 
 TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
