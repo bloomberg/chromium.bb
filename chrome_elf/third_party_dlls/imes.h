@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_WHITELIST_WHITELIST_IME_H_
-#define CHROME_ELF_WHITELIST_WHITELIST_IME_H_
+#ifndef CHROME_ELF_THIRD_PARTY_DLLS_IMES_H_
+#define CHROME_ELF_THIRD_PARTY_DLLS_IMES_H_
 
 #include <stdint.h>
 
-namespace whitelist {
+namespace third_party_dlls {
 
 // "static_cast<int>(IMEStatus::value)" to access underlying value.
 enum class IMEStatus {
@@ -37,6 +37,6 @@ IMEStatus InitIMEs();
 // Removes initialization for use by tests.
 void DeinitIMEsForTesting();
 
-}  // namespace whitelist
+}  // namespace third_party_dlls
 
-#endif  // CHROME_ELF_WHITELIST_WHITELIST_IME_H_
+#endif  // CHROME_ELF_THIRD_PARTY_DLLS_IMES_H_

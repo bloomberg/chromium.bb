@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_WHITELIST_WHITELIST_LOG_H_
-#define CHROME_ELF_WHITELIST_WHITELIST_LOG_H_
+#ifndef CHROME_ELF_THIRD_PARTY_DLLS_LOGS_H_
+#define CHROME_ELF_THIRD_PARTY_DLLS_LOGS_H_
 
 #include <windows.h>
 
@@ -11,14 +11,14 @@
 
 #include <string>
 
-#include "chrome_elf/whitelist/whitelist_packed_format.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 
 // "static_cast<int>(LogStatus::value)" to access underlying value.
 enum class LogStatus { kSuccess = 0, kCreateMutexFailure = 1, COUNT };
 
-// Adds a load attempt to the internal load log.
+// Adds a module load attempt to the internal load log.
 // - |log_type| indicates the type of logging.
 // - |basename_hash| and |code_id_hash| must each point to a 20-byte buffer
 //   holding a SHA-1 digest (of the module's basename and code identifier,
@@ -36,6 +36,6 @@ LogStatus InitLogs();
 // Removes initialization for use by tests.
 void DeinitLogsForTesting();
 
-}  // namespace whitelist
+}  // namespace third_party_dlls
 
-#endif  // CHROME_ELF_WHITELIST_WHITELIST_LOG_H_
+#endif  // CHROME_ELF_THIRD_PARTY_DLLS_LOGS_H_

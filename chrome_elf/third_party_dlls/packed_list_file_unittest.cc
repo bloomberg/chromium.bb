@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_file.h"
+#include "chrome_elf/third_party_dlls/packed_list_file.h"
 
 #include <windows.h>
 
@@ -17,10 +17,10 @@
 #include "base/win/pe_image.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/sha1/sha1.h"
-#include "chrome_elf/whitelist/whitelist_packed_format.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 namespace {
 
 constexpr wchar_t kTestBlFileName[] = L"blfile";
@@ -33,7 +33,7 @@ struct TestModule {
 };
 
 bool GetTestModules(std::vector<TestModule>* test_modules,
-                    std::vector<PackedWhitelistModule>* packed_modules) {
+                    std::vector<PackedListModule>* packed_modules) {
   // Test binaries in system32/syswow64.
   // Define them in hash order so that the resulting array is ordered!
   // ole32 = 65 6e 16..., gdi32 = 91 7a e5..., crypt32 = ce ab 70...
@@ -76,7 +76,7 @@ bool GetTestModules(std::vector<TestModule>* test_modules,
     code_id = elf_sha1::SHA1HashString(code_id);
     basename_hash = elf_sha1::SHA1HashString(test_module.basename);
 
-    PackedWhitelistModule packed_module;
+    PackedListModule packed_module;
     ::memcpy(packed_module.code_id_hash, code_id.data(), elf_sha1::kSHA1Length);
     ::memcpy(packed_module.basename_hash, basename_hash.data(),
              elf_sha1::kSHA1Length);
@@ -87,12 +87,12 @@ bool GetTestModules(std::vector<TestModule>* test_modules,
 }
 
 //------------------------------------------------------------------------------
-// WhitelistFileTest class
+// ThirdPartyFileTest class
 //------------------------------------------------------------------------------
 
-class WhitelistFileTest : public testing::Test {
+class ThirdPartyFileTest : public testing::Test {
  protected:
-  WhitelistFileTest() = default;
+  ThirdPartyFileTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(GetTestModules(&test_array_, &test_packed_array_));
@@ -119,14 +119,14 @@ class WhitelistFileTest : public testing::Test {
     ASSERT_TRUE(file.IsValid());
 
     // Write content {metadata}{array_of_modules}.
-    PackedWhitelistMetadata meta = {
+    PackedListMetadata meta = {
         kInitialVersion, static_cast<uint32_t>(test_packed_array_.size())};
     ASSERT_EQ(file.Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
               static_cast<int>(sizeof(meta)));
-    int size = static_cast<int>(test_packed_array_.size() *
-                                sizeof(PackedWhitelistModule));
+    int size =
+        static_cast<int>(test_packed_array_.size() * sizeof(PackedListModule));
     ASSERT_EQ(
-        file.Write(sizeof(PackedWhitelistMetadata),
+        file.Write(sizeof(PackedListMetadata),
                    reinterpret_cast<const char*>(test_packed_array_.data()),
                    size),
         size);
@@ -146,17 +146,17 @@ class WhitelistFileTest : public testing::Test {
   base::File bl_file_;
   base::string16 bl_test_file_path_;
   std::vector<TestModule> test_array_;
-  std::vector<PackedWhitelistModule> test_packed_array_;
+  std::vector<PackedListModule> test_packed_array_;
 
-  DISALLOW_COPY_AND_ASSIGN(WhitelistFileTest);
+  DISALLOW_COPY_AND_ASSIGN(ThirdPartyFileTest);
 };
 
 //------------------------------------------------------------------------------
-// Whitelist file tests
+// Third-party file tests
 //------------------------------------------------------------------------------
 
 // Test successful initialization and module lookup.
-TEST_F(WhitelistFileTest, Success) {
+TEST_F(ThirdPartyFileTest, Success) {
   // Create blacklist data file.
   CreateTestFile();
 
@@ -174,19 +174,19 @@ TEST_F(WhitelistFileTest, Success) {
 }
 
 // Test successful initialization with no packed files.
-TEST_F(WhitelistFileTest, NoFiles) {
+TEST_F(ThirdPartyFileTest, NoFiles) {
   ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
   EXPECT_FALSE(IsModuleListed("booya.dll", 1337, 0x12345678));
 }
 
-TEST_F(WhitelistFileTest, CorruptFile) {
+TEST_F(ThirdPartyFileTest, CorruptFile) {
   CreateTestFile();
 
   base::File* file = GetBlFile();
   ASSERT_TRUE(file->IsValid());
 
   // 1) Not enough data for array size
-  PackedWhitelistMetadata meta = {kCurrent, static_cast<uint32_t>(50)};
+  PackedListMetadata meta = {kCurrent, static_cast<uint32_t>(50)};
   ASSERT_EQ(file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
             static_cast<int>(sizeof(meta)));
   EXPECT_EQ(InitFromFile(), FileStatus::kArrayReadFail);
@@ -207,4 +207,4 @@ TEST_F(WhitelistFileTest, CorruptFile) {
 }
 
 }  // namespace
-}  // namespace whitelist
+}  // namespace third_party_dlls

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist_log.h"
+#include "chrome_elf/third_party_dlls/logs.h"
 
 #include <windows.h>
 
@@ -13,10 +13,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome_elf/sha1/sha1.h"
-#include "chrome_elf/whitelist/whitelist_packed_format.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace whitelist {
+namespace third_party_dlls {
 namespace {
 
 enum { kWaitTimeoutMs = 3000 };
@@ -142,11 +142,11 @@ DWORD WINAPI NotificationHandler(LPVOID parameter) {
 }
 
 //------------------------------------------------------------------------------
-// Whitelist log tests
+// Third-party log tests
 //------------------------------------------------------------------------------
 
 // Test successful initialization and module lookup.
-TEST(Whitelist, Logs) {
+TEST(ThirdParty, Logs) {
   // Init.
   ASSERT_EQ(InitLogs(), LogStatus::kSuccess);
 
@@ -176,7 +176,7 @@ TEST(Whitelist, Logs) {
 }
 
 // Test notifications.
-TEST(Whitelist, LogNotifications) {
+TEST(ThirdParty, LogNotifications) {
   // Init.
   ASSERT_EQ(InitLogs(), LogStatus::kSuccess);
 
@@ -215,4 +215,4 @@ TEST(Whitelist, LogNotifications) {
 }
 
 }  // namespace
-}  // namespace whitelist
+}  // namespace third_party_dlls

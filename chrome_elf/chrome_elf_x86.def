@@ -14,7 +14,7 @@ EXPORTS
   RequestSingleCrashUpload_ExportThunk
   SetUploadConsent_ExportThunk
 
-  ; From chrome_elf/crash_helper.cc
+  ; From chrome_elf/crash/crash_helper.cc
   SetMetricsClientId
 
   ; From chrome_elf/chrome_elf_main.cc
@@ -26,11 +26,11 @@ EXPORTS
   ; From chrome/install_static
   GetInstallDetailsPayload
 
-  ; From chrome_elf/blacklist.cc
+  ; From chrome_elf/blacklist/blacklist.cc
   AddDllToBlacklist
   IsBlacklistInitialized
   SuccessfullyBlocked
 
-  ; From chrome_elf/whitelist_log
+  ; From chrome_elf/third_party_dlls/logs
   DrainLog
   RegisterLogNotification

@@ -2,32 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/whitelist/whitelist.h"
+#include "chrome_elf/third_party_dlls/main.h"
 
 #include <assert.h>
 
 #include "chrome_elf/nt_registry/nt_registry.h"
-#include "chrome_elf/whitelist/whitelist_file.h"
-#include "chrome_elf/whitelist/whitelist_ime.h"
-#include "chrome_elf/whitelist/whitelist_log.h"
+#include "chrome_elf/third_party_dlls/imes.h"
+#include "chrome_elf/third_party_dlls/logs.h"
+#include "chrome_elf/third_party_dlls/packed_list_file.h"
 
 namespace {
 
-// Record if the whitelist was successfully initialized so processes can easily
-// determine if the whitelist is enabled for them.
-bool g_whitelist_initialized = false;
+// Record if all the third-party DLL management code was successfully
+// initialized, so processes can easily determine if it is enabled for them.
+bool g_third_party_initialized = false;
 
 }  // namespace
 
-namespace whitelist {
+namespace third_party_dlls {
 
-bool IsWhitelistInitialized() {
-  return g_whitelist_initialized;
+bool IsThirdPartyInitialized() {
+  return g_third_party_initialized;
 }
 
 bool Init() {
   // Debug check: Init should not be called more than once.
-  assert(!g_whitelist_initialized);
+  assert(!g_third_party_initialized);
 
   // TODO(pennymac): As work is added, consider multi-threaded init.
   // TODO(pennymac): Handle return status codes for UMA.
@@ -38,9 +38,9 @@ bool Init() {
   }
 
   // Record initialization.
-  g_whitelist_initialized = true;
+  g_third_party_initialized = true;
 
   return true;
 }
 
-}  // namespace whitelist
+}  // namespace third_party_dlls
