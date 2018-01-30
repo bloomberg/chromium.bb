@@ -753,5 +753,34 @@ TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
   WaitForTransitionsDone();
 }
 
+// Regression test for https://crbug.com/804389 where notifications are added
+// and removed at the same time when UpdateWidgets is called.
+#if defined(OS_CHROMEOS)
+TEST_F(MessagePopupCollectionTest, AddedAndRemovedAtSameTime) {
+  collection()->IncrementDeferCounter();
+  std::vector<std::string> notification_ids;
+  for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i)
+    notification_ids.push_back(AddNotification());
+  collection()->DecrementDeferCounter();
+  WaitForTransitionsDone();
+
+  // Depending on the timing of ScopedNotificationsIterationLock, it is possible
+  // that a new notificaiton is added before the observer method of
+  // MarkSinglePopupAsShown are called.
+  // To reproduce the similar state in the unit test, it removes observer.
+  // TODO(tetsui): Remove this workaround with ScopedNotificationsIterationLock.
+  MessageCenter::Get()->RemoveObserver(collection());
+  for (auto& notification_id : notification_ids)
+    MessageCenter::Get()->MarkSinglePopupAsShown(notification_id, false);
+  MessageCenter::Get()->AddObserver(collection());
+
+  AddNotification();
+  WaitForTransitionsDone();
+
+  CloseAllToasts();
+  WaitForTransitionsDone();
+}
+#endif
+
 }  // namespace test
 }  // namespace message_center
