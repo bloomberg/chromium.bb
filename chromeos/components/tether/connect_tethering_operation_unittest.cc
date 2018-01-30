@@ -32,8 +32,6 @@ namespace {
 const char kTestSsid[] = "testSsid";
 const char kTestPassword[] = "testPassword";
 
-const size_t kMaxConnectionAttemptsPerDevice = 3;
-
 constexpr base::TimeDelta kConnectTetheringResponseTime =
     base::TimeDelta::FromSeconds(15);
 
@@ -113,11 +111,7 @@ class ConnectTetheringOperationTest : public testing::Test {
   ConnectTetheringOperationTest()
       : connect_tethering_request_string_(
             CreateConnectTetheringRequestString()),
-        test_device_(cryptauth::GenerateTestRemoteDevices(1)[0]) {
-    // These tests are written under the assumption that there are a maximum of
-    // 3 connection attempts; they need to be edited if this value changes.
-    EXPECT_EQ(3u, MessageTransferOperation::kMaxConnectionAttemptsPerDevice);
-  }
+        test_device_(cryptauth::GenerateTestRemoteDevices(1)[0]) {}
 
   void SetUp() override {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -278,8 +272,9 @@ TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
       .Times(0);
 
   // Simulate the device failing to connect.
-  fake_ble_connection_manager_->SimulateFailedConnectionAttempts(
-      test_device_.GetDeviceId(), kMaxConnectionAttemptsPerDevice);
+  fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
+      test_device_.GetDeviceId(),
+      MessageTransferOperation::kMaxEmptyScansPerDevice);
 
   // The maximum number of connection failures has occurred.
   EXPECT_TRUE(test_observer_->has_received_failure());
