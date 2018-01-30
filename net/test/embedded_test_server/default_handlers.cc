@@ -646,6 +646,43 @@ std::unique_ptr<HttpResponse> HandleHungAfterHeadersResponse(
   return std::make_unique<HungAfterHeadersHttpResponse>();
 }
 
+// /exabyte_response
+// A HttpResponse that is almost never ending (with an Exabyte content-length).
+class ExabyteResponse : public net::test_server::BasicHttpResponse {
+ public:
+  ExabyteResponse() {}
+
+  void SendResponse(
+      const net::test_server::SendBytesCallback& send,
+      const net::test_server::SendCompleteCallback& done) override {
+    // Use 10^18 bytes (exabyte) as the content length so that the client will
+    // be expecting data.
+    send.Run("HTTP/1.1 200 OK\r\nContent-Length:1000000000000000000\r\n\r\n",
+             base::BindRepeating(&ExabyteResponse::SendExabyte, send));
+  }
+
+ private:
+  // Keeps sending the word "echo" over and over again. It can go further to
+  // limit the response to exactly an exabyte, but it shouldn't be necessary
+  // for the purpose of testing.
+  static void SendExabyte(const net::test_server::SendBytesCallback& send) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindRepeating(
+            send, "echo",
+            base::BindRepeating(&ExabyteResponse::SendExabyte, send)));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ExabyteResponse);
+};
+
+// /exabyte_response
+// Almost never ending response.
+std::unique_ptr<net::test_server::HttpResponse> HandleExabyteResponse(
+    const net::test_server::HttpRequest& request) {
+  return std::make_unique<ExabyteResponse>();
+}
+
 // /gzip-body?<body>
 // Returns a response with a gzipped body of "<body>". Attempts to allocate
 // enough memory to contain the body, but DCHECKs if that fails.
@@ -745,6 +782,8 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
       PREFIXED_HANDLER("/hung", &HandleHungResponse));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/hung-after-headers", &HandleHungAfterHeadersResponse));
+  server->RegisterDefaultHandler(
+      PREFIXED_HANDLER("/exabyte_response", &HandleExabyteResponse));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/gzip-body", &HandleGzipBody));
   server->RegisterDefaultHandler(PREFIXED_HANDLER("/self.pac", &HandleSelfPac));

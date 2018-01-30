@@ -24,6 +24,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -42,36 +43,8 @@ const char kEchoHeaderPath[] = "/echo_header";
 const char kEchoAllHeadersPath[] = "/echo_all_headers";
 const char kEchoMethodPath[] = "/echo_method";
 const char kRedirectToEchoBodyPath[] = "/redirect_to_echo_body";
-const char kExabyteResponsePath[] = "/exabyte_response";
 
 net::EmbeddedTestServer* g_test_server = nullptr;
-
-// A HttpResponse that is almost never ending (with an Extabyte content-length).
-class ExabyteResponse : public net::test_server::BasicHttpResponse {
- public:
-  ExabyteResponse() {}
-
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
-    // Use 10^18 bytes (exabyte) as the content length so that the client will
-    // be expecting data.
-    send.Run("HTTP/1.1 200 OK\r\nContent-Length:1000000000000000000\r\n\r\n",
-             base::Bind(&ExabyteResponse::SendExabyte, send));
-  }
-
- private:
-  // Keeps sending the word "echo" over and over again. It can go further to
-  // limit the response to exactly an exabyte, but it shouldn't be necessary
-  // for the purpose of testing.
-  static void SendExabyte(const net::test_server::SendBytesCallback& send) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(send, "echo",
-                              base::Bind(&ExabyteResponse::SendExabyte, send)));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ExabyteResponse);
-};
 
 std::unique_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
     const net::test_server::HttpRequest& request) {
@@ -121,11 +94,6 @@ std::unique_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
   return std::unique_ptr<net::test_server::BasicHttpResponse>();
 }
 
-std::unique_ptr<net::test_server::HttpResponse> HandleExabyteRequest(
-    const net::test_server::HttpRequest& request) {
-  return base::WrapUnique(new ExabyteResponse);
-}
-
 }  // namespace
 
 jboolean JNI_NativeTestServer_StartNativeTestServer(
@@ -144,15 +112,15 @@ jboolean JNI_NativeTestServer_StartNativeTestServer(
   g_test_server = new net::EmbeddedTestServer();
   g_test_server->RegisterRequestHandler(
       base::Bind(&NativeTestServerRequestHandler));
-  g_test_server->RegisterDefaultHandler(
-      base::Bind(&net::test_server::HandlePrefixedRequest, kExabyteResponsePath,
-                 base::Bind(&HandleExabyteRequest)));
   base::FilePath test_files_root(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
 
   // Add a third handler for paths that NativeTestServerRequestHandler does not
   // handle.
   g_test_server->ServeFilesFromDirectory(test_files_root);
+
+  RegisterDefaultHandlers(g_test_server);
+
   return g_test_server->Start();
 }
 
@@ -230,7 +198,7 @@ ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetExabyteResponseURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL(kExabyteResponsePath);
+  GURL url = g_test_server->GetURL("/exabyte_response");
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
