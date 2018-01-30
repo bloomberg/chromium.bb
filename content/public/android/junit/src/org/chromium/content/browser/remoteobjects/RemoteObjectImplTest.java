@@ -273,6 +273,23 @@ public final class RemoteObjectImplTest {
         verify(auditor, never()).onObjectGetClassInvocationAttempt();
     }
 
+    @Test
+    public void testInvocationTargetException() {
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public void exceptionThrowingMethod() throws Exception {
+                throw new Exception("This exception is expected during test. Do not be alarmed.");
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod(
+                "exceptionThrowingMethod", new RemoteInvocationArgument[] {}, response);
+
+        verify(response).call(resultHasError(RemoteInvocationError.EXCEPTION_THROWN));
+    }
+
     private RemoteInvocationResult resultHasError(final int error) {
         return ArgumentMatchers.argThat(result -> result.error == error);
     }
