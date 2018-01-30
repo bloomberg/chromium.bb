@@ -364,12 +364,15 @@ TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
   auto* delegate2 = new CustomFrameTestWidgetDelegate();
   auto widget2 = create_widget(delegate2);
 
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
   // Verify that when one window is snapped, the header is drawn for the snapped
   // window, but not drawn for the window still in overview.
   Shell::Get()->window_selector_controller()->ToggleOverview();
   Shell::Get()->split_view_controller()->SnapWindow(widget1->GetNativeWindow(),
                                                     SplitViewController::LEFT);
   EXPECT_TRUE(delegate1->header_view()->should_paint());
+  EXPECT_EQ(0, delegate1->GetCustomFrameViewTopBorderHeight());
   EXPECT_FALSE(delegate2->header_view()->should_paint());
 
   // Verify that when both windows are snapped, the header is drawn for both.
@@ -377,6 +380,8 @@ TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
                                                     SplitViewController::RIGHT);
   EXPECT_TRUE(delegate1->header_view()->should_paint());
   EXPECT_TRUE(delegate2->header_view()->should_paint());
+  EXPECT_EQ(0, delegate1->GetCustomFrameViewTopBorderHeight());
+  EXPECT_EQ(0, delegate2->GetCustomFrameViewTopBorderHeight());
 
   // Toggle overview mode so we return back to left snapped mode. Verify that
   // the header is again drawn for the snapped window, but not for the unsnapped
@@ -385,6 +390,7 @@ TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
   ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
             Shell::Get()->split_view_controller()->state());
   EXPECT_TRUE(delegate1->header_view()->should_paint());
+  EXPECT_EQ(0, delegate1->GetCustomFrameViewTopBorderHeight());
   EXPECT_FALSE(delegate2->header_view()->should_paint());
 
   Shell::Get()->split_view_controller()->EndSplitView();

@@ -37,6 +37,10 @@ namespace gfx {
 class Vector3dF;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace ash {
 
 class ScopedDisableInternalMouseAndKeyboard;
@@ -96,8 +100,10 @@ class ASH_EXPORT TabletModeController
   void RemoveObserver(TabletModeObserver* observer);
 
   // Checks if we should auto hide title bars in tablet mode. Returns true if
-  // the feature is enabled and we are in tablet mode.
-  bool ShouldAutoHideTitlebars() const;
+  // the feature is enabled and we are in tablet mode. If |widget| is not null
+  // this also checks if the window associated with |widget| is in an auto hide
+  // state.
+  bool ShouldAutoHideTitlebars(views::Widget* widget);
 
   bool auto_hide_title_bars() const { return auto_hide_title_bars_; }
 

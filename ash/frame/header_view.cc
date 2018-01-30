@@ -52,8 +52,8 @@ void HeaderView::ResetWindowControls() {
 int HeaderView::GetPreferredOnScreenHeight() {
   const bool should_hide_titlebar_in_tablet_mode =
       Shell::Get()->tablet_mode_controller() &&
-      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars() &&
-      target_widget_->IsMaximized();
+      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
+          target_widget_);
 
   if (is_immersive_delegate_ &&
       (target_widget_->IsFullscreen() || should_hide_titlebar_in_tablet_mode)) {
@@ -162,8 +162,10 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
 void HeaderView::OnTabletModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
-  if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars())
+  if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
+          nullptr)) {
     target_widget_->non_client_view()->Layout();
+  }
 }
 
 void HeaderView::OnTabletModeEnded() {
