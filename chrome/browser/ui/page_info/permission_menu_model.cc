@@ -56,6 +56,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
       break;
     case CONTENT_SETTING_NUM_SETTINGS:
       NOTREACHED();
+      break;
     default:
       break;
   }
