@@ -206,6 +206,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
       break;
     case Resource::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
     case Resource::kSVGDocument:
       if (!security_origin->CanRequest(url)) {
         PrintAccessDeniedMessage(url);
