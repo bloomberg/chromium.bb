@@ -121,7 +121,6 @@ class CxxDependencyTest(unittest.TestCase):
     disallow_list = [
         'GURL',
         'base::Callback<void()>',
-        'base::OnceCallback<void()>',
         'content::RenderFrame',
         'gfx::Point',
         'gfx::Rect',
