@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 
@@ -51,8 +50,10 @@ DiceAction GetDiceActionFromHeader(const std::string& value) {
 
 }  // namespace
 
-DiceHeaderHelper::DiceHeaderHelper(bool signed_in_with_auth_error)
-    : signed_in_with_auth_error_(signed_in_with_auth_error) {}
+DiceHeaderHelper::DiceHeaderHelper(bool signed_in_with_auth_error,
+                                   AccountConsistencyMethod account_consistency)
+    : signed_in_with_auth_error_(signed_in_with_auth_error),
+      account_consistency_(account_consistency) {}
 
 // static
 DiceResponseParams DiceHeaderHelper::BuildDiceSigninResponseParams(
@@ -181,14 +182,15 @@ DiceResponseParams DiceHeaderHelper::BuildDiceSignoutResponseParams(
 }
 
 bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
-  if (!IsDiceFixAuthErrorsEnabled())
+  if (account_consistency_ == AccountConsistencyMethod::kDisabled ||
+      account_consistency_ == AccountConsistencyMethod::kMirror) {
     return false;
+  }
 
   // With kDiceFixAuthError, only set the request header if the user is signed
   // in and has an authentication error.
   if (!signed_in_with_auth_error_ &&
-      (GetAccountConsistencyMethod() ==
-       AccountConsistencyMethod::kDiceFixAuthErrors)) {
+      (account_consistency_ == AccountConsistencyMethod::kDiceFixAuthErrors)) {
     return false;
   }
 
@@ -196,13 +198,12 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
 }
 
 std::string DiceHeaderHelper::BuildRequestHeader(
-    const std::string& sync_account_id,
-    SignoutMode signout_mode) {
+    const std::string& sync_account_id) {
   // When fixing auth errors, only add the header when Sync is actually in error
   // state.
-  DCHECK(signed_in_with_auth_error_ ||
-         (GetAccountConsistencyMethod() !=
-          AccountConsistencyMethod::kDiceFixAuthErrors));
+  DCHECK(
+      signed_in_with_auth_error_ ||
+      (account_consistency_ != AccountConsistencyMethod::kDiceFixAuthErrors));
   DCHECK(!(sync_account_id.empty() && signed_in_with_auth_error_));
 
   std::vector<std::string> parts;
@@ -213,23 +214,17 @@ std::string DiceHeaderHelper::BuildRequestHeader(
     parts.push_back("sync_account_id=" + sync_account_id);
 
   // Restrict Signin to Sync account only when fixing auth errors.
-  std::string signin_mode = (GetAccountConsistencyMethod() ==
-                             AccountConsistencyMethod::kDiceFixAuthErrors)
-                                ? kRequestSigninSyncAccount
-                                : kRequestSigninAll;
+  std::string signin_mode =
+      (account_consistency_ == AccountConsistencyMethod::kDiceFixAuthErrors)
+          ? kRequestSigninSyncAccount
+          : kRequestSigninAll;
   parts.push_back("signin_mode=" + signin_mode);
 
   // Show the signout confirmation only when Dice is fully enabled.
-  const char* signout_mode_value = nullptr;
-  switch (signout_mode) {
-    case SignoutMode::kNoSignoutConfirmation:
-      signout_mode_value = kRequestSignoutNoConfirmation;
-      break;
-    case SignoutMode::kShowSignoutConfirmation:
-      signout_mode_value = kRequestSignoutShowConfirmation;
-      break;
-  }
-  DCHECK(signout_mode_value);
+  const char* signout_mode_value =
+      (account_consistency_ == AccountConsistencyMethod::kDice)
+          ? kRequestSignoutShowConfirmation
+          : kRequestSignoutNoConfirmation;
   parts.push_back(base::StringPrintf("signout_mode=%s", signout_mode_value));
 
   return base::JoinString(parts, ",");

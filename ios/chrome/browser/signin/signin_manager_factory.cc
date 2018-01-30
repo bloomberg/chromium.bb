@@ -11,6 +11,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "ios/chrome/browser/application_context.h"
@@ -93,7 +94,8 @@ std::unique_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
       ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
           chrome_browser_state),
       ios::SigninErrorControllerFactory::GetForBrowserState(
-          chrome_browser_state)));
+          chrome_browser_state),
+      signin::AccountConsistencyMethod::kMirror));
   service->Initialize(GetApplicationContext()->GetLocalState());
   for (auto& observer : observer_list_)
     observer.SigninManagerCreated(service.get());

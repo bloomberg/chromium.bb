@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -121,7 +122,8 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
       client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       AccountTrackerServiceFactory::GetForProfile(profile),
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
-      SigninErrorControllerFactory::GetForProfile(profile));
+      SigninErrorControllerFactory::GetForProfile(profile),
+      AccountConsistencyModeManager::GetMethodForProfile(profile));
   AccountFetcherServiceFactory::GetForProfile(profile);
 #endif
   service->Initialize(g_browser_process->local_state());

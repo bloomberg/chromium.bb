@@ -205,7 +205,9 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders(
                                      variations::SignedIn::kNo, &headers);
 #if defined(OS_CHROMEOS)
   signin::ChromeConnectedHeaderHelper chrome_connected_header_helper(
-      account_consistency_mirror_required_);
+      account_consistency_mirror_required_
+          ? signin::AccountConsistencyMethod::kMirror
+          : signin::AccountConsistencyMethod::kDisabled);
   int profile_mode = signin::PROFILE_MODE_DEFAULT;
   if (account_consistency_mirror_required_) {
     // For the child account case (where currently

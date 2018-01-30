@@ -92,6 +92,43 @@ TEST(AccountConsistencyModeManagerTest, NewProfile) {
   ASSERT_TRUE(profile->IsNewProfile());
   EXPECT_TRUE(signin::IsDiceEnabledForProfile(profile->GetPrefs()));
 }
+
+TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
+  signin::ScopedAccountConsistencyDice scoped_dice;
+  content::TestBrowserThreadBundle test_thread_bundle;
+
+  {
+    // Regular profile.
+    TestingProfile profile;
+    EXPECT_TRUE(
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(&profile));
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
+              AccountConsistencyModeManager::GetMethodForProfile(&profile));
+
+    // Incognito profile.
+    Profile* incognito_profile = profile.GetOffTheRecordProfile();
+    EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
+        incognito_profile));
+    EXPECT_FALSE(
+        AccountConsistencyModeManager::GetForProfile(incognito_profile));
+    EXPECT_EQ(
+        signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+        AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
+  }
+
+  {
+    // Guest profile.
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetGuestSession();
+    std::unique_ptr<Profile> profile = profile_builder.Build();
+    ASSERT_TRUE(profile->IsGuestSession());
+    EXPECT_FALSE(
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
+    EXPECT_EQ(
+        signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+        AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+  }
+}
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #if defined(OS_CHROMEOS)
@@ -102,6 +139,8 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForNonUnicorn) {
   TestingProfile profile;
   EXPECT_FALSE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+  EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
+            AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 
 TEST(AccountConsistencyModeManagerTest, MirrorEnabledForUnicorn) {
@@ -112,6 +151,8 @@ TEST(AccountConsistencyModeManagerTest, MirrorEnabledForUnicorn) {
   profile.SetSupervisedUserId(supervised_users::kChildAccountSUID);
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+  EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
+            AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 #endif
 
@@ -124,10 +165,14 @@ TEST(AccountConsistencyModeManagerTest, MirrorEnabled) {
   TestingProfile profile;
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+  EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
+            AccountConsistencyModeManager::GetMethodForProfile(&profile));
 
   // Test that Mirror is enabled for child accounts.
   profile.SetSupervisedUserId(supervised_users::kChildAccountSUID);
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+  EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
+            AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 #endif

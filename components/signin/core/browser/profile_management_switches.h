@@ -65,8 +65,16 @@ enum class AccountConsistencyMethod : int {
   kDice
 };
 
+// Returns true if the |a| comes after |b| in the AccountConsistencyMethod enum.
+// Should not be used for Mirror.
+bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
+                              AccountConsistencyMethod b);
+
 ////////////////////////////////////////////////////////////////////////////////
 // AccountConsistencyMethod related functions:
+
+// WARNING: DEPRECATED. These methods are global, but account consistency is per
+// profile.
 
 // Returns the account consistency method.
 AccountConsistencyMethod GetAccountConsistencyMethod();
