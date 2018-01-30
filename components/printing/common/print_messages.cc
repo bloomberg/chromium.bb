@@ -95,7 +95,8 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
       header_template(),
       footer_template(),
       should_print_backgrounds(false),
-      printed_doc_type(printing::SkiaDocumentType::PDF) {}
+      printed_doc_type(printing::SkiaDocumentType::PDF),
+      prefer_css_page_size(false) {}
 
 PrintMsg_Print_Params::PrintMsg_Print_Params(
     const PrintMsg_Print_Params& other) = default;
@@ -126,6 +127,7 @@ void PrintMsg_Print_Params::Reset() {
   footer_template = base::string16();
   should_print_backgrounds = false;
   printed_doc_type = printing::SkiaDocumentType::PDF;
+  prefer_css_page_size = false;
 }
 
 PrintMsg_PrintPages_Params::PrintMsg_PrintPages_Params()

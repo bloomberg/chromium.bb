@@ -487,6 +487,7 @@ void HeadlessShell::PrintToPDF() {
       page::PrintToPDFParams::Builder()
           .SetDisplayHeaderFooter(true)
           .SetPrintBackground(true)
+          .SetPreferCSSPageSize(true)
           .Build(),
       base::Bind(&HeadlessShell::OnPDFCreated, weak_factory_.GetWeakPtr()));
 }

@@ -124,6 +124,7 @@ class PageHandler : public DevToolsDomainHandler,
                   Maybe<bool> ignore_invalid_page_ranges,
                   Maybe<String> header_template,
                   Maybe<String> footer_template,
+                  Maybe<bool> prefer_css_page_size,
                   std::unique_ptr<PrintToPDFCallback> callback) override;
   Response StartScreencast(Maybe<std::string> format,
                            Maybe<int> quality,

@@ -13,6 +13,18 @@
 
 namespace headless {
 
+TEST(ParsePrintSettingsTest, PreferCSSPageSize) {
+  HeadlessPrintSettings settings;
+  EXPECT_FALSE(settings.prefer_css_page_size);
+
+  auto params = std::make_unique<base::DictionaryValue>();
+  params->SetBoolean("preferCSSPageSize", true);
+  std::unique_ptr<base::DictionaryValue> response =
+      ParsePrintSettings(0, params.get(), &settings);
+  EXPECT_TRUE(settings.prefer_css_page_size);
+  EXPECT_EQ(nullptr, response);
+}
+
 TEST(ParsePrintSettingsTest, Landscape) {
   HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.landscape);
