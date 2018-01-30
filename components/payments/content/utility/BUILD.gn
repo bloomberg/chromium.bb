@@ -42,6 +42,7 @@ fuzzer_test("payment_method_manifest_fuzzer") {
   deps = [
     ":utility",
     "//base",
+    "//base:i18n",
     "//url",
   ]
   dict = "payment_manifest_json.dict"
