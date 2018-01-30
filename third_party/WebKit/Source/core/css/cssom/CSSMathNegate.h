@@ -28,9 +28,6 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   String getOperator() const final { return "negate"; }
 
   void value(CSSNumberish& value) { value.SetCSSNumericValue(value_); }
-  void setValue(const CSSNumberish& value) {
-    value_ = CSSNumericValue::FromNumberish(value);
-  }
 
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kNegateType; }

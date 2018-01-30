@@ -646,7 +646,6 @@ interface CSSMathInvert : CSSMathValue
     attribute @@toStringTag
     getter value
     method constructor
-    setter value
 interface CSSMathMax : CSSMathValue
     attribute @@toStringTag
     getter values
@@ -659,7 +658,6 @@ interface CSSMathNegate : CSSMathValue
     attribute @@toStringTag
     getter value
     method constructor
-    setter value
 interface CSSMathProduct : CSSMathValue
     attribute @@toStringTag
     getter values
