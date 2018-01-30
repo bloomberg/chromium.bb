@@ -49,7 +49,7 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
   return ContentSecurityPolicy(
       ContentSecurityPolicyHeader(policy.header.Utf8(), policy.disposition,
                                   policy.source),
-      directives, report_endpoints);
+      directives, report_endpoints, policy.use_reporting_api);
 }
 
 blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
@@ -67,6 +67,7 @@ blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
     violation.report_endpoints[i] =
         blink::WebString::FromASCII(violation_params.report_endpoints[i]);
   }
+  violation.use_reporting_api = violation_params.use_reporting_api;
   violation.header = blink::WebString::FromASCII(violation_params.header);
   violation.disposition = violation_params.disposition;
   violation.after_redirect = violation_params.after_redirect;

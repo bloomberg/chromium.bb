@@ -1850,8 +1850,6 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr) {
 
   // Don't allow any report endpoints in "csp" attributes.
   for (auto& directiveList : policy->policies_) {
-    // TODO(andypaicu): when `report-to` is implemented, make sure this still
-    // works.
     if (directiveList->ReportEndpoints().size() != 0)
       return false;
   }

@@ -113,6 +113,7 @@ CSPViolationParams::CSPViolationParams(
     const std::string& console_message,
     const GURL& blocked_url,
     const std::vector<std::string>& report_endpoints,
+    bool use_reporting_api,
     const std::string& header,
     const blink::WebContentSecurityPolicyType& disposition,
     bool after_redirect,
@@ -122,6 +123,7 @@ CSPViolationParams::CSPViolationParams(
       console_message(console_message),
       blocked_url(blocked_url),
       report_endpoints(report_endpoints),
+      use_reporting_api(use_reporting_api),
       header(header),
       disposition(disposition),
       after_redirect(after_redirect),
@@ -129,7 +131,6 @@ CSPViolationParams::CSPViolationParams(
 
 CSPViolationParams::CSPViolationParams(const CSPViolationParams& other) =
     default;
-
 CSPViolationParams::~CSPViolationParams() {}
 
 }  // namespace content

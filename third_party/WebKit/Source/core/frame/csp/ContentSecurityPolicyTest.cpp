@@ -1335,7 +1335,12 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
   EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
       "report-uri relative-path/reporting;"
       "base-uri http://example.com 'self'"));
-  // TODO(andypaicu): when `report-to` is implemented, add tests here.
+
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 'none'; report-to http://example.com/reporting"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "report-to relative-path/reporting;"
+      "base-uri http://example.com 'self'"));
 }
 
 }  // namespace blink

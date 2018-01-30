@@ -26,13 +26,15 @@ struct CONTENT_EXPORT ContentSecurityPolicy {
   ContentSecurityPolicy();
   ContentSecurityPolicy(const ContentSecurityPolicyHeader& header,
                         const std::vector<CSPDirective>& directives,
-                        const std::vector<std::string>& report_endpoints);
+                        const std::vector<std::string>& report_endpoints,
+                        bool use_reporting_api);
   ContentSecurityPolicy(const ContentSecurityPolicy&);
   ~ContentSecurityPolicy();
 
   ContentSecurityPolicyHeader header;
   std::vector<CSPDirective> directives;
   std::vector<std::string> report_endpoints;
+  bool use_reporting_api;
 
   std::string ToString() const;
 
