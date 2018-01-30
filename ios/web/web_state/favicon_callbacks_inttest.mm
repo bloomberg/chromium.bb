@@ -161,6 +161,24 @@ TEST_F(FaviconCallbackTest, NoFavicon) {
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
+// Tests page without favicon link but with a query and a ref in the URL.
+TEST_F(FaviconCallbackTest, NoFaviconWithQuery) {
+  ASSERT_TRUE(observer()->favicon_url_candidates().empty());
+  LoadHtml(@"<html></html>",
+           GURL("https://chromium.test/test/test.html?q1#h1"));
+
+  WaitForCondition(^{
+    return observer()->favicon_url_updated();
+  });
+
+  const std::vector<FaviconURL>& favicons =
+      observer()->favicon_url_candidates();
+  ASSERT_EQ(1U, favicons.size());
+  EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
+  ASSERT_TRUE(favicons[0].icon_sizes.empty());
+};
+
 // Tests page with multiple favicon links.
 TEST_F(FaviconCallbackTest, MultipleFavicons) {
   ASSERT_TRUE(observer()->favicon_url_candidates().empty());
