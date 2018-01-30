@@ -91,7 +91,6 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "public/web/WebDocumentLoader.h"
 #include "public/web/WebHistoryCommitType.h"
 
 namespace blink {
@@ -1040,9 +1039,6 @@ void DocumentLoader::InstallNewDocument(
   if (global_object_reuse_policy != WebGlobalObjectReusePolicy::kUseExisting)
     frame_->SetDOMWindow(LocalDOMWindow::Create(*frame_));
 
-  bool user_gesture_bit_set = frame_->HasBeenActivated() ||
-                              frame_->HasReceivedUserGestureBeforeNavigation();
-
   if (reason == InstallNewDocumentReason::kNavigation)
     WillCommitNavigation();
 
@@ -1055,32 +1051,18 @@ void DocumentLoader::InstallNewDocument(
           .WithNewRegistrationContext(),
       false);
 
-  // Persist the user gesture state between frames.
-  bool user_gesture_before_value = false;
-  if (user_gesture_bit_set) {
-    user_gesture_before_value = WebDocumentLoader::ShouldPersistUserActivation(
-        WebSecurityOrigin(previous_security_origin),
-        WebSecurityOrigin(document->GetSecurityOrigin()));
+  // Clear the user activation state.
+  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
+  if (frame_->IsMainFrame())
+    frame_->ClearActivation();
 
-    // Clear the user gesture bit that is not persisted.
-    // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
-    if (frame_->IsMainFrame())
-      frame_->ClearActivation();
-  }
-
-  // If the load request was user activated, pretend that there was a gesture
-  // to carry over.
-  if (user_activated_)
-    user_gesture_before_value = true;
-
-  // If the user gesture before navigation bit has changed then update it on the
-  // frame.
-  if (frame_->HasReceivedUserGestureBeforeNavigation() !=
-      user_gesture_before_value) {
-    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
-        user_gesture_before_value);
+  // The DocumentLoader was flagged as activated if it needs to notify the frame
+  // that it was activated before navigation. Update the frame state based on
+  // the new value.
+  if (frame_->HasReceivedUserGestureBeforeNavigation() != user_activated_) {
+    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(user_activated_);
     GetLocalFrameClient().SetHasReceivedUserGestureBeforeNavigation(
-        user_gesture_before_value);
+        user_activated_);
   }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {

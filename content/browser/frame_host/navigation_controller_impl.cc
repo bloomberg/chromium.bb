@@ -780,13 +780,23 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   entry->set_transferred_global_request_id(
       params.transferred_global_request_id);
 
+// Always propagate `has_user_gesture` on Android but only when the request
+// was originated by the renderer on other platforms. This is merely for
+// backward compatibility as browser process user gestures create confusion
+// in many tests.
+#if defined(OS_ANDROID)
+  entry->set_has_user_gesture(params.has_user_gesture);
+#else
+  if (params.is_renderer_initiated)
+    entry->set_has_user_gesture(params.has_user_gesture);
+#endif
+
 #if defined(OS_ANDROID)
   if (params.intent_received_timestamp > 0) {
     entry->set_intent_received_timestamp(
         base::TimeTicks() +
         base::TimeDelta::FromMilliseconds(params.intent_received_timestamp));
   }
-  entry->set_has_user_gesture(params.has_user_gesture);
 #endif
 
   switch (params.load_type) {

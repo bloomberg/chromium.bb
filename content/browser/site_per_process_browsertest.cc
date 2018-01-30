@@ -497,6 +497,21 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
 }
 #endif  // defined (OS_ANDROID)
 
+void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
+  WaitForLoadStop(shell->web_contents());
+  TestNavigationObserver same_tab_observer(shell->web_contents(), 1);
+
+  OpenURLParams params(
+      url,
+      content::Referrer(shell->web_contents()->GetLastCommittedURL(),
+                        blink::kWebReferrerPolicyAlways),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
+      true /* is_renderer_initiated */);
+  shell->OpenURLFromTab(shell->web_contents(), params);
+
+  same_tab_observer.Wait();
+}
+
 }  // namespace
 
 //
@@ -3262,7 +3277,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
       "test.example.com", "/media/autoplay/autoplay-disabled.html"));
 
   // Load a page with an iframe that has autoplay.
-  NavigateToURLBlockUntilNavigationsComplete(shell(), main_url, 1);
+  OpenURLBlockUntilNavigationComplete(shell(), main_url);
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Navigate the subframes to cross-origin pages.
@@ -3276,7 +3291,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
   EXPECT_TRUE(AutoplayAllowed(root->child_at(0)->child_at(0), false));
 
   // Navigate to a new page on the same origin.
-  NavigateToURLBlockUntilNavigationsComplete(shell(), secondary_url, 1);
+  OpenURLBlockUntilNavigationComplete(shell(), secondary_url);
   root = web_contents()->GetFrameTree()->root();
 
   // Navigate the subframes to cross-origin pages.
@@ -3290,7 +3305,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
   EXPECT_TRUE(AutoplayAllowed(root->child_at(0)->child_at(0), false));
 
   // Navigate to a page with autoplay disabled.
-  NavigateToURLBlockUntilNavigationsComplete(shell(), disabled_url, 1);
+  OpenURLBlockUntilNavigationComplete(shell(), disabled_url);
   NavigateFrameAndWait(root->child_at(0), foo_url);
 
   // Test that autoplay is no longer allowed.
@@ -3298,7 +3313,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
   EXPECT_FALSE(AutoplayAllowed(root->child_at(0), false));
 
   // Navigate to another origin and make sure autoplay is disabled.
-  NavigateToURLBlockUntilNavigationsComplete(shell(), foo_url, 1);
+  OpenURLBlockUntilNavigationComplete(shell(), foo_url);
   NavigateFrameAndWait(root->child_at(0), bar_url);
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
