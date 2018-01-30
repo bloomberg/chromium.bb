@@ -2807,6 +2807,21 @@
             ]
         }
     ],
+    "ReaderForAccessibility": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReaderForAccessibility"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReaderModeUI": [
         {
             "platforms": [
