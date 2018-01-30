@@ -15,7 +15,7 @@
 namespace blink {
 
 // A complete set of paint properties including those that are inherited from
-// other objects.  RefPtrs are used to guard against use-after-free bugs.
+// other objects.
 class PLATFORM_EXPORT PropertyTreeState {
   USING_FAST_MALLOC(PropertyTreeState);
 
@@ -27,22 +27,16 @@ class PLATFORM_EXPORT PropertyTreeState {
 
   bool HasDirectCompositingReasons() const;
 
-  const TransformPaintPropertyNode* Transform() const {
-    return transform_.get();
-  }
-  void SetTransform(scoped_refptr<const TransformPaintPropertyNode> node) {
-    transform_ = std::move(node);
+  const TransformPaintPropertyNode* Transform() const { return transform_; }
+  void SetTransform(const TransformPaintPropertyNode* node) {
+    transform_ = node;
   }
 
-  const ClipPaintPropertyNode* Clip() const { return clip_.get(); }
-  void SetClip(scoped_refptr<const ClipPaintPropertyNode> node) {
-    clip_ = std::move(node);
-  }
+  const ClipPaintPropertyNode* Clip() const { return clip_; }
+  void SetClip(const ClipPaintPropertyNode* node) { clip_ = node; }
 
-  const EffectPaintPropertyNode* Effect() const { return effect_.get(); }
-  void SetEffect(scoped_refptr<const EffectPaintPropertyNode> node) {
-    effect_ = std::move(node);
-  }
+  const EffectPaintPropertyNode* Effect() const { return effect_; }
+  void SetEffect(const EffectPaintPropertyNode* node) { effect_ = node; }
 
   static const PropertyTreeState& Root();
 
@@ -64,9 +58,9 @@ class PLATFORM_EXPORT PropertyTreeState {
 #endif
 
  private:
-  scoped_refptr<const TransformPaintPropertyNode> transform_;
-  scoped_refptr<const ClipPaintPropertyNode> clip_;
-  scoped_refptr<const EffectPaintPropertyNode> effect_;
+  const TransformPaintPropertyNode* transform_;
+  const ClipPaintPropertyNode* clip_;
+  const EffectPaintPropertyNode* effect_;
 };
 
 inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {

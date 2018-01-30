@@ -57,7 +57,8 @@ FloatClipRect CompositedLayerRasterInvalidator::ChunkToLayerClip(
     clip_rect.ClearIsTight();
   } else {
     clip_rect = GeometryMapper::LocalToAncestorClipRect(
-        chunk.properties.property_tree_state, layer_state_);
+        chunk.properties.property_tree_state.GetPropertyTreeState(),
+        layer_state_);
     if (clip_rect.IsTight())
       clip_rect.MoveBy(FloatPoint(-layer_bounds_.x(), -layer_bounds_.y()));
   }

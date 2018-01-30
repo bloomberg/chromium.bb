@@ -265,7 +265,8 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
       rect_known_to_be_opaque(
           first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
       backface_hidden(first_paint_chunk.properties.backface_hidden),
-      property_tree_state(first_paint_chunk.properties.property_tree_state),
+      property_tree_state(first_paint_chunk.properties.property_tree_state
+                              .GetPropertyTreeState()),
       requires_own_layer(chunk_requires_own_layer) {
   paint_chunks.push_back(&first_paint_chunk);
 }
