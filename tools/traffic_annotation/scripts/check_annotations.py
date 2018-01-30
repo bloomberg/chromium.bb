@@ -121,14 +121,10 @@ class NetworkTrafficAnnotationChecker():
                                stderr=subprocess.PIPE)
     stdout_text, stderr_text = command.communicate()
 
-    if stderr_text:
-      print("Could not run network traffic annotation presubmit check. "
-            "Returned error from traffic_annotation_auditor is: %s"
-            % stderr_text)
-      print("Exit code is: %i" % command.returncode)
-      return 1
     if stdout_text:
       print(stdout_text)
+    if stderr_text:
+      print("[Run Time Errors]:\n%s" % stderr_text)
     return command.returncode
 
 
