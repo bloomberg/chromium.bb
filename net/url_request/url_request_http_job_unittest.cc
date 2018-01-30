@@ -40,6 +40,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
+#include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1515,6 +1516,8 @@ TEST_F(URLRequestHttpJobTest, AndroidCleartextPermittedTest) {
 }
 #endif
 
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+
 // This base class just serves to set up some things before the TestURLRequest
 // constructor is called.
 class URLRequestHttpJobWebSocketTestBase : public ::testing::Test {
@@ -1566,17 +1569,15 @@ class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
                WebSocketHandshakeStreamBase*());
 };
 
-#if BUILDFLAG(ENABLE_WEBSOCKETS)
-
-class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
+class AsyncFakeWebSocketHandshakeStream
+    : public FakeWebSocketHandshakeStreamBase {
  public:
-  FakeWebSocketHandshakeStream() : initialize_stream_was_called_(false) {}
+  AsyncFakeWebSocketHandshakeStream() : initialize_stream_was_called_(false) {}
 
   bool initialize_stream_was_called() const {
     return initialize_stream_was_called_;
   }
 
-  // Fake implementation of HttpStreamBase methods.
   int InitializeStream(const HttpRequestInfo* request_info,
                        bool can_send_early,
                        RequestPriority priority,
@@ -1596,58 +1597,7 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return ERR_IO_PENDING;
   }
 
-  int ReadResponseBody(IOBuffer* buf,
-                       int buf_len,
-                       const CompletionCallback& callback) override {
-    return ERR_IO_PENDING;
-  }
-
   void Close(bool not_reusable) override {}
-
-  bool IsResponseBodyComplete() const override { return false; }
-
-  bool IsConnectionReused() const override { return false; }
-  void SetConnectionReused() override {}
-
-  bool CanReuseConnection() const override { return false; }
-
-  int64_t GetTotalReceivedBytes() const override { return 0; }
-  int64_t GetTotalSentBytes() const override { return 0; }
-
-  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
-    return false;
-  }
-
-  bool GetAlternativeService(
-      AlternativeService* alternative_service) const override {
-    return false;
-  }
-
-  void GetSSLInfo(SSLInfo* ssl_info) override {}
-
-  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
-
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
-
-  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                 TokenBindingType tb_type,
-                                 std::vector<uint8_t>* out) override {
-    ADD_FAILURE();
-    return ERR_NOT_IMPLEMENTED;
-  }
-
-  void Drain(HttpNetworkSession* session) override {}
-
-  void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
-
-  void SetPriority(RequestPriority priority) override {}
-
-  HttpStream* RenewStreamForAuth() override { return nullptr; }
-
-  // Fake implementation of WebSocketHandshakeStreamBase method(s)
-  std::unique_ptr<WebSocketStream> Upgrade() override {
-    return std::unique_ptr<WebSocketStream>();
-  }
 
  private:
   bool initialize_stream_was_called_;
@@ -1662,8 +1612,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, RejectedWithoutCreateHelper) {
 TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
   std::unique_ptr<MockCreateHelper> create_helper =
       std::make_unique<::testing::StrictMock<MockCreateHelper>>();
-  FakeWebSocketHandshakeStream* fake_handshake_stream(
-      new FakeWebSocketHandshakeStream);
+  auto* fake_handshake_stream = new AsyncFakeWebSocketHandshakeStream;
   // Ownership of fake_handshake_stream is transferred when CreateBasicStream()
   // is called.
   EXPECT_CALL(*create_helper, CreateBasicStreamMock())
