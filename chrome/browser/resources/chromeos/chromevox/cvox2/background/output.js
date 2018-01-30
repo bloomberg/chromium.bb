@@ -293,7 +293,7 @@ Output.RULES = {
       // author (via posInSet), do we include them in the output.
       enter: `$nameFromNode $role $state $restriction $description
           $if($posInSet, @describe_index($posInSet, $setSize))`,
-      speak: `$state $name= $role
+      speak: `$state $nameOrTextContent= $role
           $if($posInSet, @describe_index($posInSet, $setSize))
           $description $restriction`
     },
@@ -1216,22 +1216,21 @@ Output.prototype = {
           var related = node[tree.firstChild.value];
           this.node_(related, related, Output.EventType.NAVIGATE, buff);
         } else if (token == 'nameOrTextContent') {
-          var finalOutput;
           if (node.name) {
-            finalOutput = node.name;
-          } else {
-            var walker = new AutomationTreeWalker(node, Dir.FORWARD, {
-              visit: AutomationPredicate.leafOrStaticText,
-              leaf: AutomationPredicate.leafOrStaticText
-            });
-            var outputStrings = [];
-            while (walker.next().node &&
-                   walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
-              if (walker.node.name)
-                outputStrings.push(walker.node.name);
-            }
-            finalOutput = outputStrings.join(' ');
+            this.format_(node, '$name', buff);
+            return;
           }
+          var walker = new AutomationTreeWalker(node, Dir.FORWARD, {
+            visit: AutomationPredicate.leafOrStaticText,
+            leaf: AutomationPredicate.leafOrStaticText
+          });
+          var outputStrings = [];
+          while (walker.next().node &&
+                 walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
+            if (walker.node.name)
+              outputStrings.push(walker.node.name);
+          }
+          var finalOutput = outputStrings.join(' ');
           this.append_(buff, finalOutput, options);
         } else if (node[token] !== undefined) {
           options.annotation.push(token);
