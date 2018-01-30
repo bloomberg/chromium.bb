@@ -572,12 +572,12 @@ void ObjectPainterBase::DrawLineForBoxSide(GraphicsContext& graphics_context,
       // https://bugs.webkit.org/show_bug.cgi?id=58608
       if (side == BoxSide::kTop || side == BoxSide::kLeft)
         color = color.Dark();
-    // fall through
+      FALLTHROUGH;
     case EBorderStyle::kOutset:
       if (style == EBorderStyle::kOutset &&
           (side == BoxSide::kBottom || side == BoxSide::kRight))
         color = color.Dark();
-    // fall through
+      FALLTHROUGH;
     case EBorderStyle::kSolid:
       DrawSolidBoxSide(graphics_context, x1, y1, x2, y2, side, color,
                        adjacent_width1, adjacent_width2, antialias);
