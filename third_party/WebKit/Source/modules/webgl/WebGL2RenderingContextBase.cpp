@@ -873,6 +873,7 @@ void WebGL2RenderingContextBase::RenderbufferStorageImpl(
                           "for integer formats, samples > 0");
         return;
       }
+      FALLTHROUGH;
     case GL_R8:
     case GL_RG8:
     case GL_RGB8:
@@ -5521,6 +5522,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
       if (!attachment_object->IsTexture())
         break;
+      FALLTHROUGH;
     case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
     case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
     case GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE:
@@ -5539,6 +5541,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
             "COMPONENT_TYPE can't be queried for DEPTH_STENCIL_ATTACHMENT");
         return ScriptValue::CreateNull(script_state);
       }
+      FALLTHROUGH;
     case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: {
       GLint value = 0;
       ContextGL()->GetFramebufferAttachmentParameteriv(target, attachment,
