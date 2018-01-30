@@ -26,8 +26,6 @@ class FullscreenWebStateObserverTest : public PlatformTest {
         controller_(&model_),
         mediator_(&controller_, &model_),
         observer_(&controller_, &model_, &mediator_) {
-    // Set up model.
-    SetUpFullscreenModelForTesting(&model_, 100.0);
     // Set up a TestNavigationManager.
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
         std::make_unique<web::TestNavigationManager>();
@@ -35,6 +33,8 @@ class FullscreenWebStateObserverTest : public PlatformTest {
     web_state_.SetNavigationManager(std::move(navigation_manager));
     // Begin observing the WebState.
     observer_.SetWebState(&web_state_);
+    // Set up model.
+    SetUpFullscreenModelForTesting(&model_, 100.0);
   }
 
   ~FullscreenWebStateObserverTest() override {

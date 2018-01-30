@@ -32,7 +32,6 @@ class FullscreenWebStateListObserverTest : public PlatformTest {
         mediator_(&controller_, &model_),
         web_state_list_(&web_state_list_delegate_),
         observer_(&controller_, &model_, &web_state_list_, &mediator_) {
-    SetUpFullscreenModelForTesting(&model_, 100.0);
   }
 
   ~FullscreenWebStateListObserverTest() override {
@@ -62,6 +61,7 @@ TEST_F(FullscreenWebStateListObserverTest, ObserveActiveWebState) {
                                   WebStateList::INSERT_ACTIVATE,
                                   WebStateOpener());
   // Simulate a scroll to 0.5 progress.
+  SetUpFullscreenModelForTesting(&model(), 100.0);
   SimulateFullscreenUserScrollForProgress(&model(), 0.5);
   EXPECT_EQ(model().progress(), 0.5);
   // Simulate a navigation.  The model should be reset by the observers.

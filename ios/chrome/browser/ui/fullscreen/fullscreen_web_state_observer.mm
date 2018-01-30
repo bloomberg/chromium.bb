@@ -57,8 +57,11 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
   if (web_state_)
     web_state_->RemoveObserver(this);
   web_state_ = web_state;
-  if (web_state_)
+  if (web_state_) {
     web_state_->AddObserver(this);
+    // The toolbar should be visible whenever the current tab changes.
+    model_->ResetForNavigation();
+  }
   // Update the model according to the new WebState.
   SetIsLoading(web_state_ ? web_state->IsLoading() : false);
   SetDisableFullscreenForSSL(ShouldDisableFullscreenForWebStateSSL(web_state_));
