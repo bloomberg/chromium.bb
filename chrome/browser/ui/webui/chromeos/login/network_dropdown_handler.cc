@@ -29,6 +29,7 @@ const char kJsApiNetworkDropdownHide[] = "networkDropdownHide";
 const char kJsApiNetworkDropdownRefresh[] = "networkDropdownRefresh";
 const char kJsApiLaunchInternetDetailDialog[] = "launchInternetDetailDialog";
 const char kJsApiLaunchAddWiFiNetworkDialog[] = "launchAddWiFiNetworkDialog";
+const char kJsApiShowNetworkConfig[] = "showNetworkConfig";
 const char kJsApiShowNetworkDetails[] = "showNetworkDetails";
 
 }  // namespace
@@ -39,8 +40,7 @@ NetworkDropdownHandler::NetworkDropdownHandler() {
   set_call_js_prefix(kJsScreenPath);
 }
 
-NetworkDropdownHandler::~NetworkDropdownHandler() {
-}
+NetworkDropdownHandler::~NetworkDropdownHandler() {}
 
 void NetworkDropdownHandler::AddObserver(Observer* observer) {
   if (observer && !observers_.HasObserver(observer))
@@ -57,8 +57,7 @@ void NetworkDropdownHandler::DeclareLocalizedValues(
   builder->Add("selectAnotherNetwork", IDS_ANOTHER_NETWORK_SELECTION_SELECT);
 }
 
-void NetworkDropdownHandler::Initialize() {
-}
+void NetworkDropdownHandler::Initialize() {}
 
 void NetworkDropdownHandler::RegisterMessages() {
   AddCallback(kJsApiNetworkItemChosen,
@@ -77,6 +76,8 @@ void NetworkDropdownHandler::RegisterMessages() {
               &NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog);
   AddRawCallback(kJsApiShowNetworkDetails,
                  &NetworkDropdownHandler::HandleShowNetworkDetails);
+  AddRawCallback(kJsApiShowNetworkConfig,
+                 &NetworkDropdownHandler::HandleShowNetworkConfig);
 }
 
 void NetworkDropdownHandler::HandleLaunchInternetDetailDialog() {
@@ -105,6 +106,16 @@ void NetworkDropdownHandler::HandleShowNetworkDetails(
   std::string guid;
   args->GetString(0, &guid);
   InternetDetailDialog::ShowDialog(guid);
+}
+
+void NetworkDropdownHandler::HandleShowNetworkConfig(
+    const base::ListValue* args) {
+  std::string guid;
+  args->GetString(0, &guid);
+  if (chromeos::switches::IsNetworkSettingsConfigEnabled())
+    chromeos::InternetConfigDialog::ShowDialogForNetworkId(guid);
+  else
+    NetworkConfigView::ShowForNetworkId(guid);
 }
 
 void NetworkDropdownHandler::OnConnectToNetworkRequested() {

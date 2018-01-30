@@ -18,8 +18,9 @@ class NetworkState;
 
 class InternetConfigDialog : public SystemWebDialogDelegate {
  public:
-  // Shows a network configuration dialog for |network_state|.
-  static void ShowDialogForNetworkState(const NetworkState* network_state);
+  // Shows a network configuration dialog for |network_id|. Does nothing if
+  // there is no NetworkState matching |network_id|.
+  static void ShowDialogForNetworkId(const std::string& network_id);
   // Shows a network configuration dialog for a new network of |network_type|.
   static void ShowDialogForNetworkType(const std::string& network_type);
 

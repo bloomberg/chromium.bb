@@ -20,8 +20,6 @@ class NetworkingPrivateUIDelegateChromeOS
 
   // NetworkingPrivateDelegate::UIDelegate
   void ShowAccountDetails(const std::string& guid) const override;
-  bool HandleConnectFailed(const std::string& guid,
-                           const std::string error) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateUIDelegateChromeOS);
