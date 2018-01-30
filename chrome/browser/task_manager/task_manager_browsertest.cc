@@ -698,12 +698,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, SentDataObserved) {
       ->GetActiveWebContents()
       ->GetMainFrame()
       ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
-  // TODO(cburn): The assertion below currently assumes that the rate
-  // contribution of the entire 16MB upload arrives in a single refresh cycle.
-  // That's true now because it's only reported when the transaction completes,
-  // but if that changes in the future, this assertion may need to change.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("network use"), ColumnSpecifier::NETWORK_USE, 16000000));
+      MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE, 16000000));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, TotalSentDataObserved) {

@@ -168,6 +168,7 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
     case ColumnSpecifier::NETWORK_USE:
       value = task_manager()->GetNetworkUsage(task_id);
       success = true;
+      break;
     case ColumnSpecifier::TOTAL_NETWORK_USE:
       value = task_manager()->GetCumulativeNetworkUsage(task_id);
       success = true;
