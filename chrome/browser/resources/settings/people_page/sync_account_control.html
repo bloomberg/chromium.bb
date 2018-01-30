@@ -1,0 +1,64 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="profile_info_browser_proxy.html">
+<link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="../route.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-sync-account-control">
+  <template>
+    <style include="settings-shared">
+      setting-box.middle {
+        /* Per spec, middle text is indented 20px in this section. */
+        -webkit-margin-start: 20px;
+      }
+
+      #profile-icon {
+        background: center / cover no-repeat;
+        border-radius: 20px;
+        flex-shrink: 0;
+        height: 40px;
+        width: 40px;
+      }
+
+      .flex {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+    <div class="settings-box first two-line">
+      <template is="dom-if" if="[[syncStatus]]">
+        <div id="profile-icon"
+            style="background-image: [[getIcon_(profileInfo_.iconUrl)]]">
+        </div>
+        <div class="middle two-line no-min-width">
+          <div class="flex text-elide">
+            <span>[[profileInfo_.name]]</span>
+            <div class="secondary" hidden="[[!syncStatus.signedIn]]">
+              [[syncStatus.signedInUsername]]
+            </div>
+          </div>
+        </div>
+        <template is="dom-if" if="[[showSignin_(syncStatus)]]">
+          <paper-button class="primary-button" on-tap="onSigninTap_"
+              disabled="[[syncStatus.setupInProgress]]">
+            $i18n{syncSignin}
+          </paper-button>
+        </template>
+        <template is="dom-if" if="[[syncStatus.signedIn]]">
+          <div class="separator"></div>
+          <paper-button id="disconnectButton" class="secondary-button"
+              on-tap="onDisconnectTap_"
+              disabled="[[syncStatus.setupInProgress]]">
+            $i18n{syncDisconnect}
+          </paper-button>
+        </template>
+      </template>
+    </div>
+  </template>
+  <script src="sync_account_control.js"></script>
+</dom-module>
