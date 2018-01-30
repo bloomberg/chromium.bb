@@ -1765,6 +1765,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
                         OnSetOverlayRoutingToken)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
+                        OnSetHasReceivedUserGesture)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -6281,6 +6283,10 @@ void RenderFrameImpl::OnSetOverlayRoutingToken(
   for (const auto& cb : pending_routing_token_callbacks_)
     cb.Run(overlay_routing_token_.value());
   pending_routing_token_callbacks_.clear();
+}
+
+void RenderFrameImpl::OnSetHasReceivedUserGesture() {
+  frame_->SetHasReceivedUserGesture();
 }
 
 void RenderFrameImpl::RequestOverlayRoutingToken(

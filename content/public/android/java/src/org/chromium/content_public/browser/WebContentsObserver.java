@@ -16,7 +16,7 @@ public abstract class WebContentsObserver {
     // TODO(jdduke): Remove the destroy method and hold observer embedders
     // responsible for explicit observer detachment.
     // Using a weak reference avoids cycles that might prevent GC of WebView's WebContents.
-    private WeakReference<WebContents> mWebContents;
+    protected WeakReference<WebContents> mWebContents;
 
     public WebContentsObserver(WebContents webContents) {
         mWebContents = new WeakReference<WebContents>(webContents);

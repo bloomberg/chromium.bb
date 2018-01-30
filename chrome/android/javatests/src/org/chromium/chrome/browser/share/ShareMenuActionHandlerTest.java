@@ -413,5 +413,8 @@ public class ShareMenuActionHandlerTest {
         public InterfaceProvider getRemoteInterfaces() {
             return null;
         }
+
+        @Override
+        public void setHasReceivedUserGesture() {}
     }
 }
