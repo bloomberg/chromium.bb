@@ -16,7 +16,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
@@ -25,6 +24,7 @@
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -610,7 +610,7 @@ class ServiceWorkerURLLoaderJobTest
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   storage::BlobStorageContext blob_context_;
-  TestURLLoaderClient client_;
+  network::TestURLLoaderClient client_;
   bool was_main_resource_load_failed_called_ = false;
   std::unique_ptr<ServiceWorkerURLLoaderJob> job_;
   network::mojom::URLLoaderPtr loader_;

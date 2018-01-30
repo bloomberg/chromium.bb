@@ -22,7 +22,6 @@
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -36,6 +35,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
@@ -288,7 +288,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
         request.headers = extra_headers;
 
         network::mojom::URLLoaderPtr url_loader;
-        TestURLLoaderClient url_loader_client;
+        network::TestURLLoaderClient url_loader_client;
         scoped_refptr<BlobURLLoaderFactory> factory =
             BlobURLLoaderFactory::Create(
                 base::BindOnce(&BlobURLRequestJobTest::GetStorageContext,
@@ -338,7 +338,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
             MakeRequest(&blob_ptr));
 
         network::mojom::URLLoaderPtr url_loader;
-        TestURLLoaderClient url_loader_client;
+        network::TestURLLoaderClient url_loader_client;
         blob_ptr->CreateLoader(MakeRequest(&url_loader), extra_headers,
                                url_loader_client.CreateInterfacePtr());
         url_loader_client.RunUntilComplete();

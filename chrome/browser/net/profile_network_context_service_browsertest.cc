@@ -28,7 +28,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

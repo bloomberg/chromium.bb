@@ -10,7 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -19,6 +18,7 @@
 #include "services/network/network_service_impl.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -146,7 +146,7 @@ class NetworkServiceTestWithService
 
   void StartLoadingURL(const network::ResourceRequest& request,
                        uint32_t process_id) {
-    client_.reset(new TestURLLoaderClient());
+    client_.reset(new network::TestURLLoaderClient());
     network::mojom::URLLoaderFactoryPtr loader_factory;
     network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                              process_id);
@@ -158,7 +158,7 @@ class NetworkServiceTestWithService
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
-  TestURLLoaderClient* client() { return client_.get(); }
+  network::TestURLLoaderClient* client() { return client_.get(); }
   network::mojom::URLLoader* loader() { return loader_.get(); }
   network::mojom::NetworkService* service() { return network_service_.get(); }
   network::mojom::NetworkContext* context() { return network_context_.get(); }
@@ -181,7 +181,7 @@ class NetworkServiceTestWithService
   }
 
   net::EmbeddedTestServer test_server_;
-  std::unique_ptr<TestURLLoaderClient> client_;
+  std::unique_ptr<network::TestURLLoaderClient> client_;
   network::mojom::NetworkServicePtr network_service_;
   network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderPtr loader_;

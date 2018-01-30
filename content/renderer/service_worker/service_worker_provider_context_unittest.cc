@@ -18,7 +18,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/shared_url_loader_factory.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -29,6 +28,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -290,7 +290,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     request.url = url;
     request.resource_type = static_cast<int>(RESOURCE_TYPE_SUB_RESOURCE);
     network::mojom::URLLoaderPtr loader;
-    TestURLLoaderClient loader_client;
+    network::TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
         request, loader_client.CreateInterfacePtr(),

@@ -57,7 +57,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
@@ -81,6 +80,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
@@ -835,7 +835,7 @@ class ResourceDispatcherHostTest : public testing::Test {
       return;
     }
     network::mojom::URLLoaderPtr loader;
-    TestURLLoaderClient client;
+    network::TestURLLoaderClient client;
 
     MakeTestRequestWithResourceType(
         filter_.get(), 0, 1, url, RESOURCE_TYPE_MAIN_FRAME,
@@ -974,7 +974,7 @@ void ResourceDispatcherHostTest::CompleteStartRequest(
     URLRequestTestDelayedStartJob::CompleteStart(req);
 }
 
-void CheckSuccessfulRequest(TestURLLoaderClient* client,
+void CheckSuccessfulRequest(network::TestURLLoaderClient* client,
                             const std::string& reference_data) {
   if (!reference_data.empty()) {
     client->RunUntilResponseBodyArrived();
@@ -994,7 +994,7 @@ void CheckSuccessfulRequest(TestURLLoaderClient* client,
 // cancel two of them, and make sure that each sent the proper notifications.
 TEST_F(ResourceDispatcherHostTest, Cancel) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
-  TestURLLoaderClient client1, client2, client3, client4;
+  network::TestURLLoaderClient client1, client2, client3, client4;
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1(),
                   mojo::MakeRequest(&loader1), client1.CreateInterfacePtr());
   MakeTestRequest(0, 2, net::URLRequestTestJob::test_url_2(),
@@ -1042,7 +1042,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 
 TEST_F(ResourceDispatcherHostTest, DownloadToNetworkCache) {
   network::mojom::URLLoaderPtr loader1, loader2;
-  TestURLLoaderClient client1, client2;
+  network::TestURLLoaderClient client1, client2;
   // Normal request.
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2(),
                   mojo::MakeRequest(&loader1), client1.CreateInterfacePtr());
@@ -1089,7 +1089,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToNetworkCache) {
 // complete.
 TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_2(),
       RESOURCE_TYPE_PREFETCH,  // detachable type
@@ -1137,7 +1137,7 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
 // TODO(yhirano): Add a corresponding test case with the feature.
 TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
   network::mojom::URLLoaderPtr loader1, loader2;
-  TestURLLoaderClient client1, client2;
+  network::TestURLLoaderClient client1, client2;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kKeepAliveRendererForKeepaliveRequests);
@@ -1193,7 +1193,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
 // resources should continue to load, even when redirected.
 TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PREFETCH,
       net::URLRequestTestJob::test_url_redirect_to_url_2());
@@ -1241,7 +1241,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
 
 TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   bool was_deleted = false;
 
   // Arrange to have requests deferred before starting.
@@ -1269,7 +1269,7 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
 
 TEST_F(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   bool was_deleted = false;
 
   // Arrange to have requests deferred before starting.
@@ -1314,7 +1314,7 @@ TEST_F(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
 // URLRequest will not be started.
 TEST_F(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   TestResourceDispatcherHostDelegate delegate;
   delegate.set_flags(CANCEL_BEFORE_START);
   host_.SetDelegate(&delegate);
@@ -1336,7 +1336,7 @@ TEST_F(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
 
 TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   // Arrange to have requests deferred before processing response headers.
   TestResourceDispatcherHostDelegate delegate;
   delegate.set_flags(DEFER_PROCESSING_RESPONSE);
@@ -1356,7 +1356,7 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
 
 TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   // Arrange to have requests deferred before starting.
   TestResourceDispatcherHostDelegate delegate;
   delegate.set_flags(DEFER_STARTING_REQUEST);
@@ -1393,7 +1393,7 @@ TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
 // Tests that the delegate can cancel a request and provide a error code.
 TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   TestResourceDispatcherHostDelegate delegate;
   delegate.set_flags(CANCEL_BEFORE_START);
   delegate.set_error_code_for_cancellation(net::ERR_ACCESS_DENIED);
@@ -1417,7 +1417,7 @@ TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
 // TODO(yhirano): Add a corresponding test case with the feature.
 TEST_F(ResourceDispatcherHostTest, CancelRequestsForRoute) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
-  TestURLLoaderClient client1, client2, client3, client4;
+  network::TestURLLoaderClient client1, client2, client3, client4;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kKeepAliveRendererForKeepaliveRequests);
@@ -1473,7 +1473,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForRoute) {
 // Tests CancelRequestsForProcess
 TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
-  TestURLLoaderClient client1, client2, client3, client4;
+  network::TestURLLoaderClient client1, client2, client3, client4;
   scoped_refptr<TestFilter> test_filter = MakeTestFilter();
 
   // request 1 goes to the test delegate
@@ -1547,7 +1547,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 // deleted.
 TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5;
-  TestURLLoaderClient client1, client2, client3, client4, client5;
+  network::TestURLLoaderClient client1, client2, client3, client4, client5;
   // Requests all hang once started.  This prevents requests from being
   // destroyed due to completion.
   job_factory_->SetHangAfterStartJobGeneration(true);
@@ -1604,7 +1604,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
 
 TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_4(),
       RESOURCE_TYPE_PREFETCH,  // detachable type
@@ -1651,8 +1651,8 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
 TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5,
       loader6, loader7;
-  TestURLLoaderClient client1, client2, client3, client4, client5, client6,
-      client7;
+  network::TestURLLoaderClient client1, client2, client3, client4, client5,
+      client6, client7;
 
   host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 11));
   host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 12));
@@ -1730,7 +1730,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 // Tests blocking and canceling requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5;
-  TestURLLoaderClient client1, client2, client3, client4, client5;
+  network::TestURLLoaderClient client1, client2, client3, client4, client5;
 
   host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 11));
 
@@ -1780,7 +1780,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
 // Tests that blocked requests are canceled if their associated process dies.
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5;
-  TestURLLoaderClient client1, client2, client3, client4, client5;
+  network::TestURLLoaderClient client1, client2, client3, client4, client5;
   // This second filter is used to emulate a second process.
   scoped_refptr<TestFilter> second_filter = MakeTestFilter();
 
@@ -1832,8 +1832,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5,
       loader6, loader7, loader8;
-  TestURLLoaderClient client1, client2, client3, client4, client5, client6,
-      client7, client8;
+  network::TestURLLoaderClient client1, client2, client3, client4, client5,
+      client6, client7, client8;
   // This second filter is used to emulate a second process.
   scoped_refptr<TestFilter> second_filter = MakeTestFilter();
 
@@ -1933,9 +1933,10 @@ TEST_F(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
 
   auto loaders =
       std::make_unique<network::mojom::URLLoaderPtr[]>(kMaxRequests + 4);
-  auto clients = std::make_unique<TestURLLoaderClient[]>(kMaxRequests + 4);
+  auto clients =
+      std::make_unique<network::TestURLLoaderClient[]>(kMaxRequests + 4);
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
-  TestURLLoaderClient client1, client2, client3, client4;
+  network::TestURLLoaderClient client1, client2, client3, client4;
 
   // This second filter is used to emulate a second process.
   scoped_refptr<TestFilter> second_filter = MakeTestFilter();
@@ -2011,7 +2012,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   scoped_refptr<TestFilter> third_filter = MakeTestFilter();
 
   network::mojom::URLLoaderPtr loaders[kMaxRequests + 3];
-  TestURLLoaderClient clients[kMaxRequests + 3];
+  network::TestURLLoaderClient clients[kMaxRequests + 3];
 
   // Saturate the number of outstanding requests for our process.
   for (size_t i = 0; i < kMaxRequestsPerProcess; ++i) {
@@ -2069,7 +2070,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 // Tests that we sniff the mime type for a simple request.
 TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   std::string raw_headers("HTTP/1.1 200 OK\n\n");
   std::string response_data("<html><title>Test One</title></html>");
   SetResponse(raw_headers, response_data);
@@ -2089,7 +2090,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
 // Tests that we don't sniff the mime type when the server provides one.
 TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   std::string raw_headers("HTTP/1.1 200 OK\n"
                           "Content-type: image/jpeg\n\n");
   std::string response_data("<html><title>Test One</title></html>");
@@ -2110,7 +2111,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
 // Tests that we don't sniff the mime type when there is no message body.
 TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   SetResponse("HTTP/1.1 304 Not Modified\n\n");
 
   HandleScheme("http");
@@ -2127,7 +2128,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
 
 TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   SetResponse("HTTP/1.1 204 No Content\n\n");
 
   HandleScheme("http");
@@ -2144,7 +2145,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
 
 TEST_F(ResourceDispatcherHostTest, MimeSniffEmpty) {
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   SetResponse("HTTP/1.1 200 OK\n\n");
 
   HandleScheme("http");
@@ -2179,7 +2180,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
 TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
   EXPECT_EQ(0, host_.pending_requests());
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   constexpr int render_view_id = 0;
   constexpr int request_id = 1;
 
@@ -2226,7 +2227,7 @@ TEST_F(ResourceDispatcherHostTest, DataSentBeforeDetach) {
   constexpr int render_view_id = 0;
   constexpr int request_id = 1;
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
 
   std::string raw_headers("HTTP\n"
                           "Content-type: image/jpeg\n\n");
@@ -2351,7 +2352,7 @@ TEST_F(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
 TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   // Make a request which downloads to file.
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
@@ -2583,7 +2584,7 @@ TEST_F(ResourceDispatcherHostTest, ThrottleMustProcessResponseBeforeRead) {
   std::string response_data("p { text-align: center; }");
   SetResponse(raw_headers, response_data);
   network::mojom::URLLoaderPtr loader;
-  TestURLLoaderClient client;
+  network::TestURLLoaderClient client;
 
   MakeTestRequestWithResourceType(
       filter_.get(), filter_->child_id(), 1, GURL("http://example.com/blah"),
