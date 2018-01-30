@@ -132,6 +132,13 @@ class ManagePasswordsUIController
   bool AuthenticateUser() override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;
 
+#if defined(UNIT_TEST)
+  // Overwrites the client for |passwords_data_|.
+  void set_client(password_manager::PasswordManagerClient* client) {
+    passwords_data_.set_client(client);
+  }
+#endif  // defined(UNIT_TEST)
+
  protected:
   explicit ManagePasswordsUIController(
       content::WebContents* web_contents);
@@ -165,11 +172,6 @@ class ManagePasswordsUIController
            bubble_status_ == SHOULD_POP_UP_AFTER_REAUTH;
   }
 
-  // Overwrites the client for |passwords_data_|.
-  void set_client(password_manager::PasswordManagerClient* client) {
-    passwords_data_.set_client(client);
-  }
-
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -195,6 +197,10 @@ class ManagePasswordsUIController
 
   // Shows the password bubble without user interaction.
   void ShowBubbleWithoutUserInteraction();
+
+  // Resets |bubble_status_| signalling that if the bubble was due to pop up,
+  // it shouldn't anymore.
+  void ClearPopUpFlagForBubble();
 
   // Closes the account chooser gracefully so the callback is called. Then sets
   // the state to MANAGE_STATE.
