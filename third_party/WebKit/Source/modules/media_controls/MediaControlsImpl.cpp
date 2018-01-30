@@ -976,9 +976,8 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       std::make_pair(toggle_closed_captions_button_.Get(), false),
   };
 
-  // Get the size of the media controls.
-  WebSize controls_size =
-      MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
+  // Current size of the media controls.
+  WebSize controls_size = size_;
 
   // The video controls are more than one row so we need to allocate vertical
   // room and hide the overlay play button if there is not enough room.
