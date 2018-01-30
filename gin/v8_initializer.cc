@@ -34,6 +34,10 @@
 #endif
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
+#if defined(OS_FUCHSIA)
+#include "base/base_paths_fuchsia.h"
+#endif
+
 namespace gin {
 
 namespace {
@@ -104,6 +108,8 @@ void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
 #if defined(OS_ANDROID)
   // This is the path within the .apk.
   data_path = base::FilePath(FILE_PATH_LITERAL("assets"));
+#elif defined(OS_FUCHSIA)
+  PathService::Get(base::DIR_FUCHSIA_RESOURCES, &data_path);
 #elif defined(OS_POSIX)
   PathService::Get(base::DIR_EXE, &data_path);
 #elif defined(OS_WIN)
