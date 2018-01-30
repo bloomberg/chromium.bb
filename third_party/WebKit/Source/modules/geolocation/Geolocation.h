@@ -49,9 +49,11 @@ class Document;
 class LocalFrame;
 class ExecutionContext;
 
-class MODULES_EXPORT Geolocation final : public ScriptWrappable,
-                                         public ContextLifecycleObserver,
-                                         public PageVisibilityObserver {
+class MODULES_EXPORT Geolocation final
+    : public ScriptWrappable,
+      public ActiveScriptWrappable<Geolocation>,
+      public ContextLifecycleObserver,
+      public PageVisibilityObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 
@@ -99,6 +101,10 @@ class MODULES_EXPORT Geolocation final : public ScriptWrappable,
 
   // Inherited from PageVisibilityObserver.
   void PageVisibilityChanged() override;
+
+  // TODO(yukishiino): This is a short-term speculative fix for
+  // crbug.com/792604. Remove this once the bug is fixed.
+  bool HasPendingActivity() const final;
 
  private:
   explicit Geolocation(ExecutionContext*);
