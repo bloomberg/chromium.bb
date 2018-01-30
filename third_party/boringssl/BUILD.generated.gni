@@ -128,6 +128,7 @@ crypto_sources = [
   "src/crypto/fipsmodule/modes/internal.h",
   "src/crypto/fipsmodule/rand/internal.h",
   "src/crypto/fipsmodule/rsa/internal.h",
+  "src/crypto/fipsmodule/tls/internal.h",
   "src/crypto/hkdf/hkdf.c",
   "src/crypto/internal.h",
   "src/crypto/lhash/lhash.c",
@@ -326,6 +327,7 @@ crypto_sources = [
   "src/include/openssl/x509_vfy.h",
   "src/include/openssl/x509v3.h",
   "src/third_party/fiat/curve25519.c",
+  "src/third_party/fiat/curve25519_tables.h",
   "src/third_party/fiat/internal.h",
 ]
 
