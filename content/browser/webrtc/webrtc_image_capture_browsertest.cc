@@ -23,16 +23,7 @@
 
 namespace content {
 
-#if defined(OS_WIN)
-// These tests are flaky on WebRTC Windows bots: https://crbug.com/633242.
-#define MAYBE_GetPhotoCapabilities DISABLED_GetPhotoCapabilities
-#define MAYBE_GetPhotoSettings DISABLED_GetPhotoSettings
-#define MAYBE_TakePhoto DISABLED_TakePhoto
-#define MAYBE_GrabFrame DISABLED_GrabFrame
-#define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
-#define MAYBE_GetTrackSettings DISABLED_GetTrackSettings
-#define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 // TODO(chfremer): Re-enable test on Android as soon as the cause for
 // https://crbug.com/793859 is understood and fixed.
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
