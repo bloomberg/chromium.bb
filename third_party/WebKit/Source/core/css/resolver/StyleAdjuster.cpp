@@ -642,8 +642,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // 'normal'.
   if (style.JustifyItemsPosition() == ItemPosition::kAuto) {
     if (parent_style.JustifyItemsPositionType() == ItemPositionType::kLegacy) {
-      UseCounter::Count(element->GetDocument(),
-                        WebFeature::kCSSLegacyAlignment);
       style.SetJustifyItems(parent_style.JustifyItems());
     }
   }
