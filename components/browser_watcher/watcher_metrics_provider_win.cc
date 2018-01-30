@@ -29,7 +29,7 @@
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/postmortem_report_collector.h"
 #include "components/browser_watcher/stability_paths.h"
-#include "components/browser_watcher/system_session_analyzer_win.h"
+#include "components/metrics/system_session_analyzer_win.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
 namespace browser_watcher {
@@ -285,7 +285,7 @@ void WatcherMetricsProviderWin::CollectPostmortemReportsImpl() {
   LogCollectionInitStatus(INIT_SUCCESS);
 
   const size_t kSystemSessionsToInspect = 5U;
-  SystemSessionAnalyzer analyzer(kSystemSessionsToInspect);
+  metrics::SystemSessionAnalyzer analyzer(kSystemSessionsToInspect);
 
   if (should_collect) {
     base::string16 product_name, version_number, channel_name;

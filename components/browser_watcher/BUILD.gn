@@ -49,20 +49,18 @@ if (is_win) {
       "postmortem_minidump_writer_win.cc",
       "postmortem_report_collector.cc",
       "postmortem_report_collector.h",
-      "system_session_analyzer_win.cc",
-      "system_session_analyzer_win.h",
     ]
     deps = [
       ":stability_client",
       ":stability_common",
       ":stability_report_proto",
       "//base",
+      "//components/metrics:metrics",
       "//components/variations",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/minidump",
       "//third_party/crashpad/crashpad/util",
     ]
-    libs = [ "wevtapi.lib" ]
     ldflags = [ "/DELAYLOAD:wevtapi.dll" ]  # Only used after unclean shutdowns.
   }
 
@@ -128,7 +126,6 @@ if (is_win) {
       "stability_debugging_win_unittest.cc",
       "stability_paths_unittest.cc",
       "stability_report_extractor_unittest.cc",
-      "system_session_analyzer_win_unittest.cc",
       "watcher_client_win_unittest.cc",
       "watcher_metrics_provider_win_unittest.cc",
       "window_hang_monitor_win_unittest.cc",
@@ -143,6 +140,7 @@ if (is_win) {
       ":stability_report_proto",
       "//base",
       "//base/test:test_support",
+      "//components/metrics:metrics",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/crashpad/crashpad/client",
@@ -171,6 +169,7 @@ if (is_win) {
     deps = [
       ":postmortem_stability",
       "//base",
+      "//components/metrics:metrics",
     ]
   }
 }

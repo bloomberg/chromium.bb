@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_watcher/system_session_analyzer_win.h"
+#include "components/metrics/system_session_analyzer_win.h"
 
 #include <utility>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_watcher {
+namespace metrics {
 
 namespace {
 
@@ -114,4 +114,4 @@ TEST(SystemSessionAnalyzerTest, IdInversion) {
             analyzer.IsSessionUnclean(base::Time::Now()));
 }
 
-}  // namespace browser_watcher
+}  // namespace metrics

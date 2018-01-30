@@ -60,14 +60,14 @@ void LogCollectionStatus(CollectionStatus status) {
 }  // namespace
 
 PostmortemReportCollector::PostmortemReportCollector(
-    SystemSessionAnalyzer* analyzer)
+    metrics::SystemSessionAnalyzer* analyzer)
     : report_database_(nullptr), system_session_analyzer_(analyzer) {}
 PostmortemReportCollector::PostmortemReportCollector(
     const std::string& product_name,
     const std::string& version_number,
     const std::string& channel_name,
     crashpad::CrashReportDatabase* report_database,
-    SystemSessionAnalyzer* analyzer)
+    metrics::SystemSessionAnalyzer* analyzer)
     : product_name_(product_name),
       version_number_(version_number),
       channel_name_(channel_name),
@@ -193,19 +193,19 @@ void PostmortemReportCollector::RecordSystemShutdownState(
   } else if (!system_session_analyzer_) {
     status = SYSTEM_SESSION_ANALYSIS_NO_ANALYZER;
   } else {
-    SystemSessionAnalyzer::Status analyzer_status =
+    metrics::SystemSessionAnalyzer::Status analyzer_status =
         system_session_analyzer_->IsSessionUnclean(time);
     switch (analyzer_status) {
-      case SystemSessionAnalyzer::FAILED:
+      case metrics::SystemSessionAnalyzer::FAILED:
         status = SYSTEM_SESSION_ANALYSIS_FAILED;
         break;
-      case SystemSessionAnalyzer::CLEAN:
+      case metrics::SystemSessionAnalyzer::CLEAN:
         session_state = SystemState::CLEAN;
         break;
-      case SystemSessionAnalyzer::UNCLEAN:
+      case metrics::SystemSessionAnalyzer::UNCLEAN:
         session_state = SystemState::UNCLEAN;
         break;
-      case SystemSessionAnalyzer::OUTSIDE_RANGE:
+      case metrics::SystemSessionAnalyzer::OUTSIDE_RANGE:
         status = SYSTEM_SESSION_ANALYSIS_OUTSIDE_RANGE;
         break;
     }

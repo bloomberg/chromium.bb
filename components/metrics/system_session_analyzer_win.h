@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 
-namespace browser_watcher {
+namespace metrics {
 
 // Analyzes system session events for unclean sessions. Initialization is
 // expensive and therefore done lazily, as the analyzer is instantiated before
@@ -38,6 +38,9 @@ class SystemSessionAnalyzer {
   virtual ~SystemSessionAnalyzer();
 
   // Returns an analysis status for the system session that contains timestamp.
+  // TODO(siggi): it'd make more sense to do iterative fetching in this
+  //     function. This will require moving the query handle into the class
+  //     declaration.
   virtual Status IsSessionUnclean(base::Time timestamp);
 
  protected:
@@ -70,6 +73,6 @@ class SystemSessionAnalyzer {
   DISALLOW_COPY_AND_ASSIGN(SystemSessionAnalyzer);
 };
 
-}  // namespace browser_watcher
+}  // namespace metrics
 
 #endif  // COMPONENTS_BROWSER_WATCHER_SYSTEM_SESSION_ANALYZER_WIN_H_

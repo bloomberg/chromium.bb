@@ -28,6 +28,7 @@
 #include "base/threading/platform_thread.h"
 #include "components/browser_watcher/stability_data_names.h"
 #include "components/browser_watcher/stability_report_extractor.h"
+#include "components/metrics/system_session_analyzer_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
@@ -119,7 +120,7 @@ class MockPostmortemReportCollector final : public PostmortemReportCollector {
                     base::PlatformFile minidump_file));
 };
 
-class MockSystemSessionAnalyzer : public SystemSessionAnalyzer {
+class MockSystemSessionAnalyzer : public metrics::SystemSessionAnalyzer {
  public:
   MockSystemSessionAnalyzer() : SystemSessionAnalyzer(10U) {}
   MOCK_METHOD1(IsSessionUnclean, Status(base::Time timestamp));
@@ -361,7 +362,7 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   EXPECT_CALL(analyzer,
               IsSessionUnclean(base::Time::FromInternalValue(12345LL)))
       .Times(1)
-      .WillOnce(Return(SystemSessionAnalyzer::CLEAN));
+      .WillOnce(Return(metrics::SystemSessionAnalyzer::CLEAN));
   MockCrashReportDatabase crash_db;
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName, &crash_db, &analyzer);

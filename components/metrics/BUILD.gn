@@ -94,6 +94,8 @@ static_library("metrics") {
     "system_memory_stats_recorder.h",
     "system_memory_stats_recorder_linux.cc",
     "system_memory_stats_recorder_win.cc",
+    "system_session_analyzer_win.cc",
+    "system_session_analyzer_win.h",
     "url_constants.cc",
     "url_constants.h",
     "version_utils.cc",
@@ -132,6 +134,7 @@ static_library("metrics") {
   if (is_win) {
     sources -= [ "machine_id_provider_stub.cc" ]
     deps += [ "//components/browser_watcher:stability_client" ]
+    libs = [ "wevtapi.lib" ]
   }
 
   if (is_fuchsia) {
@@ -346,6 +349,7 @@ source_set("unit_tests") {
     "single_sample_metrics_factory_impl_unittest.cc",
     "stability_metrics_helper_unittest.cc",
     "stability_metrics_provider_unittest.cc",
+    "system_session_analyzer_win_unittest.cc",
     "ui/screen_info_metrics_provider_unittest.cc",
   ]
 
