@@ -473,11 +473,17 @@ label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {
  * Audio Controls
  */
 
+audio:not([controls]) {
+  display: none !important;
+}
+
+audio {
+  width: 300px;
+  height: 54px;
+}
+
 audio::-webkit-media-controls {
   min-width: 240px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 audio::-webkit-media-controls-overlay-enclosure {
@@ -485,6 +491,7 @@ audio::-webkit-media-controls-overlay-enclosure {
 }
 
 audio::-webkit-media-controls-enclosure {
+  min-height: 54px;
   max-height: 54px;
   flex-direction: row;
   background: #F1F3F4;
