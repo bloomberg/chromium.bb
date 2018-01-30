@@ -1,11 +1,5 @@
 # Tight rules since this will move to services/network. See README.
 include_rules = [
-  "+components/cookie_config",
-  "+components/network_session_configurator",
-  # Prefs are used to create an independent file with a persisted key:value
-  # store for networking-related data (Like which servers support QUIC), rather
-  # than to store user preferences.
-  "+components/prefs",
   "-content",
   "+content/common/content_export.h",
   "+content/network",
@@ -18,7 +12,6 @@ include_rules = [
   "+content/public/network",
   "+services/network",
   "+services/service_manager/public",
-  "+services/service_manager/sandbox",
 ]
 
 specific_include_rules = {

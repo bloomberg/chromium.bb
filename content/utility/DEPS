@@ -1,8 +1,8 @@
 include_rules = [
   "+content/child",
-  "+content/network",
   "+content/public/utility",
   "+services/data_decoder",
+  "+services/network",
   "+services/service_manager",
   "+services/shape_detection",
   "+services/video_capture",

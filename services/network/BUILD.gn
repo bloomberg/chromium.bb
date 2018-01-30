@@ -3,26 +3,91 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 static_library("network_service") {
   sources = [
+    "cache_url_loader.cc",
+    "cache_url_loader.h",
     "cookie_manager.cc",
     "cookie_manager.h",
+    "data_pipe_element_reader.cc",
+    "data_pipe_element_reader.h",
+    "http_server_properties_pref_delegate.cc",
+    "http_server_properties_pref_delegate.h",
+    "network_change_manager.cc",
+    "network_change_manager.h",
+    "network_context.cc",
+    "network_context.h",
+    "network_sandbox_hook_linux.cc",
+    "network_sandbox_hook_linux.h",
+    "network_service_impl.cc",
+    "network_service_impl.h",
+    "network_service_url_loader_factory.cc",
+    "network_service_url_loader_factory.h",
     "proxy_config_service_mojo.cc",
     "proxy_config_service_mojo.h",
+    "restricted_cookie_manager.cc",
+    "restricted_cookie_manager.h",
+    "throttling/network_conditions.cc",
+    "throttling/network_conditions.h",
+    "throttling/throttling_controller.cc",
+    "throttling/throttling_controller.h",
+    "throttling/throttling_network_interceptor.cc",
+    "throttling/throttling_network_interceptor.h",
+    "throttling/throttling_network_transaction.cc",
+    "throttling/throttling_network_transaction.h",
+    "throttling/throttling_network_transaction_factory.cc",
+    "throttling/throttling_network_transaction_factory.h",
+    "throttling/throttling_upload_data_stream.cc",
+    "throttling/throttling_upload_data_stream.h",
     "udp_socket.cc",
     "udp_socket.h",
     "udp_socket_factory.cc",
     "udp_socket_factory.h",
+    "upload_progress_tracker.cc",
+    "upload_progress_tracker.h",
+    "url_loader.cc",
+    "url_loader.h",
+    "url_request_context_builder_mojo.cc",
   ]
 
   deps = [
     "//base",
+    "//components/cookie_config",
+    "//components/network_session_configurator/browser",
+    "//components/network_session_configurator/common",
+    "//components/prefs",
+    "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//net:extras",
+    "//services/network/public/cpp",
+    "//services/network/public/cpp:network_features",
     "//services/network/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
     "//url",
   ]
+
+  if (is_linux) {
+    deps += [
+      "//sandbox/linux:sandbox_services",
+      "//services/service_manager/sandbox:sandbox",
+    ]
+  }
+
+  # TODO(sdefresne): This depends on net's enable_net_mojo getting turned on for
+  # iOS, which depends on net_with_v8 as well. http://crbug.com/803149
+  if (!is_ios) {
+    sources += [
+      "proxy_resolver_factory_mojo.cc",
+      "proxy_resolver_factory_mojo.h",
+      "proxy_service_mojo.cc",
+      "proxy_service_mojo.h",
+    ]
+    deps += [ "//net:net_browser_services" ]
+  }
 }
 
 source_set("tests") {
@@ -30,18 +95,31 @@ source_set("tests") {
 
   sources = [
     "cookie_manager_unittest.cc",
+    "data_pipe_element_reader_unittest.cc",
+    "network_change_manager_unittest.cc",
+    "network_context_unittest.cc",
     "proxy_config_service_mojo_unittest.cc",
+    "restricted_cookie_manager_unittest.cc",
+    "throttling/throttling_controller_unittest.cc",
     "udp_socket_factory_unittest.cc",
     "udp_socket_unittest.cc",
+    "upload_progress_tracker_unittest.cc",
   ]
 
+  if (!is_ios) {
+    sources += [ "proxy_resolver_factory_mojo_unittest.cc" ]
+  }
+
   deps = [
+    ":network_service",
     ":test_support",
     "//base",
+    "//components/network_session_configurator/browser",
+    "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
-    "//services/network:network_service",
+    "//services/network/public/cpp:network_features",
     "//services/network/public/interfaces",
     "//testing/gtest",
   ]
@@ -65,4 +143,9 @@ source_set("test_support") {
     "//services/network/public/interfaces",
     "//testing/gtest",
   ]
+}
+
+service_manifest("manifest") {
+  name = "network"
+  source = "manifest.json"
 }

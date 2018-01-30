@@ -26,8 +26,6 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "content/network/network_context.h"
-#include "content/network/network_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -46,6 +44,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/blob_registry_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -265,8 +265,8 @@ class StoragePartitionImpl::NetworkContextOwner {
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context_getter_ = std::move(context_getter);
-    network_context_ = std::make_unique<NetworkContext>(
-        static_cast<NetworkServiceImpl*>(GetNetworkServiceImpl()),
+    network_context_ = std::make_unique<network::NetworkContext>(
+        static_cast<network::NetworkServiceImpl*>(GetNetworkServiceImpl()),
         std::move(network_context_request),
         context_getter_->GetURLRequestContext());
   }

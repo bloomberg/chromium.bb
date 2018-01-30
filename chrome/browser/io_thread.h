@@ -29,10 +29,10 @@
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
-#include "content/public/network/url_request_context_owner.h"
 #include "extensions/features/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "services/network/public/cpp/url_request_context_owner.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 
 class PrefRegistrySimple;
@@ -51,10 +51,6 @@ class TreeStateTracker;
 
 namespace chrome_browser_net {
 class DnsProbeService;
-}
-
-namespace content {
-class URLRequestContextBuilderMojo;
 }
 
 namespace data_usage {
@@ -88,6 +84,10 @@ class STHObserver;
 
 namespace net_log {
 class ChromeNetLog;
+}
+
+namespace network {
+class URLRequestContextBuilderMojo;
 }
 
 namespace policy {
@@ -134,7 +134,7 @@ class IOThread : public content::BrowserThreadDelegate {
     // content::NetworkContext class that owns |system_request_context|.
     std::unique_ptr<network::mojom::NetworkContext> system_network_context;
     // When the network service is disabled, this owns |system_request_context|.
-    content::URLRequestContextOwner system_request_context_owner;
+    network::URLRequestContextOwner system_request_context_owner;
     net::URLRequestContext* system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -212,7 +212,7 @@ class IOThread : public content::BrowserThreadDelegate {
   bool PacHttpsUrlStrippingEnabled() const;
 
   // Configures |builder|'s ProxyResolutionService based on prefs and policies.
-  void SetUpProxyService(content::URLRequestContextBuilderMojo* builder) const;
+  void SetUpProxyService(network::URLRequestContextBuilderMojo* builder) const;
 
   // Gets a pointer to the NetworkService. Can only be called on the UI thread.
   // When out-of-process NetworkService is enabled, this is a reference to the

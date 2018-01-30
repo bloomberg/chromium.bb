@@ -20,8 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/network/network_context.h"
-#include "content/network/url_loader.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
@@ -44,11 +42,16 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
+#include "services/network/network_context.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_data_pipe_getter.h"
+#include "services/network/url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+
+using network::NetworkContext;
+using network::URLLoader;
 
 namespace content {
 
@@ -182,7 +185,7 @@ class URLLoaderTest : public testing::Test {
   URLLoaderTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        context_(NetworkContext::CreateForTesting()) {
+        context_(network::NetworkContext::CreateForTesting()) {
     net::URLRequestFailedJob::AddUrlHandler();
   }
   ~URLLoaderTest() override {
