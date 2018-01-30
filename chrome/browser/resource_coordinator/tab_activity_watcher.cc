@@ -5,8 +5,8 @@
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/window_activity_watcher.h"
 #include "content/public/browser/browser_context.h"

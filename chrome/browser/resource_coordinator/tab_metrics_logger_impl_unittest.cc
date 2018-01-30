@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_metrics_logger_impl.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
 
-#include "chrome/browser/ui/tabs/tab_metrics_event.pb.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using metrics::TabMetricsEvent;
