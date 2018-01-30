@@ -40,8 +40,9 @@ class DownloadManagerTabHelperTest : public PlatformTest {
   FakeDownloadManagerTabHelperDelegate* delegate_;
 };
 
-// Tests that created download has NotStarted state.
-TEST_F(DownloadManagerTabHelperTest, DownloadCreation) {
+// Tests that created download has NotStarted statefor visible web state.
+TEST_F(DownloadManagerTabHelperTest, DownloadCreationForVisibleWebState) {
+  web_state_->WasShown();
   ASSERT_FALSE(delegate_.state);
   auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
 
@@ -49,6 +50,17 @@ TEST_F(DownloadManagerTabHelperTest, DownloadCreation) {
 
   ASSERT_TRUE(delegate_.state);
   EXPECT_EQ(web::DownloadTask::State::kNotStarted, *delegate_.state);
+}
+
+// Tests that created download has null state for hidden web state.
+TEST_F(DownloadManagerTabHelperTest, DownloadCreationForHiddenWebState) {
+  web_state_->WasHidden();
+  ASSERT_FALSE(delegate_.state);
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+
+  tab_helper()->Download(std::move(task));
+
+  ASSERT_FALSE(delegate_.state);
 }
 
 // Tests that "done" download has Complete state.
@@ -66,6 +78,7 @@ TEST_F(DownloadManagerTabHelperTest, DownloadUpdate) {
 
 // Tests hiding and showing WebState.
 TEST_F(DownloadManagerTabHelperTest, HideAndShowWebState) {
+  web_state_->WasShown();
   ASSERT_FALSE(delegate_.state);
   auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
   tab_helper()->Download(std::move(task));
