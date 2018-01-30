@@ -679,6 +679,15 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   // Determine what index the dragged button should lie in, alter the model and
   // reposition the buttons.
   BrowserActionButton* draggedButton = [notification object];
+
+  if (!isDraggingSession_) {
+    for (BrowserActionButton* button : buttons_.get()) {
+      if (button != draggedButton)
+        [[button cell] setIsHoverDisabled:YES];
+    }
+    isDraggingSession_ = YES;
+  }
+
   NSRect draggedButtonFrame = [draggedButton frame];
   // Find the mid-point. We flip the y-coordinates so that y = 0 is at the
   // top of the container to make row calculation more logical.
@@ -712,6 +721,13 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (void)actionButtonDragFinished:(NSNotification*)notification {
+  BrowserActionButton* draggedButton = [notification object];
+  for (BrowserActionButton* button : buttons_.get()) {
+    if (button != draggedButton)
+      [[button cell] setIsHoverDisabled:NO];
+  }
+
+  isDraggingSession_ = NO;
   [self redraw];
 }
 
