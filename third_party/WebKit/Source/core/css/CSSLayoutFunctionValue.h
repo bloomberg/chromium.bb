@@ -13,6 +13,8 @@ namespace blink {
 
 class CSSCustomIdentValue;
 
+namespace cssvalue {
+
 class CSSLayoutFunctionValue : public CSSValue {
  public:
   static CSSLayoutFunctionValue* Create(CSSCustomIdentValue* name,
@@ -37,6 +39,7 @@ class CSSLayoutFunctionValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSLayoutFunctionValue, IsLayoutFunctionValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSLayoutFunctionValue_h
