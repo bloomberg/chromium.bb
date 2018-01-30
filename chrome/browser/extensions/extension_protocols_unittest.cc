@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/common/chrome_paths.h"
@@ -34,6 +35,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/file_util.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -609,6 +611,66 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
   // Request foo.js.
   EXPECT_EQ(net::OK, DoRequest(*extension, kFooJs));
   test_job_delegate.WaitForDoneReading(extension->id());
+}
+
+// Tests that mime types are properly set for returned extension resources.
+TEST_F(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
+  // Register a non-incognito extension protocol handler.
+  SetProtocolHandler(false);
+
+  TestExtensionDir test_dir;
+  constexpr char kManifest[] = R"(
+      {
+        "name": "Test Ext",
+        "description": "A test extension",
+        "manifest_version": 2,
+        "version": "0.1",
+        "web_accessible_resources": ["*"]
+      })";
+  test_dir.WriteManifest(kManifest);
+  std::unique_ptr<base::DictionaryValue> manifest =
+      base::DictionaryValue::From(base::test::ParseJson(kManifest));
+  ASSERT_TRUE(manifest);
+
+  test_dir.WriteFile(FILE_PATH_LITERAL("json_file.json"), "{}");
+  test_dir.WriteFile(FILE_PATH_LITERAL("js_file.js"), "function() {}");
+
+  base::FilePath unpacked_path = test_dir.UnpackedPath();
+  ASSERT_TRUE(base::PathExists(unpacked_path.AppendASCII("json_file.json")));
+  std::string error;
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(std::move(manifest))
+          .SetPath(unpacked_path)
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
+  ASSERT_TRUE(extension);
+
+  extension_info_map_->AddExtension(extension.get(), base::Time::Now(), false,
+                                    false);
+
+  struct {
+    const char* file_name;
+    const char* expected_mime_type;
+  } test_cases[] = {
+      {"json_file.json", "application/json"},
+      {"js_file.js", "application/javascript"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.file_name);
+    std::unique_ptr<net::URLRequest> request(
+        resource_context_.GetRequestContext()->CreateRequest(
+            extension->GetResourceURL(test_case.file_name),
+            net::DEFAULT_PRIORITY, &test_delegate_,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
+    StartRequest(request.get(), content::RESOURCE_TYPE_SUB_RESOURCE);
+    EXPECT_EQ(net::OK, test_delegate_.request_status());
+    std::string mime_type;
+    request->GetResponseHeaderByName(net::HttpRequestHeaders::kContentType,
+                                     &mime_type);
+    EXPECT_EQ(test_case.expected_mime_type, mime_type);
+  }
 }
 
 }  // namespace extensions
