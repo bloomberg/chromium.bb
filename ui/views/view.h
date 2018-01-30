@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -52,7 +53,7 @@ class Canvas;
 class Insets;
 class Path;
 class Transform;
-}
+}  // namespace gfx
 
 namespace ui {
 struct AXActionData;
@@ -64,7 +65,7 @@ class NativeTheme;
 class PaintContext;
 class ThemeProvider;
 class TransformRecorder;
-}
+}  // namespace ui
 
 namespace views {
 
@@ -86,7 +87,7 @@ class PreEventDispatchHandler;
 class PostEventDispatchHandler;
 class RootView;
 class ScopedChildrenLock;
-}
+}  // namespace internal
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -318,7 +319,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // position accessors.
   // Transformations are not applied on the size/position. For example, if
   // bounds is (0, 0, 100, 100) and it is scaled by 0.5 along the X axis, the
-  // width will still be 100 (although when painted, it will be 50x50, painted
+  // width will still be 100 (although when painted, it will be 50x100, painted
   // at location (0, 0)).
 
   void SetBounds(int x, int y, int width, int height);
@@ -539,7 +540,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Return the receiving view's class name. A view class is a string which
   // uniquely identifies the view class. It is intended to be used as a way to
-  // find out during run time if a view can be safely casted to a specific view
+  // find out during run time if a view can be safely cast to a specific view
   // subclass. The default implementation returns kViewClassName.
   virtual const char* GetClassName() const;
 
@@ -750,7 +751,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The provided event is in the receiver's coordinate system.
   //
   // Return true if you processed the event and want to receive subsequent
-  // MouseDraggged and MouseReleased events.  This also stops the event from
+  // MouseDragged and MouseReleased events.  This also stops the event from
   // bubbling.  If you return false, the event will bubble through parent
   // views.
   //
@@ -825,7 +826,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void SetMouseHandler(View* new_mouse_handler);
 
   // Invoked when a key is pressed or released.
-  // Subclasser should return true if the event has been processed and false
+  // Subclasses should return true if the event has been processed and false
   // otherwise. If the event has not been processed, the parent will be given a
   // chance.
   virtual bool OnKeyPressed(const ui::KeyEvent& event);
@@ -1004,7 +1005,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Provides default implementation for context menu handling. The default
   // implementation calls the ShowContextMenu of the current
   // ContextMenuController (if it is not NULL). Overridden in subclassed views
-  // to provide right-click menu display triggerd by the keyboard (i.e. for the
+  // to provide right-click menu display triggered by the keyboard (i.e. for the
   // Chrome toolbar Back and Forward buttons). No source needs to be specified,
   // as it is always equal to the current View.
   virtual void ShowContextMenu(const gfx::Point& p,
@@ -1138,7 +1139,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // The following methods are used by ScrollView to determine the amount
   // to scroll relative to the visible bounds of the view. For example, a
-  // return value of 10 indicates the scrollview should scroll 10 pixels in
+  // return value of 10 indicates the scroll_view should scroll 10 pixels in
   // the appropriate direction.
   //
   // Each method takes the following parameters:
@@ -1442,7 +1443,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ShouldPaint() const;
 
   // Adjusts the transform of |recorder| in advance of painting.
-  void SetupTransformRecorderForPainting(
+  void SetUpTransformRecorderForPainting(
       const gfx::Vector2d& offset_from_parent,
       ui::TransformRecorder* recorder) const;
 
