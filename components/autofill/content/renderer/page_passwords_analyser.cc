@@ -371,8 +371,9 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
     } else {
       // By default (if the other heuristics fail), the first text field
       // preceding a password field will be considered the username field.
-      for (username_field_guess = password_inputs[0] - 1;;
+      for (username_field_guess = explicit_password_inputs[0] - 1;;
            --username_field_guess) {
+        DCHECK(username_field_guess < signature.size());
         if (signature[username_field_guess] == kTextFieldSignature)
           break;
       }
