@@ -18,6 +18,10 @@
       font-size: 14px;
     }
 
+    button {
+      margin-bottom: 20px;
+    }
+
     table {
       border-collapse: collapse;
       margin-bottom: 20px;
@@ -50,7 +54,6 @@
 
     .origin-cell {
       background-color: rgba(230, 230, 230, 0.5);
-      min-width: 500px;
     }
 
     .visits-count-cell,
@@ -60,6 +63,7 @@
     .significant-playbacks-count-cell {
       background-color: rgba(230, 230, 230, 0.5);
       text-align: right;
+      white-space: nowrap;
     }
 
     .base-score-input {
@@ -96,6 +100,7 @@
 </head>
 <body>
   <h1>Media Engagement</h1>
+  <button id="copy-all-to-clipboard">Copy all to clipboard</button>
   <table>
     <thead>
       <tr id="config-table-header">
@@ -117,10 +122,10 @@
           Origin
         </th>
         <th sort-key="visits" sort-reverse>
-          Visits
+          Sessions
         </th>
         <th sort-key="mediaPlaybacks" sort-reverse>
-          Playbacks
+          Playbacks per session
         </th>
         <th sort-key="audiblePlaybacks" sort-reverse>
           Audible Playbacks*
