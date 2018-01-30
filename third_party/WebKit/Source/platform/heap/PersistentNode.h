@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "platform/PlatformExport.h"
+#include "platform/heap/ProcessHeap.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -174,14 +175,14 @@ class CrossThreadPersistentRegion final {
   void AllocatePersistentNode(PersistentNode*& persistent_node,
                               void* self,
                               TraceCallback trace) {
-    MutexLocker lock(mutex_);
+    MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
     PersistentNode* node =
         persistent_region_->AllocatePersistentNode(self, trace);
     ReleaseStore(reinterpret_cast<void* volatile*>(&persistent_node), node);
   }
 
   void FreePersistentNode(PersistentNode*& persistent_node) {
-    MutexLocker lock(mutex_);
+    MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
     // When the thread that holds the heap object that the cross-thread
     // persistent shuts down, prepareForThreadStateTermination() will clear out
     // the associated CrossThreadPersistent<> and PersistentNode so as to avoid
@@ -198,37 +199,10 @@ class CrossThreadPersistentRegion final {
     ReleaseStore(reinterpret_cast<void* volatile*>(&persistent_node), nullptr);
   }
 
-  class LockScope final {
-    STACK_ALLOCATED();
-
-   public:
-    LockScope(CrossThreadPersistentRegion& persistent_region,
-              bool try_lock = false)
-        : persistent_region_(persistent_region), locked_(true) {
-      if (try_lock)
-        locked_ = persistent_region_.TryLock();
-      else
-        persistent_region_.lock();
-    }
-    ~LockScope() {
-      if (locked_)
-        persistent_region_.unlock();
-    }
-
-    // If the lock scope is set up with |try_lock| set to |true|, caller/user
-    // is responsible for checking whether the GC lock was taken via
-    // |HasLock()|.
-    bool HasLock() const { return locked_; }
-
-   private:
-    CrossThreadPersistentRegion& persistent_region_;
-    bool locked_;
-  };
-
   void TracePersistentNodes(Visitor* visitor) {
 // If this assert triggers, you're tracing without being in a LockScope.
 #if DCHECK_IS_ON()
-    DCHECK(mutex_.Locked());
+    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
 #endif
     persistent_region_->TracePersistentNodes(
         visitor, CrossThreadPersistentRegion::ShouldTracePersistentNode);
@@ -244,13 +218,6 @@ class CrossThreadPersistentRegion final {
 #endif
 
  private:
-  friend class LockScope;
-
-  void lock() { mutex_.lock(); }
-
-  void unlock() { mutex_.unlock(); }
-
-  bool TryLock() { return mutex_.TryLock(); }
 
   // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
   // because we don't want to virtualize performance-sensitive methods

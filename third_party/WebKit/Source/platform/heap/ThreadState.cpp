@@ -132,6 +132,7 @@ const char* StackStateString(BlinkGC::StackState state) {
 ThreadState::ThreadState()
     : thread_(CurrentThread()),
       persistent_region_(std::make_unique<PersistentRegion>()),
+      weak_persistent_region_(std::make_unique<PersistentRegion>()),
       start_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       safe_point_scope_marker_(nullptr),
@@ -197,6 +198,8 @@ void ThreadState::RunTerminationGC() {
 
   ReleaseStaticPersistentNodes();
 
+  // PrepareForThreadStateTermination removes strong references so no need to
+  // call it on CrossThreadWeakPersistentRegion.
   ProcessHeap::GetCrossThreadPersistentRegion()
       .PrepareForThreadStateTermination(this);
 
@@ -298,11 +301,18 @@ void ThreadState::VisitStack(Visitor* visitor) {
 }
 
 void ThreadState::VisitPersistents(Visitor* visitor) {
+  ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
   persistent_region_->TracePersistentNodes(visitor);
   if (trace_dom_wrappers_) {
     TRACE_EVENT0("blink_gc", "V8GCController::traceDOMWrappers");
     trace_dom_wrappers_(isolate_, visitor);
   }
+}
+
+void ThreadState::VisitWeakPersistents(Visitor* visitor) {
+  ProcessHeap::GetCrossThreadWeakPersistentRegion().TracePersistentNodes(
+      visitor);
+  weak_persistent_region_->TracePersistentNodes(visitor);
 }
 
 ThreadState::GCSnapshotInfo::GCSnapshotInfo(size_t num_object_types)
@@ -1162,15 +1172,16 @@ void ThreadState::ReleaseStaticPersistentNodes() {
     persistent_region->ReleasePersistentNode(it.key, it.value);
 }
 
-void ThreadState::FreePersistentNode(PersistentNode* persistent_node) {
-  PersistentRegion* persistent_region = GetPersistentRegion();
+void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
+                                     PersistentNode* persistent_node) {
   persistent_region->FreePersistentNode(persistent_node);
   // Do not allow static persistents to be freed before
   // they're all released in releaseStaticPersistentNodes().
   //
   // There's no fundamental reason why this couldn't be supported,
   // but no known use for it.
-  DCHECK(!static_persistents_.Contains(persistent_node));
+  if (persistent_region == GetPersistentRegion())
+    DCHECK(!static_persistents_.Contains(persistent_node));
 }
 
 #if defined(LEAK_SANITIZER)
@@ -1270,8 +1281,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     // allocate or free PersistentNodes and we can't handle
     // that. Grabbing this lock also prevents non-attached threads
     // from accessing any GCed heap while a GC runs.
-    CrossThreadPersistentRegion::LockScope persistent_lock(
-        ProcessHeap::GetCrossThreadPersistentRegion());
+    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
 
     {
       TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
@@ -1383,6 +1393,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
 }
 
 void ThreadState::MarkPhaseEpilogue() {
+  VisitWeakPersistents(current_gc_data_.visitor.get());
   Heap().PostMarkingProcessing(current_gc_data_.visitor.get());
   Heap().WeakProcessing(current_gc_data_.visitor.get());
   Heap().DecommitCallbackStacks();

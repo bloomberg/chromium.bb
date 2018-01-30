@@ -32,6 +32,17 @@ CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadPersistentRegion() {
   return persistent_region;
 }
 
+CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadWeakPersistentRegion() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion,
+                                  persistent_region, ());
+  return persistent_region;
+}
+
+RecursiveMutex& ProcessHeap::CrossThreadPersistentMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, mutex, ());
+  return mutex;
+}
+
 size_t ProcessHeap::total_allocated_space_ = 0;
 size_t ProcessHeap::total_allocated_object_size_ = 0;
 size_t ProcessHeap::total_marked_object_size_ = 0;
