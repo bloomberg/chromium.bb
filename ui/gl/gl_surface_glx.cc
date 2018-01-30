@@ -673,10 +673,10 @@ gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
     const PresentationCallback& callback) {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceGLX:RealSwapBuffers", "width",
                GetSize().width(), "height", GetSize().height());
-  presentation_helper_->PreSwapBuffers(callback);
+  GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
+      presentation_helper_.get(), callback);
   glXSwapBuffers(g_display, GetDrawableHandle());
-  presentation_helper_->PostSwapBuffers();
-  return gfx::SwapResult::SWAP_ACK;
+  return scoped_swap_buffers.result();
 }
 
 gfx::Size NativeViewGLSurfaceGLX::GetSize() {
@@ -716,10 +716,11 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
     int height,
     const PresentationCallback& callback) {
   DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
-  presentation_helper_->PreSwapBuffers(callback);
+
+  GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
+      presentation_helper_.get(), callback);
   glXCopySubBufferMESA(g_display, GetDrawableHandle(), x, y, width, height);
-  presentation_helper_->PostSwapBuffers();
-  return gfx::SwapResult::SWAP_ACK;
+  return scoped_swap_buffers.result();
 }
 
 bool NativeViewGLSurfaceGLX::OnMakeCurrent(GLContext* context) {
