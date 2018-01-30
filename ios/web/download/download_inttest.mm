@@ -12,8 +12,11 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 
@@ -35,10 +38,15 @@ const char kContent[] = "testdata";
 std::unique_ptr<net::test_server::HttpResponse> GetDownloadResponse(
     const net::test_server::HttpRequest& request) {
   auto result = std::make_unique<net::test_server::BasicHttpResponse>();
-  result->set_code(net::HTTP_OK);
-  result->set_content(kContent);
-  result->AddCustomHeader("Content-Type", kMimeType);
-  result->AddCustomHeader("Content-Disposition", kContentDisposition);
+
+  std::string user_agent =
+      request.headers.at(net::HttpRequestHeaders::kUserAgent);
+  if (user_agent == GetWebClient()->GetUserAgent(UserAgentType::MOBILE)) {
+    result->set_code(net::HTTP_OK);
+    result->set_content(kContent);
+    result->AddCustomHeader("Content-Type", kMimeType);
+    result->AddCustomHeader("Content-Disposition", kContentDisposition);
+  }
   return result;
 }
 

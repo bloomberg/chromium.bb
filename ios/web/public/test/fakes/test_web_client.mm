@@ -31,6 +31,10 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
          url.SchemeIs(kTestNativeContentScheme);
 }
 
+std::string TestWebClient::GetUserAgent(UserAgentType type) const {
+  return "Chromium/66.0.3333.0 CFNetwork/893.14 Darwin/16.7.0";
+}
+
 base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
     int resource_id) const {
   if (!ui::ResourceBundle::HasSharedInstance())
