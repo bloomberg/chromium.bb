@@ -159,7 +159,7 @@ class CORE_EXPORT ObjectPaintProperties {
 
   class UpdateResult {
    public:
-    bool ValueChanged() const { return result_ == kValueChanged; }
+    bool Unchanged() const { return result_ == kUnchanged; }
     bool NewNodeCreated() const { return result_ == kNewNodeCreated; }
 
    private:
