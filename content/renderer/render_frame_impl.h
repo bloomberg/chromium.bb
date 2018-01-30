@@ -166,7 +166,6 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class ScreenOrientationDispatcher;
 class SharedWorkerRepository;
 class UserMediaClientImpl;
 struct CSPViolationParams;
@@ -717,7 +716,6 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ShouldBlockWebGL() override;
   bool AllowContentInitiatedDataUrlNavigations(
       const blink::WebURL& url) override;
-  blink::WebScreenOrientationClient* GetWebScreenOrientationClient() override;
   void PostAccessibilityEvent(const blink::WebAXObject& obj,
                               blink::WebAXEvent event) override;
   void HandleAccessibilityFindInPageResult(int identifier,
@@ -1450,10 +1448,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The Connector proxy used to connect to services.
   service_manager::mojom::ConnectorPtr connector_;
-
-  // The screen orientation dispatcher attached to the frame, lazily
-  // initialized.
-  ScreenOrientationDispatcher* screen_orientation_dispatcher_;
 
   // The Manifest Manager handles the manifest requests from the browser
   // process.

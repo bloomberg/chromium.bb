@@ -67,10 +67,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     return Base::CreatePlugin(params);
   }
 
-  blink::WebScreenOrientationClient* GetWebScreenOrientationClient() override {
-    return test_client()->GetWebScreenOrientationClient();
-  }
-
   void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
                               const blink::WebString& source_name,
                               unsigned source_line,

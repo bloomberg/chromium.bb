@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
+#include "modules/screen_orientation/ScreenOrientationDelegate.h"
 
-#include <list>
+#include <map>
 #include <memory>
-#include <tuple>
 
-#include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 
-namespace content {
+namespace blink {
 
 using LockOrientationCallback =
-    device::mojom::ScreenOrientation::LockOrientationCallback;
-using LockResult = device::mojom::ScreenOrientationLockResult;
+    device::mojom::blink::ScreenOrientation::LockOrientationCallback;
+using LockResult = device::mojom::blink::ScreenOrientationLockResult;
 
 // MockLockOrientationCallback is an implementation of
 // WebLockOrientationCallback and takes a LockOrientationResultHolder* as a
@@ -51,36 +48,36 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
   LockOrientationResultHolder* results_;
 };
 
-class ScreenOrientationDispatcherTest : public testing::Test {
+class ScreenOrientationDelegateTest : public testing::Test {
  protected:
   void SetUp() override {
-    dispatcher_.reset(new ScreenOrientationDispatcher(nullptr));
+    delegate_.reset(new ScreenOrientationDelegate(nullptr));
     ScreenOrientationAssociatedPtr screen_orientation;
     mojo::MakeRequestAssociatedWithDedicatedPipe(&screen_orientation);
-    dispatcher_->SetScreenOrientationForTests(screen_orientation);
+    delegate_->SetScreenOrientationAssociatedPtrForTests(
+        std::move(screen_orientation));
   }
 
   void LockOrientation(
       blink::WebScreenOrientationLockType orientation,
       std::unique_ptr<blink::WebLockOrientationCallback> callback) {
-    dispatcher_->LockOrientation(orientation, std::move(callback));
+    delegate_->LockOrientation(orientation, std::move(callback));
   }
 
-  void UnlockOrientation() { dispatcher_->UnlockOrientation(); }
+  void UnlockOrientation() { delegate_->UnlockOrientation(); }
 
-  int GetRequestId() { return dispatcher_->GetRequestIdForTests(); }
+  int GetRequestId() { return delegate_->GetRequestIdForTests(); }
 
   void RunLockResultCallback(int request_id, LockResult result) {
-    dispatcher_->OnLockOrientationResult(request_id, result);
+    delegate_->OnLockOrientationResult(request_id, result);
   }
 
-  base::MessageLoop message_loop_;
-  std::unique_ptr<ScreenOrientationDispatcher> dispatcher_;
+  std::unique_ptr<ScreenOrientationDelegate> delegate_;
 };
 
 // Test that calling lockOrientation() followed by unlockOrientation() cancel
 // the lockOrientation().
-TEST_F(ScreenOrientationDispatcherTest, CancelPending_Unlocking) {
+TEST_F(ScreenOrientationDelegateTest, CancelPending_Unlocking) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
 
   LockOrientation(
@@ -94,7 +91,7 @@ TEST_F(ScreenOrientationDispatcherTest, CancelPending_Unlocking) {
 }
 
 // Test that calling lockOrientation() twice cancel the first lockOrientation().
-TEST_F(ScreenOrientationDispatcherTest, CancelPending_DoubleLock) {
+TEST_F(ScreenOrientationDelegateTest, CancelPending_DoubleLock) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
   // We create the object to prevent leaks but never actually use it.
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
@@ -114,7 +111,7 @@ TEST_F(ScreenOrientationDispatcherTest, CancelPending_DoubleLock) {
 
 // Test that when a LockError message is received, the request is set as failed
 // with the correct values.
-TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
+TEST_F(ScreenOrientationDelegateTest, LockRequest_Error) {
   std::map<LockResult, blink::WebLockOrientationError> errors;
   errors[LockResult::SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE] =
       blink::kWebLockOrientationErrorNotAvailable;
@@ -139,7 +136,7 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
 
 // Test that when a LockSuccess message is received, the request is set as
 // succeeded.
-TEST_F(ScreenOrientationDispatcherTest, LockRequest_Success) {
+TEST_F(ScreenOrientationDelegateTest, LockRequest_Success) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
   LockOrientation(
       blink::kWebScreenOrientationLockPortraitPrimary,
@@ -153,12 +150,12 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Success) {
 }
 
 // Test the following scenario:
-// - request1 is received by the dispatcher;
-// - request2 is received by the dispatcher;
+// - request1 is received by the delegate;
+// - request2 is received by the delegate;
 // - request1 is rejected;
 // - request1 success response is received.
 // Expected: request1 is still rejected, request2 has not been set as succeeded.
-TEST_F(ScreenOrientationDispatcherTest, RaceScenario) {
+TEST_F(ScreenOrientationDelegateTest, RaceScenario) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results1;
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
 
@@ -186,4 +183,4 @@ TEST_F(ScreenOrientationDispatcherTest, RaceScenario) {
   EXPECT_FALSE(callback_results2.failed_);
 }
 
-}  // namespace content
+}  // namespace blink

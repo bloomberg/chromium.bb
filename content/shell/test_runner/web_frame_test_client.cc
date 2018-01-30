@@ -213,11 +213,6 @@ bool WebFrameTestClient::RunModalBeforeUnloadDialog(bool is_reload) {
   return !test_runner()->shouldStayOnPageAfterHandlingBeforeUnload();
 }
 
-blink::WebScreenOrientationClient*
-WebFrameTestClient::GetWebScreenOrientationClient() {
-  return test_runner()->getMockScreenOrientationClient();
-}
-
 void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
                                                 blink::WebAXEvent event) {
   // Only hook the accessibility events occured during the test run.
