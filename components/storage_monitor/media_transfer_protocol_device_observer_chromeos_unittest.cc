@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 #include "components/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_info_utils.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -45,10 +46,8 @@ const char kStorageVolumeIdentifier[] = "ExampleVolumeId";
 base::LazyInstance<std::map<std::string, device::mojom::MtpStorageInfo>>::Leaky
       g_fake_storage_info_map = LAZY_INSTANCE_INITIALIZER;
 
-// Helper function to get fake MTP device details.
-void GetFakeMtpStorageInfo(
-    const std::string& storage_name,
-    device::MediaTransferProtocolManager::GetStorageInfoCallback callback) {
+const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfoSync(
+    const std::string& storage_name) {
   // Fill the map out if it is empty.
   if (g_fake_storage_info_map.Get().empty()) {
     // Add the invalid MTP storage info.
@@ -69,9 +68,14 @@ void GetFakeMtpStorageInfo(
   }
 
   const auto it = g_fake_storage_info_map.Get().find(storage_name);
-  const auto* storage_info =
-      it != g_fake_storage_info_map.Get().end() ? &it->second : nullptr;
-  std::move(callback).Run(storage_info);
+  return it != g_fake_storage_info_map.Get().end() ? &it->second : nullptr;
+}
+
+// Helper function to get fake MTP device details.
+void GetFakeMtpStorageInfo(
+    const std::string& storage_name,
+    device::MediaTransferProtocolManager::GetStorageInfoCallback callback) {
+  std::move(callback).Run(GetFakeMtpStorageInfoSync(storage_name));
 }
 
 class TestMediaTransferProtocolDeviceObserverChromeOS
@@ -152,12 +156,17 @@ class MediaTransferProtocolDeviceObserverChromeOSTest : public testing::Test {
 
 // Test to verify basic mtp storage attach and detach notifications.
 TEST_F(MediaTransferProtocolDeviceObserverChromeOSTest, BasicAttachDetach) {
+  auto* mtpStorageInfo = GetFakeMtpStorageInfoSync(kStorageWithValidInfo);
+  std::string device_id = GetDeviceIdFromStorageInfo(*mtpStorageInfo);
 
   // Attach a mtp storage.
   mtp_device_observer()->MtpStorageAttached(kStorageWithValidInfo);
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(device_id, observer().last_attached().device_id());
+  EXPECT_EQ(GetDeviceLocationFromStorageName(kStorageWithValidInfo),
+            observer().last_attached().location());
   EXPECT_EQ(base::ASCIIToUTF16(kStorageVendor),
             observer().last_attached().vendor_name());
   EXPECT_EQ(base::ASCIIToUTF16(kStorageProduct),
@@ -168,6 +177,7 @@ TEST_F(MediaTransferProtocolDeviceObserverChromeOSTest, BasicAttachDetach) {
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(device_id, observer().last_detached().device_id());
 }
 
 // When a mtp storage device with invalid storage label and id is
