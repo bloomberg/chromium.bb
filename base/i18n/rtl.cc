@@ -25,6 +25,7 @@
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
 #if defined(OS_IOS)
+#include "base/debug/crash_logging.h"
 #include "base/ios/ios_util.h"
 #endif
 
@@ -154,6 +155,12 @@ std::string ICULocaleName(const std::string& locale_string) {
 }
 
 void SetICUDefaultLocale(const std::string& locale_string) {
+#if defined(OS_IOS)
+  static base::debug::CrashKeyString* crash_key_locale =
+      base::debug::AllocateCrashKeyString("icu_locale_input",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(crash_key_locale, locale_string);
+#endif
   icu::Locale locale(ICULocaleName(locale_string).c_str());
   UErrorCode error_code = U_ZERO_ERROR;
   const char* lang = locale.getLanguage();
