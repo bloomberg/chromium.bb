@@ -93,4 +93,10 @@ RenderFrameHostAndroid::GetAndroidOverlayRoutingToken(
       env, render_frame_host_->GetOverlayRoutingToken());
 }
 
+void RenderFrameHostAndroid::SetHasReceivedUserGesture(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&) {
+  render_frame_host_->SetHasReceivedUserGesture();
+}
+
 }  // namespace content

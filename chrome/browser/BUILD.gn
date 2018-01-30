@@ -2158,8 +2158,6 @@ split_static_library("browser") {
       "android/url_utilities.cc",
       "android/usb/web_usb_chooser_service_android.cc",
       "android/usb/web_usb_chooser_service_android.h",
-      "android/voice_search_tab_helper.cc",
-      "android/voice_search_tab_helper.h",
       "android/warmup_manager.cc",
       "android/web_contents_factory.cc",
       "android/webapk/chrome_webapk_host.cc",

@@ -110,7 +110,6 @@ class WebRemoteFrame : public WebFrame {
   // owner.
   virtual void WillEnterFullscreen() = 0;
 
-  virtual void SetHasReceivedUserGesture() = 0;
   virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) = 0;
 
   // Scrolls the given rectangle into view. This kicks off the recursive scroll

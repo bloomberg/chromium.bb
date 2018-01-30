@@ -278,10 +278,6 @@ class WebLocalFrame : public WebFrame {
   // cross process.
   virtual void SetCommittedFirstRealLoad() = 0;
 
-  // Mark this frame's document as having received a user gesture, based on
-  // one of its descendants having processed a user gesture.
-  virtual void SetHasReceivedUserGesture() = 0;
-
   // Reports a list of unique blink::WebFeature values representing
   // Blink features used, performed or encountered by the browser during the
   // current page load happening on the frame.

@@ -49,6 +49,9 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
 
+  void SetHasReceivedUserGesture(JNIEnv* env,
+                                 const base::android::JavaParamRef<jobject>&);
+
  private:
   RenderFrameHostImpl* const render_frame_host_;
   service_manager::mojom::InterfaceProviderPtr interface_provider_ptr_;

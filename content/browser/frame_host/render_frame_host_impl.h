@@ -682,6 +682,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // received by the other end. For test use only.
   void FlushNetworkAndNavigationInterfacesForTesting();
 
+  // Notifies the render frame that a user gesture was received.
+  void SetHasReceivedUserGesture();
+
  protected:
   friend class RenderFrameHostFactory;
 
