@@ -70,6 +70,9 @@ public class SavePasswordsPreferences
     // Used to pass the password id into a new activity.
     public static final String PASSWORD_LIST_ID = "id";
 
+    // The key for saving |mSearchQuery| to instance bundle.
+    private static final String SAVED_STATE_SEARCH_QUERY = "saved-state-search-query";
+
     // The key for saving |mExportRequested| to instance bundle.
     private static final String SAVED_STATE_EXPORT_REQUESTED = "saved-state-export-requested";
 
@@ -145,6 +148,9 @@ public class SavePasswordsPreferences
                 mExportFileUri = Uri.parse(uriString);
             }
         }
+        if (savedInstanceState.containsKey(SAVED_STATE_SEARCH_QUERY)) {
+            mSearchQuery = savedInstanceState.getString(SAVED_STATE_SEARCH_QUERY);
+        }
     }
 
     @Override
@@ -170,6 +176,10 @@ public class SavePasswordsPreferences
         SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN);
         searchItem.setIcon(convertToPlainWhite(searchItem.getIcon()));
+        if (mSearchQuery != null) { // If a query was recovered, restore the search view.
+            searchItem.expandActionView();
+            searchView.setQuery(mSearchQuery, false);
+        }
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
@@ -567,6 +577,9 @@ public class SavePasswordsPreferences
         outState.putBoolean(SAVED_STATE_EXPORT_REQUESTED, mExportRequested);
         if (mExportFileUri != null) {
             outState.putString(SAVED_STATE_EXPORT_FILE_URI, mExportFileUri.toString());
+        }
+        if (mSearchQuery != null) {
+            outState.putString(SAVED_STATE_SEARCH_QUERY, mSearchQuery);
         }
     }
 
