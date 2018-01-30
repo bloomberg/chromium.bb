@@ -86,9 +86,9 @@ std::unique_ptr<gfx::GpuMemoryBuffer> CreateMockGpuMemoryBuffer(
   fake_handle.native_pixmap_handle.fds.push_back(
       base::FileDescriptor(0, false));
   fake_handle.native_pixmap_handle.planes.push_back(
-      gfx::NativePixmapPlane(1280, 0, 1280 * 720, 0));
+      gfx::NativePixmapPlane(1280, 0, 1280 * 720));
   fake_handle.native_pixmap_handle.planes.push_back(
-      gfx::NativePixmapPlane(1280, 0, 1280 * 720 / 2, 0));
+      gfx::NativePixmapPlane(1280, 0, 1280 * 720 / 2));
   void* fake_mapped_address = reinterpret_cast<void*>(0xdeadbeef);
 
   EXPECT_CALL(*mock_buffer, Map()).WillRepeatedly(Return(true));

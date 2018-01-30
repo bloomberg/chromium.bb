@@ -35,10 +35,10 @@ MockGpuMemoryBufferManager::ReturnValidBuffer(
   // Set a dummy fd since this is for testing only.
   handle.native_pixmap_handle.fds.push_back(base::FileDescriptor(0, false));
   handle.native_pixmap_handle.planes.push_back(
-      gfx::NativePixmapPlane(size.width(), 0, size.width() * size.height(), 0));
+      gfx::NativePixmapPlane(size.width(), 0, size.width() * size.height()));
   handle.native_pixmap_handle.planes.push_back(gfx::NativePixmapPlane(
       size.width(), handle.native_pixmap_handle.planes[0].size,
-      size.width() * size.height() / 2, 0));
+      size.width() * size.height() / 2));
 
   auto mock_buffer = std::make_unique<MockGpuMemoryBuffer>();
   ON_CALL(*mock_buffer, Map()).WillByDefault(Return(true));

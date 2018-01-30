@@ -5,10 +5,17 @@
 #include "ui/gfx/native_pixmap_handle.h"
 
 #if defined(OS_LINUX)
+#include <drm_fourcc.h>
 #include "base/posix/eintr_wrapper.h"
 #endif
 
 namespace gfx {
+
+#if defined(OS_LINUX)
+static_assert(NativePixmapPlane::kNoModifier == DRM_FORMAT_MOD_INVALID,
+              "gfx::NativePixmapPlane::kNoModifier should be an alias for"
+              "DRM_FORMAT_MOD_INVALID");
+#endif
 
 NativePixmapPlane::NativePixmapPlane()
     : stride(0), offset(0), size(0), modifier(0) {}
