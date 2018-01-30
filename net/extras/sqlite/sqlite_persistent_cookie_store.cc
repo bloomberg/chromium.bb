@@ -457,15 +457,9 @@ bool InitTable(sql::Connection* db) {
   if (!db->Execute("CREATE INDEX domain ON cookies(host_key)"))
     return false;
 
-#if defined(OS_IOS)
-  // iOS 8.1 and older doesn't support partial indices. iOS 8.2 supports
-  // partial indices.
-  if (!db->Execute("CREATE INDEX is_transient ON cookies(persistent)")) {
-#else
   if (!db->Execute(
           "CREATE INDEX is_transient ON cookies(persistent) "
           "where persistent != 1")) {
-#endif
     return false;
   }
 
