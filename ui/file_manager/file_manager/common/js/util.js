@@ -1366,3 +1366,17 @@ util.readEntriesRecursively = function(
 
   processEntry(rootEntry);
 };
+
+/**
+ * Executes a functions only when the context is not the incognito one in a
+ * regular session.
+ * @param {function()} callback
+ */
+util.doIfPrimaryContext = function(callback) {
+  chrome.fileManagerPrivate.getProfiles((profiles) => {
+    if ((profiles[0] && profiles[0].profileId == '$guest') ||
+        !chrome.extension.inIncognitoContext) {
+      callback();
+    }
+  });
+};

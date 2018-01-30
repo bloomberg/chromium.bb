@@ -289,6 +289,16 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
  * @private
  */
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
+  util.doIfPrimaryContext(() => {
+    this.onDeviceChangedInternal_(event);
+  });
+};
+
+/**
+ * @param {DeviceEvent} event Device event.
+ * @private
+ */
+DeviceHandler.prototype.onDeviceChangedInternal_ = function(event) {
   switch (event.type) {
     case 'disabled':
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.show(
@@ -351,6 +361,12 @@ Object.freeze(DeviceHandler.MountStatus);
  * @private
  */
 DeviceHandler.prototype.onMountCompleted_ = function(event) {
+  util.doIfPrimaryContext(() => {
+    this.onMountCompletedInternal_(event);
+  });
+};
+
+DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
   var volume = event.volumeMetadata;
 
   if (event.status === 'success' && event.shouldNotify) {
@@ -545,6 +561,16 @@ DeviceHandler.prototype.onUnmount_ = function(event) {
  * @private
  */
 DeviceHandler.prototype.onNotificationClicked_ = function(id) {
+  util.doIfPrimaryContext(() => {
+    this.onNotificationClickedInternal_(id);
+  });
+};
+
+/**
+ * @param {string} id ID of the notification.
+ * @private
+ */
+DeviceHandler.prototype.onNotificationClickedInternal_ = function(id) {
   var pos = id.indexOf(':');
   var type = id.substr(0, pos);
   var devicePath = id.substr(pos + 1);
