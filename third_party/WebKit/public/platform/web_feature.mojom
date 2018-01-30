@@ -1864,6 +1864,10 @@ enum WebFeature {
   kCSSLegacyAlignment = 2351,
   kSRISignatureCheck = 2352,
   kSRISignatureSuccess = 2353,
+  kCSSBasicShape = 2354,
+  kCSSGradient = 2355,
+  kCSSPaintFunction = 2356,
+  kWebkitCrossFade = 2357,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

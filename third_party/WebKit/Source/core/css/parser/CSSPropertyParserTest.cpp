@@ -9,6 +9,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -386,6 +387,41 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertyInvalidEntries) {
       CSSPropertyScrollCustomization, "pan-x pan-x",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   EXPECT_FALSE(value);
+}
+
+TEST(CSSPropertyParserTest, GradientUseCount) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSGradient;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>* { background-image: linear-gradient(red, blue); }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST(CSSPropertyParserTest, PaintUseCount) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  document.SetSecureContextStateForTesting(SecureContextState::kSecure);
+  WebFeature feature = WebFeature::kCSSPaintFunction;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>span { background-image: paint(geometry); }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST(CSSPropertyParserTest, CrossFadeUseCount) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kWebkitCrossFade;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>div { background-image: -webkit-cross-fade(url('from.png'), "
+      "url('to.png'), 0.2); }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
 }  // namespace blink
