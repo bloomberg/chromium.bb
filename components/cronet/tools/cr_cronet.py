@@ -81,6 +81,8 @@ def main():
                       help='name of the build directory')
   parser.add_argument('-i', '--iphoneos', action='store_true',
                       help='build for physical iphone')
+  parser.add_argument('-x', '--x86', action='store_true',
+                      help='build for Intel x86 architecture')
   parser.add_argument('-r', '--release', action='store_true',
                       help='use release configuration')
   parser.add_argument('-a', '--asan', action='store_true',
@@ -99,25 +101,30 @@ def main():
         'use_xcode_clang=true ios_deployment_target="9.0" '
     gn_extra = '--ide=xcode'
     if options.iphoneos:
-      gn_args += ' target_cpu="arm64" '
+      gn_args += 'target_cpu="arm64" '
       out_dir_suffix = '-iphoneos'
     else:
-      gn_args += ' target_cpu="x64" '
+      gn_args += 'target_cpu="x64" '
       out_dir_suffix = '-iphonesimulator'
       if options.asan:
-        gn_args += ' is_asan=true use_xcode_clang=true '
+        gn_args += 'is_asan=true use_xcode_clang=true '
         out_dir_suffix += '-asan'
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
     unit_target = 'cronet_unittests'
-    gn_args = 'use_errorprone_java_compiler=true arm_use_neon=false '
+    gn_args = 'use_errorprone_java_compiler=true '
     gn_extra = ''
     out_dir_suffix = ''
+    if options.x86:
+      gn_args += 'target_cpu="x86" '
+      out_dir_suffix = '-x86'
+    else:
+      gn_args += 'arm_use_neon=false '
     if options.asan:
       # ASAN on Android requires one-time setup described here:
       # https://www.chromium.org/developers/testing/addresssanitizer
-      gn_args += ' is_asan=true is_clang=true is_debug=false '
+      gn_args += 'is_asan=true is_clang=true is_debug=false '
       out_dir_suffix += '-asan'
 
   gn_args += 'target_os="' + target_os + '" enable_websockets=false '+ \
@@ -127,7 +134,7 @@ def main():
       'enable_reporting=false '+ \
       'is_component_build=false ' + \
       'ignore_elf32_limitations=true use_partition_alloc=false ' + \
-      'include_transport_security_state_preload_list=false'
+      'include_transport_security_state_preload_list=false '
 
   extra_options = ' '.join(extra_options_list)
   if options.gn:
@@ -135,7 +142,7 @@ def main():
 
   if options.release:
     out_dir = 'out/Release' + out_dir_suffix
-    gn_args += ' is_debug=false is_official_build=true '
+    gn_args += 'is_debug=false is_official_build=true '
   else:
     out_dir = 'out/Debug' + out_dir_suffix
 

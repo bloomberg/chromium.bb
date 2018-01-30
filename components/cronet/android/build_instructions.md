@@ -25,6 +25,9 @@ Note: these commands clobber output of previously executed gn commands in
 `out/Cronet`. If `--out_dir` is left out, the output directory defaults to
 `out/Debug`.
 
+If `--x86` option is specified, then native library is built for Intel x86
+architecture, and the output directory defaults to `out/Debug-x86`.
+
 ### Building Cronet for releases
 
 To build Cronet with optimizations and with debug information stripped out:
@@ -43,11 +46,9 @@ By default ARMv7 32-bit executables are generated. To generate executables
 targeting other architectures modify [cr_cronet.py](../tools/cr_cronet.py)'s
 `gn_args` variable to include:
 
-*   For ARMv6 32-bit: `arm_version=6`
 *   For ARMv8 64-bit: `target_cpu="arm64"`
 *   For x86 32-bit: `target_cpu="x86"`
 *   For x86 64-bit: `target_cpu="x64"`
-*   For MIPS: `target_cpu="mipsel"`
 
 ## Running tests
 
