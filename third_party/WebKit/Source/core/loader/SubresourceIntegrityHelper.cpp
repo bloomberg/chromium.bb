@@ -25,6 +25,12 @@ WebFeature GetWebFeature(
     case SubresourceIntegrity::ReportInfo::UseCounterFeature::
         kSRIElementWithUnparsableIntegrityAttribute:
       return WebFeature::kSRIElementWithUnparsableIntegrityAttribute;
+    case SubresourceIntegrity::ReportInfo::UseCounterFeature::
+        kSRISignatureCheck:
+      return WebFeature::kSRISignatureCheck;
+    case SubresourceIntegrity::ReportInfo::UseCounterFeature::
+        kSRISignatureSuccess:
+      return WebFeature::kSRISignatureSuccess;
   }
   NOTREACHED();
   return WebFeature::kSRIElementWithUnparsableIntegrityAttribute;
