@@ -919,7 +919,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 
 #if CONFIG_TXK_SEL
   TX_TYPE tx_type;
-  if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] >= TX_32X32) {
+  if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
     tx_type = DCT_DCT;
   } else {
     if (plane_type == PLANE_TYPE_Y) {
