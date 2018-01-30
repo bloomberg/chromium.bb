@@ -189,12 +189,21 @@ class NotificationInputReplyButtonMD : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(NotificationInputReplyButtonMD);
 };
 
-class NotificationInputContainerMD : public views::View,
+class NotificationInputContainerMD : public views::InkDropHostView,
                                      public views::ButtonListener {
  public:
   NotificationInputContainerMD(NotificationInputDelegate* delegate);
   ~NotificationInputContainerMD() override;
 
+  void AnimateBackground(const ui::LocatedEvent& event);
+
+  // Overridden from views::InkDropHostView:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  SkColor GetInkDropBaseColor() const override;
+
+  // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   NotificationInputTextfieldMD* textfield() const { return textfield_; };
@@ -202,6 +211,8 @@ class NotificationInputContainerMD : public views::View,
 
  private:
   NotificationInputDelegate* const delegate_;
+
+  views::InkDropContainerView* const ink_drop_container_;
 
   NotificationInputTextfieldMD* const textfield_;
   NotificationInputReplyButtonMD* const button_;
