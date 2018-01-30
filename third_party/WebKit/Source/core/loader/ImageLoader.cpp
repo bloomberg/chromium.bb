@@ -395,6 +395,16 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
         !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull())
       resource_request.SetRequestContext(
           WebURLRequest::kRequestContextImageSet);
+
+    bool page_is_being_dismissed =
+        document.PageDismissalEventBeingDispatched() != Document::kNoDismissal;
+    if (page_is_being_dismissed) {
+      resource_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
+                                          "max-age=0");
+      resource_request.SetKeepalive(true);
+      resource_request.SetRequestContext(WebURLRequest::kRequestContextPing);
+    }
+
     FetchParameters params(resource_request, resource_loader_options);
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetClientHintsPreferences());
@@ -403,6 +413,12 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());
+
+    // If this load is starting while navigating away, treat it as an auditing
+    // keepalive request, and don't report its results back to the element.
+    if (page_is_being_dismissed)
+      new_image_content = nullptr;
+
     ClearFailedLoadURL();
   } else {
     if (!image_source_url.IsNull()) {

@@ -169,23 +169,6 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
       WebURLRequest::kRequestContextUnspecified) {
     params.SetRequestContext(WebURLRequest::kRequestContextImage);
   }
-  if (fetcher->Context().PageDismissalEventBeingDispatched()) {
-    KURL request_url = params.GetResourceRequest().Url();
-    if (request_url.IsValid()) {
-      ResourceRequestBlockedReason block_reason = fetcher->Context().CanRequest(
-          Resource::kImage, params.GetResourceRequest(), request_url,
-          params.Options(),
-          /* Don't send security violation reports for speculative preloads */
-          params.IsSpeculativePreload()
-              ? SecurityViolationReportingPolicy::kSuppressReporting
-              : SecurityViolationReportingPolicy::kReport,
-          params.GetOriginRestriction(),
-          params.GetResourceRequest().GetRedirectStatus());
-      if (block_reason == ResourceRequestBlockedReason::kNone)
-        fetcher->Context().SendImagePing(request_url);
-    }
-    return nullptr;
-  }
 
   ImageResource* resource = ToImageResource(
       fetcher->RequestResource(params, ImageResourceFactory(params), nullptr));
