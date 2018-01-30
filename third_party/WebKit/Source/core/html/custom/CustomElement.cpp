@@ -170,8 +170,8 @@ HTMLElement* CustomElement::CreateUndefinedElement(
     SECURITY_DCHECK(v0element->IsHTMLElement());
     element = ToHTMLElement(v0element);
   } else if (should_create_builtin) {
-    element = HTMLElementFactory::createHTMLElement(
-        tag_name.LocalName(), document, kCreatedByCreateElement);
+    element = ToHTMLElement(
+        document.CreateRawElement(tag_name, kCreatedByCreateElement));
   } else {
     element = HTMLElement::Create(tag_name, document);
   }

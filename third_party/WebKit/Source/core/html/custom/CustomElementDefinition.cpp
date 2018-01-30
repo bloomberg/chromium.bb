@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Attr.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/custom/CustomElement.h"
@@ -121,14 +122,13 @@ HTMLElement* CustomElementDefinition::CreateElementAsync(
     // prefix set to prefix, local name set to localName, custom element
     // state set to "undefined", custom element definition set to null,
     // is value set to is, and node document set to document.
-    auto* result = HTMLElementFactory::CreateRawHTMLElement(
-        tag_name.LocalName(), document, flags);
+    auto* result = document.CreateRawElement(tag_name, flags);
     result->SetCustomElementState(CustomElementState::kUndefined);
 
     // 5.4. Otherwise, enqueue a custom element upgrade reaction given
     // result and definition.
     EnqueueUpgradeReaction(result);
-    return result;
+    return ToHTMLElement(result);
   }
 
   // 6. If definition is non-null, then:
