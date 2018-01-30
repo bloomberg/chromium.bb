@@ -51,9 +51,7 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
 
   CSSStyleDeclaration* style() const;
 
-  StylePropertyMap* attributeStyleMap() const {
-    return attribute_style_map_.Get();
-  }
+  StylePropertyMap* styleMap() const { return style_map_.Get(); }
 
   // FIXME: Not CSSOM. Remove.
   StyleRule* GetStyleRule() const { return style_rule_.Get(); }
@@ -67,7 +65,7 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
 
   Member<StyleRule> style_rule_;
   mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
-  Member<StylePropertyMap> attribute_style_map_;
+  Member<StylePropertyMap> style_map_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, kStyleRule);

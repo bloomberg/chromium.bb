@@ -123,7 +123,7 @@ function createDeclaredStyleMap(test, cssText) {
   test.add_cleanup(() => {
     style.remove();
   });
-  return rule.attributeStyleMap;
+  return rule.styleMap;
 }
 
 // Creates a new element with background image set to |imageValue|
