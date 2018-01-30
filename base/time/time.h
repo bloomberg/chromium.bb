@@ -132,7 +132,9 @@ class BASE_EXPORT TimeDelta {
   // may be unclear from the perspective of a caller.
   //
   // DEPRECATED - Do not use in new code. http://crbug.com/634507
-  static TimeDelta FromInternalValue(int64_t delta) { return TimeDelta(delta); }
+  static constexpr TimeDelta FromInternalValue(int64_t delta) {
+    return TimeDelta(delta);
+  }
 
   // Returns the maximum time delta, which should be greater than any reasonable
   // time delta we might compare it to. Adding or subtracting the maximum time
@@ -150,10 +152,10 @@ class BASE_EXPORT TimeDelta {
   // For serializing, use FromInternalValue to reconstitute.
   //
   // DEPRECATED - Do not use in new code. http://crbug.com/634507
-  int64_t ToInternalValue() const { return delta_; }
+  constexpr int64_t ToInternalValue() const { return delta_; }
 
   // Returns the magnitude (absolute value) of this TimeDelta.
-  TimeDelta magnitude() const {
+  constexpr TimeDelta magnitude() const {
     // Some toolchains provide an incomplete C++11 implementation and lack an
     // int64_t overload for std::abs().  The following is a simple branchless
     // implementation:
@@ -162,13 +164,15 @@ class BASE_EXPORT TimeDelta {
   }
 
   // Returns true if the time delta is zero.
-  bool is_zero() const {
-    return delta_ == 0;
-  }
+  constexpr bool is_zero() const { return delta_ == 0; }
 
   // Returns true if the time delta is the maximum/minimum time delta.
-  bool is_max() const { return delta_ == std::numeric_limits<int64_t>::max(); }
-  bool is_min() const { return delta_ == std::numeric_limits<int64_t>::min(); }
+  constexpr bool is_max() const {
+    return delta_ == std::numeric_limits<int64_t>::max();
+  }
+  constexpr bool is_min() const {
+    return delta_ == std::numeric_limits<int64_t>::min();
+  }
 
 #if defined(OS_POSIX)
   struct timespec ToTimeSpec() const;
@@ -190,12 +194,15 @@ class BASE_EXPORT TimeDelta {
   int64_t InMicroseconds() const;
   int64_t InNanoseconds() const;
 
-  TimeDelta& operator=(TimeDelta other) {
+  constexpr TimeDelta& operator=(TimeDelta other) {
     delta_ = other.delta_;
     return *this;
   }
 
-  // Computations with other deltas.
+  // Computations with other deltas. Can easily be made constexpr with C++17 but
+  // hard to do until then per limitations around
+  // __builtin_(add|sub)_overflow in safe_math_clang_gcc_impl.h :
+  // https://chromium-review.googlesource.com/c/chromium/src/+/873352#message-59594ab70827795a67e0780404adf37b4b6c2f14
   TimeDelta operator+(TimeDelta other) const {
     return TimeDelta(time_internal::SaturatedAdd(*this, other.delta_));
   }
@@ -209,12 +216,10 @@ class BASE_EXPORT TimeDelta {
   TimeDelta& operator-=(TimeDelta other) {
     return *this = (*this - other);
   }
-  TimeDelta operator-() const {
-    return TimeDelta(-delta_);
-  }
+  constexpr TimeDelta operator-() const { return TimeDelta(-delta_); }
 
   // Computations with numeric types.
-  template<typename T>
+  template <typename T>
   TimeDelta operator*(T a) const {
     CheckedNumeric<int64_t> rv(delta_);
     rv *= a;
@@ -225,7 +230,7 @@ class BASE_EXPORT TimeDelta {
       return TimeDelta(std::numeric_limits<int64_t>::min());
     return TimeDelta(std::numeric_limits<int64_t>::max());
   }
-  template<typename T>
+  template <typename T>
   TimeDelta operator/(T a) const {
     CheckedNumeric<int64_t> rv(delta_);
     rv /= a;
@@ -237,17 +242,17 @@ class BASE_EXPORT TimeDelta {
       return TimeDelta(std::numeric_limits<int64_t>::min());
     return TimeDelta(std::numeric_limits<int64_t>::max());
   }
-  template<typename T>
+  template <typename T>
   TimeDelta& operator*=(T a) {
     return *this = (*this * a);
   }
-  template<typename T>
+  template <typename T>
   TimeDelta& operator/=(T a) {
     return *this = (*this / a);
   }
 
-  int64_t operator/(TimeDelta a) const { return delta_ / a.delta_; }
-  TimeDelta operator%(TimeDelta a) const {
+  constexpr int64_t operator/(TimeDelta a) const { return delta_ / a.delta_; }
+  constexpr TimeDelta operator%(TimeDelta a) const {
     return TimeDelta(delta_ % a.delta_);
   }
 
@@ -296,8 +301,8 @@ class BASE_EXPORT TimeDelta {
   int64_t delta_;
 };
 
-template<typename T>
-inline TimeDelta operator*(T a, TimeDelta td) {
+template <typename T>
+TimeDelta operator*(T a, TimeDelta td) {
   return td * a;
 }
 
