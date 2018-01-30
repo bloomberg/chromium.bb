@@ -235,7 +235,9 @@ message PolicyFetchRequest {
   //   google/chromeos/device => ChromeDeviceSettingsProto
   //   google/chromeos/user => ChromeSettingsProto
   //   google/chromeos/publicaccount => ChromeSettingsProto
+  //   google/chrome/machine-level-user => ChromeSettingsProto
   //   google/chrome/extension => ExternalPolicyData
+  //   google/chrome/machine-level-extension => ExternalPolicyData
   //   google/chromeos/signinextension => ExternalPolicyData
   //   google/android/user => ChromeSettingsProto
   //   google/ios/user => ChromeSettingsProto
@@ -883,6 +885,10 @@ message BrowserReport {
 
   // Profile specific reports, one per profile.
   repeated ChromeUserProfileReport chrome_user_profile_reports = 3;
+
+  // Executable path is guaranteed to be unique per Chrome install on the same
+  // machine.
+  optional string executable_path = 4;
 }
 
 // Report the status of a Chrome installation on non-Chrome OS platform.
