@@ -2795,6 +2795,21 @@
       "features": [
         "max_msaa_sample_count_4"
       ]
+    },
+    {
+      "id": 255,
+      "description": "Fullscreen video crashes macOS 10.11 WindowServer.",
+      "cr_bugs": [806506],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.12"
+        }
+      },
+      "features": [
+        "disable_av_sample_buffer_display_layer"
+      ]
     }
   ]
 }
