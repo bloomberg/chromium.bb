@@ -38,12 +38,6 @@
   ProceduralBlock _runBlock;
 }
 
-// Overrides default designated initializer.
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithName:(NSString*)name block:(ProceduralBlock)block {
   DCHECK(block);
   self = [super init];

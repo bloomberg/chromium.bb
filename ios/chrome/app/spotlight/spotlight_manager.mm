@@ -24,7 +24,6 @@
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)init NS_UNAVAILABLE;
 @end
 
 @implementation SpotlightManager
@@ -50,11 +49,6 @@
     _actionsManager = [ActionsSpotlightManager actionsSpotlightManager];
   }
   return self;
-}
-
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
 }
 
 - (void)dealloc {

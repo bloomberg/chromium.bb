@@ -116,11 +116,6 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
     _shouldPerformAdditionalDelegateHandling;
 @synthesize userInteracted = _userInteracted;
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)
 initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
      startupInformation:(id<StartupInformation>)startupInformation

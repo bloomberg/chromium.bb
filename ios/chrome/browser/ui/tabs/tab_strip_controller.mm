@@ -454,11 +454,6 @@ UIColor* BackgroundColor() {
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   [_tabStripView setDelegate:nil];
   [_tabStripView setLayoutDelegate:nil];

@@ -192,11 +192,6 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)printView:(UIView*)view
          withTitle:(NSString*)title
     viewController:(UIViewController*)viewController {

@@ -28,11 +28,6 @@ const int kMaximumBreakpadValueSize = 255;
   std::unique_ptr<base::DictionaryValue> dictionary_;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithKey:(NSString*)key {
   if ((self = [super init])) {
     DCHECK([key length] && ([key length] <= kMaximumBreakpadValueSize));

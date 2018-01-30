@@ -52,11 +52,6 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (NSArray*)rectsForRange:(NSRange)range {
   NSRange framedRange = self.textFrame.framedRange;
   if (!range.length || range.location + range.length > framedRange.length)

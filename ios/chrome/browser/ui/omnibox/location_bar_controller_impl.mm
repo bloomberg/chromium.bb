@@ -107,11 +107,6 @@ bool IsCurrentPageOffline(web::WebState* webState) {
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)clearText {
   _omniboxView->ClearText();
 }

@@ -100,11 +100,6 @@ const struct {
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   // Set audience to nil to stop observation.
   self.audience = nil;

@@ -63,11 +63,6 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
 
 #pragma mark - Public
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   DCHECK(browserState);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);

@@ -99,11 +99,6 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 
 #pragma mark - Public Methods
 
-- (instancetype)init {
-  NOTREACHED();
-  return self;
-}
-
 - (instancetype)initWithDelegate:(id<CRWWebUIPageBuilderDelegate>)delegate {
   if (self = [super init]) {
     _delegate = delegate;

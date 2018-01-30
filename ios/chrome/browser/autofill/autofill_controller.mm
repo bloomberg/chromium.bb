@@ -106,11 +106,6 @@ using autofill::AutofillPopupDelegate;
                     downloadEnabled:YES];
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   DCHECK(!_autofillAgent);  // detachFromWebController must have been called.
 }

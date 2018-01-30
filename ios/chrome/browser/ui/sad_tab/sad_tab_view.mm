@@ -149,21 +149,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithCoder:(NSCoder*)aDecoder {
-  NOTREACHED();
-  return nil;
-}
-
 #pragma mark - Text Utilities
 
 + (nonnull NSAttributedString*)bulletedAttributedStringFromStrings:

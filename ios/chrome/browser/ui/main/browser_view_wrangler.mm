@@ -79,11 +79,6 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   DCHECK(_isShutdown) << "-shutdown must be called before -dealloc";
 }

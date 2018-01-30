@@ -45,11 +45,6 @@
 @synthesize isOriginalTitle = isOriginalTitle_;
 @synthesize isPagePrintable = isPagePrintable_;
 
-- (id)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (id)initWithShareURL:(const GURL&)shareURL
     passwordManagerURL:(const GURL&)passwordManagerURL
                  title:(NSString*)title

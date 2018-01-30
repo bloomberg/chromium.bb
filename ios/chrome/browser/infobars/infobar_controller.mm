@@ -30,11 +30,6 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   [_infoBarView removeFromSuperview];
 }
