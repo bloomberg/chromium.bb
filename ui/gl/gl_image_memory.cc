@@ -12,6 +12,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_version_info.h"
 
 using gfx::BufferFormat;
@@ -30,6 +31,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_RG:
     case GL_RGB:
     case GL_RGBA:
+    case GL_RGB10_A2_EXT:
     case GL_BGRA_EXT:
       return true;
     default:
@@ -52,10 +54,10 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return true;
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
@@ -82,10 +84,10 @@ bool IsCompressedFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return false;
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
@@ -126,6 +128,9 @@ GLenum TextureFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
       return GL_RGB;
     case gfx::BufferFormat::BGRX_1010102:
+      // Technically speaking we should use an opaque format, but neither
+      // OpenGLES nor OpenGL supports the hypothetical GL_RGB10_EXT.
+      return GL_RGB10_A2_EXT;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
@@ -142,6 +147,7 @@ GLenum DataFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
       return GL_RGBA;
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
       return GL_BGRA_EXT;
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
@@ -157,7 +163,6 @@ GLenum DataFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
       return TextureFormat(format);
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
@@ -186,12 +191,13 @@ GLenum DataType(gfx::BufferFormat format) {
       return GL_UNSIGNED_SHORT;
     case gfx::BufferFormat::RGBA_F16:
       return GL_HALF_FLOAT_OES;
+    case gfx::BufferFormat::BGRX_1010102:
+      return GL_UNSIGNED_INT_2_10_10_10_REV;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
@@ -213,6 +219,7 @@ GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::BGRA_8888:
       return base::checked_cast<GLint>(stride) / 4;
     case gfx::BufferFormat::RGBA_F16:
@@ -224,7 +231,6 @@ GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
@@ -330,6 +336,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
                           data_format, data_type, data_row_length);
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::R_8:
@@ -356,11 +363,10 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
       return nullptr;  // No data conversion needed
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(format);
       return nullptr;
   }
 
@@ -390,12 +396,13 @@ bool GLImageMemory::Initialize(const unsigned char* memory,
                                gfx::BufferFormat format,
                                size_t stride) {
   if (!ValidInternalFormat(internalformat_)) {
-    LOG(ERROR) << "Invalid internalformat: " << internalformat_;
+    LOG(ERROR) << "Invalid internalformat: "
+               << GLEnums::GetStringEnum(internalformat_);
     return false;
   }
 
   if (!ValidFormat(format)) {
-    LOG(ERROR) << "Invalid format: " << static_cast<int>(format);
+    LOG(ERROR) << "Invalid format: " << gfx::BufferFormatToString(format);
     return false;
   }
 
