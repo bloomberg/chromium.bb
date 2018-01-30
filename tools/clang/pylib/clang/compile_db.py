@@ -73,8 +73,8 @@ def _ProcessCompileDatabaseForWindows(compile_db):
 
 def GetNinjaPath():
   return os.path.join(
-      os.path.dirname(os.realpath(__file__)), '..', '..', '..', 'third_party',
-        'depot_tools', 'ninja')
+      os.path.dirname(os.path.realpath(__file__)),
+        '..', '..', '..', '..', 'third_party', 'depot_tools', 'ninja')
 
 
 # FIXME: This really should be a build target, rather than generated at runtime.
