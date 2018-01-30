@@ -71,6 +71,7 @@
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace vr_shell {
 
@@ -457,9 +458,8 @@ void VrShell::OnTabListCreated(JNIEnv* env,
 void VrShell::ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito) {
   size_t len = env->GetArrayLength(tabs);
   for (size_t i = 0; i < len; ++i) {
-    jobject jtab = env->GetObjectArrayElement(tabs, i);
-    TabAndroid* tab =
-        TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, jtab));
+    ScopedJavaLocalRef<jobject> j_tab(env, env->GetObjectArrayElement(tabs, i));
+    TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
     ui_->AppendToTabList(incognito, tab->GetAndroidId(), tab->GetTitle());
   }
 }
