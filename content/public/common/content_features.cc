@@ -564,4 +564,8 @@ bool IsVideoCaptureServiceEnabledForBrowserProcess() {
 #endif
 }
 
+// Enables code caching after executing the script.
+const base::Feature kCodeCacheAfterExecute{"CodeCacheAfterExecute",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
