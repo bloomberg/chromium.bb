@@ -179,6 +179,45 @@ public final class RemoteObjectImplTest {
         verify(response, times(2)).call(resultIsOk());
     }
 
+    /**
+     * Reports to the runnable it is given when its static method is called.
+     * Works around the fact that a static method cannot capture variables.
+     */
+    static class ObjectWithStaticMethod {
+        static Runnable sRunnable;
+
+        @TestJavascriptInterface
+        public static void staticMethod() {
+            sRunnable.run();
+        }
+    }
+
+    @Test
+    public void testStaticMethod() {
+        // Static methods should work just like non-static ones.
+
+        Object target = new ObjectWithStaticMethod();
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+
+        Runnable runnable = mock(Runnable.class);
+        ObjectWithStaticMethod.sRunnable = runnable;
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("staticMethod", new RemoteInvocationArgument[] {}, response);
+        ObjectWithStaticMethod.sRunnable = null;
+        verify(runnable).run();
+        verify(response).call(resultIsOk());
+
+        RemoteObject.HasMethodResponse hasMethodResponse =
+                mock(RemoteObject.HasMethodResponse.class);
+        remoteObject.hasMethod("staticMethod", hasMethodResponse);
+        verify(hasMethodResponse).call(true);
+
+        RemoteObject.GetMethodsResponse getMethodsResponse =
+                mock(RemoteObject.GetMethodsResponse.class);
+        remoteObject.getMethods(getMethodsResponse);
+        verify(getMethodsResponse).call(aryEq(new String[] {"staticMethod"}));
+    }
+
     @Test
     public void testInvokeMethodNotFound() {
         Object target = new Object() {
