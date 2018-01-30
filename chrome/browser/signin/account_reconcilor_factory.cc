@@ -131,7 +131,8 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
     case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       return std::make_unique<signin::DiceAccountReconcilorDelegate>(
-          ChromeSigninClientFactory::GetForProfile(profile));
+          ChromeSigninClientFactory::GetForProfile(profile),
+          AccountConsistencyModeManager::GetMethodForProfile(profile));
 #else
       NOTREACHED();
       return nullptr;

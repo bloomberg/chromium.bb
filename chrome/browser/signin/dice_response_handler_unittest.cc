@@ -134,7 +134,8 @@ class DiceResponseHandlerTest : public testing::Test,
                                 &account_tracker_service_,
                                 &signin_manager_,
                                 &signin_error_controller_,
-                                &cookie_service_),
+                                &cookie_service_,
+                                signin::AccountConsistencyMethod::kDice),
         reconcilor_blocked_count_(0),
         reconcilor_unblocked_count_(0) {
     loop_.SetTaskRunner(task_runner_);
@@ -147,7 +148,7 @@ class DiceResponseHandlerTest : public testing::Test,
     signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            &signin_client_);
+            &signin_client_, signin::AccountConsistencyMethod::kDisabled);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
         &token_service_, &signin_manager_, &signin_client_, nullptr,
         std::move(account_reconcilor_delegate));

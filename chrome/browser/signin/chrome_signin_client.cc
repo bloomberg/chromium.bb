@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -71,7 +72,6 @@ ChromeSigninClient::ChromeSigninClient(
     : OAuth2TokenService::Consumer("chrome_signin_client"),
       profile_(profile),
       signin_error_controller_(signin_error_controller),
-      account_consistency_mode_manager_(profile),
       weak_ptr_factory_(this) {
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
@@ -468,7 +468,8 @@ void ChromeSigninClient::AfterCredentialsCopied() {
 
 void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  account_consistency_mode_manager_.SetReadyForDiceMigration(is_ready);
+  AccountConsistencyModeManager::GetForProfile(profile_)
+      ->SetReadyForDiceMigration(is_ready);
 #else
   NOTREACHED();
 #endif

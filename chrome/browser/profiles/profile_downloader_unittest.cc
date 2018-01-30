@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -47,17 +46,11 @@ class ProfileDownloaderTest : public testing::Test,
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
                               FakeAccountFetcherServiceBuilder::BuildForTests);
-    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                              signin::BuildTestSigninClient);
-
     profile_ = builder.Build();
     account_tracker_service_ =
         AccountTrackerServiceFactory::GetForProfile(profile_.get());
     account_fetcher_service_ = static_cast<FakeAccountFetcherService*>(
         AccountFetcherServiceFactory::GetForProfile(profile_.get()));
-    signin_client_ = static_cast<TestSigninClient*>(
-        ChromeSigninClientFactory::GetForProfile(profile_.get()));
-    signin_client_->SetURLRequestContext(profile_->GetRequestContext());
     profile_downloader_.reset(new ProfileDownloader(this));
   }
 
@@ -88,7 +81,6 @@ class ProfileDownloaderTest : public testing::Test,
   AccountTrackerService* account_tracker_service_;
   FakeAccountFetcherService* account_fetcher_service_;
   content::TestBrowserThreadBundle thread_bundle_;
-  TestSigninClient* signin_client_;
   std::unique_ptr<Profile> profile_;
   std::unique_ptr<ProfileDownloader> profile_downloader_;
 };

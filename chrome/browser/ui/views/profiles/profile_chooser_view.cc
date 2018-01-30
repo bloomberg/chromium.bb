@@ -174,7 +174,7 @@ views::ImageButton* CreateBackButton(views::ButtonListener* listener) {
   return back_button;
 }
 
-BadgedProfilePhoto::BadgeType GetProfileBadgeType(const Profile* profile) {
+BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   if (!profile->IsSupervised()) {
     return AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)
                ? BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE

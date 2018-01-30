@@ -14,6 +14,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "ios/web/public/browser_state.h"
@@ -364,7 +365,8 @@ void AccountConsistencyService::ApplyCookieRequests() {
     case ADD_CHROME_CONNECTED_COOKIE:
       cookie_value = signin::BuildMirrorRequestCookieIfPossible(
           url, signin_manager_->GetAuthenticatedAccountInfo().gaia,
-          cookie_settings_.get(), signin::PROFILE_MODE_DEFAULT);
+          signin::AccountConsistencyMethod::kMirror, cookie_settings_.get(),
+          signin::PROFILE_MODE_DEFAULT);
       if (cookie_value.empty()) {
         // Don't add the cookie. Tentatively correct |last_cookie_update_map_|.
         last_cookie_update_map_.erase(cookie_requests_.front().domain);

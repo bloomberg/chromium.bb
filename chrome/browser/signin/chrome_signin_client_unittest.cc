@@ -20,6 +20,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/common/network_connection_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -181,7 +182,8 @@ class MockSigninManager : public SigninManager {
                       nullptr,
                       &fake_service_,
                       nullptr,
-                      signin_error_controller) {
+                      signin_error_controller,
+                      signin::AccountConsistencyMethod::kDisabled) {
     DCHECK(signin_error_controller);
   }
 

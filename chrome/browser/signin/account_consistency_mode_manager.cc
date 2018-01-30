@@ -5,10 +5,14 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -33,11 +37,61 @@ enum class DiceMigrationStatus {
 };
 #endif
 
+class AccountConsistencyModeManagerFactory
+    : public BrowserContextKeyedServiceFactory {
+ public:
+  // Returns an instance of the factory singleton.
+  static AccountConsistencyModeManagerFactory* GetInstance() {
+    return base::Singleton<AccountConsistencyModeManagerFactory>::get();
+  }
+
+  static AccountConsistencyModeManager* GetForProfile(Profile* profile) {
+    DCHECK(profile);
+    return static_cast<AccountConsistencyModeManager*>(
+        GetInstance()->GetServiceForBrowserContext(profile, true));
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      AccountConsistencyModeManagerFactory>;
+
+  AccountConsistencyModeManagerFactory()
+      : BrowserContextKeyedServiceFactory(
+            "AccountConsistencyModeManager",
+            BrowserContextDependencyManager::GetInstance()) {}
+
+  ~AccountConsistencyModeManagerFactory() override = default;
+
+  // BrowserContextKeyedServiceFactory:
+  KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const override {
+    DCHECK(!context->IsOffTheRecord());
+    Profile* profile = static_cast<Profile*>(context);
+    return new AccountConsistencyModeManager(profile);
+  }
+};
+
+// Returns the default account consistency for guest profiles.
+signin::AccountConsistencyMethod GetMethodForNonRegularProfile() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  return signin::AccountConsistencyMethod::kDiceFixAuthErrors;
+#else
+  return signin::AccountConsistencyMethod::kDisabled;
+#endif
+}
+
 }  // namespace
+
+// static
+AccountConsistencyModeManager* AccountConsistencyModeManager::GetForProfile(
+    Profile* profile) {
+  return AccountConsistencyModeManagerFactory::GetForProfile(profile);
+}
 
 AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
+  DCHECK(!profile_->IsOffTheRecord());
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   bool is_ready_for_dice = IsReadyForDiceMigration();
   PrefService* user_prefs = profile->GetPrefs();
@@ -69,19 +123,36 @@ void AccountConsistencyModeManager::RegisterProfilePrefs(
 #endif
 }
 
+// static
+signin::AccountConsistencyMethod
+AccountConsistencyModeManager::GetMethodForProfile(Profile* profile) {
+  if (profile->IsOffTheRecord())
+    return GetMethodForNonRegularProfile();
+
+  return AccountConsistencyModeManager::GetForProfile(profile)
+      ->GetAccountConsistencyMethod();
+}
+
+// static
+signin::AccountConsistencyMethod
+AccountConsistencyModeManager::GetMethodForPrefMember(
+    BooleanPrefMember* dice_pref_member) {
+  if (signin::IsDiceEnabled(dice_pref_member))
+    return signin::AccountConsistencyMethod::kDice;
+
+  return signin::GetAccountConsistencyMethod();
+}
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void AccountConsistencyModeManager::SetReadyForDiceMigration(bool is_ready) {
+  DCHECK_EQ(Profile::ProfileType::REGULAR_PROFILE, profile_->GetProfileType());
   SetDiceMigrationOnStartup(profile_->GetPrefs(), is_ready);
 }
 
 // static
-bool AccountConsistencyModeManager::IsDiceEnabledForProfile(
-    const Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-
-  return profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE &&
-         signin::IsDiceEnabledForProfile(profile->GetPrefs());
+bool AccountConsistencyModeManager::IsDiceEnabledForProfile(Profile* profile) {
+  return GetMethodForProfile(profile) ==
+         signin::AccountConsistencyMethod::kDice;
 }
 
 // static
@@ -93,20 +164,38 @@ void AccountConsistencyModeManager::SetDiceMigrationOnStartup(
 }
 
 bool AccountConsistencyModeManager::IsReadyForDiceMigration() {
-  return profile_->IsNewProfile() ||
-         profile_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref);
+  return (profile_->GetProfileType() ==
+          Profile::ProfileType::REGULAR_PROFILE) &&
+         (profile_->IsNewProfile() ||
+          profile_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 // static
 bool AccountConsistencyModeManager::IsMirrorEnabledForProfile(
-    const Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
+    Profile* profile) {
+  return GetMethodForProfile(profile) ==
+         signin::AccountConsistencyMethod::kMirror;
+}
+
+signin::AccountConsistencyMethod
+AccountConsistencyModeManager::GetAccountConsistencyMethod() {
+  if (profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
+    DCHECK_EQ(Profile::ProfileType::GUEST_PROFILE, profile_->GetProfileType());
+    return GetMethodForNonRegularProfile();
+  }
+
+#if BUILDFLAG(ENABLE_MIRROR)
+  return signin::AccountConsistencyMethod::kMirror;
+#endif
 
 #if defined(OS_CHROMEOS)
-  return profile->IsChild();
-#else
-  return signin::IsAccountConsistencyMirrorEnabled();
+  if (profile_->IsChild())
+    return signin::AccountConsistencyMethod::kMirror;
 #endif
+
+  if (signin::IsDiceEnabledForProfile(profile_->GetPrefs()))
+    return signin::AccountConsistencyMethod::kDice;
+
+  return signin::GetAccountConsistencyMethod();
 }

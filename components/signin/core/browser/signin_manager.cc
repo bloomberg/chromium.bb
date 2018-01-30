@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -28,11 +27,13 @@
 
 using namespace signin_internals_util;
 
-SigninManager::SigninManager(SigninClient* client,
-                             ProfileOAuth2TokenService* token_service,
-                             AccountTrackerService* account_tracker_service,
-                             GaiaCookieManagerService* cookie_manager_service,
-                             SigninErrorController* signin_error_controller)
+SigninManager::SigninManager(
+    SigninClient* client,
+    ProfileOAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service,
+    GaiaCookieManagerService* cookie_manager_service,
+    SigninErrorController* signin_error_controller,
+    signin::AccountConsistencyMethod account_consistency)
     : SigninManagerBase(client,
                         account_tracker_service,
                         signin_error_controller),
@@ -42,6 +43,7 @@ SigninManager::SigninManager(SigninClient* client,
       diagnostics_client_(nullptr),
       token_service_(token_service),
       cookie_manager_service_(cookie_manager_service),
+      account_consistency_(account_consistency),
       signin_manager_signed_in_(false),
       user_info_fetched_by_account_tracker_(false),
       weak_pointer_factory_(this) {}
@@ -159,7 +161,7 @@ void SigninManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
-               !signin::IsDiceEnabledForProfile(client_->GetPrefs()));
+               account_consistency_ != signin::AccountConsistencyMethod::kDice);
 }
 
 void SigninManager::SignOutAndRemoveAllAccounts(

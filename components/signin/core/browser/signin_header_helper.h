@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/prefs/pref_member.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_features.h"
 #include "url/gurl.h"
 
@@ -186,6 +187,7 @@ bool SettingsAllowSigninCookies(
 std::string BuildMirrorRequestCookieIfPossible(
     const GURL& url,
     const std::string& account_id,
+    AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask);
 
@@ -196,8 +198,8 @@ void AppendOrRemoveMirrorRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
+    AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
-    bool is_mirror_enabled,
     int profile_mode_mask);
 
 // Adds the Dice to all Gaia requests from a connected profile, with the
@@ -210,7 +212,7 @@ bool AppendOrRemoveDiceRequestHeader(
     const std::string& account_id,
     bool sync_enabled,
     bool sync_has_auth_error,
-    BooleanPrefMember* dice_pref_member,
+    AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings);
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response

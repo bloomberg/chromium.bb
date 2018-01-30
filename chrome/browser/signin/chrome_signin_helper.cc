@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -441,9 +442,14 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
+  AccountConsistencyMethod account_consistency =
+      AccountConsistencyModeManager::GetMethodForPrefMember(
+          io_data->dice_enabled());
+
 #if defined(OS_CHROMEOS)
   // Mirror account consistency required by profile.
   if (io_data->account_consistency_mirror_required()->GetValue()) {
+    account_consistency = AccountConsistencyMethod::kMirror;
     // Can't add new accounts.
     profile_mode_mask |= PROFILE_MODE_ADD_ACCOUNT_DISABLED;
   }
@@ -456,7 +462,7 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   // Dice header:
   bool dice_header_added = AppendOrRemoveDiceRequestHeader(
       request, redirect_url, account_id, io_data->IsSyncEnabled(),
-      io_data->SyncHasAuthError(), io_data->dice_enabled(),
+      io_data->SyncHasAuthError(), account_consistency,
       io_data->GetCookieSettings());
 
   // Block the AccountReconcilor while the Dice requests are in flight. This
@@ -465,18 +471,10 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   if (dice_header_added)
     DiceURLRequestUserData::AttachToRequest(request);
 
-#if defined(OS_CHROMEOS)
-  bool mirror_enabled =
-      io_data->account_consistency_mirror_required()->GetValue() ||
-      IsAccountConsistencyMirrorEnabled();
-#else
-  bool mirror_enabled = IsAccountConsistencyMirrorEnabled();
-#endif
-
   // Mirror header:
-  AppendOrRemoveMirrorRequestHeader(request, redirect_url, account_id,
-                                    io_data->GetCookieSettings(),
-                                    mirror_enabled, profile_mode_mask);
+  AppendOrRemoveMirrorRequestHeader(
+      request, redirect_url, account_id, account_consistency,
+      io_data->GetCookieSettings(), profile_mode_mask);
 }
 
 void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,
