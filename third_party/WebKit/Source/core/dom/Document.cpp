@@ -1080,7 +1080,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   // 2.
   const AtomicString& is =
       AtomicString(GetTypeExtension(this, string_or_options, exception_state));
-  const AtomicString& name = should_create_builtin ? is : qualified_name;
+  const AtomicString& name = should_create_builtin ? is : q_name.LocalName();
 
   if (!IsValidElementName(this, qualified_name)) {
     exception_state.ThrowDOMException(
@@ -1093,9 +1093,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   CustomElementDefinition* definition = nullptr;
   if (is_v1 && namespace_uri == HTMLNames::xhtmlNamespaceURI) {
     const CustomElementDescriptor desc =
-        RuntimeEnabledFeatures::CustomElementsBuiltinEnabled()
-            ? CustomElementDescriptor(name, qualified_name)
-            : CustomElementDescriptor(qualified_name, qualified_name);
+        CustomElementDescriptor(name, q_name.LocalName());
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
       definition = registry->DefinitionFor(desc);
 

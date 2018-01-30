@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL autonomous: document.createElementNS should create custom elements with prefixes. assert_equals: expected (string) "p" but got (object) null
-PASS autonomous: document.createElementNS should check namespaces.
-FAIL builtin: document.createElementNS should create custom elements with prefixes. Failed to execute 'createElementNS' on 'Document': Custom element definition not found.
-PASS builtin: document.createElementNS should check namespaces.
-Harness: the test ran to completion.
-
