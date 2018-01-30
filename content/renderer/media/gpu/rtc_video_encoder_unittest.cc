@@ -185,11 +185,13 @@ class RTCVideoEncoderTest
   }
 
   void VerifyTimestamp(uint32_t rtp_timestamp,
+                       int64_t capture_time_ms,
                        const webrtc::EncodedImage& encoded_image,
                        const webrtc::CodecSpecificInfo* codec_specific_info,
                        const webrtc::RTPFragmentationHeader* fragmentation) {
     DVLOG(3) << __func__;
     EXPECT_EQ(rtp_timestamp, encoded_image._timeStamp);
+    EXPECT_EQ(capture_time_ms, encoded_image.capture_time_ms_);
   }
 
  protected:
@@ -299,9 +301,10 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
 
   const uint32_t rtp_timestamp = 1234567;
+  const uint32_t capture_time_ms = 3456789;
   RegisterEncodeCompleteCallback(
       base::Bind(&RTCVideoEncoderTest::VerifyTimestamp, base::Unretained(this),
-                 rtp_timestamp));
+                 rtp_timestamp, capture_time_ms));
 
   EXPECT_CALL(*mock_vea_, Encode(_, _))
       .WillOnce(Invoke(this, &RTCVideoEncoderTest::ReturnFrameWithTimeStamp));
@@ -311,6 +314,7 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
   std::vector<webrtc::FrameType> frame_types;
   webrtc::VideoFrame rtc_frame(buffer, rtp_timestamp, 0,
                                webrtc::kVideoRotation_0);
+  rtc_frame.set_timestamp_us(capture_time_ms * rtc::kNumMicrosecsPerMillisec);
   // We need to set ntp_time_ms because it will be used to derive
   // media::VideoFrame timestamp.
   rtc_frame.set_ntp_time_ms(4567891);
