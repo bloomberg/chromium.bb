@@ -10,6 +10,13 @@ config("default_coverage") {
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
       "-fno-use-cxa-atexit",
+
+      # Following experimental flags removes unused header functions from the
+      # coverage mapping data embedded in the test binaries, and the reduction
+      # of binary size enables building Chrome's large unit test targets on
+      # MacOS. Please refer to crbug.com/796290 for more details.
+      "-mllvm",
+      "-limited-coverage-experimental=true",
     ]
     ldflags = [ "-fprofile-instr-generate" ]
   }
