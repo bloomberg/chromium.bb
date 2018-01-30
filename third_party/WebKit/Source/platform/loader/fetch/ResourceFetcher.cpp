@@ -120,6 +120,7 @@ ResourceLoadPriority TypeToPriority(Resource::Type type) {
       return ResourceLoadPriority::kVeryHigh;
     case Resource::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
     case Resource::kRaw:
     case Resource::kImportResource:
     case Resource::kScript:
@@ -244,6 +245,7 @@ WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
       return WebURLRequest::kRequestContextHyperlink;
     case Resource::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
     case Resource::kCSSStyleSheet:
       return WebURLRequest::kRequestContextStyle;
     case Resource::kScript:
@@ -757,7 +759,7 @@ Resource* ResourceFetcher::RequestResourceInternal(
   switch (policy) {
     case kReload:
       GetMemoryCache()->Remove(resource);
-    // Fall through
+      FALLTHROUGH;
     case kLoad:
       resource = CreateResourceForLoading(params, factory);
       break;
