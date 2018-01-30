@@ -829,6 +829,8 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
   have_fired_loaded_data_ = false;
   display_mode_ = kUnknown;
 
+  autoplay_policy_->StopAutoplayMutedWhenVisible();
+
   // 1 - Abort any already-running instance of the resource selection algorithm
   // for this element.
   load_state_ = kWaitingForSource;
