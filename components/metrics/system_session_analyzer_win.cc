@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_watcher/system_session_analyzer_win.h"
+#include "components/metrics/system_session_analyzer_win.h"
 
 #include <windows.h>
 #include <winevt.h>
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace browser_watcher {
+namespace metrics {
 
 namespace {
 
@@ -241,4 +241,4 @@ bool SystemSessionAnalyzer::Initialize() {
   return true;
 }
 
-}  // namespace browser_watcher
+}  // namespace metrics
