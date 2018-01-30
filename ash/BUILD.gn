@@ -1125,11 +1125,6 @@ component("ash") {
     "//ash/touch_hud/mus:touch_hud",
   ]
 
-  # TODO(jamescook): Move to ash_unittests?
-  data = [
-    "display/test_data/",
-  ]
-
   # Usage of content should be in ash_content_unittests.
   assert_no_deps = [
     "//content/public/browser",
@@ -1640,6 +1635,11 @@ test("ash_unittests") {
   data_deps = [
     "//ash/resources:ash_test_resources_100_percent",
     "//testing/buildbot/filters:ash_unittests_filters",
+  ]
+
+  data = [
+    # See DisplayColorManagerTest.
+    "display/test_data/",
   ]
 
   # Usage of content should be in ash_with_content.
