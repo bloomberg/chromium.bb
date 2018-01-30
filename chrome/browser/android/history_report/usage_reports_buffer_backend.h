@@ -13,6 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/trace_event/memory_dump_provider.h"
 
 namespace base {
 class FilePath;
@@ -27,11 +28,11 @@ namespace history_report {
 class UsageReport;
 
 // Stores usage reports which will be sent for history reporting in batches.
-class UsageReportsBufferBackend {
+class UsageReportsBufferBackend : public base::trace_event::MemoryDumpProvider {
  public:
   explicit UsageReportsBufferBackend(const base::FilePath& dir);
 
-  ~UsageReportsBufferBackend();
+  ~UsageReportsBufferBackend() override;
 
   // Creates and initializes the internal data structures.
   bool Init();
@@ -48,6 +49,10 @@ class UsageReportsBufferBackend {
 
   // Dumps internal state to string. For debuging.
   std::string Dump();
+
+  // base::trace_event::MemoryDumpProvider implementation:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   // NULL until Init method is called.
