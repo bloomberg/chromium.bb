@@ -45,6 +45,7 @@
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/Atomics.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {

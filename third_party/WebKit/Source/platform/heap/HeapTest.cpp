@@ -352,7 +352,9 @@ namespace blink {
 class TestGCScope {
  public:
   explicit TestGCScope(BlinkGC::StackState state)
-      : state_(ThreadState::Current()), safe_point_scope_(state) {
+      : state_(ThreadState::Current()),
+        safe_point_scope_(state),
+        persistent_lock_(ProcessHeap::CrossThreadPersistentMutex()) {
     DCHECK(state_->CheckThread());
     state_->MarkPhasePrologue(state, BlinkGC::kGCWithSweep,
                               BlinkGC::kPreciseGC);
@@ -366,6 +368,7 @@ class TestGCScope {
  private:
   ThreadState* state_;
   SafePointScope safe_point_scope_;
+  MutexLocker persistent_lock_;
 };
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
