@@ -440,6 +440,7 @@ NormalPageArena::NormalPageArena(ThreadState* state, int index)
 void NormalPageArena::ClearFreeLists() {
   SetAllocationPoint(nullptr, 0);
   free_list_.Clear();
+  promptly_freed_size_ = 0;
 }
 
 size_t NormalPageArena::ArenaSize() {
@@ -719,7 +720,7 @@ bool NormalPageArena::Coalesce() {
 
   // Rebuild free lists.
   free_list_.Clear();
-  size_t freed_size = 0;
+
   for (NormalPage* page = static_cast<NormalPage*>(first_page_); page;
        page = static_cast<NormalPage*>(page->Next())) {
     page->object_start_bit_map()->Clear();
@@ -732,18 +733,6 @@ bool NormalPageArena::Coalesce() {
       DCHECK_GT(size, 0u);
       DCHECK_LT(size, BlinkPagePayloadSize());
 
-      if (header->IsPromptlyFreed()) {
-        DCHECK_GE(size, sizeof(HeapObjectHeader));
-        // Zero the memory in the free list header to maintain the
-        // invariant that memory on the free list is zero filled.
-        // The rest of the memory is already on the free list and is
-        // therefore already zero filled.
-        SET_MEMORY_INACCESSIBLE(header_address, sizeof(HeapObjectHeader));
-        CHECK_MEMORY_INACCESSIBLE(header_address, size);
-        freed_size += size;
-        header_address += size;
-        continue;
-      }
       if (header->IsFree()) {
         // Zero the memory in the free list header to maintain the
         // invariant that memory on the free list is zero filled.
@@ -769,8 +758,8 @@ bool NormalPageArena::Coalesce() {
 
     page->VerifyObjectStartBitmapIsConsistentWithPayload();
   }
-  GetThreadState()->Heap().HeapStats().DecreaseAllocatedObjectSize(freed_size);
-  DCHECK_EQ(promptly_freed_size_, freed_size);
+
+  // After coalescing we do not have promptly freed objects.
   promptly_freed_size_ = 0;
 
   double coalesce_time =
@@ -808,11 +797,31 @@ void NormalPageArena::PromptlyFreeObject(HeapObjectHeader* header) {
           ->ClearBit(address);
       return;
     }
-    SET_MEMORY_INACCESSIBLE(payload, payload_size);
-    header->MarkPromptlyFreed();
+    PromptlyFreeObjectInFreeList(header, size);
   }
+}
 
-  promptly_freed_size_ += size;
+void NormalPageArena::PromptlyFreeObjectInFreeList(HeapObjectHeader* header,
+                                                   size_t size) {
+  Address address = reinterpret_cast<Address>(header);
+  NormalPage* page = reinterpret_cast<NormalPage*>(PageFromObject(header));
+  if (page->HasBeenSwept()) {
+    Address payload = header->Payload();
+    size_t payload_size = header->PayloadSize();
+    // If the page has been swept a promptly freed object may be adjacent
+    // to other free list entries. We make the object available for future
+    // allocation right away by adding it to the free list and increase the
+    // promptly_freed_size_ counter which may result in coalescing later.
+    SET_MEMORY_INACCESSIBLE(payload, payload_size);
+    CHECK_MEMORY_INACCESSIBLE(payload, payload_size);
+    AddToFreeList(address, size);
+    promptly_freed_size_ += size;
+  } else {
+    // If we do not have free list entries the sweeper will take care of
+    // coalescing.
+    header->Unmark();
+  }
+  GetThreadState()->Heap().HeapStats().DecreaseAllocatedObjectSize(size);
 }
 
 bool NormalPageArena::ExpandObject(HeapObjectHeader* header, size_t new_size) {
@@ -858,15 +867,13 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
   HeapObjectHeader* freed_header =
       new (NotNull, shrink_address) HeapObjectHeader(
           shrink_size, header->GcInfoIndex(), HeapObjectHeader::kNormalPage);
-  freed_header->MarkPromptlyFreed();
+  PromptlyFreeObjectInFreeList(freed_header, shrink_size);
 #if DCHECK_IS_ON()
   DCHECK_EQ(PageFromObject(reinterpret_cast<Address>(header)),
             FindPageFromAddress(reinterpret_cast<Address>(header)));
 #endif
-  promptly_freed_size_ += shrink_size;
   header->SetSize(allocation_size);
-  SET_MEMORY_INACCESSIBLE(shrink_address + sizeof(HeapObjectHeader),
-                          shrink_size - sizeof(HeapObjectHeader));
+
   return false;
 }
 
@@ -1392,8 +1399,6 @@ void NormalPage::Sweep() {
     DCHECK_GT(size, 0u);
     DCHECK_LT(size, BlinkPagePayloadSize());
 
-    if (header->IsPromptlyFreed())
-      page_arena->DecreasePromptlyFreedSize(size);
     if (header->IsFree()) {
       // Zero the memory in the free list header to maintain the
       // invariant that memory on the free list is zero filled.
@@ -1473,8 +1478,6 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
     DCHECK_GT(size, 0u);
     DCHECK_LT(size, BlinkPagePayloadSize());
 
-    if (header->IsPromptlyFreed())
-      page_arena->DecreasePromptlyFreedSize(size);
     if (header->IsFree()) {
       // Unpoison the freelist entry so that we
       // can compact into it as wanted.
@@ -1576,8 +1579,6 @@ void NormalPage::MakeConsistentForMutator() {
         reinterpret_cast<HeapObjectHeader*>(header_address);
     size_t size = header->size();
     DCHECK_LT(size, BlinkPagePayloadSize());
-    if (header->IsPromptlyFreed())
-      ArenaForNormalPage()->DecreasePromptlyFreedSize(size);
     if (header->IsFree()) {
       // Zero the memory in the free list header to maintain the
       // invariant that memory on the free list is zero filled.
