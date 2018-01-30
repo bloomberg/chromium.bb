@@ -676,29 +676,33 @@ std::enable_if_t<A::kIsGarbageCollected>
 Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
-  const T* buffer_begin = buffer_.Buffer();
-  const T* end = buffer_begin + end_;
-  if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
-    if (start_ <= end_) {
-      for (const T* buffer_entry = buffer_begin + start_; buffer_entry != end;
-           buffer_entry++)
-        Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
-            visitor, *const_cast<T*>(buffer_entry));
-    } else {
-      for (const T* buffer_entry = buffer_begin; buffer_entry != end;
-           buffer_entry++)
-        Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
-            visitor, *const_cast<T*>(buffer_entry));
-      const T* buffer_end = buffer_.Buffer() + buffer_.capacity();
-      for (const T* buffer_entry = buffer_begin + start_;
-           buffer_entry != buffer_end; buffer_entry++)
-        Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
-            visitor, *const_cast<T*>(buffer_entry));
-    }
-  }
   if (buffer_.HasOutOfLineBuffer()) {
-    Allocator::MarkNoTracing(visitor, buffer_.Buffer());
-    Allocator::RegisterBackingStoreReference(visitor, buffer_.BufferSlot());
+    Allocator::TraceVectorBacking(visitor, buffer_.Buffer(),
+                                  buffer_.BufferSlot());
+  } else {
+    const T* buffer_begin = buffer_.Buffer();
+    const T* end = buffer_begin + end_;
+    if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
+      if (start_ <= end_) {
+        for (const T* buffer_entry = buffer_begin + start_; buffer_entry != end;
+             buffer_entry++) {
+          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+              visitor, *const_cast<T*>(buffer_entry));
+        }
+      } else {
+        for (const T* buffer_entry = buffer_begin; buffer_entry != end;
+             buffer_entry++) {
+          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+              visitor, *const_cast<T*>(buffer_entry));
+        }
+        const T* buffer_end = buffer_.Buffer() + buffer_.capacity();
+        for (const T* buffer_entry = buffer_begin + start_;
+             buffer_entry != buffer_end; buffer_entry++) {
+          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+              visitor, *const_cast<T*>(buffer_entry));
+        }
+      }
+    }
   }
 }
 
