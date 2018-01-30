@@ -1940,7 +1940,7 @@ test("browser_tests") {
     if (enable_library_cdms) {
       # Runtime dependencies.
       data_deps += [
-        "//media/cdm/ppapi:clearkeycdmadapter",
+        "//media/cdm/library_cdm:clearkeycdmadapter",
         "//third_party/widevine/cdm:widevinecdmadapter",
       ]
     }
@@ -5352,7 +5352,7 @@ if (!is_android && !is_fuchsia) {
     if (enable_library_cdms) {
       deps += [ "//media/cdm:cdm_paths" ]
       data_deps = [
-        "//media/cdm/ppapi:clearkeycdmadapter",
+        "//media/cdm/library_cdm:clearkeycdmadapter",
         "//third_party/widevine/cdm:widevinecdmadapter",
       ]
     }
