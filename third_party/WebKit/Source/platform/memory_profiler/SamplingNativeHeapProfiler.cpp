@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/allocator/allocator_shim.h"
 #include "base/allocator/features.h"
 #include "base/atomicops.h"
 #include "base/debug/alias.h"
@@ -33,7 +34,109 @@ AtomicWord g_sampling_interval = kDefaultSamplingInterval;
 uint32_t g_last_sample_ordinal = 0;
 SamplingNativeHeapProfiler* g_instance;
 
+void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
+  void* address = self->next->alloc_function(self->next, size, context);
+  SamplingNativeHeapProfiler::MaybeRecordAlloc(address, size);
+  return address;
+}
+
+// static
+void* AllocZeroInitializedFn(const AllocatorDispatch* self,
+                             size_t n,
+                             size_t size,
+                             void* context) {
+  void* address =
+      self->next->alloc_zero_initialized_function(self->next, n, size, context);
+  SamplingNativeHeapProfiler::MaybeRecordAlloc(address, n * size);
+  return address;
+}
+
+// static
+void* AllocAlignedFn(const AllocatorDispatch* self,
+                     size_t alignment,
+                     size_t size,
+                     void* context) {
+  void* address =
+      self->next->alloc_aligned_function(self->next, alignment, size, context);
+  SamplingNativeHeapProfiler::MaybeRecordAlloc(address, size);
+  return address;
+}
+
+// static
+void* ReallocFn(const AllocatorDispatch* self,
+                void* address,
+                size_t size,
+                void* context) {
+  // Note: size == 0 actually performs free.
+  SamplingNativeHeapProfiler::MaybeRecordFree(address);
+  address = self->next->realloc_function(self->next, address, size, context);
+  SamplingNativeHeapProfiler::MaybeRecordAlloc(address, size);
+  return address;
+}
+
+// static
+void FreeFn(const AllocatorDispatch* self, void* address, void* context) {
+  SamplingNativeHeapProfiler::MaybeRecordFree(address);
+  self->next->free_function(self->next, address, context);
+}
+
+// static
+size_t GetSizeEstimateFn(const AllocatorDispatch* self,
+                         void* address,
+                         void* context) {
+  return self->next->get_size_estimate_function(self->next, address, context);
+}
+
+// static
+unsigned BatchMallocFn(const AllocatorDispatch* self,
+                       size_t size,
+                       void** results,
+                       unsigned num_requested,
+                       void* context) {
+  unsigned num_allocated = self->next->batch_malloc_function(
+      self->next, size, results, num_requested, context);
+  for (unsigned i = 0; i < num_allocated; ++i)
+    SamplingNativeHeapProfiler::MaybeRecordAlloc(results[i], size);
+  return num_allocated;
+}
+
+// static
+void BatchFreeFn(const AllocatorDispatch* self,
+                 void** to_be_freed,
+                 unsigned num_to_be_freed,
+                 void* context) {
+  for (unsigned i = 0; i < num_to_be_freed; ++i)
+    SamplingNativeHeapProfiler::MaybeRecordFree(to_be_freed[i]);
+  self->next->batch_free_function(self->next, to_be_freed, num_to_be_freed,
+                                  context);
+}
+
+// static
+void FreeDefiniteSizeFn(const AllocatorDispatch* self,
+                        void* address,
+                        size_t size,
+                        void* context) {
+  SamplingNativeHeapProfiler::MaybeRecordFree(address);
+  self->next->free_definite_size_function(self->next, address, size, context);
+}
+
+AllocatorDispatch g_allocator_dispatch = {&AllocFn,
+                                          &AllocZeroInitializedFn,
+                                          &AllocAlignedFn,
+                                          &ReallocFn,
+                                          &FreeFn,
+                                          &GetSizeEstimateFn,
+                                          &BatchMallocFn,
+                                          &BatchFreeFn,
+                                          &FreeDefiniteSizeFn,
+                                          nullptr};
+
 }  // namespace
+
+// static
+SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
+  return SamplingNativeHeapProfiler::GetInstance();
+}
 
 SamplingNativeHeapProfiler::Sample::Sample(size_t size,
                                            size_t count,
@@ -44,116 +147,6 @@ SamplingNativeHeapProfiler::SamplingNativeHeapProfiler() {
   g_instance = this;
 }
 
-SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
-  return SamplingNativeHeapProfiler::GetInstance();
-}
-
-void* SamplingNativeHeapProfiler::AllocFn(const AllocatorDispatch* self,
-                                          size_t size,
-                                          void* context) {
-  void* address = self->next->alloc_function(self->next, size, context);
-  MaybeRecordAlloc(address, size);
-  return address;
-}
-
-// static
-void* SamplingNativeHeapProfiler::AllocZeroInitializedFn(
-    const AllocatorDispatch* self,
-    size_t n,
-    size_t size,
-    void* context) {
-  void* address =
-      self->next->alloc_zero_initialized_function(self->next, n, size, context);
-  MaybeRecordAlloc(address, n * size);
-  return address;
-}
-
-// static
-void* SamplingNativeHeapProfiler::AllocAlignedFn(const AllocatorDispatch* self,
-                                                 size_t alignment,
-                                                 size_t size,
-                                                 void* context) {
-  void* address =
-      self->next->alloc_aligned_function(self->next, alignment, size, context);
-  MaybeRecordAlloc(address, size);
-  return address;
-}
-
-// static
-void* SamplingNativeHeapProfiler::ReallocFn(const AllocatorDispatch* self,
-                                            void* address,
-                                            size_t size,
-                                            void* context) {
-  // Note: size == 0 actually performs free.
-  MaybeRecordFree(address);
-  address = self->next->realloc_function(self->next, address, size, context);
-  MaybeRecordAlloc(address, size);
-  return address;
-}
-
-// static
-void SamplingNativeHeapProfiler::FreeFn(const AllocatorDispatch* self,
-                                        void* address,
-                                        void* context) {
-  MaybeRecordFree(address);
-  self->next->free_function(self->next, address, context);
-}
-
-// static
-size_t SamplingNativeHeapProfiler::GetSizeEstimateFn(
-    const AllocatorDispatch* self,
-    void* address,
-    void* context) {
-  return self->next->get_size_estimate_function(self->next, address, context);
-}
-
-// static
-unsigned SamplingNativeHeapProfiler::BatchMallocFn(
-    const AllocatorDispatch* self,
-    size_t size,
-    void** results,
-    unsigned num_requested,
-    void* context) {
-  unsigned num_allocated = self->next->batch_malloc_function(
-      self->next, size, results, num_requested, context);
-  for (unsigned i = 0; i < num_allocated; ++i)
-    MaybeRecordAlloc(results[i], size);
-  return num_allocated;
-}
-
-// static
-void SamplingNativeHeapProfiler::BatchFreeFn(const AllocatorDispatch* self,
-                                             void** to_be_freed,
-                                             unsigned num_to_be_freed,
-                                             void* context) {
-  for (unsigned i = 0; i < num_to_be_freed; ++i)
-    MaybeRecordFree(to_be_freed[i]);
-  self->next->batch_free_function(self->next, to_be_freed, num_to_be_freed,
-                                  context);
-}
-
-// static
-void SamplingNativeHeapProfiler::FreeDefiniteSizeFn(
-    const AllocatorDispatch* self,
-    void* address,
-    size_t size,
-    void* context) {
-  MaybeRecordFree(address);
-  self->next->free_definite_size_function(self->next, address, size, context);
-}
-
-AllocatorDispatch SamplingNativeHeapProfiler::allocator_dispatch_ = {
-    &AllocFn,
-    &AllocZeroInitializedFn,
-    &AllocAlignedFn,
-    &ReallocFn,
-    &FreeFn,
-    &GetSizeEstimateFn,
-    &BatchMallocFn,
-    &BatchFreeFn,
-    &FreeDefiniteSizeFn,
-    nullptr};
-
 // static
 void SamplingNativeHeapProfiler::InstallAllocatorHooksOnce() {
   static bool hook_installed = InstallAllocatorHooks();
@@ -163,9 +156,9 @@ void SamplingNativeHeapProfiler::InstallAllocatorHooksOnce() {
 // static
 bool SamplingNativeHeapProfiler::InstallAllocatorHooks() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  base::allocator::InsertAllocatorDispatch(&allocator_dispatch_);
+  base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 #else
-  base::debug::Alias(&allocator_dispatch_);
+  base::debug::Alias(&g_allocator_dispatch);
   CHECK(false)
       << "Can't enable native sampling heap profiler without the shim.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
