@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
@@ -59,10 +60,24 @@ class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
 
 class OneGoogleBarFetcherImplTest : public testing::Test {
  public:
-  OneGoogleBarFetcherImplTest() : OneGoogleBarFetcherImplTest(base::nullopt) {}
+  OneGoogleBarFetcherImplTest()
+      : OneGoogleBarFetcherImplTest(
+            /*api_url_override=*/base::nullopt,
+            /*account_consistency_mirror_required=*/false) {}
+
+  explicit OneGoogleBarFetcherImplTest(
+      const base::Optional<std::string>& api_url_override)
+      : OneGoogleBarFetcherImplTest(
+            api_url_override,
+            /*account_consistency_mirror_required=*/false) {}
+
+  explicit OneGoogleBarFetcherImplTest(bool account_consistency_mirror_required)
+      : OneGoogleBarFetcherImplTest(/*api_url_override=*/base::nullopt,
+                                    account_consistency_mirror_required) {}
 
   OneGoogleBarFetcherImplTest(
-      const base::Optional<std::string>& api_url_override)
+      const base::Optional<std::string>& api_url_override,
+      bool account_consistency_mirror_required)
       : task_runner_(new base::TestSimpleTaskRunner()),
         request_context_getter_(
             new net::TestURLRequestContextGetter(task_runner_)),
@@ -71,7 +86,8 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
         one_google_bar_fetcher_(request_context_getter_.get(),
                                 &google_url_tracker_,
                                 kApplicationLocale,
-                                api_url_override) {}
+                                api_url_override,
+                                account_consistency_mirror_required) {}
 
   net::TestURLFetcher* GetRunningURLFetcher() {
     // All created URLFetchers have ID 0 by default.
@@ -290,6 +306,58 @@ TEST_F(OneGoogleBarFetcherImplTest, IncompleteJsonErrorIsFatal) {
   "html": {},
   "page_hooks": {}
 }}})json");
+}
+
+TEST_F(OneGoogleBarFetcherImplTest, MirrorAccountConsistencyNotRequired) {
+  // Trigger a request.
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+  net::TestURLFetcher* fetcher = GetRunningURLFetcher();
+
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, X-Chrome-Connected header is present, but
+  // enable_account_consistency is set to false.
+  std::string header_value;
+  EXPECT_TRUE(headers.GetHeader(signin::kChromeConnectedHeader, &header_value));
+  // mode = PROFILE_MODE_DEFAULT
+  EXPECT_EQ("mode=0,enable_account_consistency=false", header_value);
+#else
+  // On not Chrome OS, the X-Chrome-Connected header must not be present.
+  EXPECT_FALSE(headers.HasHeader(signin::kChromeConnectedHeader));
+#endif
+}
+
+class OneGoogleBarFetcherImplWithMirrorAccountConsistencyTest
+    : public OneGoogleBarFetcherImplTest {
+ public:
+  OneGoogleBarFetcherImplWithMirrorAccountConsistencyTest()
+      : OneGoogleBarFetcherImplTest(true) {}
+};
+
+TEST_F(OneGoogleBarFetcherImplWithMirrorAccountConsistencyTest,
+       MirrorAccountConsistencyRequired) {
+  // Trigger a request.
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+  net::TestURLFetcher* fetcher = GetRunningURLFetcher();
+
+  // Make sure mirror account consistency is requested.
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, X-Chrome-Connected header is present, and
+  // enable_account_consistency is set to true.
+  std::string header_value;
+  EXPECT_TRUE(headers.GetHeader(signin::kChromeConnectedHeader, &header_value));
+  // mode = PROFILE_MODE_INCOGNITO_DISABLED | PROFILE_MODE_ADD_ACCOUNT_DISABLED
+  EXPECT_EQ("mode=3,enable_account_consistency=true", header_value);
+#else
+  // This is not a valid case (mirror account consistency can only be required
+  // on Chrome OS). This ensures in this case nothing happens.
+  EXPECT_FALSE(headers.HasHeader(signin::kChromeConnectedHeader));
+#endif
 }
 
 class OneGoogleBarFetcherImplWithRelativeApiUrlOverrideTest
