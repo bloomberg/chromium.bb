@@ -34,7 +34,6 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -57,6 +56,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -416,7 +416,7 @@ class MojoAsyncResourceHandlerTestBase {
   ResourceDispatcherHostImpl rdh_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   network::mojom::URLLoaderPtr url_loader_proxy_;
-  TestURLLoaderClient url_loader_client_;
+  network::TestURLLoaderClient url_loader_client_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::TestDelegate url_request_delegate_;
   std::unique_ptr<net::URLRequest> request_;

@@ -14,11 +14,11 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using network::mojom::FetchRequestMode;
@@ -130,7 +130,9 @@ class CORSURLLoaderTest : public testing::Test {
     test_url_loader_factory_->NotifyClientOnComplete(error_code);
   }
 
-  const TestURLLoaderClient& client() const { return test_cors_loader_client_; }
+  const network::TestURLLoaderClient& client() const {
+    return test_cors_loader_client_;
+  }
 
   void RunUntilComplete() { test_cors_loader_client_.RunUntilComplete(); }
 
@@ -150,8 +152,8 @@ class CORSURLLoaderTest : public testing::Test {
   // Holds URLLoaderPtr that CreateLoaderAndStart() creates.
   network::mojom::URLLoaderPtr url_loader_;
 
-  // TestURLLoaderClient that records callback activities.
-  TestURLLoaderClient test_cors_loader_client_;
+  // network::TestURLLoaderClient that records callback activities.
+  network::TestURLLoaderClient test_cors_loader_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderTest);
 };

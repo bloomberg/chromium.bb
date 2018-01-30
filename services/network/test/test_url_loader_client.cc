@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/test_url_loader_client.h"
+#include "services/network/test/test_url_loader_client.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace network {
 
 TestURLLoaderClient::TestURLLoaderClient() : binding_(this) {}
 TestURLLoaderClient::~TestURLLoaderClient() {}
 
 void TestURLLoaderClient::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head,
+    const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    mojom::DownloadedTempFilePtr downloaded_file) {
   EXPECT_FALSE(has_received_response_);
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
@@ -30,7 +30,7 @@ void TestURLLoaderClient::OnReceiveResponse(
 
 void TestURLLoaderClient::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    const ResourceResponseHead& response_head) {
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(response_body_.is_valid());
   EXPECT_FALSE(has_received_response_);
@@ -99,8 +99,7 @@ void TestURLLoaderClient::OnStartLoadingResponseBody(
     quit_closure_for_on_start_loading_response_body_.Run();
 }
 
-void TestURLLoaderClient::OnComplete(
-    const network::URLLoaderCompletionStatus& status) {
+void TestURLLoaderClient::OnComplete(const URLLoaderCompletionStatus& status) {
   EXPECT_FALSE(has_received_completion_);
   has_received_completion_ = true;
   completion_status_ = status;
@@ -108,8 +107,7 @@ void TestURLLoaderClient::OnComplete(
     quit_closure_for_on_complete_.Run();
 }
 
-network::mojom::DownloadedTempFilePtr
-TestURLLoaderClient::TakeDownloadedTempFile() {
+mojom::DownloadedTempFilePtr TestURLLoaderClient::TakeDownloadedTempFile() {
   return std::move(downloaded_file_);
 }
 
@@ -117,8 +115,8 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
   has_received_redirect_ = false;
 }
 
-network::mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
-  network::mojom::URLLoaderClientPtr client_ptr;
+mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
+  mojom::URLLoaderClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
   binding_.set_connection_error_handler(base::BindOnce(
       &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
@@ -201,4 +199,4 @@ void TestURLLoaderClient::OnConnectionError() {
     quit_closure_for_on_connection_error_.Run();
 }
 
-}  // namespace content
+}  // namespace network

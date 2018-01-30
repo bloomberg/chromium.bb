@@ -13,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/test_completion_callback.h"
@@ -23,6 +22,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -262,7 +262,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
   std::unique_ptr<ServiceWorkerScriptURLLoader> loader_;
   std::unique_ptr<MockHTTPServer> mock_server_;
 
-  TestURLLoaderClient client_;
+  network::TestURLLoaderClient client_;
 };
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {

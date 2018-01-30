@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/controllable_http_response.h"
-#include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -45,6 +44,7 @@
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_data_pipe_getter.h"
+#include "services/network/test/test_url_loader_client.h"
 #include "services/network/url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -322,7 +322,7 @@ class URLLoaderTest : public testing::Test {
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   NetworkContext* context() { return context_.get(); }
-  TestURLLoaderClient* client() { return &client_; }
+  network::TestURLLoaderClient* client() { return &client_; }
   void DestroyContext() { context_.reset(); }
 
   // Returns the path of the requested file in the test data directory.
@@ -460,7 +460,7 @@ class URLLoaderTest : public testing::Test {
   // made, since the test fixture is meant to be used only once.
   bool ran_ = false;
   net::test_server::HttpRequest sent_request_;
-  TestURLLoaderClient client_;
+  network::TestURLLoaderClient client_;
 };
 
 TEST_F(URLLoaderTest, Basic) {
