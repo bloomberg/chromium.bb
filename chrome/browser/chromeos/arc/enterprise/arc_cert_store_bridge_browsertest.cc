@@ -113,6 +113,18 @@ class ArcCertStoreBridgeTest : public InProcessBrowserTest {
                                     kFakeUserName);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
+    // Don't require policy for our sessions - this is required because
+    // this test creates a secondary profile synchronously, so we need to
+    // let the policy code know not to expect cached policy.
+    command_line->AppendSwitchASCII(chromeos::switches::kProfileRequiresPolicy,
+                                    "false");
+
+    // Tell the policy subsystem to wait for an initial policy load, even
+    // though we are using a synchronously loaded profile.
+    // TODO(edmanp): Update this test to properly use an asynchronously loaded
+    // user profile and remove the use of this flag (crbug.com/795737).
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kWaitForInitialPolicyFetchForTest, "true");
   }
 
   void SetUpOnMainThread() override {

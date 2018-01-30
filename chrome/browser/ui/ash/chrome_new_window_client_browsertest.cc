@@ -12,6 +12,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
+#include "components/user_manager/user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 
@@ -26,6 +28,9 @@ void CreateAndStartUserSession(const AccountId& account_id) {
   using chromeos::ProfileHelper;
   using session_manager::SessionManager;
 
+  user_manager::known_user::SetProfileRequiresPolicy(
+      account_id,
+      user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired);
   const std::string user_id_hash =
       ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail());
   SessionManager::Get()->CreateSession(account_id, user_id_hash, false);

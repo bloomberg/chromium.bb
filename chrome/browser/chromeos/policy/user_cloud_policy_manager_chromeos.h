@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
@@ -15,11 +16,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class GoogleServiceAuthError;
 class PrefService;
@@ -37,7 +40,6 @@ namespace policy {
 class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
-class WildcardLoginChecker;
 
 // Implements logic for initializing user policy on Chrome OS.
 class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
@@ -45,10 +47,44 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
                                        public CloudPolicyService::Observer,
                                        public KeyedService {
  public:
-  // If |initial_policy_fetch_timeout| is non-zero, IsInitializationComplete()
-  // is forced to false until either there has been a successful policy fetch
-  // from the server or |initial_policy_fetch_timeout| has expired. (The timeout
-  // may be set to TimeDelta::Max() to block permanently.)
+  // Enum describing what behavior we want to enforce here.
+  enum class PolicyEnforcement {
+    // No policy enforcement - it's OK to start the session even without a
+    // policy check because it has previously been established that this
+    // session is unmanaged.
+    kPolicyOptional,
+
+    // This is a managed session so require a successful policy load before
+    // completing profile initialization.
+    kPolicyRequired,
+
+    // It is unknown whether this session should be managed, so require a check
+    // with the policy server before initializing the profile.
+    kServerCheckRequired
+  };
+
+  // |enforcement_type| specifies what kind of policy state will be
+  // enforced by this object:
+  //
+  // * kPolicyOptional: The class will kick off a background policy fetch to
+  //   detect whether the user has become managed since the last signin, but
+  //   there's no enforcement (it's OK for the server request to fail, and the
+  //   profile initialization is allowed to proceed immediately).
+  //
+  // * kServerCheckRequired: Profile initialization will be blocked
+  //   (IsInitializationComplete() will return false) until we have made a
+  //   successful call to DMServer to check for policy or loaded policy from
+  //   cache. If this call is unsuccessful due to network/server errors, then
+  //   |fatal_error_callback| is invoked to close the session.
+  //
+  // * kPolicyRequired: A background policy refresh will be initiated. If a
+  //   non-zero |policy_refresh_timeout| is passed, then profile initialization
+  //   will be blocked (IsInitializationComplete() will return false) until
+  //   either the fetch completes or the timeout fires. |fatal_error_callback|
+  //   will be invoked if the system could not load policy from either cache or
+  //   the server.
+  //
+  // |account_id| is the AccountId associated with the user's session.
   // |task_runner| is the runner for policy refresh tasks.
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
@@ -56,7 +92,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
       std::unique_ptr<CloudPolicyStore> store,
       std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const base::FilePath& component_policy_cache_path,
-      base::TimeDelta initial_policy_fetch_timeout,
+      PolicyEnforcement enforcement_type,
+      base::TimeDelta policy_refresh_timeout,
+      base::OnceClosure fatal_error_callback,
+      const AccountId& account_id,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~UserCloudPolicyManagerChromeOS() override;
@@ -112,6 +151,12 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void GetChromePolicy(PolicyMap* policy_map) override;
 
  private:
+  // Sets the appropriate persistent flags to mark whether the current session
+  // requires policy. If |policy_required| is true, this ensures that future
+  // instances of this session will not start up unless a valid policy blob can
+  // be loaded.
+  void SetPolicyRequired(bool policy_required);
+
   // Fetches a policy token using the refresh token if available, or the
   // authentication context of the signin context, and calls back
   // OnOAuth2PolicyTokenFetched when done.
@@ -123,15 +168,20 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
                                   const GoogleServiceAuthError& error);
 
   // Completion handler for the explicit policy fetch triggered on startup in
-  // case |waiting_for_initial_policy_fetch_| is true. |success| is true if the
+  // case |waiting_for_policy_fetch_| is true. |success| is true if the
   // fetch was successful.
   void OnInitialPolicyFetchComplete(bool success);
 
-  // Called when |policy_fetch_timeout_| times out, to cancel the blocking wait
-  // for the initial policy fetch.
-  void OnBlockingFetchTimeout();
+  // Called when |policy_refresh_timeout_| times out, to cancel the blocking
+  // wait for the policy refresh.
+  void OnPolicyRefreshTimeout();
 
-  // Cancels waiting for the initial policy fetch and flags the
+  // Called when a wildcard check has completed, to allow us to exit the session
+  // if required.
+  void OnWildcardCheckCompleted(const std::string& username,
+                                WildcardLoginChecker::Result result);
+
+  // Cancels waiting for the initial policy fetch/refresh and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks
   // have completed). Pass |true| if policy fetch was successful (either because
   // policy was successfully fetched, or if DMServer has notified us that the
@@ -154,16 +204,15 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Whether we're waiting for a policy fetch to complete before reporting
   // IsInitializationComplete().
-  bool waiting_for_initial_policy_fetch_;
+  bool waiting_for_policy_fetch_;
 
-  // Whether the user session is continued in case of failure of initial policy
-  // fetch.
-  bool initial_policy_fetch_may_fail_;
+  // What kind of enforcement we need to implement.
+  PolicyEnforcement enforcement_type_;
 
-  // A timer that puts a hard limit on the maximum time to wait for the initial
-  // policy fetch.
-  base::Timer policy_fetch_timeout_{false /* retain_user_task */,
-                                    false /* is_repeating */};
+  // A timer that puts a hard limit on the maximum time to wait for a policy
+  // refresh.
+  base::Timer policy_refresh_timeout_{false /* retain_user_task */,
+                                      false /* is_repeating */};
 
   // The pref service to pass to the refresh scheduler on initialization.
   PrefService* local_state_;
@@ -189,6 +238,13 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // TODO(emaxx): Remove after the crashes tracked at https://crbug.com/685996
   // are fixed.
   base::debug::StackTrace connect_callstack_;
+
+  // The AccountId associated with the user whose policy is being loaded.
+  AccountId account_id_;
+
+  // The callback to invoke if the user session should be shutdown. This is
+  // injected in the constructor to make it easier to write tests.
+  base::OnceClosure fatal_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

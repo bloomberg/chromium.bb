@@ -33,7 +33,7 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
     RESULT_FAILED,   // Failure due to network errors etc.
   };
 
-  typedef base::Callback<void(Result)> StatusCallback;
+  using StatusCallback = base::OnceCallback<void(Result)>;
 
   WildcardLoginChecker();
   virtual ~WildcardLoginChecker();
@@ -41,15 +41,15 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
   // Starts checking. The result will be reported via |callback_|.
   void StartWithSigninContext(
       scoped_refptr<net::URLRequestContextGetter> signin_context,
-      const StatusCallback& callback);
+      StatusCallback callback);
 
   // Starts checking with a provided refresh token.
   void StartWithRefreshToken(const std::string& refresh_token,
-                             const StatusCallback& callback);
+                             StatusCallback callback);
 
   // Starts checking with a provided access token.
   void StartWithAccessToken(const std::string& access_token,
-                            const StatusCallback& callback);
+                            StatusCallback callback);
 
   // UserInfoFetcher::Delegate:
   void OnGetUserInfoSuccess(const base::DictionaryValue* response) override;

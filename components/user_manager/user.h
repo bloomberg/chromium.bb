@@ -158,6 +158,11 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Whether the user's session has completed initialization yet.
   bool profile_ever_initialized() const { return profile_ever_initialized_; }
 
+  // Public so it can be called via tests.
+  void set_profile_ever_initialized(bool profile_ever_initialized) {
+    profile_ever_initialized_ = profile_ever_initialized;
+  }
+
   // True if the user's session can be locked (i.e. the user has a password with
   // which to unlock the session).
   bool can_lock() const;
@@ -176,6 +181,12 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   static User* CreatePublicAccountUserForTesting(const AccountId& account_id) {
     return CreatePublicAccountUser(account_id);
+  }
+
+  static User* CreateRegularUserForTesting(const AccountId& account_id) {
+    User* user = CreateRegularUser(account_id, USER_TYPE_REGULAR);
+    user->SetImage(std::unique_ptr<UserImage>(new UserImage), 0);
+    return user;
   }
 
   void AddProfileCreatedObserver(base::OnceClosure on_profile_created);
@@ -243,10 +254,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   void set_force_online_signin(bool force_online_signin) {
     force_online_signin_ = force_online_signin;
-  }
-
-  void set_profile_ever_initialized(bool profile_ever_initialized) {
-    profile_ever_initialized_ = profile_ever_initialized;
   }
 
   void set_username_hash(const std::string& username_hash) {

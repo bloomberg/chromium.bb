@@ -304,4 +304,14 @@ TEST_F(UserManagerTest, ProfileInitializedMigration) {
   EXPECT_TRUE((*users)[0]->profile_ever_initialized());
 }
 
+TEST_F(UserManagerTest, ProfileRequiresPolicyUnknown) {
+  user_manager::UserManager::Get()->UserLoggedIn(
+      owner_account_id_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false, false);
+  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+            user_manager::known_user::GetProfileRequiresPolicy(
+                owner_account_id_at_invalid_domain_));
+  ResetUserManager();
+}
+
 }  // namespace chromeos

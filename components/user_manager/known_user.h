@@ -138,6 +138,26 @@ bool USER_MANAGER_EXPORT WasProfileEverInitialized(const AccountId& account_id);
 void USER_MANAGER_EXPORT SetProfileEverInitialized(const AccountId& account_id,
                                                    bool initialized);
 
+// Enum describing whether a user's profile requires policy. If kPolicyRequired,
+// the profile initialization code will ensure that valid policy is loaded
+// before session initialization completes.
+enum class ProfileRequiresPolicy {
+  kUnknown,
+  kPolicyRequired,
+  kNoPolicyRequired
+};
+
+// Returns whether the current profile requires policy or not (returns UNKNOWN
+// if the profile has never been initialized and so the policy status is
+// not yet known).
+ProfileRequiresPolicy USER_MANAGER_EXPORT
+GetProfileRequiresPolicy(const AccountId& account_id);
+
+// Sets whether the profile requires policy or not.
+void USER_MANAGER_EXPORT
+SetProfileRequiresPolicy(const AccountId& account_id,
+                         ProfileRequiresPolicy policy_required);
+
 // Saves why the user has to go through re-auth flow.
 void USER_MANAGER_EXPORT UpdateReauthReason(const AccountId& account_id,
                                             const int reauth_reason);

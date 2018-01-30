@@ -38,7 +38,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
@@ -106,6 +105,10 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     // testserver.
     command_line->AppendSwitchASCII(::chromeos::switches::kLoginUser,
                                     PolicyBuilder::kFakeUsername);
+    // Let policy code know that policy is not required to be cached at startup
+    // (it can be loaded asynchronously).
+    command_line->AppendSwitchASCII(
+        ::chromeos::switches::kProfileRequiresPolicy, "false");
 #endif
   }
 
