@@ -1615,13 +1615,6 @@ views::View* BrowserView::GetInitiallyFocusedView() {
 
 bool BrowserView::ShouldShowWindowTitle() const {
 #if defined(OS_CHROMEOS)
-  // Hosted apps on ChromeOS should always show their window icon.
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser())) {
-    DCHECK(browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR));
-    return true;
-  }
-
   // For Chrome OS only, trusted windows (apps and settings) do not show a
   // title, crbug.com/119411. Child windows (i.e. popups) do show a title.
   if (browser_->is_trusted_source()) {
