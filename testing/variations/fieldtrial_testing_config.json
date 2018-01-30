@@ -4237,24 +4237,6 @@
             ]
         }
     ],
-    "YieldBetweenContentScriptRuns": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "YieldBetweenContentScriptRuns"
-                    ]
-                }
-            ]
-        }
-    ],
     "use-new-media-cache": [
         {
             "platforms": [
