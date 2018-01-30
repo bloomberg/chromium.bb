@@ -1942,6 +1942,7 @@ public class LocationBarLayout extends FrameLayout
             }
 
             startZeroSuggest();
+            RecordUserAction.record("MobileOmniboxDeleteUrl");
             return;
         } else if (!mUrlHasFocus && shouldShowPageInfoForView(v)) {
             if (mToolbarDataProvider.hasTab() && getCurrentTab().getWebContents() != null

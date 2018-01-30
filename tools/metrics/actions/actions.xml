@@ -12032,6 +12032,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of the metric.</description>
 </action>
 
+<action name="MobileOmniboxDeleteUrl">
+  <owner>thildebr@chromium.org</owner>
+  <description>
+    The user cleared the contents of the omnibox via the delete button.
+  </description>
+</action>
+
 <action name="MobileOmniboxRefineSuggestion">
   <obsolete>
     Deprecated 07/2017. Replaced by MobileOmniboxRefineSuggestion.Query and
