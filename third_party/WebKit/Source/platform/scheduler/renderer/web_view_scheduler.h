@@ -67,7 +67,7 @@ class PLATFORM_EXPORT WebViewScheduler {
     kAdvance,
 
     // In this policy virtual time is not allowed to advance. Delayed tasks
-    // posted to WebTaskRunners owned by any child WebFrameSchedulers will be
+    // posted to task runners owned by any child WebFrameSchedulers will be
     // paused, unless their scheduled run time is less than or equal to the
     // current virtual time.  Note non-delayed tasks will run as normal.
     kPause,

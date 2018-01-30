@@ -40,12 +40,12 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/TokenizedChunkQueue.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
 class HTMLDocumentParser;
 class XSSAuditor;
-class WebTaskRunner;
 
 class BackgroundHTMLParser {
   USING_FAST_MALLOC(BackgroundHTMLParser);

@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/TaskTypeTraits.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
@@ -17,7 +18,6 @@
 namespace blink {
 
 class LocalFrame;
-class WebTaskRunner;
 
 // Represents a set of task runners of the parent (or associated) document's
 // frame, or default task runners of the main thread.

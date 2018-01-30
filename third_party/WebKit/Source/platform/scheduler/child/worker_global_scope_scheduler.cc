@@ -28,8 +28,8 @@ void WorkerGlobalScopeScheduler::Dispose() {
 #endif
 }
 
-scoped_refptr<WebTaskRunner> WorkerGlobalScopeScheduler::GetTaskRunner(
-    TaskType type) const {
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerGlobalScopeScheduler::GetTaskRunner(TaskType type) const {
   switch (type) {
     case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:

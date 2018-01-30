@@ -6,7 +6,6 @@
 #define WebThreadSupportingGC_h
 
 #include <memory>
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"

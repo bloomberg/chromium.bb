@@ -32,6 +32,7 @@
 #define WebSocketHandle_h
 
 #include <stdint.h>
+#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/websockets/websocket.mojom-blink.h"
@@ -41,7 +42,6 @@ namespace blink {
 class KURL;
 class SecurityOrigin;
 class WebSocketHandleClient;
-class WebTaskRunner;
 
 // WebSocketHandle is an interface class designed to be a handle of WebSocket
 // connection.  WebSocketHandle will be used together with

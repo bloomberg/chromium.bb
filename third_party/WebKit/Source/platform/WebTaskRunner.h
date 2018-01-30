@@ -15,13 +15,11 @@
 #include "platform/wtf/Time.h"
 #include "public/platform/WebCommon.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace blink {
 
-class WebTaskRunner;
+// TODO(yutak): WebTaskRunner is soon to be deprecated. Use
+// base::SingleThreadTaskRunner instead. See: http://crbug.com/794845
+using WebTaskRunner = base::SingleThreadTaskRunner;
 
 // TaskHandle is associated to a task posted by
 // WebTaskRunner::postCancellableTask or
@@ -60,28 +58,6 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 
   explicit TaskHandle(scoped_refptr<Runner>);
   scoped_refptr<Runner> runner_;
-};
-
-// The blink representation of a chromium SingleThreadTaskRunner.
-class BLINK_PLATFORM_EXPORT WebTaskRunner
-    : public base::SingleThreadTaskRunner {
- public:
-  virtual bool PostDelayedTask(const base::Location&,
-                               base::OnceClosure,
-                               base::TimeDelta) = 0;
-
-  // Helpers for posting bound functions as tasks.
-
-  // For same-thread posting. Must be called from the associated WebThread.
-  void PostTask(const base::Location&, base::OnceClosure);
-
- protected:
-  friend ThreadSafeRefCounted<WebTaskRunner>;
-  WebTaskRunner() = default;
-  virtual ~WebTaskRunner();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebTaskRunner);
 };
 
 // For cross-thread posting. Can be called from any thread.

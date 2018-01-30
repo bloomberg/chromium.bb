@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebAssociatedURLLoader.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"

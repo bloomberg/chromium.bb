@@ -10,14 +10,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "platform/WebTaskRunner.h"
 
 namespace blink {
 namespace scheduler {
 
 // A dummy WebTaskRunner for tests.
-class FakeWebTaskRunner : public WebTaskRunner {
+class FakeWebTaskRunner : public base::SingleThreadTaskRunner {
  public:
   FakeWebTaskRunner();
 

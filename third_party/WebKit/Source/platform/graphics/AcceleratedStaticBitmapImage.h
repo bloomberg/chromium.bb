@@ -5,12 +5,14 @@
 #ifndef AcceleratedStaticBitmapImage_h
 #define AcceleratedStaticBitmapImage_h
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/TextureHolder.h"
 
-#include <memory>
 
 class GrContext;
 

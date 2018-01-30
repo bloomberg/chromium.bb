@@ -112,13 +112,6 @@ TaskHandle::TaskHandle(scoped_refptr<Runner> runner)
   DCHECK(runner_);
 }
 
-void WebTaskRunner::PostTask(const base::Location& location,
-                             base::OnceClosure task) {
-  PostDelayedTask(location, std::move(task), base::TimeDelta());
-}
-
-WebTaskRunner::~WebTaskRunner() = default;
-
 // Use a custom function for base::Bind instead of WTF::Bind to
 // avoid copying the closure later in the call chain. Copying the bound state
 // can lead to data races with ref counted objects like StringImpl. See

@@ -29,6 +29,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "core/CoreExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -39,7 +40,6 @@ namespace blink {
 
 class Document;
 class ScriptLoader;
-class WebTaskRunner;
 
 class CORE_EXPORT ScriptRunner final
     : public GarbageCollectedFinalized<ScriptRunner>,

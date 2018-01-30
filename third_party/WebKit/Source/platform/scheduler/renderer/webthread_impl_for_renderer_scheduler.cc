@@ -44,8 +44,8 @@ WebThreadImplForRendererScheduler::GetIdleTaskRunner() const {
   return idle_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebThreadImplForRendererScheduler::GetWebTaskRunner()
-    const {
+base::SingleThreadTaskRunner*
+WebThreadImplForRendererScheduler::GetWebTaskRunner() const {
   return web_task_runner_.get();
 }
 

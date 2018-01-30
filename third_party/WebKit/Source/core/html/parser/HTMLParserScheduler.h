@@ -37,7 +37,6 @@
 namespace blink {
 
 class HTMLDocumentParser;
-class WebTaskRunner;
 
 class PumpSession : public NestingLevelIncrementer {
   STACK_ALLOCATED();

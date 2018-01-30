@@ -224,8 +224,8 @@ WebFrameScheduler::FrameType WebFrameSchedulerImpl::GetFrameType() const {
   return frame_type_;
 }
 
-scoped_refptr<blink::WebTaskRunner> WebFrameSchedulerImpl::GetTaskRunner(
-    TaskType type) {
+scoped_refptr<base::SingleThreadTaskRunner>
+WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::kJavascriptTimer:
