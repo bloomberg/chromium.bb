@@ -25,11 +25,11 @@ TabStatsDataStore::TabStatsDataStore(PrefService* pref_service)
     : pref_service_(pref_service) {
   DCHECK(pref_service != nullptr);
   tab_stats_.total_tab_count_max =
-      pref_service->GetInteger(prefs::kTabStatsTotalTabCountMax);
+      pref_service->GetInteger(::prefs::kTabStatsTotalTabCountMax);
   tab_stats_.max_tab_per_window =
-      pref_service->GetInteger(prefs::kTabStatsMaxTabsPerWindow);
+      pref_service->GetInteger(::prefs::kTabStatsMaxTabsPerWindow);
   tab_stats_.window_count_max =
-      pref_service->GetInteger(prefs::kTabStatsWindowCountMax);
+      pref_service->GetInteger(::prefs::kTabStatsWindowCountMax);
 }
 
 void TabStatsDataStore::OnWindowAdded() {
@@ -61,7 +61,7 @@ void TabStatsDataStore::UpdateMaxTabsPerWindowIfNeeded(size_t value) {
   if (value <= tab_stats_.max_tab_per_window)
     return;
   tab_stats_.max_tab_per_window = value;
-  pref_service_->SetInteger(prefs::kTabStatsMaxTabsPerWindow, value);
+  pref_service_->SetInteger(::prefs::kTabStatsMaxTabsPerWindow, value);
 }
 
 void TabStatsDataStore::ResetMaximumsToCurrentState() {
@@ -88,7 +88,7 @@ void TabStatsDataStore::UpdateTotalTabCountMaxIfNeeded() {
   if (tab_stats_.total_tab_count <= tab_stats_.total_tab_count_max)
     return;
   tab_stats_.total_tab_count_max = tab_stats_.total_tab_count;
-  pref_service_->SetInteger(prefs::kTabStatsTotalTabCountMax,
+  pref_service_->SetInteger(::prefs::kTabStatsTotalTabCountMax,
                             tab_stats_.total_tab_count_max);
 }
 
@@ -97,7 +97,7 @@ void TabStatsDataStore::UpdateWindowCountMaxIfNeeded() {
   if (tab_stats_.window_count <= tab_stats_.window_count_max)
     return;
   tab_stats_.window_count_max = tab_stats_.window_count;
-  pref_service_->SetInteger(prefs::kTabStatsWindowCountMax,
+  pref_service_->SetInteger(::prefs::kTabStatsWindowCountMax,
                             tab_stats_.window_count_max);
 }
 

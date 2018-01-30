@@ -58,7 +58,7 @@ TabStatsTracker::TabStatsTracker(PrefService* pref_service)
       tab_stats_data_store_(base::MakeUnique<TabStatsDataStore>(pref_service)),
       daily_event_(
           base::MakeUnique<DailyEvent>(pref_service,
-                                       prefs::kTabStatsDailySample,
+                                       ::prefs::kTabStatsDailySample,
                                        kTabStatsDailyEventHistogramName)) {
   DCHECK(pref_service != nullptr);
   // Get the list of existing windows/tabs. There shouldn't be any if this is
@@ -111,10 +111,10 @@ TabStatsTracker* TabStatsTracker::GetInstance() {
 }
 
 void TabStatsTracker::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kTabStatsTotalTabCountMax, 0);
-  registry->RegisterIntegerPref(prefs::kTabStatsMaxTabsPerWindow, 0);
-  registry->RegisterIntegerPref(prefs::kTabStatsWindowCountMax, 0);
-  DailyEvent::RegisterPref(registry, prefs::kTabStatsDailySample);
+  registry->RegisterIntegerPref(::prefs::kTabStatsTotalTabCountMax, 0);
+  registry->RegisterIntegerPref(::prefs::kTabStatsMaxTabsPerWindow, 0);
+  registry->RegisterIntegerPref(::prefs::kTabStatsWindowCountMax, 0);
+  DailyEvent::RegisterPref(registry, ::prefs::kTabStatsDailySample);
 }
 
 void TabStatsTracker::TabStatsDailyObserver::OnDailyEvent(
