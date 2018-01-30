@@ -26,6 +26,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -200,7 +201,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
     std::unique_ptr<UploadJob> upload_job(new UploadJobImpl(
         GetServerURL(), kRobotAccountId, &oauth2_service_,
         request_context_getter_.get(), this, std::move(mime_boundary_generator),
-        base::ThreadTaskRunnerHandle::Get()));
+        TRAFFIC_ANNOTATION_FOR_TESTS, base::ThreadTaskRunnerHandle::Get()));
 
     std::map<std::string, std::string> header_entries;
     header_entries.insert(std::make_pair(kCustomField1, "CUSTOM1"));

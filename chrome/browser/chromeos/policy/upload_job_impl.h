@@ -62,7 +62,8 @@ class UploadJobImpl : public UploadJob,
                 scoped_refptr<net::URLRequestContextGetter> url_context_getter,
                 Delegate* delegate,
                 std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
-                const scoped_refptr<base::SequencedTaskRunner> task_runner);
+                net::NetworkTrafficAnnotationTag traffic_annotation,
+                scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~UploadJobImpl() override;
 
   // UploadJob:
@@ -144,6 +145,10 @@ class UploadJobImpl : public UploadJob,
   // generate MIME boundaries when assembling the multipart request in
   // SetUpMultipart().
   std::unique_ptr<MimeBoundaryGenerator> boundary_generator_;
+
+  // Network traffic annotation set by the delegate describing what kind of data
+  // is uploaded.
+  net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   // Current state the uploader is in.
   State state_;

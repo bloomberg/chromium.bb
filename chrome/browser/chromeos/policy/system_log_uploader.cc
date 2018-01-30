@@ -149,11 +149,32 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
       device_oauth2_token_service->GetRobotAccountId();
 
   SYSLOG(INFO) << "Creating upload job for system log";
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("policy_system_logs", R"(
+        semantics {
+          sender: "Chrome OS system log uploader"
+          description:
+              "Admins can ask that their devices regularly upload their system "
+              "logs."
+          trigger: "After reboot and every 12 hours."
+          data: "Non-user specific, anonymized system logs from /var/log/."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled in settings."
+          chrome_policy {
+            LogUploadEnabled {
+                LogUploadEnabled: false
+            }
+          }
+        }
+      )");
   return std::make_unique<UploadJobImpl>(
       upload_url, robot_account_id, device_oauth2_token_service,
       system_request_context, delegate,
       std::make_unique<UploadJobImpl::RandomMimeBoundaryGenerator>(),
-      task_runner_);
+      traffic_annotation, task_runner_);
 }
 
 // Returns the system log upload frequency.
