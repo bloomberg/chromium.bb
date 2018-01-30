@@ -172,6 +172,7 @@ class CORE_EXPORT DocumentLoader
   HistoryItem* GetHistoryItem() const { return history_item_; }
 
   void StartLoading();
+  void StopLoading();
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
   const DocumentLoadTiming& GetTiming() const { return document_load_timing_; }
