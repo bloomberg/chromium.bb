@@ -611,6 +611,12 @@
     // The corresponding row header for this cell.
     AutomationNode? tableRowHeader;
 
+    // The column index of this column node.
+    long? tableColumnIndex;
+
+    // The row index of this row node.
+    long? tableRowIndex;
+
     //
     // Live region attributes.
     //

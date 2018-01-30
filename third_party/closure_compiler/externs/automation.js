@@ -838,6 +838,20 @@ chrome.automation.AutomationNode.prototype.tableColumnHeader;
 chrome.automation.AutomationNode.prototype.tableRowHeader;
 
 /**
+ * The column index of this column node.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-tableColumnIndex
+ */
+chrome.automation.AutomationNode.prototype.tableColumnIndex;
+
+/**
+ * The row index of this row node.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-tableRowIndex
+ */
+chrome.automation.AutomationNode.prototype.tableRowIndex;
+
+/**
  * The type of region if this is the root of a live region. Possible values are 'polite' and 'assertive'.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-liveStatus

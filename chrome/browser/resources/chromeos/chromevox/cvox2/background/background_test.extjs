@@ -1394,3 +1394,43 @@ TEST_F('BackgroundTest', 'TextSelectionAndLiveRegion', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'TableColumnHeaders', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <div role="grid">
+      <div role="rowgroup">
+        <div role="row">
+          <div role="columnheader">city</div>
+          <div role="columnheader">state</div>
+          <div role="columnheader">zip</div>
+        </div>
+      </div>
+      <div role="rowgroup">
+        <div role="row">
+          <div role="gridcell">Mountain View</div>
+          <div role="gridcell">CA</div>
+          <div role="gridcell">94043</div>
+        </div>
+        <div role="row">
+          <div role="gridcell">San Jose</div>
+          <div role="gridcell">CA</div>
+          <div role="gridcell">95128</div>
+        </div>
+      </div>
+    </div>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextRow'))
+        .expectSpeech('Mountain View', 'row 2 column 1')
+        .call(doCmd('nextRow'))
+        .expectNextSpeechUtteranceIsNot('city')
+        .expectSpeech('San Jose', 'row 3 column 1')
+        .call(doCmd('nextCol'))
+        .expectSpeech('CA', 'row 3 column 2', 'state')
+        .call(doCmd('previousRow'))
+        .expectSpeech('CA', 'row 2 column 2')
+        .call(doCmd('previousRow'))
+        .expectSpeech('state', 'row 1 column 2')
+        .replay();
+  });
+});

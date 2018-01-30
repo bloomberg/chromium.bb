@@ -1211,10 +1211,41 @@ Output.prototype = {
                 buff);
           }
         } else if (token == 'node') {
-          if (!tree.firstChild || !node[tree.firstChild.value])
+          if (!tree.firstChild)
             return;
-          var related = node[tree.firstChild.value];
-          this.node_(related, related, Output.EventType.NAVIGATE, buff);
+
+          var relationName = tree.firstChild.value;
+          if (node[relationName]) {
+            var related = node[relationName];
+            this.node_(related, related, Output.EventType.NAVIGATE, buff);
+          } else if (
+              relationName == 'tableColumnHeader' &&
+              node.role == RoleType.CELL) {
+            // Because table columns do not contain cells as descendants, we
+            // must search for the correct column.
+            var columnIndex = node.tableCellColumnIndex;
+            if (opt_prevNode) {
+              // Skip output when previous position falls on the same column.
+              while (opt_prevNode &&
+                     !AutomationPredicate.cellLike(opt_prevNode)) {
+                opt_prevNode = opt_prevNode.parent;
+              }
+
+              if (opt_prevNode &&
+                  opt_prevNode.tableCellColumnIndex == columnIndex)
+                return;
+            }
+            var tableLike = node.parent && node.parent.parent;
+            if (!tableLike || !AutomationPredicate.table(tableLike))
+              return;
+            var column = tableLike.children.find(function(candidate) {
+              return columnIndex === candidate.tableColumnIndex;
+            });
+            if (column && column.tableColumnHeader &&
+                column.tableColumnHeader.name) {
+              this.append_(buff, column.tableColumnHeader.name, options);
+            }
+          }
         } else if (token == 'nameOrTextContent') {
           if (node.name) {
             this.format_(node, '$name', buff);
