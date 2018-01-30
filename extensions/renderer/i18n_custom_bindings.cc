@@ -21,6 +21,7 @@
 #include "extensions/common/message_bundle.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "gin/data_object_builder.h"
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
 
 namespace extensions {
@@ -39,17 +40,13 @@ const int kCld3MinimumByteThreshold = 50;
 struct DetectedLanguage {
   DetectedLanguage(const std::string& language, int percentage)
       : language(language), percentage(percentage) {}
-  ~DetectedLanguage() {}
 
   // Returns a new v8::Local<v8::Value> representing the serialized form of
   // this DetectedLanguage object.
-  std::unique_ptr<base::DictionaryValue> ToDictionary() const;
+  v8::Local<v8::Value> ToV8(v8::Isolate* isolate) const;
 
   std::string language;
   int percentage;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetectedLanguage);
 };
 
 // LanguageDetectionResult object that holds detected langugae reliability and
@@ -62,50 +59,49 @@ struct LanguageDetectionResult {
 
   // Returns a new v8::Local<v8::Value> representing the serialized form of
   // this Result object.
-  v8::Local<v8::Value> ToValue(ScriptContext* context);
+  v8::Local<v8::Value> ToV8(v8::Local<v8::Context> context) const;
 
   // CLD detected language reliability
   bool is_reliable;
 
   // Array of detectedLanguage of size 1-3. The null is returned if
   // there were no languages detected
-  std::vector<std::unique_ptr<DetectedLanguage>> languages;
+  std::vector<DetectedLanguage> languages;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageDetectionResult);
 };
 
-std::unique_ptr<base::DictionaryValue> DetectedLanguage::ToDictionary() const {
-  std::unique_ptr<base::DictionaryValue> dict_value(
-      new base::DictionaryValue());
-  dict_value->SetString("language", language.c_str());
-  dict_value->SetInteger("percentage", percentage);
-  return dict_value;
+v8::Local<v8::Value> DetectedLanguage::ToV8(v8::Isolate* isolate) const {
+  return gin::DataObjectBuilder(isolate)
+      .Set("language", language)
+      .Set("percentage", percentage)
+      .Build();
 }
 
-v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
-  base::DictionaryValue dict_value;
-  dict_value.SetBoolean("isReliable", is_reliable);
-  std::unique_ptr<base::ListValue> languages_list(new base::ListValue());
-  for (const auto& language : languages)
-    languages_list->Append(language->ToDictionary());
-  dict_value.Set("languages", std::move(languages_list));
+v8::Local<v8::Value> LanguageDetectionResult::ToV8(
+    v8::Local<v8::Context> context) const {
+  v8::Isolate* isolate = context->GetIsolate();
+  DCHECK(isolate->GetCurrentContext() == context);
 
-  v8::Local<v8::Context> v8_context = context->v8_context();
-  v8::Isolate* isolate = v8_context->GetIsolate();
-  v8::EscapableHandleScope handle_scope(isolate);
-
-  v8::Local<v8::Value> result =
-      content::V8ValueConverter::Create()->ToV8Value(&dict_value, v8_context);
-  return handle_scope.Escape(result);
+  v8::Local<v8::Array> v8_languages = v8::Array::New(isolate, languages.size());
+  for (uint32_t i = 0; i < languages.size(); ++i) {
+    bool success =
+        v8_languages->CreateDataProperty(context, i, languages[i].ToV8(isolate))
+            .ToChecked();
+    DCHECK(success) << "CreateDataProperty() should never fail.";
+  }
+  return gin::DataObjectBuilder(isolate)
+      .Set("isReliable", is_reliable)
+      .Set("languages", v8_languages.As<v8::Value>())
+      .Build();
 }
 
 void InitDetectedLanguages(
     const std::vector<chrome_lang_id::NNetLanguageIdentifier::Result>&
         lang_results,
     LanguageDetectionResult* result) {
-  std::vector<std::unique_ptr<DetectedLanguage>>* detected_languages =
-      &result->languages;
+  std::vector<DetectedLanguage>* detected_languages = &result->languages;
   DCHECK(detected_languages->empty());
   bool* is_reliable = &result->is_reliable;
 
@@ -136,13 +132,11 @@ void InitDetectedLanguages(
 
     *is_reliable = *is_reliable && lang_result.is_reliable;
     const int percent = static_cast<int>(100 * lang_result.proportion);
-    detected_languages->push_back(
-        std::make_unique<DetectedLanguage>(language_code, percent));
+    detected_languages->emplace_back(language_code, percent);
   }
 
-  if (detected_languages->empty()) {
+  if (detected_languages->empty())
     *is_reliable = false;
-  }
 }
 
 }  // namespace
@@ -256,7 +250,7 @@ void I18NCustomBindings::DetectTextLanguage(
   // Populate LanguageDetectionResult with prediction reliability, languages,
   // and the corresponding percentages.
   InitDetectedLanguages(lang_results, &result);
-  args.GetReturnValue().Set(result.ToValue(context()));
+  args.GetReturnValue().Set(result.ToV8(context()->v8_context()));
 }
 
 }  // namespace extensions
