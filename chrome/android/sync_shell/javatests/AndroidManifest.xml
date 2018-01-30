@@ -21,7 +21,4 @@
         android:targetPackage="{{manifest_package}}"
         android:label="Tests for {{manifest_package}}"
         chromium-junit4="true"/>
-    <instrumentation android:name="org.chromium.chrome.test.ChromeInstrumentationTestRunner"
-        android:targetPackage="{{manifest_package}}"
-        android:label="Tests for {{manifest_package}}"/>
 </manifest>

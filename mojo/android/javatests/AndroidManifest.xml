@@ -26,8 +26,5 @@
         android:targetPackage="org.chromium.mojo.tests"
         android:label="Tests for org.chromium.mojo"
         chromium-junit4="true"/>
-    <instrumentation android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="org.chromium.mojo.tests"
-        android:label="Tests for org.chromium.mojo"/>
 
 </manifest>

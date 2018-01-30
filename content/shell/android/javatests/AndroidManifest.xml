@@ -21,7 +21,4 @@
         android:targetPackage="org.chromium.content_shell_apk"
         chromium-junit4="true"
         android:label="JUnit4-based tests for org.chromium.content_shell_apk" />
-    <instrumentation android:name="org.chromium.content.browser.test.ContentInstrumentationTestRunner"
-        android:targetPackage="org.chromium.content_shell_apk"
-        android:label="Tests for org.chromium.content_shell_apk"/>
 </manifest>
