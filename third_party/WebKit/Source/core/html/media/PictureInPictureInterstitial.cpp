@@ -27,10 +27,10 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
           this,
           &PictureInPictureInterstitial::ToggleInterstitialTimerFired),
       video_element_(&videoElement) {
-  SetShadowPseudoId(AtomicString("-internal-picture-in-picture-interstitial"));
+  SetShadowPseudoId(AtomicString("-internal-media-interstitial"));
   background_image_ = HTMLImageElement::Create(GetDocument());
   background_image_->SetShadowPseudoId(
-      AtomicString("-internal-picture-in-picture-background-image"));
+      AtomicString("-internal-media-interstitial-background-image"));
   background_image_->SetSrc(videoElement.getAttribute(HTMLNames::posterAttr));
   AppendChild(background_image_);
 
