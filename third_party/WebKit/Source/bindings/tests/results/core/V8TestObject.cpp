@@ -5280,7 +5280,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
     return;
   }
 
-  Nullable<Vector<int32_t>> longSequenceArg;
+  Optional<Vector<int32_t>> longSequenceArg;
   if (!info[0]->IsNullOrUndefined()) {
     longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
@@ -5335,11 +5335,11 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
 static void nullableLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  Nullable<int32_t> result = impl->nullableLongMethod();
-  if (result.IsNull())
+  Optional<int32_t> result = impl->nullableLongMethod();
+  if (!result)
     V8SetReturnValueNull(info);
   else
-    V8SetReturnValueInt(info, result.Get());
+    V8SetReturnValueInt(info, result.value());
 }
 
 static void nullableStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5357,11 +5357,11 @@ static void nullableTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8:
 static void nullableLongSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  Nullable<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
-  if (result.IsNull())
+  Optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
+  if (!result)
     V8SetReturnValueNull(info);
   else
-    V8SetReturnValue(info, ToV8(result.Get(), info.Holder(), info.GetIsolate()));
+    V8SetReturnValue(info, ToV8(result.value(), info.Holder(), info.GetIsolate()));
 }
 
 static void testInterfaceGarbageCollectedOrDOMStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5716,12 +5716,12 @@ static void testDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  Nullable<TestDictionary> result;
+  Optional<TestDictionary> result;
   impl->nullableTestDictionaryMethod(result);
-  if (result.IsNull())
+  if (!result)
     V8SetReturnValueNull(info);
   else
-    V8SetReturnValue(info, result.Get());
+    V8SetReturnValue(info, result.value());
 }
 
 static void staticTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5731,12 +5731,12 @@ static void staticTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::
 }
 
 static void staticNullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Nullable<TestDictionary> result;
+  Optional<TestDictionary> result;
   TestObject::staticNullableTestDictionaryMethod(result);
-  if (result.IsNull())
+  if (!result)
     V8SetReturnValueNull(info);
   else
-    V8SetReturnValue(info, result.Get(), info.GetIsolate()->GetCurrentContext()->Global());
+    V8SetReturnValue(info, result.value(), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

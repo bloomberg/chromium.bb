@@ -1339,9 +1339,9 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
       (mask && framebuffer_binding_))
     return kSkipped;
 
-  Nullable<WebGLContextAttributes> context_attributes;
+  Optional<WebGLContextAttributes> context_attributes;
   getContextAttributes(context_attributes);
-  if (context_attributes.IsNull()) {
+  if (!context_attributes) {
     // Unlikely, but context was lost.
     return kSkipped;
   }
@@ -1363,13 +1363,13 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
       true, true, true,
       !GetDrawingBuffer()->RequiresAlphaChannelToBePreserved());
   GLbitfield clear_mask = GL_COLOR_BUFFER_BIT;
-  if (context_attributes.Get().depth()) {
+  if (context_attributes->depth()) {
     if (!combined_clear || !depth_mask_ || !(mask & GL_DEPTH_BUFFER_BIT))
       ContextGL()->ClearDepthf(1.0f);
     clear_mask |= GL_DEPTH_BUFFER_BIT;
     ContextGL()->DepthMask(true);
   }
-  if (context_attributes.Get().stencil() ||
+  if (context_attributes->stencil() ||
       GetDrawingBuffer()->HasImplicitStencilBuffer()) {
     if (combined_clear && (mask & GL_STENCIL_BUFFER_BIT))
       ContextGL()->ClearStencil(clear_stencil_ & stencil_mask_);
@@ -2676,10 +2676,10 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(
   return WebGLActiveInfo::Create(name_impl->Substring(0, length), type, size);
 }
 
-Nullable<HeapVector<Member<WebGLShader>>>
+Optional<HeapVector<Member<WebGLShader>>>
 WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program) {
   if (isContextLost() || !ValidateWebGLObject("getAttachedShaders", program))
-    return nullptr;
+    return WTF::nullopt;
 
   HeapVector<Member<WebGLShader>> shader_objects;
   const GLenum kShaderType[] = {GL_VERTEX_SHADER, GL_FRAGMENT_SHADER};
@@ -2750,17 +2750,17 @@ ScriptValue WebGLRenderingContextBase::getBufferParameter(
 }
 
 void WebGLRenderingContextBase::getContextAttributes(
-    Nullable<WebGLContextAttributes>& result) {
+    Optional<WebGLContextAttributes>& result) {
   if (isContextLost())
     return;
-  result.Set(ToWebGLContextAttributes(CreationAttributes()));
+  result = ToWebGLContextAttributes(CreationAttributes());
   // Some requested attributes may not be honored, so we need to query the
   // underlying context/drawing buffer and adjust accordingly.
   if (CreationAttributes().depth() && !GetDrawingBuffer()->HasDepthBuffer())
-    result.Get().setDepth(false);
+    result->setDepth(false);
   if (CreationAttributes().stencil() && !GetDrawingBuffer()->HasStencilBuffer())
-    result.Get().setStencil(false);
-  result.Get().setAntialias(GetDrawingBuffer()->Multisample());
+    result->setStencil(false);
+  result->setAntialias(GetDrawingBuffer()->Multisample());
 }
 
 GLenum WebGLRenderingContextBase::getError() {
@@ -3385,9 +3385,9 @@ String WebGLRenderingContextBase::getShaderSource(WebGLShader* shader) {
   return EnsureNotNull(shader->Source());
 }
 
-Nullable<Vector<String>> WebGLRenderingContextBase::getSupportedExtensions() {
+Optional<Vector<String>> WebGLRenderingContextBase::getSupportedExtensions() {
   if (isContextLost())
-    return nullptr;
+    return WTF::nullopt;
 
   Vector<String> result;
 
@@ -7697,9 +7697,9 @@ void WebGLRenderingContextBase::ApplyStencilTest() {
   if (framebuffer_binding_) {
     have_stencil_buffer = framebuffer_binding_->HasStencilBuffer();
   } else {
-    Nullable<WebGLContextAttributes> attributes;
+    Optional<WebGLContextAttributes> attributes;
     getContextAttributes(attributes);
-    have_stencil_buffer = !attributes.IsNull() && attributes.Get().stencil();
+    have_stencil_buffer = attributes && attributes->stencil();
   }
   EnableOrDisable(GL_STENCIL_TEST, stencil_enabled_ && have_stencil_buffer);
 }
@@ -7838,18 +7838,18 @@ int WebGLRenderingContextBase::ExternallyAllocatedBufferCountPerPixel() {
   int buffer_count = 1;
   buffer_count *= 2;  // WebGL's front and back color buffers.
   int samples = GetDrawingBuffer() ? GetDrawingBuffer()->SampleCount() : 0;
-  Nullable<WebGLContextAttributes> attribs;
+  Optional<WebGLContextAttributes> attribs;
   getContextAttributes(attribs);
-  if (!attribs.IsNull()) {
+  if (attribs) {
     // Handle memory from WebGL multisample and depth/stencil buffers.
     // It is enabled only in case of explicit resolve assuming that there
     // is no memory overhead for MSAA on tile-based GPU arch.
-    if (attribs.Get().antialias() && samples > 0 &&
+    if (attribs->antialias() && samples > 0 &&
         GetDrawingBuffer()->ExplicitResolveOfMultisampleData()) {
-      if (attribs.Get().depth() || attribs.Get().stencil())
+      if (attribs->depth() || attribs->stencil())
         buffer_count += samples;  // depth/stencil multisample buffer
       buffer_count += samples;    // color multisample buffer
-    } else if (attribs.Get().depth() || attribs.Get().stencil()) {
+    } else if (attribs->depth() || attribs->stencil()) {
       buffer_count += 1;  // regular depth/stencil buffer
     }
   }

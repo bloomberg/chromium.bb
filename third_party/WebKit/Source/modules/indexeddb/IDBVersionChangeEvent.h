@@ -26,12 +26,12 @@
 #ifndef IDBVersionChangeEvent_h
 #define IDBVersionChangeEvent_h
 
-#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "modules/EventModules.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBVersionChangeEventInit.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 
@@ -45,7 +45,7 @@ class IDBVersionChangeEvent final : public Event {
   static IDBVersionChangeEvent* Create(
       const AtomicString& event_type,
       unsigned long long old_version,
-      const Nullable<unsigned long long>& new_version,
+      const Optional<unsigned long long>& new_version,
       WebIDBDataLoss data_loss = kWebIDBDataLossNone,
       const String& data_loss_message = String()) {
     return new IDBVersionChangeEvent(event_type, old_version, new_version,
@@ -71,14 +71,14 @@ class IDBVersionChangeEvent final : public Event {
   IDBVersionChangeEvent();
   IDBVersionChangeEvent(const AtomicString& event_type,
                         unsigned long long old_version,
-                        const Nullable<unsigned long long>& new_version,
+                        const Optional<unsigned long long>& new_version,
                         WebIDBDataLoss,
                         const String& data_loss);
   IDBVersionChangeEvent(const AtomicString& event_type,
                         const IDBVersionChangeEventInit&);
 
   unsigned long long old_version_;
-  Nullable<unsigned long long> new_version_;
+  Optional<unsigned long long> new_version_;
   WebIDBDataLoss data_loss_;
   String data_loss_message_;
 };

@@ -178,7 +178,7 @@ def method_context(interface, method, is_visible=True):
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': argument_contexts,
-        'cpp_type': (v8_types.cpp_template_type('Nullable', idl_type.cpp_type)
+        'cpp_type': (v8_types.cpp_template_type('Optional', idl_type.cpp_type)
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
@@ -264,7 +264,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
                                            used_as_variadic_argument=argument.is_variadic)
     context = {
         'cpp_type': (
-            v8_types.cpp_template_type('Nullable', this_cpp_type)
+            v8_types.cpp_template_type('Optional', this_cpp_type)
             if idl_type.is_explicit_nullable and not argument.is_variadic
             else this_cpp_type),
         'cpp_value': this_cpp_value,
@@ -365,8 +365,8 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     # [CallWith=ScriptState], [RaisesException]
     if use_local_result(method):
         if idl_type.is_explicit_nullable:
-            # result is of type Nullable<T>
-            cpp_value = 'result.Get()'
+            # result is of type WTF::Optional<T>
+            cpp_value = 'result.value()'
         else:
             cpp_value = 'result'
 

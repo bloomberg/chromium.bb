@@ -26,9 +26,9 @@
 #ifndef DeviceOrientationData_h
 #define DeviceOrientationData_h
 
-#include "bindings/core/v8/Nullable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace device {
 class OrientationData;
@@ -42,9 +42,9 @@ class MODULES_EXPORT DeviceOrientationData final
     : public GarbageCollected<DeviceOrientationData> {
  public:
   static DeviceOrientationData* Create();
-  static DeviceOrientationData* Create(const Nullable<double>& alpha,
-                                       const Nullable<double>& beta,
-                                       const Nullable<double>& gamma,
+  static DeviceOrientationData* Create(const Optional<double>& alpha,
+                                       const Optional<double>& beta,
+                                       const Optional<double>& gamma,
                                        bool absolute);
   static DeviceOrientationData* Create(const DeviceOrientationEventInit&);
   static DeviceOrientationData* Create(const device::OrientationData&);
@@ -62,14 +62,14 @@ class MODULES_EXPORT DeviceOrientationData final
 
  private:
   DeviceOrientationData();
-  DeviceOrientationData(const Nullable<double>& alpha,
-                        const Nullable<double>& beta,
-                        const Nullable<double>& gamma,
+  DeviceOrientationData(const Optional<double>& alpha,
+                        const Optional<double>& beta,
+                        const Optional<double>& gamma,
                         bool absolute);
 
-  Nullable<double> alpha_;
-  Nullable<double> beta_;
-  Nullable<double> gamma_;
+  Optional<double> alpha_;
+  Optional<double> beta_;
+  Optional<double> gamma_;
   bool absolute_;
 };
 

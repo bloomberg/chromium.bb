@@ -6,11 +6,11 @@
 #define CSSStyleValue_h
 
 #include "base/macros.h"
-#include "bindings/core/v8/Nullable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
                               const String& property_name,
                               const String& value,
                               ExceptionState&);
-  static Nullable<CSSStyleValueVector> parseAll(const ExecutionContext*,
+  static Optional<CSSStyleValueVector> parseAll(const ExecutionContext*,
                                                 const String& property_name,
                                                 const String& value,
                                                 ExceptionState&);

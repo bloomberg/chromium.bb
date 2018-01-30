@@ -30,12 +30,12 @@
 #define SQLTransaction_h
 
 #include <memory>
-#include "bindings/core/v8/Nullable.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -74,7 +74,7 @@ class SQLTransaction final : public ScriptWrappable,
   void executeSql(ScriptState*, const String& sql_statement, ExceptionState&);
   void executeSql(ScriptState*,
                   const String& sql_statement,
-                  const Nullable<Vector<ScriptValue>>& arguments,
+                  const Optional<Vector<ScriptValue>>& arguments,
                   SQLStatementCallback*,
                   SQLStatementErrorCallback*,
                   ExceptionState&);

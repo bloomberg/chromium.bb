@@ -35,7 +35,7 @@ IDBVersionChangeEvent::IDBVersionChangeEvent()
 IDBVersionChangeEvent::IDBVersionChangeEvent(
     const AtomicString& event_type,
     unsigned long long old_version,
-    const Nullable<unsigned long long>& new_version,
+    const Optional<unsigned long long>& new_version,
     WebIDBDataLoss data_loss,
     const String& data_loss_message)
     : Event(event_type, /*can_bubble=*/false, /*cancelable=*/false),
@@ -49,7 +49,6 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(
     const IDBVersionChangeEventInit& initializer)
     : Event(event_type, /*can_bubble=*/false, /*cancelable=*/false),
       old_version_(initializer.oldVersion()),
-      new_version_(nullptr),
       data_loss_(kWebIDBDataLossNone) {
   if (initializer.hasNewVersion())
     new_version_ = initializer.newVersion();
@@ -58,8 +57,8 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(
 }
 
 unsigned long long IDBVersionChangeEvent::newVersion(bool& is_null) const {
-  is_null = new_version_.IsNull();
-  return is_null ? 0 : new_version_.Get();
+  is_null = !new_version_.has_value();
+  return new_version_.value_or(0);
 }
 
 const AtomicString& IDBVersionChangeEvent::dataLoss() const {
