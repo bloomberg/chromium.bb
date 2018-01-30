@@ -28,6 +28,7 @@
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -91,16 +92,16 @@ class MockFileStream : public net::FileStream {
 
   int Open(const base::FilePath& path,
            int open_flags,
-           const net::CompletionCallback& callback) override {
-    return ReturnResult(open_result_, callback);
+           net::CompletionOnceCallback callback) override {
+    return ReturnResult(open_result_, std::move(callback));
   }
 
-  int Close(const net::CompletionCallback& callback) override {
+  int Close(net::CompletionOnceCallback callback) override {
     EXPECT_FALSE(closed_);
     int result = ReturnResult(
         close_result_,
-        base::BindRepeating(&MockFileStream::SetClosedAndRunCallback,
-                            base::Unretained(this), callback));
+        base::BindOnce(&MockFileStream::SetClosedAndRunCallback,
+                       base::Unretained(this), std::move(callback)));
     if (result != net::ERR_IO_PENDING)
       closed_ = true;
     return result;
@@ -111,22 +112,21 @@ class MockFileStream : public net::FileStream {
     return false;
   }
 
-  int Seek(int64_t offset,
-           const net::Int64CompletionCallback& callback) override {
+  int Seek(int64_t offset, net::Int64CompletionOnceCallback callback) override {
     NOTREACHED();
     return net::ERR_UNEXPECTED;
   }
 
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override {
+           net::CompletionOnceCallback callback) override {
     NOTREACHED();
     return net::ERR_UNEXPECTED;
   }
 
   int Write(net::IOBuffer* buf,
             int buf_len,
-            const net::CompletionCallback& callback) override {
+            net::CompletionOnceCallback callback) override {
     // 0-byte writes aren't allowed.
     EXPECT_GT(buf_len, 0);
 
@@ -137,10 +137,10 @@ class MockFileStream : public net::FileStream {
     if (write_result.result > 0)
       written_data_ += std::string(buf->data(), write_result.result);
 
-    return ReturnResult(write_result, callback);
+    return ReturnResult(write_result, std::move(callback));
   }
 
-  int Flush(const net::CompletionCallback& callback) override {
+  int Flush(net::CompletionOnceCallback callback) override {
     NOTREACHED();
     return net::ERR_UNEXPECTED;
   }
@@ -172,19 +172,19 @@ class MockFileStream : public net::FileStream {
   void set_expect_closed(bool expect_closed) { expect_closed_ = expect_closed; }
 
  private:
-  void SetClosedAndRunCallback(const net::CompletionCallback& callback,
+  void SetClosedAndRunCallback(net::CompletionOnceCallback callback,
                                int result) {
     EXPECT_FALSE(closed_);
     closed_ = true;
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   int ReturnResult(OperationResult result,
-                   const net::CompletionCallback& callback) {
+                   net::CompletionOnceCallback callback) {
     if (result.completion_mode == CompletionMode::SYNC)
       return result.result;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, result.result));
+        FROM_HERE, base::BindOnce(std::move(callback), result.result));
     return net::ERR_IO_PENDING;
   }
 
