@@ -24,6 +24,8 @@ class FontCachePurgePreventer;
 class CORE_EXPORT CanvasFontCache final
     : public GarbageCollectedFinalized<CanvasFontCache>,
       public WebThread::TaskObserver {
+  USING_PRE_FINALIZER(CanvasFontCache, Dispose);
+
  public:
   static CanvasFontCache* Create(Document& document) {
     return new CanvasFontCache(document);
@@ -52,6 +54,7 @@ class CORE_EXPORT CanvasFontCache final
 
  private:
   explicit CanvasFontCache(Document&);
+  void Dispose();
   void SchedulePruningIfNeeded();
   typedef HeapHashMap<String, Member<MutableCSSPropertyValueSet>>
       MutableStylePropertyMap;

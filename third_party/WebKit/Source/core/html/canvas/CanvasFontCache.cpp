@@ -40,10 +40,6 @@ CanvasFontCache::CanvasFontCache(Document& document)
 }
 
 CanvasFontCache::~CanvasFontCache() {
-  main_cache_purge_preventer_.reset();
-  if (pruning_scheduled_) {
-    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
-  }
 }
 
 unsigned CanvasFontCache::MaxFonts() {
@@ -158,6 +154,13 @@ void CanvasFontCache::PruneAll() {
 void CanvasFontCache::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetched_fonts_);
   visitor->Trace(document_);
+}
+
+void CanvasFontCache::Dispose() {
+  main_cache_purge_preventer_.reset();
+  if (pruning_scheduled_) {
+    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  }
 }
 
 }  // namespace blink
