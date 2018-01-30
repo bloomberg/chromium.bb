@@ -7274,8 +7274,6 @@ crbug.com/591099 virtual/scroll_customization/fast/events/touch/compositor-touch
 crbug.com/591099 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-global.html [ Pass ]
 crbug.com/591099 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-transform-changed-nolayout.html [ Pass ]
 crbug.com/591099 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
-crbug.com/591099 virtual/service-worker-script-streaming/ [ Skip ]
-crbug.com/591099 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure Pass ]
 crbug.com/591099 virtual/spv175/ [ Skip ]
 crbug.com/591099 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Failure ]
 crbug.com/591099 virtual/spv2/paint/invalidation/box/margin.html [ Failure Pass ]
