@@ -5,6 +5,7 @@
 #ifndef WebGLTimerQueryEXT_h
 #define WebGLTimerQueryEXT_h
 
+#include "base/single_thread_task_runner.h"
 #include "modules/webgl/WebGLContextObject.h"
 #include "platform/WebTaskRunner.h"
 
@@ -52,7 +53,7 @@ class WebGLTimerQueryEXT : public WebGLContextObject {
   bool query_result_available_;
   GLuint64 query_result_;
 
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TaskHandle task_handle_;
 };
 

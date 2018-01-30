@@ -32,7 +32,7 @@
 #define WebSocketHandle_h
 
 #include <stdint.h>
-#include "platform/WebTaskRunner.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/websockets/websocket.mojom-blink.h"
@@ -68,7 +68,7 @@ class WebSocketHandle {
                        const KURL& site_for_cookies,
                        const String& user_agent_override,
                        WebSocketHandleClient*,
-                       WebTaskRunner*) = 0;
+                       base::SingleThreadTaskRunner*) = 0;
   virtual void Send(bool fin, MessageType, const char* data, size_t) = 0;
   virtual void FlowControl(int64_t quota) = 0;
   virtual void Close(unsigned short code, const String& reason) = 0;

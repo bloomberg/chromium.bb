@@ -710,7 +710,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   TaskRunnerTimer<WebGLRenderingContextBase> dispatch_context_lost_event_timer_;
   bool restore_allowed_;
   TaskRunnerTimer<WebGLRenderingContextBase> restore_timer_;
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   bool marked_canvas_dirty_;
   bool animation_frame_in_progress_;
@@ -1665,7 +1665,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
  private:
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
-                            scoped_refptr<WebTaskRunner>,
+                            scoped_refptr<base::SingleThreadTaskRunner>,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             bool using_gpu_compositing,
                             const CanvasContextCreationAttributes&,

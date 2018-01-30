@@ -40,6 +40,7 @@
 #include "core/workers/WorkerThreadLifecycleContext.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
@@ -160,7 +161,7 @@ void WorkerWebSocketChannel::Trace(blink::Visitor* visitor) {
 
 MainChannelClient::MainChannelClient(
     Bridge* bridge,
-    scoped_refptr<WebTaskRunner> worker_networking_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_networking_task_runner,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context)
     : WorkerThreadLifecycleObserver(worker_thread_lifecycle_context),
       bridge_(bridge),
@@ -377,7 +378,7 @@ Bridge::~Bridge() {
 void Bridge::ConnectOnMainThread(
     std::unique_ptr<SourceLocation> location,
     ThreadableLoadingContext* loading_context,
-    scoped_refptr<WebTaskRunner> worker_networking_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_networking_task_runner,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context,
     const KURL& url,
     const String& protocol,
@@ -403,7 +404,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   // Wait for completion of the task on the main thread because the mixed
   // content check must synchronously be conducted.
   WebSocketChannelSyncHelper sync_helper;
-  scoped_refptr<WebTaskRunner> worker_networking_task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> worker_networking_task_runner =
       worker_global_scope_->GetTaskRunner(TaskType::kNetworking);
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
 

@@ -28,6 +28,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/WebTaskRunner.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

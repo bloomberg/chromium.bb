@@ -132,7 +132,7 @@ class AudioScheduledSourceHandler : public AudioHandler {
   // and getter to protect the access to this.
   int playback_state_;
 
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class AudioScheduledSourceNode

@@ -35,7 +35,6 @@
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"

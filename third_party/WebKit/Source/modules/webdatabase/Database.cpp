@@ -52,6 +52,7 @@
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/wtf/Atomics.h"
 #include "platform/wtf/Time.h"
@@ -990,7 +991,7 @@ bool Database::Opened() {
   return static_cast<bool>(AcquireLoad(&opened_));
 }
 
-WebTaskRunner* Database::GetDatabaseTaskRunner() const {
+base::SingleThreadTaskRunner* Database::GetDatabaseTaskRunner() const {
   return database_task_runner_.get();
 }
 

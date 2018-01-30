@@ -10,6 +10,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Optional.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace blink {

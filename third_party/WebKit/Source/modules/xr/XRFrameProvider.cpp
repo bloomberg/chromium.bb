@@ -16,7 +16,6 @@
 #include "modules/xr/XRSession.h"
 #include "modules/xr/XRViewport.h"
 #include "modules/xr/XRWebGLLayer.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/graphics/gpu/XRFrameTransport.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/transforms/TransformationMatrix.h"
