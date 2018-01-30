@@ -70,7 +70,7 @@ class CORE_EXPORT AtRuleCSSStyleDeclaration : public CSSStyleDeclaration {
                            bool important,
                            SecureContextMode,
                            ExceptionState&);
-  bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const final {
+  bool CssPropertyMatches(CSSPropertyID, const CSSValue&) const final {
     return false;
   }
 

@@ -77,7 +77,7 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
                            SecureContextMode,
                            ExceptionState&) final;
 
-  bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const final;
+  bool CssPropertyMatches(CSSPropertyID, const CSSValue&) const final;
 
  protected:
   enum MutationType { kNoChanges, kPropertyChanged };
