@@ -498,7 +498,9 @@ sqlite3_vfs* VFSWrapper() {
   wrapper_vfs->xDlClose = &DlClose;
   wrapper_vfs->xRandomness = &Randomness;
   wrapper_vfs->xSleep = &Sleep;
-  wrapper_vfs->xCurrentTime = &CurrentTime;
+  // |xCurrentTime| is null when SQLite is built with SQLITE_OMIT_DEPRECATED.
+  wrapper_vfs->xCurrentTime =
+      (wrapped_vfs->xCurrentTime ? &CurrentTime : nullptr);
   wrapper_vfs->xGetLastError = &GetLastError;
   // The methods above are in version 1 of sqlite_vfs.
   // There were VFS implementations with nullptr for |xCurrentTimeInt64|.
