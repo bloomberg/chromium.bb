@@ -37,16 +37,6 @@ FrameSinkManagerImpl::FrameSinkSourceMapping&
 FrameSinkManagerImpl::FrameSinkSourceMapping::operator=(
     FrameSinkSourceMapping&& other) = default;
 
-FrameSinkManagerImpl::SinkAndSupport::SinkAndSupport() = default;
-
-FrameSinkManagerImpl::SinkAndSupport::SinkAndSupport(SinkAndSupport&& other) =
-    default;
-
-FrameSinkManagerImpl::SinkAndSupport::~SinkAndSupport() = default;
-
-FrameSinkManagerImpl::SinkAndSupport& FrameSinkManagerImpl::SinkAndSupport::
-operator=(SinkAndSupport&& other) = default;
-
 FrameSinkManagerImpl::FrameSinkManagerImpl(
     uint32_t number_of_frames_to_activation_deadline,
     DisplayProvider* display_provider)
@@ -61,10 +51,17 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(
 FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_capturers_.clear();
-  // All FrameSinks should be unregistered prior to FrameSinkManager
+
+  // Delete any remaining owned CompositorFrameSinks.
+  sink_map_.clear();
+
+  // All BeginFrameSources should be deleted before FrameSinkManagerImpl
   // destruction.
-  compositor_frame_sinks_.clear();
-  DCHECK_EQ(registered_sources_.size(), 0u);
+  DCHECK(registered_sources_.empty());
+
+  // TODO(kylechar): Enforce that all CompositorFrameSinks are destroyed before
+  // ~FrameSinkManagerImpl() runs.
+
   surface_manager_.RemoveObserver(this);
   surface_manager_.RemoveObserver(&hit_test_manager_);
 }
@@ -103,12 +100,8 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
   if (video_detector_)
     video_detector_->OnFrameSinkIdInvalidated(frame_sink_id);
 
-  // Destroy the [Root]CompositorFrameSinkImpl if there is one. This will result
-  // in UnregisterCompositorFrameSinkSupport() being called and |iter| will be
-  // invalidated afterwards
-  auto iter = compositor_frame_sinks_.find(frame_sink_id);
-  if (iter != compositor_frame_sinks_.end())
-    iter->second.sink.reset();
+  // Destroy the [Root]CompositorFrameSinkImpl if there is one.
+  sink_map_.erase(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
@@ -120,7 +113,7 @@ void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(0u, compositor_frame_sinks_.count(params->frame_sink_id));
+  DCHECK(!base::ContainsKey(sink_map_, params->frame_sink_id));
   DCHECK(display_provider_);
 
   std::unique_ptr<ExternalBeginFrameControllerImpl>
@@ -140,17 +133,16 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
       external_begin_frame_controller.get(), params->renderer_settings,
       &begin_frame_source);
 
-  auto frame_sink = std::make_unique<RootCompositorFrameSinkImpl>(
-      this, params->frame_sink_id, std::move(display),
-      std::move(begin_frame_source), std::move(external_begin_frame_controller),
-      std::move(params->compositor_frame_sink),
-      mojom::CompositorFrameSinkClientPtr(
-          std::move(params->compositor_frame_sink_client)),
-      std::move(params->display_private),
-      mojom::DisplayClientPtr(std::move(params->display_client)));
-  SinkAndSupport& entry = compositor_frame_sinks_[params->frame_sink_id];
-  DCHECK(entry.support);  // |entry| was created by RootCompositorFrameSinkImpl.
-  entry.sink = std::move(frame_sink);
+  sink_map_[params->frame_sink_id] =
+      std::make_unique<RootCompositorFrameSinkImpl>(
+          this, params->frame_sink_id, std::move(display),
+          std::move(begin_frame_source),
+          std::move(external_begin_frame_controller),
+          std::move(params->compositor_frame_sink),
+          mojom::CompositorFrameSinkClientPtr(
+              std::move(params->compositor_frame_sink_client)),
+          std::move(params->display_private),
+          mojom::DisplayClientPtr(std::move(params->display_client)));
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
@@ -158,22 +150,16 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkRequest request,
     mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
+  DCHECK(!base::ContainsKey(sink_map_, frame_sink_id));
 
-  auto frame_sink = std::make_unique<CompositorFrameSinkImpl>(
+  sink_map_[frame_sink_id] = std::make_unique<CompositorFrameSinkImpl>(
       this, frame_sink_id, std::move(request), std::move(client));
-  SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
-  DCHECK(entry.support);  // |entry| was created by CompositorFrameSinkImpl.
-  entry.sink = std::move(frame_sink);
 }
 
 void FrameSinkManagerImpl::DestroyCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     DestroyCompositorFrameSinkCallback callback) {
-  auto iter = compositor_frame_sinks_.find(frame_sink_id);
-  if (iter != compositor_frame_sinks_.end())
-    iter->second.sink.reset();
-
+  sink_map_.erase(frame_sink_id);
   std::move(callback).Run();
 }
 
@@ -259,14 +245,13 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupport* support) {
   DCHECK(support);
+  DCHECK(!base::ContainsKey(support_map_, frame_sink_id));
 
-  SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
-  DCHECK(!entry.support);
-  entry.support = support;
+  support_map_[frame_sink_id] = support;
 
   for (auto& capturer : video_capturers_) {
     if (capturer->requested_target() == frame_sink_id)
-      capturer->SetResolvedTarget(entry.support);
+      capturer->SetResolvedTarget(support);
   }
 
   auto it = frame_sink_source_map_.find(frame_sink_id);
@@ -276,14 +261,14 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
 
 void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id) {
-  DCHECK_EQ(compositor_frame_sinks_.count(frame_sink_id), 1u);
+  DCHECK(base::ContainsKey(support_map_, frame_sink_id));
 
   for (auto& capturer : video_capturers_) {
     if (capturer->requested_target() == frame_sink_id)
       capturer->OnTargetWillGoAway();
   }
 
-  compositor_frame_sinks_.erase(frame_sink_id);
+  support_map_.erase(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::RegisterBeginFrameSource(
@@ -330,9 +315,9 @@ void FrameSinkManagerImpl::RecursivelyAttachBeginFrameSource(
   FrameSinkSourceMapping& mapping = frame_sink_source_map_[frame_sink_id];
   if (!mapping.source) {
     mapping.source = source;
-    auto iter = compositor_frame_sinks_.find(frame_sink_id);
-    if (iter != compositor_frame_sinks_.end())
-      iter->second.support->SetBeginFrameSource(source);
+    auto iter = support_map_.find(frame_sink_id);
+    if (iter != support_map_.end())
+      iter->second->SetBeginFrameSource(source);
   }
 
   // Copy the list of children because RecursivelyAttachBeginFrameSource() can
@@ -352,9 +337,9 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
   auto& mapping = iter->second;
   if (mapping.source == source) {
     mapping.source = nullptr;
-    auto client_iter = compositor_frame_sinks_.find(frame_sink_id);
-    if (client_iter != compositor_frame_sinks_.end())
-      client_iter->second.support->SetBeginFrameSource(nullptr);
+    auto client_iter = support_map_.find(frame_sink_id);
+    if (client_iter != support_map_.end())
+      client_iter->second->SetBeginFrameSource(nullptr);
   }
 
   // Delete the FrameSinkSourceMapping for |frame_sink_id| if empty.
@@ -372,10 +357,10 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
 
 CapturableFrameSink* FrameSinkManagerImpl::FindCapturableFrameSink(
     const FrameSinkId& frame_sink_id) {
-  const auto it = compositor_frame_sinks_.find(frame_sink_id);
-  if (it == compositor_frame_sinks_.end())
+  const auto it = support_map_.find(frame_sink_id);
+  if (it == support_map_.end())
     return nullptr;
-  return it->second.support;
+  return it->second;
 }
 
 void FrameSinkManagerImpl::OnCapturerConnectionLost(
