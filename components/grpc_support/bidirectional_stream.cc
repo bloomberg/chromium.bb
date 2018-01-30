@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -100,8 +101,8 @@ int BidirectionalStream::Start(const char* url,
   request_info->end_stream_on_headers = end_of_stream;
   write_end_of_stream_ = end_of_stream;
   PostToNetworkThread(FROM_HERE,
-                      base::Bind(&BidirectionalStream::StartOnNetworkThread,
-                                 weak_this_, base::Passed(&request_info)));
+                      base::BindOnce(&BidirectionalStream::StartOnNetworkThread,
+                                     weak_this_, base::Passed(&request_info)));
   return 0;
 }
 
@@ -111,9 +112,9 @@ bool BidirectionalStream::ReadData(char* buffer, int capacity) {
   scoped_refptr<net::WrappedIOBuffer> read_buffer(
       new net::WrappedIOBuffer(buffer));
 
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&BidirectionalStream::ReadDataOnNetworkThread,
-                                 weak_this_, read_buffer, capacity));
+  PostToNetworkThread(
+      FROM_HERE, base::BindOnce(&BidirectionalStream::ReadDataOnNetworkThread,
+                                weak_this_, read_buffer, capacity));
   return true;
 }
 
@@ -127,30 +128,31 @@ bool BidirectionalStream::WriteData(const char* buffer,
       new net::WrappedIOBuffer(buffer));
 
   PostToNetworkThread(
-      FROM_HERE, base::Bind(&BidirectionalStream::WriteDataOnNetworkThread,
-                            weak_this_, write_buffer, count, end_of_stream));
+      FROM_HERE,
+      base::BindOnce(&BidirectionalStream::WriteDataOnNetworkThread, weak_this_,
+                     write_buffer, count, end_of_stream));
   return true;
 }
 
 void BidirectionalStream::Flush() {
   PostToNetworkThread(
       FROM_HERE,
-      base::Bind(&BidirectionalStream::FlushOnNetworkThread, weak_this_));
+      base::BindOnce(&BidirectionalStream::FlushOnNetworkThread, weak_this_));
 }
 
 void BidirectionalStream::Cancel() {
   PostToNetworkThread(
       FROM_HERE,
-      base::Bind(&BidirectionalStream::CancelOnNetworkThread, weak_this_));
+      base::BindOnce(&BidirectionalStream::CancelOnNetworkThread, weak_this_));
 }
 
 void BidirectionalStream::Destroy() {
   // Destroy could be called from any thread, including network thread (if
   // posting task to executor throws an exception), but is posted, so |this|
   // is valid until calling task is complete.
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&BidirectionalStream::DestroyOnNetworkThread,
-                                 base::Unretained(this)));
+  PostToNetworkThread(
+      FROM_HERE, base::BindOnce(&BidirectionalStream::DestroyOnNetworkThread,
+                                base::Unretained(this)));
 }
 
 void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
@@ -249,9 +251,9 @@ void BidirectionalStream::OnFailed(int error) {
   read_state_ = write_state_ = ERR;
   weak_factory_.InvalidateWeakPtrs();
   // Delete underlying |bidi_stream_| asynchronously as it may still be used.
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&base::DeletePointer<net::BidirectionalStream>,
-                                 bidi_stream_.release()));
+  PostToNetworkThread(
+      FROM_HERE, base::BindOnce(&base::DeletePointer<net::BidirectionalStream>,
+                                bidi_stream_.release()));
   delegate_->OnFailed(error);
 }
 
@@ -381,8 +383,9 @@ void BidirectionalStream::MaybeOnSucceded() {
     weak_factory_.InvalidateWeakPtrs();
     // Delete underlying |bidi_stream_| asynchronously as it may still be used.
     PostToNetworkThread(
-        FROM_HERE, base::Bind(&base::DeletePointer<net::BidirectionalStream>,
-                              bidi_stream_.release()));
+        FROM_HERE,
+        base::BindOnce(&base::DeletePointer<net::BidirectionalStream>,
+                       bidi_stream_.release()));
     delegate_->OnSucceeded();
   }
 }
@@ -393,8 +396,9 @@ bool BidirectionalStream::IsOnNetworkThread() {
 }
 
 void BidirectionalStream::PostToNetworkThread(const base::Location& from_here,
-                                              const base::Closure& task) {
-  request_context_getter_->GetNetworkTaskRunner()->PostTask(from_here, task);
+                                              base::OnceClosure task) {
+  request_context_getter_->GetNetworkTaskRunner()->PostTask(from_here,
+                                                            std::move(task));
 }
 
-}  // namespace cronet
+}  // namespace grpc_support
