@@ -141,8 +141,10 @@ class ExternalVideoEncoder::VEAClientImpl
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     requested_bit_rate_ = bit_rate;
-    video_encode_accelerator_->RequestEncodingParametersChange(
-        bit_rate, static_cast<uint32_t>(max_frame_rate_ + 0.5));
+    if (encoder_active_) {
+      video_encode_accelerator_->RequestEncodingParametersChange(
+          bit_rate, static_cast<uint32_t>(max_frame_rate_ + 0.5));
+    }
   }
 
   // The destruction call back of the copied video frame to free its use of
@@ -161,12 +163,14 @@ class ExternalVideoEncoder::VEAClientImpl
       const VideoEncoder::FrameEncodedCallback& frame_encoded_callback) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    if (!encoder_active_)
-      return;
-
     in_progress_frame_encodes_.push_back(InProgressFrameEncode(
         video_frame, reference_time, frame_encoded_callback,
         requested_bit_rate_));
+
+    if (!encoder_active_) {
+      ExitEncodingWithErrors();
+      return;
+    }
 
     scoped_refptr<media::VideoFrame> frame = video_frame;
     if (video_frame->coded_size() != frame_coded_size_) {
@@ -394,22 +398,28 @@ class ExternalVideoEncoder::VEAClientImpl
 
     // We need to re-add the output buffer to the encoder after we are done
     // with it.
-    video_encode_accelerator_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        bitstream_buffer_id,
-        output_buffers_[bitstream_buffer_id]->handle(),
-        output_buffers_[bitstream_buffer_id]->mapped_size()));
+    if (encoder_active_) {
+      video_encode_accelerator_->UseOutputBitstreamBuffer(
+          media::BitstreamBuffer(
+              bitstream_buffer_id,
+              output_buffers_[bitstream_buffer_id]->handle(),
+              output_buffers_[bitstream_buffer_id]->mapped_size()));
+    }
   }
 
  private:
   friend class base::RefCountedThreadSafe<VEAClientImpl>;
 
   ~VEAClientImpl() final {
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+    while (!in_progress_frame_encodes_.empty())
+      ExitEncodingWithErrors();
+
     // According to the media::VideoEncodeAccelerator interface, Destroy()
     // should be called instead of invoking its private destructor.
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&media::VideoEncodeAccelerator::Destroy,
-                   base::Unretained(video_encode_accelerator_.release())));
+    if (video_encode_accelerator_)
+      video_encode_accelerator_.release()->Destroy();
   }
 
   // Note: This method can be called on any thread.
@@ -470,7 +480,9 @@ class ExternalVideoEncoder::VEAClientImpl
   // Parse H264 SPS, PPS, and Slice header, and return the averaged frame
   // quantizer in the range of [0, 51], or -1 on parse error.
   double GetH264FrameQuantizer(const uint8_t* encoded_data, off_t size) {
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(encoded_data);
+
     if (!size)
       return -1;
     h264_parser_.SetStream(encoded_data, size);
@@ -619,7 +631,17 @@ ExternalVideoEncoder::ExternalVideoEncoder(
                  status_change_cb));
 }
 
-ExternalVideoEncoder::~ExternalVideoEncoder() = default;
+ExternalVideoEncoder::~ExternalVideoEncoder() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+  // Ensure |client_| is destroyed from the encoder task runner by dropping the
+  // reference to it within an encoder task.
+  if (client_) {
+    client_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce([](scoped_refptr<VEAClientImpl> client) {},
+                                  std::move(client_)));
+  }
+}
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
