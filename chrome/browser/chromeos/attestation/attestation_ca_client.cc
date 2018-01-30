@@ -112,9 +112,38 @@ void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
 void AttestationCAClient::FetchURL(const std::string& url,
                                    const std::string& request,
                                    const DataCallback& on_response) {
+  const net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("attestation_ca_client", R"(
+        semantics {
+          sender: "Attestation CA client"
+          description:
+            "Sends requests to the Attestation CA as part of the remote "
+            "attestation feature, such as enrolling for remote attestation or "
+            "to obtain an attestation certificate."
+          trigger:
+            "Device enrollment, content protection or get an attestation "
+            "certificate for a hardware-protected key."
+          data:
+            "The data from AttestationCertificateRequest or from "
+            "AttestationEnrollmentRequest message from "
+            "cryptohome/attestation.proto. Some of the important data being "
+            "encrypted endorsement certificate, attestation identity public "
+            "key, PCR0 and PCR1 TPM values."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "The device setting DeviceAttestationEnabled can disable the "
+            "attestation requests and AttestationForContentProtectionEnabled "
+            "can disable the attestation for content protection. But they "
+            "cannot be controlled by a policy or through settings."
+          policy_exception_justification: "Not implemented."
+        })");
   // The first argument allows the use of TestURLFetcherFactory in tests.
   net::URLFetcher* fetcher =
-      net::URLFetcher::Create(0, GURL(url), net::URLFetcher::POST, this)
+      net::URLFetcher::Create(0, GURL(url), net::URLFetcher::POST, this,
+                              traffic_annotation)
           .release();
   fetcher->SetRequestContext(g_browser_process->system_request_context());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
