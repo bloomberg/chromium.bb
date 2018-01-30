@@ -46,7 +46,6 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -186,12 +185,6 @@ class TestResourceDispatcherHostDelegate final
 
   NavigationData* GetNavigationData(net::URLRequest* request) const override {
     ADD_FAILURE() << "GetNavigationData should not be called.";
-    return nullptr;
-  }
-
-  std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
-      ResourceContext* resource_context) override {
-    ADD_FAILURE() << "CreateClientCertStore should not be called.";
     return nullptr;
   }
 

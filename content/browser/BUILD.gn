@@ -1587,6 +1587,8 @@ jumbo_source_set("browser") {
     "ssl/ssl_error_handler.h",
     "ssl/ssl_manager.cc",
     "ssl/ssl_manager.h",
+    "ssl_private_key_impl.cc",
+    "ssl_private_key_impl.h",
     "startup_task_runner.cc",
     "startup_task_runner.h",
     "storage_partition_impl.cc",

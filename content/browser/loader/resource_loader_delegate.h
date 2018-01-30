@@ -11,7 +11,6 @@ class GURL;
 
 namespace net {
 class AuthChallengeInfo;
-class ClientCertStore;
 }
 
 namespace network {
@@ -41,10 +40,6 @@ class CONTENT_EXPORT ResourceLoaderDelegate {
   // This method informs the delegate that the loader is done, and the loader
   // expects to be destroyed as a side-effect of this call.
   virtual void DidFinishLoading(ResourceLoader* loader) = 0;
-
-  // Get platform ClientCertStore. May return nullptr.
-  virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
-      ResourceLoader* loader) = 0;
 
  protected:
   virtual ~ResourceLoaderDelegate() {}
