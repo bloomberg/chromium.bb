@@ -1316,7 +1316,8 @@ IN_PROC_BROWSER_TEST_F(WebViewPopupInteractiveTest, PopupPositioningBasic) {
 }
 
 // Flaky on ChromeOS and Linux: http://crbug.com/526886
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// TODO(crbug.com/807446): Flaky on Mac.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_PopupPositioningMoved DISABLED_PopupPositioningMoved
 #else
 #define MAYBE_PopupPositioningMoved PopupPositioningMoved
