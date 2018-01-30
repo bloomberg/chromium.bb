@@ -108,6 +108,7 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/epub+zip", "epub"},
     {"application/font-woff", "woff"},
     {"application/gzip", "gz,tgz"},
+    {"application/json", "json"},  // Per http://www.ietf.org/rfc/rfc4627.txt.
     {"application/octet-stream", "bin,exe,com"},
     {"application/pdf", "pdf"},
     {"application/pkcs7-mime", "p7m,p7c,p7z"},
