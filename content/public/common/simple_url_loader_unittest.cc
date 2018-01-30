@@ -1347,8 +1347,10 @@ class MockURLLoader : public network::mojom::URLLoader {
           status.error_code = net::OK;
           status.decoded_body_length = CountBytesToSend() - 1;
           client_->OnComplete(status);
+          break;
         }
         case TestLoaderEvent::kClientPipeClosed: {
+          DCHECK(client_);
           EXPECT_TRUE(binding_.is_bound());
           client_.reset();
           break;
