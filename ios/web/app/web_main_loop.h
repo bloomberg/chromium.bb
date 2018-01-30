@@ -14,7 +14,6 @@
 
 namespace base {
 class PowerMonitor;
-class SystemMonitor;
 }  // namespace base
 
 namespace web {
@@ -72,7 +71,6 @@ class WebMainLoop {
   // The MessageLoop and NetworkChangeNotifier are not owned by the WebMainLoop
   // but still need to be destroyed in correct order so use ScopedClosureRunner.
   base::ScopedClosureRunner destroy_message_loop_;
-  std::unique_ptr<base::SystemMonitor> system_monitor_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
   base::ScopedClosureRunner destroy_network_change_notifier_;
 
