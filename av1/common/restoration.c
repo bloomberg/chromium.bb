@@ -197,7 +197,6 @@ static void copy_tile(int width, int height, const uint8_t *src, int src_stride,
     copy_tile_lowbd(width, height, src, src_stride, dst, dst_stride);
 }
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 #define REAL_PTR(hbd, d) ((hbd) ? (uint8_t *)CONVERT_TO_SHORTPTR(d) : (d))
 
 // Helper function: Save one column of left/right context to the appropriate
@@ -543,7 +542,6 @@ static void restore_processing_stripe_boundary(
     }
   }
 }
-#endif
 
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
 #define wiener_convolve8_add_src aom_convolve8_add_src_hip
@@ -1374,7 +1372,6 @@ static const stripe_filter_fun stripe_filters[NUM_STRIPE_FILTERS] = {
 // Filter one restoration unit
 void av1_loop_restoration_filter_unit(
     const RestorationTileLimits *limits, const RestorationUnitInfo *rui,
-#if CONFIG_STRIPED_LOOP_RESTORATION
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
     const AV1PixelRect *tile_rect, int tile_stripe0,
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -1385,7 +1382,6 @@ void av1_loop_restoration_filter_unit(
     int loop_filter_across_tiles_enabled,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
     int ss_x, int ss_y, int highbd, int bit_depth, uint8_t *data8, int stride,
     uint8_t *dst8, int dst_stride, int32_t *tmpbuf) {
   RestorationType unit_rtype = rui->restoration_type;
@@ -1406,8 +1402,7 @@ void av1_loop_restoration_filter_unit(
 
   const int procunit_width = RESTORATION_PROC_UNIT_SIZE >> ss_x;
 
-// Convolve the whole tile one stripe at a time
-#if CONFIG_STRIPED_LOOP_RESTORATION
+  // Convolve the whole tile one stripe at a time
   RestorationTileLimits remaining_stripes = *limits;
   int i = 0;
   while (i < unit_h) {
@@ -1471,23 +1466,13 @@ void av1_loop_restoration_filter_unit(
 
     i += h;
   }
-#else
-  const int stripe_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
-  for (int i = 0; i < unit_h; i += stripe_height) {
-    const int h = AOMMIN(stripe_height, unit_h - i);
-    stripe_filter(rui, unit_w, h, procunit_width, data8_tl + i * stride, stride,
-                  dst8_tl + i * dst_stride, dst_stride, tmpbuf, bit_depth);
-  }
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 }
 
 typedef struct {
   const RestorationInfo *rsi;
-#if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationLineBuffers *rlbs;
   const AV1_COMMON *cm;
   int tile_stripe0;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
   int ss_x, ss_y;
   int highbd, bit_depth;
   uint8_t *data8, *dst8;
@@ -1497,14 +1482,9 @@ typedef struct {
 
 static void filter_frame_on_tile(int tile_row, int tile_col, void *priv) {
   (void)tile_col;
-#if CONFIG_STRIPED_LOOP_RESTORATION
   FilterFrameCtxt *ctxt = (FilterFrameCtxt *)priv;
   ctxt->tile_stripe0 =
       (tile_row == 0) ? 0 : ctxt->cm->rst_end_stripe[tile_row - 1];
-#else
-  (void)tile_row;
-  (void)priv;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 }
 
 static void filter_frame_on_unit(const RestorationTileLimits *limits,
@@ -1513,14 +1493,9 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
   FilterFrameCtxt *ctxt = (FilterFrameCtxt *)priv;
   const RestorationInfo *rsi = ctxt->rsi;
 
-#if !CONFIG_STRIPED_LOOP_RESTORATION
-  (void)tile_rect;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
-
   av1_loop_restoration_filter_unit(
-      limits, &rsi->unit_info[rest_unit_idx],
-#if CONFIG_STRIPED_LOOP_RESTORATION
-      &rsi->boundaries, ctxt->rlbs, tile_rect, ctxt->tile_stripe0,
+      limits, &rsi->unit_info[rest_unit_idx], &rsi->boundaries, ctxt->rlbs,
+      tile_rect, ctxt->tile_stripe0,
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
       ctxt->cm->loop_filter_across_tiles_v_enabled,
@@ -1529,7 +1504,6 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
       ctxt->cm->loop_filter_across_tiles_enabled,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
       ctxt->ss_x, ctxt->ss_y, ctxt->highbd, ctxt->bit_depth, ctxt->data8,
       ctxt->data_stride, ctxt->dst8, ctxt->dst_stride, ctxt->tmpbuf);
 }
@@ -1553,9 +1527,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate restoration dst buffer");
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationLineBuffers rlbs;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
   const int bit_depth = cm->bit_depth;
   const int highbd = cm->use_highbitdepth;
 
@@ -1577,10 +1549,8 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
 
     FilterFrameCtxt ctxt;
     ctxt.rsi = rsi;
-#if CONFIG_STRIPED_LOOP_RESTORATION
     ctxt.rlbs = &rlbs;
     ctxt.cm = cm;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
     ctxt.ss_x = is_uv && cm->subsampling_x;
     ctxt.ss_y = is_uv && cm->subsampling_y;
     ctxt.highbd = highbd;
@@ -1623,14 +1593,10 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
     limits.v_start = tile_rect->top + y0;
     limits.v_end = tile_rect->top + y0 + h;
     assert(limits.v_end <= tile_rect->bottom);
-#if CONFIG_STRIPED_LOOP_RESTORATION
     // Offset the tile upwards to align with the restoration processing stripe
     const int voffset = RESTORATION_TILE_OFFSET >> ss_y;
     limits.v_start = AOMMAX(tile_rect->top, limits.v_start - voffset);
     if (limits.v_end < tile_rect->bottom) limits.v_end -= voffset;
-#else
-    (void)ss_y;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
     int x0 = 0, j = 0;
     while (x0 < tile_w) {
@@ -1801,7 +1767,6 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   return *rcol0 < *rcol1 && *rrow0 < *rrow1;
 }
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 // Extend to left and right
 static void extend_lines(uint8_t *buf, int width, int height, int stride,
                          int extend, int use_highbitdepth) {
@@ -2035,4 +2000,3 @@ void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
     }
   }
 }
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION

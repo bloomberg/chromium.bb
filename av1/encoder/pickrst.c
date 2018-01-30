@@ -98,10 +98,7 @@ typedef struct {
   // sse and bits are initialised by reset_rsc in search_rest_type
   int64_t sse;
   int64_t bits;
-
-#if CONFIG_STRIPED_LOOP_RESTORATION
   int tile_y0, tile_stripe0;
-#endif
 
   // sgrproj and wiener are initialised by rsc_on_tile when starting the first
   // tile in the frame.
@@ -116,12 +113,8 @@ static void rsc_on_tile(int tile_row, int tile_col, void *priv) {
   set_default_sgrproj(&rsc->sgrproj);
   set_default_wiener(&rsc->wiener);
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
   rsc->tile_stripe0 =
       (tile_row == 0) ? 0 : rsc->cm->rst_end_stripe[tile_row - 1];
-#else
-  (void)tile_row;
-#endif
 }
 
 static void reset_rsc(RestSearchCtxt *rsc) {
@@ -158,21 +151,15 @@ static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
   const AV1_COMMON *const cm = rsc->cm;
   const int plane = rsc->plane;
   const int is_uv = plane > 0;
-#if CONFIG_STRIPED_LOOP_RESTORATION
   const RestorationInfo *rsi = &cm->rst_info[plane];
   RestorationLineBuffers rlbs;
-#else
-  (void)tile_rect;
-#endif
   const int bit_depth = cm->bit_depth;
   const int highbd = cm->use_highbitdepth;
 
   const YV12_BUFFER_CONFIG *fts = cm->frame_to_show;
 
   av1_loop_restoration_filter_unit(
-      limits, rui,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-      &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
+      limits, rui, &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
       cm->loop_filter_across_tiles_v_enabled,
@@ -181,7 +168,6 @@ static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
       cm->loop_filter_across_tiles_enabled,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
       is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
       fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],
       rsc->dst->strides[is_uv], cm->rst_tmpbuf);

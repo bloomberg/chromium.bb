@@ -69,10 +69,6 @@
 #include "av1/common/cfl.h"
 #endif
 
-#if CONFIG_STRIPED_LOOP_RESTORATION && !CONFIG_LOOP_RESTORATION
-#error "striped_loop_restoration requires loop_restoration"
-#endif
-
 #if CONFIG_LOOP_RESTORATION
 static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
@@ -3572,13 +3568,11 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     return;
   }
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
   }
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
   if (!cm->skip_loop_filter &&
 #if CONFIG_INTRABC
@@ -3597,9 +3591,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-#if CONFIG_STRIPED_LOOP_RESTORATION
     av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 1);
-#endif
     av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm);
   }
 #endif  // CONFIG_LOOP_RESTORATION

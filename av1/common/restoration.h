@@ -27,23 +27,13 @@ extern "C" {
 
 #define RESTORATION_PROC_UNIT_SIZE 64
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 // Filter tile grid offset upwards compared to the superblock grid
 #define RESTORATION_TILE_OFFSET 8
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 #define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
-#else
-#define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
-#endif                         // CONFIG_STRIPED_LOOP_RESTORATION
 #define SGRPROJ_BORDER_HORZ 3  // Horizontal border used for Sgr
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 #define WIENER_BORDER_VERT 2  // Vertical border used for Wiener
-#else
-#define WIENER_BORDER_VERT 3  // Vertical border used for Wiener
-#endif                        // CONFIG_STRIPED_LOOP_RESTORATION
 #define WIENER_HALFWIN 3
 #define WIENER_BORDER_HORZ (WIENER_HALFWIN)  // Horizontal border for Wiener
 
@@ -65,7 +55,6 @@ extern "C" {
 // How many border pixels do we need for each processing unit?
 #define RESTORATION_BORDER 3
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 // How many rows of deblocked pixels do we save above/below each processing
 // stripe?
 #define RESTORATION_CTX_VERT 2
@@ -73,7 +62,6 @@ extern "C" {
 // Additional pixels to the left and right in above/below buffers
 // It is RESTORATION_BORDER_HORZ rounded up to get nicer buffer alignment
 #define RESTORATION_EXTRA_HORZ 4
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 // Pad up to 20 more (may be much less is needed)
 #define RESTORATION_PADDING 20
@@ -84,7 +72,6 @@ extern "C" {
     RESTORATION_PADDING))
 
 #define RESTORATION_TILESIZE_MAX 256
-#if CONFIG_STRIPED_LOOP_RESTORATION
 #define RESTORATION_TILEPELS_HORZ_MAX \
   (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16)
 #define RESTORATION_TILEPELS_VERT_MAX                                \
@@ -92,11 +79,6 @@ extern "C" {
     RESTORATION_TILE_OFFSET))
 #define RESTORATION_TILEPELS_MAX \
   (RESTORATION_TILEPELS_HORZ_MAX * RESTORATION_TILEPELS_VERT_MAX)
-#else
-#define RESTORATION_TILEPELS_MAX                                           \
-  ((RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16) * \
-   (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT))
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 // Two 32-bit buffers needed for the restored versions from two filters
 // TODO(debargha, rupert): Refactor to not need the large tilesize to be stored
@@ -207,7 +189,6 @@ typedef struct {
   SgrprojInfo sgrproj_info;
 } RestorationUnitInfo;
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
 // A restoration line buffer needs space for two lines plus a horizontal filter
 // margin of RESTORATION_EXTRA_HORZ on each side.
 #define RESTORATION_LINEBUFFER_WIDTH \
@@ -241,7 +222,6 @@ typedef struct {
   uint8_t *stripe_boundary_below;
   int stripe_boundary_stride;
 } RestorationStripeBoundaries;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 typedef struct {
   RestorationType frame_restoration_type;
@@ -258,9 +238,7 @@ typedef struct {
   int units_per_tile;
   int vert_units_per_tile, horz_units_per_tile;
   RestorationUnitInfo *unit_info;
-#if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationStripeBoundaries boundaries;
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 } RestorationInfo;
 
 static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
@@ -316,7 +294,6 @@ void decode_xq(const int *xqd, int *xq);
 // be at least SGRPROJ_TMPBUF_SIZE big.
 void av1_loop_restoration_filter_unit(
     const RestorationTileLimits *limits, const RestorationUnitInfo *rui,
-#if CONFIG_STRIPED_LOOP_RESTORATION
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
     const AV1PixelRect *tile_rect, int tile_stripe0,
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -327,7 +304,6 @@ void av1_loop_restoration_filter_unit(
     int loop_filter_across_tiles_enabled,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
     int ss_x, int ss_y, int highbd, int bit_depth, uint8_t *data8, int stride,
     uint8_t *dst8, int dst_stride, int32_t *tmpbuf);
 

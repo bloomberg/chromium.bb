@@ -116,7 +116,6 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
                   (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
 
-#if CONFIG_STRIPED_LOOP_RESTORATION
   // For striped loop restoration, we divide each row of tiles into "stripes",
   // of height 64 luma pixels but with an offset by RESTORATION_TILE_OFFSET
   // luma pixels to match the output from CDEF. We will need to store 2 *
@@ -167,7 +166,6 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
 
     boundaries->stripe_boundary_stride = stride;
   }
-#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
@@ -177,7 +175,6 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
     av1_free_restoration_struct(&cm->rst_info[p]);
   aom_free(cm->rst_tmpbuf);
   cm->rst_tmpbuf = NULL;
-#if CONFIG_STRIPED_LOOP_RESTORATION
   for (p = 0; p < num_planes; ++p) {
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
     aom_free(boundaries->stripe_boundary_above);
@@ -185,7 +182,6 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
     boundaries->stripe_boundary_above = NULL;
     boundaries->stripe_boundary_below = NULL;
   }
-#endif
 }
 #endif  // CONFIG_LOOP_RESTORATION
 

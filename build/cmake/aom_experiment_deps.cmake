@@ -77,12 +77,6 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_STRIPED_LOOP_RESTORATION)
-    if (NOT CONFIG_LOOP_RESTORATION)
-      change_config_and_warn(CONFIG_LOOP_RESTORATION 1 CONFIG_STRIPED_LOOP_RESTORATION)
-    endif ()
-  endif ()
-
   if (CONFIG_TXK_SEL)
     if (NOT CONFIG_LV_MAP)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
