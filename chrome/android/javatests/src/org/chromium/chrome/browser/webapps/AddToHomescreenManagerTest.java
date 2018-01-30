@@ -88,10 +88,6 @@ public class AddToHomescreenManagerTest {
     private static final String MANIFEST_PATH = "/chrome/test/data/banners/manifest_test_page.html";
     private static final String MANIFEST_TITLE = "Web app banner test page";
 
-    private static final String EVENT_WEBAPP_PATH =
-            "/chrome/test/data/banners/appinstalled_test_page.html";
-    private static final String EVENT_WEBAPP_TITLE = "appinstalled event test page";
-
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
         public String mRequestedShortcutTitle;
         public Intent mRequestedShortcutIntent;
@@ -302,7 +298,8 @@ public class AddToHomescreenManagerTest {
     @SmallTest
     @Feature("{Webapp}")
     public void testAddWebappShortcutAppInstalledEvent() throws Exception {
-        loadUrl(mTestServerRule.getServer().getURL(EVENT_WEBAPP_PATH), EVENT_WEBAPP_TITLE);
+        loadUrl(mTestServerRule.getServer().getURL(MANIFEST_PATH), MANIFEST_TITLE);
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("verifyEvents('appinstalled')");
         addShortcutToTab(mTab, "", true);
 
         // Wait for the tab title to change. This will happen (due to the JavaScript that runs
