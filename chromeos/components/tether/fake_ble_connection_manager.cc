@@ -61,7 +61,7 @@ void FakeBleConnectionManager::SetMessageSent(int sequence_number) {
   NotifyMessageSent(sequence_number);
 }
 
-void FakeBleConnectionManager::SimulateFailedConnectionAttempts(
+void FakeBleConnectionManager::SimulateUnansweredConnectionAttempts(
     const std::string& device_id,
     size_t num_attempts) {
   for (size_t i = 0; i < num_attempts; ++i) {
@@ -70,6 +70,22 @@ void FakeBleConnectionManager::SimulateFailedConnectionAttempts(
     SetDeviceStatus(
         device_id, cryptauth::SecureChannel::Status::DISCONNECTED,
         StateChangeDetail::STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
+  }
+}
+
+void FakeBleConnectionManager::SimulateGattErrorConnectionAttempts(
+    const std::string& device_id,
+    size_t num_attempts) {
+  for (size_t i = 0; i < num_attempts; ++i) {
+    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::CONNECTING,
+                    StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
+    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::CONNECTED,
+                    StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
+    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::AUTHENTICATING,
+                    StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
+    SetDeviceStatus(
+        device_id, cryptauth::SecureChannel::Status::DISCONNECTED,
+        StateChangeDetail::STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED);
   }
 }
 
