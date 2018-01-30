@@ -11,6 +11,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/http/http_basic_state.h"
+#include "net/http/http_stream_parser.h"
+#include "net/socket/client_socket_handle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -138,6 +142,82 @@ struct WebSocketTestURLRequestContextHost {
   bool url_request_context_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTestURLRequestContextHost);
+};
+
+// Dummy WebSocketHandshakeStreamBase implementation to reduce boilerplate in
+// tests.
+class FakeWebSocketHandshakeStreamBase : public WebSocketHandshakeStreamBase {
+ public:
+  FakeWebSocketHandshakeStreamBase() = default;
+
+  // HttpStreamBase methods.
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override;
+  bool IsResponseBodyComplete() const override;
+  bool IsConnectionReused() const override;
+  void SetConnectionReused() override;
+  bool CanReuseConnection() const override;
+  int64_t GetTotalReceivedBytes() const override;
+  int64_t GetTotalSentBytes() const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  bool GetAlternativeService(
+      AlternativeService* alternative_service) const override;
+  void GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
+  void Drain(HttpNetworkSession* session) override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) override;
+  void SetPriority(RequestPriority priority) override;
+  HttpStream* RenewStreamForAuth() override;
+
+  // WebSocketHandshakeStreamBase method.
+  std::unique_ptr<WebSocketStream> Upgrade() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeWebSocketHandshakeStreamBase);
+};
+
+// Fake WebSocketHandshakeStreamBase implementation that implements SendRequest
+// and ReadResponseHeaders to send data on the mock socket.
+class FakeWebSocketHandshakeStream : public FakeWebSocketHandshakeStreamBase {
+ public:
+  FakeWebSocketHandshakeStream(std::unique_ptr<ClientSocketHandle> connection,
+                               bool using_proxy)
+      : state_(std::move(connection), using_proxy, false) {}
+
+  // HttpStreamBase methods.
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       bool can_send_early,
+                       RequestPriority priority,
+                       const NetLogWithSource& net_log,
+                       const CompletionCallback& callback) override;
+
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override;
+
+  int ReadResponseHeaders(const CompletionCallback& callback) override;
+
+  void Close(bool not_reusable) override;
+
+ private:
+  HttpStreamParser* parser() const { return state_.parser(); }
+  HttpBasicState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWebSocketHandshakeStream);
+};
+
+class FakeWebSocketStreamCreateHelper
+    : public WebSocketHandshakeStreamBase::CreateHelper {
+ public:
+  std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
+      std::unique_ptr<ClientSocketHandle> connection,
+      bool using_proxy) override;
+  ~FakeWebSocketStreamCreateHelper() override = default;
 };
 
 }  // namespace net
