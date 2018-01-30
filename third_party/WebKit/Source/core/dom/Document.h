@@ -343,7 +343,12 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* createElementNS(const AtomicString& namespace_uri,
                            const AtomicString& qualified_name,
                            ExceptionState&);
+  // Creates an element with autonomous custom element processing. If
+  // LocalName of the specified qualified name doesn't contain '-', this
+  // function is equivalent to CreateRawElement().
   Element* createElement(const QualifiedName&, CreateElementFlags);
+  // Creates an element without custom element processing.
+  Element* CreateRawElement(const QualifiedName&, CreateElementFlags);
 
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;
@@ -1536,8 +1541,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // that any changes to the declared policy are relayed to the embedder through
   // the LocalFrameClient.
   void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
-
-  Element* CreateRawElement(const QualifiedName&, CreateElementFlags);
 
   DocumentLifecycle lifecycle_;
 

@@ -17,8 +17,8 @@ namespace blink {
 class EventPathTest : public PageTestBase {};
 
 TEST_F(EventPathTest, ShouldBeEmptyForPseudoElementWithoutParentElement) {
-  Element* div =
-      GetDocument().createElement(HTMLNames::divTag, kCreatedByCreateElement);
+  Element* div = GetDocument().CreateRawElement(HTMLNames::divTag,
+                                                kCreatedByCreateElement);
   PseudoElement* pseudo = PseudoElement::Create(div, kPseudoIdFirstLetter);
   pseudo->Dispose();
   EventPath event_path(*pseudo);
