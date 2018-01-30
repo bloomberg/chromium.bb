@@ -997,7 +997,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // Generate certificate. The |certificateObserver| will resolve the promise
   // asynchronously upon completion. The observer will manage its own
   // destruction as well as the resolver's destruction.
-  scoped_refptr<WebTaskRunner> task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       ExecutionContext::From(script_state)
           ->GetTaskRunner(blink::TaskType::kUnthrottled);
   if (!expires) {

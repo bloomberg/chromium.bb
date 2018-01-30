@@ -106,7 +106,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
    public:
     MainChannelClient(Bridge*,
-                      scoped_refptr<WebTaskRunner>,
+                      scoped_refptr<base::SingleThreadTaskRunner>,
                       WorkerThreadLifecycleContext*);
     ~MainChannelClient() override;
 
@@ -148,7 +148,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void ReleaseMainChannel();
 
     CrossThreadWeakPersistent<Bridge> bridge_;
-    scoped_refptr<WebTaskRunner> worker_networking_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> worker_networking_task_runner_;
     Member<DocumentWebSocketChannel> main_channel_;
   };
 
@@ -178,7 +178,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
     void ConnectOnMainThread(std::unique_ptr<SourceLocation>,
                              ThreadableLoadingContext*,
-                             scoped_refptr<WebTaskRunner>,
+                             scoped_refptr<base::SingleThreadTaskRunner>,
                              WorkerThreadLifecycleContext*,
                              const KURL&,
                              const String& protocol,

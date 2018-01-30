@@ -78,7 +78,7 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
       buffer_(mojom::ClipboardBuffer::kStandard),
       write_data_() {}
 
-scoped_refptr<WebTaskRunner> ClipboardPromise::GetTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
   return GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 }

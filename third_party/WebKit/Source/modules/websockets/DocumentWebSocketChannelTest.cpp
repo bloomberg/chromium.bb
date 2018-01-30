@@ -94,7 +94,7 @@ class MockWebSocketHandle : public WebSocketHandle {
                     const KURL&,
                     const String&,
                     WebSocketHandleClient*,
-                    WebTaskRunner*));
+                    base::SingleThreadTaskRunner*));
   MOCK_METHOD4(Send,
                void(bool, WebSocketHandle::MessageType, const char*, size_t));
   MOCK_METHOD1(FlowControl, void(int64_t));

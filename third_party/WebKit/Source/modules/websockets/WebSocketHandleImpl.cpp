@@ -4,8 +4,8 @@
 
 #include "modules/websockets/WebSocketHandleImpl.h"
 
+#include "base/single_thread_task_runner.h"
 #include "modules/websockets/WebSocketHandleClient.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/network/NetworkLog.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
@@ -50,7 +50,7 @@ void WebSocketHandleImpl::Connect(const KURL& url,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
                                   WebSocketHandleClient* client,
-                                  WebTaskRunner* task_runner) {
+                                  base::SingleThreadTaskRunner* task_runner) {
   DCHECK(websocket_);
 
   NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ", "

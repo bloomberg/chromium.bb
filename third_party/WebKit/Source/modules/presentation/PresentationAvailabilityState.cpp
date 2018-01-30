@@ -6,7 +6,6 @@
 
 #include "modules/presentation/PresentationAvailabilityObserver.h"
 #include "modules/presentation/PresentationController.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"

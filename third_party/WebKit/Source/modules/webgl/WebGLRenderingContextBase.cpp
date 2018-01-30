@@ -613,7 +613,7 @@ CreateContextProviderOnWorkerThread(
   creation_info.gl_info = gl_info;
   creation_info.url = url.Copy();
   creation_info.using_gpu_compositing = using_gpu_compositing;
-  scoped_refptr<WebTaskRunner> task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
   PostCrossThreadTask(*task_runner, FROM_HERE,
                       CrossThreadBind(&CreateContextProviderOnMainThread,
@@ -974,7 +974,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(
     CanvasRenderingContextHost* host,
-    scoped_refptr<WebTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing,
     const CanvasContextCreationAttributes& requested_attributes,

@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "platform/WaitableEvent.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/URLTestHelpers.h"

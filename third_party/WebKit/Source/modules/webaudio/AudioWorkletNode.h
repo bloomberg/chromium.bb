@@ -86,7 +86,7 @@ class AudioWorkletHandler final : public AudioHandler {
   HashMap<String, std::unique_ptr<AudioFloatArray>> param_value_map_;
 
   // A reference to the main thread task runner.
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class AudioWorkletNode final : public AudioNode,
