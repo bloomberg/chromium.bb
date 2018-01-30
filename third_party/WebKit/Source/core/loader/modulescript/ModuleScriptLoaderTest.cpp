@@ -178,7 +178,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       GetDocument().Url(), GetDocument().UserAgent(),
       nullptr /* content_security_policy_parsed_headers */,
       GetDocument().GetReferrerPolicy(), GetDocument().GetSecurityOrigin(),
-      nullptr /* worker_clients */, GetDocument().AddressSpace(),
+      GetDocument().IsSecureContext(), nullptr /* worker_clients */,
+      GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       nullptr /* worker_settings */, kV8CacheOptionsDefault);
   global_scope_ = new MainThreadWorkletGlobalScope(

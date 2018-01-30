@@ -9,6 +9,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/probe/CoreProbes.h"
 #include "core/script/Modulator.h"
 #include "core/workers/GlobalScopeCreationParams.h"
@@ -33,7 +34,8 @@ WorkletGlobalScope::WorkletGlobalScope(
                                  reporting_proxy),
       url_(creation_params->script_url),
       user_agent_(creation_params->user_agent),
-      document_security_origin_(creation_params->starter_origin) {
+      document_security_origin_(creation_params->starter_origin),
+      document_secure_context_(creation_params->starter_secure_context) {
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.
 
@@ -48,6 +50,9 @@ WorkletGlobalScope::WorkletGlobalScope(
   // workletGlobalScope."
   ApplyContentSecurityPolicyFromVector(
       *creation_params->content_security_policy_parsed_headers);
+
+  OriginTrialContext::AddTokens(this,
+                                creation_params->origin_trial_tokens.get());
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;

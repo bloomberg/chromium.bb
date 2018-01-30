@@ -182,7 +182,8 @@ class ThreadedWorkletMessagingProxyForTest
             document->Url(), document->UserAgent(),
             document->GetContentSecurityPolicy()->Headers().get(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-            worker_clients, document->AddressSpace(),
+            document->IsSecureContext(), worker_clients,
+            document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             std::move(worker_settings), kV8CacheOptionsDefault),
         WTF::nullopt);
