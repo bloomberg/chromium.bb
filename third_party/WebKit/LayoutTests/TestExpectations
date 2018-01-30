@@ -3187,6 +3187,8 @@ crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Timeout ]
 crbug.com/770691 [ Win7 Linux Mac10.11 ] media/controls/lazy-loaded-style.html [ Failure Pass ]
 crbug.com/770691 [ Win7 Linux Mac10.11 ] virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure Pass ]
 
+crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
+
 # Text rendering on Win7 failing image diffs, flakily.
 crbug.com/773122 [ Win7 ] fast/text/international/unicode-bidi-plaintext-in-textarea.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
