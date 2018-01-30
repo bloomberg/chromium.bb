@@ -1002,8 +1002,9 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
       // weak types:
 
       case WTF::Unicode::kEuropeanNumber:
+        // If last_strong is kRightToLeftArabic, change kEuropeanNumber to
+        // kArabicNumber by falling through after this if.
         if (status_.last_strong != WTF::Unicode::kRightToLeftArabic) {
-          // if last strong was AL change EN to AN
           switch (status_.last) {
             case WTF::Unicode::kEuropeanNumber:
             case WTF::Unicode::kLeftToRight:
@@ -1074,6 +1075,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             direction_ = WTF::Unicode::kLeftToRight;
           break;
         }
+        FALLTHROUGH;
       case WTF::Unicode::kArabicNumber:
         dir_current = WTF::Unicode::kArabicNumber;
         switch (status_.last) {
