@@ -75,6 +75,37 @@ config("chromium_sqlite3_compile_options") {
     # syntax working but execution failing.  Review:
     #   src/src/parse.py
     #   src/tool/mkkeywordhash.c
+
+    # The flags below are recommended in the SQLite documentation, and disable
+    # features Chromium doesn't use.
+    "SQLITE_LIKE_DOESNT_MATCH_BLOBS",
+    "SQLITE_OMIT_DEPRECATED",
+    "SQLITE_OMIT_PROGRESS_CALLBACK",
+    "SQLITE_OMIT_SHARED_CACHE",
+    "SQLITE_USE_ALLOCA",
+
+    # Chromium initializes SQLite manually in //sql/connection.cc.
+    "SQLITE_OMIT_AUTOINIT",
+
+    # Chromium calls sqlite3_reset() correctly to reset prepared statements.
+    "SQLITE_OMIT_AUTORESET",
+
+    # Chromium does not use sqlite3_{get,free}_table().
+    "SQLITE_OMIT_GET_TABLE",
+
+    # Chromium does not use sqlite3_{enable_}load_extension().
+    # Asides from the code savings, there's a tiny security benefit to knowing
+    # that WebSQL can't possibly reach extension loading code.
+    "SQLITE_OMIT_LOAD_EXTENSION",
+
+    # Chromium doesn't use TCL variables.
+    "SQLITE_OMIT_TCL_VARIABLE",
+
+    # Chromium doesn't use sqlite3_{profile,trace}().
+    "SQLITE_OMIT_TRACE",
+
+    # TODO(pwnall): Add SQLITE_OMIT_COMPLETE when we import a SQLite release
+    #               including https://www.sqlite.org/src/info/c3e816cca4ddf096
   ]
 
   # Pull in config.h on Linux.  This allows use of preprocessor macros which
@@ -122,6 +153,9 @@ if (!use_system_sqlite) {
         "-Wno-int-to-pointer-cast",
         "-Wno-pointer-to-int-cast",
       ]
+    }
+    if (is_win && !is_clang) {
+      cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in src/vdbe.c
     }
   }
 
