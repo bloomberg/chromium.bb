@@ -1148,7 +1148,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
       guest_profile_button_ =
           new HoverButton(this,
-                          gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize,
+                          gfx::CreateVectorIcon(kUserMenuGuestIcon, kIconSize,
                                                 gfx::kChromeIconGrey),
                           l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
       layout->StartRow(1, 0);
