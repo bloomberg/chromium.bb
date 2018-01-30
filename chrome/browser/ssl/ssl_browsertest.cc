@@ -1907,10 +1907,23 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
+// By default, trust in Symantec's Legacy PKI should be disabled.
 IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecEnforcementIsNotDisabled) {
   bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
+}
+
+// Enables support for Symantec's Legacy PKI via policy, and then ensures that
+// the SSLConfig is configured to trust the Legacy PKI.
+IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
+  bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
+
+  ASSERT_NO_FATAL_FAILURE(
+      EnablePolicy(policy::key::kEnableSymantecLegacyInfrastructure,
+                   ssl_config::prefs::kCertEnableSymantecLegacyInfrastructure));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 }
 
 // Visit a HTTP page which request WSS connection to a server providing invalid

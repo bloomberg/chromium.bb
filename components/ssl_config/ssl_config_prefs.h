@@ -11,6 +11,7 @@ namespace prefs {
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];
 extern const char kCertEnableSha1LocalAnchors[];
+extern const char kCertEnableSymantecLegacyInfrastructure[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
 extern const char kTLS13Variant[];

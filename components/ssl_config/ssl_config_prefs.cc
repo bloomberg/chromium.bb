@@ -12,6 +12,8 @@ const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kCertRevocationCheckingRequiredLocalAnchors[] =
     "ssl.rev_checking.required_for_local_anchors";
 const char kCertEnableSha1LocalAnchors[] = "ssl.sha1_enabled_for_local_anchors";
+const char kCertEnableSymantecLegacyInfrastructure[] =
+    "ssl.enable_symantec_legacy_infrastructure";
 const char kSSLVersionMin[] = "ssl.version_min";
 const char kSSLVersionMax[] = "ssl.version_max";
 const char kTLS13Variant[] = "ssl.tls13_variant";

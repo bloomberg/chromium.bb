@@ -12488,6 +12488,7 @@ Called by update_net_error_codes.py.-->
   <int value="410" label="RestrictAccountsToPatterns"/>
   <int value="411" label="PasswordProtectionWarningTrigger"/>
   <int value="412" label="PasswordProtectionRiskTrigger"/>
+  <int value="413" label="EnableSymantecLegacyInfrastructure"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
