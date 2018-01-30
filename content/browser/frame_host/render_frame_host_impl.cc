@@ -1568,6 +1568,14 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
   }
 
+  // If we're waiting for an unload ack from this renderer and we receive a
+  // Navigate message, then the renderer was navigating before it received the
+  // unload request.  It will either respond to the unload request soon or our
+  // timer will expire.  Either way, we should ignore this message, because we
+  // have already committed to closing this renderer.
+  if (IsWaitingForUnloadACK())
+    return;
+
   // Retroactive sanity check:
   // - If this is the first real load committing in this frame, then by this
   //   time the RenderFrameHost's InterfaceProvider implementation should have
@@ -1613,14 +1621,6 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     // if the new document is same-origin with the initial empty document, and
     // therefore the global object is not replaced.
   }
-
-  // If we're waiting for an unload ack from this renderer and we receive a
-  // Navigate message, then the renderer was navigating before it received the
-  // unload request.  It will either respond to the unload request soon or our
-  // timer will expire.  Either way, we should ignore this message, because we
-  // have already committed to closing this renderer.
-  if (IsWaitingForUnloadACK())
-    return;
 
   if (validated_params->report_type ==
       FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
