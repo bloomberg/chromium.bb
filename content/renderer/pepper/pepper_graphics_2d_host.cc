@@ -886,9 +886,11 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
 void PepperGraphics2DHost::ExecuteTransform(const float& scale,
                                             const gfx::PointF& translate,
                                             gfx::Rect* invalidated_rect) {
-  bound_instance_->SetGraphics2DTransform(scale, translate);
-  *invalidated_rect =
-      gfx::Rect(0, 0, image_data_->width(), image_data_->height());
+  if (bound_instance_) {
+    bound_instance_->SetGraphics2DTransform(scale, translate);
+    *invalidated_rect =
+        gfx::Rect(0, 0, image_data_->width(), image_data_->height());
+  }
 }
 
 void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
