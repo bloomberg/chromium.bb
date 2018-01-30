@@ -319,6 +319,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // FIXME: this document's origin is pristine and without any extra privileges.
   // (crbug.com/254993)
   const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  bool starter_secure_context = document->IsSecureContext();
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideIndexedDBClientToWorker(worker_clients,
@@ -358,8 +359,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         document->GetContentSecurityPolicy()->Headers().get(),
-        document->GetReferrerPolicy(), starter_origin, worker_clients,
-        main_script_loader_->ResponseAddressSpace(),
+        document->GetReferrerPolicy(), starter_origin, starter_secure_context,
+        worker_clients, main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         std::move(interface_provider_info_));
@@ -373,8 +374,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         nullptr /* ContentSecurityPolicy */, kReferrerPolicyDefault,
-        starter_origin, worker_clients, worker_start_data_.address_space,
-        nullptr /* OriginTrialTokens */, std::move(worker_settings),
+        starter_origin, starter_secure_context, worker_clients,
+        worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
+        std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         std::move(interface_provider_info_));
   }

@@ -38,6 +38,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
+      bool starter_secure_context,
       WorkerClients*,
       mojom::IPAddressSpace,
       const Vector<String>* origin_trial_tokens,
@@ -75,6 +76,15 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // scripts need to be fetched as sub-resources of the Document, and a module
   // script loader uses Document's SecurityOrigin for security checks.
   scoped_refptr<const SecurityOrigin> starter_origin;
+
+  // Indicates if the Document creating a Worker/Worklet is a secure context.
+  //
+  // Worklets are defined to have a unique, opaque origin, so are not secure:
+  // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
+  // Origin trials are only enabled in secure contexts, and the trial tokens are
+  // inherited from the document, so also consider the context of the document.
+  // The value should be supplied as the result of Document.IsSecureContext().
+  bool starter_secure_context;
 
   // This object is created and initialized on the thread creating
   // a new worker context, but ownership of it and this

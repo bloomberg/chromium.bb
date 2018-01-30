@@ -219,8 +219,9 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
       document->GetContentSecurityPolicy()->Headers().get(),
-      kReferrerPolicyDefault, starter_origin, CreateWorkerClients(),
-      document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
+      kReferrerPolicyDefault, starter_origin, document->IsSecureContext(),
+      CreateWorkerClients(), document->AddressSpace(),
+      OriginTrialContext::GetTokens(document).get(),
       std::make_unique<WorkerSettings>(document->GetSettings()),
       kV8CacheOptionsDefault,
       ConnectToWorkerInterfaceProvider(document,

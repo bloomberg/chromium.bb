@@ -102,7 +102,8 @@ class WorkerThreadForTest : public WorkerThread {
 
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_url, "fake user agent", headers.get(), kReferrerPolicyDefault,
-        security_origin, worker_clients, mojom::IPAddressSpace::kLocal, nullptr,
+        security_origin, false /* starter_secure_context */, worker_clients,
+        mojom::IPAddressSpace::kLocal, nullptr,
         std::make_unique<WorkerSettings>(Settings::Create().get()),
         kV8CacheOptionsDefault);
 

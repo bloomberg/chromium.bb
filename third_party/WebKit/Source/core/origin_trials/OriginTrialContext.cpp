@@ -13,7 +13,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkletGlobalScope.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/runtime_enabled_features.h"
@@ -229,7 +229,20 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
   DCHECK(!token.IsEmpty());
 
   // Origin trials are only enabled for secure origins
-  if (!GetSupplementable()->IsSecureContext()) {
+  //  - For worklets, they are currently spec'd to not be secure, given their
+  //    scope has unique origin:
+  //    https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
+  //  - For the purpose of origin trials, we consider worklets as running in the
+  //    same context as the originating document. Thus, the special logic here
+  //    to validate the token against the document context.
+  bool is_secure = false;
+  ExecutionContext* context = GetSupplementable();
+  if (context->IsWorkletGlobalScope()) {
+    is_secure = ToWorkletGlobalScope(context)->DocumentSecureContext();
+  } else {
+    is_secure = context->IsSecureContext();
+  }
+  if (!is_secure) {
     TokenValidationResultHistogram().Count(
         static_cast<int>(OriginTrialTokenStatus::kInsecure));
     return false;
@@ -241,7 +254,14 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
     return false;
   }
 
-  WebSecurityOrigin origin(GetSupplementable()->GetSecurityOrigin());
+  WebSecurityOrigin origin;
+  if (context->IsWorkletGlobalScope()) {
+    origin = WebSecurityOrigin(
+        ToWorkletGlobalScope(context)->DocumentSecurityOrigin());
+  } else {
+    origin = WebSecurityOrigin(context->GetSecurityOrigin());
+  }
+
   WebString trial_name;
   bool valid = false;
   OriginTrialTokenStatus token_result =
