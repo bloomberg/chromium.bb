@@ -245,6 +245,10 @@ def check(path, contents):
         A list of line number, disallowed identifier tuples.
     """
     results = []
+    basename, ext = os.path.splitext(path)
+    # Only check code. Ignore tests.
+    if ext not in ('.cc', '.cpp', '.h', '.mm') or basename.endswith('Test'):
+        return results
     entries = _find_matching_entries(path)
     if not entries:
         return
@@ -261,12 +265,6 @@ def check(path, contents):
 
 def main():
     for path in sys.stdin.read().splitlines():
-        basename, ext = os.path.splitext(path)
-        if ext not in ('.cc', '.cpp', '.h', '.mm'):
-            continue
-        # Ignore test files.
-        if basename.endswith('Test'):
-            continue
         try:
             with open(path, 'r') as f:
                 contents = f.read()
