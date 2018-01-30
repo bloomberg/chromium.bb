@@ -15,6 +15,18 @@
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='green'",
+          "rect": [8, 200, 100, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='green'",
+          "rect": [8, 100, 100, 100],
+          "reason": "paint property change"
+        }
+      ],
       "transform": 1
     }
   ],
