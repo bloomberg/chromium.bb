@@ -267,7 +267,7 @@ static_library("content_shell_lib") {
     "//ppapi/features",
     "//sandbox",
     "//services/device/public/interfaces",
-    "//services/network/public/cpp:network_features",
+    "//services/network/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
     "//services/test/echo/public/interfaces",

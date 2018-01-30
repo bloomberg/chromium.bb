@@ -6,6 +6,8 @@ import("//build/config/jumbo.gni")
 
 # C++ headers and sources that can be used outside message_center.
 jumbo_component("cpp") {
+  output_name = "ui_message_center_cpp"
+
   sources = [
     "message_center_constants.h",
     "message_center_public_export.h",

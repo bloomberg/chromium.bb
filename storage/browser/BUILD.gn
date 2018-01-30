@@ -213,6 +213,7 @@ component("browser") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network/public/cpp",
+    "//services/network/public/interfaces",
     "//sql",
     "//third_party/leveldatabase",
     "//third_party/sqlite",

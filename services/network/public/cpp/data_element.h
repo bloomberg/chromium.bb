@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -27,7 +28,7 @@ namespace network {
 
 // Represents a base Web data element. This could be either one of
 // bytes, file or blob data.
-class DataElement {
+class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
  public:
   static const uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
 
@@ -175,7 +176,9 @@ class DataElement {
   base::Time expected_modification_time_;
 };
 
+COMPONENT_EXPORT(NETWORK_CPP_BASE)
 bool operator==(const DataElement& a, const DataElement& b);
+COMPONENT_EXPORT(NETWORK_CPP_BASE)
 bool operator!=(const DataElement& a, const DataElement& b);
 
 }  // namespace network

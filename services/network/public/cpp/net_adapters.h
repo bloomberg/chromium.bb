@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_
-#define SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_H_
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/io_buffer.h"
@@ -25,7 +26,7 @@ namespace network {
 // of the Mojo pipe, which in turn is kept alive by the IOBuffer. This allows
 // the request to potentially outlive the object managing the translation.
 // Mojo side of a Net -> Mojo copy. The buffer is allocated by Mojo.
-class NetToMojoPendingBuffer
+class COMPONENT_EXPORT(NETWORK_CPP) NetToMojoPendingBuffer
     : public base::RefCountedThreadSafe<NetToMojoPendingBuffer> {
  public:
   // Begins a two-phase write to the data pipe.
@@ -58,7 +59,8 @@ class NetToMojoPendingBuffer
 
 // Net side of a Net -> Mojo copy. The data will be read from the network and
 // copied into the buffer associated with the pending mojo write.
-class NetToMojoIOBuffer : public net::WrappedIOBuffer {
+class COMPONENT_EXPORT(NETWORK_CPP) NetToMojoIOBuffer
+    : public net::WrappedIOBuffer {
  public:
   // If |offset| is specified then the memory buffer passed to the Net layer
   // will be offset by that many bytes.
@@ -71,7 +73,7 @@ class NetToMojoIOBuffer : public net::WrappedIOBuffer {
   DISALLOW_COPY_AND_ASSIGN(NetToMojoIOBuffer);
 };
 
-class MojoToNetPendingBuffer
+class COMPONENT_EXPORT(NETWORK_CPP) MojoToNetPendingBuffer
     : public base::RefCountedThreadSafe<MojoToNetPendingBuffer> {
  public:
   // Starts reading from Mojo.
@@ -117,7 +119,8 @@ class MojoToNetPendingBuffer
 
 // Net side of a Mojo -> Net copy. The data will already be in the
 // MojoToNetPendingBuffer's buffer.
-class MojoToNetIOBuffer : public net::WrappedIOBuffer {
+class COMPONENT_EXPORT(NETWORK_CPP) MojoToNetIOBuffer
+    : public net::WrappedIOBuffer {
  public:
   // |bytes_to_be_read| contains the number of bytes expected to be read by
   // the consumer.
@@ -133,4 +136,4 @@ class MojoToNetIOBuffer : public net::WrappedIOBuffer {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_H_

@@ -63,7 +63,6 @@ static_library("network_service") {
     "//net",
     "//net:extras",
     "//services/network/public/cpp",
-    "//services/network/public/cpp:network_features",
     "//services/network/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
@@ -119,7 +118,7 @@ source_set("tests") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
-    "//services/network/public/cpp:network_features",
+    "//services/network/public/cpp",
     "//services/network/public/interfaces",
     "//testing/gtest",
   ]

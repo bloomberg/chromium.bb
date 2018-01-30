@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -16,7 +17,7 @@
 
 namespace network {
 
-struct URLLoaderCompletionStatus {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   URLLoaderCompletionStatus();
   URLLoaderCompletionStatus(const URLLoaderCompletionStatus& status);
 

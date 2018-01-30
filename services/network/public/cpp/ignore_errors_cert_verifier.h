@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "net/cert/cert_verifier.h"
 
@@ -22,7 +23,8 @@ namespace network {
 // IgnoreErrorsCertVerifier wraps another CertVerifier in order to ignore
 // verification errors from certificate chains that match a whitelist of SPKI
 // fingerprints.
-class IgnoreErrorsCertVerifier : public net::CertVerifier {
+class COMPONENT_EXPORT(NETWORK_CPP) IgnoreErrorsCertVerifier
+    : public net::CertVerifier {
  public:
   // SPKIHashSet is a set of SHA-256 SPKI fingerprints (RFC 7469, Section 2.4).
   using SPKIHashSet = base::flat_set<net::SHA256HashValue>;

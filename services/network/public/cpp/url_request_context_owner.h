@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_NETWORK_URL_REQUEST_CONTEXT_OWNER_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_NETWORK_URL_REQUEST_CONTEXT_OWNER_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_CONTEXT_OWNER_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_CONTEXT_OWNER_H_
 
 #include <memory>
+
+#include "base/component_export.h"
 
 class PrefService;
 
@@ -16,7 +18,7 @@ class URLRequestContext;
 namespace network {
 
 // This owns a net::URLRequestContext and other state that's used with it.
-struct URLRequestContextOwner {
+struct COMPONENT_EXPORT(NETWORK_CPP) URLRequestContextOwner {
   URLRequestContextOwner();
   ~URLRequestContextOwner();
   URLRequestContextOwner(URLRequestContextOwner&& other);
@@ -30,4 +32,4 @@ struct URLRequestContextOwner {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_NETWORK_URL_REQUEST_CONTEXT_OWNER_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_CONTEXT_OWNER_H_

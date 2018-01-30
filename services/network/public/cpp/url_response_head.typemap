@@ -6,7 +6,7 @@ mojom = "//services/network/public/interfaces/url_loader.mojom"
 public_headers = [ "//services/network/public/cpp/resource_response.h" ]
 traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
 public_deps = [
-  "//services/network/public/cpp:typemap_dependencies",
+  "//services/network/public/cpp:cpp_base",
 ]
 type_mappings =
     [ "network.mojom.URLResponseHead=network::ResourceResponseHead" ]

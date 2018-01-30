@@ -9,7 +9,7 @@ traits_headers = [
   "//services/network/public/cpp/url_request_struct_traits.h",
 ]
 public_deps = [
-  "//services/network/public/cpp:typemap_dependencies",
+  "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [
   "network.mojom.URLRequest=network::ResourceRequest",

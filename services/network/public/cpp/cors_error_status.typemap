@@ -9,6 +9,6 @@ deps = [
   "//net",
 ]
 public_deps = [
-  "//services/network/public/cpp:typemap_dependencies",
+  "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [ "network.mojom.CORSErrorStatus=network::CORSErrorStatus" ]

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "net/base/request_priority.h"
@@ -22,7 +23,7 @@
 
 namespace network {
 
-struct ResourceRequest {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   ResourceRequest();
   ResourceRequest(const ResourceRequest& request);
   ~ResourceRequest();
