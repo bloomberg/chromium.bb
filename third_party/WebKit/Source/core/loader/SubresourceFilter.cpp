@@ -102,7 +102,7 @@ void SubresourceFilter::ReportLoad(
             kOtherMessageSource, kErrorMessageLevel,
             GetErrorStringForDisallowedLoad(resource_url)));
       }
-    // fall through
+      FALLTHROUGH;
     case WebDocumentSubresourceFilter::kWouldDisallow:
       // TODO(csharrison): Consider posting a task to the main thread from
       // worker thread, or adding support for DidObserveLoadingBehavior to

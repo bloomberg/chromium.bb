@@ -417,7 +417,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   switch (state_) {
     case kNotStarted:
       probe::frameClearedScheduledClientNavigation(frame_);
-    // Fall-through
+      FALLTHROUGH;
     case kProvisional:
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
