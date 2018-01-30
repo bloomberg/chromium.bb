@@ -19,7 +19,7 @@ static_library("gpu") {
   if (enable_library_cdms) {
     deps += [
       "//media/cdm:cdm_paths",
-      "//media/cdm/ppapi/clear_key_cdm:clear_key_cdm_proxy",
+      "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm_proxy",
     ]
   }
 

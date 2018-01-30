@@ -21,7 +21,7 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"
-#include "media/cdm/ppapi/clear_key_cdm/clear_key_cdm_proxy.h"
+#include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"
 #endif
 
 #if defined(OS_CHROMEOS)
