@@ -444,15 +444,15 @@ void CopyRowsToXR30Buffer(int first_row,
 
     switch (color_space) {
       case COLOR_SPACE_HD_REC709:
-        libyuv::H010ToAR30(y_plane, y_plane_stride, v_plane, v_plane_stride,
-                           u_plane, u_plane_stride, dest_ar30, dest_stride,
+        libyuv::H010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                           v_plane, v_plane_stride, dest_ar30, dest_stride,
                            width, rows);
         break;
       case COLOR_SPACE_UNSPECIFIED:
       case COLOR_SPACE_JPEG:
       case COLOR_SPACE_SD_REC601:
-        libyuv::I010ToAR30(y_plane, y_plane_stride, v_plane, v_plane_stride,
-                           u_plane, u_plane_stride, dest_ar30, dest_stride,
+        libyuv::I010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                           v_plane, v_plane_stride, dest_ar30, dest_stride,
                            width, rows);
         break;
     }
