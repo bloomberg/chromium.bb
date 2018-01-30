@@ -60,8 +60,8 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 
-  scheduler::ThreadType GetThreadType() const override {
-    return scheduler::ThreadType::kDedicatedWorkerThread;
+  WebThreadType GetThreadType() const override {
+    return WebThreadType::kDedicatedWorkerThread;
   }
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;

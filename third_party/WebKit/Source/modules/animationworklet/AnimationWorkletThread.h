@@ -47,8 +47,8 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
 
   bool IsOwningBackingThread() const override { return false; }
 
-  scheduler::ThreadType GetThreadType() const override {
-    return scheduler::ThreadType::kAnimationWorkletThread;
+  WebThreadType GetThreadType() const override {
+    return WebThreadType::kAnimationWorkletThread;
   }
 };
 

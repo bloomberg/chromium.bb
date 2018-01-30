@@ -408,6 +408,7 @@ jumbo_component("platform") {
     "WebThread.cpp",
     "WebThreadSupportingGC.cpp",
     "WebThreadSupportingGC.h",
+    "WebThreadType.cpp",
     "WebTouchEvent.cpp",
     "WindowsKeyboardCodes.h",
     "animation/AnimationTranslationUtil.cpp",

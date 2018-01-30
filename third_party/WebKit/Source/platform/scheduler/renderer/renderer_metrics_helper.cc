@@ -43,7 +43,7 @@ RendererMetricsHelper::RendererMetricsHelper(
     RendererSchedulerImpl* renderer_scheduler,
     base::TimeTicks now,
     bool renderer_backgrounded)
-    : MetricsHelper(ThreadType::kMainThread),
+    : MetricsHelper(WebThreadType::kMainThread),
       renderer_scheduler_(renderer_scheduler),
       main_thread_load_tracker(
           now,

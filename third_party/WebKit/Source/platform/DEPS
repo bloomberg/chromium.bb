@@ -10,6 +10,7 @@ include_rules = [
     "+base/guid.h",
     "+base/json",
     "+base/location.h",
+    "+base/logging.h",
     "+base/memory",
     "+base/message_loop/message_loop.h",
     "+base/metrics/histogram.h",

@@ -26,6 +26,7 @@
 #define WebThread_h
 
 #include "WebCommon.h"
+#include "WebThreadType.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 
@@ -46,8 +47,11 @@ class WebScheduler;
 typedef uintptr_t PlatformThreadId;
 
 struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
-  explicit WebThreadCreationParams(const char* name);
+  explicit WebThreadCreationParams(WebThreadType);
 
+  WebThreadCreationParams& SetThreadName(const char* name);
+
+  WebThreadType thread_type;
   const char* name;
 };
 
