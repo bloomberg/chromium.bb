@@ -131,7 +131,7 @@ HttpNetworkSession::Params::Params()
       quic_max_migrations_to_non_default_network_on_path_degrading(
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading),
       quic_allow_server_migration(false),
-      quic_allow_remote_alt_svc(false),
+      quic_allow_remote_alt_svc(true),
       quic_disable_bidirectional_streams(false),
       quic_force_hol_blocking(false),
       quic_race_cert_verification(false),
