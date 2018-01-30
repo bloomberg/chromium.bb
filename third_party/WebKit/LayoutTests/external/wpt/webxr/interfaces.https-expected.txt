@@ -114,12 +114,12 @@ PASS XRWebGLLayer interface: attribute framebuffer
 PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS XRWebGLLayer interface: attribute framebufferHeight
 PASS XRWebGLLayer interface: operation requestViewportScaling(double)
-FAIL XRPresentationContext interface: existence and properties of interface object assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface object length assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface object name assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: attribute canvas assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
+PASS XRPresentationContext interface: existence and properties of interface object
+PASS XRPresentationContext interface object length
+PASS XRPresentationContext interface object name
+PASS XRPresentationContext interface: existence and properties of interface prototype object
+PASS XRPresentationContext interface: existence and properties of interface prototype object's "constructor" property
+PASS XRPresentationContext interface: attribute canvas
 PASS XRSessionEvent interface: existence and properties of interface object
 PASS XRSessionEvent interface object length
 PASS XRSessionEvent interface object name

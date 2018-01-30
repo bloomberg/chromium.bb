@@ -82,6 +82,7 @@
 #include "modules/webdatabase/WebDatabaseImpl.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
+#include "modules/xr/XRPresentationContext.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
@@ -126,6 +127,8 @@ void ModulesInitializer::Initialize() {
       std::make_unique<WebGL2RenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<ImageBitmapRenderingContext::Factory>());
+  HTMLCanvasElement::RegisterRenderingContextFactory(
+      std::make_unique<XRPresentationContext::Factory>());
 
   // OffscreenCanvas context types must be registered with the OffscreenCanvas.
   OffscreenCanvas::RegisterRenderingContextFactory(

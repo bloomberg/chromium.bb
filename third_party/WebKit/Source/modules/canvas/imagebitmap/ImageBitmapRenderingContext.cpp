@@ -6,20 +6,14 @@
 
 #include "bindings/modules/v8/rendering_context.h"
 #include "core/imagebitmap/ImageBitmap.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/gpu/ImageLayerBridge.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 
 ImageBitmapRenderingContext::ImageBitmapRenderingContext(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attrs)
-    : CanvasRenderingContext(host, attrs),
-      image_layer_bridge_(
-          new ImageLayerBridge(attrs.alpha() ? kNonOpaque : kOpaque)) {}
+    : ImageBitmapRenderingContextBase(host, attrs) {}
 
 ImageBitmapRenderingContext::~ImageBitmapRenderingContext() = default;
 
@@ -37,13 +31,7 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
     return;
   }
 
-  image_layer_bridge_->SetImage(image_bitmap ? image_bitmap->BitmapImage()
-                                             : nullptr);
-
-  DidDraw();
-
-  if (image_bitmap)
-    image_bitmap->close();
+  SetImage(image_bitmap);
 }
 
 CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
@@ -52,32 +40,6 @@ CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
   if (!RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled())
     return nullptr;
   return new ImageBitmapRenderingContext(host, attrs);
-}
-
-void ImageBitmapRenderingContext::Stop() {
-  image_layer_bridge_->Dispose();
-}
-
-scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContext::GetImage(
-    AccelerationHint) const {
-  return image_layer_bridge_->GetImage();
-}
-
-WebLayer* ImageBitmapRenderingContext::PlatformLayer() const {
-  return image_layer_bridge_->PlatformLayer();
-}
-
-bool ImageBitmapRenderingContext::IsPaintable() const {
-  return !!image_layer_bridge_->GetImage();
-}
-
-void ImageBitmapRenderingContext::Trace(blink::Visitor* visitor) {
-  visitor->Trace(image_layer_bridge_);
-  CanvasRenderingContext::Trace(visitor);
-}
-
-bool ImageBitmapRenderingContext::IsAccelerated() const {
-  return image_layer_bridge_->IsAccelerated();
 }
 
 }  // namespace blink

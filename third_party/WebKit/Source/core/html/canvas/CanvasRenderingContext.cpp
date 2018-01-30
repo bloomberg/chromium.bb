@@ -152,6 +152,9 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
       RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled()) {
     return kContextImageBitmap;
   }
+  if (id == "xrpresent" && RuntimeEnabledFeatures::WebXREnabled()) {
+    return kContextXRPresent;
+  }
   return kContextTypeCount;
 }
 
