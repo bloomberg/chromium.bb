@@ -2008,6 +2008,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webapps/WebappInfoTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkInfoTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/widget/AnchoredPopupWindowTest.java",
   "junit/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetectorTest.java",
   "junit/src/org/chromium/chrome/browser/widget/selection/SelectionDelegateTest.java",
 ]
