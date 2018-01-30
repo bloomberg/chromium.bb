@@ -60,6 +60,9 @@ void BrowserPolicyConnectorBase::Shutdown() {
     for (const auto& provider : *policy_providers_)
       provider->Shutdown();
   }
+  // Drop g_testing_provider so that tests executed with --single_process can
+  // call SetPolicyProviderForTesting() again. It is still owned by the test.
+  g_testing_provider = nullptr;
   g_created_policy_service = false;
 }
 
