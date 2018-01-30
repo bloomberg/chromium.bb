@@ -32,7 +32,7 @@ public class ChildProcessCreationParams {
     }
 
     // Members should all be immutable to avoid worrying about thread safety.
-    private final String mPackageNameForSandboxedService;
+    private final String mPackageNameForService;
     private final boolean mIsSandboxedServiceExternal;
     private final int mLibraryProcessType;
     private final boolean mBindToCallerCheck;
@@ -40,10 +40,10 @@ public class ChildProcessCreationParams {
     // signals in content.
     private final boolean mIgnoreVisibilityForImportance;
 
-    public ChildProcessCreationParams(String packageNameForSandboxedService,
+    public ChildProcessCreationParams(String packageNameForService,
             boolean isExternalSandboxedService, int libraryProcessType, boolean bindToCallerCheck,
             boolean ignoreVisibilityForImportance) {
-        mPackageNameForSandboxedService = packageNameForSandboxedService;
+        mPackageNameForService = packageNameForService;
         mIsSandboxedServiceExternal = isExternalSandboxedService;
         mLibraryProcessType = libraryProcessType;
         mBindToCallerCheck = bindToCallerCheck;
@@ -54,9 +54,9 @@ public class ChildProcessCreationParams {
         extras.putInt(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
     }
 
-    public static String getPackageNameForSandboxedService() {
+    public static String getPackageNameForService() {
         ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
-        return params != null ? params.mPackageNameForSandboxedService
+        return params != null ? params.mPackageNameForService
                               : ContextUtils.getApplicationContext().getPackageName();
     }
 
