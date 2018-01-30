@@ -1302,6 +1302,17 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
+      'fuzzer',
+      site_config.templates.default_hw_tests_override,
+      profile='fuzzer',
+      # Need larger rootfs since fuzzing also enables asan.
+      disk_layout='2gb-rootfs',
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
+      vm_tests_override=None,
+  )
+
+  site_config.AddTemplate(
       'telemetry',
       site_config.templates.default_hw_tests_override,
       display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
@@ -3084,6 +3095,18 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
       boards=['betty'],
+  )
+
+  site_config.Add(
+      'amd64-generic-fuzzer',
+      site_config.templates.fuzzer,
+      site_config.templates.incremental,
+      site_config.templates.no_hwtest_builder,
+      boards=['amd64-generic'],
+      description='Build for fuzzing testing',
+      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
+      disk_layout='4gb-rootfs',
+      trybot_list=True,
   )
 
   _chrome_perf_boards = frozenset([
