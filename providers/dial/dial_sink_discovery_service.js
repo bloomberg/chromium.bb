@@ -546,7 +546,7 @@ SinkDiscoveryService.APP_ORIGIN_WHITELIST_ = {
  * @private @const {!RegExp}
  */
 SinkDiscoveryService.DISCOVERY_ONLY_RE_ =
-    new RegExp('Eureka Dongle|Chromecast Audio', 'i');
+    new RegExp('Eureka Dongle|Chromecast Audio|Chromecast Ultra', 'i');
 
 /**
  * How long to wait between device counts metrics are recorded. Set to 1 hour.
