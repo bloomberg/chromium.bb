@@ -17,7 +17,7 @@
 
 namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace net {
 class HttpRequestHeaders;
@@ -193,7 +193,7 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
 
   bool IsOnNetworkThread();
   void PostToNetworkThread(const base::Location& from_here,
-                           const base::Closure& task);
+                           base::OnceClosure task);
 
   // Read state is tracking reading flow. Only accessed on network thread.
   //                         | <--- READING <--- |

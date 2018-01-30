@@ -4,6 +4,7 @@
 
 #include "components/grpc_support/test/quic_test_server.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/spdy/core/spdy_header_block.h"
 #include "net/test/test_data_directory.h"
+#include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
@@ -110,8 +112,15 @@ void ShutdownOnServerThread(base::WaitableEvent* server_stopped_event) {
   server_stopped_event->Signal();
 }
 
+void ShutdownDispatcherOnServerThread(
+    base::WaitableEvent* dispatcher_stopped_event) {
+  DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
+  g_quic_server->dispatcher()->Shutdown();
+  dispatcher_stopped_event->Signal();
+}
+
 bool StartQuicTestServer() {
-  LOG(INFO) << g_quic_server_thread;
+  DVLOG(3) << g_quic_server_thread;
   DCHECK(!g_quic_server_thread);
   g_quic_server_thread = new base::Thread("quic server thread");
   base::Thread::Options thread_options;
@@ -124,21 +133,36 @@ bool StartQuicTestServer() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&StartQuicServerOnServerThread, test_files_root,
-                            &server_started_event));
+      FROM_HERE, base::BindOnce(&StartQuicServerOnServerThread, test_files_root,
+                                &server_started_event));
   server_started_event.Wait();
   return true;
 }
 
+// Shut down the server dispatcher, and the stream should error out.
+void ShutdownQuicTestServerDispatcher() {
+  if (!g_quic_server)
+    return;
+  DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
+  base::WaitableEvent dispatcher_stopped_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  g_quic_server_thread->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ShutdownDispatcherOnServerThread,
+                                &dispatcher_stopped_event));
+  dispatcher_stopped_event.Wait();
+}
+
 void ShutdownQuicTestServer() {
-  if (!g_quic_server_thread)
+  if (!g_quic_server)
     return;
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   base::WaitableEvent server_stopped_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ShutdownOnServerThread, &server_stopped_event));
+      FROM_HERE,
+      base::BindOnce(&ShutdownOnServerThread, &server_stopped_event));
   server_stopped_event.Wait();
   delete g_quic_server_thread;
   g_quic_server_thread = nullptr;

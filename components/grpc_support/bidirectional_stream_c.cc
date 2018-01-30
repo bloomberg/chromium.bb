@@ -38,12 +38,12 @@ namespace {
 
 class HeadersArray : public bidirectional_stream_header_array {
  public:
-  HeadersArray(const net::SpdyHeaderBlock& header_block);
+  explicit HeadersArray(const net::SpdyHeaderBlock& header_block);
   ~HeadersArray();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HeadersArray);
   base::StringPairs headers_strings_;
+  DISALLOW_COPY_AND_ASSIGN(HeadersArray);
 };
 
 HeadersArray::HeadersArray(const net::SpdyHeaderBlock& header_block)
@@ -195,8 +195,9 @@ void BidirectionalStreamAdapter::DestroyAdapterForStream(
   // is valid until calling task is complete.
   adapter->bidirectional_stream_->Destroy();
   adapter->request_context_getter_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&BidirectionalStreamAdapter::DestroyOnNetworkThread,
-                            base::Unretained(adapter)));
+      FROM_HERE,
+      base::BindOnce(&BidirectionalStreamAdapter::DestroyOnNetworkThread,
+                     base::Unretained(adapter)));
 }
 
 void BidirectionalStreamAdapter::DestroyOnNetworkThread() {
