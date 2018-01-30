@@ -435,6 +435,7 @@ void BattOrAgent::PerformAction(Action action) {
       // Clear stored samples from prior attempts to read sample frames.
       samples_.clear();
       calibration_frame_.clear();
+      FALLTHROUGH;
     case Action::READ_DATA_FRAME:
       // The first frame sent back from the BattOr contains voltage and current
       // data that excludes whatever device is being measured from the
