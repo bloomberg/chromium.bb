@@ -213,7 +213,7 @@ void RadioInputType::DidDispatchClick(Event* event,
              checked_radio_button->GetName() == GetElement().GetName())
       checked_radio_button->setChecked(true);
   } else if (state.checked != GetElement().checked()) {
-    GetElement().DispatchChangeEventIfNeeded();
+    GetElement().DispatchInputAndChangeEventIfNeeded();
   }
   is_in_click_handler_ = false;
   // The work we did in willDispatchClick was default handling.
