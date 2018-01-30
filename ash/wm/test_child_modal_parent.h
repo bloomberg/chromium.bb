@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_CHILD_MODAL_WINDOW_H_
-#define ASH_TEST_CHILD_MODAL_WINDOW_H_
+#ifndef ASH_WM_TEST_CHILD_MODAL_PARENT_H_
+#define ASH_WM_TEST_CHILD_MODAL_PARENT_H_
 
 #include <memory>
 
@@ -18,21 +18,20 @@ class NativeViewHost;
 class Textfield;
 class View;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
-namespace test {
 
-void CreateChildModalParent(aura::Window* context);
-
-// TODO(jamescook): Rename to TestChildModalParent, remove the test namespcae,
-// and move to //ash/wm.
-class ChildModalParent : public views::WidgetDelegateView,
-                         public views::ButtonListener,
-                         public views::WidgetObserver {
+// Test window that can act as a parent for modal child windows.
+class TestChildModalParent : public views::WidgetDelegateView,
+                             public views::ButtonListener,
+                             public views::WidgetObserver {
  public:
-  ChildModalParent(aura::Window* context);
-  ~ChildModalParent() override;
+  // Creates the test window.
+  static void Create(aura::Window* context);
+
+  explicit TestChildModalParent(aura::Window* context);
+  ~TestChildModalParent() override;
 
   void ShowChild();
   aura::Window* GetModalParent() const;
@@ -74,10 +73,9 @@ class ChildModalParent : public views::WidgetDelegateView,
   // The child window.
   views::Widget* child_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChildModalParent);
+  DISALLOW_COPY_AND_ASSIGN(TestChildModalParent);
 };
 
-}  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_CHILD_MODAL_WINDOW_H_
+#endif  // ASH_WM_TEST_CHILD_MODAL_PARENT_H_

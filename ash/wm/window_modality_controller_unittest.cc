@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/child_modal_window.h"
+#include "ash/wm/test_child_modal_parent.h"
 #include "ash/wm/window_util.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -463,8 +463,7 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 //   |child| window.
 // - Focus should follow the active window.
 TEST_F(WindowModalityControllerTest, ChildModal) {
-  test::ChildModalParent* delegate =
-      new test::ChildModalParent(CurrentContext());
+  TestChildModalParent* delegate = new TestChildModalParent(CurrentContext());
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       delegate, CurrentContext(), gfx::Rect(0, 0, 400, 400));
   widget->Show();
@@ -523,8 +522,7 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 // Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
 // it by calling |ActivateWindow|.
 TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
-  test::ChildModalParent* delegate =
-      new test::ChildModalParent(CurrentContext());
+  TestChildModalParent* delegate = new TestChildModalParent(CurrentContext());
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       delegate, CurrentContext(), gfx::Rect(0, 0, 400, 400));
   widget->Show();
