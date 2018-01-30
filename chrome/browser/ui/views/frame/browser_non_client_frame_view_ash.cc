@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
-#include "chrome/browser/ui/views/frame/hosted_app_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
@@ -522,12 +521,20 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
                                caption_button_container_, back_button_);
     return browser_frame_header;
   }
-  std::unique_ptr<ash::DefaultFrameHeader> default_frame_header = nullptr;
+  std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =
+      std::make_unique<ash::DefaultFrameHeader>(frame(), this,
+                                                caption_button_container_);
   if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser)) {
-    default_frame_header = std::make_unique<HostedAppFrameHeaderAsh>(
-        browser->hosted_app_controller(), frame(), this,
-        caption_button_container_);
+    // Hosted apps apply a theme color if specified by the extension.
+    base::Optional<SkColor> theme_color =
+        browser->hosted_app_controller()->GetThemeColor();
+    if (theme_color) {
+      SkColor opaque_theme_color =
+          SkColorSetA(theme_color.value(), SK_AlphaOPAQUE);
+      default_frame_header->SetFrameColors(opaque_theme_color,
+                                           opaque_theme_color);
+    }
 
     // Add the container for extra hosted app buttons (e.g app menu button).
     SkColor button_color = ash::FrameCaptionButton::GetButtonColor(
@@ -537,14 +544,10 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
         SkColorSetA(button_color,
                     255 * ash::kInactiveFrameButtonIconAlphaRatio));
     caption_button_container_->AddChildViewAt(hosted_app_button_container_, 0);
-  } else {
-    default_frame_header = std::make_unique<ash::DefaultFrameHeader>(
-        frame(), this, caption_button_container_);
-    if (!browser->is_app()) {
-      // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
-      default_frame_header->SetFrameColors(kMdWebUIFrameColor,
-                                           kMdWebUIFrameColor);
-    }
+  } else if (!browser->is_app()) {
+    // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
+    default_frame_header->SetFrameColors(kMdWebUIFrameColor,
+                                         kMdWebUIFrameColor);
   }
 
   if (back_button_)
