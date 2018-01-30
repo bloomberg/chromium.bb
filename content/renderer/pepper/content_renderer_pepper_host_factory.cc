@@ -197,10 +197,12 @@ ContentRendererPepperHostFactory::CreateResourceHost(
       if (CanUseMediaStreamAPI(host_, instance))
         return std::make_unique<PepperVideoDestinationHost>(host_, instance,
                                                             resource);
+      return nullptr;
     case PpapiHostMsg_VideoSource_Create::ID:
       if (CanUseMediaStreamAPI(host_, instance))
         return std::make_unique<PepperVideoSourceHost>(host_, instance,
                                                        resource);
+      return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
   }
 
