@@ -29,7 +29,7 @@
 [
     Exposed=Window
 ] interface MediaList {
-    [TreatNullAs=EmptyString] stringifier attribute DOMString mediaText;
+    stringifier attribute [TreatNullAs=EmptyString] DOMString mediaText;
     readonly attribute unsigned long length;
     [Measure] getter DOMString? item(unsigned long index);
     // TODO(foolip): appendMedium() and deleteMedium() should never throw.
