@@ -835,7 +835,7 @@ interface CSSTransformValue : CSSStyleValue
     method keys
     method toMatrix
     method values
-interface CSSTranslation : CSSTransformComponent
+interface CSSTranslate : CSSTransformComponent
     attribute @@toStringTag
     getter x
     getter y

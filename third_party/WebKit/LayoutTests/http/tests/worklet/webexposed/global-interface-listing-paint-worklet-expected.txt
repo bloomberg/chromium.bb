@@ -105,7 +105,7 @@ CONSOLE MESSAGE: line 147:     method forEach
 CONSOLE MESSAGE: line 147:     method keys
 CONSOLE MESSAGE: line 147:     method toMatrix
 CONSOLE MESSAGE: line 147:     method values
-CONSOLE MESSAGE: line 147: interface CSSTranslation : CSSTransformComponent
+CONSOLE MESSAGE: line 147: interface CSSTranslate : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter x
 CONSOLE MESSAGE: line 147:     getter y
 CONSOLE MESSAGE: line 147:     getter z
@@ -389,7 +389,7 @@ CONSOLE MESSAGE: line 147:     method forEach
 CONSOLE MESSAGE: line 147:     method keys
 CONSOLE MESSAGE: line 147:     method toMatrix
 CONSOLE MESSAGE: line 147:     method values
-CONSOLE MESSAGE: line 147: interface CSSTranslation : CSSTransformComponent
+CONSOLE MESSAGE: line 147: interface CSSTranslate : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter x
 CONSOLE MESSAGE: line 147:     getter y
 CONSOLE MESSAGE: line 147:     getter z
