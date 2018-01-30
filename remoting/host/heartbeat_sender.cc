@@ -244,8 +244,8 @@ void HeartbeatSender::OnResponse(IqRequest* request,
         delay = base::TimeDelta();
         break;
       }
-    // Fall through to handle other cases as errors.
-
+      // Fall through to handle other cases as errors.
+      FALLTHROUGH;
     case HeartbeatResult::TIMEOUT:
     case HeartbeatResult::ERROR:
       delay = pow(2.0, failed_heartbeat_count_) * (1 + base::RandDouble()) *
