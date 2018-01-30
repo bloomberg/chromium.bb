@@ -23094,6 +23094,60 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BrowsingInstanceViolation.ExtensionType"
+    enum="ExtensionType">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    When an extension violates browsing instance boundaries, this metric records
+    the extension type.
+
+    This is a temporary metric - probably okay to remove it in M66, after we've
+    gathered sufficient UMA data in M65.  See also http://crbug.com/718489.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.BrowsingInstanceViolation.IsBackgroundSourceOrTarget"
+    enum="ExtensionViewTypeIsBackground">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    When an extension violates browsing instance boundaries, this metric records
+    whether either the source or the target frame was of the extension view type
+    of VIEW_TYPE_BACKGROUND_CONTENTS.
+
+    This is a temporary metric - probably okay to remove it in M66, after we've
+    gathered sufficient UMA data in M65.  See also http://crbug.com/718489.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.BrowsingInstanceViolation.SourceExtensionViewType"
+    enum="ExtensionViewType">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    When an extension violates browsing instance boundaries, this metric records
+    the extension view type of the source frame.
+
+    This is a temporary metric - probably okay to remove it in M66, after we've
+    gathered sufficient UMA data in M65.  See also http://crbug.com/718489.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.BrowsingInstanceViolation.TargetExtensionViewType"
+    enum="ExtensionViewType">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    When an extension violates browsing instance boundaries, this metric records
+    the extension view type of the found frame.
+
+    This metric should help confirm or deny the theory that violating browsing
+    instance boundaries is only needed for looking up background contents /
+    pages (of VIEW_TYPE_BACKGROUND_CONTENTS type).
+
+    This is a temporary metric - probably okay to remove it in M66, after we've
+    gathered sufficient UMA data in M65.  See also http://crbug.com/718489.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CheckForExternalUpdatesTime" units="ms">
   <owner>rkaplow@chromium.org</owner>
   <summary>

@@ -15069,6 +15069,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="HOSTED_APP"/>
   <int value="5" label="LEGACY_PACKAGED_APP"/>
   <int value="6" label="PLATFORM_APP"/>
+  <int value="7" label="SHARED_MODULE"/>
 </enum>
 
 <enum name="ExtensionUninstallDialogAction">
@@ -15130,6 +15131,24 @@ Called by update_net_error_codes.py.-->
   <int value="33" label="CRX_HASH_VERIFICATION_FAILED"/>
   <int value="34" label="CRX_FILE_IS_DELTA_UPDATE"/>
   <int value="35" label="CRX_EXPECTED_HASH_INVALID"/>
+</enum>
+
+<enum name="ExtensionViewType">
+  <int value="0" label="INVALID"/>
+  <int value="1" label="APP_WINDOW"/>
+  <int value="2" label="BACKGROUND_CONTENTS"/>
+  <int value="3" label="COMPONENT"/>
+  <int value="4" label="EXTENSION_BACKGROUND_PAGE"/>
+  <int value="5" label="EXTENSION_DIALOG"/>
+  <int value="6" label="EXTENSION_GUEST"/>
+  <int value="7" label="EXTENSION_POPUP"/>
+  <int value="8" label="PANEL"/>
+  <int value="9" label="TAB_CONTENTS"/>
+</enum>
+
+<enum name="ExtensionViewTypeIsBackground">
+  <int value="0" label="Not background"/>
+  <int value="1" label="Background"/>
 </enum>
 
 <enum name="ExternalDeviceAction">

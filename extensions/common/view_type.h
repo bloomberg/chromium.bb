@@ -12,19 +12,26 @@ namespace extensions {
 // Icky RTTI used by a few systems to distinguish the host type of a given
 // WebContents.
 //
+// Do not change the order of entries or remove entries in this list as this
+// is used in ExtensionViewType enum in tools/metrics/histograms/enums.xml.
+//
 // TODO(aa): Remove this and teach those systems to keep track of their own
 // data.
 enum ViewType {
-  VIEW_TYPE_INVALID,
-  VIEW_TYPE_APP_WINDOW,
-  VIEW_TYPE_BACKGROUND_CONTENTS,
-  VIEW_TYPE_COMPONENT,  // For custom parts of Chrome if no other type applies.
-  VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,
-  VIEW_TYPE_EXTENSION_DIALOG,
-  VIEW_TYPE_EXTENSION_GUEST,
-  VIEW_TYPE_EXTENSION_POPUP,
-  VIEW_TYPE_PANEL,
-  VIEW_TYPE_TAB_CONTENTS,
+  VIEW_TYPE_INVALID = 0,
+  VIEW_TYPE_APP_WINDOW = 1,
+  VIEW_TYPE_BACKGROUND_CONTENTS = 2,
+
+  // For custom parts of Chrome if no other type applies.
+  VIEW_TYPE_COMPONENT = 3,
+
+  VIEW_TYPE_EXTENSION_BACKGROUND_PAGE = 4,
+  VIEW_TYPE_EXTENSION_DIALOG = 5,
+  VIEW_TYPE_EXTENSION_GUEST = 6,
+  VIEW_TYPE_EXTENSION_POPUP = 7,
+  VIEW_TYPE_PANEL = 8,
+  VIEW_TYPE_TAB_CONTENTS = 9,
+
   VIEW_TYPE_LAST = VIEW_TYPE_TAB_CONTENTS
 };
 

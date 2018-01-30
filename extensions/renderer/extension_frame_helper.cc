@@ -200,17 +200,43 @@ content::RenderFrame* ExtensionFrameHelper::FindFrame(
   if (!extension)
     return nullptr;
 
-  for (const ExtensionFrameHelper* helper : g_frame_helpers.Get()) {
+  for (const ExtensionFrameHelper* target : g_frame_helpers.Get()) {
+    // Skip frames with a mismatched name.
+    if (target->render_frame()->GetWebFrame()->AssignedName().Utf8() != name)
+      continue;
+
     // Only pierce browsing instance boundaries if the target frame is from the
     // same extension (but not when another extension shares the same renderer
     // process because of reuse trigerred by process limit).
-    // TODO(lukasza): https://crbug.com/764487: Investigate if we can further
-    // restrict scenarios that allow piercing of browsing instance boundaries.
-    if (extension != GetExtensionFromFrame(helper->render_frame()))
+    if (extension != GetExtensionFromFrame(target->render_frame()))
       continue;
 
-    if (helper->render_frame()->GetWebFrame()->AssignedName().Utf8() == name)
-      return helper->render_frame();
+    // TODO(lukasza): https://crbug.com/764487: Investigate if we can further
+    // restrict scenarios that allow piercing of browsing instance boundaries.
+    // We hope that the piercing is only needed if the source or target frames
+    // are for background contents or background page.
+    ViewType target_view_type = target->view_type();
+    ViewType source_view_type =
+        ExtensionFrameHelper::Get(relative_to_frame)->view_type();
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.BrowsingInstanceViolation.ExtensionType",
+        extension->GetType(), Manifest::NUM_LOAD_TYPES);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.BrowsingInstanceViolation.SourceExtensionViewType",
+        source_view_type, VIEW_TYPE_LAST + 1);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.BrowsingInstanceViolation.TargetExtensionViewType",
+        target_view_type, VIEW_TYPE_LAST + 1);
+    bool is_background_source_or_target =
+        source_view_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
+        source_view_type == VIEW_TYPE_BACKGROUND_CONTENTS ||
+        target_view_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
+        target_view_type == VIEW_TYPE_BACKGROUND_CONTENTS;
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.BrowsingInstanceViolation.IsBackgroundSourceOrTarget",
+        is_background_source_or_target);
+
+    return target->render_frame();
   }
 
   return nullptr;

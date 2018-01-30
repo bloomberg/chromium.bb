@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -54,19 +55,19 @@ class Manifest {
     NUM_LOCATIONS
   };
 
-  // Do not change the order of entries or remove entries in this list
-  // as this is used in UMA_HISTOGRAM_ENUMERATIONs about extensions.
+  // Do not change the order of entries or remove entries in this list as this
+  // is used in ExtensionType enum in tools/metrics/histograms/enums.xml.
   enum Type {
     TYPE_UNKNOWN = 0,
-    TYPE_EXTENSION,
-    TYPE_THEME,
-    TYPE_USER_SCRIPT,
-    TYPE_HOSTED_APP,
+    TYPE_EXTENSION = 1,
+    TYPE_THEME = 2,
+    TYPE_USER_SCRIPT = 3,
+    TYPE_HOSTED_APP = 4,
     // This is marked legacy because platform apps are preferred. For
     // backwards compatibility, we can't remove support for packaged apps
-    TYPE_LEGACY_PACKAGED_APP,
-    TYPE_PLATFORM_APP,
-    TYPE_SHARED_MODULE,
+    TYPE_LEGACY_PACKAGED_APP = 5,
+    TYPE_PLATFORM_APP = 6,
+    TYPE_SHARED_MODULE = 7,
 
     // New enum values must go above here.
     NUM_LOAD_TYPES
