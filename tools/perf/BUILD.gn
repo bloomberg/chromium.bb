@@ -60,5 +60,8 @@ group("perf_experimental") {
     # Field trial dependencies
     "//tools/json_comment_eater/",
     "//tools/json_to_struct/",
+
+    # For Pylib used by benchmarks
+    "//build/android/pylib/",
   ]
 }
