@@ -2222,7 +2222,7 @@ void aom_lpf_vertical_6_sse2(unsigned char *s, int p,
                              const unsigned char *blimit,
                              const unsigned char *limit,
                              const unsigned char *thresh) {
-  DECLARE_ALIGNED(8, unsigned char, t_dst[38]);
+  DECLARE_ALIGNED(8, unsigned char, t_dst[38]) = { 0 };
   unsigned char *src[1];
   unsigned char *dst[1];
 
