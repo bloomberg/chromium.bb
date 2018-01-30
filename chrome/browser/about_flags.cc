@@ -512,12 +512,6 @@ const FeatureEntry::Choice kDataSaverPromptChoices[] = {
      chromeos::switches::kDataSaverPromptDemoMode},
 };
 
-const FeatureEntry::Choice kUseMusChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kEnableMusDescription, switches::kMus, ""},
-    {flag_descriptions::kEnableMashDescription, switches::kMash, ""},
-};
-
 const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
@@ -1523,7 +1517,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMultidevice)},
     {"mus", flag_descriptions::kUseMusName,
      flag_descriptions::kUseMusDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kUseMusChoices)},
+     SINGLE_VALUE_TYPE(switches::kMus)},
+    {"mash", flag_descriptions::kUseMashName,
+     flag_descriptions::kUseMashDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kMash)},
     {"show-taps", flag_descriptions::kShowTapsName,
      flag_descriptions::kShowTapsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kShowTaps)},
@@ -3718,11 +3715,9 @@ class FlagsStateSingleton {
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
 #if defined(OS_CHROMEOS)
-  // Only expose --mash/--mus on unstable channels and developer builds.
-  if (!strcmp("mus", entry.internal_name) &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
+  // Don't expose --mash on stable channel.
+  if (!strcmp("mash", entry.internal_name) &&
+      channel == version_info::Channel::STABLE) {
     return true;
   }
 

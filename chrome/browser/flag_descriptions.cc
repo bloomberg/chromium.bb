@@ -2748,12 +2748,15 @@ const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
     "chrome://inspect#other";
 
-const char kUseMusName[] = "Mus";
-const char kUseMusDescription[] = "Enable the Mojo UI service.";
-const char kEnableMashDescription[] =
-    "Mash (UI, Chrome and ash in separate services)";
-const char kEnableMusDescription[] =
-    "Mus (UI in separate service, Chrome and ash in same service)";
+const char kUseMusName[] = "Mojo UI service (mus)";
+const char kUseMusDescription[] =
+    "Handles input events, display configuration, and windowing in a mojo "
+    "service on a thread in the browser process.";
+
+const char kUseMashName[] = "Out-of-process system UI (mash)";
+const char kUseMashDescription[] =
+    "Runs the mojo UI service (mus) and the ash window manager and system UI "
+    "in a separate process.";
 
 // TODO(mcasas): remove after https://crbug.com/771345.
 const char kUseMonitorColorSpaceName[] = "Use monitor color space";
