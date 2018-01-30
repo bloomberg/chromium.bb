@@ -18,8 +18,8 @@
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                didCreateDownload:(nonnull web::DownloadTask*)download
-               webStateIsVisible:(BOOL)vebStateIsVisible {
-  if (vebStateIsVisible) {
+               webStateIsVisible:(BOOL)webStateIsVisible {
+  if (webStateIsVisible) {
     _state = std::make_unique<web::DownloadTask::State>(download->GetState());
   }
 }

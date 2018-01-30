@@ -18,7 +18,7 @@ class DownloadTask;
 // Informs the delegate that a DownloadTask was created.
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                didCreateDownload:(nonnull web::DownloadTask*)download
-               webStateIsVisible:(BOOL)vebStateIsVisible;
+               webStateIsVisible:(BOOL)webStateIsVisible;
 
 // Informs the delegate that a DownloadTask was updated (download progress was
 // changed, or download has reached a terminal state).

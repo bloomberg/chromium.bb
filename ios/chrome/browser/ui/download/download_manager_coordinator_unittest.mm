@@ -1,0 +1,364 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
+
+#import <UIKit/UIKit.h>
+
+#include "base/files/file_util.h"
+#include "base/run_loop.h"
+#include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/download/download_directory_util.h"
+#import "ios/chrome/browser/download/download_manager_tab_helper.h"
+#import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
+#import "ios/chrome/test/fakes/fake_contained_presenter.h"
+#import "ios/chrome/test/scoped_key_window.h"
+#import "ios/testing/wait_util.h"
+#import "ios/web/public/test/fakes/fake_download_task.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "net/base/net_errors.h"
+#include "net/url_request/url_fetcher_response_writer.h"
+#include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+using testing::WaitUntilConditionOrTimeout;
+
+namespace {
+
+// Constants for configuring a fake download task.
+const char kTestUrl[] = "https://chromium.test/download.txt";
+const char kTestMimeType[] = "text/html";
+const int64_t kTestTotalBytes = 10;
+const int64_t kTestReceivedBytes = 0;
+NSString* const kTestSuggestedFileName = @"important_file.zip";
+
+// Creates a fake download task for testing.
+std::unique_ptr<web::FakeDownloadTask> CreateTestTask() {
+  auto task =
+      std::make_unique<web::FakeDownloadTask>(GURL(kTestUrl), kTestMimeType);
+  task->SetTotalBytes(kTestTotalBytes);
+  task->SetReceivedBytes(kTestReceivedBytes);
+  task->SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  return task;
+}
+
+// Substitutes real TabHelper for testing.
+class StubTabHelper : public DownloadManagerTabHelper {
+ public:
+  StubTabHelper(web::WebState* web_state)
+      : DownloadManagerTabHelper(web_state, /*delegate=*/nullptr) {}
+  DISALLOW_COPY_AND_ASSIGN(StubTabHelper);
+};
+
+}  // namespace
+
+// Test fixture for testing DownloadManagerCoordinator class.
+class DownloadManagerCoordinatorTest : public PlatformTest {
+ protected:
+  DownloadManagerCoordinatorTest()
+      : presenter_([[FakeContainedPresenter alloc] init]),
+        base_view_controller_([[UIViewController alloc] init]),
+        tab_helper_(&web_state_),
+        coordinator_([[DownloadManagerCoordinator alloc]
+            initWithBaseViewController:base_view_controller_]) {
+    [scoped_key_window_.Get() setRootViewController:base_view_controller_];
+    coordinator_.presenter = presenter_;
+  }
+
+  FakeContainedPresenter* presenter_;
+  UIViewController* base_view_controller_;
+  ScopedKeyWindow scoped_key_window_;
+  web::TestWebState web_state_;
+  StubTabHelper tab_helper_;
+  DownloadManagerCoordinator* coordinator_;
+};
+
+// Tests starting the coordinator. Verifies that view controller is presented
+// without animation (default configuration) and that
+// DownloadManagerViewController is propertly configured and presented.
+TEST_F(DownloadManagerCoordinatorTest, Start) {
+  auto task = CreateTestTask();
+  coordinator_.downloadTask = task.get();
+  [coordinator_ start];
+
+  // By default coordinator presents without animation.
+  EXPECT_FALSE(presenter_.lastPresentationWasAnimated);
+
+  // Verify that presented view controller is DownloadManagerViewController.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Verify that DownloadManagerViewController configuration matches download
+  // task.
+  EXPECT_EQ(kDownloadManagerStateNotStarted, viewController.state);
+  EXPECT_EQ(kTestReceivedBytes, viewController.countOfBytesReceived);
+  EXPECT_EQ(kTestTotalBytes, viewController.countOfBytesExpectedToReceive);
+  EXPECT_NSEQ(kTestSuggestedFileName, viewController.fileName);
+}
+
+// Tests stopping coordinator. Verifies that hiding web states dismisses the
+// presented view controller and download task is reset to null (to prevent a
+// stale raw pointer).
+TEST_F(DownloadManagerCoordinatorTest, Stop) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+  [coordinator_ stop];
+
+  // Verify that child view controller is removed and download task is set to
+  // null.
+  EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  EXPECT_FALSE(coordinator_.downloadTask);
+}
+
+// Tests downloadManagerTabHelper:didCreateDownload:webStateIsVisible: callback
+// for visible web state. Verifies that coordinator's properties are set up and
+// that DownloadManagerViewController is properly configured and presented with
+// animation.
+TEST_F(DownloadManagerCoordinatorTest, DelegateCreatedDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+
+  // Verify that coordinator's properties are set up.
+  EXPECT_EQ(task.get(), coordinator_.downloadTask);
+  EXPECT_TRUE(coordinator_.animatesPresentation);
+
+  // First presentation of Download Manager UI should be animated.
+  EXPECT_TRUE(presenter_.lastPresentationWasAnimated);
+
+  // Verify that presented view controller is DownloadManagerViewController.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Verify that DownloadManagerViewController configuration matches download
+  // task.
+  EXPECT_EQ(kDownloadManagerStateNotStarted, viewController.state);
+  EXPECT_EQ(kTestReceivedBytes, viewController.countOfBytesReceived);
+  EXPECT_EQ(kTestTotalBytes, viewController.countOfBytesExpectedToReceive);
+  EXPECT_NSEQ(kTestSuggestedFileName, viewController.fileName);
+}
+
+// Tests downloadManagerTabHelper:didCreateDownload:webStateIsVisible: callback
+// for hidden web state. Verifies that coordinator ignores callback from
+// a background tab.
+TEST_F(DownloadManagerCoordinatorTest,
+       DelegateCreatedDownloadForHiddenWebState) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:NO];
+
+  // Background tab should not present Download Manager UI.
+  EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+}
+
+// Tests downloadManagerTabHelper:didUpdateDownload: callback for download task
+// completion. Verifies that DownloadManagerViewController state is changed to
+// kDownloadManagerStateSuceeded.
+TEST_F(DownloadManagerCoordinatorTest, DelegateCompletedDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+  task->SetDone(true);
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didUpdateDownload:task.get()];
+
+  // Verify that DownloadManagerViewController state is set to suceeded.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  EXPECT_EQ(kDownloadManagerStateSuceeded, viewController.state);
+}
+
+// Tests downloadManagerTabHelper:didUpdateDownload: callback for download task
+// failure. Verifies that DownloadManagerViewController state is changed to
+// kDownloadManagerStateFailed.
+TEST_F(DownloadManagerCoordinatorTest, DelegateFailedDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+  task->SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
+  task->SetDone(true);
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didUpdateDownload:task.get()];
+
+  // Verify that DownloadManagerViewController state is set to failed.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  EXPECT_EQ(kDownloadManagerStateFailed, viewController.state);
+}
+
+// Tests downloadManagerTabHelper:didUpdateDownload: callback for download task
+// progress. Verifies that DownloadManagerViewController state is changed to
+// kDownloadManagerStateInProgress.
+TEST_F(DownloadManagerCoordinatorTest, DelegateProgressedDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+  task->Start(std::make_unique<net::URLFetcherStringWriter>());
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didUpdateDownload:task.get()];
+
+  // Verify that DownloadManagerViewController state is set to "in progress".
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  EXPECT_EQ(kDownloadManagerStateInProgress, viewController.state);
+}
+
+// Tests downloadManagerTabHelper:didUpdateDownload: callback for background
+// download task when web state is not visible. Verifies that coordinator
+// ignores callback from a background tab.
+TEST_F(DownloadManagerCoordinatorTest, DelegateCompletedBackgroundDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+  auto background_task = CreateTestTask();
+  background_task->SetDone(true);
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didUpdateDownload:background_task.get()];
+
+  // Background tab download progress should not affect presented Download
+  // Manager UI.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  EXPECT_EQ(kDownloadManagerStateNotStarted, viewController.state);
+}
+
+// Tests downloadManagerTabHelper:didHideDownload: callback. Verifies that
+// hiding web states dismisses the presented view controller and download task
+// is reset to null (to prevent a stale raw pointer).
+TEST_F(DownloadManagerCoordinatorTest, DelegateHideDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                         didHideDownload:task.get()];
+
+  // Verify that child view controller is removed and download task is set to
+  // null.
+  EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  EXPECT_FALSE(coordinator_.downloadTask);
+}
+
+// Tests downloadManagerTabHelper:didShowDownload: callback. Verifies that
+// showing web state presents download manager UI for that web state.
+TEST_F(DownloadManagerCoordinatorTest, DelegateShowDownload) {
+  auto task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                         didShowDownload:task.get()];
+
+  // Only first presentation is animated. Switching between tab should create
+  // the impression that UI was never dismissed.
+  EXPECT_FALSE(presenter_.lastPresentationWasAnimated);
+
+  // Verify that presented view controller is DownloadManagerViewController.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Verify that DownloadManagerViewController configuration matches download
+  // task for shown web state.
+  EXPECT_EQ(kDownloadManagerStateNotStarted, viewController.state);
+  EXPECT_EQ(kTestReceivedBytes, viewController.countOfBytesReceived);
+  EXPECT_EQ(kTestTotalBytes, viewController.countOfBytesExpectedToReceive);
+  EXPECT_NSEQ(kTestSuggestedFileName, viewController.fileName);
+}
+
+// Tests closing view controller. Coordinator should be stopped and task
+// cancelled.
+TEST_F(DownloadManagerCoordinatorTest, Close) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  [viewController.delegate
+      downloadManagerViewControllerDidClose:viewController];
+
+  // Verify that child view controller is removed, download task is set to null
+  // and download task is cancelled.
+  EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  EXPECT_FALSE(coordinator_.downloadTask);
+  EXPECT_EQ(web::DownloadTask::State::kCancelled, task.GetState());
+}
+
+// Tests starting the download. Verifies that download task is started and its
+// file writer is configured to write into download directory.
+TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
+  web::TestWebThreadBundle thread_bundle;
+
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  web::DownloadTask* task_ptr = &task;
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  [viewController.delegate
+      downloadManagerViewControllerDidStartDownload:viewController];
+
+  // Starting download is async for model and sync for view controller.
+  EXPECT_EQ(kDownloadManagerStateInProgress, viewController.state);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
+
+  // Download file should be located in download directory.
+  base::FilePath file = task.GetResponseWriter()->AsFileWriter()->file_path();
+  base::FilePath download_dir;
+  ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
+  EXPECT_TRUE(download_dir.IsParent(file));
+}
+
+// Tests starting and failing the download. Simulates download failure from
+// inability to create a file writer.
+TEST_F(DownloadManagerCoordinatorTest, StartDownloadFailure) {
+  web::TestWebThreadBundle thread_bundle;
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  // Writer can not be created without file name, which will fail the download.
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  [viewController.delegate
+      downloadManagerViewControllerDidStartDownload:viewController];
+
+  // Writer is created by a background task, so wait for failure.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return viewController.state == kDownloadManagerStateFailed;
+  }));
+}

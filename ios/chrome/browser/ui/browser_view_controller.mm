@@ -60,6 +60,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
@@ -139,6 +140,7 @@
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
+#import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/download/legacy_download_manager_controller.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
@@ -599,6 +601,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the External Search UI.
   ExternalSearchCoordinator* _externalSearchCoordinator;
 
+  // Coordinator for the Download Manager UI.
+  DownloadManagerCoordinator* _downloadManagerCoordinator;
+
   // Coordinator for the language selection UI.
   LanguageSelectionCoordinator* _languageSelectionCoordinator;
 
@@ -985,6 +990,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _snackbarCoordinator = [[SnackbarCoordinator alloc] init];
     _snackbarCoordinator.dispatcher = _dispatcher;
     [_snackbarCoordinator start];
+
+    _downloadManagerCoordinator =
+        [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
+    _downloadManagerCoordinator.presenter =
+        [[VerticalAnimationContainer alloc] init];
 
     _languageSelectionCoordinator =
         [[LanguageSelectionCoordinator alloc] initWithBaseViewController:self];
@@ -2927,6 +2937,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   AppLauncherTabHelper::CreateForWebState(
       tab.webState, [[ExternalAppsLaunchPolicyDecider alloc] init],
       _appLauncherCoordinator);
+  DownloadManagerTabHelper::CreateForWebState(tab.webState,
+                                              _downloadManagerCoordinator);
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.
