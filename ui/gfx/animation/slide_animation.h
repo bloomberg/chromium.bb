@@ -55,9 +55,11 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   virtual void Reset(double value);
 
   // Begin a showing animation or reverse a hiding animation in progress.
+  // Animates |GetCurrentValue()| towards 1.
   virtual void Show();
 
   // Begin a hiding animation or reverse a showing animation in progress.
+  // Animates |GetCurrentValue()| towards 0.
   virtual void Hide();
 
   // Sets the time a slide will take. Note that this isn't actually
