@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class AtRuleDescriptorValueSet;
 class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
@@ -153,8 +152,6 @@ class CORE_EXPORT FrameSerializer final {
   void AddFontToResources(FontResource&);
 
   void RetrieveResourcesForProperties(const CSSPropertyValueSet*, Document&);
-  void RetrieveResourcesForProperties(const AtRuleDescriptorValueSet*,
-                                      Document&);
   void RetrieveResourcesForCSSValue(const CSSValue&, Document&);
 
   Deque<SerializedResource>* resources_;

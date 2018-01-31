@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class CSSStyleDeclaration;
+class AbstractPropertySetCSSStyleDeclaration;
 class MutationObserverInterestGroup;
 class MutationRecord;
 
@@ -37,7 +37,7 @@ class StyleAttributeMutationScope {
   STACK_ALLOCATED();
 
  public:
-  StyleAttributeMutationScope(CSSStyleDeclaration*);
+  StyleAttributeMutationScope(AbstractPropertySetCSSStyleDeclaration*);
 
   ~StyleAttributeMutationScope();
 
@@ -47,7 +47,7 @@ class StyleAttributeMutationScope {
 
  private:
   static unsigned scope_count_;
-  static CSSStyleDeclaration* current_decl_;
+  static AbstractPropertySetCSSStyleDeclaration* current_decl_;
   static bool should_notify_inspector_;
   static bool should_deliver_;
 

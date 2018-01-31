@@ -3,7 +3,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script>
   test(function() {
-    var cssText = '@font-face { font-family: Font1; src: url("font.woff") format("woff"), local("font2"); }';
+    var cssText = '@font-face { src: url("font.woff") format("woff"), local("font2"); }';
     var doc = document.implementation.createHTMLDocument("");
     var styleElement = document.createElement("style");
     styleElement.textContent = cssText;

@@ -17,7 +17,7 @@
 test(() => {
   var fontFace = document.styleSheets[0].rules[0];
   assert_true(fontFace instanceof CSSFontFaceRule);
-  var cssText = 'font-family: Ahem; src: url("../../resources/Ahem.ttf"); unicode-range: U+0-3FF; font-variant: small-caps; font-stretch: expanded; font-weight: 300; font-style: italic; font-display: block;';
+  var cssText = 'font-family: Ahem; src: url("../../resources/Ahem.ttf"); font-style: italic; font-weight: 300; unicode-range: U+0-3FF; font-variant: small-caps; font-display: block; font-stretch: expanded;';
   assert_equals(fontFace.cssText, '@font-face { ' + cssText + ' }', 'Rule cssText');
   assert_equals(fontFace.style.cssText, cssText, 'style cssText');
 }, 'Calling cssText() on an @font-face rule serializes the contents.');

@@ -22,7 +22,7 @@
 
 #include "core/css/StyleAttributeMutationScope.h"
 
-#include "core/css/CSSStyleDeclaration.h"
+#include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/html/custom/CustomElement.h"
@@ -45,13 +45,14 @@ static CustomElementDefinition* DefinitionIfStyleChangedCallback(
 }  // namespace
 
 unsigned StyleAttributeMutationScope::scope_count_ = 0;
-CSSStyleDeclaration* StyleAttributeMutationScope::current_decl_ = nullptr;
+AbstractPropertySetCSSStyleDeclaration*
+    StyleAttributeMutationScope::current_decl_ = nullptr;
 bool StyleAttributeMutationScope::should_notify_inspector_ = false;
 bool StyleAttributeMutationScope::should_deliver_ = false;
 
 DISABLE_CFI_PERF
 StyleAttributeMutationScope::StyleAttributeMutationScope(
-    CSSStyleDeclaration* decl) {
+    AbstractPropertySetCSSStyleDeclaration* decl) {
   ++scope_count_;
 
   if (scope_count_ != 1) {
@@ -108,7 +109,7 @@ StyleAttributeMutationScope::~StyleAttributeMutationScope() {
   }
 
   // We have to clear internal state before calling Inspector's code.
-  CSSStyleDeclaration* local_copy_style_decl = current_decl_;
+  AbstractPropertySetCSSStyleDeclaration* local_copy_style_decl = current_decl_;
   current_decl_ = nullptr;
 
   if (!should_notify_inspector_)
