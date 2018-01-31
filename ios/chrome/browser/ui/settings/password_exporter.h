@@ -7,13 +7,58 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+#include <vector>
+
+namespace autofill {
+struct PasswordForm;
+}  // namespace autofill
+
+enum class WriteToURLStatus {
+  SUCCESS,
+  OUT_OF_DISK_SPACE_ERROR,
+  UNKNOWN_ERROR,
+};
+
 @protocol ReauthenticationProtocol;
+
+@protocol FileWriterProtocol<NSObject>
+
+// Posts a task to write the data in |data| to the file at |fileURL| and
+// executes |handler| when the writing is finished.
+- (void)writeData:(NSString*)data
+            toURL:(NSURL*)fileURL
+          handler:(void (^)(WriteToURLStatus))handler;
+
+@end
+
+@protocol PasswordSerializerBridge<NSObject>
+
+// Posts task to serialize passwords and calls |serializedPasswordsHandler|
+// when serialization is finished.
+- (void)serializePasswords:
+            (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords
+                   handler:(void (^)(std::string))serializedPasswordsHandler;
+
+@end
 
 @protocol PasswordExporterDelegate<NSObject>
 
 // Displays a dialog informing the user that they must set up a passcode
 // in order to export passwords.
 - (void)showSetPasscodeDialog;
+
+// Displays an alert detailing an error that has occured during export.
+- (void)showExportErrorAlertWithLocalizedReason:(NSString*)errorReason;
+
+// Displays an activity view that allows the user to pick an app to process
+// the exported passwords file.
+- (void)showActivityViewWithActivityItems:(NSArray*)activityItems
+                        completionHandler:
+                            (void (^)(NSString* activityType,
+                                      BOOL completed,
+                                      NSArray* returnedItems,
+                                      NSError* activityError))completionHandler;
 
 @end
 
@@ -31,8 +76,12 @@
 - (instancetype)init NS_UNAVAILABLE;
 
 // Method to be called in order to start the export flow. This initiates
-// the re-authentication procedure and asks for password serialization.
-- (void)startExportFlow;
+// the reauthentication procedure and asks for password serialization.
+- (void)startExportFlow:
+    (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords;
+
+// Whether an export operation is already in progress.
+@property(nonatomic, assign, readonly) BOOL isExporting;
 
 @end
 
