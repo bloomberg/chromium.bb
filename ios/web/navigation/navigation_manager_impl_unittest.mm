@@ -2389,14 +2389,20 @@ TEST_P(NavigationManagerTest, UpdateCurrentItemForReplaceState) {
   [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
   navigation_manager()->CommitPendingItem();
 
-  // Replace current item again and check history size and fields.
+  // Note that it is important this reference is taken before calling
+  // UpdateCurrentItemForReplaceState() because NavigationItem getter always
+  // rewrites NavigationItem URL to match WKBackForwardListItem.URL, which
+  // unfortunatelly due to the way the mock object is set up in this test,
+  // cannot be rewritten to the replaced URL. This is not a problem in real
+  // world because WKBackForwardListItem.URL would already be updated to the
+  // replace URL by WKWebView when UpdateCurrentItemForReplaceState() is called.
+  auto* last_committed_item = static_cast<NavigationItemImpl*>(
+      navigation_manager()->GetLastCommittedItem());
   GURL replace_page_url2("http://www.url.com/replace2");
   navigation_manager()->UpdateCurrentItemForReplaceState(replace_page_url2,
                                                          nil);
 
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
-  auto* last_committed_item = static_cast<NavigationItemImpl*>(
-      navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(replace_page_url2, last_committed_item->GetURL());
   EXPECT_FALSE(last_committed_item->IsCreatedFromPushState());
   EXPECT_NSEQ(nil, last_committed_item->GetSerializedStateObject());
