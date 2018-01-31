@@ -348,7 +348,9 @@
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"],
     "whitelist": [
-      "3970B660353CA07962DAD1A5C1B75A7B87835943"  // http://crbug.com/724206
+      "3970B660353CA07962DAD1A5C1B75A7B87835943",  // http://crbug.com/724206
+      "E0DEFFD4518AF92D2DB1F575FF390EE35F58200C",  // http://crbug.com/806970
+      "B7B5CF88FE1AAE4B84B81B949A69AD18E512A33A"   // http://crbug.com/806970
     ]
   }],
   "metricsPrivate": {
