@@ -24,7 +24,6 @@ void ossfuzz_set_debug_flags(unsigned x){
   mDebug = x;
 }
 
-#ifndef SQLITE_OMIT_PROGRESS_CALLBACK
 /* Return the current real-world time in milliseconds since the
 ** Julian epoch (-4714-11-24).
 */
@@ -41,7 +40,6 @@ static sqlite3_int64 timeOfDay(void){
   }
   return t;
 }
-#endif
 
 /* An instance of the following object is passed by pointer as the
 ** client data to various callbacks.
@@ -181,4 +179,3 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
   return 0;
 }
-
