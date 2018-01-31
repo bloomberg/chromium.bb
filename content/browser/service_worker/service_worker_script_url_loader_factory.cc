@@ -37,6 +37,8 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(loader_factory_getter_);
   if (!ShouldHandleScriptRequest(resource_request)) {
     // If the request should not be handled by ServiceWorkerScriptURLLoader,
     // just fallback to the network. This needs a relaying as we use different
