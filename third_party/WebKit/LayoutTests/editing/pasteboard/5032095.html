@@ -1,10 +1,13 @@
-<p>This tests for a bug where content pasted at the end of a paragraph would be inserted into the next paragraph.  You should see 'helloworld' below.</p>
-<div id="div" contenteditable="true">hello</div>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var div = document.getElementById("div");
-var sel = window.getSelection();
-sel.collapse(div, 0);
-sel.modify("move", "forward", "word");
-document.execCommand("InsertHTML", false, "<span><div>world</div></span>");
+// This tests for a bug where content pasted at the end of a paragraph would be
+// inserted into the next paragraph.  You should see 'helloworld' below.
+selection_test(
+    '<div contenteditable>hello|</div>',
+    'InsertHTML <span><div>world</div></span>',
+    '<div contenteditable>helloworld|</div>',
+    'InsertHTML at end of a paragraph');
 </script>
