@@ -173,7 +173,8 @@ enum CircleComponentIndex : unsigned {
   kCircleComponentIndexCount,
 };
 
-InterpolationValue ConvertCSSValue(const CSSBasicShapeCircleValue& circle) {
+InterpolationValue ConvertCSSValue(
+    const cssvalue::CSSBasicShapeCircleValue& circle) {
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kCircleComponentIndexCount);
   list->Set(kCircleCenterXIndex, ConvertCSSCoordinate(circle.CenterX()));
@@ -241,7 +242,8 @@ enum EllipseComponentIndex : unsigned {
   kEllipseComponentIndexCount,
 };
 
-InterpolationValue ConvertCSSValue(const CSSBasicShapeEllipseValue& ellipse) {
+InterpolationValue ConvertCSSValue(
+    const cssvalue::CSSBasicShapeEllipseValue& ellipse) {
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kEllipseComponentIndexCount);
   list->Set(kEllipseCenterXIndex, ConvertCSSCoordinate(ellipse.CenterX()));
@@ -326,7 +328,8 @@ enum InsetComponentIndex : unsigned {
   kInsetComponentIndexCount,
 };
 
-InterpolationValue ConvertCSSValue(const CSSBasicShapeInsetValue& inset) {
+InterpolationValue ConvertCSSValue(
+    const cssvalue::CSSBasicShapeInsetValue& inset) {
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kInsetComponentIndexCount);
   list->Set(kInsetTopIndex, ConvertCSSLength(inset.Top()));
@@ -449,7 +452,8 @@ scoped_refptr<BasicShape> CreateBasicShape(
 
 namespace PolygonFunctions {
 
-InterpolationValue ConvertCSSValue(const CSSBasicShapePolygonValue& polygon) {
+InterpolationValue ConvertCSSValue(
+    const cssvalue::CSSBasicShapePolygonValue& polygon) {
   size_t size = polygon.Values().size();
   std::unique_ptr<InterpolableList> list = InterpolableList::Create(size);
   for (size_t i = 0; i < size; i++)
@@ -506,16 +510,22 @@ scoped_refptr<BasicShape> CreateBasicShape(
 
 InterpolationValue BasicShapeInterpolationFunctions::MaybeConvertCSSValue(
     const CSSValue& value) {
-  if (value.IsBasicShapeCircleValue())
-    return CircleFunctions::ConvertCSSValue(ToCSSBasicShapeCircleValue(value));
-  if (value.IsBasicShapeEllipseValue())
+  if (value.IsBasicShapeCircleValue()) {
+    return CircleFunctions::ConvertCSSValue(
+        cssvalue::ToCSSBasicShapeCircleValue(value));
+  }
+  if (value.IsBasicShapeEllipseValue()) {
     return EllipseFunctions::ConvertCSSValue(
-        ToCSSBasicShapeEllipseValue(value));
-  if (value.IsBasicShapeInsetValue())
-    return InsetFunctions::ConvertCSSValue(ToCSSBasicShapeInsetValue(value));
-  if (value.IsBasicShapePolygonValue())
+        cssvalue::ToCSSBasicShapeEllipseValue(value));
+  }
+  if (value.IsBasicShapeInsetValue()) {
+    return InsetFunctions::ConvertCSSValue(
+        cssvalue::ToCSSBasicShapeInsetValue(value));
+  }
+  if (value.IsBasicShapePolygonValue()) {
     return PolygonFunctions::ConvertCSSValue(
-        ToCSSBasicShapePolygonValue(value));
+        cssvalue::ToCSSBasicShapePolygonValue(value));
+  }
   return nullptr;
 }
 

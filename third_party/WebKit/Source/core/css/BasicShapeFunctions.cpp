@@ -133,8 +133,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
 
     case BasicShape::kBasicShapeCircleType: {
       const BasicShapeCircle* circle = ToBasicShapeCircle(basic_shape);
-      CSSBasicShapeCircleValue* circle_value =
-          CSSBasicShapeCircleValue::Create();
+      cssvalue::CSSBasicShapeCircleValue* circle_value =
+          cssvalue::CSSBasicShapeCircleValue::Create();
 
       circle_value->SetCenterX(ValueForCenterCoordinate(
           style, circle->CenterX(), EBoxOrient::kHorizontal));
@@ -146,8 +146,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
     case BasicShape::kBasicShapeEllipseType: {
       const BasicShapeEllipse* ellipse = ToBasicShapeEllipse(basic_shape);
-      CSSBasicShapeEllipseValue* ellipse_value =
-          CSSBasicShapeEllipseValue::Create();
+      cssvalue::CSSBasicShapeEllipseValue* ellipse_value =
+          cssvalue::CSSBasicShapeEllipseValue::Create();
 
       ellipse_value->SetCenterX(ValueForCenterCoordinate(
           style, ellipse->CenterX(), EBoxOrient::kHorizontal));
@@ -161,8 +161,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
     case BasicShape::kBasicShapePolygonType: {
       const BasicShapePolygon* polygon = ToBasicShapePolygon(basic_shape);
-      CSSBasicShapePolygonValue* polygon_value =
-          CSSBasicShapePolygonValue::Create();
+      cssvalue::CSSBasicShapePolygonValue* polygon_value =
+          cssvalue::CSSBasicShapePolygonValue::Create();
 
       polygon_value->SetWindRule(polygon->GetWindRule());
       const Vector<Length>& values = polygon->Values();
@@ -175,7 +175,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
     case BasicShape::kBasicShapeInsetType: {
       const BasicShapeInset* inset = ToBasicShapeInset(basic_shape);
-      CSSBasicShapeInsetValue* inset_value = CSSBasicShapeInsetValue::Create();
+      cssvalue::CSSBasicShapeInsetValue* inset_value =
+          cssvalue::CSSBasicShapeInsetValue::Create();
 
       inset_value->SetTop(
           CSSPrimitiveValue::Create(inset->Top(), style.EffectiveZoom()));
@@ -287,8 +288,8 @@ scoped_refptr<BasicShape> BasicShapeForValue(
   scoped_refptr<BasicShape> basic_shape;
 
   if (basic_shape_value.IsBasicShapeCircleValue()) {
-    const CSSBasicShapeCircleValue& circle_value =
-        ToCSSBasicShapeCircleValue(basic_shape_value);
+    const cssvalue::CSSBasicShapeCircleValue& circle_value =
+        cssvalue::ToCSSBasicShapeCircleValue(basic_shape_value);
     scoped_refptr<BasicShapeCircle> circle = BasicShapeCircle::Create();
 
     circle->SetCenterX(
@@ -299,8 +300,8 @@ scoped_refptr<BasicShape> BasicShapeForValue(
 
     basic_shape = std::move(circle);
   } else if (basic_shape_value.IsBasicShapeEllipseValue()) {
-    const CSSBasicShapeEllipseValue& ellipse_value =
-        ToCSSBasicShapeEllipseValue(basic_shape_value);
+    const cssvalue::CSSBasicShapeEllipseValue& ellipse_value =
+        cssvalue::ToCSSBasicShapeEllipseValue(basic_shape_value);
     scoped_refptr<BasicShapeEllipse> ellipse = BasicShapeEllipse::Create();
 
     ellipse->SetCenterX(
@@ -314,8 +315,8 @@ scoped_refptr<BasicShape> BasicShapeForValue(
 
     basic_shape = std::move(ellipse);
   } else if (basic_shape_value.IsBasicShapePolygonValue()) {
-    const CSSBasicShapePolygonValue& polygon_value =
-        ToCSSBasicShapePolygonValue(basic_shape_value);
+    const cssvalue::CSSBasicShapePolygonValue& polygon_value =
+        cssvalue::ToCSSBasicShapePolygonValue(basic_shape_value);
     scoped_refptr<BasicShapePolygon> polygon = BasicShapePolygon::Create();
 
     polygon->SetWindRule(polygon_value.GetWindRule());
@@ -327,8 +328,8 @@ scoped_refptr<BasicShape> BasicShapeForValue(
 
     basic_shape = std::move(polygon);
   } else if (basic_shape_value.IsBasicShapeInsetValue()) {
-    const CSSBasicShapeInsetValue& rect_value =
-        ToCSSBasicShapeInsetValue(basic_shape_value);
+    const cssvalue::CSSBasicShapeInsetValue& rect_value =
+        cssvalue::ToCSSBasicShapeInsetValue(basic_shape_value);
     scoped_refptr<BasicShapeInset> rect = BasicShapeInset::Create();
 
     rect->SetTop(ConvertToLength(state, rect_value.Top()));
