@@ -664,8 +664,6 @@ jumbo_component("platform") {
     "exported/WebNetworkStateNotifier.cpp",
     "exported/WebPrerender.cpp",
     "exported/WebPrerenderingSupport.cpp",
-    "exported/WebPresentationConnection.cpp",
-    "exported/WebPresentationConnectionCallbacks.cpp",
     "exported/WebPresentationReceiver.cpp",
     "exported/WebRTCAnswerOptions.cpp",
     "exported/WebRTCOfferOptions.cpp",

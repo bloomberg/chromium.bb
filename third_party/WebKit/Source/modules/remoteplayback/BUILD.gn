@@ -12,7 +12,5 @@ blink_modules_sources("remoteplayback") {
     "HTMLMediaElementRemotePlayback.h",
     "RemotePlayback.cpp",
     "RemotePlayback.h",
-    "RemotePlaybackConnectionCallbacks.cpp",
-    "RemotePlaybackConnectionCallbacks.h",
   ]
 }
