@@ -11,6 +11,8 @@
 namespace base {
 namespace android {
 
+// Disable on Android ASAN bot due to consistent failures: crbug.com/807080.
+#if !defined(ADDRESS_SANITIZER)
 TEST(ContentUriUtilsTest, ContentUriMimeTest) {
   // Get the test image path.
   FilePath data_dir;
@@ -32,6 +34,7 @@ TEST(ContentUriUtilsTest, ContentUriMimeTest) {
   mime = GetContentUriMimeType(invalid_path);
   EXPECT_TRUE(mime.empty());
 }
+#endif
 
 }  // namespace android
 }  // namespace base
