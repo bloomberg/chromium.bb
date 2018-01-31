@@ -93,9 +93,6 @@ class PermissionSet {
   // Returns true if this includes permission to access |origin|.
   bool HasExplicitAccessToOrigin(const GURL& origin) const;
 
-  // Returns true if this permission set includes access to script |url|.
-  bool HasScriptableAccessToURL(const GURL& url) const;
-
   // Returns true if this permission set includes effective access to all
   // origins.
   bool HasEffectiveAccessToAllHosts() const;
