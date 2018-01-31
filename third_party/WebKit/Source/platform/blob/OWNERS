@@ -1,5 +1,10 @@
 dmurph@chromium.org
 mek@chromium.org
 
+per-file *StructTraits*.*=set noparent
+per-file *StructTraits*.*=file://ipc/SECURITY_OWNERS
+per-file *.typemap=set noparent
+per-file *.typemap=file://ipc/SECURITY_OWNERS
+
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>FileAPI

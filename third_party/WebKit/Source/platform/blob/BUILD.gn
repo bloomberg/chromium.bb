@@ -31,6 +31,8 @@ blink_platform_sources("blob") {
     "BlobRegistry.h",
     "BlobURL.cpp",
     "BlobURL.h",
+    "SerializedBlobStructTraits.cpp",
+    "SerializedBlobStructTraits.h",
   ]
 }
 
