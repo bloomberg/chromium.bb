@@ -2537,6 +2537,20 @@ void Internals::setPersistent(HTMLVideoElement* video_element,
   video_element->OnBecamePersistentVideo(persistent);
 }
 
+void Internals::forceStaleStateForMediaElement(
+    HTMLMediaElement* media_element) {
+  DCHECK(media_element);
+  if (auto wmp = media_element->GetWebMediaPlayer())
+    wmp->ForceStaleStateForTesting();
+}
+
+bool Internals::isMediaElementSuspended(HTMLMediaElement* media_element) {
+  DCHECK(media_element);
+  if (auto wmp = media_element->GetWebMediaPlayer())
+    return wmp->IsSuspendedForTesting();
+  return false;
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme) {
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy(scheme);
