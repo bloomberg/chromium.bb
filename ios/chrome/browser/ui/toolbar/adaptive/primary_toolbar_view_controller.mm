@@ -52,11 +52,15 @@
   if (!onNTP)
     return;
 
+  self.view.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.NTPBackgroundColor;
   self.view.locationBarContainer.hidden = YES;
 }
 
 - (void)resetAfterSideSwipeSnapshot {
   [super resetAfterSideSwipeSnapshot];
+  self.view.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
   self.view.locationBarContainer.hidden = NO;
 }
 
