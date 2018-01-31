@@ -318,7 +318,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     # Test unversioned checkout.
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1'],
-        ['running', 'running'])
+        ['running', 'running', 'running'])
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
@@ -383,7 +383,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1',
          '--revision', 'invalid@' + self.githash('repo_1', 1)],
-        ['running', 'running'],
+        ['running', 'running', 'running'],
         'Please fix your script, having invalid --revision flags '
         'will soon considered an error.\n')
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
@@ -401,7 +401,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1',
          '--revision', self.githash('repo_1', 1)],
-        [])
+        ['running'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -424,7 +424,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     # Test unversioned checkout.
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '8'],
-        ['running', 'running'],
+        ['running', 'running', 'running'],
         untangle=True)
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
@@ -554,13 +554,15 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
     expectation = [
+        ('running', self.root_dir),                 # git clone
         ('running', self.root_dir),                 # pre-deps hook
     ]
     out = self.parseGclient(['sync', '--deps', 'mac', '--jobs=1',
                              '--revision', 'src@' + self.githash('repo_5', 2)],
                             expectation)
-    self.assertEquals(2, len(out[0]))
-    self.assertEquals('pre-deps hook', out[0][1])
+    self.assertEquals('Cloning into ', out[0][1][:13])
+    self.assertEquals(2, len(out[1]))
+    self.assertEquals('pre-deps hook', out[1][1])
     tree = self.mangle_git_tree(('repo_5@2', 'src'),
                                 ('repo_1@2', 'src/repo1'),
                                 ('repo_2@1', 'src/repo2')
@@ -604,6 +606,7 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
     expectated_stdout = [
+        ('running', self.root_dir),                 # git clone
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # pre-deps hook (fails)
     ]

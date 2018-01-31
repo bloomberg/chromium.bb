@@ -325,6 +325,22 @@ class Wrapper(object):
     return getattr(self._wrapped, name)
 
 
+class WriteToStdout(Wrapper):
+  """Creates a file object clone to also print to sys.stdout."""
+  def __init__(self, wrapped):
+    super(WriteToStdout, self).__init__(wrapped)
+    if not hasattr(self, 'lock'):
+      self.lock = threading.Lock()
+
+  def write(self, out, *args, **kwargs):
+    self._wrapped.write(out, *args, **kwargs)
+    self.lock.acquire()
+    try:
+      sys.stdout.write(out, *args, **kwargs)
+    finally:
+      self.lock.release()
+
+
 class AutoFlush(Wrapper):
   """Creates a file object clone to automatically flush after N seconds."""
   def __init__(self, wrapped, delay):

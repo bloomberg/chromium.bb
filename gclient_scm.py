@@ -94,7 +94,7 @@ class SCMWrapper(object):
   """
 
   def __init__(self, url=None, root_dir=None, relpath=None, out_fh=None,
-               out_cb=None):
+               out_cb=None, print_outbuf=False):
     self.url = url
     self._root_dir = root_dir
     if self._root_dir:
@@ -108,6 +108,7 @@ class SCMWrapper(object):
       out_fh = sys.stdout
     self.out_fh = out_fh
     self.out_cb = out_cb
+    self.print_outbuf = print_outbuf
 
   def Print(self, *args, **kwargs):
     kwargs.setdefault('file', self.out_fh)
@@ -896,7 +897,14 @@ class GitWrapper(SCMWrapper):
         dir=parent_dir)
     try:
       clone_cmd.append(tmp_dir)
-      self._Run(clone_cmd, options, cwd=self._root_dir, retry=True)
+      if self.print_outbuf:
+        print_stdout = True
+        stdout = gclient_utils.WriteToStdout(self.out_fh)
+      else:
+        print_stdout = False
+        stdout = self.out_fh
+      self._Run(clone_cmd, options, cwd=self._root_dir, retry=True,
+                print_stdout=print_stdout, stdout=stdout)
       gclient_utils.safe_makedirs(self.checkout_path)
       gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
                                 os.path.join(self.checkout_path, '.git'))
