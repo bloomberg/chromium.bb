@@ -110,7 +110,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   // (text_fragment.StartOffset(), text_fragment.EndOffset()).
   // If first equals second, it indicates "no selection in fragment".
   std::pair<unsigned, unsigned> SelectionStartEndForNG(
-      const NGPhysicalTextFragment&);
+      const NGPhysicalTextFragment&) const;
 
   void OnDocumentShutdown();
 
