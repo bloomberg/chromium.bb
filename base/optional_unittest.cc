@@ -364,6 +364,65 @@ TEST(OptionalTest, MoveValueConstructor) {
   }
 }
 
+TEST(OptionalTest, ConvertingCopyConstructor) {
+  {
+    Optional<int> first(1);
+    Optional<double> second(first);
+    EXPECT_TRUE(second.has_value());
+    EXPECT_EQ(1.0, second.value());
+  }
+
+  // Make sure explicit is not marked for convertible case.
+  {
+    Optional<int> o(1);
+    ignore_result<Optional<double>>(o);
+  }
+}
+
+TEST(OptionalTest, ConvertingMoveConstructor) {
+  {
+    Optional<int> first(1);
+    Optional<double> second(std::move(first));
+    EXPECT_TRUE(second.has_value());
+    EXPECT_EQ(1.0, second.value());
+  }
+
+  // Make sure explicit is not marked for convertible case.
+  {
+    Optional<int> o(1);
+    ignore_result<Optional<double>>(std::move(o));
+  }
+
+  {
+    class Test1 {
+     public:
+      explicit Test1(int foo) : foo_(foo) {}
+
+      int foo() const { return foo_; }
+
+     private:
+      int foo_;
+    };
+
+    // Not copyable but convertible from Test1.
+    class Test2 {
+     public:
+      Test2(const Test2&) = delete;
+      explicit Test2(Test1&& other) : bar_(other.foo()) {}
+
+      double bar() const { return bar_; }
+
+     private:
+      double bar_;
+    };
+
+    Optional<Test1> first(in_place, 42);
+    Optional<Test2> second(std::move(first));
+    EXPECT_TRUE(second.has_value());
+    EXPECT_EQ(42.0, second->bar());
+  }
+}
+
 TEST(OptionalTest, ConstructorForwardArguments) {
   {
     constexpr Optional<float> a(base::in_place, 0.1f);
