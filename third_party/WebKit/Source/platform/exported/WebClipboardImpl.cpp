@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/WebKit/Source/platform/blob/BlobData.h"
 #include "third_party/WebKit/Source/platform/clipboard/ClipboardMimeTypes.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
@@ -153,12 +154,11 @@ WebBlobInfo WebClipboardImpl::ReadImage(mojom::ClipboardBuffer buffer) {
   if (!IsValidBufferType(buffer))
     return WebBlobInfo();
 
-  mojom::blink::SerializedBlobPtr blob;
+  scoped_refptr<BlobDataHandle> blob;
   clipboard_->ReadImage(buffer, &blob);
   if (!blob)
     return WebBlobInfo();
-  return WebBlobInfo(blob->uuid, blob->content_type, blob->size,
-                     blob->blob.PassHandle());
+  return blob;
 }
 
 WebString WebClipboardImpl::ReadCustomData(mojom::ClipboardBuffer buffer,

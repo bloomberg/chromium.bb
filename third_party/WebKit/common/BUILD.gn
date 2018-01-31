@@ -113,6 +113,7 @@ mojom("mojo_platform_bindings") {
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
     "blob/blob_url_store.mojom",
+    "blob/serialized_blob.mojom",
     "clipboard/clipboard.mojom",
     "color_chooser/color_chooser.mojom",
     "feature_policy/feature_policy.mojom",

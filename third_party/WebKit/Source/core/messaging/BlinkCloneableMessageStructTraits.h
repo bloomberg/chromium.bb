@@ -9,6 +9,7 @@
 #include "core/messaging/BlinkCloneableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
+#include "platform/blob/SerializedBlobStructTraits.h"
 #include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
 
 namespace mojo {
@@ -21,7 +22,7 @@ struct StructTraits<blink::mojom::blink::CloneableMessage::DataView,
     return input.message->GetWireData();
   }
 
-  static Vector<blink::mojom::blink::SerializedBlobPtr> blobs(
+  static Vector<scoped_refptr<blink::BlobDataHandle>> blobs(
       blink::BlinkCloneableMessage& input);
 
   static uint64_t stack_trace_id(blink::BlinkCloneableMessage& input) {
