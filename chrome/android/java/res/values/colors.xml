@@ -75,7 +75,8 @@
     <color name="url_emphasis_light_default_text">@android:color/white</color>
 
     <!-- Omnibox Suggestion colors -->
-    <color name="suggestion_url_dark">@color/google_blue_500</color>
+    <color name="suggestion_url_dark_modern">@color/google_blue_500</color>
+    <color name="suggestion_url_light_modern">@color/google_blue_300</color>
     <color name="suggestion_url_light">#5595FE</color>
     <color name="answers_description_text_negative">@color/google_red_700</color>
     <color name="answers_description_text_positive">@color/google_green_700</color>

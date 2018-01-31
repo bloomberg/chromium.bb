@@ -36,7 +36,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -83,7 +82,8 @@ class SuggestionView extends ViewGroup {
 
     private final int mDarkTitleColorStandardFont;
     private final int mLightTitleColorStandardFont;
-    private final int mDarkUrlStandardColor;
+    private final int mDarkUrlStandardModernColor;
+    private final int mLightUrlStandardModernColor;
     private final int mLightUrlStandardColor;
 
     private OmniboxResultItem mSuggestionItem;
@@ -129,8 +129,10 @@ class SuggestionView extends ViewGroup {
                 ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
         mLightTitleColorStandardFont =
                 ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_light_default_text);
-        mDarkUrlStandardColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.suggestion_url_dark);
+        mDarkUrlStandardModernColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.suggestion_url_dark_modern);
+        mLightUrlStandardModernColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.suggestion_url_light_modern);
         mLightUrlStandardColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.suggestion_url_light);
 
@@ -287,10 +289,10 @@ class SuggestionView extends ViewGroup {
      * @param suggestionDelegate The suggestion delegate.
      * @param position Position of the suggestion in the dropdown list.
      * @param useDarkColors Whether dark colors should be used for fonts and icons.
-     * @param mUseModernDesign Whether modern design padding should be used.
+     * @param useModernDesign Whether modern design should be used.
      */
     public void init(OmniboxResultItem suggestionItem, OmniboxSuggestionDelegate suggestionDelegate,
-            int position, boolean useDarkColors, boolean mUseModernDesign) {
+            int position, boolean useDarkColors, boolean useModernDesign) {
         ViewCompat.setLayoutDirection(this, ViewCompat.getLayoutDirection(mUrlBar));
 
         // Update the position unconditionally.
@@ -319,8 +321,8 @@ class SuggestionView extends ViewGroup {
         mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
                 .getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
 
-        mRightOffsetPx = mUseModernDesign ? mRefineViewModernEndPadding : 0;
-        mSuggestionViewOffset = mUseModernDesign ? mSuggestionListModernOffset : 0;
+        mRightOffsetPx = useModernDesign ? mRefineViewModernEndPadding : 0;
+        mSuggestionViewOffset = useModernDesign ? mSuggestionListModernOffset : 0;
 
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.
@@ -350,7 +352,7 @@ class SuggestionView extends ViewGroup {
             boolean urlShown = !TextUtils.isEmpty(mSuggestion.getUrl());
             boolean urlHighlighted = false;
             if (urlShown) {
-                urlHighlighted = setUrlText(suggestionItem);
+                urlHighlighted = setUrlText(suggestionItem, useModernDesign);
             } else {
                 mContentsView.mTextLine2.setVisibility(INVISIBLE);
             }
@@ -371,7 +373,8 @@ class SuggestionView extends ViewGroup {
             setSuggestedQuery(suggestionItem, false, false, false);
             if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
                     || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
-                showDescriptionLine(SpannableString.valueOf(mSuggestion.getDescription()), false);
+                showDescriptionLine(SpannableString.valueOf(mSuggestion.getDescription()), false,
+                        useModernDesign);
             } else {
                 mContentsView.mTextLine2.setVisibility(INVISIBLE);
             }
@@ -401,10 +404,10 @@ class SuggestionView extends ViewGroup {
                                                           : mLightTitleColorStandardFont;
     }
 
-    private int getStandardUrlColor() {
-        if (!FeatureUtilities.isChromeModernDesignEnabled()) return mLightUrlStandardColor;
-        return (mUseDarkColors == null || mUseDarkColors) ? mDarkUrlStandardColor
-                                                          : mLightUrlStandardColor;
+    private int getStandardUrlColor(boolean useModernDesign) {
+        if (!useModernDesign) return mLightUrlStandardColor;
+        return (mUseDarkColors == null || mUseDarkColors) ? mDarkUrlStandardModernColor
+                                                          : mLightUrlStandardModernColor;
     }
 
     @Override
@@ -434,14 +437,15 @@ class SuggestionView extends ViewGroup {
      * Sets (and highlights) the URL text of the second line of the omnibox suggestion.
      *
      * @param result The suggestion containing the URL.
+     * @param useModernDesign Whether modern design should be used.
      * @return Whether the URL was highlighted based on the user query.
      */
-    private boolean setUrlText(OmniboxResultItem result) {
+    private boolean setUrlText(OmniboxResultItem result, boolean useModernDesign) {
         OmniboxSuggestion suggestion = result.getSuggestion();
         Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
         boolean hasMatch = applyHighlightToMatchRegions(
                 str, suggestion.getDisplayTextClassifications());
-        showDescriptionLine(str, true);
+        showDescriptionLine(str, true, useModernDesign);
         return hasMatch;
     }
 
@@ -476,8 +480,9 @@ class SuggestionView extends ViewGroup {
      *
      * @param str The description text.
      * @param isUrl Whether this text is a URL (as opposed to a normal string).
+     * @param useModernDesign Whether modern design should be used.
      */
-    private void showDescriptionLine(Spannable str, boolean isUrl) {
+    private void showDescriptionLine(Spannable str, boolean isUrl, boolean useModernDesign) {
         TextView textLine = mContentsView.mTextLine2;
         if (textLine.getVisibility() != VISIBLE) {
             textLine.setVisibility(VISIBLE);
@@ -486,7 +491,7 @@ class SuggestionView extends ViewGroup {
 
         // Force left-to-right rendering for URLs. See UrlBar constructor for details.
         if (isUrl) {
-            textLine.setTextColor(getStandardUrlColor());
+            textLine.setTextColor(getStandardUrlColor(useModernDesign));
             ApiCompatibilityUtils.setTextDirection(textLine, TEXT_DIRECTION_LTR);
         } else {
             textLine.setTextColor(getStandardFontColor());
