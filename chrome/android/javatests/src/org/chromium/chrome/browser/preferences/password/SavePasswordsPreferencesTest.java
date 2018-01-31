@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.startsWith;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.intent.Intents;
@@ -95,8 +96,9 @@ public class SavePasswordsPreferencesTest {
         // The faked contents of the saves password exceptions to be displayed.
         private ArrayList<String> mSavedPasswordExeptions = new ArrayList<>();
 
-        // This is set to true when serializePasswords is called.
-        private boolean mSerializePasswordsCalled;
+        // This is set once {@link #serializePasswords()} is called.
+        @Nullable
+        private Callback<String> mExportCallback;
 
         public void setSavedPasswords(ArrayList<SavedPasswordEntry> savedPasswords) {
             mSavedPasswords = savedPasswords;
@@ -106,8 +108,8 @@ public class SavePasswordsPreferencesTest {
             mSavedPasswordExeptions = savedPasswordExceptions;
         }
 
-        public boolean getSerializePasswordsCalled() {
-            return mSerializePasswordsCalled;
+        public Callback<String> getExportCallback() {
+            return mExportCallback;
         }
 
         /**
@@ -152,8 +154,7 @@ public class SavePasswordsPreferencesTest {
 
         @Override
         public void serializePasswords(Callback<String> callback) {
-            callback.onResult("serialized passwords");
-            mSerializePasswordsCalled = true;
+            mExportCallback = callback;
         }
     }
 
@@ -234,6 +235,20 @@ public class SavePasswordsPreferencesTest {
                     InstrumentationRegistry.getInstrumentation().getTargetContext());
             return withText(R.string.search);
         }
+    }
+
+    /**
+     * Taps the menu item to trigger exporting and ensures that reauthentication passes.
+     */
+    private void reauthenticateAndRequestExport() {
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // Before exporting, pretend that the last successful reauthentication just
+        // happened. This will allow the export flow to continue.
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
     }
 
     /**
@@ -476,7 +491,7 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
 
-        Assert.assertTrue(mHandler.getSerializePasswordsCalled());
+        Assert.assertTrue(mHandler.getExportCallback() != null);
     }
 
     /**
@@ -631,14 +646,10 @@ public class SavePasswordsPreferencesTest {
 
         Intents.init();
 
-        Espresso.openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // Before exporting, pretend that the last successful reauthentication just
-        // happened. This will allow the export flow to continue.
-        ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
-        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
-                .perform(click());
+        reauthenticateAndRequestExport();
+
+        // Pretend that passwords have been serialized to go directly to the intent.
+        mHandler.getExportCallback().onResult("serialized passwords");
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -654,6 +665,100 @@ public class SavePasswordsPreferencesTest {
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
 
         Intents.release();
+    }
+
+    /**
+     * Check that a progressbar is displayed when the user confirms the export and the serialized
+     * passwords are not ready yet.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportProgress() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Intents.init();
+
+        reauthenticateAndRequestExport();
+
+        // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
+        // after the test is finished.
+        intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
+                .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+
+        // Confirm the export warning to fire the sharing intent.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Before simulating the serialized passwords being received, check that the progress bar is
+        // shown.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(matches(isDisplayed()));
+
+        // Now pretend that passwords have been serialized.
+        mHandler.getExportCallback().onResult("serialized passwords");
+
+        // Before simulating the serialized passwords being received, check that the progress bar is
+        // hidden.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(doesNotExist());
+
+        intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
+                hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
+                        allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
+
+        Intents.release();
+    }
+
+    /**
+     * Check that the user can cancel exporting with the "Cancel" button on the progressbar.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportCancelOnProgress() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Confirm the export warning to fire the sharing intent.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Check that the progress bar is shown.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(matches(isDisplayed()));
+
+        // Hit the Cancel button.
+        Espresso.onView(withText(R.string.cancel)).perform(click());
+
+        // Check that the cancellation succeeded by checking that the export menu is available and
+        // enabled.
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // The text matches a text view, but the potentially disabled entity is some wrapper two
+        // levels up in the view hierarchy, hence the two withParent matchers.
+        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
+                                withParent(withParent(isEnabled()))))
+                .check(matches(isDisplayed()));
     }
 
     /**

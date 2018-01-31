@@ -493,13 +493,16 @@ CHAR-LIMIT guidelines:
         Showing password generation popup
       </message>
       <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_ACTION_TITLE" desc="The title of a menu item to trigger exporting passwords from the password settings.">
-        Export passwords...
+        Export passwords…
       </message>
       <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_ACTION_DESCRIPTION" desc="The description of a menu item to trigger exporting passwords from the password settings.">
         Export passwords stored with Chrome
       </message>
       <message name="IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION" desc="Text shown to the user who initiated exporting passwords, as a warning before any passwords have been exported.">
         Your passwords will be visible to anyone who can see the exported file.
+      </message>
+      <message name="IDS_SETTINGS_PASSWORDS_PREPARING_EXPORT" desc="Text shown to the user above a progress bar, informing the user that passwords are being prepared for export.">
+        Preparing passwords…
       </message>
 
       <!-- Lock Screen Fragment -->
