@@ -675,18 +675,20 @@ void WebViewGuest::NewGuestWebViewCallback(const content::OpenURLParams& params,
 
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
 // 'unresponsive' events.
-void WebViewGuest::RendererResponsive(WebContents* source) {
+void WebViewGuest::RendererResponsive(
+    WebContents* source,
+    content::RenderProcessHost* render_process_host) {
   auto args = std::make_unique<base::DictionaryValue>();
-  args->SetInteger(webview::kProcessId,
-                   web_contents()->GetMainFrame()->GetProcess()->GetID());
+  args->SetInteger(webview::kProcessId, render_process_host->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventResponsive, std::move(args)));
 }
 
-void WebViewGuest::RendererUnresponsive(WebContents* source) {
+void WebViewGuest::RendererUnresponsive(
+    WebContents* source,
+    content::RenderProcessHost* render_process_host) {
   auto args = std::make_unique<base::DictionaryValue>();
-  args->SetInteger(webview::kProcessId,
-                   web_contents()->GetMainFrame()->GetProcess()->GetID());
+  args->SetInteger(webview::kProcessId, render_process_host->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventUnresponsive, std::move(args)));
 }

@@ -162,7 +162,8 @@ class Shell : public WebContentsDelegate,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-  void RendererUnresponsive(WebContents* source) override;
+  void RendererUnresponsive(WebContents* source,
+                            RenderProcessHost* render_process_host) override;
   void ActivateContents(WebContents* contents) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,
