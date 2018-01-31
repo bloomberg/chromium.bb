@@ -618,6 +618,34 @@ function presentationConnectionCloseReasonToMojo_(reason) {
 }
 
 /**
+ * Converts string to Mojo origin.
+ * @param {string|!url.mojom.Origin} origin
+ * @return {!url.mojom.Origin}
+ */
+function stringToMojoOrigin_(origin) {
+  if (origin instanceof url.mojom.Origin) {
+    return origin;
+  }
+  var originUrl = new URL(origin);
+  var mojoOrigin = {};
+  mojoOrigin.scheme = originUrl.protocol.replace(':', '');
+  mojoOrigin.host = originUrl.hostname;
+  var port = originUrl.port ? Number.parseInt(originUrl.port) : 0;
+  switch (mojoOrigin.scheme) {
+    case 'http':
+      mojoOrigin.port = port || 80;
+      break;
+    case 'https':
+      mojoOrigin.port = port || 443;
+      break;
+    default:
+      throw new Error('Scheme must be http or https');
+  }
+  mojoOrigin.suborigin = '';
+  return new url.mojom.Origin(mojoOrigin);
+}
+
+/**
  * Parses the given route request Error object and converts it to the
  * corresponding result code.
  * @param {!Error} error
@@ -782,12 +810,16 @@ MediaRouter.prototype.getKeepAlive = function() {
  * updated.
  * @param {!string} sourceUrn
  * @param {!Array<!MediaSink>} sinks
- * @param {!Array<!url.mojom.Origin>} origins
+ * @param {!Array<string|!url.mojom.Origin>} origins
  */
 MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks, origins) {
+  // |origins| is a string array if the Media Router component extension version
+  // is 59 or older. Without the stringToMojoOrigin_() conversion, clients using
+  // those extension versions would see a crash shown in
+  // https://crbug.com/787427.
   this.service_.onSinksReceived(
       mediaRouter.mojom.MediaRouteProvider.Id.EXTENSION, sourceUrn,
-      sinks.map(sinkToMojo_), origins);
+      sinks.map(sinkToMojo_), origins.map(stringToMojoOrigin_));
 };
 
 /**
