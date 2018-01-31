@@ -979,6 +979,8 @@ jumbo_source_set("browser") {
     "loader/loader_delegate.h",
     "loader/loader_io_thread_notifier.cc",
     "loader/loader_io_thread_notifier.h",
+    "loader/merkle_integrity_source_stream.cc",
+    "loader/merkle_integrity_source_stream.h",
     "loader/mime_sniffing_resource_handler.cc",
     "loader/mime_sniffing_resource_handler.h",
     "loader/mojo_async_resource_handler.cc",
