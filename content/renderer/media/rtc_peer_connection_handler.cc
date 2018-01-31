@@ -825,6 +825,7 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
             "WebRTC.PeerConnection.KeyProtocol",
             static_cast<webrtc::KeyExchangeProtocolType>(counter),
             webrtc::kEnumCounterKeyProtocolMax);
+        break;
       default:
         // The default clause is expected to be reached when new enum types are
         // added.
