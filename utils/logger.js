@@ -77,6 +77,9 @@ mr.Logger = class {
       message = message.replace(mr.Logger.URL_REGEXP_, '[Redacted URL]');
       message = message.replace(
           mr.Logger.DOMAIN_OR_EMAIL_REGEXP_, '[Redacted domain/email]');
+      message = message.replace(mr.Logger.SINK_ID_REGEXP_, (match, p1, p2) => {
+        return p1 + ':<' + p2.substr(-4) + '>';
+      });
     }
 
     const record = {
@@ -203,6 +206,14 @@ mr.Logger.DOMAIN_OR_EMAIL_REGEXP_ =
  * @private const {!RegExp}
  */
 mr.Logger.URL_REGEXP_ = /(data:|https?:\/\/)\S+/gi;
+
+
+/**
+ * A regular expression that matches a very broad-range of text that looks like
+ * it could be a sink ID.
+ * @private const {!RegExp}
+ */
+mr.Logger.SINK_ID_REGEXP_ = /(dial|cast):<([a-zA-Z0-9]+)>/gi;
 
 
 /**

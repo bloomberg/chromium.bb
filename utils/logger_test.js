@@ -137,5 +137,22 @@ describe('Test mr.Logger', function() {
         'Relpacing content with: [Redacted URL]'
       ]);
     });
+
+    it('scrubs sink IDs', () => {
+      logger.info(
+          'Sink has pending connection' +
+          ' dial:<05f5e10100641000bc6f90f1aaa0bd90>');
+      logger.info(
+          'Adding new session: cast:<de51d94921f15f8af6dbf65592bb3610>, ' +
+          '5d85e5da-b773-4382-ba06-43c2a6dc6ba6');
+      logger.info('Connecting to (id 1) rf72niQ3FPe8VpTz_tIEGNSkfGUo.');
+      logger.info('');
+
+      expect(loggedMessages).toEqual([
+        'Sink has pending connection dial:<bd90>',
+        'Adding new session: cast:<3610>, 5d85e5da-b773-4382-ba06-43c2a6dc6ba6',
+        'Connecting to (id 1) rf72niQ3FPe8VpTz_tIEGNSkfGUo.', ''
+      ]);
+    });
   });
 });
