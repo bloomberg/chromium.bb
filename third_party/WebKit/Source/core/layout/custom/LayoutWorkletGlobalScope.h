@@ -34,7 +34,7 @@ class CORE_EXPORT LayoutWorkletGlobalScope final
 
   // Implements LayoutWorkletGlobalScope.idl
   void registerLayout(const String& name,
-                      const ScriptValue& ctor_value,
+                      const ScriptValue& constructor_value,
                       ExceptionState&);
 
   CSSLayoutDefinition* FindDefinition(const String& name);

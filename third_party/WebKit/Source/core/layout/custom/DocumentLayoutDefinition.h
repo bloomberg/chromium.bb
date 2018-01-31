@@ -14,8 +14,7 @@ namespace blink {
 // needed by the document about the author defined layout.
 // https://drafts.css-houdini.org/css-layout-api/#document-layout-definition
 class DocumentLayoutDefinition final
-    : public GarbageCollectedFinalized<DocumentLayoutDefinition>,
-      public TraceWrapperBase {
+    : public GarbageCollectedFinalized<DocumentLayoutDefinition> {
  public:
   explicit DocumentLayoutDefinition(CSSLayoutDefinition*);
   virtual ~DocumentLayoutDefinition();
@@ -40,7 +39,6 @@ class DocumentLayoutDefinition final
   }
 
   virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override{};
 
  private:
   bool IsEqual(const CSSLayoutDefinition&);

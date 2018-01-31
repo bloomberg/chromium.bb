@@ -59,7 +59,7 @@ class CSSLayoutDefinition final
     return layout_.NewLocal(isolate);
   }
 
-  void Trace(blink::Visitor* visitor){};
+  void Trace(blink::Visitor* visitor) {}
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:

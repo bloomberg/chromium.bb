@@ -24,8 +24,7 @@ namespace blink {
 // The document has a map of document paint definitions. Initially the map is
 // empty; it is populated when registerPaint(name, paintCtor) is called.
 class DocumentPaintDefinition final
-    : public GarbageCollectedFinalized<DocumentPaintDefinition>,
-      public TraceWrapperBase {
+    : public GarbageCollectedFinalized<DocumentPaintDefinition> {
  public:
   explicit DocumentPaintDefinition(CSSPaintDefinition*);
   virtual ~DocumentPaintDefinition();
@@ -50,7 +49,6 @@ class DocumentPaintDefinition final
   }
 
   virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override{};
 
  private:
   Member<CSSPaintDefinition> paint_definition_;
