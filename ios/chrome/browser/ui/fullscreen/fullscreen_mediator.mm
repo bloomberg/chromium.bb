@@ -107,7 +107,14 @@ void FullscreenMediator::FullscreenModelScrollEventEnded(
 }
 
 void FullscreenMediator::FullscreenModelWasReset(FullscreenModel* model) {
+  // Stop any in-progress animations.  Don't update the model because this
+  // callback occurs after the model's state is reset, and updating the model
+  // the with active animator's current value would overwrite the reset value.
   StopAnimating(false /* update_model */);
+  // Update observers for the reset progress value.
+  for (auto& observer : observers_) {
+    observer.FullscreenProgressUpdated(controller_, model_->progress());
+  }
 }
 
 void FullscreenMediator::SetUpAnimator(__strong FullscreenAnimator** animator) {
