@@ -330,8 +330,8 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
 
 // Verifies that navigation finish acts as the event that separates pageloads.
 // subresource requests started before the navigation commit has finished are
-// ascribed to the previous page load, and requests started after are ascribed
-// to the next page load.
+// ascribed to the previous page load at the time of the commit, and requests
+// started after are ascribed to the next page load.
 TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
   CreateAscriber();
   std::unique_ptr<net::URLRequest> page_load_a_mainresource = CreateNewRequest(
@@ -353,6 +353,8 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
   ascriber()->OnBeforeUrlRequest(page_load_a_subresource.get());
   ascriber()->OnUrlRequestDestroyed(page_load_a_mainresource.get());
 
+  ascriber()->OnNetworkBytesReceived(page_load_a_subresource.get(), 100);
+
   EXPECT_EQ(1u, recorders().size());
   auto& page_load_a_recorder = recorders().front();
   EXPECT_EQ(RenderFrameHostID(kRenderProcessId, kRenderFrameId),
@@ -373,6 +375,7 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
 
   // Second page load 'b' on the same main render frame.
   ascriber()->OnBeforeUrlRequest(page_load_b_mainresource.get());
+  EXPECT_EQ(100, page_load_a_recorder.data_use().total_bytes_received());
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -384,8 +387,8 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
   ascriber()->OnNetworkBytesReceived(page_load_b_subresource.get(), 200);
   ascriber()->OnNetworkBytesReceived(page_load_a_subresource.get(), 100);
 
-  // Previous page recorder still exists.
-  EXPECT_EQ(2u, recorders().size());
+  // Previous page recorder is gone.
+  EXPECT_EQ(1u, recorders().size());
   auto& page_load_b_recorder = recorders().back();
   EXPECT_EQ(RenderFrameHostID(kRenderProcessId, kRenderFrameId),
             page_load_b_recorder.main_frame_id());
@@ -397,7 +400,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
             page_load_b_recorder.data_use().traffic_type());
 
   // Verify the data usage.
-  EXPECT_EQ(100, page_load_a_recorder.data_use().total_bytes_received());
   EXPECT_EQ(200, page_load_b_recorder.data_use().total_bytes_received());
 
   std::unique_ptr<net::URLRequest> page_load_c_mainresource =
@@ -422,7 +424,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
   ascriber()->OnNetworkBytesReceived(page_load_b_subresource.get(), 1000);
 
   // Data usage of page load 'c' should get merged to page load 'b'.
-  EXPECT_EQ(100, page_load_a_recorder.data_use().total_bytes_received());
   EXPECT_EQ(3200, page_load_b_recorder.data_use().total_bytes_received());
 
   ascriber()->OnUrlRequestDestroyed(page_load_a_subresource.get());
