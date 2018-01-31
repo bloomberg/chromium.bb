@@ -500,8 +500,8 @@ public class SavePasswordsPreferences
         }
         mNoPasswords = profileCategory.getPreferenceCount() == 0;
         if (mNoPasswords) {
-            displayManageAccountLink(); // Maybe the password is just not on the device.
-            displayEmptyScreenMessage();
+            if (count == 0) displayEmptyScreenMessage(); // Show if the list was already empty.
+            getPreferenceScreen().removePreference(profileCategory);
         }
     }
 

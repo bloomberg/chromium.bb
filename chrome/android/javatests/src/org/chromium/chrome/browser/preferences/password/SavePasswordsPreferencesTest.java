@@ -836,16 +836,16 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
-    public void testSearchDisplaysAccountLinkIfSearchTurnsUpEmpty() throws Exception {
+    public void testSearchDisplaysBlankPageIfSearchTurnsUpEmpty() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
+        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
 
         // Open the search which should hide the Account link.
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
 
-        // Search for a string that matches nothing which should bring the Account link back.
+        // Search for a string that matches nothing which should leave the results entirely blank.
         Espresso.onView(withId(R.id.search_src_text))
                 .perform(click(), typeText("Mars"), closeSoftKeyboard());
 
@@ -853,7 +853,9 @@ public class SavePasswordsPreferencesTest {
             Espresso.onView(allOf(withText(god.getUserName()), withText(god.getUrl())))
                     .check(doesNotExist());
         }
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
+        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
+        Espresso.onView(withText(R.string.saved_passwords_none_text)).check(doesNotExist());
+        Espresso.onView(withText(R.string.section_saved_passwords)).check(doesNotExist());
     }
 
     /**
