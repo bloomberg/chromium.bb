@@ -151,8 +151,12 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   void WasResized();
 
-  const gfx::Rect& frame_rect() const {
-    return pending_resize_params_.frame_rect;
+  const gfx::Rect& screen_space_rect() const {
+    return pending_resize_params_.screen_space_rect;
+  }
+
+  const gfx::Size& local_frame_size() const {
+    return pending_resize_params_.local_frame_size;
   }
 
   const ScreenInfo& screen_info() const {
@@ -173,7 +177,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                           blink::WebDOMMessageEvent event) override;
   void Navigate(const blink::WebURLRequest& request,
                 bool should_replace_current_entry) override;
-  void FrameRectsChanged(const blink::WebRect& frame_rect) override;
+  void FrameRectsChanged(const blink::WebRect& local_frame_rect,
+                         const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const blink::WebRect& viewportIntersection) override;
   void VisibilityChanged(bool visible) override;
@@ -271,7 +276,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // therefore don't care to synchronize ResizeParams with viz::LocalSurfaceIds.
   // Perhaps this can be moved to ChildFrameCompositingHelper?
   struct ResizeParams {
-    gfx::Rect frame_rect;
+    gfx::Rect screen_space_rect;
+    gfx::Size local_frame_size;
     ScreenInfo screen_info;
     uint64_t sequence_number = 0lu;
   };

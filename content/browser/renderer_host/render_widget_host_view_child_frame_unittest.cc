@@ -343,14 +343,17 @@ TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest, PhysicalBackingSize) {
   screen_info.device_scale_factor = 2.0f;
   test_frame_connector_->SetScreenInfoForTesting(screen_info);
 
-  gfx::Size frame_size_in_pixels(1276, 410);
-  gfx::Rect frame_rect_in_pixels(frame_size_in_pixels);
-  test_frame_connector_->SetRect(frame_rect_in_pixels);
-  EXPECT_EQ(frame_size_in_pixels, view_->GetPhysicalBackingSize());
+  gfx::Size local_frame_size(1276, 410);
+  test_frame_connector_->SetLocalFrameSize(local_frame_size);
+  EXPECT_EQ(local_frame_size, view_->GetPhysicalBackingSize());
 
-  frame_rect_in_pixels.set_origin(gfx::Point(230, 263));
-  test_frame_connector_->SetRect(frame_rect_in_pixels);
-  EXPECT_EQ(frame_size_in_pixels, view_->GetPhysicalBackingSize());
+  gfx::Rect screen_space_rect(local_frame_size);
+  screen_space_rect.set_origin(gfx::Point(230, 263));
+  test_frame_connector_->SetScreenSpaceRect(screen_space_rect);
+  EXPECT_EQ(local_frame_size, view_->GetPhysicalBackingSize());
+  EXPECT_EQ(gfx::Point(115, 131), view_->GetViewBounds().origin());
+  EXPECT_EQ(gfx::Point(230, 263),
+            test_frame_connector_->screen_space_rect_in_pixels().origin());
 }
 
 }  // namespace content

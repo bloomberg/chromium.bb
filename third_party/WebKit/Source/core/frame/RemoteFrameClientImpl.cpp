@@ -146,8 +146,10 @@ void RemoteFrameClientImpl::ForwardPostMessage(
   }
 }
 
-void RemoteFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
-  web_frame_->Client()->FrameRectsChanged(frame_rect);
+void RemoteFrameClientImpl::FrameRectsChanged(
+    const IntRect& local_frame_rect,
+    const IntRect& screen_space_rect) {
+  web_frame_->Client()->FrameRectsChanged(local_frame_rect, screen_space_rect);
 }
 
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(

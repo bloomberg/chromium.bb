@@ -204,7 +204,8 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   ~UpdateResizeParamsMessageFilter() override;
 
  private:
-  void OnUpdateResizeParams(const gfx::Rect& rect,
+  void OnUpdateResizeParams(const gfx::Rect& screen_space_rect,
+                            const gfx::Size& local_frame_size,
                             const ScreenInfo& screen_info,
                             uint64_t sequence_number,
                             const viz::SurfaceId& surface_id);
@@ -216,8 +217,8 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   viz::FrameSinkId frame_sink_id_;
   base::RunLoop frame_sink_id_run_loop_;
 
-  std::unique_ptr<base::RunLoop> frame_rect_run_loop_;
-  bool frame_rect_received_;
+  std::unique_ptr<base::RunLoop> screen_space_rect_run_loop_;
+  bool screen_space_rect_received_;
   gfx::Rect last_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateResizeParamsMessageFilter);

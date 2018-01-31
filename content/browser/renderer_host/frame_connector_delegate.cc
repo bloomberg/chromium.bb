@@ -64,15 +64,29 @@ bool FrameConnectorDelegate::IsSubtreeThrottled() const {
   return false;
 }
 
-void FrameConnectorDelegate::SetRect(const gfx::Rect& frame_rect) {
+void FrameConnectorDelegate::SetLocalFrameSize(
+    const gfx::Size& local_frame_size) {
   if (use_zoom_for_device_scale_factor_) {
-    frame_rect_in_pixels_ = frame_rect;
-    frame_rect_in_dip_ = gfx::ScaleToEnclosingRect(
-        frame_rect, 1.f / screen_info_.device_scale_factor);
+    local_frame_size_in_pixels_ = local_frame_size;
+    local_frame_size_in_dip_ = gfx::ScaleToCeiledSize(
+        local_frame_size, 1.f / screen_info_.device_scale_factor);
   } else {
-    frame_rect_in_dip_ = frame_rect;
-    frame_rect_in_pixels_ =
-        gfx::ScaleToEnclosingRect(frame_rect, screen_info_.device_scale_factor);
+    local_frame_size_in_dip_ = local_frame_size;
+    local_frame_size_in_pixels_ = gfx::ScaleToCeiledSize(
+        local_frame_size, screen_info_.device_scale_factor);
+  }
+}
+
+void FrameConnectorDelegate::SetScreenSpaceRect(
+    const gfx::Rect& screen_space_rect) {
+  if (use_zoom_for_device_scale_factor_) {
+    screen_space_rect_in_pixels_ = screen_space_rect;
+    screen_space_rect_in_dip_ = gfx::ScaleToEnclosingRect(
+        screen_space_rect, 1.f / screen_info_.device_scale_factor);
+  } else {
+    screen_space_rect_in_dip_ = screen_space_rect;
+    screen_space_rect_in_pixels_ = gfx::ScaleToEnclosingRect(
+        screen_space_rect, screen_info_.device_scale_factor);
   }
 }
 
