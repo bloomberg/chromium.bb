@@ -198,6 +198,14 @@ void WebDocumentLoaderImpl::SetUserActivated() {
   DocumentLoader::SetUserActivated();
 }
 
+void WebDocumentLoaderImpl::SetIsAdSubframe(bool is_ad_subframe) {
+  GetSubresourceFilter()->SetIsAdSubframe(is_ad_subframe);
+}
+
+bool WebDocumentLoaderImpl::GetIsAdSubframe() const {
+  return GetSubresourceFilter()->GetIsAdSubframe();
+}
+
 void WebDocumentLoaderImpl::Trace(blink::Visitor* visitor) {
   DocumentLoader::Trace(visitor);
 }

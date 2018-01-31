@@ -37,7 +37,8 @@ SubresourceFilterAgent::SubresourceFilterAgent(
     UnverifiedRulesetDealer* ruleset_dealer)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SubresourceFilterAgent>(render_frame),
-      ruleset_dealer_(ruleset_dealer) {
+      ruleset_dealer_(ruleset_dealer),
+      is_ad_subframe_for_next_commit_(false) {
   DCHECK(ruleset_dealer);
 }
 
@@ -55,6 +56,11 @@ void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
     std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) {
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
   web_frame->GetDocumentLoader()->SetSubresourceFilter(filter.release());
+}
+
+void SubresourceFilterAgent::SetIsAdSubframeForDocument(bool is_ad_subframe) {
+  blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
+  web_frame->GetDocumentLoader()->SetIsAdSubframe(is_ad_subframe);
 }
 
 void SubresourceFilterAgent::
@@ -84,8 +90,10 @@ ActivationState SubresourceFilterAgent::GetParentActivationState(
 }
 
 void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
-    const ActivationState& activation_state) {
+    const ActivationState& activation_state,
+    bool is_ad_subframe) {
   activation_state_for_next_commit_ = activation_state;
+  is_ad_subframe_for_next_commit_ = is_ad_subframe;
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
@@ -146,9 +154,10 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   SendDocumentLoadStatistics(statistics);
 }
 
-void SubresourceFilterAgent::ResetActivatonStateForNextCommit() {
+void SubresourceFilterAgent::ResetInfoForNextCommit() {
   activation_state_for_next_commit_ =
       ActivationState(ActivationLevel::DISABLED);
+  is_ad_subframe_for_next_commit_ = false;
 }
 
 void SubresourceFilterAgent::OnDestruct() {
@@ -172,8 +181,9 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   const ActivationState activation_state =
       use_parent_activation ? GetParentActivationState(render_frame())
                             : activation_state_for_next_commit_;
+  bool is_ad_subframe = is_ad_subframe_for_next_commit_;
 
-  ResetActivatonStateForNextCommit();
+  ResetInfoForNextCommit();
 
   // Do not pollute the histograms for empty main frame documents.
   if (IsMainFrame() && !url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
@@ -201,12 +211,14 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
 
   filter_for_last_committed_load_ = filter->AsWeakPtr();
   SetSubresourceFilterForCommittedLoad(std::move(filter));
+  if (is_ad_subframe)
+    SetIsAdSubframeForDocument(true);
 }
 
 void SubresourceFilterAgent::DidFailProvisionalLoad(
     const blink::WebURLError& error) {
   // TODO(engedy): Add a test with `frame-ancestor` violation to exercise this.
-  ResetActivatonStateForNextCommit();
+  ResetInfoForNextCommit();
 }
 
 void SubresourceFilterAgent::DidFinishLoad() {
