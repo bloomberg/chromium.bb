@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
@@ -781,6 +782,11 @@ using ios::material::TimingFunction;
 
 - (void)scrollFullscreenToTopWithAnimator:
     (FullscreenScrollToTopAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+- (void)showToolbarForForgroundWithAnimator:
+    (FullscreenForegroundAnimator*)animator {
   [self addFullscreenAnimationsToAnimator:animator];
 }
 

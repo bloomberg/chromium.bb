@@ -13,7 +13,7 @@
 class FullscreenMediator;
 class FullscreenModel;
 class FullscreenWebStateListObserver;
-@class SystemNotificationFullscreenDisabler;
+@class FullscreenSystemNotificationObserver;
 
 // Implementation of FullscreenController.
 class FullscreenControllerImpl : public FullscreenController {
@@ -41,12 +41,12 @@ class FullscreenControllerImpl : public FullscreenController {
   WebStateList* web_state_list_ = nullptr;
   // The model used to calculate fullscreen state.
   std::unique_ptr<FullscreenModel> model_;
-  // The bridge used to forward brodcasted UI to |model_|.
-  __strong ChromeBroadcastOberverBridge* bridge_ = nil;
-  // A helper object that disables fullscreen for system notifications.
-  __strong SystemNotificationFullscreenDisabler* disabler_ = nil;
   // Object that manages sending signals to FullscreenControllerImplObservers.
   std::unique_ptr<FullscreenMediator> mediator_;
+  // The bridge used to forward brodcasted UI to |model_|.
+  __strong ChromeBroadcastOberverBridge* bridge_ = nil;
+  // A helper object that listens for system notifications.
+  __strong FullscreenSystemNotificationObserver* notification_observer_ = nil;
   // A WebStateListObserver that updates |model_| for WebStateList changes.
   std::unique_ptr<FullscreenWebStateListObserver> web_state_list_observer_;
 

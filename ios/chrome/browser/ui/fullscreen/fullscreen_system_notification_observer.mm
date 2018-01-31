@@ -1,73 +1,86 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen/system_notification_fullscreen_disabler.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_system_notification_observer.h"
 
 #include <memory>
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SystemNotificationFullscreenDisabler () {
+@interface FullscreenSystemNotificationObserver () {
   // The disabler created when VoiceOver is enabled.
   std::unique_ptr<ScopedFullscreenDisabler> _voiceOverDisabler;
   // The disabler created when the keyboard is visible.
   std::unique_ptr<ScopedFullscreenDisabler> _keyboardDisabler;
 }
-// The FullscreenController being enabled/disabled for VoiceOver.
+// The FullscreenController being enabled/disabled for system events.
 @property(nonatomic, readonly, nonnull) FullscreenController* controller;
+// The FullscreenMediator through which foreground events are propagated to
+// FullscreenControllerObservers.
+@property(nonatomic, readonly, nonnull) FullscreenMediator* mediator;
 // Creates or destroys |_voiceOverDisabler| depending on whether VoiceOver is
 // enabled.
 - (void)voiceOverStatusChanged;
 // Called when the keyboard is shown/hidden to reset |_keyboardDisabler|.
 - (void)keyboardWillShow;
 - (void)keyboardDidHide;
+// Called when the application is foregrounded.
+- (void)applicationWillEnterForeground;
 @end
 
-@implementation SystemNotificationFullscreenDisabler
+@implementation FullscreenSystemNotificationObserver
 @synthesize controller = _controller;
+@synthesize mediator = _mediator;
 
-- (instancetype)initWithController:(FullscreenController*)controller {
+- (instancetype)initWithController:(FullscreenController*)controller
+                          mediator:(FullscreenMediator*)mediator {
   if (self = [super init]) {
     _controller = controller;
     DCHECK(_controller);
+    _mediator = mediator;
+    DCHECK(_mediator);
     // Register for VoiceOVer status change notifications.  The notification
     // name has been updated in iOS 11.
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     if (@available(iOS 11, *)) {
-      [[NSNotificationCenter defaultCenter]
+      [defaultCenter
           addObserver:self
              selector:@selector(voiceOverStatusChanged)
                  name:UIAccessibilityVoiceOverStatusDidChangeNotification
                object:nil];
     } else {
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(voiceOverStatusChanged)
-                 name:UIAccessibilityVoiceOverStatusChanged
-               object:nil];
+      [defaultCenter addObserver:self
+                        selector:@selector(voiceOverStatusChanged)
+                            name:UIAccessibilityVoiceOverStatusChanged
+                          object:nil];
     }
     // Create a disabler if VoiceOver is enabled.
     if (UIAccessibilityIsVoiceOverRunning()) {
       _voiceOverDisabler =
           std::make_unique<ScopedFullscreenDisabler>(_controller);
     }
-    // Regsiter for keyboard visibility notifications.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardWillShow)
-               name:UIKeyboardWillShowNotification
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardDidHide)
-               name:UIKeyboardDidHideNotification
-             object:nil];
+    // Register for keyboard visibility notifications.
+    [defaultCenter addObserver:self
+                      selector:@selector(keyboardWillShow)
+                          name:UIKeyboardWillShowNotification
+                        object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(keyboardDidHide)
+                          name:UIKeyboardDidHideNotification
+                        object:nil];
+    // Register for application lifecycle events.
+    [defaultCenter addObserver:self
+                      selector:@selector(applicationWillEnterForeground)
+                          name:UIApplicationWillEnterForegroundNotification
+                        object:nil];
   }
   return self;
 }
@@ -100,6 +113,10 @@
 
 - (void)keyboardDidHide {
   _keyboardDisabler = nullptr;
+}
+
+- (void)applicationWillEnterForeground {
+  self.mediator->WillEnterForeground();
 }
 
 @end

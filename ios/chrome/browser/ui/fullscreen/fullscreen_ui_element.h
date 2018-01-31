@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+@class FullscreenForegroundAnimator;
 @class FullscreenScrollEndAnimator;
 @class FullscreenScrollToTopAnimator;
 
@@ -33,6 +34,11 @@
 // to fullscreen events can configure |animator| with animations.
 - (void)scrollFullscreenToTopWithAnimator:
     (FullscreenScrollToTopAnimator*)animator;
+
+// Called when fullscreen detects a foreground event.  UI elements that react
+// to fullscreen events can configure |animator| with aniamtions.
+- (void)showToolbarForForgroundWithAnimator:
+    (FullscreenForegroundAnimator*)animator;
 
 @end
 
