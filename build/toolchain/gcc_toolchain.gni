@@ -609,6 +609,7 @@ template("clang_toolchain") {
                              "strip",
                              "is_clang_analysis_supported",
                              "enable_linker_map",
+                             "use_unstripped_as_runtime_outputs",
                            ])
 
     toolchain_args = {

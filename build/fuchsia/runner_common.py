@@ -107,10 +107,17 @@ def _MakeTargetImageName(common_prefix, output_directory, location):
   loc = location[len(common_prefix):]
   if loc.startswith(output_dir_no_common_prefix):
     loc = loc[len(output_dir_no_common_prefix)+1:]
-  # TODO(fuchsia): The requirements for finding/loading .so are in flux, so this
-  # ought to be reconsidered at some point. See https://crbug.com/732897.
-  if location.endswith('.so'):
-    loc = 'lib/' + loc
+
+  if loc.startswith('lib.unstripped'):
+    # TODO(fuchsia): The requirements for finding/loading .so are in flux, so this
+    # ought to be reconsidered at some point. See https://crbug.com/732897.
+    loc = 'lib/' + loc[len('lib.unstripped') + 1:]
+
+  if loc.startswith('exe.unstripped'):
+    # TODO(fuchsia): The requirements for finding/loading .so are in flux, so this
+    # ought to be reconsidered at some point. See https://crbug.com/732897.
+    loc = loc[len('lib.unstripped') + 1:]
+
   return loc
 
 

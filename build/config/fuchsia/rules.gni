@@ -215,8 +215,6 @@ template("fuchsia_executable_runner") {
     ]
   }
 
-  # This target is superceded by the packaging system.
-  # TODO(kmarshall): remove this target and remove dependencies from bots.
   generate_runner_script(_archive_target) {
     forward_variables_from(invoker, [ "testonly" ])
     runner_script = "archive_builder.py"

@@ -246,7 +246,8 @@ template("test") {
         ":$_exec_target",
       ]
       test_name = _output_name
-      exe_path = "$root_out_dir/" + get_label_info(_exec_target, "name")
+      exe_path =
+          "$root_out_dir/exe.unstripped/" + get_label_info(_exec_target, "name")
       package_name = _output_name
     }
 
