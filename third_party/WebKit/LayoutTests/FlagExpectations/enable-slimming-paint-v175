@@ -96,8 +96,6 @@ crbug.com/771643 scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failur
 # A few (sub?)-pixels clipped off.
 crbug.com/771643 svg/as-background-image/svg-as-background-6.html [ Failure ]
 # Mask clip issue.
-crbug.com/771643 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
-crbug.com/771643 fast/reflections/reflection-masks.html [ Pass Failure ]
 crbug.com/771643 svg/batik/masking/maskRegions.svg [ Failure ]
 crbug.com/771643 svg/zoom/page/zoom-mask-with-percentages.svg [ Failure ]
 # Incorect LocalBorderBoxProperties for absolute-pos under transformed table section. 

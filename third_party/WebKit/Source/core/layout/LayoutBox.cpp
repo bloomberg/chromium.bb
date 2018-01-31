@@ -1792,14 +1792,22 @@ void LayoutBox::PaintMask(const PaintInfo& paint_info,
 void LayoutBox::ImageChanged(WrappedImagePtr image,
                              CanDeferInvalidation defer,
                              const IntRect*) {
+  bool is_box_reflect_image =
+      (StyleRef().BoxReflect() && StyleRef().BoxReflect()->Mask().GetImage() &&
+       StyleRef().BoxReflect()->Mask().GetImage()->Data() == image);
+
+  if (is_box_reflect_image && HasLayer()) {
+    Layer()->SetFilterOnEffectNodeDirty();
+    SetNeedsPaintPropertyUpdate();
+  }
+
   // TODO(chrishtr): support PaintInvalidationReason::kDelayedFull for animated
   // border images.
   if ((StyleRef().BorderImage().GetImage() &&
        StyleRef().BorderImage().GetImage()->Data() == image) ||
       (StyleRef().MaskBoxImage().GetImage() &&
        StyleRef().MaskBoxImage().GetImage()->Data() == image) ||
-      (StyleRef().BoxReflect() && StyleRef().BoxReflect()->Mask().GetImage() &&
-       StyleRef().BoxReflect()->Mask().GetImage()->Data() == image)) {
+      is_box_reflect_image) {
     SetShouldDoFullPaintInvalidationWithoutGeometryChange(
         PaintInvalidationReason::kImage);
   } else {
