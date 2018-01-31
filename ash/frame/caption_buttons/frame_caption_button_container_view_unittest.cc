@@ -148,15 +148,26 @@ TEST_F(FrameCaptionButtonContainerViewTest,
        TestUpdateSizeButtonVisibilityAnimation) {
   FrameCaptionButtonContainerView container(
       CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
+
+  // Add an extra button to the left of the size button to verify that it is
+  // repositioned similarly to the minimize button. This simulates the PWA menu
+  // button being added to the left of the minimize button.
+  FrameCaptionButton* extra_button =
+      new FrameCaptionButton(&container, CAPTION_BUTTON_ICON_BACK);
+  container.AddChildViewAt(extra_button, 0);
+
   InitContainer(&container);
   container.Layout();
 
   FrameCaptionButtonContainerView::TestApi test(&container);
+  gfx::Rect initial_extra_button_bounds = extra_button->bounds();
   gfx::Rect initial_minimize_button_bounds = test.minimize_button()->bounds();
   gfx::Rect initial_size_button_bounds = test.size_button()->bounds();
   gfx::Rect initial_close_button_bounds = test.close_button()->bounds();
   gfx::Rect initial_container_bounds = container.bounds();
 
+  ASSERT_EQ(initial_minimize_button_bounds.x(),
+            initial_extra_button_bounds.right());
   ASSERT_EQ(initial_size_button_bounds.x(),
             initial_minimize_button_bounds.right());
   ASSERT_EQ(initial_close_button_bounds.x(),
@@ -173,8 +184,10 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   EXPECT_TRUE(test.minimize_button()->visible());
   EXPECT_FALSE(test.size_button()->visible());
   EXPECT_TRUE(test.close_button()->visible());
+  gfx::Rect extra_button_bounds = extra_button->bounds();
   gfx::Rect minimize_button_bounds = test.minimize_button()->bounds();
   gfx::Rect close_button_bounds = test.close_button()->bounds();
+  EXPECT_EQ(minimize_button_bounds.x(), extra_button_bounds.right());
   EXPECT_EQ(close_button_bounds.x(), minimize_button_bounds.right());
   EXPECT_EQ(initial_size_button_bounds, test.size_button()->bounds());
   EXPECT_EQ(initial_close_button_bounds.size(), close_button_bounds.size());
@@ -191,6 +204,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   EXPECT_TRUE(test.minimize_button()->visible());
   EXPECT_TRUE(test.size_button()->visible());
   EXPECT_TRUE(test.close_button()->visible());
+  EXPECT_EQ(initial_extra_button_bounds, extra_button->bounds());
   EXPECT_EQ(initial_minimize_button_bounds, test.minimize_button()->bounds());
   EXPECT_EQ(initial_size_button_bounds, test.size_button()->bounds());
   EXPECT_EQ(initial_close_button_bounds, test.close_button()->bounds());
