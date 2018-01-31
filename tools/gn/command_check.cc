@@ -120,7 +120,7 @@ What gets checked
       included by other targets. Anything in the sources will be considered
       private and will not be includable regardless of dependency paths.
 
-    - Ouptuts from actions are treated like public sources on that target.
+    - Outputs from actions are treated like public sources on that target.
 
     - A target can include headers from a target that depends on it if the
       other target is annotated accordingly. See "gn help

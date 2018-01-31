@@ -554,7 +554,7 @@ const char kGetEnv_Help[] =
 
   value = getenv(env_var_name)
 
-  Returns the value of the given enironment variable. If the value is not
+  Returns the value of the given environment variable. If the value is not
   found, it will try to look up the variable with the "opposite" case (based on
   the case of the first letter of the variable), but is otherwise
   case-sensitive.

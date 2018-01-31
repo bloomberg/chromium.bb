@@ -79,9 +79,9 @@ class Args {
   // arguments. If there are, this returns false and sets the error.
   bool VerifyAllOverridesUsed(Err* err) const;
 
-  // Returns information about all arguements, both defaults and overrides.
+  // Returns information about all arguments, both defaults and overrides.
   // This is used for the help system which is not performance critical. Use a
-  // map instead of a hash map so the arguements are sorted alphabetically.
+  // map instead of a hash map so the arguments are sorted alphabetically.
   ValueWithOverrideMap GetAllArguments() const;
 
   // Returns the set of build files that may affect the build arguments, please

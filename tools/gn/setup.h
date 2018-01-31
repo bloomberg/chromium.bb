@@ -44,7 +44,7 @@ class Setup {
   // is malformed.
   //
   // With force_create = false, setup will fail if the build directory doesn't
-  // alreay exist with an args file in it. With force_create set to true, the
+  // already exist with an args file in it. With force_create set to true, the
   // directory will be created if necessary. Commands explicitly doing
   // generation should set this to true to create it, but querying commands
   // should set it to false to prevent creating oddly-named directories in case
@@ -88,7 +88,7 @@ class Setup {
   const SourceFile& GetDotFile() const { return dotfile_input_file_->name(); }
 
   // Name of the file in the root build directory that contains the build
-  // arguements.
+  // arguments.
   static const char kBuildArgFileName[];
 
  private:

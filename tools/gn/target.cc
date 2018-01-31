@@ -235,7 +235,7 @@ Executing target definitions and templates
       ... target parameter definitions ...
     }
 
-  There is also a generic "target" function for programatically defined types
+  There is also a generic "target" function for programmatically defined types
   (see "gn help target"). You can define new types using templates (see "gn
   help template"). A template defines some custom code that expands to one or
   more other targets.
