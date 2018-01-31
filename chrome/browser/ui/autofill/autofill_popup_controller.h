@@ -54,6 +54,9 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   virtual ui::NativeTheme::ColorId GetBackgroundColorIDForRow(
       int index) const = 0;
 
+  // Change which line is currently selected by the user.
+  virtual void SetSelectedLine(base::Optional<int> selected_line) = 0;
+
   // Returns the index of the selected line. A line is "selected" when it is
   // hovered or has keyboard focus.
   virtual base::Optional<int> selected_line() const = 0;
