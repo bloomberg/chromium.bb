@@ -77,6 +77,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
                 bool frame_handler) override;
   void ProgressFling(base::TimeTicks current_time) override;
   void StopFling() override;
+  bool FlingCancellationIsDeferred() override;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -121,6 +122,8 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   // FlingControllerClient
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
+  void SendGeneratedGestureScrollEvents(
+      const GestureEventWithLatencyInfo& gesture_event) override;
   void SetNeedsBeginFrameForFlingProgress() override;
 
   // MouseWheelEventQueueClient
