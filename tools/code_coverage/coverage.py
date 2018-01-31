@@ -102,10 +102,6 @@ PROFDATA_FILE_NAME = 'coverage.profdata'
 # Build arg required for generating code coverage data.
 CLANG_COVERAGE_BUILD_ARG = 'use_clang_coverage'
 
-# A set of targets that depend on target "testing/gtest", this set is generated
-# by 'gn refs "testing/gtest"', and it is lazily initialized when needed.
-GTEST_TARGET_NAMES = None
-
 # The default name of the html coverage report for a directory.
 DIRECTORY_COVERAGE_HTML_REPORT_NAME = os.extsep.join(['report', 'html'])
 
