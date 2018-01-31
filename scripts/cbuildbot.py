@@ -140,17 +140,20 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
     # Create directory if in need
     osutils.SafeMakedirsNonRoot(options.chrome_root)
 
-  metadata_dump_dict = {}
-  if options.metadata_dump:
-    with open(options.metadata_dump, 'r') as metadata_file:
-      metadata_dump_dict = json.loads(metadata_file.read())
-
   # We are done munging options values, so freeze options object now to avoid
   # further abuse of it.
   # TODO(mtennant): one by one identify each options value override and see if
   # it can be handled another way.  Try to push this freeze closer and closer
   # to the start of the script (e.g. in or after _PostParseCheck).
   options.Freeze()
+
+  metadata_dump_dict = {
+      # A detected default has been set before now if it wasn't explicit.
+      'branch': options.branch,
+  }
+  if options.metadata_dump:
+    with open(options.metadata_dump, 'r') as metadata_file:
+      metadata_dump_dict = json.loads(metadata_file.read())
 
   with parallel.Manager() as manager:
     builder_run = cbuildbot_run.BuilderRun(
