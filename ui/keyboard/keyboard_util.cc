@@ -245,12 +245,14 @@ bool SendKeyEvent(const std::string type,
       if (!input_method)
         return false;
 
+      // This can be null if no text input field is not focused.
       ui::TextInputClient* tic = input_method->GetTextInputClient();
 
       SendProcessKeyEvent(ui::ET_KEY_PRESSED, host);
 
       ui::KeyEvent char_event(key_value, code, ui::EF_NONE);
-      tic->InsertChar(char_event);
+      if (tic)
+        tic->InsertChar(char_event);
       SendProcessKeyEvent(ui::ET_KEY_RELEASED, host);
     }
   } else {
