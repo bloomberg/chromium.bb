@@ -399,8 +399,6 @@ class Internals final : public ScriptWrappable {
   void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);
   void setMediaElementNetworkState(HTMLMediaElement*, int state);
   void setPersistent(HTMLVideoElement*, bool);
-  void forceStaleStateForMediaElement(HTMLMediaElement*);
-  bool isMediaElementSuspended(HTMLMediaElement*);
 
   void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
   void registerURLSchemeAsBypassingContentSecurityPolicy(
