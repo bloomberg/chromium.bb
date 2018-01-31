@@ -233,6 +233,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       const LayerTreeResourceProvider* resource_provider,
+                      bool dump_parent,
                       bool is_free) const;
 
    private:

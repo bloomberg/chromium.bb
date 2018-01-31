@@ -614,14 +614,18 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     MemoryAllocatorDump::kUnitsBytes,
                     total_memory_usage_bytes_);
   } else {
+    bool dump_parent = use_gpu_resources_ || use_gpu_memory_buffers_;
     for (const auto& resource : unused_resources_) {
-      resource->OnMemoryDump(pmd, resource_provider_, true /* is_free */);
+      resource->OnMemoryDump(pmd, resource_provider_, dump_parent,
+                             true /* is_free */);
     }
     for (const auto& resource : busy_resources_) {
-      resource->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+      resource->OnMemoryDump(pmd, resource_provider_, dump_parent,
+                             false /* is_free */);
     }
     for (const auto& entry : in_use_resources_) {
-      entry.second->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+      entry.second->OnMemoryDump(pmd, resource_provider_, dump_parent,
+                                 false /* is_free */);
     }
   }
   return true;
@@ -654,18 +658,23 @@ ResourcePool::PoolResource::~PoolResource() = default;
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
     const LayerTreeResourceProvider* resource_provider,
+    bool dump_parent,
     bool is_free) const {
   // Resource IDs are not process-unique, so log with the
   // LayerTreeResourceProvider's unique id.
-  std::string parent_node =
-      base::StringPrintf("cc/resource_memory/provider_%d/resource_%zd",
-                         resource_provider->tracing_id(), unique_id_);
-
   std::string dump_name =
       base::StringPrintf("cc/tile_memory/provider_%d/resource_%zd",
                          resource_provider->tracing_id(), unique_id_);
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-  pmd->AddSuballocation(dump->guid(), parent_node);
+  if (dump_parent) {
+    // This string matches the one emitted by ResourceProvider. The one above
+    // has a different name, and does not need to match, it is connected by the
+    // AddSuballocation() call.
+    std::string parent_node =
+        base::StringPrintf("cc/resource_memory/provider_%d/resource_%d",
+                           resource_provider->tracing_id(), resource_id_);
+    pmd->AddSuballocation(dump->guid(), parent_node);
+  }
 
   uint64_t total_bytes =
       ResourceUtil::UncheckedSizeInBytesAligned<size_t>(size_, format_);
