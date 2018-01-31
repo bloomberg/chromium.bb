@@ -1146,3 +1146,18 @@ message NotificationImageReportRequest {
   // (even if the image URL is cross-origin). Otherwise a website could mislead
   // Safe Browsing into associating phishing image bitmaps with safe image URLs.
 }
+
+// Protobuf for Chrome extension webstore install request.
+message ExtensionWebStoreInstallRequest {
+  // If we can find the complete referrer chain, this field will contain URL
+  // transitions from landing referrer to event in reverse chronological
+  // order, i.e. event url comes first in this list, and landing referrer
+  // comes last.
+  // For Safe Browsing Extended Reporting or Scout users, if the referrer
+  // chain is empty or partially missing, we will add/append recent navigation
+  // events to this list. The type of these entries will be RECENT_NAVIGATION.
+  repeated ReferrerChainEntry referrer_chain = 1;
+
+  // Options and metadata about the above referrer chain.
+  optional ReferrerChainOptions referrer_chain_options = 2;
+}
