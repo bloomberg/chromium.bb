@@ -615,8 +615,12 @@ class Browser : public TabStripModelObserver,
                           const std::string& frame_name,
                           const GURL& target_url,
                           content::WebContents* new_contents) override;
-  void RendererUnresponsive(content::WebContents* source) override;
-  void RendererResponsive(content::WebContents* source) override;
+  void RendererUnresponsive(
+      content::WebContents* source,
+      content::RenderProcessHost* render_process_host) override;
+  void RendererResponsive(
+      content::WebContents* source,
+      content::RenderProcessHost* render_process_host) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(

@@ -44,6 +44,7 @@ namespace content {
 class ColorChooser;
 class JavaScriptDialogManager;
 class RenderFrameHost;
+class RenderProcessHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -316,11 +317,13 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 
-  // Notification that the tab is hung.
-  virtual void RendererUnresponsive(WebContents* source) {}
+  // Notification that a process in the WebContents is hung.
+  virtual void RendererUnresponsive(WebContents* source,
+                                    RenderProcessHost* render_process_host) {}
 
-  // Notification that the tab is no longer hung.
-  virtual void RendererResponsive(WebContents* source) {}
+  // Notification that a process in the WebContents is no longer hung.
+  virtual void RendererResponsive(WebContents* source,
+                                  RenderProcessHost* render_process_host) {}
 
   // Invoked when a main fram navigation occurs.
   virtual void DidNavigateMainFramePostCommit(WebContents* source) {}
