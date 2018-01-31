@@ -1473,8 +1473,9 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
 
 // Tells the browser that a child's resize parameters have changed.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_UpdateResizeParams,
-                    gfx::Rect /* frame_rect */,
+IPC_MESSAGE_ROUTED5(FrameHostMsg_UpdateResizeParams,
+                    gfx::Rect /* screen_space_rect */,
+                    gfx::Size /* local_frame_size */,
                     content::ScreenInfo /* screen_info */,
                     uint64_t /* sequence_number */,
                     viz::SurfaceId /* surface_id */)

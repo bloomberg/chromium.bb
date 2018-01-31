@@ -348,17 +348,17 @@ void UrlCommitObserver::DidFinishNavigation(
 
 UpdateResizeParamsMessageFilter::UpdateResizeParamsMessageFilter()
     : content::BrowserMessageFilter(FrameMsgStart),
-      frame_rect_run_loop_(std::make_unique<base::RunLoop>()),
-      frame_rect_received_(false) {}
+      screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
+      screen_space_rect_received_(false) {}
 
 void UpdateResizeParamsMessageFilter::WaitForRect() {
-  frame_rect_run_loop_->Run();
+  screen_space_rect_run_loop_->Run();
 }
 
 void UpdateResizeParamsMessageFilter::ResetRectRunLoop() {
   last_rect_ = gfx::Rect();
-  frame_rect_run_loop_.reset(new base::RunLoop);
-  frame_rect_received_ = false;
+  screen_space_rect_run_loop_.reset(new base::RunLoop);
+  screen_space_rect_received_ = false;
 }
 
 viz::FrameSinkId UpdateResizeParamsMessageFilter::GetOrWaitForId() {
@@ -370,7 +370,8 @@ viz::FrameSinkId UpdateResizeParamsMessageFilter::GetOrWaitForId() {
 UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
 
 void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
-    const gfx::Rect& rect,
+    const gfx::Rect& screen_space_rect,
+    const gfx::Size& local_frame_size,
     const ScreenInfo& screen_info,
     uint64_t sequence_number,
     const viz::SurfaceId& surface_id) {
@@ -378,7 +379,7 @@ void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI,
-                     this, rect));
+                     this, screen_space_rect));
 
   // Record the received value. We cannot check the current state of the child
   // frame, as it can only be processed on the UI thread, and we cannot block
@@ -402,11 +403,11 @@ void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
 void UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI(
     const gfx::Rect& rect) {
   last_rect_ = rect;
-  if (!frame_rect_received_) {
-    frame_rect_received_ = true;
+  if (!screen_space_rect_received_) {
+    screen_space_rect_received_ = true;
     // Tests looking at the rect currently expect all received input to finish
     // processing before the test continutes.
-    frame_rect_run_loop_->QuitWhenIdle();
+    screen_space_rect_run_loop_->QuitWhenIdle();
   }
 }
 
