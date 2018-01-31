@@ -35,3 +35,33 @@ source_set("json_proto_converter") {
     ":json_proto",
   ]
 }
+
+if (!is_win) {
+  static_library("skia_image_filter_converter") {
+    sources = [
+      "skia_image_filter_proto_converter.cc",
+      "skia_image_filter_proto_converter.h",
+    ]
+    deps = [
+      ":skia_image_filter_proto",
+      "//base",
+      "//skia",
+      "//third_party/libprotobuf-mutator",
+    ]
+    defines = [ "AVOID_MISBEHAVIOR=1" ]
+
+    testonly = true
+
+    #  Can't disable instrumentation because of container-overflow false
+    # positives.
+
+    # Assertion failures in skia are uninteresting. Don't use debug builds on
+    # CF.
+  }
+
+  proto_library("skia_image_filter_proto") {
+    sources = [
+      "skia_image_filter.proto",
+    ]
+  }
+}
