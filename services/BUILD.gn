@@ -65,9 +65,6 @@ service_test("services_unittests") {
       "//services/data_decoder/public/cpp/android:safe_json_java",
       "//services/device:java",
 
-      # Some tests make network requests.
-      "//net/android:net_java",
-
       # Some tests need to initialize V8.
       "//v8:v8_external_startup_data_assets",
     ]
@@ -94,10 +91,7 @@ catalog("services_unittests_catalog") {
 
   # The division between "all platforms" and "!iOS" here needs to match that
   # for the main deps list in the services_unittests target above.
-  catalog_deps = [
-    "//services/identity:tests_catalog",
-    "//services/network:tests_catalog",
-  ]
+  catalog_deps = [ "//services/identity:tests_catalog" ]
 
   if (!is_ios) {
     catalog_deps += [
