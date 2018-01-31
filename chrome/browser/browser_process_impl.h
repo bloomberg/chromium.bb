@@ -174,16 +174,13 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateWatchdogThread();
   void CreateProfileManager();
   void CreateLocalState();
-  void CreateViewedPageTracker();
   void CreateIconManager();
   void CreateIntranetRedirectDetector();
   void CreateNotificationPlatformBridge();
   void CreateNotificationUIManager();
-  void CreateStatusTrayManager();
   void CreatePrintPreviewDialogController();
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingService();
-  void CreateSafeBrowsingDetectionService();
   void CreateSubresourceFilterRulesetService();
   void CreateOptimizationGuideService();
   void CreateStatusTray();
@@ -259,9 +256,11 @@ class BrowserProcessImpl : public BrowserProcess,
       background_printing_manager_;
 #endif
 
+#if !defined(OS_ANDROID)
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_ = false;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
+#endif
 
   std::unique_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
 
