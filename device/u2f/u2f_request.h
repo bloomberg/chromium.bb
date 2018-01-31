@@ -7,24 +7,51 @@
 
 #include <list>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_set.h"
 #include "device/u2f/u2f_device.h"
 #include "device/u2f/u2f_discovery.h"
+#include "device/u2f/u2f_transport_protocol.h"
+
+namespace service_manager {
+class Connector;
+};
 
 namespace device {
 
 class U2fRequest : public U2fDiscovery::Observer {
  public:
-  // U2fRequest will register itself as an observer for each entry in
-  // |discoveries|. Clients need to ensure that each discovery outlives this
-  // request.
+  // U2fRequest will create a discovery instance and register itself as an
+  // observer for each passed in transport protocol.
+  // TODO(https://crbug.com/769631): Remove the dependency on Connector once U2F
+  // is servicified.
   U2fRequest(std::string relying_party_id,
-             std::vector<U2fDiscovery*> discoveries);
+             service_manager::Connector* connector,
+             const base::flat_set<U2fTransportProtocol>& protocols);
   ~U2fRequest() override;
 
   void Start();
+  // Enables the overriding of discoveries for testing. Useful for fakes such as
+  // MockU2fDiscovery.
+  // Returns a raw pointer to the added |discovery| for convenience.
+  U2fDiscovery* SetDiscoveryForTesting(std::unique_ptr<U2fDiscovery> discovery);
+
+  // Supports two different discoveries for testing. For caller's convenience we
+  // deliberately don't take a vector of discoveries. This is because such a
+  // vector could not be constructed inline, since initializer lists don't
+  // support move-only types.
+  // Returns a reference to the underlying discoveries for convenience.
+  std::vector<std::unique_ptr<U2fDiscovery>>& SetDiscoveriesForTesting(
+      std::unique_ptr<U2fDiscovery> discovery_1,
+      std::unique_ptr<U2fDiscovery> discovery_2);
+
+  // Enables the overriding of discoveries for testing. Useful for fakes such as
+  // MockU2fDiscovery.
+  void SetDiscoveriesForTesting(
+      std::vector<std::unique_ptr<U2fDiscovery>> discoveries);
 
  protected:
   enum class State {
@@ -50,12 +77,13 @@ class U2fRequest : public U2fDiscovery::Observer {
 
   State state_;
   const std::string relying_party_id_;
-  std::vector<U2fDiscovery*> discoveries_;
+  std::vector<std::unique_ptr<U2fDiscovery>> discoveries_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestIterateDevice);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestBasicMachine);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestAlreadyPresentDevice);
+  FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveries);
 
   // U2fDiscovery::Observer
   void DiscoveryStarted(U2fDiscovery* discovery, bool success) override;
