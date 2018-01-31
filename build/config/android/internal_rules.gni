@@ -1409,7 +1409,41 @@ if (enable_java_templates) {
     }
   }
 
-  # Runs process_resources.py
+  template("merge_manifests") {
+    action(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                             ])
+      script = "//build/android/gyp/merge_manifest.py"
+      depfile = "$target_gen_dir/$target_name.d"
+
+      inputs = [
+        invoker.build_config,
+        invoker.input_manifest,
+      ]
+
+      outputs = [
+        invoker.output_manifest,
+      ]
+      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--build-vars",
+        rebase_path(android_build_vars, root_build_dir),
+        "--root-manifest",
+        rebase_path(invoker.input_manifest, root_build_dir),
+        "--output",
+        rebase_path(invoker.output_manifest, root_build_dir),
+        "--extras",
+        "@FileArg($_rebased_build_config:extra_android_manifests)",
+      ]
+    }
+  }
+
   template("process_resources") {
     _process_resources_target_name = target_name
     if (defined(invoker.srcjar_path)) {

@@ -1961,31 +1961,10 @@ if (enable_java_templates) {
     _android_manifest =
         "$target_gen_dir/${_template_name}_manifest/AndroidManifest.xml"
     _merge_manifest_target = "${_template_name}__merge_manifests"
-    action(_merge_manifest_target) {
-      script = "//build/android/gyp/merge_manifest.py"
-      depfile = "$target_gen_dir/$target_name.d"
-
-      sources = [
-        _android_root_manifest,
-      ]
-
-      outputs = [
-        _android_manifest,
-      ]
-
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--build-vars",
-        rebase_path(android_build_vars, root_build_dir),
-        "--root-manifest",
-        rebase_path(_android_root_manifest, root_build_dir),
-        "--output",
-        rebase_path(_android_manifest, root_build_dir),
-        "--extras",
-        "@FileArg($_rebased_build_config:extra_android_manifests)",
-      ]
-
+    merge_manifests(_merge_manifest_target) {
+      input_manifest = _android_root_manifest
+      output_manifest = _android_manifest
+      build_config = _build_config
       deps = _android_root_manifest_deps + [ ":$_build_config_target" ]
     }
 
