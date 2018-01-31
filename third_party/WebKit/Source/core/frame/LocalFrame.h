@@ -219,7 +219,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Returns the frame scheduler, creating one if needed.
   WebFrameScheduler* FrameScheduler();
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType);
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
   void ScheduleVisualUpdateUnlessThrottled();
 
   bool IsNavigationAllowed() const { return navigation_disable_count_ == 0; }

@@ -848,7 +848,7 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
     paint_record->Playback(surface->getCanvas());
     skia_image = surface->makeImageSnapshot();
   }
-  scoped_refptr<WebTaskRunner> task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
   PostCrossThreadTask(*task_runner, FROM_HERE,
                       CrossThreadBind(&ResolvePromiseOnOriginalThread,

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "platform/WebTaskRunner.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Time.h"
 
@@ -27,7 +27,7 @@ class DOMTimerCoordinator {
   DISALLOW_NEW();
 
  public:
-  explicit DOMTimerCoordinator(scoped_refptr<WebTaskRunner>);
+  explicit DOMTimerCoordinator(scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Creates and installs a new timer. Returns the assigned ID.
   int InstallNewTimeout(ExecutionContext*,
@@ -50,7 +50,7 @@ class DOMTimerCoordinator {
   // deeper timer nesting level, see DOMTimer::DOMTimer.
   void SetTimerNestingLevel(int level) { timer_nesting_level_ = level; }
 
-  scoped_refptr<WebTaskRunner> TimerTaskRunner() const {
+  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const {
     return timer_task_runner_;
   }
 
@@ -64,7 +64,7 @@ class DOMTimerCoordinator {
 
   int circular_sequential_id_;
   int timer_nesting_level_;
-  scoped_refptr<WebTaskRunner> timer_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMTimerCoordinator);
 };

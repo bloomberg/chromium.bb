@@ -50,7 +50,7 @@ class MockLinkLoaderClient final
   void DidSendLoadForLinkPrerender() override {}
   void DidSendDOMContentLoadedForLinkPrerender() override {}
 
-  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override {
     return Platform::Current()->CurrentThread()->GetWebTaskRunner();
   }
 

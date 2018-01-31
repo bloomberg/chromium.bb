@@ -69,7 +69,7 @@ class WorkerThreadableLoader::AsyncTaskForwarder final
     : public WorkerThreadableLoader::TaskForwarder {
  public:
   explicit AsyncTaskForwarder(
-      scoped_refptr<WebTaskRunner> worker_loading_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner)
       : worker_loading_task_runner_(std::move(worker_loading_task_runner)) {
     DCHECK(IsMainThread());
   }
@@ -90,7 +90,7 @@ class WorkerThreadableLoader::AsyncTaskForwarder final
   void Abort() override { DCHECK(IsMainThread()); }
 
  private:
-  scoped_refptr<WebTaskRunner> worker_loading_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner_;
 };
 
 struct WorkerThreadableLoader::TaskWithLocation final {
@@ -236,7 +236,7 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
   event_with_tasks = WaitableEventWithTasks::Create();
 
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
-  scoped_refptr<WebTaskRunner> worker_loading_task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner =
       worker_global_scope_->GetTaskRunner(TaskType::kUnspecedLoading);
   PostCrossThreadTask(
       *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
@@ -427,7 +427,7 @@ void WorkerThreadableLoader::Trace(blink::Visitor* visitor) {
 void WorkerThreadableLoader::MainThreadLoaderHolder::CreateAndStart(
     WorkerThreadableLoader* worker_loader,
     ThreadableLoadingContext* loading_context,
-    scoped_refptr<WebTaskRunner> worker_loading_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context,
     std::unique_ptr<CrossThreadResourceRequestData> request,
     const ThreadableLoaderOptions& options,

@@ -55,7 +55,7 @@ class MojoWatcher final : public ScriptWrappable,
                             MojoWatcherNotificationFlags);
   void RunReadyCallback(MojoResult);
 
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TraceWrapperMember<V8MojoWatchCallback> callback_;
   mojo::ScopedWatcherHandle watcher_handle_;
   mojo::Handle handle_;

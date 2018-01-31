@@ -6,10 +6,10 @@
 #define ThreadedWorkletObjectProxy_h
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/workers/ThreadedObjectProxyBase.h"
 #include "core/workers/WorkerReportingProxy.h"
-#include "platform/WebTaskRunner.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -37,7 +37,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
       const KURL& module_url_record,
       WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*,
       WorkerThread*);
 

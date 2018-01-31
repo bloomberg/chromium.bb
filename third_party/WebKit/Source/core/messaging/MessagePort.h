@@ -29,13 +29,13 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebVector.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
@@ -140,7 +140,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   bool started_ = false;
   bool closed_ = false;
 
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

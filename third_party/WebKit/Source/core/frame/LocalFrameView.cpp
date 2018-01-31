@@ -650,7 +650,8 @@ FloatQuad LocalFrameView::LocalToVisibleContentQuad(
   return result;
 }
 
-scoped_refptr<WebTaskRunner> LocalFrameView::GetTimerTaskRunner() const {
+scoped_refptr<base::SingleThreadTaskRunner> LocalFrameView::GetTimerTaskRunner()
+    const {
   return frame_->GetTaskRunner(TaskType::kUnspecedTimer);
 }
 

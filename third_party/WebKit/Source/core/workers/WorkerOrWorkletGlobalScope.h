@@ -100,7 +100,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
  protected:
   void ApplyContentSecurityPolicyFromVector(

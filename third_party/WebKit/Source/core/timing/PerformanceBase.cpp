@@ -89,8 +89,9 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 static const size_t kDefaultResourceTimingBufferSize = 150;
 static const size_t kDefaultFrameTimingBufferSize = 150;
 
-PerformanceBase::PerformanceBase(TimeTicks time_origin,
-                                 scoped_refptr<WebTaskRunner> task_runner)
+PerformanceBase::PerformanceBase(
+    TimeTicks time_origin,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_timing_buffer_size_(kDefaultFrameTimingBufferSize),
       resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
       user_timing_(nullptr),

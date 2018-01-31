@@ -238,7 +238,7 @@ void FrameCaret::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
 }
 
 void FrameCaret::RecreateCaretBlinkTimerForTesting(
-    scoped_refptr<WebTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   caret_blink_timer_.reset(new TaskRunnerTimer<FrameCaret>(
       std::move(task_runner), this, &FrameCaret::CaretBlinkTimerFired));
 }

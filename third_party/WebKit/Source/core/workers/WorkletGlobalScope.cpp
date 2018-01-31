@@ -78,7 +78,7 @@ void WorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
     WorkletModuleResponsesMap* module_responses_map,
     network::mojom::FetchCredentialsMode credentials_mode,
-    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
   if (!module_responses_map_proxy_) {

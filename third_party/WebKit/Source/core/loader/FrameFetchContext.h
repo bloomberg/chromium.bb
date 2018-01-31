@@ -31,10 +31,10 @@
 #ifndef FrameFetchContext_h
 #define FrameFetchContext_h
 
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/BaseFetchContext.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -154,7 +154,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
-      scoped_refptr<WebTaskRunner>) override;
+      scoped_refptr<base::SingleThreadTaskRunner>) override;
 
   ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
       const override {
@@ -190,7 +190,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // FetchContext overrides:
   WebFrameScheduler* GetFrameScheduler() const override;
-  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
   // BaseFetchContext overrides:
   KURL GetSiteForCookies() const override;

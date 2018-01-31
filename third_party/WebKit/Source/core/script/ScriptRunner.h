@@ -28,8 +28,8 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -103,7 +103,7 @@ class CORE_EXPORT ScriptRunner final
   HeapDeque<TraceWrapperMember<ScriptLoader>> async_scripts_to_execute_soon_;
   HeapDeque<TraceWrapperMember<ScriptLoader>> in_order_scripts_to_execute_soon_;
 
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   int number_of_in_order_scripts_with_pending_notification_;
 

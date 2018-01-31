@@ -26,7 +26,7 @@ class ClientAdapter final : public GarbageCollectedFinalized<ClientAdapter>,
  public:
   static ClientAdapter* Create(
       WorkletModuleResponsesMap::Client* client,
-      scoped_refptr<WebTaskRunner> inside_settings_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner) {
     return new ClientAdapter(client, std::move(inside_settings_task_runner));
   }
 
@@ -50,21 +50,22 @@ class ClientAdapter final : public GarbageCollectedFinalized<ClientAdapter>,
   void Trace(blink::Visitor* visitor) override {}
 
  private:
-  ClientAdapter(WorkletModuleResponsesMap::Client* client,
-                scoped_refptr<WebTaskRunner> inside_settings_task_runner)
+  ClientAdapter(
+      WorkletModuleResponsesMap::Client* client,
+      scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner)
       : client_(client),
         inside_settings_task_runner_(std::move(inside_settings_task_runner)) {}
 
   CrossThreadPersistent<WorkletModuleResponsesMap::Client> client_;
-  scoped_refptr<WebTaskRunner> inside_settings_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner_;
 };
 
 }  // namespace
 
 WorkletModuleResponsesMapProxy* WorkletModuleResponsesMapProxy::Create(
     WorkletModuleResponsesMap* module_responses_map,
-    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
-    scoped_refptr<WebTaskRunner> inside_settings_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner) {
   return new WorkletModuleResponsesMapProxy(
       module_responses_map, std::move(outside_settings_task_runner),
       std::move(inside_settings_task_runner));
@@ -85,8 +86,8 @@ void WorkletModuleResponsesMapProxy::Trace(blink::Visitor* visitor) {}
 
 WorkletModuleResponsesMapProxy::WorkletModuleResponsesMapProxy(
     WorkletModuleResponsesMap* module_responses_map,
-    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
-    scoped_refptr<WebTaskRunner> inside_settings_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner)
     : module_responses_map_(module_responses_map),
       outside_settings_task_runner_(outside_settings_task_runner),
       inside_settings_task_runner_(inside_settings_task_runner) {

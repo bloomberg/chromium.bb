@@ -32,12 +32,12 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/SecurityContext.h"
 #include "platform/Supplementable.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"
@@ -205,7 +205,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
-  virtual scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      TaskType) = 0;
 
   InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
 

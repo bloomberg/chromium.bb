@@ -7,7 +7,6 @@
 
 #include "core/html/HTMLDivElement.h"
 #include "platform/Timer.h"
-#include "platform/WebTaskRunner.h"
 #include "public/platform/WebLocalizedString.h"
 
 namespace blink {

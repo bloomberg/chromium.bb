@@ -45,7 +45,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/paint/PaintLayer.h"
 #include "core/probe/CoreProbes.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/Persistent.h"

@@ -46,7 +46,8 @@ void NullExecutionContext::SetUpSecurityContext() {
   SecurityContext::SetContentSecurityPolicy(policy);
 }
 
-scoped_refptr<WebTaskRunner> NullExecutionContext::GetTaskRunner(TaskType) {
+scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(
+    TaskType) {
   return Platform::Current()->CurrentThread()->GetWebTaskRunner();
 }
 

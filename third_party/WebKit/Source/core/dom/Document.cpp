@@ -7257,7 +7257,8 @@ service_manager::InterfaceProvider* Document::GetInterfaceProvider() {
   return &GetFrame()->GetInterfaceProvider();
 }
 
-scoped_refptr<WebTaskRunner> Document::GetTaskRunner(TaskType type) {
+scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
+    TaskType type) {
   DCHECK(IsMainThread());
 
   if (ContextDocument() && ContextDocument()->GetFrame())

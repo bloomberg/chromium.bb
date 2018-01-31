@@ -7,7 +7,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Report.h"
 #include "core/frame/ReportingObserver.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/TaskType.h"
 

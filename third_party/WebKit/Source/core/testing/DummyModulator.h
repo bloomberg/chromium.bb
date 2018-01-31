@@ -5,9 +5,9 @@
 #ifndef DummyModulator_h
 #define DummyModulator_h
 
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/script/Modulator.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ class DummyModulator : public Modulator {
   void Trace(blink::Visitor*);
 
   ScriptModuleResolver* GetScriptModuleResolver() override;
-  WebTaskRunner* TaskRunner() override;
+  base::SingleThreadTaskRunner* TaskRunner() override;
   ReferrerPolicy GetReferrerPolicy() override;
   const SecurityOrigin* GetSecurityOriginForFetch() override;
   ScriptState* GetScriptState() override;

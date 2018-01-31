@@ -108,7 +108,7 @@ class BytesConsumerTestUtil {
   // commends when read.
   class ReplayingBytesConsumer final : public BytesConsumer {
    public:
-    // The ExecutionContext is needed to get a WebTaskRunner.
+    // The ExecutionContext is needed to get a base::SingleThreadTaskRunner.
     explicit ReplayingBytesConsumer(ExecutionContext*);
     ~ReplayingBytesConsumer() override;
 

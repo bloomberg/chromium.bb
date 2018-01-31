@@ -71,7 +71,7 @@ class CORE_EXPORT FilterOperations {
 
   bool HasReferenceFilter() const;
 
-  void AddClient(SVGResourceClient*, WebTaskRunner*) const;
+  void AddClient(SVGResourceClient*, base::SingleThreadTaskRunner*) const;
   void RemoveClient(SVGResourceClient*) const;
 
   void Trace(blink::Visitor*);

@@ -139,7 +139,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
   void TestTaskRunner() {
     EXPECT_TRUE(IsCurrentThread());
-    scoped_refptr<WebTaskRunner> task_runner =
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GlobalScope()->GetTaskRunner(TaskType::kInternalTest);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     PostCrossThreadTask(

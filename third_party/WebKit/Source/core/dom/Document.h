@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
@@ -66,7 +67,6 @@
 #include "core/page/PageVisibilityState.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -1408,7 +1408,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ukm::UkmRecorder* UkmRecorder();
   int64_t UkmSourceID() const;
 
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   void RecordUkmOutliveTimeAfterShutdown(int outlive_time_count);
 

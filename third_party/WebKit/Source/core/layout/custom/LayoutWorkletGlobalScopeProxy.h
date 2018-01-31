@@ -31,7 +31,7 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
       const KURL& module_url_record,
       WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) override;
   void WorkletObjectDestroyed() override;
   void TerminateWorkletGlobalScope() override;

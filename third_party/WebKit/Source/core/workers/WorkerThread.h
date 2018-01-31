@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -194,7 +195,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   }
 
   // Can be called on both the main thread and the worker thread.
-  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType type) {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
     return global_scope_scheduler_->GetTaskRunner(type);
   }
 

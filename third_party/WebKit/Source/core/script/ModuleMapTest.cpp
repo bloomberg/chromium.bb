@@ -97,7 +97,7 @@ class ModuleMapTestModulator final : public DummyModulator {
     return resolver_.Get();
   }
 
-  WebTaskRunner* TaskRunner() override {
+  base::SingleThreadTaskRunner* TaskRunner() override {
     return Platform::Current()->CurrentThread()->GetWebTaskRunner();
   };
 

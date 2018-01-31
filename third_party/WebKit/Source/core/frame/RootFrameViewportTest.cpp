@@ -73,7 +73,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
     contents_size_ = contents_size;
   }
 
-  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
     return timer_task_runner_;
   }
 
@@ -133,7 +133,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   ScrollOffset scroll_offset_;
   IntSize viewport_size_;
   IntSize contents_size_;
-  scoped_refptr<WebTaskRunner> timer_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 };
 
 class RootFrameViewStub : public ScrollableAreaStub {
