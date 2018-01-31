@@ -247,6 +247,7 @@ template("test") {
       ]
       test_name = _output_name
       exe_path = "$root_out_dir/" + get_label_info(_exec_target, "name")
+      package_name = _output_name
     }
 
     executable(_exec_target) {

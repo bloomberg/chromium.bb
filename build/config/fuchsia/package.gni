@@ -16,11 +16,10 @@ template("package") {
   }
   assert(defined(pkg.binary))
 
-  _pkg_out_dir = "$root_build_dir/package"
-  _runtime_deps_file = "$root_out_dir/gen.runtime/${pkg.package_name}/" +
-                       "${pkg.package_name}.runtime_deps"
-  _manifest_file = "$root_out_dir/gen.runtime/${pkg.package_name}/" +
-                   "${pkg.package_name}.archive_manifest"
+  _pkg_out_dir = "$root_out_dir/gen/" +
+                 get_label_info(pkg.package_name, "dir")
+  _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
+  _manifest_file = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
   _archive_file = "$_pkg_out_dir/${pkg.package_name}.far"
   _write_archive_target = "${pkg.package_name}__write_archive"
   _write_manifest_target = "${pkg.package_name}__write_manifest"

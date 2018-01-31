@@ -5,14 +5,20 @@
 """Helper functions for remotely executing and copying files over a SSH
 connection."""
 
+import logging
 import os
 import subprocess
+import sys
 
 _SSH = ['ssh']
 _SCP = ['scp']
 
 COPY_TO_TARGET = 0
 COPY_FROM_TARGET = 1
+
+
+def _IsLinkLocalIPv6(hostname):
+  return hostname.startswith('fe80::')
 
 
 def RunSsh(config_path, host, port, command, silent):
@@ -29,6 +35,7 @@ def RunSsh(config_path, host, port, command, silent):
   ssh_command = _SSH + ['-F', config_path,
                         host,
                         '-p', str(port)] + command
+  logging.debug('ssh exec: ' + ' '.join(ssh_command))
   if silent:
     devnull = open(os.devnull, 'w')
     return subprocess.call(ssh_command, stderr=devnull, stdout=devnull)
@@ -36,7 +43,7 @@ def RunSsh(config_path, host, port, command, silent):
     return subprocess.call(ssh_command)
 
 
-def RunPipedSsh(config_path, host, port, command):
+def RunPipedSsh(config_path, host, port, command, **kwargs):
   """Executes an SSH command on the remote host and returns a process object
   with access to the command's stdio streams. Does not block.
 
@@ -44,17 +51,16 @@ def RunPipedSsh(config_path, host, port, command):
   host: The hostname or IP address of the remote host.
   port: The port to connect to.
   command: A list of strings containing the command and its arguments.
-  silent: If true, suppresses all output from 'ssh'.
+  kwargs: A dictionary of parameters to be passed to subprocess.Popen().
+          The parameters can be used to override stdin and stdout, for example.
 
   Returns a Popen object for the command."""
 
   ssh_command = _SSH + ['-F', config_path,
                         host,
                         '-p', str(port)] + command
-  return subprocess.Popen(ssh_command,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          stdin=subprocess.PIPE)
+  logging.debug(' '.join(ssh_command))
+  return subprocess.Popen(ssh_command, **kwargs)
 
 
 def RunScp(config_path, host, port, source, dest, direction):
@@ -72,14 +78,18 @@ def RunScp(config_path, host, port, source, dest, direction):
 
   Function will raise an assertion if a failure occurred."""
 
+  scp_command = _SCP[:]
+  if ':' in host:
+    scp_command.append('-6')
+    host = '[' + host + ']'
+  if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+    scp_command.append('-v')
+
   if direction == COPY_TO_TARGET:
     dest = "%s:%s" % (host, dest)
   else:
     source = "%s:%s" % (host, source)
+  scp_command += ['-F', config_path, '-P', str(port), source, dest]
 
-  scp_command = _SCP + ['-F', config_path,
-                        '-P', str(port),
-                        source,
-                        dest]
-  devnull = open('/dev/null', 'w')
-  subprocess.check_call(scp_command, stdout=devnull)
+  logging.debug(' '.join(scp_command))
+  subprocess.check_call(scp_command, stdout=open(os.devnull, 'w'))

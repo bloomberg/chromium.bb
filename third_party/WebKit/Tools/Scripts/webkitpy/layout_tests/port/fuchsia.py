@@ -30,6 +30,7 @@ import logging
 import os
 import select
 import socket
+import subprocess
 import sys
 import threading
 
@@ -108,8 +109,9 @@ class SubprocessOutputLogger(object):
 class _TargetHost(object):
     def __init__(self, build_path, ports_to_forward):
         try:
+            self._target = None
             self._target = qemu_target.QemuTarget(
-                build_path, 'x64', verbose=False, ram_size_mb=8192)
+                build_path, 'x64', ram_size_mb=8192)
             self._target.Start()
             self._setup_target(build_path, ports_to_forward)
         except:
@@ -122,25 +124,33 @@ class _TargetHost(object):
         # TODO(sergeyu): Potentially this can be implemented using port
         # forwarding in SSH, but that feature is currently broken on Fuchsia,
         # see ZX-1555. Remove layout_test_proxy once that SSH bug is fixed.
-        self._target.CopyTo(
-            os.path.join(build_path, 'package/layout_test_proxy.far'), '/tmp')
+        self._target.PutFile(
+            os.path.join(
+                build_path,
+                'gen/build/fuchsia/layout_test_proxy/layout_test_proxy/layout_test_proxy.far'),
+            '/tmp')
         command = ['run', '/tmp/layout_test_proxy.far',
                    '--remote-address=' + qemu_target.HOST_IP_ADDRESS,
                    '--ports=' + ','.join([str(p) for p in ports_to_forward])]
-        self._proxy = self._target.RunCommandPiped(command)
+        self._proxy = self._target.RunCommandPiped(command,
+                                                   stdin=subprocess.PIPE,
+                                                   stdout=subprocess.PIPE)
 
         # Copy content_shell package to the device.
-        self._target.CopyTo(
-            os.path.join(build_path, 'package/content_shell.far'), '/tmp')
+        self._target.PutFile(
+            os.path.join(build_path, 'gen/content/shell/content_shell.far'), '/tmp')
 
         # Currently dynamic library loading is not implemented for packaged
         # apps. Copy libosmesa.so to /system/lib as a workaround.
-        self._target.CopyTo(
+        self._target.PutFile(
             os.path.join(build_path, 'libosmesa.so'), '/system/lib')
 
     def run_command(self, *args, **kvargs):
-        return self._target.RunCommandPiped(*args, **kvargs)
-
+        return self._target.RunCommandPiped(*args,
+                                            stdin=subprocess.PIPE,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE,
+                                            **kvargs)
     def cleanup(self):
         if self._target:
             # TODO(sergeyu): Currently __init__() always starts Qemu, so we can
@@ -179,7 +189,8 @@ class FuchsiaPort(base.Port):
         return ChromiumFuchsiaDriver
 
     def _path_to_driver(self, target=None):
-        return self._build_path_with_target(target, 'package/content_shell.far')
+        return self._build_path_with_target(target,
+                                            'gen/content/shell/content_shell.far')
 
     def __del__(self):
         if self._zircon_logger:
