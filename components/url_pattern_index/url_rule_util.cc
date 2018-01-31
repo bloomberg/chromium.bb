@@ -17,9 +17,9 @@ std::string AnchorToString(url_pattern_index::flat::AnchorType anchor_type) {
     case url_pattern_index::flat::AnchorType_NONE:
       return std::string();
     case url_pattern_index::flat::AnchorType_SUBDOMAIN:
-      return "|";
-    case url_pattern_index::flat::AnchorType_BOUNDARY:
       return "||";
+    case url_pattern_index::flat::AnchorType_BOUNDARY:
+      return "|";
   }
   NOTREACHED();
   return std::string();

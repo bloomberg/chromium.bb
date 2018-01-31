@@ -78,31 +78,50 @@ TEST_F(UrlRuleUtilTest, Whitelist) {
 
 TEST_F(UrlRuleUtilTest, LeftAnchor) {
   const flat::UrlRule* flat_rule = MakeFlatRule(
-      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("example.com/"),
+      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST,
+                    UrlPattern("example.com/", proto::ANCHOR_TYPE_NONE,
+                               proto::ANCHOR_TYPE_NONE),
                     proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
   EXPECT_EQ("example.com/", FlatUrlRuleToString(flat_rule));
 
-  flat_rule = MakeFlatRule(MakeProtoRule(
-      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("|example.com/"),
-      proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
+  flat_rule = MakeFlatRule(
+      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST,
+                    UrlPattern("example.com/", proto::ANCHOR_TYPE_BOUNDARY,
+                               proto::ANCHOR_TYPE_NONE),
+                    proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
   EXPECT_EQ("|example.com/", FlatUrlRuleToString(flat_rule));
 
-  flat_rule = MakeFlatRule(MakeProtoRule(
-      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("||example.com/"),
-      proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
+  flat_rule = MakeFlatRule(
+      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST,
+                    UrlPattern("example.com/", proto::ANCHOR_TYPE_SUBDOMAIN,
+                               proto::ANCHOR_TYPE_NONE),
+                    proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
   EXPECT_EQ("||example.com/", FlatUrlRuleToString(flat_rule));
 }
 
 TEST_F(UrlRuleUtilTest, RightAnchor) {
   const flat::UrlRule* flat_rule = MakeFlatRule(
-      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("example.com"),
+      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST,
+                    UrlPattern("example.com", proto::ANCHOR_TYPE_NONE,
+                               proto::ANCHOR_TYPE_NONE),
                     proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
   EXPECT_EQ("example.com", FlatUrlRuleToString(flat_rule));
 
-  flat_rule = MakeFlatRule(MakeProtoRule(
-      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("|example.com|"),
-      proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
-  EXPECT_EQ("|example.com|", FlatUrlRuleToString(flat_rule));
+  flat_rule = MakeFlatRule(
+      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST,
+                    UrlPattern("example.com", proto::ANCHOR_TYPE_NONE,
+                               proto::ANCHOR_TYPE_BOUNDARY),
+                    proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
+  EXPECT_EQ("example.com|", FlatUrlRuleToString(flat_rule));
+}
+
+TEST_F(UrlRuleUtilTest, BothSidesAnchored) {
+  const flat::UrlRule* flat_rule = MakeFlatRule(
+      MakeProtoRule(proto::RULE_SEMANTICS_BLACKLIST,
+                    UrlPattern("example.com", proto::ANCHOR_TYPE_SUBDOMAIN,
+                               proto::ANCHOR_TYPE_BOUNDARY),
+                    proto::SOURCE_TYPE_ANY, proto::ELEMENT_TYPE_ALL, {}));
+  EXPECT_EQ("||example.com|", FlatUrlRuleToString(flat_rule));
 }
 
 TEST_F(UrlRuleUtilTest, NonRegex) {
@@ -123,22 +142,21 @@ TEST_F(UrlRuleUtilTest, NonRegex) {
 
 TEST_F(UrlRuleUtilTest, Party) {
   const flat::UrlRule* flat_rule = MakeFlatRule(MakeProtoRule(
-      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("||example.com/"),
+      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("example.com/"),
       proto::SOURCE_TYPE_THIRD_PARTY, proto::ELEMENT_TYPE_ALL, {}));
-  EXPECT_EQ("||example.com/$third-party", FlatUrlRuleToString(flat_rule));
+  EXPECT_EQ("example.com/$third-party", FlatUrlRuleToString(flat_rule));
 
   flat_rule = MakeFlatRule(MakeProtoRule(
-      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("||example.com/"),
+      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("example.com/"),
       proto::SOURCE_TYPE_FIRST_PARTY, proto::ELEMENT_TYPE_ALL, {}));
-  EXPECT_EQ("||example.com/$~third-party", FlatUrlRuleToString(flat_rule));
+  EXPECT_EQ("example.com/$~third-party", FlatUrlRuleToString(flat_rule));
 }
 
 TEST_F(UrlRuleUtilTest, MultipleOptions) {
   const flat::UrlRule* flat_rule = MakeFlatRule(MakeProtoRule(
-      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("||example.com/"),
+      proto::RULE_SEMANTICS_BLACKLIST, UrlPattern("example.com/"),
       proto::SOURCE_TYPE_THIRD_PARTY, proto::ELEMENT_TYPE_SCRIPT, {}));
-  EXPECT_EQ("||example.com/$third-party,script",
-            FlatUrlRuleToString(flat_rule));
+  EXPECT_EQ("example.com/$third-party,script", FlatUrlRuleToString(flat_rule));
 }
 
 TEST_F(UrlRuleUtilTest, ElementType) {
