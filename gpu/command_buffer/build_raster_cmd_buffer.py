@@ -1010,6 +1010,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'DeleteTransferCacheEntryINTERNAL': {
@@ -1018,6 +1019,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'UnlockTransferCacheEntryINTERNAL': {
@@ -1026,6 +1028,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'TexStorage2DImageCHROMIUM': {
@@ -1091,9 +1094,9 @@ def main(argv):
   # gen.WriteCmdHelperHeader(
   #   "gpu/command_buffer/client/raster_cmd_helper_autogen.h")
   gen.WriteServiceImplementation(
-    "gpu/command_buffer/service/raster_cmd_decoder_autogen.h")
-  # gen.WriteServiceUnitTests(
-  #   "gpu/command_buffer/service/raster_cmd_decoder_unittest_%d_autogen.h")
+    "gpu/command_buffer/service/raster_decoder_autogen.h")
+  gen.WriteServiceUnitTests(
+    "gpu/command_buffer/service/raster_decoder_unittest_%d_autogen.h")
   # gen.WriteServiceUnitTestsForExtensions(
   #   "gpu/command_buffer/service/"
   #   "raster_cmd_decoder_unittest_extensions_autogen.h")
