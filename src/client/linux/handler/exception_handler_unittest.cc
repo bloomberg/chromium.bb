@@ -258,6 +258,7 @@ TEST(ExceptionHandlerTest, ChildCrashWithFD) {
   ASSERT_NO_FATAL_FAILURE(ChildCrash(true));
 }
 
+#if !defined(__ANDROID_API__) || __ANDROID_API__ >= __ANDROID_API_N__
 static void* SleepFunction(void* unused) {
   while (true) usleep(1000000);
   return NULL;
@@ -270,7 +271,6 @@ static void* CrashFunction(void* b_ptr) {
   return NULL;
 }
 
-#if !defined(__ANDROID_API__) || __ANDROID_API__ >= __ANDROID_API_N__
 // Tests that concurrent crashes do not enter a loop by alternately triggering
 // the signal handler.
 TEST(ExceptionHandlerTest, ParallelChildCrashesDontHang) {
@@ -316,7 +316,7 @@ TEST(ExceptionHandlerTest, ParallelChildCrashesDontHang) {
   // SIGKILL.
   ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGSEGV));
 }
-#endif
+#endif  // !defined(__ANDROID_API__) || __ANDROID_API__ >= __ANDROID_API_N__
 
 static bool DoneCallbackReturnFalse(const MinidumpDescriptor& descriptor,
                                     void* context,
