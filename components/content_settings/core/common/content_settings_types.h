@@ -100,6 +100,10 @@ enum ContentSettingsType {
   // such doesn't have associated prefs data.
   CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE,
 
+  // Used to store whether the user has ever changed the Flash permission for
+  // a site.
+  CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

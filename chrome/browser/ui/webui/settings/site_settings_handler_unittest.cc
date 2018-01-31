@@ -31,11 +31,16 @@
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
+#include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #endif
 
 namespace {
@@ -45,7 +50,41 @@ constexpr char kSetting[] = "setting";
 constexpr char kSource[] = "source";
 constexpr char kExtensionName[] = "Test Extension";
 
-}
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Waits until a change is observed in content settings.
+class FlashContentSettingsChangeWaiter : public content_settings::Observer {
+ public:
+  explicit FlashContentSettingsChangeWaiter(Profile* profile)
+      : profile_(profile) {
+    HostContentSettingsMapFactory::GetForProfile(profile)->AddObserver(this);
+  }
+  ~FlashContentSettingsChangeWaiter() override {
+    HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(
+        this);
+  }
+
+  // content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override {
+    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+      Proceed();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  void Proceed() { run_loop_.Quit(); }
+
+  Profile* profile_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlashContentSettingsChangeWaiter);
+};
+#endif
+
+}  // namespace
 
 namespace settings {
 
@@ -90,6 +129,8 @@ class SiteSettingsHandlerTest : public testing::Test {
             CONTENT_SETTINGS_TYPE_NOTIFICATIONS)),
         kCookies(site_settings::ContentSettingsTypeToGroupName(
             CONTENT_SETTINGS_TYPE_COOKIES)),
+        kFlash(site_settings::ContentSettingsTypeToGroupName(
+            CONTENT_SETTINGS_TYPE_PLUGINS)),
         handler_(&profile_) {
 #if defined(OS_CHROMEOS)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -277,6 +318,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   // Content setting group name for the relevant ContentSettingsType.
   const std::string kNotifications;
   const std::string kCookies;
+  const std::string kFlash;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -475,6 +517,56 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
                  CONTENT_SETTING_ASK,
                  site_settings::SiteSettingSource::kDefault, 4U);
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
+  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
+      profile(), profile()->GetResourceContext());
+  FlashContentSettingsChangeWaiter waiter(profile());
+
+  const std::string origin_with_port("https://www.example.com:443");
+  // The display name won't show the port if it's default for that scheme.
+  const std::string origin("https://www.example.com");
+  base::ListValue get_args;
+  get_args.AppendString(kCallbackId);
+  get_args.AppendString(origin_with_port);
+  const GURL url(origin_with_port);
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  // Make sure the site being tested doesn't already have this marker set.
+  EXPECT_EQ(nullptr,
+            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                   std::string(), nullptr));
+
+  // Change the Flash setting.
+  base::ListValue set_args;
+  set_args.AppendString(origin_with_port);
+  {
+    auto category_list = std::make_unique<base::ListValue>();
+    category_list->AppendString(kFlash);
+    set_args.Append(std::move(category_list));
+  }
+  set_args.AppendString(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleSetOriginPermissions(&set_args);
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+  waiter.Wait();
+
+  // Check that this site has now been marked for displaying Flash always, then
+  // clear it and check this works.
+  EXPECT_NE(nullptr,
+            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                   std::string(), nullptr));
+  base::ListValue clear_args;
+  clear_args.AppendString(origin_with_port);
+  handler()->HandleSetOriginPermissions(&set_args);
+  handler()->HandleClearFlashPref(&clear_args);
+  EXPECT_EQ(nullptr,
+            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                   std::string(), nullptr));
+}
+#endif
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetForInvalidURLs) {
   const std::string origin("arbitrary string");

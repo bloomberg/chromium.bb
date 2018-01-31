@@ -223,6 +223,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = std::move(default_provider);
 
+  InitializePluginsDataSettings();
   RecordExceptionMetrics();
 }
 
@@ -531,6 +532,10 @@ void HostContentSettingsMap::SetContentSettingDefaultScope(
 
 base::WeakPtr<HostContentSettingsMap> HostContentSettingsMap::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void HostContentSettingsMap::SetClockForTesting(base::Clock* clock) {
+  pref_provider_->SetClockForTesting(clock);
 }
 
 void HostContentSettingsMap::RecordExceptionMetrics() {
@@ -849,6 +854,32 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
   return std::unique_ptr<base::Value>();
 }
 
-void HostContentSettingsMap::SetClockForTesting(base::Clock* clock) {
-  pref_provider_->SetClockForTesting(clock);
+void HostContentSettingsMap::InitializePluginsDataSettings() {
+  if (!content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
+          CONTENT_SETTINGS_TYPE_PLUGINS_DATA)) {
+    return;
+  }
+  ContentSettingsForOneType host_settings;
+  GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS_DATA, std::string(),
+                        &host_settings);
+  if (host_settings.empty()) {
+    GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+                          &host_settings);
+    for (ContentSettingPatternSource pattern : host_settings) {
+      if (pattern.source != "preference")
+        continue;
+      const GURL primary(pattern.primary_pattern.ToString());
+      if (!primary.is_valid())
+        continue;
+      DCHECK_EQ(ContentSettingsPattern::Relation::IDENTITY,
+                ContentSettingsPattern::Wildcard().Compare(
+                    pattern.secondary_pattern));
+      auto dict = std::make_unique<base::DictionaryValue>();
+      constexpr char kFlagKey[] = "flashPreviouslyChanged";
+      dict->SetKey(kFlagKey, base::Value(true));
+      SetWebsiteSettingDefaultScope(primary, primary,
+                                    CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                    std::string(), std::move(dict));
+    }
+  }
 }

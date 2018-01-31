@@ -121,6 +121,20 @@ ContentSetting PluginUtils::GetFlashPluginContentSetting(
 }
 
 // static
+void PluginUtils::RememberFlashChangedForSite(
+    HostContentSettingsMap* host_content_settings_map,
+    const GURL& top_level_url) {
+  // A |base::DictionaryValue| is set here but for now, clients only check this
+  // is a non-nullptr value.
+  auto dict = std::make_unique<base::DictionaryValue>();
+  constexpr char kFlagKey[] = "flashPreviouslyChanged";
+  dict->SetKey(kFlagKey, base::Value(true));
+  host_content_settings_map->SetWebsiteSettingDefaultScope(
+      top_level_url, top_level_url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+      std::string(), std::move(dict));
+}
+
+// static
 bool PluginUtils::ShouldPreferHtmlOverPlugins(
     const HostContentSettingsMap* host_content_settings_map) {
   return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
