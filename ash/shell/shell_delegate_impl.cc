@@ -8,7 +8,6 @@
 
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/default_wallpaper_delegate.h"
-#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -20,8 +19,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/keyboard/keyboard_test_util.h"
+#include "ui/keyboard/keyboard_ui.h"
 
 namespace ash {
 namespace shell {
@@ -51,7 +53,8 @@ void ShellDelegateImpl::PreInit() {}
 void ShellDelegateImpl::PreShutdown() {}
 
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
-  return std::make_unique<TestKeyboardUI>();
+  return std::make_unique<keyboard::TestKeyboardUI>(
+      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod());
 }
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
