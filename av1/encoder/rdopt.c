@@ -4810,7 +4810,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                RD_STATS *rd_stats, BLOCK_SIZE bsize, int mi_row,
                                int mi_col, int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
-  const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int64_t rd = INT64_MAX;
@@ -4896,13 +4895,15 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
           continue;
       }
     }
-#endif  // CONFIG_TXK_SEL
+
+    const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
     if (is_inter && x->use_default_inter_tx_type &&
         tx_type != get_default_tx_type(0, xd, max_tx_size))
       continue;
 
     if (xd->lossless[mbmi->segment_id])
       if (tx_type != DCT_DCT) continue;
+#endif  // CONFIG_TXK_SEL
 
     rd = select_tx_size_fix_type(cpi, x, &this_rd_stats, bsize, mi_row, mi_col,
                                  ref_best_rd, tx_type,
@@ -10407,6 +10408,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         memcpy(ctx->blk_skip[i], x->blk_skip[i],
                sizeof(uint8_t) * ctx->num_4x4_blk);
       best_mbmode.min_tx_size = mbmi->min_tx_size;
+#if CONFIG_TXK_SEL
+      av1_copy(best_mbmode.txk_type, mbmi->txk_type);
+#endif
       rd_cost->rate +=
           (rd_stats_y.rate + rd_stats_uv.rate - best_rate_y - best_rate_uv);
       rd_cost->dist = rd_stats_y.dist + rd_stats_uv.dist;
