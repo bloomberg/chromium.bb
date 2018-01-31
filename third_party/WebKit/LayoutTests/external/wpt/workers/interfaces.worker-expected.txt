@@ -122,10 +122,10 @@ PASS WorkerNavigator interface: self.navigator must inherit property "appName" w
 PASS WorkerNavigator interface: self.navigator must inherit property "appVersion" with the proper type
 PASS WorkerNavigator interface: self.navigator must inherit property "platform" with the proper type
 PASS WorkerNavigator interface: self.navigator must inherit property "product" with the proper type
-PASS WorkerNavigatorinterface: self.navigatormust not have property "productSub"
+PASS WorkerNavigator interface: self.navigator must not have property "productSub"
 PASS WorkerNavigator interface: self.navigator must inherit property "userAgent" with the proper type
-PASS WorkerNavigatorinterface: self.navigatormust not have property "vendor"
-PASS WorkerNavigatorinterface: self.navigatormust not have property "vendorSub"
+PASS WorkerNavigator interface: self.navigator must not have property "vendor"
+PASS WorkerNavigator interface: self.navigator must not have property "vendorSub"
 FAIL WorkerNavigator interface: self.navigator must inherit property "language" with the proper type assert_inherits: property "language" not found in prototype chain
 FAIL WorkerNavigator interface: self.navigator must inherit property "languages" with the proper type assert_inherits: property "languages" not found in prototype chain
 PASS WorkerNavigator interface: self.navigator must inherit property "onLine" with the proper type
