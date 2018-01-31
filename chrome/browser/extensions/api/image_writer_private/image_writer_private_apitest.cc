@@ -69,7 +69,6 @@ class ImageWriterPrivateApiTest : public ExtensionApiTest {
 
 
  protected:
-  base::MessageLoopForUI message_loop_;
   image_writer::ImageWriterTestUtils test_utils_;
 };
 

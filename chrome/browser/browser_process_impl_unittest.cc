@@ -102,6 +102,7 @@ class BrowserProcessImplTest : public ::testing::Test {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(BrowserProcessImplTest, LifeCycle) {
   // Setup the BrowserProcessImpl and the threads.
+  browser_process_impl()->Init();
   browser_process_impl()->PreCreateThreads(*command_line());
   StartSecondaryThreads();
   browser_process_impl()->PreMainMessageLoopRun();
