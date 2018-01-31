@@ -49,6 +49,7 @@ typedef struct TxbInfo {
   TXB_CTX *txb_ctx;
   int64_t rdmult;
   const LV_MAP_CTX_TABLE *coeff_ctx_table;
+  const qm_val_t *iqmatrix;
 } TxbInfo;
 
 typedef struct TxbCache {

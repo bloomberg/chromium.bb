@@ -49,6 +49,21 @@ static INLINE int rec_eob_pos(const int eob_token, const int extra) {
   return eob;
 }
 
+#if !CONFIG_NEW_QUANT
+static INLINE int get_dqv(const int16_t *dequant, int coeff_idx,
+                          const qm_val_t *iqmatrix) {
+  int dqv = dequant[!!coeff_idx];
+#if CONFIG_AOM_QM
+  if (iqmatrix != NULL)
+    dqv =
+        ((iqmatrix[coeff_idx] * dqv) + (1 << (AOM_QM_BITS - 1))) >> AOM_QM_BITS;
+#else
+  (void)iqmatrix;
+#endif
+  return dqv;
+}
+#endif
+
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *const r, const int blk_row,
                             const int blk_col, const int plane,
@@ -115,6 +130,16 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
+#if CONFIG_AOM_QM
+  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
+  const qm_val_t *iqmatrix =
+      IS_2D_TRANSFORM(tx_type)
+          ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
+          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+#else
+  const qm_val_t *iqmatrix = NULL;
+#endif
+  (void)iqmatrix;
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
   int dummy;
@@ -229,7 +254,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         v = av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val, nq_shift);
 #endif  // CONFIG_AOM_QM
 #else
-        v = level * dequant[!!c];
+        v = level * get_dqv(dequant, scan[c], iqmatrix);
         v = v >> shift;
 #endif  // CONFIG_NEW_QUANT
         tcoeffs[pos] = v;
@@ -288,7 +313,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, nq_shift);
 #endif  // CONFIG_AOM_QM
 #else
-        t = *level * dequant[!!pos];
+        t = *level * get_dqv(dequant, pos, iqmatrix);
         t = t >> shift;
 #endif  // CONFIG_NEW_QUANT
         if (signs[pos]) t = -t;
@@ -309,7 +334,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dqv_val, nq_shift);
 #endif  // CONFIG_AOM_QM
 #else
-      t = t * dequant[!!pos];
+      t = t * get_dqv(dequant, pos, iqmatrix);
       t = t >> shift;
 #endif  // CONFIG_NEW_QUANT
       if (signs[pos]) t = -t;
