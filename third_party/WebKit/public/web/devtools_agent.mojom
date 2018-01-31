@@ -4,25 +4,16 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/big_string.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// Used to send large messages in chunks from session to a host.
-struct DevToolsMessageChunk {
-  // Whether this is a first chunk in a message.
-  bool is_first;
-
-  // Whether this is a last chunk in a message.
-  bool is_last;
-
-  // Chunk data.
-  string data;
-
-  // Call id as defined in DevTools protocol, only comes for responses.
-  int32 call_id;
-
-  // State for future reattach, only comes for responses in a last chunk.
-  string post_state;
-};
+// Debugging interactions are defined in Remote Debugging Protocol.
+// See https://chromedevtools.github.io/devtools-protocol/ for more
+// information on the protocol itself.
+//
+// All interfaces defined here serve as a transport level for the
+// remote debugging protocol, passing messages opaquely between debugging
+// client (like DevTools frontend) and debugging agent (like core/inspector).
 
 // Implemented by debugging targets which expose remote debugging protocol.
 // Examples are local frame roots and service workers.
@@ -48,7 +39,7 @@ interface DevToolsAgent {
   // regular |session|.
   //
   // If |reattach_state| is present, restores the state of the session to
-  // previously saved one (see DevToolsMessageChunk). This is useful when
+  // previously saved one (see DevToolsSessionHost). This is useful when
   // transferring a session from one agent to another while preserving the
   // state. For example, cross-process navigation in a frame creates a new
   // DevToolsAgent (in a different process), but we can preserve the state of
@@ -89,7 +80,7 @@ interface DevToolsSession {
   // Dispatches protocol message from a client to a debugging target.
   // |method| is a method name as defined in protocol (e.g. "Runtime.evaluate").
   // |call_id| is a command id as defined in protocol, and is going to be
-  // reported back to host in a response message (see DevToolsMessageChunk).
+  // reported back to host in a response message (see DevToolsSessionHost).
   DispatchProtocolMessage(int32 call_id, string method, string message);
 };
 
@@ -97,6 +88,12 @@ interface DevToolsSession {
 // which receives notifications and responses from a session.
 // This interface is implemented in browser.
 interface DevToolsSessionHost {
-  // Dispatches protocol message (in chunks) to a remote debugging client.
-  DispatchProtocolMessage(DevToolsMessageChunk chunk);
+  // Dispatches protocol message to a remote debugging client.
+  // |call_id| is a command id as defined in protocol, only used
+  // for command responses (as opposite to protocol events).
+  // |state| is a state for future reattach (see DevToolsAgent),
+  // only comes in response to a command.
+  DispatchProtocolMessage(mojo_base.mojom.BigString message,
+                          int32 call_id,
+                          string? state);
 };
