@@ -327,8 +327,11 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
 
   if (simple_cache_mode_) {
     net::TestCompletionCallback cb;
+    // We limit ourselves to 64 fds since OS X by default gives us 256.
+    // (Chrome raises the number on startup, but the test fixture doesn't).
     if (!simple_file_tracker_)
-      simple_file_tracker_ = std::make_unique<disk_cache::SimpleFileTracker>();
+      simple_file_tracker_ =
+          std::make_unique<disk_cache::SimpleFileTracker>(64);
     std::unique_ptr<disk_cache::SimpleBackendImpl> simple_backend =
         std::make_unique<disk_cache::SimpleBackendImpl>(
             cache_path_, /* cleanup_tracker = */ nullptr,

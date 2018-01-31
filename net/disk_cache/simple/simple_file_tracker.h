@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <algorithm>
+#include <list>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -84,14 +85,16 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
     uint64_t doom_generation;
   };
 
-  SimpleFileTracker();
+  // The default limit here is half of what's available on our target OS where
+  // Chrome has the lowest limit.
+  SimpleFileTracker(int file_limit = 512);
   ~SimpleFileTracker();
 
   // Established |file| as what's backing |subfile| for |owner|. This is
   // intended to be called when SimpleSynchronousEntry first sets up the file to
   // transfer its ownership to SimpleFileTracker. Any Register() call must be
   // eventually followed by a corresponding Close() call before the |owner| is
-  // destroyed.
+  // destroyed. |file->IsValid()| must be true.
   void Register(const SimpleSynchronousEntry* owner,
                 SubFile subfile,
                 std::unique_ptr<base::File> file);
@@ -139,11 +142,16 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
       TF_ACQUIRED_PENDING_CLOSE = 3,
     };
 
-    TrackedFiles() {
-      std::fill(state, state + kSimpleEntryTotalFileCount, TF_NO_REGISTRATION);
-    }
+    NET_EXPORT_PRIVATE TrackedFiles();
+    NET_EXPORT_PRIVATE ~TrackedFiles();
 
+    // True if this isn't keeping track of anything any more.
     bool Empty() const;
+
+    // True if this has open files. Note that this is not the same as !Empty()
+    // as this may be false when an entry had its files temporarily closed, but
+    // is still relevant.
+    bool HasOpenFiles() const;
 
     // We use pointers to SimpleSynchronousEntry two ways:
     // 1) As opaque keys. This is handy as it avoids having to compare paths in
@@ -156,30 +164,61 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
     const SimpleSynchronousEntry* owner;
     EntryFileKey key;
 
-    // Some of these may be !IsValid(), if they are not open.
+    // Some of these may be nullptr, if they are not open. Non-null pointers
+    // to files that are not valid will not be stored here.
     // Note that these are stored indirect since we hand out pointers to these,
     // and we don't want those to become invalid if some other thread appends
     // things here.
     std::unique_ptr<base::File> files[kSimpleEntryTotalFileCount];
 
     State state[kSimpleEntryTotalFileCount];
+    std::list<TrackedFiles*>::iterator position_in_lru;
+
+    // true if position_in_lru is valid. For entries where we closed everything,
+    // we try not to keep them in the LRU so that we don't have to constantly
+    // rescan them.
+    bool in_lru;
   };
 
   // Marks the file that was previously returned by Acquire as eligible for
   // closing again. Called by ~FileHandle.
   void Release(const SimpleSynchronousEntry* owner, SubFile subfile);
 
-  // |*found| will be set to whether the entry was found or not.
-  std::vector<TrackedFiles>::iterator Find(const SimpleSynchronousEntry* owner);
+  // Precondition: entry for given |owner| must already be in tracked_files_
+  TrackedFiles* Find(const SimpleSynchronousEntry* owner);
 
   // Handles state transition of closing file (when we are not deferring it),
-  // and moves the file out. Note that this may invalidate |owners_files|.
-  std::unique_ptr<base::File> PrepareClose(
-      std::vector<TrackedFiles>::iterator owners_files,
-      int file_index);
+  // and moves the file out. Note that this may delete |*owners_files|.
+  std::unique_ptr<base::File> PrepareClose(TrackedFiles* owners_files,
+                                           int file_index);
+
+  // If too many files are open, picks some to close, and moves them to
+  // |*files_to_close|, updating other state as appropriate.
+  void CloseFilesIfTooManyOpen(
+      std::vector<std::unique_ptr<base::File>>* files_to_close);
+
+  // Tries to reopen given file, updating |*owners_files| if successful.
+  void ReopenFile(TrackedFiles* owners_files, SubFile subfile);
+
+  // Makes sure the entry is marked as most recently used, adding it to LRU
+  // if needed.
+  void EnsureInFrontOfLRU(TrackedFiles* owners_files);
 
   base::Lock lock_;
-  std::unordered_map<uint64_t, std::vector<TrackedFiles>> tracked_files_;
+  std::unordered_map<uint64_t, std::vector<std::unique_ptr<TrackedFiles>>>
+      tracked_files_;
+  std::list<TrackedFiles*> lru_;
+
+  int file_limit_;
+
+  // How many actually open files we are using.
+  // Note that when a thread commits to closing a file, but hasn't actually
+  // executed the close yet, the file is no longer counted as open here, so this
+  // might be a little off. This should be OK as long as file_limit_ is set
+  // conservatively, considering SimpleCache's parallelism is bounded by a low
+  // number of threads, and getting it exact would require re-acquiring the
+  // lock after closing the file.
+  int open_files_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFileTracker);
 };

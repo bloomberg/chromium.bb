@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -38,6 +39,7 @@
 #include "net/disk_cache/memory/mem_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_histogram_enums.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_test_util.h"
@@ -1041,22 +1043,24 @@ void DiskCacheBackendTest::BackendLoad() {
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
 
-  disk_cache::Entry* entries[100];
-  for (int i = 0; i < 100; i++) {
+  const int kNumEntries = 512;
+
+  disk_cache::Entry* entries[kNumEntries];
+  for (int i = 0; i < kNumEntries; i++) {
     std::string key = GenerateKey(true);
     ASSERT_THAT(CreateEntry(key, &entries[i]), IsOk());
   }
-  EXPECT_EQ(100, cache_->GetEntryCount());
+  EXPECT_EQ(kNumEntries, cache_->GetEntryCount());
 
-  for (int i = 0; i < 100; i++) {
-    int source1 = rand() % 100;
-    int source2 = rand() % 100;
+  for (int i = 0; i < kNumEntries; i++) {
+    int source1 = rand() % kNumEntries;
+    int source2 = rand() % kNumEntries;
     disk_cache::Entry* temp = entries[source1];
     entries[source1] = entries[source2];
     entries[source2] = temp;
   }
 
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < kNumEntries; i++) {
     disk_cache::Entry* entry;
     ASSERT_THAT(OpenEntry(entries[i]->GetKey(), &entry), IsOk());
     EXPECT_TRUE(entry == entries[i]);
@@ -3784,21 +3788,13 @@ TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheKeying) {
   BackendKeying();
 }
 
-// MacOS has a default open file limit of 256 files, which is incompatible with
-// this simple cache test.
-#if defined(OS_MACOSX)
-#define SIMPLE_MAYBE_MACOS(TestName) DISABLED_ ## TestName
-#else
-#define SIMPLE_MAYBE_MACOS(TestName) TestName
-#endif
-
-TEST_F(DiskCacheBackendTest, SIMPLE_MAYBE_MACOS(SimpleCacheLoad)) {
+TEST_F(DiskCacheBackendTest, SimpleCacheLoad) {
   SetMaxSize(0x100000);
   SetSimpleCacheMode();
   BackendLoad();
 }
 
-TEST_F(DiskCacheBackendTest, SIMPLE_MAYBE_MACOS(SimpleCacheAppCacheLoad)) {
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheLoad) {
   SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
   SetMaxSize(0x100000);
@@ -4214,4 +4210,105 @@ TEST_F(DiskCacheBackendTest, SimpleLastModified) {
   // This shouldn't pick up entry2's write time incorrectly.
   EXPECT_LE(reopen_entry1->GetLastModified(), entry1_timestamp);
   reopen_entry1->Close();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
+  base::HistogramTester histogram_tester;
+  SetSimpleCacheMode();
+  // Make things blocking so CreateEntry actually waits for file to be
+  // created.
+  SetCacheType(net::APP_CACHE);
+  InitCache();
+  const int kNumEntries = 512;
+
+  disk_cache::Entry* entries[kNumEntries];
+  std::string keys[kNumEntries];
+  for (int i = 0; i < kNumEntries; ++i) {
+    keys[i] = GenerateKey(true);
+    ASSERT_THAT(CreateEntry(keys[i], &entries[i]), IsOk());
+  }
+
+  // Note the fixture sets the file limit to 64.
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_CLOSE_FILE, 512 - 64);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_REOPEN_FILE, 0);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
+
+  const int kSize = 25000;
+  scoped_refptr<net::IOBuffer> buf1(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buf1->data(), kSize, false);
+
+  scoped_refptr<net::IOBuffer> buf2(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buf2->data(), kSize, false);
+
+  // Doom an entry and create a new one with same name, to test that both
+  // re-open properly.
+  EXPECT_EQ(net::OK, DoomEntry(keys[0]));
+  disk_cache::Entry* alt_entry;
+  ASSERT_THAT(CreateEntry(keys[0], &alt_entry), IsOk());
+
+  // One more file closure here to accomodate for alt_entry.
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_CLOSE_FILE,
+                                     512 - 64 + 1);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_REOPEN_FILE, 0);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
+
+  // Do some writes in [1...511] range, both testing bring those in and kicking
+  // out [0] and [alt_entry]. These have to be to stream != 0 to actually need
+  // files.
+  for (int i = 1; i < kNumEntries; ++i) {
+    EXPECT_EQ(kSize, WriteData(entries[i], 1, 0, buf1.get(), kSize, true));
+    scoped_refptr<net::IOBuffer> read_buf(new net::IOBuffer(kSize));
+    ASSERT_EQ(kSize, ReadData(entries[i], 1, 0, read_buf.get(), kSize));
+    EXPECT_EQ(0, memcmp(read_buf->data(), buf1->data(), kSize));
+  }
+
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_CLOSE_FILE,
+                                     512 - 64 + 1 + 511);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_REOPEN_FILE, 511);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
+  EXPECT_EQ(kSize, WriteData(entries[0], 1, 0, buf1.get(), kSize, true));
+  EXPECT_EQ(kSize, WriteData(alt_entry, 1, 0, buf2.get(), kSize, true));
+
+  scoped_refptr<net::IOBuffer> read_buf(new net::IOBuffer(kSize));
+  ASSERT_EQ(kSize, ReadData(entries[0], 1, 0, read_buf.get(), kSize));
+  EXPECT_EQ(0, memcmp(read_buf->data(), buf1->data(), kSize));
+
+  scoped_refptr<net::IOBuffer> read_buf2(new net::IOBuffer(kSize));
+  ASSERT_EQ(kSize, ReadData(alt_entry, 1, 0, read_buf2.get(), kSize));
+  EXPECT_EQ(0, memcmp(read_buf2->data(), buf2->data(), kSize));
+
+  // Two more things than last time --- entries[0] and |alt_entry|
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_CLOSE_FILE,
+                                     512 - 64 + 1 + 511 + 2);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_REOPEN_FILE, 513);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
+
+  for (int i = 0; i < kNumEntries; ++i) {
+    entries[i]->Close();
+  }
+  alt_entry->Close();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+
+  // Closes have to pull things in to write out the footer, but they also
+  // free up FDs, so we will only need to kick one more thing out.
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_CLOSE_FILE,
+                                     512 - 64 + 1 + 511 + 2 + 1);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_REOPEN_FILE,
+                                     512 - 64 + 1 + 511 + 2 + 1);
+  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
+                                     disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 }

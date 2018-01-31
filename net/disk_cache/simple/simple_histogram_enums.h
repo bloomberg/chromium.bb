@@ -71,6 +71,14 @@ enum class KeySHA256Result {
   MAX = 3
 };
 
+// Used in histograms, please only add entries at the end.
+enum FileDescriptorLimiterOp {
+  FD_LIMIT_CLOSE_FILE = 0,
+  FD_LIMIT_REOPEN_FILE = 1,
+  FD_LIMIT_FAIL_REOPEN_FILE = 2,
+  FD_LIMIT_OP_MAX = 3
+};
+
 }  // namespace disk_cache
 
 #endif  // NET_DISK_CACHE_SIMPLE_SIMPLE_HISTOGRAM_ENUMS_H_

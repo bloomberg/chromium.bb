@@ -82535,6 +82535,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
+<histogram name="SimpleCache.FileDescriptorLimiterAction"
+    enum="SimpleCache.FileDescriptorLimiterOp">
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    This even is emitted when SimpleCache is forced to either close some files
+    due to being over FD limit, or reopen files it had to close due to such
+    limit earlier.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.FileDescriptorLimitHard" units="file descriptors">
   <owner>morlovich@chromium.org</owner>
   <summary>
