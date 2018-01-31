@@ -1072,6 +1072,15 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_EXPORT_PASSWORDS_ALERT_MESSAGE" desc="The message of the alert displayed as a warning to the user who tapped on the button to export passwords. [iOS only]">
         Your passwords will be visible to anyone who can see the exported file.
       </message>
+      <message name="IDS_IOS_EXPORT_PASSWORDS_FAILED_ALERT_TITLE" desc="Title of the alert informing the user that exporting passwords has failed. [iOS only]">
+        Can't Export Passwords
+      </message>
+      <message name="IDS_IOS_EXPORT_PASSWORDS_UNKNOWN_ERROR_ALERT_MESSAGE" desc="The message of the alert informing the user that an error has occured while exporting passwords. [iOS only]">
+        An error occured. Try again later.
+      </message>
+      <message name="IDS_IOS_EXPORT_PASSWORDS_OUT_OF_SPACE_ALERT_MESSAGE" desc="The message of an error alert displayed while trying to export passwords. If informs the user that their device storage is almost full and instructing them to free space. [iOS only]">
+        Your device is almost full. Free up space and try again.
+      </message>
       <message name="IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON" desc="Label of a confirmation dialog button which allows the user to cancel passwords export. [Length: 22em] [iOS only]">
         Cancel
       </message>

@@ -43,6 +43,8 @@
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -70,6 +72,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeBlacklisted,    // This is a repeated item type.
   ItemTypeExportPasswordsButton,
 };
+
+std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_copy;
+  for (const auto& form : password_list) {
+    password_list_copy.push_back(
+        std::make_unique<autofill::PasswordForm>(*form));
+  }
+  return password_list_copy;
+}
 
 }  // namespace
 
@@ -168,6 +180,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
 @implementation SavePasswordsCollectionViewController
 
+// Private synthesized properties
 @synthesize passwordExporter = passwordExporter_;
 
 #pragma mark - Initialization
@@ -184,7 +197,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     passwordExporter_ = [[PasswordExporter alloc]
         initWithReauthenticationModule:reauthenticationModule_
                               delegate:self];
-
     self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
@@ -484,6 +496,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 }
 
 - (void)startPasswordsExportFlow {
+  // TODO(crbug.com/789122): Consider disabling the button while another export
+  // operation is in progress.
+  if (self.passwordExporter.isExporting)
+    return;
   UIAlertController* exportConfirmation = [UIAlertController
       alertControllerWithTitle:nil
                        message:l10n_util::GetNSString(
@@ -505,7 +521,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
                 if (!strongSelf) {
                   return;
                 }
-                [strongSelf.passwordExporter startExportFlow];
+                [strongSelf.passwordExporter
+                    startExportFlow:CopyOf(strongSelf->savedForms_)];
               }];
   [exportConfirmation addAction:exportAction];
 
@@ -758,6 +775,62 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
+- (void)showExportErrorAlertWithLocalizedReason:(NSString*)localizedReason {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_EXPORT_PASSWORDS_FAILED_ALERT_TITLE)
+                       message:localizedReason
+                preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* okAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                               style:UIAlertActionStyleDefault
+                             handler:nil];
+  [alertController addAction:okAction];
+  [self presentViewController:alertController animated:YES completion:nil];
+}
+
+- (void)showActivityViewWithActivityItems:(NSArray*)activityItems
+                        completionHandler:(void (^)(NSString* activityType,
+                                                    BOOL completed,
+                                                    NSArray* returnedItems,
+                                                    NSError* activityError))
+                                              completionHandler {
+  UIActivityViewController* activityViewController =
+      [[UIActivityViewController alloc] initWithActivityItems:activityItems
+                                        applicationActivities:nil];
+  NSArray* excludedActivityTypes = @[
+    UIActivityTypeAddToReadingList, UIActivityTypeAirDrop,
+    UIActivityTypeCopyToPasteboard, UIActivityTypeOpenInIBooks,
+    UIActivityTypePostToFacebook, UIActivityTypePostToFlickr,
+    UIActivityTypePostToTencentWeibo, UIActivityTypePostToTwitter,
+    UIActivityTypePostToVimeo, UIActivityTypePostToWeibo, UIActivityTypePrint
+  ];
+  [activityViewController setExcludedActivityTypes:excludedActivityTypes];
+
+  [activityViewController setCompletionWithItemsHandler:completionHandler];
+
+  UIView* sourceView = nil;
+  CGRect sourceRect = CGRectZero;
+  if (IsIPadIdiom() && !IsCompact()) {
+    NSIndexPath* indexPath = [self.collectionViewModel
+        indexPathForItemType:ItemTypeExportPasswordsButton
+           sectionIdentifier:SectionIdentifierExportPasswordsButton];
+    UICollectionViewCell* cell =
+        [self.collectionView cellForItemAtIndexPath:indexPath];
+    sourceView = self.collectionView;
+    sourceRect = cell.frame;
+  }
+  activityViewController.modalPresentationStyle = UIModalPresentationPopover;
+  activityViewController.popoverPresentationController.sourceView = sourceView;
+  activityViewController.popoverPresentationController.sourceRect = sourceRect;
+  activityViewController.popoverPresentationController
+      .permittedArrowDirections =
+      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionDown;
+  [self presentViewController:activityViewController
+                     animated:YES
+                   completion:nil];
+}
+
 #pragma mark Helper methods
 
 // Sets the save passwords switch item's enabled status to |enabled| and
@@ -777,6 +850,19 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           [model itemAtIndexPath:switchPath]);
   [switchItem setEnabled:enabled];
   [self reconfigureCellsForItems:@[ switchItem ]];
+}
+
+#pragma mark - Testing
+
+- (void)setReauthenticationModuleForExporter:
+    (id<ReauthenticationProtocol>)reauthenticationModule {
+  passwordExporter_ = [[PasswordExporter alloc]
+      initWithReauthenticationModule:reauthenticationModule
+                            delegate:self];
+}
+
+- (PasswordExporter*)getPasswordExporter {
+  return passwordExporter_;
 }
 
 @end
