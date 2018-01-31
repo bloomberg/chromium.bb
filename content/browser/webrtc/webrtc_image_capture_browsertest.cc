@@ -168,18 +168,6 @@ class WebRtcImageCaptureSucceedsBrowserTest
 #endif
   }
 
-  bool RunImageCaptureTestCase(const std::string& command) override {
-    // TODO(chfremer): Enable test cases using the video capture service with
-    // real cameras as soon as root cause for https://crbug.com/733582 is
-    // understood and resolved.
-    if ((std::get<0>(GetParam()) == TargetCamera::REAL_WEBCAM) &&
-        (std::get<1>(GetParam()).use_video_capture_service)) {
-      LOG(INFO) << "Skipping this test case";
-      return true;
-    }
-    return WebRtcImageCaptureBrowserTestBase::RunImageCaptureTestCase(command);
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
