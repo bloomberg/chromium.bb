@@ -51,8 +51,8 @@ public class AccountSigninActivity extends AppCompatActivity
      * @return {@code true} if sign in has been allowed.
      */
     public static boolean startIfAllowed(Context context, @AccessPoint int accessPoint) {
-        if (!SigninManager.get(context).isSignInAllowed()) {
-            if (SigninManager.get(context).isSigninDisabledByPolicy()) {
+        if (!SigninManager.get().isSignInAllowed()) {
+            if (SigninManager.get().isSigninDisabledByPolicy()) {
                 ManagedPreferencesUtils.showManagedByAdministratorToast(context);
             }
             return false;
@@ -171,7 +171,7 @@ public class AccountSigninActivity extends AppCompatActivity
     public void onAccountSelected(
             final String accountName, boolean isDefaultAccount, final boolean settingsClicked) {
         final Context context = this;
-        SigninManager.get(this).signIn(accountName, this, new SignInCallback() {
+        SigninManager.get().signIn(accountName, this, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 if (settingsClicked) {

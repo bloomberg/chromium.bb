@@ -74,7 +74,7 @@ public class SignInPromo extends OptionalLeaf {
     private SignInPromo(SuggestionsUiDelegate uiDelegate) {
         Context context = ContextUtils.getApplicationContext();
         SuggestionsSource suggestionsSource = uiDelegate.getSuggestionsSource();
-        SigninManager signinManager = SigninManager.get(context);
+        SigninManager signinManager = SigninManager.get();
 
         mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
         mCanShowPersonalizedSuggestions = suggestionsSource.areRemoteSuggestionsEnabled();

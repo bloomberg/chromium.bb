@@ -70,20 +70,20 @@ public class SyncAccountSwitcher
         assert mNewAccountName != null;
 
         // Sign out first to ensure we don't wipe the data when sync is still on.
-        SigninManager.get(mActivity).signOutPromise()
+        SigninManager.get().signOutPromise()
                 .then(new Promise.AsyncFunction<Void, Void>(){
                     @Override
                     public Promise<Void> apply(Void argument) {
                         // Once signed out, clear the last signed in user and wipe data if needed.
-                        SigninManager.get(mActivity).clearLastSignedInUser();
+                        SigninManager.get().clearLastSignedInUser();
                         return SigninManager.wipeSyncUserDataIfRequired(wipeData);
                     }
                 }).then(new Callback<Void>(){
                     @Override
                     public void onResult(Void result) {
                         // Once the data has been wiped (if needed), sign in to the next account.
-                        SigninManager.get(mActivity)
-                            .signIn(mNewAccountName, mActivity, SyncAccountSwitcher.this);
+                        SigninManager.get().signIn(
+                                mNewAccountName, mActivity, SyncAccountSwitcher.this);
                     }
                 });
     }

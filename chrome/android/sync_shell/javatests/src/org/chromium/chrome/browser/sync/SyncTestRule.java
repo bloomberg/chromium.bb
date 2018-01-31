@@ -146,7 +146,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SigninManager.get(mContext).signIn(account, null, null);
+                SigninManager.get().signIn(account, null, null);
             }
         });
         SyncTestUtil.waitForSyncActive();
@@ -159,7 +159,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SigninManager.get(mContext).signOut(new Runnable() {
+                SigninManager.get().signOut(new Runnable() {
                     @Override
                     public void run() {
                         s.release();

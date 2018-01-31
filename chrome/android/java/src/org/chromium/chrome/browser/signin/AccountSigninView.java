@@ -452,7 +452,7 @@ public class AccountSigninView extends FrameLayout {
                 && mGooglePlayServicesUpdateErrorHandler.isShowing()) {
             return;
         }
-        boolean cancelable = !SigninManager.get(getContext()).isForceSigninEnabled();
+        boolean cancelable = !SigninManager.get().isForceSigninEnabled();
         mGooglePlayServicesUpdateErrorHandler =
                 new UserRecoverableErrorHandler.ModalDialog(mDelegate.getActivity(), cancelable);
         mGooglePlayServicesUpdateErrorHandler.handleError(getContext(), gmsErrorCode);
