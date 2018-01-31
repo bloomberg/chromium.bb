@@ -101,6 +101,13 @@ source_set("gles2_sources") {
     "gles2_cmd_format_autogen.h",
     "gles2_cmd_ids.h",
     "gles2_cmd_ids_autogen.h",
+
+    # TODO(backer): Separate into distinct raster target.
+    "raster_cmd_format.cc",
+    "raster_cmd_format.h",
+    "raster_cmd_format_autogen.h",
+    "raster_cmd_ids.h",
+    "raster_cmd_ids_autogen.h",
   ]
 
   configs += [ "//gpu:gpu_gles2_implementation" ]

@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
@@ -60,6 +61,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                     gles2::ContextGroup* group);
   ~RasterDecoderImpl() override;
 
+  GLES2Util* GetGLES2Util() override { return &util_; }
+
   // DecoderContext implementation.
   base::WeakPtr<DecoderContext> AsWeakPtr() override;
   gpu::ContextResult Initialize(
@@ -68,7 +71,6 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
       bool offscreen,
       const gles2::DisallowedFeatures& disallowed_features,
       const ContextCreationAttribs& attrib_helper) override;
-  bool initialized() const override;
   const gles2::ContextState* GetContextState() override;
   void Destroy(bool have_context) override;
   bool MakeCurrent() override;
@@ -120,11 +122,46 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void OnContextLostError() override;
   void OnOutOfMemoryError() override;
 
+  Logger* GetLogger() override;
+
+  void SetIgnoreCachedStateForTest(bool ignore) override;
+
  private:
   gl::GLApi* api() const { return state_.api(); }
 
   const FeatureInfo::FeatureFlags& features() const {
     return feature_info_->feature_flags();
+  }
+
+  const gl::GLVersionInfo& gl_version_info() {
+    return feature_info_->gl_version_info();
+  }
+
+  const TextureManager* texture_manager() const {
+    return group_->texture_manager();
+  }
+
+  TextureManager* texture_manager() { return group_->texture_manager(); }
+
+  // Creates a Texture for the given texture.
+  TextureRef* CreateTexture(GLuint client_id, GLuint service_id) {
+    return texture_manager()->CreateTexture(client_id, service_id);
+  }
+
+  // Gets the texture info for the given texture. Returns nullptr if none
+  // exists.
+  TextureRef* GetTexture(GLuint client_id) const {
+    return texture_manager()->GetTexture(client_id);
+  }
+
+  // Deletes the texture info for the given texture.
+  void RemoveTexture(GLuint client_id) {
+    texture_manager()->RemoveTexture(client_id);
+  }
+
+  void UnbindTexture(TextureRef* texture_ref) {
+    // Unbind texture_ref from texture_ref units.
+    state_.UnbindTexture(texture_ref);
   }
 
   // Set remaining commands to process to 0 to force DoCommands to return
@@ -138,22 +175,17 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                               int num_entries,
                               int* entries_processed);
 
+  // Helper for glGetIntegerv.  Returns false if pname is unhandled.
+  bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
+
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
-  bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values) {
-    NOTIMPLEMENTED();
-    return false;
-  }
+  bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
   void DoActiveTexture(GLenum texture_unit) { NOTIMPLEMENTED(); }
-  void DoBindTexture(GLenum target, GLuint texture) { NOTIMPLEMENTED(); }
-  void DeleteTexturesHelper(GLsizei n, const volatile GLuint* client_ids) {
-    NOTIMPLEMENTED();
-  }
-  bool GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
-    NOTIMPLEMENTED();
-    return true;
-  }
+  void DoBindTexture(GLenum target, GLuint texture);
+  void DeleteTexturesHelper(GLsizei n, const volatile GLuint* client_ids);
+  bool GenTexturesHelper(GLsizei n, const GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids) {
     NOTIMPLEMENTED();
     return true;
@@ -161,14 +193,10 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void DeleteQueriesEXTHelper(GLsizei n, const volatile GLuint* client_ids) {
     NOTIMPLEMENTED();
   }
-  void DoFinish() { NOTIMPLEMENTED(); }
-  void DoFlush() { NOTIMPLEMENTED(); }
-  void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size) {
-    NOTIMPLEMENTED();
-  }
-  void DoTexParameteri(GLenum target, GLenum pname, GLint param) {
-    NOTIMPLEMENTED();
-  }
+  void DoFinish();
+  void DoFlush();
+  void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
+  void DoTexParameteri(GLenum target, GLenum pname, GLint param);
   void DoTexStorage2DEXT(GLenum target,
                          GLsizei levels,
                          GLenum internal_format,
@@ -240,6 +268,34 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
     NOTIMPLEMENTED();
   }
 
+#if defined(NDEBUG)
+  void LogClientServiceMapping(const char* /* function_name */,
+                               GLuint /* client_id */,
+                               GLuint /* service_id */) {}
+  template <typename T>
+  void LogClientServiceForInfo(T* /* info */,
+                               GLuint /* client_id */,
+                               const char* /* function_name */) {}
+#else
+  void LogClientServiceMapping(const char* function_name,
+                               GLuint client_id,
+                               GLuint service_id) {
+    if (service_logging_) {
+      VLOG(1) << "[" << logger_.GetLogPrefix() << "] " << function_name
+              << ": client_id = " << client_id
+              << ", service_id = " << service_id;
+    }
+  }
+  template <typename T>
+  void LogClientServiceForInfo(T* info,
+                               GLuint client_id,
+                               const char* function_name) {
+    if (info) {
+      LogClientServiceMapping(function_name, client_id, info->service_id());
+    }
+  }
+#endif
+
 // Generate a member function prototype for each command in an automated and
 // typesafe way.
 #define RASTER_CMD_OP(name) \
@@ -262,8 +318,6 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kFirstRasterCommand];
-
-  bool initialized_;
 
   // Number of commands remaining to be processed in DoCommands().
   int commands_to_process_;
@@ -289,7 +343,12 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   // All the state for this context.
   gles2::ContextState state_;
 
+  GLES2Util util_;
+
   bool gpu_debug_commands_;
+
+  // Log extra info.
+  bool service_logging_;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -319,10 +378,27 @@ RasterDecoder* RasterDecoder::Create(
 
 RasterDecoder::RasterDecoder(CommandBufferServiceBase* command_buffer_service)
     : CommonDecoder(command_buffer_service),
+      initialized_(false),
       debug_(false),
       log_commands_(false) {}
 
 RasterDecoder::~RasterDecoder() {}
+
+bool RasterDecoder::initialized() const {
+  return initialized_;
+}
+
+TextureBase* RasterDecoder::GetTextureBase(uint32_t client_id) {
+  return nullptr;
+}
+
+void RasterDecoder::BeginDecoding() {}
+
+void RasterDecoder::EndDecoding() {}
+
+base::StringPiece RasterDecoder::GetLogPrefix() {
+  return GetLogger()->GetLogPrefix();
+}
 
 RasterDecoderImpl::RasterDecoderImpl(
     DecoderClient* client,
@@ -330,7 +406,6 @@ RasterDecoderImpl::RasterDecoderImpl(
     Outputter* outputter,
     ContextGroup* group)
     : RasterDecoder(command_buffer_service),
-      initialized_(false),
       commands_to_process_(0),
       current_decoder_error_(error::kNoError),
       client_(client),
@@ -339,6 +414,8 @@ RasterDecoderImpl::RasterDecoderImpl(
       validators_(group_->feature_info()->validators()),
       feature_info_(group_->feature_info()),
       state_(group_->feature_info(), this, &logger_),
+      service_logging_(
+          group_->gpu_preferences().enable_gpu_service_logging_gpu),
       weak_ptr_factory_(this) {}
 
 RasterDecoderImpl::~RasterDecoderImpl() {}
@@ -359,7 +436,7 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
 
   state_.set_api(gl::g_current_gl_context);
 
-  initialized_ = true;
+  set_initialized();
 
   if (!offscreen) {
     return gpu::ContextResult::kFatalFailure;
@@ -384,11 +461,19 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
-  return gpu::ContextResult::kSuccess;
-}
+  state_.texture_units.resize(group_->max_texture_units());
+  state_.sampler_units.resize(group_->max_texture_units());
+  for (uint32_t tt = 0; tt < state_.texture_units.size(); ++tt) {
+    api()->glActiveTextureFn(GL_TEXTURE0 + tt);
+    TextureRef* ref;
+    ref = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
+    state_.texture_units[tt].bound_texture_2d = ref;
+    api()->glBindTextureFn(GL_TEXTURE_2D, ref ? ref->service_id() : 0);
+  }
+  api()->glActiveTextureFn(GL_TEXTURE0);
+  CHECK_GL_ERROR();
 
-bool RasterDecoderImpl::initialized() const {
-  return initialized_;
+  return gpu::ContextResult::kSuccess;
 }
 
 const gles2::ContextState* RasterDecoderImpl::GetContextState() {
@@ -396,7 +481,21 @@ const gles2::ContextState* RasterDecoderImpl::GetContextState() {
   return nullptr;
 }
 
-void RasterDecoderImpl::Destroy(bool have_context) {}
+void RasterDecoderImpl::Destroy(bool have_context) {
+  if (group_.get()) {
+    group_->Destroy(this, have_context);
+    group_ = NULL;
+  }
+
+  // Destroy the surface before the context, some surface destructors make GL
+  // calls.
+  surface_ = nullptr;
+
+  if (context_.get()) {
+    context_->ReleaseCurrent(NULL);
+    context_ = NULL;
+  }
+}
 
 // Make this decoder's GL context current.
 bool RasterDecoderImpl::MakeCurrent() {
@@ -545,6 +644,14 @@ bool RasterDecoderImpl::CheckResetStatus() {
   return false;
 }
 
+Logger* RasterDecoderImpl::GetLogger() {
+  return &logger_;
+}
+
+void RasterDecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
+  state_.SetIgnoreCachedStateForTest(ignore);
+}
+
 void RasterDecoderImpl::BeginDecoding() {
   // TODO(backer): Add support the tracing commands.
   gpu_debug_commands_ = log_commands() || debug();
@@ -556,7 +663,7 @@ void RasterDecoderImpl::EndDecoding() {
 
 const char* RasterDecoderImpl::GetCommandName(unsigned int command_id) const {
   if (command_id >= kFirstRasterCommand && command_id < kNumCommands) {
-    return GetCommandName(static_cast<CommandId>(command_id));
+    return raster::GetCommandName(static_cast<CommandId>(command_id));
   }
   return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
 }
@@ -653,6 +760,45 @@ error::Error RasterDecoderImpl::DoCommands(unsigned int num_commands,
     return DoCommandsImpl<false>(num_commands, buffer, num_entries,
                                  entries_processed);
   }
+}
+
+bool RasterDecoderImpl::GetHelper(GLenum pname,
+                                  GLint* params,
+                                  GLsizei* num_written) {
+  DCHECK(num_written);
+  switch (pname) {
+    case GL_MAX_TEXTURE_SIZE:
+      *num_written = 1;
+      if (params) {
+        params[0] = texture_manager()->MaxSizeForTarget(GL_TEXTURE_2D);
+      }
+      return true;
+    default:
+      *num_written = util_.GLGetNumValuesReturned(pname);
+      if (*num_written)
+        break;
+
+      return false;
+  }
+
+  // TODO(backer): Only GL_ACTIVE_TEXTURE supported?
+  if (pname != GL_ACTIVE_TEXTURE) {
+    return false;
+  }
+
+  if (params) {
+    api()->glGetIntegervFn(pname, params);
+  }
+  return true;
+}
+
+bool RasterDecoderImpl::GetNumValuesReturnedForGLGet(GLenum pname,
+                                                     GLsizei* num_values) {
+  *num_values = 0;
+  if (state_.GetStateAsGLint(pname, NULL, num_values)) {
+    return true;
+  }
+  return GetHelper(pname, NULL, num_values);
 }
 
 base::StringPiece RasterDecoderImpl::GetLogPrefix() {
@@ -807,11 +953,130 @@ error::Error RasterDecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
+void RasterDecoderImpl::DoFinish() {
+  api()->glFinishFn();
+  ProcessPendingQueries(true);
+}
+
+void RasterDecoderImpl::DoFlush() {
+  api()->glFlushFn();
+  ProcessPendingQueries(false);
+}
+
+void RasterDecoderImpl::DoGetIntegerv(GLenum pname,
+                                      GLint* params,
+                                      GLsizei params_size) {
+  DCHECK(params);
+  GLsizei num_written = 0;
+  if (state_.GetStateAsGLint(pname, params, &num_written) ||
+      GetHelper(pname, params, &num_written)) {
+    DCHECK_EQ(num_written, params_size);
+    return;
+  }
+  NOTREACHED() << "Unhandled enum " << pname;
+}
+
+void RasterDecoderImpl::DeleteTexturesHelper(
+    GLsizei n,
+    const volatile GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    GLuint client_id = client_ids[ii];
+    TextureRef* texture_ref = GetTexture(client_id);
+    if (texture_ref) {
+      UnbindTexture(texture_ref);
+      RemoveTexture(client_id);
+    }
+  }
+}
+
+bool RasterDecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetTexture(client_ids[ii])) {
+      return false;
+    }
+  }
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
+  api()->glGenTexturesFn(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateTexture(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+void RasterDecoderImpl::DoTexParameteri(GLenum target,
+                                        GLenum pname,
+                                        GLint param) {
+  TextureRef* texture =
+      texture_manager()->GetTextureInfoForTarget(&state_, target);
+  if (!texture) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexParameteri", "unknown texture");
+    return;
+  }
+
+  texture_manager()->SetParameteri("glTexParameteri", GetErrorState(), texture,
+                                   pname, param);
+}
+
+void RasterDecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
+  TextureRef* texture_ref = NULL;
+  GLuint service_id = 0;
+  if (client_id != 0) {
+    texture_ref = GetTexture(client_id);
+    if (!texture_ref) {
+      if (!group_->bind_generates_resource()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindTexture",
+                           "id not generated by glGenTextures");
+        return;
+      }
+
+      // It's a new id so make a texture texture for it.
+      api()->glGenTexturesFn(1, &service_id);
+      DCHECK_NE(0u, service_id);
+      CreateTexture(client_id, service_id);
+      texture_ref = GetTexture(client_id);
+    }
+  } else {
+    texture_ref = texture_manager()->GetDefaultTextureInfo(target);
+  }
+
+  // Check the texture exists
+  if (texture_ref) {
+    Texture* texture = texture_ref->texture();
+    // Check that we are not trying to bind it to a different target.
+    if (texture->target() != 0 && texture->target() != target) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindTexture",
+                         "texture bound to more than 1 target.");
+      return;
+    }
+    LogClientServiceForInfo(texture, client_id, "glBindTexture");
+    api()->glBindTextureFn(target, texture->service_id());
+    if (texture->target() == 0) {
+      texture_manager()->SetTarget(texture_ref, target);
+      if (!gl_version_info().BehavesLikeGLES() &&
+          gl_version_info().IsAtLeastGL(3, 2)) {
+        // In Desktop GL core profile and GL ES, depth textures are always
+        // sampled to the RED channel, whereas on Desktop GL compatibility
+        // proifle, they are sampled to RED, LUMINANCE, INTENSITY, or ALPHA
+        // channel, depending on the DEPTH_TEXTURE_MODE value.
+        // In theory we only need to apply this for depth textures, but it is
+        // simpler to apply to all textures.
+        api()->glTexParameteriFn(target, GL_DEPTH_TEXTURE_MODE, GL_RED);
+      }
+    }
+  } else {
+    api()->glBindTextureFn(target, 0);
+  }
+
+  TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
+  unit.bind_target = target;
+  unit.SetInfoForTarget(target, texture_ref);
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
 #include "base/macros.h"
-#include "gpu/command_buffer/service/raster_cmd_decoder_autogen.h"
+#include "gpu/command_buffer/service/raster_decoder_autogen.h"
 
 }  // namespace raster
 }  // namespace gpu

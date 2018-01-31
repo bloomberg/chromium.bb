@@ -147,6 +147,8 @@ static_library("test_support") {
     "command_buffer/service/error_state_mock.h",
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
     "command_buffer/service/gles2_cmd_decoder_mock.h",
+    "command_buffer/service/raster_decoder_mock.cc",
+    "command_buffer/service/raster_decoder_mock.h",
   ]
 
   public_deps = [
@@ -340,6 +342,9 @@ test("gpu_unittests") {
     "command_buffer/service/program_cache_unittest.cc",
     "command_buffer/service/program_manager_unittest.cc",
     "command_buffer/service/query_manager_unittest.cc",
+    "command_buffer/service/raster_decoder_unittest_1.cc",
+    "command_buffer/service/raster_decoder_unittest_base.cc",
+    "command_buffer/service/raster_decoder_unittest_base.h",
     "command_buffer/service/renderbuffer_manager_unittest.cc",
     "command_buffer/service/scheduler_unittest.cc",
     "command_buffer/service/service_discardable_manager_unittest.cc",
