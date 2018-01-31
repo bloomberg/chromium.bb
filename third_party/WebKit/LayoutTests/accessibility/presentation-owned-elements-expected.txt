@@ -47,12 +47,15 @@ AXRole: AXWebArea
     AXRole: AXGenericContainer
         AXRole: AXStaticText "These two tables have static text roles because they have presentation roles."
             AXRole: AXInlineTextBox "These two tables have static text roles because they have presentation roles."
-    AXRole: AXStaticText "Presentation th"
-        AXRole: AXInlineTextBox "Presentation th"
-    AXRole: AXStaticText "Presentation th"
-        AXRole: AXInlineTextBox "Presentation th"
-    AXRole: AXStaticText "Presentation th"
-        AXRole: AXInlineTextBox "Presentation th"
+    AXRole: AXGenericContainer
+        AXRole: AXStaticText "Presentation th"
+            AXRole: AXInlineTextBox "Presentation th"
+    AXRole: AXGenericContainer
+        AXRole: AXStaticText "Presentation th"
+            AXRole: AXInlineTextBox "Presentation th"
+    AXRole: AXGenericContainer
+        AXRole: AXStaticText "Presentation th"
+            AXRole: AXInlineTextBox "Presentation th"
     AXRole: AXGenericContainer
         AXRole: AXStaticText "The "Presentation th" has a static text role because it has a presentation role."
             AXRole: AXInlineTextBox "The "Presentation th" has a static text role because it has a presentation role."
@@ -68,8 +71,9 @@ AXRole: AXWebArea
         AXRole: AXGenericContainer
             AXRole: AXStaticText "Explicit th"
                 AXRole: AXInlineTextBox "Explicit th"
-    AXRole: AXStaticText "Implicit td"
-        AXRole: AXInlineTextBox "Implicit td"
+    AXRole: AXGenericContainer
+        AXRole: AXStaticText "Implicit td"
+            AXRole: AXInlineTextBox "Implicit td"
     AXRole: AXGenericContainer
         AXRole: AXStaticText "The menu items except button have a static text role because it has a presentation role and is disabled."
             AXRole: AXInlineTextBox "The menu items except button have a static text role because it has a presentation role and is disabled."

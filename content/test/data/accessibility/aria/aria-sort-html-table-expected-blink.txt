@@ -164,5 +164,6 @@ rootWebArea
 ++++++++++inlineTextBox name='B'
 ++++column
 ++++tableHeaderContainer
-++staticText name='Alphabet'
-++++inlineTextBox name='Alphabet'
+++genericContainer
+++++staticText name='Alphabet'
+++++++inlineTextBox name='Alphabet'

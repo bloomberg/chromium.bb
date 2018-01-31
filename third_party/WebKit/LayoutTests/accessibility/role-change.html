@@ -46,7 +46,7 @@ test(function(t) {
 test(function(t) {
     assert_equals(axElementById('table'), undefined);
     assert_equals(axElementById('tr1'), undefined);
-    assert_equals(axElementById('td1'), undefined);
+    assert_equals(axElementById('td1').role, "AXRole: AXGenericContainer");
 
     // Change role="presentation"
     document.getElementById('table1').removeAttribute('role');
@@ -65,7 +65,7 @@ test(function(t) {
 
     assert_equals(axElementById('table'), undefined);
     assert_equals(axElementById('tr1'), undefined);
-    assert_equals(axElementById('td1'), undefined);
+    assert_equals(axElementById('td1').role, "AXRole: AXGenericContainer");
 }, "Role presentation toggled on table.");
 
 test(function(t) {
