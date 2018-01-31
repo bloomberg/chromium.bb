@@ -63,7 +63,7 @@ message DeviceStatus {
 // Next id: 1
 message TetherAvailabilityRequest {}
 
-// Next id: 6
+// Next id: 7
 message TetherAvailabilityResponse {
   enum ResponseCode {
     UNKNOWN_ERROR = 0;
@@ -71,7 +71,8 @@ message TetherAvailabilityResponse {
     SETUP_NEEDED = 2;
     NO_RECEPTION = 3;
     NO_SIM_CARD = 4;
-    NOTIFICATIONS_DISABLED = 5;
+    NOTIFICATIONS_DISABLED_LEGACY = 5;
+    NOTIFICATIONS_DISABLED_WITH_NOTIFICATION_CHANNEL = 6;
   }
 
   optional ResponseCode response_code = 1;

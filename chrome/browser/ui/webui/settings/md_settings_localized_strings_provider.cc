@@ -1091,6 +1091,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_SECOND_STEP},
       {"gmscoreNotificationsThirdStep",
        IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_THIRD_STEP},
+      {"gmscoreNotificationsFourthStep",
+       IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_FOURTH_STEP},
       {"tetherConnectionDialogTitle",
        IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DIALOG_TITLE},
       {"tetherConnectionAvailableDeviceTitle",
