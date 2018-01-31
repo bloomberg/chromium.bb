@@ -4703,6 +4703,32 @@ TEST_P(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   CheckNoNextBuffer();
 }
 
+TEST_P(SourceBufferStreamTest, Audio_Opus_SeekToJustBeforeRangeStart) {
+  // Seek to a time within the fudge room of seekability to a buffered Opus
+  // audio frame's range, but before the range's start. Use small seek_preroll
+  // in case the associated logic to check same config in the preroll time
+  // interval requires a nonzero seek_preroll value.
+  video_config_ = TestVideoConfig::Invalid();
+  audio_config_.Initialize(kCodecOpus, kSampleFormatPlanarF32,
+                           CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
+                           Unencrypted(), base::TimeDelta::FromMilliseconds(10),
+                           0);
+  STREAM_RESET(audio_config_);
+
+  // Equivalent to 1s per frame.
+  SetStreamInfo(1, 1);
+  Seek(0);
+
+  // Append a buffer at 1.5 seconds, with duration 1 second, increasing the
+  // fudge room to 2 * 1 seconds. The pending seek to time 0 should be satisfied
+  // with this buffer's range, because that seek time is within the fudge room
+  // of 2.
+  NewCodedFrameGroupAppend("1500D1000K");
+  CheckExpectedRangesByTimestamp("{ [1500,2500) }");
+  CheckExpectedBuffers("1500K");
+  CheckNoNextBuffer();
+}
+
 TEST_P(SourceBufferStreamTest, BFrames) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 120|30 30|60 60|90 90|120");
