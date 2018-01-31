@@ -35,6 +35,7 @@
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webmidi/MIDIPort.h"
+#include "platform/heap/HeapAllocator.h"
 
 namespace blink {
 
@@ -73,9 +74,10 @@ class MIDIOutput final : public MIDIPort {
              midi::mojom::PortState);
 
   void DidOpen(bool opened) override;
+  void SendInternal(DOMUint8Array*, double platform_timestamp, ExceptionState&);
 
   unsigned port_index_;
-  Deque<std::pair<Vector<uint8_t>, double>> pending_data_;
+  HeapDeque<std::pair<Member<DOMUint8Array>, double>> pending_data_;
 };
 
 }  // namespace blink
