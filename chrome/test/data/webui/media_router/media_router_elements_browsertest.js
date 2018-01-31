@@ -25,9 +25,6 @@ MediaRouterElementsBrowserTest.prototype = {
   browsePreload: 'chrome://media-router/',
 
   /** @override */
-  runAccessibilityChecks: true,
-
-  /** @override */
   accessibilityIssuesAreErrors: true,
 
   commandLineSwitches: [{switchName: 'media-router', switchValue: '1'}],
@@ -67,7 +64,7 @@ MediaRouterElementsBrowserTest.prototype = {
 
       function seekCurrentMedia(time) {
         var event =
-            new CustomEvent('mock-seek-current-media', {detail: {time: time}})
+            new CustomEvent('mock-seek-current-media', {detail: {time: time}});
         document.dispatchEvent(event);
       }
 
