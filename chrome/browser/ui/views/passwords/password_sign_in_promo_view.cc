@@ -46,5 +46,5 @@ int PasswordSignInPromoView::GetDialogButtons() const {
 base::string16 PasswordSignInPromoView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   DCHECK(button == ui::DIALOG_BUTTON_OK);
-  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE);
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN);
 }
