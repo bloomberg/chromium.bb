@@ -106,11 +106,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                                   base::string16* body) override;
   bool RemoveSuggestion(int list_index) override;
   ui::NativeTheme::ColorId GetBackgroundColorIDForRow(int index) const override;
+  void SetSelectedLine(base::Optional<int> selected_line) override;
   base::Optional<int> selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
-
-  // Change which line is currently selected by the user.
-  void SetSelectedLine(base::Optional<int> selected_line);
 
   // Increase the selected line by 1, properly handling wrapping.
   void SelectNextLine();

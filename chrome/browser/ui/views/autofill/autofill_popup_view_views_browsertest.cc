@@ -74,6 +74,7 @@ class MockAutofillPopupController : public AutofillPopupController {
   MOCK_METHOD1(RemoveSuggestion, bool(int index));
   MOCK_CONST_METHOD1(GetBackgroundColorIDForRow,
                      ui::NativeTheme::ColorId(int index));
+  MOCK_METHOD1(SetSelectedLine, void(base::Optional<int> selected_line));
   MOCK_CONST_METHOD0(selected_line, base::Optional<int>());
   const AutofillPopupLayoutModel& layout_model() const override {
     return *layout_model_;
