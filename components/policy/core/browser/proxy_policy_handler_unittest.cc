@@ -32,8 +32,7 @@ class ProxyPolicyHandlerTest
     // preprocessor. The previous store must be nulled out first so that it
     // removes itself from the service's observer list.
     store_ = nullptr;
-    policy_service_ = std::make_unique<PolicyServiceImpl>();
-    policy_service_->SetProviders(providers_);
+    policy_service_ = std::make_unique<PolicyServiceImpl>(providers_);
     store_ = new ConfigurationPolicyPrefStore(
         nullptr, policy_service_.get(), &handler_list_, POLICY_LEVEL_MANDATORY);
   }

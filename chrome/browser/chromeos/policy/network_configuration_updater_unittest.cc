@@ -220,8 +220,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     provider_.Init();
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
-    policy_service_ = std::make_unique<PolicyServiceImpl>();
-    policy_service_->SetProviders(providers);
+    policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers));
 
     std::unique_ptr<base::DictionaryValue> fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);

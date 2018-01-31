@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -32,17 +31,10 @@ class POLICY_EXPORT PolicyServiceImpl
  public:
   using Providers = std::vector<ConfigurationPolicyProvider*>;
 
-  // Creates a new PolicyServiceImpl, it is expected SetProviders() is called
-  // once to complete initialization.
-  PolicyServiceImpl();
-
+  // Creates a new PolicyServiceImpl with the list of
+  // ConfigurationPolicyProviders, in order of decreasing priority.
+  explicit PolicyServiceImpl(Providers providers);
   ~PolicyServiceImpl() override;
-
-  // Sets the providers; see description of constructor for details.
-  void SetProviders(Providers providers);
-
-  // Returns true if SetProviders() was called.
-  bool has_providers() const { return providers_.has_value(); }
 
   // PolicyService overrides:
   void AddObserver(PolicyDomain domain,
@@ -76,8 +68,8 @@ class POLICY_EXPORT PolicyServiceImpl
   // Invokes all the refresh callbacks if there are no more refreshes pending.
   void CheckRefreshComplete();
 
-  // The providers set via SetProviders(), in order of decreasing priority.
-  base::Optional<Providers> providers_;
+  // The providers, in order of decreasing priority.
+  Providers providers_;
 
   // Maps each policy namespace to its current policies.
   PolicyBundle policy_bundle_;

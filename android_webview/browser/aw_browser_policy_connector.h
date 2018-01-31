@@ -13,12 +13,17 @@ namespace android_webview {
 // Sets up and keeps the browser-global policy objects such as the PolicyService
 // and the platform-specific PolicyProvider.
 class AwBrowserPolicyConnector : public policy::BrowserPolicyConnectorBase {
-public:
- AwBrowserPolicyConnector();
- ~AwBrowserPolicyConnector() override;
+ public:
+  AwBrowserPolicyConnector();
+  ~AwBrowserPolicyConnector() override;
 
-private:
- DISALLOW_COPY_AND_ASSIGN(AwBrowserPolicyConnector);
+ protected:
+  // policy::BrowserPolicyConnectorBase:
+  std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
+  CreatePolicyProviders() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AwBrowserPolicyConnector);
 };
 
 }  // namespace android_webview

@@ -653,7 +653,6 @@ BrowserProcessImpl::browser_policy_connector() {
     DCHECK(!browser_policy_connector_);
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
     created_browser_policy_connector_ = true;
-    browser_policy_connector_->InitPolicyProviders();
   }
   return browser_policy_connector_.get();
 }
