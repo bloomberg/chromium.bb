@@ -5521,7 +5521,10 @@ bool RenderFrameImpl::UpdateNavigationHistory(
   current_history_item_.SetTarget(
       blink::WebString::FromUTF8(unique_name_helper_.value()));
   bool is_new_navigation = commit_type == blink::kWebStandardCommit;
-  if (is_new_navigation) {
+  if (request_params.should_clear_history_list) {
+    render_view_->history_list_offset_ = 0;
+    render_view_->history_list_length_ = 1;
+  } else if (is_new_navigation) {
     DCHECK(!navigation_state->common_params().should_replace_current_entry ||
            render_view_->history_list_length_ > 0);
     if (!navigation_state->common_params().should_replace_current_entry) {
@@ -6600,10 +6603,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
       request_params.current_history_list_offset;
   render_view_->history_list_length_ =
       request_params.current_history_list_length;
-  if (request_params.should_clear_history_list) {
-    CHECK_EQ(-1, render_view_->history_list_offset_);
-    CHECK_EQ(0, render_view_->history_list_length_);
-  }
 }
 
 void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {

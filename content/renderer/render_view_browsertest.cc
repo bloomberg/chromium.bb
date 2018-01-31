@@ -73,6 +73,7 @@
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
+#include "third_party/WebKit/public/web/WebGlobalObjectReusePolicy.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebInputMethodController.h"
@@ -2224,16 +2225,56 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   EXPECT_EQ(0, view()->HistoryBackListCount() +
                    view()->HistoryForwardListCount() + 1);
 
-  // Receive a Navigate message with history parameters.
+  // Receive a CommitNavigation message with history parameters.
   RequestNavigationParams request_params;
-  request_params.current_history_list_length = 2;
   request_params.current_history_list_offset = 1;
-  request_params.pending_history_list_offset = 2;
+  request_params.current_history_list_length = 2;
   frame()->Navigate(CommonNavigationParams(), request_params);
 
-  // The history list in RenderView should have been updated.
+  // The current history list in RenderView is updated.
   EXPECT_EQ(1, view()->HistoryBackListCount());
   EXPECT_EQ(2, view()->HistoryBackListCount() +
+                   view()->HistoryForwardListCount() + 1);
+}
+
+// Ensure the RenderViewImpl history list is properly updated when starting a
+// new history browser-initiated navigation.
+TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnHistoryNavigation) {
+  EXPECT_EQ(0, view()->HistoryBackListCount());
+  EXPECT_EQ(0, view()->HistoryBackListCount() +
+                   view()->HistoryForwardListCount() + 1);
+
+  // Receive a CommitNavigation message with history parameters.
+  RequestNavigationParams request_params;
+  request_params.current_history_list_offset = 1;
+  request_params.current_history_list_length = 25;
+  request_params.pending_history_list_offset = 12;
+  request_params.nav_entry_id = 777;
+  frame()->Navigate(CommonNavigationParams(), request_params);
+
+  // The current history list in RenderView is updated.
+  EXPECT_EQ(12, view()->HistoryBackListCount());
+  EXPECT_EQ(25, view()->HistoryBackListCount() +
+                    view()->HistoryForwardListCount() + 1);
+}
+
+// Ensure the RenderViewImpl history list is properly updated when starting a
+// new history browser-initiated navigation with should_clear_history_list
+TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
+  EXPECT_EQ(0, view()->HistoryBackListCount());
+  EXPECT_EQ(0, view()->HistoryBackListCount() +
+                   view()->HistoryForwardListCount() + 1);
+
+  // Receive a CommitNavigation message with history parameters.
+  RequestNavigationParams request_params;
+  request_params.current_history_list_offset = 12;
+  request_params.current_history_list_length = 25;
+  request_params.should_clear_history_list = true;
+  frame()->Navigate(CommonNavigationParams(), request_params);
+
+  // The current history list in RenderView is updated.
+  EXPECT_EQ(0, view()->HistoryBackListCount());
+  EXPECT_EQ(1, view()->HistoryBackListCount() +
                    view()->HistoryForwardListCount() + 1);
 }
 
