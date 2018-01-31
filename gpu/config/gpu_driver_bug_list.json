@@ -2624,7 +2624,7 @@
           "value": "9.0"
         }
       },
-      "gl_renderer": "Adreno \\(TM\\) 5[34]0",
+      "gl_renderer": "Adreno \\(TM\\) (3.*|5[34]0)",
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query",
         "GL_EXT_disjoint_timer_query_webgl2"
