@@ -6,24 +6,6 @@ import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/config/android/rules.gni")
 import("//testing/test.gni")
 
-action("jni_generator_py_tests") {
-  _stamp = "$target_gen_dir/jni_generator_py_tests.stamp"
-  inputs = [
-    "jni_generator.py",
-    "jni_generator_tests.py",
-    "java/src/org/chromium/example/jni_generator/SampleForTests.java",
-    "SampleForTests_jni.golden",
-  ]
-  outputs = [
-    _stamp,
-  ]
-  script = "jni_generator_tests.py"
-  args = [
-    "--stamp",
-    rebase_path(_stamp, root_build_dir),
-  ]
-}
-
 generate_jni("jni_sample_header") {
   sources = [
     "java/src/org/chromium/example/jni_generator/SampleForTests.java",
@@ -81,7 +63,6 @@ generate_jni_registration("sample_jni_registration") {
 # Serves to test that generated bindings compile properly.
 group("jni_generator_tests") {
   deps = [
-    ":jni_generator_py_tests",
     ":sample_jni_apk",
   ]
 }

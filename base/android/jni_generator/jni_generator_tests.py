@@ -1129,9 +1129,14 @@ def TouchStamp(stamp_path):
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--verbose', action="store_true",
+                    help='Whether to output details.')
   options, _ = parser.parse_args(argv[1:])
 
-  test_result = unittest.main(argv=argv[0:1], exit=False)
+  test_result = unittest.main(
+      argv=argv[0:1],
+      exit=False,
+      verbosity=(2 if options.verbose else 1))
 
   if test_result.result.wasSuccessful() and options.stamp:
     TouchStamp(options.stamp)
