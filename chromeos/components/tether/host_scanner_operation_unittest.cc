@@ -30,6 +30,8 @@ namespace tether {
 
 namespace {
 
+const size_t kMaxConnectionAttemptsPerDevice = 3;
+
 const char kDefaultCarrier[] = "Google Fi";
 
 constexpr base::TimeDelta kTetherAvailabilityResponseTime =
@@ -127,7 +129,11 @@ class HostScannerOperationTest : public testing::Test {
   HostScannerOperationTest()
       : tether_availability_request_string_(
             CreateTetherAvailabilityRequestString()),
-        test_devices_(cryptauth::GenerateTestRemoteDevices(5)) {}
+        test_devices_(cryptauth::GenerateTestRemoteDevices(5)) {
+    // These tests are written under the assumption that there are a maximum of
+    // 3 connection attempts; they need to be edited if this value changes.
+    EXPECT_EQ(3u, MessageTransferOperation::kMaxConnectionAttemptsPerDevice);
+  }
 
   void SetUp() override {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -369,9 +375,8 @@ TEST_F(HostScannerOperationTest, TestMultipleDevices) {
       kTetherAvailabilityResponseTime, 2);
 
   // Simulate device 1 failing to connect.
-  fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_devices_[1].GetDeviceId(),
-      MessageTransferOperation::kMaxEmptyScansPerDevice);
+  fake_ble_connection_manager_->SimulateFailedConnectionAttempts(
+      test_devices_[1].GetDeviceId(), kMaxConnectionAttemptsPerDevice);
 
   // The scan should still not be over, and no new scan results should have
   // come in.
@@ -379,9 +384,8 @@ TEST_F(HostScannerOperationTest, TestMultipleDevices) {
   EXPECT_EQ(2u, test_observer_->scanned_devices_so_far().size());
 
   // Simulate device 3 failing to connect.
-  fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_devices_[3].GetDeviceId(),
-      MessageTransferOperation::kMaxEmptyScansPerDevice);
+  fake_ble_connection_manager_->SimulateFailedConnectionAttempts(
+      test_devices_[3].GetDeviceId(), kMaxConnectionAttemptsPerDevice);
 
   // The scan should still not be over, and no new scan results should have
   // come in.
