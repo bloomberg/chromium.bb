@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_QUICK_UNLOCK_PRIVATE_QUICK_UNLOCK_PRIVATE_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_QUICK_UNLOCK_PRIVATE_QUICK_UNLOCK_PRIVATE_API_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
