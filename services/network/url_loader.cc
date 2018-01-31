@@ -551,7 +551,8 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
     std::string new_type;
     bool made_final_decision = net::SniffMimeType(
         pending_write_->buffer(), pending_write_buffer_offset_,
-        url_request_->url(), type_hint, &new_type);
+        url_request_->url(), type_hint,
+        net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
     // SniffMimeType() returns false if there is not enough data to determine
     // the mime type. However, even if it returns false, it returns a new type
     // that is probably better than the current one.

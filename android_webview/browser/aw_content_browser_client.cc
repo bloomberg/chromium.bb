@@ -275,6 +275,11 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
   return net::URLRequest::IsHandledProtocol(scheme);
 }
 
+bool AwContentBrowserClient::ForceSniffingFileUrlsForHtml() {
+  // Needed to support legacy consumers.
+  return true;
+}
+
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {

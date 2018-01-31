@@ -363,6 +363,11 @@ class CONTENT_EXPORT ContentBrowserClient {
                                    const base::FilePath& absolute_path,
                                    const base::FilePath& profile_path);
 
+  // Indicates whether to force the MIME sniffer to sniff file URLs for HTML.
+  // By default, disabled. May be called on either the UI or IO threads.
+  // See https://crbug.com/777737
+  virtual bool ForceSniffingFileUrlsForHtml();
+
   // Allows the embedder to pass extra command line flags.
   // switches::kProcessType will already be set at this point.
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

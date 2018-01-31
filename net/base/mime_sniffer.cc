@@ -754,6 +754,7 @@ bool SniffMimeType(const char* content,
                    size_t content_size,
                    const GURL& url,
                    const std::string& type_hint,
+                   ForceSniffFileUrlsForHtml force_sniff_file_url_for_html,
                    std::string* result) {
   DCHECK_LT(content_size, 1000000U);  // sanity check
   DCHECK(content);
@@ -774,10 +775,13 @@ bool SniffMimeType(const char* content,
     return SniffForInvalidOfficeDocs(content, content_size, url, result);
 
   // Cache information about the type_hint
-  const bool hint_is_unknown_mime_type = IsUnknownMimeType(type_hint);
+  bool hint_is_unknown_mime_type = IsUnknownMimeType(type_hint);
 
-  // First check for HTML
-  if (hint_is_unknown_mime_type) {
+  // First check for HTML, unless it's a file URL and
+  // |allow_sniffing_files_urls_as_html| is false.
+  if (hint_is_unknown_mime_type &&
+      (!url.SchemeIsFile() ||
+       force_sniff_file_url_for_html == ForceSniffFileUrlsForHtml::kEnabled)) {
     // We're only willing to sniff HTML if the server has not supplied a mime
     // type, or if the type it did supply indicates that it doesn't know what
     // the type should be.

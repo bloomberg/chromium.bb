@@ -38,6 +38,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
@@ -175,6 +176,17 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       "Content Sniffer Test 3");
   EXPECT_EQ(1u, Shell::windows().size());
   ASSERT_FALSE(got_downloads());
+}
+
+// Make sure file URLs are not sniffed as HTML when they don't end in HTML.
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+                       DoNotSniffHTMLFromFileUrl) {
+  base::FilePath path =
+      GetTestFilePath(nullptr, "content-sniffer-test5.not-html");
+  GURL file_url = net::FilePathToFileURL(path);
+  // If the file isn't rendered as HTML, the title will match the name of the
+  // file, rather than the contents of the file's title tag.
+  CheckTitleTest(file_url, path.BaseName().MaybeAsASCII());
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,

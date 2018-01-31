@@ -186,6 +186,10 @@ bool ContentBrowserClient::IsFileAccessAllowed(
   return true;
 }
 
+bool ContentBrowserClient::ForceSniffingFileUrlsForHtml() {
+  return false;
+}
+
 std::string ContentBrowserClient::GetApplicationLocale() {
   return "en-US";
 }
