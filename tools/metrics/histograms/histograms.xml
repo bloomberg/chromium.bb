@@ -60521,9 +60521,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.ExportedPasswordsPerUserInCSV">
-  <owner>xunlu@chromium.org</owner>
+  <owner>cfroussios@chromium.org</owner>
+  <owner>ioanap@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>The number of passwords exported in CSV format per user.</summary>
+</histogram>
+
+<histogram name="PasswordManager.ExportPasswordsToCSVResult"
+    enum="ExportPasswordsResult">
+  <owner>cfroussios@chromium.org</owner>
+  <owner>ioanap@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>The success or error type of exporting passwords into CSV.</summary>
 </histogram>
 
 <histogram name="PasswordManager.FilledCredentialWasFromAndroidApp"
@@ -61257,6 +61266,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     This metric reports a type of a sync password hash change event. Recorded
     when a sync password hash is saved or cleared.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.TimeReadingExportedPasswords" units="ms">
+  <owner>cfroussios@chromium.org</owner>
+  <owner>ioanap@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The time it takes to fetch and serialise the passwords for export.
   </summary>
 </histogram>
 

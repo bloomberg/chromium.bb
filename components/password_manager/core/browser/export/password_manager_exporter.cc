@@ -13,6 +13,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 
 namespace {
@@ -33,6 +34,8 @@ bool Write(int (*write_function)(const base::FilePath& filename,
 
 namespace password_manager {
 
+using metrics_util::ExportPasswordsResult;
+
 PasswordManagerExporter::PasswordManagerExporter(
     password_manager::CredentialProviderInterface*
         credential_provider_interface,
@@ -48,6 +51,8 @@ PasswordManagerExporter::PasswordManagerExporter(
 PasswordManagerExporter::~PasswordManagerExporter() {}
 
 void PasswordManagerExporter::PreparePasswordsForExport() {
+  export_preparation_started_ = base::Time::Now();
+
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       credential_provider_interface_->GetAllPasswords();
   size_t password_list_size = password_list.size();
@@ -76,6 +81,9 @@ void PasswordManagerExporter::SetSerialisedPasswordList(
   serialised_password_list_ = serialised;
   password_count_ = count;
 
+  UMA_HISTOGRAM_MEDIUM_TIMES("PasswordManager.TimeReadingExportedPasswords",
+                             base::Time::Now() - export_preparation_started_);
+
   if (IsReadyForExport())
     Export();
 }
@@ -89,6 +97,10 @@ void PasswordManagerExporter::Cancel() {
   password_count_ = 0;
 
   OnProgress(ExportProgressStatus::FAILED_CANCELLED, std::string());
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
+                            ExportPasswordsResult::USER_ABORTED,
+                            ExportPasswordsResult::COUNT);
 }
 
 password_manager::ExportProgressStatus
@@ -127,12 +139,20 @@ void PasswordManagerExporter::OnPasswordsExported(
     int count,
     bool success) {
   if (success) {
+    OnProgress(ExportProgressStatus::SUCCEEDED, std::string());
+
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
+                              ExportPasswordsResult::SUCCESS,
+                              ExportPasswordsResult::COUNT);
     UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                          count);
-    OnProgress(ExportProgressStatus::SUCCEEDED, std::string());
   } else {
     OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
                destination.DirName().BaseName().AsUTF8Unsafe());
+
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
+                              ExportPasswordsResult::WRITE_FAILED,
+                              ExportPasswordsResult::COUNT);
   }
 }
 
