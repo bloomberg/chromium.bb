@@ -126,21 +126,22 @@ declare_args() {
 declare_args() {
   # Set to true to use icf, Identical Code Folding.
   #
-  # TODO(thakis): Remove `!is_android` below once NDK gold has been rolled
-  # with the fix for https://sourceware.org/bugzilla/show_bug.cgi?id=17704
-  # merged.  See also https://crbug.com/663886
-  #
+  # icf=all is broken in older golds, see
+  # https://sourceware.org/bugzilla/show_bug.cgi?id=17704
+  # See also https://crbug.com/663886
   # `linux_use_bundled_binutils` is to avoid breaking Linux distros which may
   # still have a buggy gold.
-  #
   # chromeos binutils has been patched with the fix, so always use icf there.
-  #
   # The bug only affects x86 and x64, so we can still use ICF when targeting
   # other architectures.
-  use_icf = is_posix && (use_gold || (use_lld && !is_nacl)) &&
-            !using_sanitizer && !(is_android && use_order_profiling) &&
-            ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
-             !(current_cpu == "x86" || current_cpu == "x64"))
+  #
+  # lld doesn't have the bug.
+  use_icf =
+      is_posix && !using_sanitizer && !(is_android && use_order_profiling) &&
+      ((use_lld && !is_nacl) ||
+       (use_gold &&
+        ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
+         !(current_cpu == "x86" || current_cpu == "x64"))))
 }
 
 if (is_clang) {
