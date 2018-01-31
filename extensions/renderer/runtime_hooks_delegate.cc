@@ -7,18 +7,22 @@
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/renderer/bindings/api_signature.h"
+#include "extensions/renderer/bindings/js_runner.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
@@ -48,6 +52,34 @@ constexpr char kConnect[] = "runtime.connect";
 constexpr char kConnectNative[] = "runtime.connectNative";
 constexpr char kSendMessage[] = "runtime.sendMessage";
 constexpr char kSendNativeMessage[] = "runtime.sendNativeMessage";
+constexpr char kGetBackgroundPage[] = "runtime.getBackgroundPage";
+constexpr char kGetPackageDirectoryEntry[] = "runtime.getPackageDirectoryEntry";
+
+// The custom callback supplied to runtime.getBackgroundPage to find and return
+// the background page to the original callback. The original callback is
+// curried in through the Data.
+void GetBackgroundPageCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = info.Holder()->CreationContext();
+
+  DCHECK(!info.Data().IsEmpty());
+  if (info.Data()->IsNull())
+    return;
+
+  // The ScriptContext should always be valid, because otherwise the
+  // getBackgroundPage() request should have been invalidated (and this should
+  // never run).
+  ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
+
+  v8::Local<v8::Value> background_page =
+      ExtensionFrameHelper::GetV8BackgroundPageMainFrame(
+          isolate, script_context->extension()->id());
+  v8::Local<v8::Value> args[] = {background_page};
+  script_context->SafeCallFunction(info.Data().As<v8::Function>(),
+                                   arraysize(args), args);
+}
 
 }  // namespace
 
@@ -74,6 +106,9 @@ RequestResult RuntimeHooksDelegate::HandleRequest(
       {&RuntimeHooksDelegate::HandleGetManifest, kGetManifest},
       {&RuntimeHooksDelegate::HandleConnectNative, kConnectNative},
       {&RuntimeHooksDelegate::HandleSendNativeMessage, kSendNativeMessage},
+      {&RuntimeHooksDelegate::HandleGetBackgroundPage, kGetBackgroundPage},
+      {&RuntimeHooksDelegate::HandleGetPackageDirectoryEntryCallback,
+       kGetPackageDirectoryEntry},
   };
 
   ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
@@ -89,9 +124,18 @@ RequestResult RuntimeHooksDelegate::HandleRequest(
   if (!handler)
     return RequestResult(RequestResult::NOT_HANDLED);
 
+  bool should_massage = false;
+  bool allow_options = false;
   if (method_name == kSendMessage) {
-    messaging_util::MassageSendMessageArguments(context->GetIsolate(), true,
-                                                arguments);
+    should_massage = true;
+    allow_options = true;
+  } else if (method_name == kSendNativeMessage) {
+    should_massage = true;
+  }
+
+  if (should_massage) {
+    messaging_util::MassageSendMessageArguments(context->GetIsolate(),
+                                                allow_options, arguments);
   }
 
   std::string error;
@@ -264,6 +308,111 @@ RequestResult RuntimeHooksDelegate::HandleConnectNative(
 
   RequestResult result(RequestResult::HANDLED);
   result.return_value = port.ToV8();
+  return result;
+}
+
+RequestResult RuntimeHooksDelegate::HandleGetBackgroundPage(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  DCHECK(script_context->extension());
+
+  RequestResult result(RequestResult::NOT_HANDLED);
+  if (!v8::Function::New(script_context->v8_context(),
+                         &GetBackgroundPageCallback, arguments[0])
+           .ToLocal(&result.custom_callback)) {
+    return RequestResult(RequestResult::THROWN);
+  }
+
+  return result;
+}
+
+RequestResult RuntimeHooksDelegate::HandleGetPackageDirectoryEntryCallback(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  // TODO(devlin): This is basically just copied and translated from
+  // the JS bindings, and still relies on the custom JS bindings for
+  // getBindDirectoryEntryCallback. This entire API is a bit crazy, and needs
+  // some help.
+  v8::Isolate* isolate = script_context->isolate();
+  v8::Local<v8::Context> v8_context = script_context->v8_context();
+
+  v8::Local<v8::Function> get_bind_directory_entry_callback;
+  {  // Begin natives enabled scope (for requiring the module).
+    ModuleSystem::NativesEnabledScope enable_natives(
+        script_context->module_system());
+    content::RenderFrame* background_page =
+        ExtensionFrameHelper::GetBackgroundPageFrame(
+            script_context->extension()->id());
+
+    // The JS function will sometimes use the background page's context to do
+    // some work (see also
+    // extensions/renderer/resources/file_entry_binding_util.js).  In order to
+    // allow native code to run in the background page, we'll also need a
+    // NativesEnabledScope for that context.
+    DCHECK(v8_context == isolate->GetCurrentContext());
+    base::Optional<ModuleSystem::NativesEnabledScope> background_page_natives;
+    if (background_page &&
+        background_page != script_context->GetRenderFrame() &&
+        blink::WebFrame::ScriptCanAccess(background_page->GetWebFrame())) {
+      ScriptContext* background_page_script_context =
+          GetScriptContextFromV8Context(
+              background_page->GetWebFrame()->MainWorldScriptContext());
+      if (background_page_script_context) {
+        background_page_natives.emplace(
+            background_page_script_context->module_system());
+      }
+    }
+
+    v8::Local<v8::Object> file_entry_binding_util;
+    // ModuleSystem::Require can return an empty Maybe when it fails for any
+    // number of reasons. It *shouldn't* ever throw, but it is technically
+    // possible. This makes the handling the failure result complicated. Since
+    // this shouldn't happen at all, bail and consider it handled if it fails.
+    if (!script_context->module_system()
+             ->Require("fileEntryBindingUtil")
+             .ToLocal(&file_entry_binding_util)) {
+      NOTREACHED();
+      // Abort, and consider the request handled.
+      return RequestResult(RequestResult::HANDLED);
+    }
+
+    v8::Local<v8::Value> get_bind_directory_entry_callback_value;
+    if (!file_entry_binding_util
+             ->Get(v8_context, gin::StringToSymbol(
+                                   isolate, "getBindDirectoryEntryCallback"))
+             .ToLocal(&get_bind_directory_entry_callback_value)) {
+      NOTREACHED();
+      return RequestResult(RequestResult::THROWN);
+    }
+
+    if (!get_bind_directory_entry_callback_value->IsFunction()) {
+      NOTREACHED();
+      // Abort, and consider the request handled.
+      return RequestResult(RequestResult::HANDLED);
+    }
+
+    get_bind_directory_entry_callback =
+        get_bind_directory_entry_callback_value.As<v8::Function>();
+  }  // End modules enabled scope.
+
+  v8::MaybeLocal<v8::Value> script_result =
+      JSRunner::Get(v8_context)
+          ->RunJSFunctionSync(get_bind_directory_entry_callback, v8_context, 0,
+                              nullptr);
+  v8::Local<v8::Value> callback;
+  if (!script_result.ToLocal(&callback)) {
+    NOTREACHED();
+    return RequestResult(RequestResult::THROWN);
+  }
+
+  if (!callback->IsFunction()) {
+    NOTREACHED();
+    // Abort, and consider the request handled.
+    return RequestResult(RequestResult::HANDLED);
+  }
+
+  RequestResult result(RequestResult::NOT_HANDLED);
+  result.custom_callback = callback.As<v8::Function>();
   return result;
 }
 

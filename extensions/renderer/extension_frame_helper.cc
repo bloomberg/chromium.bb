@@ -148,6 +148,9 @@ v8::Local<v8::Array> ExtensionFrameHelper::GetV8MainFrames(
     int browser_window_id,
     int tab_id,
     ViewType view_type) {
+  // WebFrame::ScriptCanAccess uses the isolate's current context. We need to
+  // make sure that the current context is the one we're expecting.
+  DCHECK(context == context->GetIsolate()->GetCurrentContext());
   std::vector<content::RenderFrame*> render_frames =
       GetExtensionFrames(extension_id, browser_window_id, tab_id, view_type);
   v8::Local<v8::Array> v8_frames = v8::Array::New(context->GetIsolate());
@@ -188,6 +191,22 @@ content::RenderFrame* ExtensionFrameHelper::GetBackgroundPageFrame(
     }
   }
   return nullptr;
+}
+
+v8::Local<v8::Value> ExtensionFrameHelper::GetV8BackgroundPageMainFrame(
+    v8::Isolate* isolate,
+    const std::string& extension_id) {
+  content::RenderFrame* main_frame = GetBackgroundPageFrame(extension_id);
+
+  v8::Local<v8::Value> background_page;
+  blink::WebLocalFrame* web_frame =
+      main_frame ? main_frame->GetWebFrame() : nullptr;
+  if (web_frame && blink::WebFrame::ScriptCanAccess(web_frame))
+    background_page = web_frame->MainWorldScriptContext()->Global();
+  else
+    background_page = v8::Undefined(isolate);
+
+  return background_page;
 }
 
 // static

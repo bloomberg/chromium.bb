@@ -118,11 +118,11 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     content::RenderFrame* render_frame = script_context->GetRenderFrame();
     DCHECK(render_frame);
     int routing_id = render_frame->GetRoutingID();
+    const Extension* extension = script_context->extension();
 
     switch (target.type) {
       case MessageTarget::EXTENSION: {
         ExtensionMsg_ExternalConnectionInfo info;
-        const Extension* extension = script_context->extension();
         if (extension && !extension->is_hosted_app())
           info.source_id = extension->id();
         info.target_id = *target.extension_id;
@@ -132,9 +132,15 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
             routing_id, info, channel_name, include_tls_channel_id, port_id));
         break;
       }
-      case MessageTarget::TAB:
-        NOTIMPLEMENTED();
+      case MessageTarget::TAB: {
+        DCHECK(extension);
+        ExtensionMsg_TabTargetConnectionInfo info;
+        info.tab_id = *target.tab_id;
+        info.frame_id = *target.frame_id;
+        render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
+            routing_id, info, extension->id(), channel_name, port_id));
         break;
+      }
       case MessageTarget::NATIVE_APP:
         render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
             routing_id, *target.native_application_name, port_id));

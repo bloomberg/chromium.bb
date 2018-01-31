@@ -15,6 +15,8 @@
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
+#include "extensions/renderer/api_activity_logger.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/get_per_context_data.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/message_target.h"
@@ -169,6 +171,7 @@ bool NativeRendererMessagingService::ContextHasMessagePort(
     const PortId& port_id) {
   if (one_time_message_handler_.HasPort(script_context, port_id))
     return true;
+  v8::HandleScope handle_scope(script_context->isolate());
   MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
       script_context->v8_context(), kDontCreateIfMissing);
   return data && base::ContainsKey(data->ports, port_id);
@@ -186,13 +189,15 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = script_context->v8_context();
+  v8::Context::Scope context_scope(v8_context);
 
   gin::DataObjectBuilder sender_builder(isolate);
   if (!info.source_id.empty())
     sender_builder.Set("id", info.source_id);
   if (!info.source_url.is_empty())
     sender_builder.Set("url", info.source_url.spec());
-  sender_builder.Set("frameId", source->frame_id);
+  if (source->frame_id >= 0)
+    sender_builder.Set("frameId", source->frame_id);
 
   const Extension* extension = script_context->extension();
   if (extension) {
@@ -222,15 +227,36 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
       channel_name == "chrome.runtime.sendMessage") {
     one_time_message_handler_.AddReceiver(script_context, target_port_id,
                                           sender, event_name);
-    return;
+  } else {
+    gin::Handle<GinPort> port =
+        CreatePort(script_context, channel_name, target_port_id);
+    port->SetSender(v8_context, sender);
+    std::vector<v8::Local<v8::Value>> args = {port.ToV8()};
+    bindings_system_->api_system()->event_handler()->FireEventInContext(
+        event_name, v8_context, &args, nullptr, JSRunner::ResultCallback());
   }
+  // Note: Arbitrary JS may have run; the context may now be deleted.
 
-  gin::Handle<GinPort> port =
-      CreatePort(script_context, channel_name, target_port_id);
-  port->SetSender(v8_context, sender);
-  std::vector<v8::Local<v8::Value>> args = {port.ToV8()};
-  bindings_system_->api_system()->event_handler()->FireEventInContext(
-      event_name, v8_context, &args, nullptr, JSRunner::ResultCallback());
+  if (binding::IsContextValid(v8_context) &&
+      APIActivityLogger::IsLoggingEnabled()) {
+    auto activity_logging_args =
+        std::make_unique<base::Value>(base::Value::Type::LIST);
+    auto& list = activity_logging_args->GetList();
+    list.reserve(2u);
+    if (!info.source_id.empty())
+      list.emplace_back(info.source_id);
+    else
+      list.emplace_back();
+
+    if (!info.source_url.is_empty())
+      list.emplace_back(info.source_url.spec());
+    else
+      list.emplace_back();
+
+    APIActivityLogger::LogEvent(
+        script_context, event_name,
+        base::ListValue::From(std::move(activity_logging_args)));
+  }
 }
 
 void NativeRendererMessagingService::DispatchOnMessageToListeners(
@@ -239,6 +265,7 @@ void NativeRendererMessagingService::DispatchOnMessageToListeners(
     const PortId& target_port_id) {
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(script_context->v8_context());
 
   if (one_time_message_handler_.DeliverMessage(script_context, message,
                                                target_port_id)) {
@@ -249,6 +276,7 @@ void NativeRendererMessagingService::DispatchOnMessageToListeners(
   DCHECK(!port.IsEmpty());
 
   port->DispatchOnMessage(script_context->v8_context(), message);
+  // Note: Arbitrary JS may have run; the context may now be deleted.
 }
 
 void NativeRendererMessagingService::DispatchOnDisconnectToListeners(
@@ -257,27 +285,39 @@ void NativeRendererMessagingService::DispatchOnDisconnectToListeners(
     const std::string& error_message) {
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> v8_context = script_context->v8_context();
+  v8::Context::Scope context_scope(v8_context);
 
   if (one_time_message_handler_.Disconnect(script_context, port_id,
                                            error_message)) {
     return;
   }
 
-  v8::Local<v8::Context> context = script_context->v8_context();
   gin::Handle<GinPort> port = GetPort(script_context, port_id);
   DCHECK(!port.IsEmpty());
   if (!error_message.empty()) {
+    // TODO(devlin): Subtle: If the JS event to disconnect the port happens
+    // asynchronously because JS is suspended, this last error won't be
+    // correctly set for listeners. Given this exceedingly rare, and shouldn't
+    // behave too strangely, this is somewhat low priority.
     bindings_system_->api_system()->request_handler()->last_error()->SetError(
-        context, error_message);
-  }
-  port->DispatchOnDisconnect(context);
-  if (!error_message.empty()) {
-    bindings_system_->api_system()->request_handler()->last_error()->ClearError(
-        context, true);
+        v8_context, error_message);
   }
 
-  MessagingPerContextData* data =
-      GetPerContextData<MessagingPerContextData>(context, kDontCreateIfMissing);
+  port->DispatchOnDisconnect(v8_context);
+  // Note: Arbitrary JS may have run; the context may now be deleted.
+
+  if (!binding::IsContextValid(v8_context))
+    return;
+
+  if (!error_message.empty()) {
+    bindings_system_->api_system()->request_handler()->last_error()->ClearError(
+        v8_context, true);
+  }
+
+  MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
+      v8_context, kDontCreateIfMissing);
+  DCHECK(data);
   data->ports.erase(port_id);
 }
 

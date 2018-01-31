@@ -53,6 +53,12 @@ class RuntimeHooksDelegate : public APIBindingHooksDelegate {
   APIBindingHooks::RequestResult HandleConnectNative(
       ScriptContext* script_context,
       const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleGetBackgroundPage(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleGetPackageDirectoryEntryCallback(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
 
   // The messaging service to handle connect() and sendMessage() calls.
   // Guaranteed to outlive this object.

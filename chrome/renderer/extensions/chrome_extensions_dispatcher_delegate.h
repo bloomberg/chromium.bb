@@ -30,7 +30,7 @@ class ChromeExtensionsDispatcherDelegate
       const std::set<std::string>& extensions_ids) override;
   void InitializeBindingsSystem(
       extensions::Dispatcher* dispatcher,
-      extensions::APIBindingsSystem* bindings_system) override;
+      extensions::NativeExtensionBindingsSystem* bindings_system) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsDispatcherDelegate);
 };

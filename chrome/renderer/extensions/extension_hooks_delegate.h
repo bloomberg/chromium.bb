@@ -40,6 +40,18 @@ class ExtensionHooksDelegate : public APIBindingHooksDelegate {
   APIBindingHooks::RequestResult HandleSendRequest(
       ScriptContext* script_context,
       const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleGetURL(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleGetViews(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleGetExtensionTabs(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleGetBackgroundPage(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
 
   // The messaging service to handle messaging calls.
   // Guaranteed to outlive this object.
