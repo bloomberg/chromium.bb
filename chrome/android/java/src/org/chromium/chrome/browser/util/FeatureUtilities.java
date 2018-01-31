@@ -249,7 +249,7 @@ public class FeatureUtilities {
      *         returned if the command line is not initialized or no experiment is specified.
      */
     public static String getChromeHomeSwipeLogicType() {
-        if (sChromeHomeSwipeLogicType == null && CommandLine.isInitialized()) {
+        if (sChromeHomeSwipeLogicType == null) {
             CommandLine instance = CommandLine.getInstance();
             sChromeHomeSwipeLogicType =
                     instance.getSwitchValue(ChromeSwitches.CHROME_HOME_SWIPE_LOGIC);

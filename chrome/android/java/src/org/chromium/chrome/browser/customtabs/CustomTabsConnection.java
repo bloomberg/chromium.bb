@@ -219,8 +219,6 @@ public class CustomTabsConnection {
     public CustomTabsConnection() {
         super();
         mContext = ContextUtils.getApplicationContext();
-        // Command line switch values are used below.
-        ((ChromeApplication) mContext).initCommandLine();
         mClientManager = new ClientManager(mContext);
         mLogRequests = CommandLine.getInstance().hasSwitch(LOG_SERVICE_REQUESTS);
     }

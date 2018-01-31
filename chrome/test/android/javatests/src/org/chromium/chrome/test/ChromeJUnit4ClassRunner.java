@@ -66,8 +66,7 @@ public class ChromeJUnit4ClassRunner extends BaseJUnit4ClassRunner {
 
     @Override
     protected void initCommandLineForTest() {
-        CommandLineInitUtil.initCommandLine(
-                InstrumentationRegistry.getTargetContext(), CommandLineFlags.getTestCmdLineFile());
+        CommandLineInitUtil.initCommandLine(CommandLineFlags.getTestCmdLineFile());
     }
 
     private static class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {

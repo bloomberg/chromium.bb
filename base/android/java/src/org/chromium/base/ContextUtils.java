@@ -11,10 +11,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Build;
+import android.os.Process;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+
+import java.lang.reflect.Method;
 
 /**
  * This class provides Android application context related utility methods.
@@ -148,5 +151,36 @@ public class ContextUtils {
             context = ((ContextWrapper) context).getBaseContext();
         }
         return context.getAssets();
+    }
+
+    /**
+     * @return Whether the process is isolated.
+     */
+    public static boolean isIsolatedProcess() {
+        // Could be tested by trying to list a directory and seeing if it throws.
+        // Reflection is faster though.
+        try {
+            Method isIsolatedMethod = Process.class.getMethod("isIsolated");
+            return (Boolean) isIsolatedMethod.invoke(null);
+        } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** @return The name of the current process. E.g. "org.chromium.chrome:isolated_process0" */
+    public static String getProcessName() {
+        // Could be obtained by looping through results of ActivityManager.getRunningAppProcesses(),
+        // but avoiding IPC is much faster.
+        try {
+            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
+            Method currentProcessName = activityThreadClazz.getMethod("currentProcessName");
+            return (String) currentProcessName.invoke(null);
+        } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean isMainProcess() {
+        return !getProcessName().contains(":");
     }
 }

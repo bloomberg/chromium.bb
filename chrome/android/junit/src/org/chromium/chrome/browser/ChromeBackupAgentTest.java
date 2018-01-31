@@ -40,6 +40,7 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -109,6 +110,7 @@ public class ChromeBackupAgentTest {
         // Set up the context.
         mContext = RuntimeEnvironment.application.getApplicationContext();
         ContextUtils.initApplicationContextForTests(mContext);
+        CommandLine.init(null);
 
         // Clear any app preferences
         clearPrefs();

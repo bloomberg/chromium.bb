@@ -20,6 +20,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -50,6 +51,7 @@ public class ChromeActionModeCallbackTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        CommandLine.init(null);
         RecordUserAction.setDisabledForTests(true);
 
         mActionModeCallback =

@@ -37,43 +37,50 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
  */
 @MainDex
 public class ChromeApplication extends BaseChromiumApplication {
-    public static final String COMMAND_LINE_FILE = "chrome-command-line";
+    private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
     private static DocumentTabModelSelector sDocumentTabModelSelector;
     private DiscardableReferencePool mReferencePool;
 
+    // Called by the framework for ALL processes. Runs before ContentProviders are created.
+    // Quirk: context.getApplicationContext() returns null during this method.
     @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
+    protected void attachBaseContext(Context context) {
+        UmaUtils.recordMainEntryPointTime();
+        super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
-        BuildHooksAndroid.initCustomResources(this);
-        ApplicationStatus.initialize(this);
-        Boolean isIsolatedProcess = PureJavaExceptionReporter.detectIsIsolatedProcess();
-        if (isIsolatedProcess != null && !isIsolatedProcess.booleanValue()) {
+
+        if (ContextUtils.isMainProcess()) {
+            // Renderers and GPU process have command line passed to them via IPC
+            // (see ChildProcessService.java).
+            CommandLineInitUtil.initCommandLine(COMMAND_LINE_FILE);
+
+            // Requires command-line flags.
+            TraceEvent.maybeEnableEarlyTracing();
+            TraceEvent.begin("ChromeApplication.attachBaseContext");
+
+            // Register for activity lifecycle callbacks. Must be done before any activities are
+            // created and is needed only by processes that use the ApplicationStatus api (which for
+            // Chrome is just the browser process).
+            ApplicationStatus.initialize(this);
+
+            // Only browser process requires custom resources.
+            BuildHooksAndroid.initCustomResources(this);
+
+            // Not losing much to not cover the below conditional since it just has simple setters.
+            TraceEvent.end("ChromeApplication.attachBaseContext");
+        }
+
+        if (!ContextUtils.isIsolatedProcess()) {
+            // Incremental install disables process isolation, so things in this block will actually
+            // be run for incremental apks, but not normal apks.
             PureJavaExceptionHandler.installHandler();
             if (BuildHooksConfig.REPORT_JAVA_ASSERT) {
                 BuildHooks.setReportAssertionCallback(
-                        exception -> { PureJavaExceptionReporter.reportJavaException(exception); });
+                        PureJavaExceptionReporter::reportJavaException);
             }
         }
-    }
-
-    /**
-     * This is called once per ChromeApplication instance, which get created per process
-     * (browser OR renderer).  Don't stick anything in here that shouldn't be called multiple times
-     * during Chrome's lifetime.
-     */
-    @Override
-    public void onCreate() {
-        UmaUtils.recordMainEntryPointTime();
-        initCommandLine();
-        TraceEvent.maybeEnableEarlyTracing();
-        TraceEvent.begin("ChromeApplication.onCreate");
-
-        super.onCreate();
-
-        TraceEvent.end("ChromeApplication.onCreate");
     }
 
     @Override
@@ -97,10 +104,6 @@ public class ChromeApplication extends BaseChromiumApplication {
             return;
         }
         InvalidStartupDialog.show(activity, e.getErrorCode());
-    }
-
-    public void initCommandLine() {
-        CommandLineInitUtil.initCommandLine(this, COMMAND_LINE_FILE);
     }
 
     /**
