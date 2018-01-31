@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Constructing a CSSVariableReferenceValue with an invalid variable name throws SyntaxError assert_throws: function "() => new CSSVariableReferenceValue('bar')" did not throw
-FAIL Updating CSSVariableReferenceValue.variable to an invalid variable name throws SyntaxError assert_throws: function "() => result.variable = 'bar'" did not throw
-PASS CSSVariableReferenceValue can be constructed with no fallback
-PASS CSSVariableReferenceValue can be constructed with fallback
-PASS CSSVariableReferenceValue.variable can updated to a valid variable name
-Harness: the test ran to completion.
-
