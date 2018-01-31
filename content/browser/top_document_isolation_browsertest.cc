@@ -596,20 +596,20 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, PopupAndRedirection) {
       DepictFrameTree(root()));
 
   // The popup redirects itself to the advertiser's website (ad.com).
+  RenderFrameDeletedObserver deleted_observer(popup_root->current_frame_host());
   RendererInitiatedNavigateToURL(popup_root, ad_url);
+  deleted_observer.WaitUntilDeleted();
 
   // This must join its same-site opener, in the default subframe SiteInstance.
   EXPECT_EQ(
-      " Site A ------------ proxies for B C\n"
-      "   +--Site B ------- proxies for A C\n"
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
       "Where A = http://page.com/\n"
-      "      B = default subframe process\n"
-      "      C = http://adnetwork.com/",
+      "      B = default subframe process",
       DepictFrameTree(root()));
   EXPECT_EQ(
-      " Site C ------------ proxies for B\n"
-      "Where B = default subframe process\n"
-      "      C = http://adnetwork.com/",
+      " Site B\n"
+      "Where B = default subframe process",
       DepictFrameTree(popup_root));
 }
 

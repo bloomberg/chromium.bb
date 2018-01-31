@@ -1316,6 +1316,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // isn't a strict invariant but rather a heuristic to avoid unnecessary
   // OOPIFs; see https://crbug.com/711006.  Note that this shouldn't apply to
   // TopDocumentIsolation, so do this after TDI checks above.
+  //
+  // TODO(alexmos): Remove this check after fixing https://crbug.com/787576.
   if (!frame_tree_node_->IsMainFrame()) {
     RenderFrameHostImpl* parent =
         frame_tree_node_->parent()->current_frame_host();
@@ -1381,6 +1383,20 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
     // Always attempt a transfer in these cases.
     return true;
   }
+
+  // If the destination URL is not same-site with current RenderFrameHost and
+  // doesn't require a dedicated process (see above), but it is same-site with
+  // the opener RenderFrameHost, attempt a transfer so that the destination URL
+  // can go back to the opener SiteInstance.  This avoids breaking scripting in
+  // some cases when only a subset of sites is isolated
+  // (https://crbug.com/807184).
+  //
+  // TODO(alexmos): This is a temporary workaround and should be removed after
+  // fixing https://crbug.com/787576.
+  FrameTreeNode* opener = frame_tree_node_->opener();
+  if (opener && IsCurrentlySameSite(opener->current_frame_host(), dest_url) &&
+      opener->current_frame_host()->GetSiteInstance() != rfh->GetSiteInstance())
+    return true;
 
   return false;
 }
