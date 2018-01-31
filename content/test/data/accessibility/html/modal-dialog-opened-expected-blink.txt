@@ -1,4 +1,5 @@
 rootWebArea
+++genericContainer
 ++dialog
 ++++staticText name='The dialog subtree should be the only text content in the accessibility tree. '
 ++++++inlineTextBox name='The dialog subtree should be the only text content in the accessibility tree. '
