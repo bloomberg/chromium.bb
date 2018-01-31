@@ -10,8 +10,7 @@ p { font-family: 'test'; }
 <img src="missing-image.png">
 <script>
 function doXHR() {
-  return fetch('extensions-network.html')
-    .then(response => response.arrayBuffer());
+  return fetch('extensions-network.html');
 }
 </script>
 <p>some text.</p>
