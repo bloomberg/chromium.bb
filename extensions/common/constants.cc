@@ -119,4 +119,6 @@ const char* const kHangoutsExtensionIds[6] = {
 const char kPolicyBlockedScripting[] =
     "This page cannot be scripted due to an ExtensionsSettings policy.";
 
+const int kContentVerificationDefaultBlockSize = 4096;
+
 }  // namespace extension_misc

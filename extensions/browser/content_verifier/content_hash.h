@@ -12,6 +12,7 @@
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/verified_contents.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
 
 namespace extensions {
@@ -137,7 +138,7 @@ class ContentHash {
   // The block size to use for hashing.
   // TODO(asargent) - use the value from verified_contents.json for each
   // file, instead of using a constant.
-  int block_size_ = 4096;
+  int block_size_ = extension_misc::kContentVerificationDefaultBlockSize;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHash);
 };
