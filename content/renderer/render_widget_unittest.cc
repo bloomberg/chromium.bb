@@ -17,6 +17,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
+#include "content/common/view_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
@@ -378,6 +379,31 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
+}
+
+// Tests that if a RenderWidget goes invisible while performing a resize, the
+// resize is acked immediately.
+TEST_F(RenderWidgetUnittest, AckResizeOnHide) {
+  // The widget should start off visible.
+  ASSERT_FALSE(widget()->is_hidden());
+
+  // Send a ResizeParams that needs to be acked.
+  constexpr gfx::Size size(200, 200);
+  ResizeParams resize_params;
+  resize_params.screen_info = ScreenInfo();
+  resize_params.new_size = size;
+  resize_params.physical_backing_size = size;
+  resize_params.visible_viewport_size = size;
+  resize_params.content_source_id = widget()->GetContentSourceId();
+  resize_params.needs_resize_ack = true;
+  widget()->OnMessageReceived(
+      ViewMsg_Resize(widget()->routing_id(), resize_params));
+
+  // Hide the widget. Make sure the resize is acked.
+  widget()->sink()->ClearMessages();
+  widget()->OnMessageReceived(ViewMsg_WasHidden(widget()->routing_id()));
+  EXPECT_TRUE(widget()->sink()->GetUniqueMessageMatching(
+      ViewHostMsg_ResizeOrRepaint_ACK::ID));
 }
 
 class PopupRenderWidget : public RenderWidget {
