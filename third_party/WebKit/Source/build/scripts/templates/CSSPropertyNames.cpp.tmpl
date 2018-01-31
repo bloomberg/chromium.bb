@@ -18,12 +18,6 @@
 #pragma warning(disable : 4302 4311)
 #endif
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-// TODO(thakis): Remove once we use a gperf that no longer produces "register".
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#endif
-
 namespace blink {
 %}
 %struct-type
@@ -42,10 +36,6 @@ struct Property;
 %%
 {{property_to_enum_map}}
 %%
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 const Property* FindProperty(const char* str, unsigned int len) {
   return {{class_name}}Hash::findPropertyImpl(str, len);

@@ -14,12 +14,6 @@
 #pragma warning(disable : 4302 4311)
 #endif
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-// TODO(thakis): Remove once we use a gperf that no longer produces "register".
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#endif
-
 namespace blink {
 static const char valueListStringPool[] = {
 {% for keyword in value_keywords %}
@@ -52,10 +46,6 @@ struct Value;
 {{keyword.lower_name}}, {{keyword.enum_name}}
 {% endfor %}
 %%
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 const Value* FindValue(const char* str, unsigned int len) {
   return CSSValueKeywordsHash::findValueImpl(str, len);
