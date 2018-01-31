@@ -19,6 +19,7 @@ import java.util.Locale;
 public class DownloadFilter {
     // These statics are used for UMA logging. Please update the AndroidDownloadFilterType enum in
     // histograms.xml if these change.
+    // TODO(jming): Move this to an IntDef.
     public static final int FILTER_ALL = 0;
     public static final int FILTER_PAGE = 1;
     public static final int FILTER_VIDEO = 2;
@@ -37,7 +38,8 @@ public class DownloadFilter {
      * Icons and labels for each filter in the menu.
      *
      * Changing the ordering of these items requires changing the FILTER_* values in
-     * {@link DownloadHistoryAdapter}.
+     * {@link DownloadHistoryAdapter} and the values in mCanonicalDirectoryPairs in
+     * {@link org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter}
      */
     static final int[][] FILTER_LIST = new int[][] {
             {R.drawable.ic_file_download_24dp, R.string.download_manager_ui_all_downloads},
@@ -60,14 +62,14 @@ public class DownloadFilter {
     /**
      * @return The drawable id representing the given filter.
      */
-    static int getDrawableForFilter(int filter) {
+    public static int getDrawableForFilter(int filter) {
         return FILTER_LIST[filter][0];
     }
 
     /**
      * @return The resource id of the title representing the given filter.
      */
-    static int getStringIdForFilter(int filter) {
+    public static int getStringIdForFilter(int filter) {
         return FILTER_LIST[filter][1];
     }
 

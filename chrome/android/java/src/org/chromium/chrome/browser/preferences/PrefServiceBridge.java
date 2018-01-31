@@ -1061,8 +1061,8 @@ public final class PrefServiceBridge {
     /**
      * @param directory New directory to set as the download default directory.
      */
-    public void setDownloadDefaultDirectory(String directory) {
-        nativeSetDownloadDefaultDirectory(directory);
+    public void setDownloadAndSaveFileDefaultDirectory(String directory) {
+        nativeSetDownloadAndSaveFileDefaultDirectory(directory);
     }
 
     private native boolean nativeGetBoolean(int preference);
@@ -1179,5 +1179,5 @@ public final class PrefServiceBridge {
     private native boolean nativeIsBlockedLanguage(String language);
     private native void nativeSetLanguageBlockedState(String language, boolean blocked);
     private native String nativeGetDownloadDefaultDirectory();
-    private native void nativeSetDownloadDefaultDirectory(String directory);
+    private native void nativeSetDownloadAndSaveFileDefaultDirectory(String directory);
 }
