@@ -47,7 +47,6 @@ class TargetHandler : public DevToolsDomainHandler,
   Response SetDiscoverTargets(bool discover) override;
   Response SetAutoAttach(bool auto_attach,
                          bool wait_for_debugger_on_start) override;
-  Response SetAttachToFrames(bool value) override;
   Response SetRemoteLocations(
       std::unique_ptr<protocol::Array<Target::RemoteLocation>>) override;
   Response AttachToTarget(const std::string& target_id,
