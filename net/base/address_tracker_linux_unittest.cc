@@ -736,6 +736,11 @@ TEST_F(AddressTrackerLinuxTest, BroadcastInit) {
   runner2.VerifyCompletes();
 }
 
+TEST_F(AddressTrackerLinuxTest, TunnelInterfaceName) {
+  EXPECT_TRUE(AddressTrackerLinux::IsTunnelInterfaceName("tun0"));
+  EXPECT_FALSE(AddressTrackerLinux::IsTunnelInterfaceName("wlan0"));
+}
+
 }  // namespace
 
 }  // namespace internal

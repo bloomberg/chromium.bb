@@ -35,7 +35,9 @@
 #include <sys/system_properties.h>
 #include "base/android/build_info.h"
 #include "net/android/network_library.h"
+#include "net/base/address_tracker_linux.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_interfaces.h"
 #endif
 
 namespace net {
@@ -118,6 +120,20 @@ class DnsConfigWatcher {
 };
 #endif  // defined(OS_IOS)
 
+#if defined(OS_ANDROID)
+bool IsVpnPresent() {
+  NetworkInterfaceList networks;
+  if (!GetNetworkList(&networks, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
+    return false;
+
+  for (NetworkInterface network : networks) {
+    if (AddressTrackerLinux::IsTunnelInterfaceName(network.name.c_str()))
+      return true;
+  }
+  return false;
+}
+#endif  // defined(OS_ANDROID)
+
 ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 #if !defined(OS_ANDROID)
@@ -182,6 +198,11 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
     if (dns_config->nameservers.empty())
       return CONFIG_PARSE_POSIX_NO_NAMESERVERS;
     return CONFIG_PARSE_POSIX_OK;
+  }
+
+  if (IsVpnPresent()) {
+    dns_config->unhandled_options = true;
+    return CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS;
   }
 
   char property_value[PROP_VALUE_MAX];
