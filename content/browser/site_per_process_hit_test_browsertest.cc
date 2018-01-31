@@ -1600,7 +1600,6 @@ class SitePerProcessMouseWheelHitTestBrowserTest
 
     InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
                                blink::WebInputEvent::kMouseWheel);
-    waiter.Reset();
     SendMouseWheel(pos);
     waiter.Wait();
 
@@ -1610,9 +1609,7 @@ class SitePerProcessMouseWheelHitTestBrowserTest
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
     EXPECT_EQ("\"scroll: 1\"", reply);
 
-    waiter.Reset();
     SendMouseWheel(pos);
-    waiter.Wait();
 
     // If async_wheel_events is disabled, this time only the wheel handler
     // fires, since even numbered scrolls are prevent-defaulted. If it is
@@ -1627,9 +1624,7 @@ class SitePerProcessMouseWheelHitTestBrowserTest
       EXPECT_EQ("\"scroll: 2\"", reply);
     }
 
-    waiter.Reset();
     SendMouseWheel(pos);
-    waiter.Wait();
 
     // Odd number of wheels, expect both wheel and scroll handlers to fire
     // again.
