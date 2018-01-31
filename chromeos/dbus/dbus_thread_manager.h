@@ -82,13 +82,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Processes for which to create and initialize the D-Bus clients.
   // TODO(jamescook): Move creation of clients into //ash and //chrome/browser.
   // http://crbug.com/647367
-  enum ClientSet {
-    // Common clients needed by both ash and the browser.
-    kShared,
-
-    // Includes the client in |kShared| as well as the clients used only by
-    // the browser (and not ash).
-    kAll
+  enum ProcessMask {
+    PROCESS_ASH = 1 << 0,
+    PROCESS_BROWSER = 1 << 1,
+    PROCESS_ALL = ~0,
   };
   // Sets the global instance. Must be called before any calls to Get().
   // We explicitly initialize and shut down the global object, rather than
@@ -97,9 +94,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // arguments and whether this process runs in a ChromeOS environment.
   // Only D-Bus clients available in the processes in |process_mask| will be
   // created.
-  static void Initialize(ClientSet client_set);
+  static void Initialize(ProcessMask process_mask);
 
-  // Equivalent to Initialize(kAll).
+  // Equivalent to Initialize(PROCESS_ALL).
   static void Initialize();
 
   // Returns a DBusThreadManagerSetter instance that allows tests to
@@ -162,9 +159,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
  private:
   friend class DBusThreadManagerSetter;
 
-  // Creates dbus clients based on |client_set|. Creates real clients if
-  // |use_real_clients| is set, otherwise creates fakes.
-  DBusThreadManager(ClientSet client_set, bool use_real_clients);
+  // Creates dbus clients for all process types in |process_mask|. Creates real
+  // clients if |use_real_clients| is set, otherwise creates fakes.
+  DBusThreadManager(ProcessMask process_mask, bool use_real_clients);
   ~DBusThreadManager();
 
   // Initializes all currently stored DBusClients with the system bus and

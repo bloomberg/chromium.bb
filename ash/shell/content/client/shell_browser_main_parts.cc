@@ -57,7 +57,8 @@ ShellBrowserMainParts::~ShellBrowserMainParts() = default;
 void ShellBrowserMainParts::PreMainMessageLoopStart() {}
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-  chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
+  chromeos::DBusThreadManager::Initialize(
+      chromeos::DBusThreadManager::PROCESS_ASH);
 }
 
 void ShellBrowserMainParts::ToolkitInitialized() {

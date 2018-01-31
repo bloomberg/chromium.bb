@@ -51,7 +51,7 @@ TEST(DBusThreadManagerTest, Initialize) {
 
 // Tests that clients can be created for the browser process.
 TEST(DBusThreadManagerTest, InitializeForBrowser) {
-  DBusThreadManager::Initialize(DBusThreadManager::kAll);
+  DBusThreadManager::Initialize(DBusThreadManager::PROCESS_BROWSER);
   DBusThreadManager* manager = DBusThreadManager::Get();
   ASSERT_TRUE(manager);
 
@@ -88,7 +88,7 @@ TEST(DBusThreadManagerTest, InitializeForBrowser) {
 
 // Tests that clients can be created for the ash process.
 TEST(DBusThreadManagerTest, InitializeForAsh) {
-  DBusThreadManager::Initialize(DBusThreadManager::kShared);
+  DBusThreadManager::Initialize(DBusThreadManager::PROCESS_ASH);
   DBusThreadManager* manager = DBusThreadManager::Get();
   ASSERT_TRUE(manager);
 

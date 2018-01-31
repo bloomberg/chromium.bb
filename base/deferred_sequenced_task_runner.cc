@@ -26,13 +26,9 @@ DeferredSequencedTaskRunner::DeferredTask::operator=(DeferredTask&& other) =
 
 DeferredSequencedTaskRunner::DeferredSequencedTaskRunner(
     scoped_refptr<SequencedTaskRunner> target_task_runner)
-    : DeferredSequencedTaskRunner(std::move(target_task_runner), false) {}
+    : started_(false), target_task_runner_(std::move(target_task_runner)) {}
 
-DeferredSequencedTaskRunner::DeferredSequencedTaskRunner(
-    bool does_target_task_runner_run_tasks_in_sequence)
-    : DeferredSequencedTaskRunner(
-          nullptr,
-          does_target_task_runner_run_tasks_in_sequence) {}
+DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() = default;
 
 bool DeferredSequencedTaskRunner::PostDelayedTask(const Location& from_here,
                                                   OnceClosure task,
@@ -50,9 +46,7 @@ bool DeferredSequencedTaskRunner::PostDelayedTask(const Location& from_here,
 }
 
 bool DeferredSequencedTaskRunner::RunsTasksInCurrentSequence() const {
-  AutoLock lock(lock_);
-  return target_task_runner_ ? target_task_runner_->RunsTasksInCurrentSequence()
-                             : does_target_task_runner_run_tasks_in_sequence_;
+  return target_task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool DeferredSequencedTaskRunner::PostNonNestableDelayedTask(
@@ -70,16 +64,6 @@ bool DeferredSequencedTaskRunner::PostNonNestableDelayedTask(
   return true;
 }
 
-DeferredSequencedTaskRunner::DeferredSequencedTaskRunner(
-    scoped_refptr<SequencedTaskRunner> target_task_runner,
-    bool does_target_task_runner_run_tasks_in_sequence)
-    : does_target_task_runner_run_tasks_in_sequence_(
-          does_target_task_runner_run_tasks_in_sequence),
-      started_(false),
-      target_task_runner_(std::move(target_task_runner)) {}
-
-DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() = default;
-
 void DeferredSequencedTaskRunner::QueueDeferredTask(const Location& from_here,
                                                     OnceClosure task,
                                                     TimeDelta delay,
@@ -96,16 +80,10 @@ void DeferredSequencedTaskRunner::QueueDeferredTask(const Location& from_here,
   deferred_tasks_queue_.push_back(std::move(deferred_task));
 }
 
-void DeferredSequencedTaskRunner::Start(
-    scoped_refptr<SequencedTaskRunner> target_task_runner) {
+void DeferredSequencedTaskRunner::Start() {
   AutoLock lock(lock_);
   DCHECK(!started_);
   started_ = true;
-  if (target_task_runner) {
-    DCHECK(!target_task_runner_);
-    target_task_runner_ = std::move(target_task_runner);
-  }
-  DCHECK(target_task_runner_);
   for (std::vector<DeferredTask>::iterator i = deferred_tasks_queue_.begin();
       i != deferred_tasks_queue_.end();
       ++i) {

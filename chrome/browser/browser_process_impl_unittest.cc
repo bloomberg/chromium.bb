@@ -108,7 +108,6 @@ class BrowserProcessImplTest : public ::testing::Test {
 #endif
 TEST_F(BrowserProcessImplTest, MAYBE_LifeCycle) {
   // Setup the BrowserProcessImpl and the threads.
-  browser_process_impl()->Init();
   browser_process_impl()->PreCreateThreads(*command_line());
   StartSecondaryThreads();
   browser_process_impl()->PreMainMessageLoopRun();
