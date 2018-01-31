@@ -823,18 +823,29 @@ void BlinkTestController::OnImageDump(const std::string& actual_pixel_hash,
 
     bool discard_transparency = true;
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kForceOverlayFullscreenVideo))
+            switches::kForceOverlayFullscreenVideo)) {
       discard_transparency = false;
+    }
+
+    gfx::PNGCodec::ColorFormat pixel_format;
+    switch (image.info().colorType()) {
+      case kBGRA_8888_SkColorType:
+        pixel_format = gfx::PNGCodec::FORMAT_BGRA;
+        break;
+      case kRGBA_8888_SkColorType:
+        pixel_format = gfx::PNGCodec::FORMAT_RGBA;
+        break;
+      default:
+        NOTREACHED();
+        return;
+    }
 
     std::vector<gfx::PNGCodec::Comment> comments;
     comments.push_back(gfx::PNGCodec::Comment("checksum", actual_pixel_hash));
     bool success = gfx::PNGCodec::Encode(
-        static_cast<const unsigned char*>(image.getPixels()),
-        gfx::PNGCodec::FORMAT_BGRA,
+        static_cast<const unsigned char*>(image.getPixels()), pixel_format,
         gfx::Size(image.width(), image.height()),
-        static_cast<int>(image.rowBytes()),
-        discard_transparency,
-        comments,
+        static_cast<int>(image.rowBytes()), discard_transparency, comments,
         &png);
     if (success)
       printer_->PrintImageBlock(png);
