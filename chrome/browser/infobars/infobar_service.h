@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -56,6 +57,11 @@ class InfoBarService : public infobars::InfoBarManager,
   std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
   void OpenURL(const GURL& url, WindowOpenDisposition disposition) override;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBarCocoa(
+      std::unique_ptr<ConfirmInfoBarDelegate> delegate);
+#endif
 
  private:
   friend class content::WebContentsUserData<InfoBarService>;

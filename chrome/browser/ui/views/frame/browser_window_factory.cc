@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/chromium_strings.h"
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
@@ -16,6 +18,10 @@
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser,
                                                   bool user_gesture) {
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return BrowserWindow::CreateBrowserWindowCocoa(browser, user_gesture);
+#endif
   // Create the view and the frame. The frame will attach itself via the view
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView();

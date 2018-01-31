@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/buildflag.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,6 +31,7 @@
 #include "net/ssl/ssl_platform_key_mac.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/ui_features.h"
 
 using content::BrowserThread;
 
@@ -79,7 +81,7 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
 
 namespace chrome {
 
-void ShowSSLClientCertificateSelector(
+void ShowSSLClientCertificateSelectorCocoa(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -105,6 +107,18 @@ void ShowSSLClientCertificateSelector(
                         delegate:std::move(delegate)];
   [selector displayForWebContents:contents clientCerts:std::move(client_certs)];
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+void ShowSSLClientCertificateSelector(
+    content::WebContents* contents,
+    net::SSLCertRequestInfo* cert_request_info,
+    net::ClientCertIdentityList client_certs,
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
+  return ShowSSLClientCertificateSelectorCocoa(contents, cert_request_info,
+                                               std::move(client_certs),
+                                               std::move(delegate));
+}
+#endif
 
 }  // namespace chrome
 
