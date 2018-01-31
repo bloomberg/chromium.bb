@@ -1597,9 +1597,15 @@ void SourceBufferStream<RangeClass>::Seek(base::TimeDelta timestamp) {
     return;
 
   if (!audio_configs_.empty()) {
+    // Adjust |seek_dts| for an Opus stream backward up to the config's seek
+    // preroll, but not further than the range start time, and not at all if
+    // there is a config change in the middle of that preroll interval. If
+    // |seek_dts| is already before the range start time, as can happen due to
+    // fudge room, do not adjust it.
     const auto& config =
         audio_configs_[RangeGetConfigIdAtTime(itr->get(), seek_dts)];
-    if (config.codec() == kCodecOpus) {
+    if (config.codec() == kCodecOpus &&
+        seek_dts > RangeGetStartTimestamp(itr->get())) {
       DecodeTimestamp preroll_dts = std::max(
           seek_dts - config.seek_preroll(), RangeGetStartTimestamp(itr->get()));
       if (RangeCanSeekTo(itr->get(), preroll_dts) &&
