@@ -149,6 +149,7 @@ v8::Local<v8::Value> EventEmitter::DispatchSync(
 
   JSRunner* js_runner = JSRunner::Get(context);
   v8::Isolate* isolate = context->GetIsolate();
+  DCHECK(context == isolate->GetCurrentContext());
 
   // Gather results from each listener as we go along. This should only be
   // called when running synchronous script is allowed, and some callers
@@ -211,6 +212,7 @@ void EventEmitter::DispatchAsync(v8::Local<v8::Context> context,
                                  JSRunner::ResultCallback callback) {
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context);
 
   // In order to dispatch (potentially) asynchronously (such as when script is
   // suspended), use a helper function to run once JS is allowed to run,

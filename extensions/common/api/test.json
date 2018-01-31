@@ -65,6 +65,11 @@
                     "type": "boolean",
                     "optional": true,
                     "description": "Whether navigation requets are initiated by the browser or renderer (PlzNavigate)."
+                  },
+                  "nativeCrxBindingsEnabled": {
+                    "type": "boolean",
+                    "optional": true,
+                    "description": "Whether native extension bindings are enabled."
                   }
                 }
               }

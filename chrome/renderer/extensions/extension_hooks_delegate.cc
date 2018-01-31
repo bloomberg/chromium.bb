@@ -4,18 +4,22 @@
 
 #include "chrome/renderer/extensions/extension_hooks_delegate.h"
 
-#include "base/strings/stringprintf.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/view_type.h"
 #include "extensions/renderer/bindings/api_signature.h"
+#include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
+#include "gin/dictionary.h"
 
 namespace extensions {
 
@@ -24,6 +28,10 @@ namespace {
 using RequestResult = APIBindingHooks::RequestResult;
 
 constexpr char kSendRequest[] = "extension.sendRequest";
+constexpr char kGetURL[] = "extension.getURL";
+constexpr char kGetBackgroundPage[] = "extension.getBackgroundPage";
+constexpr char kGetViews[] = "extension.getViews";
+constexpr char kGetExtensionTabs[] = "extension.getExtensionTabs";
 
 // We alias a bunch of chrome.extension APIs to their chrome.runtime
 // counterparts.
@@ -109,7 +117,10 @@ RequestResult ExtensionHooksDelegate::HandleRequest(
     base::StringPiece method;
   } kHandlers[] = {
       {&ExtensionHooksDelegate::HandleSendRequest, kSendRequest},
-      // TODO(devlin): Add getBackgroundPage, getExtensionTabs, getViews.
+      {&ExtensionHooksDelegate::HandleGetURL, kGetURL},
+      {&ExtensionHooksDelegate::HandleGetBackgroundPage, kGetBackgroundPage},
+      {&ExtensionHooksDelegate::HandleGetExtensionTabs, kGetExtensionTabs},
+      {&ExtensionHooksDelegate::HandleGetViews, kGetViews},
   };
 
   ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
@@ -155,6 +166,10 @@ void ExtensionHooksDelegate::InitializeTemplate(
     object_template->SetAccessor(gin::StringToSymbol(isolate, alias),
                                  &GetAliasedFeature);
   }
+
+  bool is_incognito = ExtensionsRendererClient::Get()->IsIncognitoProcess();
+  object_template->Set(isolate, "inIncognitoContext",
+                       v8::Boolean::New(isolate, is_incognito));
 }
 
 void ExtensionHooksDelegate::InitializeInstance(
@@ -214,6 +229,106 @@ RequestResult ExtensionHooksDelegate::HandleSendRequest(
       messaging_util::kSendRequestChannel, false, *message, response_callback);
 
   return RequestResult(RequestResult::HANDLED);
+}
+
+RequestResult ExtensionHooksDelegate::HandleGetURL(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  DCHECK_EQ(1u, arguments.size());
+  DCHECK(arguments[0]->IsString());
+  DCHECK(script_context->extension());
+
+  std::string path = gin::V8ToString(arguments[0]);
+
+  RequestResult result(RequestResult::HANDLED);
+  result.return_value =
+      gin::StringToV8(script_context->isolate(),
+                      script_context->extension()->GetResourceURL(path).spec());
+  return result;
+}
+
+APIBindingHooks::RequestResult ExtensionHooksDelegate::HandleGetViews(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  const Extension* extension = script_context->extension();
+  DCHECK(extension);
+
+  ViewType view_type = VIEW_TYPE_INVALID;
+  int window_id = extension_misc::kUnknownWindowId;
+  int tab_id = extension_misc::kUnknownTabId;
+
+  if (!arguments[0]->IsNull()) {
+    gin::Dictionary options_dict(script_context->isolate(),
+                                 arguments[0].As<v8::Object>());
+    v8::Local<v8::Value> v8_window_id;
+    v8::Local<v8::Value> v8_tab_id;
+    v8::Local<v8::Value> v8_view_type;
+    if (!options_dict.Get("windowId", &v8_window_id) ||
+        !options_dict.Get("tabId", &v8_tab_id) ||
+        !options_dict.Get("type", &v8_view_type)) {
+      NOTREACHED()
+          << "Unexpected exception: argument parsing produces plain objects";
+      return RequestResult(RequestResult::THROWN);
+    }
+
+    if (!v8_window_id->IsUndefined()) {
+      DCHECK(v8_window_id->IsInt32());
+      window_id = v8_window_id.As<v8::Int32>()->Value();
+    }
+
+    if (!v8_tab_id->IsUndefined()) {
+      DCHECK(v8_tab_id->IsInt32());
+      tab_id = v8_tab_id.As<v8::Int32>()->Value();
+    }
+
+    if (!v8_view_type->IsUndefined()) {
+      DCHECK(v8_view_type->IsString());
+      std::string view_type_string =
+          base::ToUpperASCII(gin::V8ToString(v8_view_type));
+      if (view_type_string != "ALL") {
+        bool success = GetViewTypeFromString(view_type_string, &view_type);
+        DCHECK(success);
+      }
+    }
+  }
+
+  RequestResult result(RequestResult::HANDLED);
+  result.return_value = ExtensionFrameHelper::GetV8MainFrames(
+      script_context->v8_context(), extension->id(), window_id, tab_id,
+      view_type);
+  return result;
+}
+
+RequestResult ExtensionHooksDelegate::HandleGetExtensionTabs(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  const Extension* extension = script_context->extension();
+  DCHECK(extension);
+
+  ViewType view_type = VIEW_TYPE_TAB_CONTENTS;
+  int window_id = extension_misc::kUnknownWindowId;
+  int tab_id = extension_misc::kUnknownTabId;
+
+  if (!arguments[0]->IsNull())
+    window_id = arguments[0].As<v8::Int32>()->Value();
+
+  RequestResult result(RequestResult::HANDLED);
+  result.return_value = ExtensionFrameHelper::GetV8MainFrames(
+      script_context->v8_context(), extension->id(), window_id, tab_id,
+      view_type);
+  return result;
+}
+
+RequestResult ExtensionHooksDelegate::HandleGetBackgroundPage(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  const Extension* extension = script_context->extension();
+  DCHECK(extension);
+
+  RequestResult result(RequestResult::HANDLED);
+  result.return_value = ExtensionFrameHelper::GetV8BackgroundPageMainFrame(
+      script_context->isolate(), extension->id());
+  return result;
 }
 
 }  // namespace extensions

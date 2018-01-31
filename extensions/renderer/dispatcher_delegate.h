@@ -9,11 +9,11 @@
 #include <string>
 
 namespace extensions {
-class APIBindingsSystem;
 class Dispatcher;
 class Extension;
 class ExtensionBindingsSystem;
 class ModuleSystem;
+class NativeExtensionBindingsSystem;
 class ResourceBundleSourceMap;
 class ScriptContext;
 
@@ -48,8 +48,9 @@ class DispatcherDelegate {
   // Allows the delegate to add any additional custom bindings or types to the
   // native bindings system. This will only be called if --native-crx-bindings
   // is enabled.
-  virtual void InitializeBindingsSystem(Dispatcher* dispatcher,
-                                        APIBindingsSystem* bindings_system) {}
+  virtual void InitializeBindingsSystem(
+      Dispatcher* dispatcher,
+      NativeExtensionBindingsSystem* bindings_system) {}
 };
 
 }  // namespace extensions

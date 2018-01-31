@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
@@ -28,8 +29,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
@@ -47,6 +50,7 @@ const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
 const char kBrowserSideNavigationEnabled[] = "browserSideNavigationEnabled";
+const char kNativeCrxBindingsEnabled[] = "nativeCrxBindingsEnabled";
 
 std::unique_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
@@ -168,6 +172,9 @@ void ExtensionApiTest::SetUpOnMainThread() {
     test_config_->SetInteger(kEmbeddedTestServerPort,
                              embedded_test_server()->port());
   }
+  test_config_->SetBoolean(
+      kNativeCrxBindingsEnabled,
+      base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings));
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }

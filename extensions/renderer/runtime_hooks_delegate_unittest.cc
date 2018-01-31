@@ -425,11 +425,13 @@ TEST_F(RuntimeHooksDelegateNativeMessagingTest, SendNativeMessage) {
     EXPECT_CALL(
         *ipc_message_sender(),
         SendPostMessageToPort(MSG_ROUTING_NONE, expected_port_id, message));
-    if (expected_port_status == CLOSED) {
-      EXPECT_CALL(
-          *ipc_message_sender(),
-          SendCloseMessagePort(MSG_ROUTING_NONE, expected_port_id, true));
-    }
+    // Note: we don't close native message ports immediately. See comment in
+    // OneTimeMessageSender.
+    // if (expected_port_status == CLOSED) {
+    //   EXPECT_CALL(
+    //       *ipc_message_sender(),
+    //       SendCloseMessagePort(MSG_ROUTING_NONE, expected_port_id, true));
+    // }
     v8::Local<v8::Function> send_message = FunctionFromString(
         context, base::StringPrintf(kSendMessageTemplate, args));
     RunFunction(send_message, context, 0, nullptr);

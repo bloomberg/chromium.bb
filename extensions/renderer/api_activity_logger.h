@@ -18,24 +18,32 @@ class ListValue;
 }
 
 namespace extensions {
-class Dispatcher;
 
 // Used to log extension API calls and events that are implemented with custom
 // bindings.The actions are sent via IPC to extensions::ActivityLog for
 // recording and display.
 class APIActivityLogger : public ObjectBackedNativeHandler {
  public:
-  APIActivityLogger(ScriptContext* context, Dispatcher* dispatcher);
+  explicit APIActivityLogger(ScriptContext* context);
   ~APIActivityLogger() override;
 
   // ObjectBackedNativeHandler:
   void AddRoutes() override;
+
+  // Returns true if logging is enabled.
+  static bool IsLoggingEnabled();
 
   // Notifies the browser that an API method has been called, if and only if
   // activity logging is enabled.
   static void LogAPICall(v8::Local<v8::Context> context,
                          const std::string& call_name,
                          const std::vector<v8::Local<v8::Value>>& arguments);
+
+  // Notifies the browser that an API event has been dispatched, if and only if
+  // activity logging is enabled.
+  static void LogEvent(ScriptContext* script_context,
+                       const std::string& event_name,
+                       std::unique_ptr<base::ListValue> arguments);
 
   static void set_log_for_testing(bool log);
 
@@ -58,8 +66,6 @@ class APIActivityLogger : public ObjectBackedNativeHandler {
                           const std::string& call_name,
                           std::unique_ptr<base::ListValue> arguments,
                           const std::string& extra);
-
-  Dispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(APIActivityLogger);
 };
