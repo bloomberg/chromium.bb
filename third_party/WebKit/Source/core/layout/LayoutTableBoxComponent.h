@@ -73,6 +73,8 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
     return Children()->LastChild();
   }
 
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
  private:
   // Column, section and row's visibility has rules different from other
   // elements. For example, column's visibility:hidden doesn't apply; row's

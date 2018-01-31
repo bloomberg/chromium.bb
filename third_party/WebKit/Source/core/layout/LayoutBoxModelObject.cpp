@@ -1313,25 +1313,11 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
     // There can't be a transform between container and ancestor_to_stop_at,
     // because transforms create containers, so it should be safe to just
     // subtract the delta between the container and ancestor_to_stop_at.
-    // But if ancestor_to_stop_at is a table section/row with a transform, we
-    // must apply the transform to the offset because the table part is
-    // not the container (it is not a LayoutBlock).
     LayoutSize ancestor_offset =
         ancestor_to_stop_at->OffsetFromAncestorContainer(container);
-    if (ancestor_to_stop_at->IsTablePart() &&
-        ancestor_to_stop_at->StyleRef().HasTransform() &&
-        ancestor_to_stop_at->ShouldUseTransformFromContainer(container)) {
-      TransformationMatrix t;
-      ancestor_to_stop_at->GetTransformFromContainer(container, ancestor_offset,
-                                                     t);
-      adjustment_for_skipped_ancestor = t.Inverse();
-      adjustment_for_skipped_ancestor_is_translate2D =
-          adjustment_for_skipped_ancestor.IsIdentityOr2DTranslation();
-    } else {
-      adjustment_for_skipped_ancestor.Translate(
-          -ancestor_offset.Width().ToFloat(),
-          -ancestor_offset.Height().ToFloat());
-    }
+    adjustment_for_skipped_ancestor.Translate(
+        -ancestor_offset.Width().ToFloat(),
+        -ancestor_offset.Height().ToFloat());
   }
 
   LayoutSize container_offset = OffsetFromContainer(container);

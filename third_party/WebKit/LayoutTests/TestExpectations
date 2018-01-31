@@ -175,13 +175,6 @@ crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/com
 
 # Will be fixed in slimming-paint-v175.
 crbug.com/798638 fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
-
-# Transformed table parts being containers for fixed elements tests. This feature is not yet implemented.
-crbug.com/804952 external/wpt/css/css-transforms/transform-transformed-tbody-contains-fixed-position.html [ Failure ]
-crbug.com/804952 external/wpt/css/css-transforms/transform-transformed-tfoot-contains-fixed-position.html [ Failure ]
-crbug.com/804952 external/wpt/css/css-transforms/transform-transformed-thead-contains-fixed-position.html [ Failure ]
-crbug.com/804952 external/wpt/css/css-transforms/transform-transformed-tr-contains-fixed-position.html [ Failure ]
-
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
