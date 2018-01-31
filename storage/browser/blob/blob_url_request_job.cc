@@ -182,37 +182,6 @@ scoped_refptr<net::HttpResponseHeaders> BlobURLRequestJob::GenerateHeaders(
   return headers;
 }
 
-net::HttpStatusCode BlobURLRequestJob::NetErrorToHttpStatusCode(
-    int error_code) {
-  net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;
-  switch (error_code) {
-    case net::ERR_ACCESS_DENIED:
-      status_code = net::HTTP_FORBIDDEN;
-      break;
-    case net::ERR_FILE_NOT_FOUND:
-      status_code = net::HTTP_NOT_FOUND;
-      break;
-    case net::ERR_METHOD_NOT_SUPPORTED:
-      status_code = net::HTTP_METHOD_NOT_ALLOWED;
-      break;
-    case net::ERR_REQUEST_RANGE_NOT_SATISFIABLE:
-      status_code = net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE;
-      break;
-    case net::ERR_INVALID_ARGUMENT:
-      status_code = net::HTTP_BAD_REQUEST;
-      break;
-    case net::ERR_CACHE_READ_FAILURE:
-    case net::ERR_CACHE_CHECKSUM_READ_FAILURE:
-    case net::ERR_UNEXPECTED:
-    case net::ERR_FAILED:
-      break;
-    default:
-      DCHECK(false) << "Error code not supported: " << error_code;
-      break;
-  }
-  return status_code;
-}
-
 BlobURLRequestJob::~BlobURLRequestJob() {
   TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest", this, "uuid",
                          blob_handle_ ? blob_handle_->uuid() : "NotFound");
@@ -314,7 +283,7 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
   // now. Instead, we just error out.
   DCHECK(!response_info_) << "Cannot NotifyFailure after headers.";
 
-  HeadersCompleted(NetErrorToHttpStatusCode(error_code));
+  NotifyStartError(net::URLRequestStatus::FromError(error_code));
 }
 
 void BlobURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {

@@ -20,13 +20,17 @@ var streamDetails;
 function fetchUrl(url) {
   return new Promise(function(resolve, reject) {
     var request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-      if (request.readyState == 4) {
-        resolve({
-          status: request.status,
-          data: request.responseText,
-        });
-      }
+    request.onload = function() {
+      resolve({
+        status: request.status,
+        data: request.responseText,
+      });
+    };
+    request.onerror = function() {
+      resolve({
+        status: request.status,
+        data: 'error',
+      });
     };
     request.open('GET', streamDetails.streamUrl, true);
     request.send();
@@ -88,8 +92,8 @@ var tests = [
     checkStreamDetails('testAbort.csv', false);
     chrome.mimeHandlerPrivate.abortStream(function() {
       fetchUrl(streamDetails.streamUrl).then(function(response) {
-        chrome.test.assertEq(404, response.status);
-        chrome.test.assertEq('', response.data);
+        chrome.test.assertEq(0, response.status);
+        chrome.test.assertEq('error', response.data);
         chrome.test.succeed();
       });
     });

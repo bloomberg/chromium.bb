@@ -347,18 +347,6 @@ void FetchManager::Loader::DidReceiveResponse(
   ScriptState* script_state = resolver_->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  if (response.Url().ProtocolIs("blob") && response.HttpStatusCode() == 404) {
-    // "If |blob| is null, return a network error."
-    // https://fetch.spec.whatwg.org/#concept-scheme-fetch
-    PerformNetworkError("Blob not found.");
-    return;
-  }
-
-  if (response.Url().ProtocolIs("blob") && response.HttpStatusCode() == 405) {
-    PerformNetworkError("Only 'GET' method is allowed for blob URLs.");
-    return;
-  }
-
   response_http_status_code_ = response.HttpStatusCode();
   FetchRequestData::Tainting tainting = request_->ResponseTainting();
 

@@ -75,14 +75,15 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
       chrome.streamsPrivate.abort(params.streamUrl, function() {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", params.streamUrl, false);
-        xhr.send(null);
-        if (xhr.status == 404) {
+        try {
+          xhr.send(null);
+        } catch (e) {
           chrome.test.notifyPass();
-        } else {
-          chrome.test.notifyFail(
-              'Expected a stream URL response of 404, got ' + xhr.status + '.');
-          hasFailed = true;
+          return;
         }
+        chrome.test.notifyFail(
+            'Expected a network error, got ' + xhr.status + '.');
+        hasFailed = true;
       });
     }
     return;

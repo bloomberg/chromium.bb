@@ -55,9 +55,6 @@ class STORAGE_EXPORT BlobURLRequestJob
       uint64_t total_size,
       uint64_t content_size);
 
-  // Helper method to map from a net error to an http status code.
-  static net::HttpStatusCode NetErrorToHttpStatusCode(int error_code);
-
  protected:
   ~BlobURLRequestJob() override;
 
