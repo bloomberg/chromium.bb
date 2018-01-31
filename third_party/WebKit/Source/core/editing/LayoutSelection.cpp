@@ -662,7 +662,7 @@ static unsigned ClampOffset(unsigned offset,
 }
 
 std::pair<unsigned, unsigned> LayoutSelection::SelectionStartEndForNG(
-    const NGPhysicalTextFragment& text_fragment) {
+    const NGPhysicalTextFragment& text_fragment) const {
   // FrameSelection holds selection offsets in layout block flow at
   // LayoutSelection::Commit() if selection starts/ends within Text that
   // each LayoutObject::SelectionState indicates.
