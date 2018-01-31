@@ -71,7 +71,7 @@
         android:order="12"
         android:title="@string/data_reduction_title"/>
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.preferences.DownloadPreferences"
+        android:fragment="org.chromium.chrome.browser.preferences.download.DownloadPreferences"
         android:key="downloads"
         android:order="13"
         android:title="@string/menu_downloads"/>

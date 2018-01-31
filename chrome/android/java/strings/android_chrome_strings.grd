@@ -1171,11 +1171,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_LOCATION_TITLE" desc="Title for 'Downloads location' preference that changes the default device directory that stores downloaded items.">
         Location
       </message>
-      <message name="IDS_DOWNLOADS_PRIMARY_STORAGE" desc="Option for setting the default download location to be internal storage (ie. on the device itself).">
-        Primary storage
+      <message name="IDS_DOWNLOADS_LOCATION_SELECTOR_TITLE" desc="Title of the preference that allows the user to select which of the folders they would like to make the default location to save their downloads.">
+        Download location
       </message>
-      <message name="IDS_DOWNLOADS_SECONDARY_STORAGE" desc="Option for setting the default download location to be external storage (ie. an SD card).">
-        Secondary storage
+      <message name="IDS_DOWNLOADS_LOCATION_SD_CARD" desc="Option for setting the default download location to be external storage (ie. an SD card).">
+        SD Card
+      </message>
+      <message name="IDS_DOWNLOADS_LOCATION_SD_CARD_NUMBER" desc="Option for setting the default download location to be external storage (ie. an SD card). Has the option to include a number to indicate which SD card this is (ie. SD Card 2 or SD Card 3).">
+        SD Card <ph name="sd_card_number">%1$d<ex>2</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_PROMPT_ENABLED_TITLE" desc="Title for preference that allows the user to indicate whether they want to show a change downloads location prompt every time they download.">
         Ask where to save each file before downloading
