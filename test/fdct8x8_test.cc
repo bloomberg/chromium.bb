@@ -318,9 +318,9 @@ class FwdTrans8x8TestBase {
           << "Error: Extremal 8x8 FDCT/IDCT or FHT/IHT has"
           << "an individual roundtrip error > 1";
 
-      EXPECT_GE((count_test_block << 2 * (bit_depth_ - 8)) / 5, total_error)
+      EXPECT_GE((count_test_block << 2 * (bit_depth_ - 8)) / 3, total_error)
           << "Error: Extremal 8x8 FDCT/IDCT or FHT/IHT has average"
-          << " roundtrip error > 1/5 per block";
+          << " roundtrip error > 1/3 per block";
 
       EXPECT_EQ(0, total_coeff_error)
           << "Error: Extremal 8x8 FDCT/FHT has"
