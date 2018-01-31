@@ -382,6 +382,10 @@ void SynchronousCompositorProxy::OnSetBeginFrameSourcePaused(bool paused) {
 void SynchronousCompositorProxy::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->BeginFrame(args);
+
+  SyncCompositorCommonRendererParams param;
+  PopulateCommonParams(&param);
+  Send(new SyncCompositorHostMsg_BeginFrameResponse(routing_id_, param));
 }
 
 void SynchronousCompositorProxy::SynchronouslyZoomBy(

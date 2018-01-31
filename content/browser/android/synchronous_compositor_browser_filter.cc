@@ -12,11 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "content/browser/android/synchronous_compositor_host.h"
+#include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 #include "content/browser/bad_message.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "ui/android/window_android.h"
 
 namespace content {
 
@@ -28,25 +27,6 @@ SynchronousCompositorBrowserFilter::SynchronousCompositorBrowserFilter(
 }
 
 SynchronousCompositorBrowserFilter::~SynchronousCompositorBrowserFilter() {
-  DCHECK(compositor_host_pending_renderer_state_.empty());
-  DCHECK(future_map_.empty());
-}
-
-void SynchronousCompositorBrowserFilter::SyncStateAfterVSync(
-    ui::WindowAndroid* window_android,
-    SynchronousCompositorHost* compositor_host) {
-  DCHECK(!window_android_in_vsync_ ||
-         window_android_in_vsync_ == window_android)
-      << !!window_android_in_vsync_;
-  DCHECK(compositor_host);
-  DCHECK(!base::ContainsValue(compositor_host_pending_renderer_state_,
-                              compositor_host));
-  compositor_host_pending_renderer_state_.push_back(compositor_host);
-  if (window_android_in_vsync_)
-    return;
-  window_android_in_vsync_ = window_android;
-  window_android_in_vsync_->AddVSyncCompleteCallback(
-      base::Bind(&SynchronousCompositorBrowserFilter::VSyncComplete, this));
 }
 
 bool SynchronousCompositorBrowserFilter::OnMessageReceived(
@@ -55,6 +35,8 @@ bool SynchronousCompositorBrowserFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorBrowserFilter, message)
     IPC_MESSAGE_HANDLER_GENERIC(SyncCompositorHostMsg_ReturnFrame,
                                 ReceiveFrame(message))
+    IPC_MESSAGE_HANDLER_GENERIC(SyncCompositorHostMsg_BeginFrameResponse,
+                                BeginFrameResponse(message))
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -67,154 +49,75 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
     return false;
 
   int routing_id = message.routing_id();
-  scoped_refptr<SynchronousCompositor::FrameFuture> future;
-  {
-    base::AutoLock lock(future_map_lock_);
-    auto itr = future_map_.find(routing_id);
-    if (itr == future_map_.end() || itr->second.empty()) {
-      bad_message::ReceivedBadMessage(render_process_host_,
-                                      bad_message::SCO_INVALID_ARGUMENT);
-      return true;
-    }
-    future = std::move(itr->second.front());
-    DCHECK(future);
-    itr->second.pop_front();
-    if (itr->second.empty())
-      future_map_.erase(itr);
+  auto itr = bridges_.find(routing_id);
+  if (itr == bridges_.end()) {
+    bad_message::ReceivedBadMessage(this, bad_message::SCO_INVALID_ARGUMENT);
+    return true;
   }
 
-  auto frame_ptr = std::make_unique<SynchronousCompositor::Frame>();
-  frame_ptr->layer_tree_frame_sink_id = std::get<0>(param);
+  int frame_sink_id = std::get<0>(param);
   base::Optional<viz::CompositorFrame>& compositor_frame = std::get<1>(param);
-  if (compositor_frame) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &SynchronousCompositorBrowserFilter::ProcessFrameMetadataOnUIThread,
-            this, routing_id,
-            base::Passed(compositor_frame->metadata.Clone())));
-    frame_ptr->frame.reset(new viz::CompositorFrame);
-    *frame_ptr->frame = std::move(*compositor_frame);
-  }
-  future->SetFrame(std::move(frame_ptr));
+
+  if (!itr->second->ReceiveFrameOnIOThread(frame_sink_id,
+                                           std::move(compositor_frame)))
+    bad_message::ReceivedBadMessage(this, bad_message::SCO_INVALID_ARGUMENT);
   return true;
 }
 
-void SynchronousCompositorBrowserFilter::ProcessFrameMetadataOnUIThread(
-    int routing_id,
-    viz::CompositorFrameMetadata metadata) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto itr = hosts_.find(routing_id);
-  if (itr == hosts_.end())
-    return;
-  itr->second->UpdateFrameMetaData(std::move(metadata));
-}
+bool SynchronousCompositorBrowserFilter::BeginFrameResponse(
+    const IPC::Message& message) {
+  SyncCompositorHostMsg_BeginFrameResponse::Param param;
+  if (!SyncCompositorHostMsg_BeginFrameResponse::Read(&message, &param))
+    return false;
 
-void SynchronousCompositorBrowserFilter::RegisterHost(
-    SynchronousCompositorHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(host);
-  DCHECK(!base::ContainsKey(hosts_, host->routing_id()));
-  hosts_[host->routing_id()] = host;
-}
-
-void SynchronousCompositorBrowserFilter::UnregisterHost(
-    SynchronousCompositorHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(host);
-  int routing_id = host->routing_id();
-  DCHECK(base::ContainsKey(hosts_, routing_id));
-  DCHECK_EQ(host, hosts_[routing_id]);
-  hosts_.erase(routing_id);
-}
-
-void SynchronousCompositorBrowserFilter::SetFrameFuture(
-    int routing_id,
-    scoped_refptr<SynchronousCompositor::FrameFuture> frame_future) {
-  DCHECK(frame_future);
-  base::AutoLock lock(future_map_lock_);
-  if (!filter_ready_) {
-    frame_future->SetFrame(nullptr);
-    return;
+  int routing_id = message.routing_id();
+  auto itr = bridges_.find(routing_id);
+  if (itr == bridges_.end()) {
+    bad_message::ReceivedBadMessage(this, bad_message::SCO_INVALID_ARGUMENT);
+    return true;
   }
-
-  auto itr = future_map_.find(routing_id);
-  if (itr == future_map_.end()) {
-    auto emplace_result = future_map_.emplace(routing_id, FrameFutureQueue());
-    DCHECK(emplace_result.second);
-    itr = emplace_result.first;
-  }
-
-  // Allowing arbitrary number of pending futures can lead to increase in frame
-  // latency. Due to this, Android platform already ensures that here that there
-  // can be at most 2 pending frames. Here, we rely on Android to do the
-  // necessary blocking, which allows more parallelism without increasing
-  // latency. But DCHECK Android blocking is working.
-  DCHECK_LT(itr->second.size(), 2u);
-  itr->second.emplace_back(std::move(frame_future));
+  const SyncCompositorCommonRendererParams& render_params = std::get<0>(param);
+  if (!itr->second->BeginFrameResponseOnIOThread(render_params))
+    bad_message::ReceivedBadMessage(this, bad_message::SCO_INVALID_ARGUMENT);
+  return true;
 }
 
 void SynchronousCompositorBrowserFilter::OnFilterAdded(IPC::Channel* channel) {
-  base::AutoLock lock(future_map_lock_);
   filter_ready_ = true;
+  for (auto& bridge : bridges_)
+    bridge.second->RemoteReady();
 }
 
 void SynchronousCompositorBrowserFilter::OnFilterRemoved() {
-  SignalAllFutures();
+  SignalFilterClosed();
 }
 
 void SynchronousCompositorBrowserFilter::OnChannelClosing() {
-  SignalAllFutures();
+  SignalFilterClosed();
 }
 
 void SynchronousCompositorBrowserFilter::OnChannelError() {
-  SignalAllFutures();
+  SignalFilterClosed();
 }
 
-void SynchronousCompositorBrowserFilter::SignalAllFutures() {
-  base::AutoLock lock(future_map_lock_);
-  for (auto& pair : future_map_) {
-    for (auto& future_ptr : pair.second) {
-      future_ptr->SetFrame(nullptr);
-    }
-  }
-  future_map_.clear();
-  filter_ready_ = false;
+void SynchronousCompositorBrowserFilter::SignalFilterClosed() {
+  for (auto& bridge : bridges_)
+    bridge.second->RemoteClosedOnIOThread();
 }
 
-void SynchronousCompositorBrowserFilter::VSyncComplete() {
-  DCHECK(window_android_in_vsync_);
-  window_android_in_vsync_ = nullptr;
+void SynchronousCompositorBrowserFilter::RegisterSyncCallBridge(
+    int routing_id,
+    scoped_refptr<SynchronousCompositorSyncCallBridge> host_bridge) {
+  DCHECK(bridges_.find(routing_id) == bridges_.end());
+  bridges_[routing_id] = host_bridge;
+  if (filter_ready_)
+    host_bridge->RemoteReady();
+}
 
-  std::vector<int> routing_ids;
-  routing_ids.reserve(compositor_host_pending_renderer_state_.size());
-  for (const auto* host : compositor_host_pending_renderer_state_)
-    routing_ids.push_back(host->routing_id());
-
-  std::vector<SyncCompositorCommonRendererParams> params;
-  params.reserve(compositor_host_pending_renderer_state_.size());
-
-  {
-    base::ThreadRestrictions::ScopedAllowWait wait;
-    if (!render_process_host_->Send(
-            new SyncCompositorMsg_SynchronizeRendererState(routing_ids,
-                                                           &params))) {
-      compositor_host_pending_renderer_state_.clear();
-      return;
-    }
-  }
-
-  if (compositor_host_pending_renderer_state_.size() != params.size()) {
-    bad_message::ReceivedBadMessage(render_process_host_,
-                                    bad_message::SCO_INVALID_ARGUMENT);
-    compositor_host_pending_renderer_state_.clear();
-    return;
-  }
-
-  for (size_t i = 0; i < compositor_host_pending_renderer_state_.size(); ++i) {
-    compositor_host_pending_renderer_state_[i]->ProcessCommonParams(params[i]);
-  }
-  compositor_host_pending_renderer_state_.clear();
+void SynchronousCompositorBrowserFilter::UnregisterSyncCallBridge(
+    int routing_id) {
+  DCHECK(bridges_.find(routing_id) != bridges_.end());
+  bridges_.erase(routing_id);
 }
 
 }  // namespace content

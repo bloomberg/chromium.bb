@@ -25,7 +25,6 @@ class SynchronousInputHandlerProxy;
 namespace content {
 
 class SynchronousCompositorProxy;
-struct SyncCompositorCommonRendererParams;
 
 class SynchronousCompositorFilter
     : public IPC::MessageFilter,
@@ -80,9 +79,6 @@ class SynchronousCompositorFilter
   void UnregisterObjects(int routing_id);
   void RemoveEntryIfNeeded(int routing_id);
   SynchronousCompositorProxy* FindProxy(int routing_id);
-  void OnSynchronizeRendererState(
-      const std::vector<int>& routing_ids,
-      std::vector<SyncCompositorCommonRendererParams>* out);
 
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
