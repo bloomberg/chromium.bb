@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_url_loader.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/file_data_pipe_producer.h"
@@ -522,8 +523,12 @@ class FileURLLoader : public network::mojom::URLLoader {
     }
 
     if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
-      net::SniffMimeType(initial_read_buffer, initial_read_result, request.url,
-                         head.mime_type, &head.mime_type);
+      net::SniffMimeType(
+          initial_read_buffer, initial_read_result, request.url, head.mime_type,
+          GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
+              ? net::ForceSniffFileUrlsForHtml::kEnabled
+              : net::ForceSniffFileUrlsForHtml::kDisabled,
+          &head.mime_type);
     }
     client->OnReceiveResponse(head, base::nullopt, nullptr);
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));

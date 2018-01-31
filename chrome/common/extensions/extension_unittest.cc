@@ -278,22 +278,18 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   ASSERT_TRUE(base::ReadFileToString(path, &data));
 
   std::string result;
-  EXPECT_TRUE(net::SniffMimeType(data.c_str(),
-                                 data.size(),
-                                 GURL("http://www.example.com/foo.crx"),
-                                 std::string(),
-                                 &result));
+  EXPECT_TRUE(net::SniffMimeType(
+      data.c_str(), data.size(), GURL("http://www.example.com/foo.crx"),
+      std::string(), net::ForceSniffFileUrlsForHtml::kDisabled, &result));
   EXPECT_EQ(std::string(Extension::kMimeType), result);
 
   data.clear();
   result.clear();
   path = path.DirName().AppendASCII("bad_magic.crx");
   ASSERT_TRUE(base::ReadFileToString(path, &data));
-  EXPECT_TRUE(net::SniffMimeType(data.c_str(),
-                                 data.size(),
-                                 GURL("http://www.example.com/foo.crx"),
-                                 std::string(),
-                                 &result));
+  EXPECT_TRUE(net::SniffMimeType(
+      data.c_str(), data.size(), GURL("http://www.example.com/foo.crx"),
+      std::string(), net::ForceSniffFileUrlsForHtml::kDisabled, &result));
   EXPECT_EQ("application/octet-stream", result);
 }
 

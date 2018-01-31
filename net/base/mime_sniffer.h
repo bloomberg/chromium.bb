@@ -21,27 +21,44 @@ namespace net {
 // This must be updated if any internal sniffing routine needs more bytes.
 const int kMaxBytesToSniff = 1024;
 
-// Examine the URL and the mime_type and decide whether we should sniff a
-// replacement mime type from the content.
+// Whether to force the MIME sniffer to sniff the contents of file URLs for
+// HTML. kDisabled is recommended.
+enum class ForceSniffFileUrlsForHtml {
+  kDisabled,
+  kEnabled,
+};
+
+// Examine the URL and the mime_type and decide whether to sniff a replacement
+// mime type from the content.
 //
-// @param url The URL from which we obtained the content.
-// @param mime_type The current mime type, e.g. from the Content-Type header.
-// @return Returns true if we should sniff the mime type.
+// |url| is the URL from which the content was obtained.
+// |mime_type| is the current mime type, e.g. from the Content-Type header.
+// Returns true if the mime type should be sniffed.
 NET_EXPORT bool ShouldSniffMimeType(const GURL& url,
                                     const std::string& mime_type);
 
 // Guess a mime type from the first few bytes of content an its URL.  Always
 // assigns |result| with its best guess of a mime type.
 //
-// @param content A buffer containing the bytes to sniff.
-// @param content_size The number of bytes in the |content| buffer.
-// @param url The URL from which we obtained this content.
-// @param type_hint The current mime type, e.g. from the Content-Type header.
-// @param result Address at which to place the sniffed mime type.
-// @return Returns true if we have enough content to guess the mime type.
-NET_EXPORT bool SniffMimeType(const char* content, size_t content_size,
-                              const GURL& url, const std::string& type_hint,
-                              std::string* result);
+// |content| is the buffer containing the bytes to sniff.
+// |content_size| is the number of bytes in the |content| buffer.
+// |url| is the URL from which the content was obtained.
+// |type_hint| is the current mime type, e.g. from the Content-Type header.
+// |result| is the address at which to place the sniffed mime type.
+// If |force_sniff_file_url_for_html| is enabled, the contents of |file| URLs
+// will be sniffed to see if they contain HTML. It is recommended this be
+// disabled.
+//
+// Returns true if |content| had enough data to guess the mime type. Otherwise,
+// |result| will be populated with a putative MIME type, but the method should
+// be called again with more of the content.
+NET_EXPORT bool SniffMimeType(
+    const char* content,
+    size_t content_size,
+    const GURL& url,
+    const std::string& type_hint,
+    ForceSniffFileUrlsForHtml force_sniff_file_url_for_html,
+    std::string* result);
 
 // Attempt to identify a MIME type from the first few bytes of content only.
 // Uses a bigger set of media file searches than |SniffMimeType()|.

@@ -138,9 +138,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  base::FilePath temp_file;
-  ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_directory.GetPath(), &temp_file));
+  base::FilePath temp_file = temp_directory.GetPath().AppendASCII("foo.html");
   ASSERT_EQ(static_cast<int>(file_redirect_contents.size()),
             base::WriteFile(temp_file,
                             file_redirect_contents.data(),

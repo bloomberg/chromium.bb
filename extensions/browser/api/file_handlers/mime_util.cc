@@ -42,7 +42,7 @@ void SniffMimeType(const base::FilePath& local_path, std::string* result) {
     net::SniffMimeType(&content[0], bytes_read,
                        net::FilePathToFileURL(local_path),
                        std::string(),  // type_hint (passes no hint)
-                       result);
+                       net::ForceSniffFileUrlsForHtml::kDisabled, result);
   }
 }
 

@@ -60,11 +60,17 @@ class FileHandlersMimeUtilTest : public ExtensionsTest {
     file_system_context_ = content::CreateFileSystemContextForTesting(
         NULL, browser_context()->GetPath());
 
-    EXPECT_TRUE(base::CreateTemporaryFile(&html_mime_file_path_));
+    base::FilePath temp_filename;
+    EXPECT_TRUE(base::CreateTemporaryFile(&temp_filename));
     const std::string kSampleContent = "<html><body></body></html>";
     EXPECT_EQ(static_cast<int>(kSampleContent.size()),
-              base::WriteFile(html_mime_file_path_, kSampleContent.c_str(),
+              base::WriteFile(temp_filename, kSampleContent.c_str(),
                               kSampleContent.size()));
+    // File path must end in .html to avoid relying upon MIME-sniffing, which
+    // is disabled for HTML files delivered from file:// URIs.
+    html_mime_file_path_ =
+        temp_filename.AddExtension(FILE_PATH_LITERAL(".html"));
+    EXPECT_TRUE(base::Move(temp_filename, html_mime_file_path_));
   }
 
   ExtensionsAPIClient extensions_api_client_;
