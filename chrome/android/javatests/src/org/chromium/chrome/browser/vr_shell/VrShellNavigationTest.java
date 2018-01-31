@@ -291,7 +291,8 @@ public class VrShellNavigationTest {
     }
 
     /**
-     * Tests navigation from a fullscreened WebVR to a WebVR page.
+     * Tests that the back button is disabled in VR if pressing it in regular 2D Chrome would result
+     * in Chrome being backgrounded.
      */
     @Test
     @MediumTest
