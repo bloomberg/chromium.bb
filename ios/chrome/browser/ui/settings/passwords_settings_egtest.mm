@@ -47,9 +47,6 @@
 // password_details_collection_view_controller_unittest.mm. Very simple
 // integration tests and features which are not currently unittestable should
 // go here, the rest into the unittest.
-// This test only uses the new UI which allows viewing passwords.
-// TODO(crbug.com/159166): Remove the above sentence once the new UI is the
-// default one.
 
 using autofill::PasswordForm;
 using chrome_test_util::ButtonWithAccessibilityLabel;
