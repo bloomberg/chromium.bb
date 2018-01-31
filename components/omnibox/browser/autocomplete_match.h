@@ -114,8 +114,10 @@ struct AutocompleteMatch {
   // Converts |type| to a string representation.  Used in logging and debugging.
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
 
-  // Gets the vector icon identifier for the icon to be shown for |type|.
-  static const gfx::VectorIcon& TypeToVectorIcon(Type type);
+  // Gets the vector icon identifier for the icon to be shown for |type|. If
+  // |is_bookmark| is true, returns a bookmark icon rather than what the type
+  // would determine.
+  static const gfx::VectorIcon& TypeToVectorIcon(Type type, bool is_bookmark);
 
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,
