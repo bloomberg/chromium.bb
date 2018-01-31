@@ -10,6 +10,10 @@
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus0
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus1
 
+# viz::HostFrameSinkManager::CreateCompositorFrameSinkSupport crash.
+# http://crbug.com/807465
+-ArcAccessibilityHelperBridgeBrowserTest.PreferenceChange
+
 # PictureLayerTilingSet::ComputeSkewport crash crbug.com/796594
 -LoginFeedbackTest.Basic
 
