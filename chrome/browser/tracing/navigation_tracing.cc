@@ -28,24 +28,26 @@ namespace {
 
 const char kNavigationTracingConfig[] = "navigation-config";
 
-void OnUploadComplete(TraceCrashServiceUploader* uploader,
-                      const base::Closure& done_callback,
-                      bool success,
-                      const std::string& feedback) {
+void OnNavigationTracingUploadComplete(TraceCrashServiceUploader* uploader,
+                                       const base::Closure& done_callback,
+                                       bool success,
+                                       const std::string& feedback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   done_callback.Run();
 }
 
-void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
-                    std::unique_ptr<const base::DictionaryValue> metadata,
-                    base::Closure callback) {
+void NavigationUploadCallback(
+    const scoped_refptr<base::RefCountedString>& file_contents,
+    std::unique_ptr<const base::DictionaryValue> metadata,
+    base::Closure callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
 
   uploader->DoUpload(
       file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,
       std::move(metadata), content::TraceUploader::UploadProgressCallback(),
-      base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
+      base::Bind(&OnNavigationTracingUploadComplete, base::Owned(uploader),
+                 callback));
 }
 
 }  // namespace
@@ -91,7 +93,7 @@ void SetupNavigationTracing() {
   DCHECK(config);
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-      std::move(config), base::Bind(&UploadCallback),
+      std::move(config), base::Bind(&NavigationUploadCallback),
       content::BackgroundTracingManager::NO_DATA_FILTERING);
 }
 
