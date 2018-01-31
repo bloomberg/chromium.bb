@@ -153,9 +153,9 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             kInvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
-  WebPresentationClient* client =
-      PresentationController::ClientFromContext(execution_context);
-  if (!client)
+  PresentationController* controller =
+      PresentationController::FromContext(GetExecutionContext());
+  if (!controller)
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
@@ -164,16 +164,20 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
 
   RecordStartOriginTypeAccess(*execution_context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  client->StartPresentation(
-      urls_, std::make_unique<PresentationConnectionCallbacks>(resolver, this));
+
+  controller->GetPresentationService()->StartPresentation(
+      urls_,
+      WTF::Bind(
+          &PresentationConnectionCallbacks::HandlePresentationResponse,
+          std::make_unique<PresentationConnectionCallbacks>(resolver, this)));
   return resolver->Promise();
 }
 
 ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
                                              const String& id) {
-  WebPresentationClient* client =
-      PresentationController::ClientFromContext(GetExecutionContext());
-  if (!client)
+  PresentationController* controller =
+      PresentationController::FromContext(GetExecutionContext());
+  if (!controller)
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
@@ -182,21 +186,20 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
-  PresentationController* controller =
-      PresentationController::FromContext(GetExecutionContext());
-  DCHECK(controller);
-
   ControllerPresentationConnection* existing_connection =
       controller->FindExistingConnection(urls_, id);
   if (existing_connection) {
-    client->ReconnectPresentation(
+    controller->GetPresentationService()->ReconnectPresentation(
         urls_, id,
-        std::make_unique<PresentationConnectionCallbacks>(resolver,
-                                                          existing_connection));
+        WTF::Bind(&PresentationConnectionCallbacks::HandlePresentationResponse,
+                  std::make_unique<PresentationConnectionCallbacks>(
+                      resolver, existing_connection)));
   } else {
-    client->ReconnectPresentation(
+    controller->GetPresentationService()->ReconnectPresentation(
         urls_, id,
-        std::make_unique<PresentationConnectionCallbacks>(resolver, this));
+        WTF::Bind(
+            &PresentationConnectionCallbacks::HandlePresentationResponse,
+            std::make_unique<PresentationConnectionCallbacks>(resolver, this)));
   }
   return resolver->Promise();
 }
@@ -217,7 +220,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
         PresentationAvailabilityProperty::kReady);
 
     controller->GetAvailabilityState()->RequestAvailability(
-        urls_, std::make_unique<PresentationAvailabilityCallbacksImpl>(
+        urls_, std::make_unique<PresentationAvailabilityCallbacks>(
                    availability_property_, urls_));
   }
   return availability_property_->Promise(script_state->World());

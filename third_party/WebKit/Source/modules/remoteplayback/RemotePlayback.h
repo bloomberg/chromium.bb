@@ -22,7 +22,6 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/modules/presentation/WebPresentationConnection.h"
 #include "public/platform/modules/presentation/presentation.mojom-blink.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
@@ -35,8 +34,6 @@ class HTMLMediaElement;
 class ScriptPromiseResolver;
 class ScriptState;
 class V8RemotePlaybackAvailabilityCallback;
-struct WebPresentationError;
-struct WebPresentationInfo;
 
 // Remote playback for HTMLMediaElements.
 // The new RemotePlayback pipeline is implemented on top of Presentation.
@@ -49,7 +46,6 @@ class MODULES_EXPORT RemotePlayback final
       public ActiveScriptWrappable<RemotePlayback>,
       public WebRemotePlaybackClient,
       public PresentationAvailabilityObserver,
-      public WebPresentationConnection,
       public mojom::blink::PresentationConnection {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
@@ -99,16 +95,15 @@ class MODULES_EXPORT RemotePlayback final
 
   WebRemotePlaybackState GetState() const { return state_; }
 
-  // Called by RemotePlaybackConnectionCallbacks.
-  void OnConnectionSuccess(const WebPresentationInfo&);
-  void OnConnectionError(const WebPresentationError&);
-
   // PresentationAvailabilityObserver implementation.
   void AvailabilityChanged(mojom::blink::ScreenAvailability) override;
   const Vector<KURL>& Urls() const override;
 
-  // WebPresentationConnection implementation.
-  void Init() override;
+  // Handles the response from PresentationService::StartPresentation.
+  void HandlePresentationResponse(mojom::blink::PresentationInfoPtr,
+                                  mojom::blink::PresentationErrorPtr);
+  void OnConnectionSuccess(const mojom::blink::PresentationInfo&);
+  void OnConnectionError(const mojom::blink::PresentationError&);
 
   // mojom::blink::PresentationConnection implementation.
   void OnMessage(mojom::blink::PresentationConnectionMessagePtr,

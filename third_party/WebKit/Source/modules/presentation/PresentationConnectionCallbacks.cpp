@@ -4,14 +4,11 @@
 
 #include "modules/presentation/PresentationConnectionCallbacks.h"
 
-#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "public/platform/modules/presentation/WebPresentationError.h"
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
 
 namespace blink {
 
@@ -31,13 +28,22 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(
   DCHECK(connection_);
 }
 
-void PresentationConnectionCallbacks::OnSuccess(
-    const WebPresentationInfo& presentation_info) {
+void PresentationConnectionCallbacks::HandlePresentationResponse(
+    mojom::blink::PresentationInfoPtr presentation_info,
+    mojom::blink::PresentationErrorPtr error) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed()) {
     return;
   }
 
+  if (presentation_info)
+    OnSuccess(*presentation_info);
+  else
+    OnError(*error);
+}
+
+void PresentationConnectionCallbacks::OnSuccess(
+    const mojom::blink::PresentationInfo& presentation_info) {
   // Reconnect to existing connection.
   if (connection_ && connection_->GetState() ==
                          mojom::blink::PresentationConnectionState::CLOSED) {
@@ -50,21 +56,15 @@ void PresentationConnectionCallbacks::OnSuccess(
     connection_ = ControllerPresentationConnection::Take(
         resolver_.Get(), presentation_info, request_);
   }
+
   resolver_->Resolve(connection_);
+  connection_->Init();
 }
 
 void PresentationConnectionCallbacks::OnError(
-    const WebPresentationError& error) {
-  if (!resolver_->GetExecutionContext() ||
-      resolver_->GetExecutionContext()->IsContextDestroyed()) {
-    return;
-  }
-  resolver_->Reject(PresentationError::Take(error));
+    const mojom::blink::PresentationError& error) {
+  resolver_->Reject(CreatePresentationError(error));
   connection_ = nullptr;
-}
-
-WebPresentationConnection* PresentationConnectionCallbacks::GetConnection() {
-  return connection_ ? connection_.Get() : nullptr;
 }
 
 }  // namespace blink

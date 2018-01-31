@@ -8,23 +8,8 @@
 #include "modules/presentation/PresentationController.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/presentation/WebPresentationError.h"
 
 namespace blink {
-
-namespace {
-
-blink::WebPresentationError GetAvailabilityNotSupportedError() {
-  static const WebString& not_supported_error = blink::WebString::FromUTF8(
-      "getAvailability() isn't supported at the moment. It can be due to "
-      "a permanent or temporary system limitation. It is recommended to "
-      "try to blindly start a presentation in that case.");
-  return blink::WebPresentationError(
-      blink::WebPresentationError::kErrorTypeAvailabilityNotSupported,
-      not_supported_error);
-}
-
-}  // namespace
 
 PresentationAvailabilityState::PresentationAvailabilityState(
     mojom::blink::PresentationService* presentation_service)
@@ -40,8 +25,9 @@ void PresentationAvailabilityState::RequestAvailability(
   if (screen_availability == mojom::blink::ScreenAvailability::DISABLED) {
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
         FROM_HERE,
-        WTF::Bind(&PresentationAvailabilityCallbacks::OnError,
-                  std::move(callback), GetAvailabilityNotSupportedError()));
+        WTF::Bind(
+            &PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported,
+            std::move(callback)));
     // Do not listen to urls if we reject the promise.
     return;
   }
@@ -54,7 +40,7 @@ void PresentationAvailabilityState::RequestAvailability(
 
   if (screen_availability != mojom::blink::ScreenAvailability::UNKNOWN) {
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&PresentationAvailabilityCallbacks::OnSuccess,
+        FROM_HERE, WTF::Bind(&PresentationAvailabilityCallbacks::Resolve,
                              std::move(callback),
                              screen_availability ==
                                  mojom::blink::ScreenAvailability::AVAILABLE));
@@ -122,15 +108,13 @@ void PresentationAvailabilityState::UpdateAvailability(
       observer->AvailabilityChanged(screen_availability);
 
     if (screen_availability == mojom::blink::ScreenAvailability::DISABLED) {
-      blink::WebPresentationError not_supported_error =
-          GetAvailabilityNotSupportedError();
       for (auto& callback_ptr : listener->availability_callbacks) {
-        callback_ptr->OnError(not_supported_error);
+        callback_ptr->RejectAvailabilityNotSupported();
       }
     } else {
       for (auto& callback_ptr : listener->availability_callbacks) {
-        callback_ptr->OnSuccess(screen_availability ==
-                                mojom::blink::ScreenAvailability::AVAILABLE);
+        callback_ptr->Resolve(screen_availability ==
+                              mojom::blink::ScreenAvailability::AVAILABLE);
       }
     }
     listener->availability_callbacks.clear();

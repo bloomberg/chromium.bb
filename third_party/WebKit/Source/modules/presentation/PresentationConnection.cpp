@@ -223,7 +223,7 @@ void PresentationConnection::RequestClose() {
 // static
 ControllerPresentationConnection* ControllerPresentationConnection::Take(
     ScriptPromiseResolver* resolver,
-    const WebPresentationInfo& presentation_info,
+    const mojom::blink::PresentationInfo& presentation_info,
     PresentationRequest* request) {
   DCHECK(resolver);
   DCHECK(request);
@@ -238,10 +238,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
   if (!controller)
     return nullptr;
 
-  return Take(controller,
-              mojom::blink::PresentationInfo(presentation_info.url,
-                                             presentation_info.id),
-              request);
+  return Take(controller, presentation_info, request);
 }
 
 // static
@@ -589,12 +586,6 @@ void PresentationConnection::terminate() {
 
   DoTerminate();
   TearDown();
-}
-
-bool PresentationConnection::Matches(
-    const WebPresentationInfo& presentation_info) const {
-  return url_ == KURL(presentation_info.url) &&
-         id_ == String(presentation_info.id);
 }
 
 bool PresentationConnection::Matches(const String& id, const KURL& url) const {

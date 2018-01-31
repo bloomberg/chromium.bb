@@ -9,21 +9,30 @@
 #include "modules/presentation/PresentationAvailability.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "public/platform/modules/presentation/WebPresentationError.h"
 
 namespace blink {
 
-PresentationAvailabilityCallbacksImpl::PresentationAvailabilityCallbacksImpl(
-    PresentationAvailabilityProperty* resolver,
-    const Vector<KURL>& urls)
-    : resolver_(resolver), urls_(urls) {
-  DCHECK(resolver_);
+namespace {
+
+DOMException* CreateAvailabilityNotSupportedError() {
+  static const WebString& not_supported_error = blink::WebString::FromUTF8(
+      "getAvailability() isn't supported at the moment. It can be due to "
+      "a permanent or temporary system limitation. It is recommended to "
+      "try to blindly start a presentation in that case.");
+  return DOMException::Create(kNotSupportedError, not_supported_error);
 }
 
-PresentationAvailabilityCallbacksImpl::
-    ~PresentationAvailabilityCallbacksImpl() = default;
+}  // namespace
 
-void PresentationAvailabilityCallbacksImpl::OnSuccess(bool value) {
+PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
+    PresentationAvailabilityProperty* resolver,
+    const Vector<KURL>& urls)
+    : resolver_(resolver), urls_(urls) {}
+
+PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks() =
+    default;
+
+void PresentationAvailabilityCallbacks::Resolve(bool value) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
@@ -31,12 +40,11 @@ void PresentationAvailabilityCallbacksImpl::OnSuccess(bool value) {
       PresentationAvailability::Take(resolver_.Get(), urls_, value));
 }
 
-void PresentationAvailabilityCallbacksImpl::OnError(
-    const WebPresentationError& error) {
+void PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported() {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  resolver_->Reject(PresentationError::Take(error));
+  resolver_->Reject(CreateAvailabilityNotSupportedError());
 }
 
 }  // namespace blink
