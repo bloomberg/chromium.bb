@@ -33,7 +33,6 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/html_element_factory.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -332,8 +331,9 @@ bool LineBreakExistsAtVisiblePosition(const VisiblePosition& visible_position) {
 }
 
 HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
-  return HTMLElementFactory::createHTMLElement(name.LocalName(), document,
-                                               kCreatedByCloneNode);
+  DCHECK_EQ(name.NamespaceURI(), HTMLNames::xhtmlNamespaceURI)
+      << "Unexpected namespace: " << name;
+  return ToHTMLElement(document.createElement(name, kCreatedByCloneNode));
 }
 
 HTMLElement* EnclosingList(const Node* node) {
