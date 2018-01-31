@@ -119,6 +119,10 @@
     inlineTextBox,
     inputTime,
     labelText,
+    layoutTable,
+    layoutTableCell,
+    layoutTableColumn,
+    layoutTableRow,
     legend,
     lineBreak,
     link,
@@ -682,7 +686,7 @@
     DOMString? language;
 
     // Input restriction, if any, such as readonly or disabled:
-    // undefined - enabled control or other object that is not disabled 
+    // undefined - enabled control or other object that is not disabled
     // Restriction.DISABLED - disallows input in itself + any descendants
     // Restriction.READONLY - allow focus/selection but not input
     DOMString? restriction;

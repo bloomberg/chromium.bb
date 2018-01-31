@@ -2150,6 +2150,7 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
     bool found_parent = false;
 
     switch (container_parent->RoleValue()) {
+      case kLayoutTableRole:
       case kTreeRole:
       case kTreeGridRole:
       case kGridRole:

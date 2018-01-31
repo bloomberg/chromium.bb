@@ -14,7 +14,7 @@
     <div class='tests'>
       <div data-dump id='link1' tabIndex=0 role='link'>
         <p>1</p>
-        <table>
+        <table role="presentation">
           <tr><td>2</td></tr>
           <tr><td style='visibility: hidden'>3</td></tr>
           <tr><td style='display:none'>4</td></tr>
@@ -27,7 +27,7 @@
       <input data-dump id='input2' aria-labelledby='label2'>
       <div id='label2'>
         <p>1</p>
-        <table>
+        <table role="presentation">
           <tr><td>2</td></tr>
           <tr><td style='visibility: hidden'>3</td></tr>
           <tr><td style='display:none'>4</td></tr>
@@ -39,7 +39,7 @@
 
       <input data-dump id='input3' aria-labelledby='3a 3b 3c 3d 3e 3f 3g'>
       <p id='3a'>1</p>
-      <table>
+      <table role="presentation">
         <tr><td id='3b'>2</td></tr>
         <tr><td id='3c' style='visibility: hidden'>3</td></tr>
         <tr><td id='3d' style='display:none'>4</td></tr>

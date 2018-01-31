@@ -130,6 +130,10 @@ chrome.automation.RoleType = {
   INLINE_TEXT_BOX: 'inlineTextBox',
   INPUT_TIME: 'inputTime',
   LABEL_TEXT: 'labelText',
+  LAYOUT_TABLE: 'layoutTable',
+  LAYOUT_TABLE_CELL: 'layoutTableCell',
+  LAYOUT_TABLE_COLUMN: 'layoutTableColumn',
+  LAYOUT_TABLE_ROW: 'layoutTableRow',
   LEGEND: 'legend',
   LINE_BREAK: 'lineBreak',
   LINK: 'link',
@@ -978,7 +982,7 @@ chrome.automation.AutomationNode.prototype.imageDataUrl;
 chrome.automation.AutomationNode.prototype.language;
 
 /**
- * Input restriction, if any, such as readonly or disabled: undefined - enabled control or other object that is not disabled  Restriction.DISABLED - disallows input in itself + any descendants Restriction.READONLY - allow focus/selection but not input
+ * Input restriction, if any, such as readonly or disabled: undefined - enabled control or other object that is not disabled Restriction.DISABLED - disallows input in itself + any descendants Restriction.READONLY - allow focus/selection but not input
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-restriction
  */

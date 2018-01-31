@@ -51,8 +51,6 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
   // retrieves the "column" headers (th, scope) from top to bottom
   void HeaderObjectsForColumn(AXObjectVector&);
 
-  AccessibilityRole RoleValue() const override { return kColumnRole; }
-
   void SetColumnIndex(int column_index) { column_index_ = column_index; }
   int ColumnIndex() const { return column_index_; }
 
@@ -61,6 +59,11 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
 
  protected:
   virtual bool CanSetSelectedAttribute() const { return false; }
+
+  // Set the role via RoleValue() instead of DetermineAccessibilityRole(),
+  // because the role depends on the parent, and DetermineAccessibilityRole()
+  // is called before SetParent().
+  AccessibilityRole RoleValue() const final;
 
  private:
   unsigned column_index_;

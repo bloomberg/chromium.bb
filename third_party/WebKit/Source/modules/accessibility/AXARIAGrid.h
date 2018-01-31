@@ -56,6 +56,7 @@ class AXARIAGrid final : public AXTable {
   // ARIA treegrids and grids support selected rows.
   bool SupportsSelectedRows() override { return true; }
   bool IsTableExposableThroughAccessibility() const override { return true; }
+  bool ComputeIsDataTable() const override { return true; }
 
   void ComputeRows(AXObjectVector from_child_list);
   bool AddRow(AXObject*);

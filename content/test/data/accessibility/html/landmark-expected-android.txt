@@ -30,7 +30,8 @@ android.webkit.WebView focusable focused scrollable
 ++++android.view.View name='This should NOT have banner role.'
 ++android.view.View role_description='graphic'
 ++++android.view.View name='This should NOT have banner role.'
-++android.view.View name='This should NOT have banner role.'
+++android.view.View
+++++android.view.View name='This should NOT have banner role.'
 ++android.view.View role_description='main'
 ++++android.view.View name='This should NOT have banner role.'
 ++android.view.View role_description='article'
@@ -87,6 +88,7 @@ android.webkit.WebView focusable focused scrollable
 ++++android.view.View name='This should NOT have footer role.'
 ++android.view.View role_description='graphic'
 ++++android.view.View name='This should NOT have footer role.'
-++android.view.View name='This should NOT have footer role.'
+++android.view.View
+++++android.view.View name='This should NOT have footer role.'
 ++android.view.View role_description='main'
 ++++android.view.View name='This should NOT have footer role.'

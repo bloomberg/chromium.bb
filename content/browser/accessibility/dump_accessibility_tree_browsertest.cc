@@ -192,6 +192,8 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "FOCUSED", Filter::DENY);
   AddFilter(filters, "HOTTRACKED", Filter::DENY);
   AddFilter(filters, "OFFSCREEN", Filter::DENY);
+  // Object attributes.
+  AddFilter(filters, "layout-guess:*", Filter::ALLOW);
 
   //
   // Blink
@@ -1665,6 +1667,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySvg) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTableSimple) {
   RunHtmlTest(FILE_PATH_LITERAL("table-simple.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTableLayout) {
+  RunHtmlTest(FILE_PATH_LITERAL("table-layout.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,

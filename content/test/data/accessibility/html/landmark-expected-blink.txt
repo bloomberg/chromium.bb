@@ -76,9 +76,10 @@ rootWebArea
 ++++genericContainer
 ++++++staticText name='This should NOT have banner role.'
 ++++++++inlineTextBox name='This should NOT have banner role.'
-++genericContainer
-++++staticText name='This should NOT have banner role.'
-++++++inlineTextBox name='This should NOT have banner role.'
+++group
+++++genericContainer
+++++++staticText name='This should NOT have banner role.'
+++++++++inlineTextBox name='This should NOT have banner role.'
 ++main
 ++++genericContainer
 ++++++staticText name='This should NOT have banner role.'
@@ -193,9 +194,10 @@ rootWebArea
 ++++genericContainer
 ++++++staticText name='This should NOT have footer role.'
 ++++++++inlineTextBox name='This should NOT have footer role.'
-++genericContainer
-++++staticText name='This should NOT have footer role.'
-++++++inlineTextBox name='This should NOT have footer role.'
+++group
+++++genericContainer
+++++++staticText name='This should NOT have footer role.'
+++++++++inlineTextBox name='This should NOT have footer role.'
 ++main
 ++++genericContainer
 ++++++staticText name='This should NOT have footer role.'

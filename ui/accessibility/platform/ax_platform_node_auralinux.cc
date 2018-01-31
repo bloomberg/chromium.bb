@@ -870,6 +870,15 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_IMAGE_MAP;
     case ax::mojom::Role::kLabelText:
       return ATK_ROLE_LABEL;
+    // Layout table objects are treated the same as Role::kGenericContainer.
+    case ax::mojom::Role::kLayoutTable:
+      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kLayoutTableCell:
+      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kLayoutTableColumn:
+      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kLayoutTableRow:
+      return ATK_ROLE_PANEL;
     case ax::mojom::Role::kLink:
       return ATK_ROLE_LINK;
     case ax::mojom::Role::kList:
