@@ -181,7 +181,17 @@ class SmbProviderClientImpl : public SmbProviderClient {
     dbus::MethodCall method_call(smbprovider::kSmbProviderInterface, name);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(protobuf);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    CallMethod(&method_call, handler, callback);
+  }
+
+  // Calls the method specified in |method_call|. |handler| is the member
+  // function in this class that receives the response and then passes the
+  // processed response to |callback|.
+  template <typename CallbackHandler, typename Callback>
+  void CallMethod(dbus::MethodCall* method_call,
+                  CallbackHandler handler,
+                  Callback callback) {
+    proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::BindOnce(handler, weak_ptr_factory_.GetWeakPtr(),
                                       base::Passed(callback)));
   }
