@@ -55,7 +55,7 @@ class ChromeBrowserMainExtraPartsChecker : public ChromeBrowserMainExtraParts {
             expected_metrics_reporting_enabled) {}
 
   // ChromeBrowserMainExtraParts:
-  void PostEarlyInitialization() override;
+  void PreCreateThreads() override;
 
  private:
   // Expected value of reporting state.
@@ -138,7 +138,7 @@ class MetricsReportingStateTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(MetricsReportingStateTest);
 };
 
-void ChromeBrowserMainExtraPartsChecker::PostEarlyInitialization() {
+void ChromeBrowserMainExtraPartsChecker::PreCreateThreads() {
   ASSERT_EQ(expected_metrics_reporting_enabled_,
             MetricsReportingStateTest::IsMetricsAndCrashReportingEnabled());
 }
