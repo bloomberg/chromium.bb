@@ -32,6 +32,7 @@ jumbo_source_set("utility") {
     "//base",
     "//content:export",
     "//content/child",
+    "//content/network:network_sources",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//media:media_features",

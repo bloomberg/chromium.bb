@@ -9,7 +9,8 @@
          ]
       },
       "requires": {
-        "file": [ "file:filesystem", "file:leveldb" ]
+        "file": [ "file:filesystem", "file:leveldb" ],
+        "network": [ "network_service" ]
       }
     }
   }
