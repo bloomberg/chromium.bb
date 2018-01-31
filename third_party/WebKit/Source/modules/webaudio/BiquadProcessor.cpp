@@ -80,6 +80,16 @@ void BiquadProcessor::CheckForDirtyCoefficients() {
       filter_coefficients_dirty_ = true;
       has_just_reset_ = false;
     } else {
+      // TODO(crbug.com/763994): With dezippering removed, we don't want to use
+      // these methods.  We need to implement another way of noticing if one of
+      // the parameters has changed.  We do this as an optimization because
+      // computing the filter coefficients from these parameters is fairly
+      // expensive.  NB: The calls to Smooth() don't actually cause the
+      // coefficients to be dezippered.  This is just a way to notice that the
+      // coefficient values have changed.  |UpdateCoefficientsIfNecessary()|
+      // checks to see if the filter coefficients are dirty and sets the filter
+      // to the new value, without smoothing.
+      //
       // Smooth all of the filter parameters. If they haven't yet converged to
       // their target value then mark coefficients as dirty.
       bool is_stable1 = parameter1_->Smooth();
