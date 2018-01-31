@@ -118,11 +118,6 @@ IPC_STRUCT_TRAITS_END()
 // Synchronous IPCs are allowed here to the renderer compositor thread. See
 // design doc https://goo.gl/Tn81FW and https://crbug.com/526842 for details.
 
-IPC_SYNC_MESSAGE_CONTROL1_1(
-    SyncCompositorMsg_SynchronizeRendererState,
-    std::vector<int> /* routing ids*/,
-    std::vector<content::SyncCompositorCommonRendererParams>)
-
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_ComputeScroll, base::TimeTicks)
 
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_DemandDrawHwAsync,
@@ -173,6 +168,10 @@ IPC_MESSAGE_ROUTED1(SyncCompositorMsg_BeginFrame,
 IPC_MESSAGE_ROUTED0(SyncCompositorHostMsg_LayerTreeFrameSinkCreated)
 
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
+                    content::SyncCompositorCommonRendererParams)
+
+// Response to a begin frame request.
+IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_BeginFrameResponse,
                     content::SyncCompositorCommonRendererParams)
 
 IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_ReturnFrame,
