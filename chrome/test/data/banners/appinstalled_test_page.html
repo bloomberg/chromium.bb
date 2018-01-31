@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>appinstalled event test page</title>
+        <script>
+            // These blanks will get filled in when each event comes through.
+            var gotEventsFrom = ['________', '____'];
+
+            function setTitle() {
+              window.document.title = 'Got appinstalled: ' +
+                gotEventsFrom.join(', ');
+            }
+
+            window.addEventListener('load', () => {
+              // Test both the addEventListener and onX attribute versions.
+              // When an app is installed, each should fire once.
+              window.addEventListener('appinstalled', () => {
+                gotEventsFrom[0] = 'listener';
+                setTitle();
+              });
+              window.onappinstalled = () => {
+                gotEventsFrom[1] = 'attr';
+                setTitle();
+              };
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
