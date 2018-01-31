@@ -138,7 +138,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
     if (!chromeos::DBusThreadManager::IsInitialized()) {
       chromeos::DBusThreadManager::Initialize(
-          chromeos::DBusThreadManager::PROCESS_ASH);
+          chromeos::DBusThreadManager::kShared);
       dbus_thread_manager_initialized_ = true;
     }
 

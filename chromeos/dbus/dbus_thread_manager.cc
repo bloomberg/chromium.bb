@@ -53,11 +53,11 @@ namespace chromeos {
 static DBusThreadManager* g_dbus_thread_manager = nullptr;
 static bool g_using_dbus_thread_manager_for_testing = false;
 
-DBusThreadManager::DBusThreadManager(ProcessMask process_mask,
+DBusThreadManager::DBusThreadManager(ClientSet client_set,
                                      bool use_real_clients)
     : use_real_clients_(use_real_clients),
       clients_common_(new DBusClientsCommon(use_real_clients)) {
-  if (process_mask & PROCESS_BROWSER)
+  if (client_set == DBusThreadManager::kAll)
     clients_browser_.reset(new DBusClientsBrowser(use_real_clients));
   // NOTE: When there are clients only used by ash, create them here.
 
@@ -270,7 +270,7 @@ bool DBusThreadManager::IsUsingFakes() {
 }
 
 // static
-void DBusThreadManager::Initialize(ProcessMask process_mask) {
+void DBusThreadManager::Initialize(ClientSet client_set) {
   // If we initialize DBusThreadManager twice we may also be shutting it down
   // early; do not allow that.
   if (g_using_dbus_thread_manager_for_testing)
@@ -280,13 +280,13 @@ void DBusThreadManager::Initialize(ProcessMask process_mask) {
   bool use_real_clients = base::SysInfo::IsRunningOnChromeOS() &&
                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
                               chromeos::switches::kDbusStub);
-  g_dbus_thread_manager = new DBusThreadManager(process_mask, use_real_clients);
+  g_dbus_thread_manager = new DBusThreadManager(client_set, use_real_clients);
   g_dbus_thread_manager->InitializeClients();
 }
 
 // static
 void DBusThreadManager::Initialize() {
-  Initialize(PROCESS_ALL);
+  Initialize(kAll);
 }
 
 // static
@@ -298,7 +298,7 @@ DBusThreadManager::GetSetterForTesting() {
     // TODO(jamescook): Don't initialize clients as a side-effect of using a
     // test API. For now, assume the caller wants all clients.
     g_dbus_thread_manager =
-        new DBusThreadManager(PROCESS_ALL, false /* use_real_clients */);
+        new DBusThreadManager(kAll, false /* use_real_clients */);
     g_dbus_thread_manager->InitializeClients();
   }
 

@@ -268,31 +268,38 @@ bool ShallAttemptTpmOwnership() {
 
 namespace internal {
 
+// Contains state created in PreEarlyInitialization(). This is just the state
+// needed for field trials.
+class DBusPreEarlyInit {
+ public:
+  DBusPreEarlyInit() {
+    SystemSaltGetter::Initialize();
+
+    // Initialize the device settings service so that we'll take actions per
+    // signals sent from the session manager. This needs to happen before
+    // g_browser_process initializes BrowserPolicyConnector.
+    DeviceSettingsService::Initialize();
+
+    // Initialize DBusThreadManager for the browser.
+    DBusThreadManager::Initialize(DBusThreadManager::kAll);
+  }
+
+  ~DBusPreEarlyInit() {
+    // NOTE: This must only be called if Initialize() was called.
+    DBusThreadManager::Shutdown();
+    SystemSaltGetter::Shutdown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DBusPreEarlyInit);
+};
+
 // Wrapper class for initializing dbus related services and shutting them
 // down. This gets instantiated in a scoped_ptr so that shutdown methods in the
 // destructor will get called if and only if this has been instantiated.
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    // Under mash, some D-Bus clients are owned by other processes.
-    DBusThreadManager::ProcessMask process_mask;
-    switch (GetAshConfig()) {
-      case ash::Config::CLASSIC:
-        process_mask = DBusThreadManager::PROCESS_ALL;
-        break;
-      case ash::Config::MUS:
-        // TODO(jamescook|derat): We need another category for mushrome.
-        process_mask = DBusThreadManager::PROCESS_ALL;
-        break;
-      case ash::Config::MASH:
-        process_mask = DBusThreadManager::PROCESS_BROWSER;
-        break;
-    }
-
-    // Initialize DBusThreadManager for the browser. This must be done after
-    // the main message loop is started, as it uses the message loop.
-    DBusThreadManager::Initialize(process_mask);
-
     bluez::BluezDBusManager::Initialize(
         DBusThreadManager::Get()->GetSystemBus(),
         chromeos::DBusThreadManager::Get()->IsUsingFakes());
@@ -378,7 +385,6 @@ class DBusServices {
     PowerDataCollector::Initialize();
 
     LoginState::Initialize();
-    SystemSaltGetter::Initialize();
     TPMTokenLoader::Initialize();
     CertLoader::Initialize();
 
@@ -398,10 +404,6 @@ class DBusServices {
     // detector starts to monitor changes from the update engine.
     UpgradeDetectorChromeos::GetInstance()->Init();
 
-    // Initialize the device settings service so that we'll take actions per
-    // signals sent from the session manager. This needs to happen before
-    // g_browser_process initializes BrowserPolicyConnector.
-    DeviceSettingsService::Initialize();
     DeviceSettingsService::Get()->SetSessionManager(
         DBusThreadManager::Get()->GetSessionManagerClient(),
         OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil());
@@ -412,7 +414,6 @@ class DBusServices {
     NetworkHandler::Shutdown();
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
-    SystemSaltGetter::Shutdown();
     LoginState::Shutdown();
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
@@ -428,9 +429,6 @@ class DBusServices {
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
-
-    // NOTE: This must only be called if Initialize() was called.
-    DBusThreadManager::Shutdown();
   }
 
   void ServiceManagerConnectionStarted(
@@ -606,6 +604,8 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel))
     chrome::SetChannel(channel);
 #endif
+
+  dbus_pre_early_init_ = std::make_unique<internal::DBusPreEarlyInit>();
 
   return ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
@@ -1191,6 +1191,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();
+
+  dbus_pre_early_init_.reset();
 
   // Reset SystemTokenCertDBInitializer after DBus services because it should
   // outlive CertLoader.

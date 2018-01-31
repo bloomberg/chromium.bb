@@ -19,10 +19,6 @@
 
 class PrefService;
 
-namespace metrics_services_manager {
-class MetricsServicesManager;
-}
-
 namespace metrics {
 class EnabledStateProvider;
 class MetricsStateManager;
@@ -44,11 +40,6 @@ class ChromeMetricsServicesManagerClient
   explicit ChromeMetricsServicesManagerClient(PrefService* local_state);
   ~ChromeMetricsServicesManagerClient() override;
 
-  // Called once MetricsServicesManager has been created. Used to attach state
-  // associated with the MetricsServicesManager.
-  void OnMetricsServiceManagerCreated(
-      metrics_services_manager::MetricsServicesManager* manager);
-
   // Unconditionally attempts to create a field trial to control client side
   // metrics/crash sampling to use as a fallback when one hasn't been
   // provided. This is expected to occur on first-run on platforms that don't
@@ -69,6 +60,10 @@ class ChromeMetricsServicesManagerClient
   // sample rate is undefined. It is also undefined for clients that are not
   // eligible for sampling.
   static bool GetSamplingRatePerMille(int* rate);
+
+#if defined(OS_CHROMEOS)
+  void OnCrosSettingsCreated();
+#endif
 
  private:
   // This is defined as a member class to get access to
