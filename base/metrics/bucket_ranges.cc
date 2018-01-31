@@ -75,30 +75,13 @@ const uint32_t kCrcTable[256] = {
 // a nice hash, that tends to depend on all the bits of the sample, with very
 // little chance of changes in one place impacting changes in another place.
 static uint32_t Crc32(uint32_t sum, HistogramBase::Sample value) {
-  // TODO(jar): Switch to false and watch stats.
-  const bool kUseRealCrc = true;
-
-  if (kUseRealCrc) {
-    union {
-      HistogramBase::Sample range;
-      unsigned char bytes[sizeof(HistogramBase::Sample)];
-    } converter;
-    converter.range = value;
-    for (size_t i = 0; i < sizeof(converter); ++i)
-      sum = kCrcTable[(sum & 0xff) ^ converter.bytes[i]] ^ (sum >> 8);
-  } else {
-    // Use hash techniques provided in ReallyFastHash, except we don't care
-    // about "avalanching" (which would worsten the hash, and add collisions),
-    // and we don't care about edge cases since we have an even number of bytes.
-    union {
-      HistogramBase::Sample range;
-      uint16_t ints[sizeof(HistogramBase::Sample) / 2];
-    } converter;
-    DCHECK_EQ(sizeof(HistogramBase::Sample), sizeof(converter));
-    converter.range = value;
-    sum += converter.ints[0];
-    sum = (sum << 16) ^ sum ^ (static_cast<uint32_t>(converter.ints[1]) << 11);
-    sum += sum >> 11;
+  union {
+    HistogramBase::Sample range;
+    unsigned char bytes[sizeof(HistogramBase::Sample)];
+  } converter;
+  converter.range = value;
+  for (size_t i = 0; i < sizeof(converter); ++i) {
+    sum = kCrcTable[(sum & 0xff) ^ converter.bytes[i]] ^ (sum >> 8);
   }
   return sum;
 }
