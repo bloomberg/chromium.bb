@@ -7,19 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
-namespace {
-
-// Make sure this Obj-C enum is kept in sync with the
-// NotificationCommon::Operation enum.
-// The latter cannot be reused because the XPC service is not aware of
-// PlatformNotificationCenter.
-enum NotificationOperation {
-  NOTIFICATION_CLICK = 0,
-  NOTIFICATION_CLOSE = 1,
-  NOTIFICATION_SETTINGS = 2
-};
-}  // namespace
-
 @implementation NotificationResponseBuilder
 
 + (NSDictionary*)buildDictionary:(NSUserNotification*)notification {

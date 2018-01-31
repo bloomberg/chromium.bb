@@ -15,7 +15,8 @@ class Profile;
 // Shared functionality for both in page and persistent notification
 class NotificationCommon {
  public:
-  // Things as user can do to a notification.
+  // Things as user can do to a notification. Keep in sync with the
+  // NotificationOperation enumeration in notification_response_builder_mac.h.
   // TODO(peter): Prefix these options with OPERATION_.
   enum Operation {
     CLICK = 0,
