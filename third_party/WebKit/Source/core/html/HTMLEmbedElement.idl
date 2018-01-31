@@ -23,7 +23,8 @@
 // TODO(yukishiino): HTMLEmbedElement should not have [OverrideBuiltins].
 [
     OverrideBuiltins,
-    ActiveScriptWrappable
+    ActiveScriptWrappable,
+    HTMLConstructor
 ] interface HTMLEmbedElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute DOMString src;
     [CEReactions, Reflect] attribute DOMString type;
