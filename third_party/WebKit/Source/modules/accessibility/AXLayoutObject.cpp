@@ -719,7 +719,11 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (IsGenericFocusableElement() && node->hasChildren())
     return false;
 
+  // Positioned elements and scrollable containers are important for
+  // determining bounding boxes.
   if (IsScrollableContainer())
+    return false;
+  if (layout_object_->IsPositioned())
     return false;
 
   // Ignore layout objects that are block flows with inline children. These
