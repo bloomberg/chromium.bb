@@ -4,8 +4,9 @@
 
 """Implements commands for running and interacting with Fuchsia on QEMU."""
 
-import boot_image
+import boot_data
 import common
+import logging
 import target
 import os
 import platform
@@ -31,12 +32,12 @@ def _GetAvailableTcpPort():
 
 
 class QemuTarget(target.Target):
-  def __init__(self, output_dir, target_cpu, verbose=True, ram_size_mb=2048):
+  def __init__(self, output_dir, target_cpu, ram_size_mb=2048):
     """output_dir: The directory which will contain the files that are
                    generated to support the QEMU deployment.
-    target_cpu: The emulated target CPU architecture. Can be 'x64' or 'arm64'.
-    verbose: If true, emits extra non-error logging data for diagnostics."""
-    super(QemuTarget, self).__init__(output_dir, target_cpu, verbose)
+    target_cpu: The emulated target CPU architecture.
+                Can be 'x64' or 'arm64'."""
+    super(QemuTarget, self).__init__(output_dir, target_cpu)
     self._qemu_process = None
     self._ram_size_mb = ram_size_mb
 
@@ -50,18 +51,18 @@ class QemuTarget(target.Target):
       self.Shutdown()
 
   def Start(self):
-    self._ssh_config_path, boot_image_path = boot_image.CreateBootFS(
+    boot_data_path = boot_data.CreateBootdata(
         self._output_dir, self._GetTargetSdkArch())
     qemu_path = os.path.join(
         common.SDK_ROOT, 'qemu', 'bin',
         'qemu-system-' + self._GetTargetSdkArch())
-    kernel_args = ['devmgr.epoch=%d' % time.time()]
+    kernel_args = boot_data.GetKernelArgs(self._output_dir)
 
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
         '-nographic',
-        '-kernel', boot_image._GetKernelPath(self._GetTargetSdkArch()),
-        '-initrd', boot_image_path,
+        '-kernel', boot_data.GetKernelPath(self._GetTargetSdkArch()),
+        '-initrd', boot_data_path,
         '-smp', '4',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
@@ -111,21 +112,23 @@ class QemuTarget(target.Target):
     # Python script panicking and aborting.
     # The precise root cause is still nebulous, but this fix works.
     # See crbug.com/741194.
+    logging.debug('Launching QEMU.')
+    logging.debug(' '.join(qemu_command))
     self._qemu_process = subprocess.Popen(
-        qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
+        qemu_command, stdout=open(os.devnull), stdin=open(os.devnull),
+        stderr=open(os.devnull))
 
-    self._Attach();
+    self._WaitUntilReady();
 
   def Shutdown(self):
+    logging.info('Shutting down QEMU.')
     self._qemu_process.kill()
 
   def GetQemuStdout(self):
     return self._qemu_process.stdout
 
   def _GetEndpoint(self):
-    return ('127.0.0.1', self._host_ssh_port)
+    return ('localhost', self._host_ssh_port)
 
   def _GetSshConfigPath(self):
-    return self._ssh_config_path
-
-
+    return boot_data.GetSSHConfigPath(self._output_dir)

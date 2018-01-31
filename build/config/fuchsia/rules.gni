@@ -14,6 +14,12 @@ template("generate_runner_script") {
       "$root_out_dir/gen.runtime/" +
       get_label_info(invoker.root_target_name, "dir") + "/" +
       get_label_info(invoker.root_target_name, "name") + ".runtime_deps"
+  _pkg_dir = "$root_out_dir/gen/" + get_label_info(invoker.package_name, "dir")
+  _manifest_path = "$_pkg_dir/${invoker.package_name}.archive_manifest"
+  _package_path = "$_pkg_dir/${invoker.package_name}.far"
+  _runner_target = "${target_name}_runner"
+  _legacy_runner_target = "${target_name}_legacy_runner"
+  _target_name = target_name
 
   group(_runtime_deps_target) {
     forward_variables_from(invoker,
@@ -25,7 +31,17 @@ template("generate_runner_script") {
     write_runtime_deps = _runtime_deps_file
   }
 
-  action(target_name) {
+  # Build both types of runner scripts until the legacy scripts can be removed.
+  # TODO(crbug.com/805057): delete legacy runner scripts.
+  group(target_name) {
+    forward_variables_from(invoker, [ "testonly" ])
+    data_deps = [
+      ":${_legacy_runner_target}",
+    ]
+    data_deps += [ ":${_runner_target}" ]
+  }
+
+  action(_legacy_runner_target) {
     forward_variables_from(invoker,
                            [
                              "deps",
@@ -75,6 +91,59 @@ template("generate_runner_script") {
       target_cpu,
       "--runtime-deps-path",
       rebase_path(_runtime_deps_file, root_build_dir),
+    ]
+  }
+
+  action(_runner_target) {
+    forward_variables_from(invoker,
+                           [
+                             "runner_script",
+                             "target",
+                             "testonly",
+                           ])
+
+    deps = [
+      "//testing/buildbot/filters:fuchsia_filters",
+    ]
+
+    _generated_script = "${invoker.generated_script}_v2"
+
+    script = "//build/fuchsia/runner_v2/create_runner_script.py"
+    depfile = "$target_gen_dir/$_target_name.d"
+
+    outputs = [
+      _generated_script,
+    ]
+
+    data = [
+      _generated_script,
+      "//build/fuchsia/runner_v2/",
+      "//build/util/lib/",
+      "//third_party/fuchsia-sdk/",
+    ]
+
+    # Arguments used at build time by the runner script generator.
+    args = [
+      "--script-output-path",
+      rebase_path(_generated_script, root_build_dir, root_out_dir),
+      "--package",
+      rebase_path(_package_path, root_out_dir, root_build_dir),
+      "--package-manifest",
+      rebase_path(_manifest_path, root_out_dir, root_build_dir),
+    ]
+
+    if (defined(invoker.use_test_server) && invoker.use_test_server) {
+      args += [ "--enable-test-server" ]
+    }
+
+    # Arguments used at runtime by the test runner.
+    args += [
+      "--runner-script",
+      runner_script,
+      "--output-directory",
+      rebase_path(root_build_dir, root_build_dir),
+      "--target-cpu",
+      target_cpu,
     ]
   }
 }
@@ -134,6 +203,7 @@ template("fuchsia_executable_runner") {
     ]
     exe_path = _exe_path
     root_target_name = invoker.target_name
+    package_name = _exe_name
   }
 
   group(target_name) {
@@ -145,6 +215,8 @@ template("fuchsia_executable_runner") {
     ]
   }
 
+  # This target is superceded by the packaging system.
+  # TODO(kmarshall): remove this target and remove dependencies from bots.
   generate_runner_script(_archive_target) {
     forward_variables_from(invoker, [ "testonly" ])
     runner_script = "archive_builder.py"
@@ -155,5 +227,6 @@ template("fuchsia_executable_runner") {
     ]
     exe_path = _exe_path
     root_target_name = invoker.target_name
+    package_name = _exe_name
   }
 }

@@ -5,6 +5,7 @@
 
 import qemu_target
 import shutil
+import subprocess
 import tempfile
 import time
 import unittest
@@ -31,10 +32,10 @@ with qemu_target.QemuTarget(tmpdir, 'x64') as target:
       tmp_path = tmpdir + "/payload"
       with open(tmp_path, "w") as tmpfile:
         tmpfile.write(TEST_PAYLOAD)
-      target.CopyTo(tmp_path, '/tmp/payload')
+      target.PutFile(tmp_path, '/tmp/payload')
 
       tmp_path_roundtrip = tmp_path + ".roundtrip"
-      target.CopyFrom('/tmp/payload', tmp_path_roundtrip)
+      target.GetFile('/tmp/payload', tmp_path_roundtrip)
       with open(tmp_path_roundtrip) as roundtrip:
         self.assertEqual(TEST_PAYLOAD, roundtrip.read())
 
@@ -45,7 +46,9 @@ with qemu_target.QemuTarget(tmpdir, 'x64') as target:
       self.assertEqual(1, target.RunCommand(['false']))
 
     def testRunCommandPiped(self):
-      proc = target.RunCommandPiped(['cat'])
+      proc = target.RunCommandPiped(['cat'],
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE)
       proc.stdin.write(TEST_PAYLOAD)
       proc.stdin.flush()
       proc.stdin.close()
