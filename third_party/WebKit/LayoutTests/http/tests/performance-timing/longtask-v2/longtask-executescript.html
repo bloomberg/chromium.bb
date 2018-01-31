@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+\<!DOCTYPE HTML>
 <meta charset=utf-8>
 <title>LongTask Timing: validate the long task attributes for execute-script</title>
 <body>
@@ -10,12 +10,19 @@
 <div id="log"></div>
 <script>
   async_test(function (t) {
+    const scriptURL = 'longtask-executescript.html';
     const observer = new PerformanceObserver(
       t.step_func(function (entryList) {
-        const entries = entryList.getEntries();
-        assert_equals(entries.length, 1,
-            'Exactly one entry is expected.');
-        const longtask = entries[0];
+        const longtaskEntries = entryList.getEntries().filter((e) => {
+          return e.attribution.find((a) => {
+            return a.scriptURL.includes(scriptURL);
+          });
+        });
+        if (longtaskEntries.length === 0) {
+          return;
+        }
+        assert_equals(longtaskEntries.length, 1);
+        const longtask = longtaskEntries[0];
         assert_equals(longtask.entryType, 'longtask');
         assert_equals(longtask.name, 'self');
         assert_greater_than(longtask.duration, 50);
@@ -23,10 +30,12 @@
         const currentTime = performance.now();
         assert_less_than_equal(longtask.startTime, currentTime);
 
-        const it = longtask.attribution.find(function(it) {
-          return it.name === 'script-run';
+        const runAttribution = longtask.attribution.filter(function(it) {
+          return it.name === 'script-run' &&
+              it.scriptURL.includes(scriptURL);
         });
-        assert_false(!it, 'script-run is not captured.');
+        assert_equals(runAttribution.length, 1);
+        const it = runAttribution[0];
         assert_greater_than(it.duration, 51);
         assert_greater_than(it.startTime, 0);
         assert_equals(it.entryType, 'taskattribution');
@@ -34,7 +43,7 @@
         assert_equals(it.containerId, '');
         assert_equals(it.containerName, '');
         assert_equals(it.containerSrc, '');
-        assert_true(it.scriptURL.includes('longtask-executescript.html'));
+        assert_true(it.scriptURL.includes(scriptURL));
         observer.disconnect();
         t.done();
       })
