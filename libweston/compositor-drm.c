@@ -527,6 +527,7 @@ struct drm_output {
 
 	struct gbm_surface *gbm_surface;
 	uint32_t gbm_format;
+	uint32_t gbm_bo_flags;
 
 	/* Plane being displayed directly on the CRTC */
 	struct drm_plane *scanout_plane;
@@ -4876,7 +4877,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 		output->gbm_surface =
 		    gbm_surface_create(b->gbm, mode->width, mode->height,
 				       output->gbm_format,
-				       GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT);
+				       output->gbm_bo_flags);
 	}
 
 	if (!output->gbm_surface) {
@@ -6325,6 +6326,7 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
 		return NULL;
 
 	output->backend = b;
+	output->gbm_bo_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
 
 	weston_output_init(&output->base, compositor, name);
 
