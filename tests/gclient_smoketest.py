@@ -653,7 +653,12 @@ class GClientSmokeGIT(GClientSmokeBase):
     output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
     self.assertFalse(os.path.exists(output_deps))
 
-    self.gclient(['config', self.git_base + 'repo_6', '--name', 'src'])
+    self.gclient(['config', self.git_base + 'repo_6', '--name', 'src',
+                  # This should be ignored because 'custom_true_var' isn't
+                  # defined in the DEPS.
+                  '--custom-var', 'custom_true_var=True',
+                  # This should override 'true_var=True' from the DEPS.
+                  '--custom-var', 'true_var="0"'])
     self.gclient(['sync'])
     self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
 
@@ -810,8 +815,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  # src',
         '  "true_str_var": \'True\',',
         '',
-        '  # src',
-        '  "true_var": True,',
+        '  # src [custom_var override]',
+        '  "true_var": \'0\',',
         '',
         '}',
         '',

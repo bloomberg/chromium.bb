@@ -2088,12 +2088,27 @@ class Flattener(object):
 
     self._allowed_hosts.update(dep.allowed_hosts)
 
-    # Only include vars listed in the DEPS files, not possible local overrides.
+    # Only include vars explicitly listed in the DEPS files or gclient solution,
+    # not automatic, local overrides (i.e. not all of dep.get_vars()).
+    hierarchy = dep.hierarchy(include_url=False)
     for key, value in dep._vars.iteritems():
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
       assert key not in self._vars or self._vars[key][1] == value
-      self._vars[key] = (dep, value)
+      self._vars[key] = (hierarchy, value)
+    # Override explicit custom variables.
+    for key, value in dep.custom_vars.iteritems():
+      # Do custom_vars that don't correspond to DEPS vars ever make sense? DEPS
+      # conditionals shouldn't be using vars that aren't also defined in the
+      # DEPS (presubmit actually disallows this), so any new custom_var must be
+      # unused in the DEPS, so no need to add it to the flattened output either.
+      if key not in self._vars:
+        continue
+      # Don't "override" existing vars if it's actually the same value.
+      elif self._vars[key][1] == value:
+        continue
+      # Anything else is overriding a default value from the DEPS.
+      self._vars[key] = (hierarchy + ' [custom_var override]', value)
 
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
@@ -2292,9 +2307,9 @@ def _VarsToLines(variables):
     return []
   s = ['vars = {']
   for key, tup in sorted(variables.iteritems()):
-    dep, value = tup
+    hierarchy, value = tup
     s.extend([
-        '  # %s' % dep.hierarchy(include_url=False),
+        '  # %s' % hierarchy,
         '  "%s": %r,' % (key, value),
         '',
     ])
