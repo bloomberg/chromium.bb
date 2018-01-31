@@ -81,8 +81,13 @@ static const size_t kNumClasses = 78 - kSkippedClasses;
 #else
 // Original TCMalloc code used kPageShift == 13.  In Chromium, we changed
 // this to 12 (as was done in prior versions of TCMalloc).
+#if defined(_MIPS_ARCH_LOONGSON)
+static const size_t kPageShift  = 14;
+static const size_t kNumClasses = 70 - kSkippedClasses;
+#else
 static const size_t kPageShift  = 12;
 static const size_t kNumClasses = 54 - kSkippedClasses;
+#endif
 #endif
 static const size_t kMaxThreadCacheSize = 4 << 20;
 
