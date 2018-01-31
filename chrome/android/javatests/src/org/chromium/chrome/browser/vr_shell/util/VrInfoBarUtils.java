@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.vr_shell.VrTestFramework;
+import org.chromium.chrome.browser.vr_shell.TestFramework;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -29,7 +29,7 @@ public class VrInfoBarUtils {
      * @return True if there are any InfoBars present, false otherwise
      */
     @SuppressWarnings("unchecked")
-    public static boolean isInfoBarPresent(VrTestFramework framework) {
+    public static boolean isInfoBarPresent(TestFramework framework) {
         List<InfoBar> infoBars = framework.getRule().getInfoBars();
         return infoBars != null && !infoBars.isEmpty();
     }
@@ -38,10 +38,10 @@ public class VrInfoBarUtils {
      * Clicks on either the primary or secondary button of the first InfoBar
      * in the activity.
      * @param button Which button to click
-     * @param framework The VrTestFramework to get the current activity from
+     * @param framework The TestFramework to get the current activity from
      */
     @SuppressWarnings("unchecked")
-    public static void clickInfoBarButton(final Button button, VrTestFramework framework) {
+    public static void clickInfoBarButton(final Button button, TestFramework framework) {
         if (!isInfoBarPresent(framework)) return;
         final List<InfoBar> infoBars = framework.getRule().getInfoBars();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -61,10 +61,10 @@ public class VrInfoBarUtils {
 
     /**
      * Clicks on the close button of the first InfoBar in the activity.
-     * @param framework The VrTestFramework to get the current activity from
+     * @param framework The TestFramework to get the current activity from
      */
     @SuppressWarnings("unchecked")
-    public static void clickInfobarCloseButton(VrTestFramework framework) {
+    public static void clickInfobarCloseButton(TestFramework framework) {
         if (!isInfoBarPresent(framework)) return;
         final List<InfoBar> infoBars = framework.getRule().getInfoBars();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -78,10 +78,10 @@ public class VrInfoBarUtils {
 
     /**
      * Determines is there is any InfoBar present in the given View hierarchy.
-     * @param parentView The View to start the search in
+     * @param framework The TestFramework that will be used to get the current activity/view from
      * @param present Whether an InfoBar should be present.
      */
-    public static void expectInfoBarPresent(final VrTestFramework framework, boolean present) {
+    public static void expectInfoBarPresent(final TestFramework framework, boolean present) {
         CriteriaHelper.pollUiThread(Criteria.equals(present, new Callable<Boolean>() {
             @Override
             public Boolean call() {
