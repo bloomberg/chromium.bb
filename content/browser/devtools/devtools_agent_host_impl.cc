@@ -79,13 +79,14 @@ int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
 // static
 std::string DevToolsAgentHost::GetProtocolVersion() {
   // TODO(dgozman): generate this.
-  return "1.2";
+  return "1.3";
 }
 
 // static
 bool DevToolsAgentHost::IsSupportedProtocolVersion(const std::string& version) {
   // TODO(dgozman): generate this.
-  return version == "1.0" || version == "1.1" || version == "1.2";
+  return version == "1.0" || version == "1.1" || version == "1.2" ||
+         version == "1.3";
 }
 
 // static

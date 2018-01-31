@@ -6,7 +6,7 @@ var pass = chrome.test.callbackPass;
 var fail = chrome.test.callbackFail;
 
 var debuggee;
-var protocolVersion = "1.2";
+var protocolVersion = "1.3";
 
 chrome.test.runTests([
 

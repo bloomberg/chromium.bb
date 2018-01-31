@@ -7,8 +7,8 @@ var fail = chrome.test.callbackFail;
 
 var tabId;
 var debuggee;
-var protocolVersion = "1.2";
-var protocolPreviousVersion = "1.1";
+var protocolVersion = "1.3";
+var protocolPreviousVersion = "1.2";
 var unsupportedMinorProtocolVersion = "1.5";
 var unsupportedMajorProtocolVersion = "100.0";
 
