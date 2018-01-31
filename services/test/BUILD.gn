@@ -22,9 +22,13 @@ source_set("run_all_service_tests") {
     "//ui/base",
   ]
 
-  data = [
-    "data/",
-  ]
+  if (is_ios) {
+    deps += [ ":tests_bundle_data" ]
+  } else {
+    data = [
+      "data/",
+    ]
+  }
 
   data_deps = [
     "//ui/resources:ui_test_pak_data",
@@ -37,4 +41,33 @@ source_set("run_all_service_tests") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
+}
+
+bundle_data("tests_bundle_data") {
+  visibility = [ ":run_all_service_tests" ]
+  testonly = true
+  sources = [
+    "//services/test/data/content-sniffer-test0.html",
+    "//services/test/data/content-sniffer-test0.html.mock-http-headers",
+    "//services/test/data/content-sniffer-test1.html",
+    "//services/test/data/content-sniffer-test1.html.mock-http-headers",
+    "//services/test/data/content-sniffer-test2.html",
+    "//services/test/data/content-sniffer-test2.html.mock-http-headers",
+    "//services/test/data/content-sniffer-test4.html",
+    "//services/test/data/content-sniffer-test4.html.mock-http-headers",
+    "//services/test/data/empty.html",
+    "//services/test/data/hello.html",
+    "//services/test/data/hello.html.mock-http-headers",
+    "//services/test/data/nocache.html",
+    "//services/test/data/nocache.html.mock-http-headers",
+    "//services/test/data/nosniff-test.html",
+    "//services/test/data/nosniff-test.html.mock-http-headers",
+    "//services/test/data/redirect307-to-echo",
+    "//services/test/data/redirect307-to-echo.mock-http-headers",
+    "//services/test/data/simple_page.html",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
 }
