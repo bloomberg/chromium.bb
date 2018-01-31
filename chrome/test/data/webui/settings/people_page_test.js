@@ -53,21 +53,6 @@ cr.define('settings_people_page', function() {
         assertTrue(newBg.includes(iconDataUrl));
       });
     });
-
-    test('GetProfileManagesSupervisedUsers', function() {
-      return browserProxy.whenCalled('getProfileManagesSupervisedUsers').then(
-          function() {
-            Polymer.dom.flush();
-            assertFalse(!!peoplePage.$$('#manageSupervisedUsersContainer'));
-
-            cr.webUIListenerCallback(
-              'profile-manages-supervised-users-changed',
-              true);
-
-            Polymer.dom.flush();
-            assertTrue(!!peoplePage.$$('#manageSupervisedUsersContainer'));
-          });
-    });
   });
 
   if (!cr.isChromeOS) {
