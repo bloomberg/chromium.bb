@@ -78,33 +78,27 @@ void MediaTransferProtocolDeviceObserverChromeOS::EjectDevice(
 
   // TODO(thestig): Change this to tell the mtp manager to eject the device.
 
-  StorageChanged(false, location);
+  StorageDetached(location);
   callback.Run(StorageMonitor::EJECT_OK);
 }
 
 // device::MediaTransferProtocolManager::Observer override.
-void MediaTransferProtocolDeviceObserverChromeOS::StorageChanged(
-    bool is_attached,
+void MediaTransferProtocolDeviceObserverChromeOS::StorageAttached(
+    const device::mojom::MtpStorageInfo& mtp_storage_info) {
+  DoAttachStorage(&mtp_storage_info);
+}
+
+// device::MediaTransferProtocolManager::Observer override.
+void MediaTransferProtocolDeviceObserverChromeOS::StorageDetached(
     const std::string& storage_name) {
   DCHECK(!storage_name.empty());
 
-  // Existing storage is detached.
-  if (!is_attached) {
-    StorageLocationToInfoMap::iterator it =
-        storage_map_.find(GetDeviceLocationFromStorageName(storage_name));
-    if (it == storage_map_.end())
-      return;
-    notifications_->ProcessDetach(it->second.device_id());
-    storage_map_.erase(it);
+  StorageLocationToInfoMap::iterator it =
+      storage_map_.find(GetDeviceLocationFromStorageName(storage_name));
+  if (it == storage_map_.end())
     return;
-  }
-
-  // New storage is attached.
-  get_mtp_storage_info_cb_.Run(
-      storage_name,
-      base::BindOnce(
-          &MediaTransferProtocolDeviceObserverChromeOS::DoAttachStorage,
-          weak_ptr_factory_.GetWeakPtr()));
+  notifications_->ProcessDetach(it->second.device_id());
+  storage_map_.erase(it);
 }
 
 void MediaTransferProtocolDeviceObserverChromeOS::DoAttachStorage(
@@ -142,7 +136,11 @@ void MediaTransferProtocolDeviceObserverChromeOS::OnReceivedStorages(
   typedef std::vector<std::string> StorageList;
   for (StorageList::const_iterator storage_iter = storages.begin();
        storage_iter != storages.end(); ++storage_iter) {
-    StorageChanged(true, *storage_iter);
+    get_mtp_storage_info_cb_.Run(
+        *storage_iter,
+        base::BindOnce(
+            &MediaTransferProtocolDeviceObserverChromeOS::DoAttachStorage,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
