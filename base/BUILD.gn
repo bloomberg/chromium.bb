@@ -2578,6 +2578,7 @@ if (enable_nocompile_tests) {
       "memory/weak_ptr_unittest.nc",
       "metrics/field_trial_params_unittest.nc",
       "metrics/histogram_unittest.nc",
+      "optional_unittest.nc",
       "strings/string16_unittest.nc",
       "task_scheduler/task_traits_unittest.nc",
     ]

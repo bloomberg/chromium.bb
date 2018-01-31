@@ -30,6 +30,10 @@ constexpr in_place_t in_place = {};
 // http://en.cppreference.com/w/cpp/utility/optional/nullopt
 constexpr nullopt_t nullopt(0);
 
+// Forward declaration, which is refered by following helpers.
+template <typename T>
+class Optional;
+
 namespace internal {
 
 template <typename T, bool = std::is_trivially_destructible<T>::value>
@@ -219,6 +223,19 @@ class OptionalBase {
   constexpr explicit OptionalBase(in_place_t, Args&&... args)
       : storage_(in_place, std::forward<Args>(args)...) {}
 
+  // Implementation of converting constructors.
+  template <typename U>
+  explicit OptionalBase(const OptionalBase<U>& other) {
+    if (other.storage_.is_populated_)
+      storage_.Init(other.storage_.value_);
+  }
+
+  template <typename U>
+  explicit OptionalBase(OptionalBase<U>&& other) {
+    if (other.storage_.is_populated_)
+      storage_.Init(std::move(other.storage_.value_));
+  }
+
   ~OptionalBase() = default;
 
   OptionalBase& operator=(const OptionalBase& other) {
@@ -261,6 +278,11 @@ class OptionalBase {
     storage_.value_.~T();
     storage_.is_populated_ = false;
   }
+
+  // For implementing conversion, allow access to other typed OptionalBase
+  // class.
+  template <typename U>
+  friend class OptionalBase;
 
   OptionalStorage<T> storage_;
 };
@@ -317,6 +339,20 @@ struct MoveAssignable<false> {
   MoveAssignable& operator=(MoveAssignable&&) = delete;
 };
 
+// Helper to conditionally enable converting constructors.
+template <typename T, typename U>
+struct IsConvertibleFromOptional
+    : std::integral_constant<
+          bool,
+          std::is_constructible<T, Optional<U>&>::value ||
+              std::is_constructible<T, const Optional<U>&>::value ||
+              std::is_constructible<T, Optional<U>&&>::value ||
+              std::is_constructible<T, const Optional<U>&&>::value ||
+              std::is_convertible<Optional<U>&, T>::value ||
+              std::is_convertible<const Optional<U>&, T>::value ||
+              std::is_convertible<Optional<U>&&, T>::value ||
+              std::is_convertible<const Optional<U>&&, T>::value> {};
+
 }  // namespace internal
 
 // base::Optional is a Chromium version of the C++17 optional class:
@@ -347,7 +383,47 @@ class Optional
   constexpr Optional(const Optional& other) = default;
   constexpr Optional(Optional&& other) = default;
 
-  constexpr Optional(nullopt_t) {}
+  constexpr Optional(nullopt_t) {}  // NOLINT(runtime/explicit)
+
+  // Converting copy constructor. "explicit" only if
+  // std::is_convertible<const U&, T>::value is false. It is implemented by
+  // declaring two almost same constructors, but that condition in enable_if_t
+  // is different, so that either one is chosen, thanks to SFINAE.
+  template <
+      typename U,
+      std::enable_if_t<std::is_constructible<T, const U&>::value &&
+                           !internal::IsConvertibleFromOptional<T, U>::value &&
+                           std::is_convertible<const U&, T>::value,
+                       bool> = false>
+  Optional(const Optional<U>& other) : internal::OptionalBase<T>(other) {}
+
+  template <
+      typename U,
+      std::enable_if_t<std::is_constructible<T, const U&>::value &&
+                           !internal::IsConvertibleFromOptional<T, U>::value &&
+                           !std::is_convertible<const U&, T>::value,
+                       bool> = false>
+  explicit Optional(const Optional<U>& other)
+      : internal::OptionalBase<T>(other) {}
+
+  // Converting move constructor. Similar to converting copy constructor,
+  // declaring two (explicit and non-explicit) constructors.
+  template <
+      typename U,
+      std::enable_if_t<std::is_constructible<T, U&&>::value &&
+                           !internal::IsConvertibleFromOptional<T, U>::value &&
+                           std::is_convertible<U&&, T>::value,
+                       bool> = false>
+  Optional(Optional<U>&& other) : internal::OptionalBase<T>(std::move(other)) {}
+
+  template <
+      typename U,
+      std::enable_if_t<std::is_constructible<T, U&&>::value &&
+                           !internal::IsConvertibleFromOptional<T, U>::value &&
+                           !std::is_convertible<U&&, T>::value,
+                       bool> = false>
+  explicit Optional(Optional<U>&& other)
+      : internal::OptionalBase<T>(std::move(other)) {}
 
   constexpr Optional(const T& value)
       : internal::OptionalBase<T>(in_place, value) {}
