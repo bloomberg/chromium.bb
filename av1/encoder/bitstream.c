@@ -182,10 +182,6 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
   const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
 
-  int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
-                                   xd->left_txfm_context + blk_row,
-                                   mbmi->sb_type, tx_size);
-
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   if (depth == MAX_VARTX_DEPTH) {
@@ -193,6 +189,10 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
     return;
   }
+
+  int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
+                                   xd->left_txfm_context + blk_row,
+                                   mbmi->sb_type, tx_size);
 
   const int write_txfm_partition =
       tx_size == mbmi->inter_tx_size[tx_row][tx_col];
