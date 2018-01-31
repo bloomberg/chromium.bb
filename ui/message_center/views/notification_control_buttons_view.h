@@ -77,8 +77,8 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
  private:
   MessageView* message_view_;
 
-  std::unique_ptr<message_center::PaddedButton> close_button_;
-  std::unique_ptr<message_center::PaddedButton> settings_button_;
+  std::unique_ptr<PaddedButton> close_button_;
+  std::unique_ptr<PaddedButton> settings_button_;
 
   std::unique_ptr<gfx::LinearAnimation> bgcolor_animation_;
   SkColor bgcolor_origin_;

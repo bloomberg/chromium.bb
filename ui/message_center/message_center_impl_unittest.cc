@@ -117,14 +117,13 @@ class MessageCenterImplTest : public testing::Test {
   }
 
   Notification* CreateNotification(const std::string& id,
-                                   message_center::NotificationType type) {
+                                   NotificationType type) {
     return CreateNotificationWithNotifierId(id, "app1", type);
   }
 
-  Notification* CreateNotificationWithNotifierId(
-      const std::string& id,
-      const std::string& notifier_id,
-      message_center::NotificationType type) {
+  Notification* CreateNotificationWithNotifierId(const std::string& id,
+                                                 const std::string& notifier_id,
+                                                 NotificationType type) {
     RichNotificationData optional_fields;
     optional_fields.buttons.push_back(ButtonInfo(UTF8ToUTF16("foo")));
     optional_fields.buttons.push_back(ButtonInfo(UTF8ToUTF16("foo")));
@@ -162,7 +161,7 @@ class ToggledNotificationBlocker : public NotificationBlocker {
 
   // NotificationBlocker overrides:
   bool ShouldShowNotificationAsPopup(
-      const message_center::Notification& notification) const override {
+      const Notification& notification) const override {
     return notifications_enabled_;
   }
 
@@ -402,8 +401,7 @@ TEST_F(MessageCenterImplTest, NotificationBlocker) {
   EXPECT_EQ(2u, message_center()->GetVisibleNotifications().size());
 
   // "id1" is displayed as a pop-up so that it will be closed when blocked.
-  message_center()->DisplayedNotification("id1",
-                                          message_center::DISPLAY_SOURCE_POPUP);
+  message_center()->DisplayedNotification("id1", DISPLAY_SOURCE_POPUP);
 
   // Block all notifications. All popups are gone and message center should be
   // hidden.
@@ -451,8 +449,7 @@ TEST_F(MessageCenterImplTest, NotificationsDuringBlocked) {
   EXPECT_EQ(1u, message_center()->GetVisibleNotifications().size());
 
   // "id1" is displayed as a pop-up so that it will be closed when blocked.
-  message_center()->DisplayedNotification("id1",
-                                          message_center::DISPLAY_SOURCE_POPUP);
+  message_center()->DisplayedNotification("id1", DISPLAY_SOURCE_POPUP);
 
   // Create a notification during blocked. Still no popups.
   blocker.SetNotificationsEnabled(false);
@@ -492,8 +489,7 @@ TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
                        notifier_id2, RichNotificationData(), NULL)));
 
   // "id1" is displayed as a pop-up so that it will be closed when blocked.
-  message_center()->DisplayedNotification("id1",
-                                          message_center::DISPLAY_SOURCE_POPUP);
+  message_center()->DisplayedNotification("id1", DISPLAY_SOURCE_POPUP);
 
   // "id1" is closed but "id2" is still visible as a popup.
   blocker.SetNotificationsEnabled(false);

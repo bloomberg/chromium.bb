@@ -708,7 +708,7 @@ TEST_F(NotificationViewMDTest, TestAccentColor) {
 
   // By default, header does not have accent color (default grey), and
   // buttons have default accent color.
-  EXPECT_EQ(message_center::kNotificationDefaultAccentColor,
+  EXPECT_EQ(kNotificationDefaultAccentColor,
             notification_view()->header_row_->accent_color_for_testing());
   EXPECT_EQ(
       kActionButtonTextColor,

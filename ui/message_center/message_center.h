@@ -24,7 +24,7 @@ class DownloadNotificationTestBase;
 // is shown, closed, or clicked on.
 //
 // MessageCenter is agnostic of profiles; it uses the string returned by
-// message_center::Notification::id() to uniquely identify a notification. It is
+// Notification::id() to uniquely identify a notification. It is
 // the caller's responsibility to formulate the id so that 2 different
 // notification should have different ids. For example, if the caller supports
 // multiple profiles, then caller should encode both profile characteristics and
@@ -73,8 +73,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
   // Find the notification with the corresponding id. Returns null if not
   // found. The returned instance is owned by the message center.
-  virtual message_center::Notification* FindVisibleNotificationById(
-      const std::string& id) = 0;
+  virtual Notification* FindVisibleNotificationById(const std::string& id) = 0;
 
   // Gets all notifications to be shown to the user in the message center.  Note
   // that queued changes due to the message center being open are not reflected

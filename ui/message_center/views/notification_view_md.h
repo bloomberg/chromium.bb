@@ -36,7 +36,7 @@ class ProportionalImageView;
 // message next to each other within a single column.
 class ItemView : public views::View {
  public:
-  explicit ItemView(const message_center::NotificationItem& item);
+  explicit ItemView(const NotificationItem& item);
   ~ItemView() override;
 
   const char* GetClassName() const override;

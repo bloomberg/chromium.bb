@@ -222,8 +222,8 @@ void MessagePopupCollection::UpdateWidgets() {
           toast, ax::mojom::Event::kAlert);
     }
 
-    message_center_->DisplayedNotification(
-        notification.id(), message_center::DISPLAY_SOURCE_POPUP);
+    message_center_->DisplayedNotification(notification.id(),
+                                           DISPLAY_SOURCE_POPUP);
   }
 }
 

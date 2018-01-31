@@ -52,7 +52,7 @@ class NotificationHeaderView : public views::Button {
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
-  SkColor accent_color_ = message_center::kNotificationDefaultAccentColor;
+  SkColor accent_color_ = kNotificationDefaultAccentColor;
 
   views::Label* app_name_view_ = nullptr;
   views::Label* summary_text_divider_ = nullptr;

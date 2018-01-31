@@ -42,7 +42,7 @@ bool UiController::ShowMessageCenterBubble(bool show_by_click) {
 
   message_center_visible_ = delegate_->ShowMessageCenter(show_by_click);
   if (message_center_visible_) {
-    message_center_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+    message_center_->SetVisibility(VISIBILITY_MESSAGE_CENTER);
     NotifyUiControllerChanged();
   }
   return message_center_visible_;
@@ -66,7 +66,7 @@ void UiController::MarkMessageCenterHidden() {
   if (!message_center_visible_)
     return;
   message_center_visible_ = false;
-  message_center_->SetVisibility(message_center::VISIBILITY_TRANSIENT);
+  message_center_->SetVisibility(VISIBILITY_TRANSIENT);
 
   // Some notifications (like system ones) should appear as popups again
   // after the message center is closed.
@@ -117,7 +117,7 @@ void UiController::ShowNotifierSettingsBubble() {
     HidePopupBubbleInternal();
 
   message_center_visible_ = delegate_->ShowNotifierSettings();
-  message_center_->SetVisibility(message_center::VISIBILITY_SETTINGS);
+  message_center_->SetVisibility(VISIBILITY_SETTINGS);
 
   NotifyUiControllerChanged();
 }
