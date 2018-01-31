@@ -46,6 +46,9 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+
+using namespace cssvalue;
+
 namespace CSSParsingUtils {
 namespace {
 
@@ -144,8 +147,7 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
     return nullptr;
 
   range = range_copy;
-  return cssvalue::CSSStepsTimingFunctionValue::Create(steps->GetIntValue(),
-                                                       position);
+  return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
 }
 
 CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
@@ -167,7 +169,7 @@ CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
     return nullptr;
 
   range = range_copy;
-  return cssvalue::CSSFramesTimingFunctionValue::Create(frames_int);
+  return CSSFramesTimingFunctionValue::Create(frames_int);
 }
 
 CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
@@ -187,7 +189,7 @@ CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
       CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args) &&
       CSSPropertyParserHelpers::ConsumeNumberRaw(args, y2) && args.AtEnd()) {
     range = range_copy;
-    return cssvalue::CSSCubicBezierTimingFunctionValue::Create(x1, y1, x2, y2);
+    return CSSCubicBezierTimingFunctionValue::Create(x1, y1, x2, y2);
   }
 
   return nullptr;
@@ -1168,7 +1170,7 @@ CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
   CSSPropertyParserHelpers::Complete4Sides(slices);
   if (default_fill == DefaultFill::kFill)
     fill = true;
-  return cssvalue::CSSBorderImageSliceValue::Create(
+  return CSSBorderImageSliceValue::Create(
       CSSQuadValue::Create(slices[0], slices[1], slices[2], slices[3],
                            CSSQuadValue::kSerializeAsQuad),
       fill);
@@ -1573,8 +1575,7 @@ CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange& range) {
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   CSSValueList* settings = CSSValueList::CreateCommaSeparated();
   do {
-    cssvalue::CSSFontFeatureValue* font_feature_value =
-        ConsumeFontFeatureTag(range);
+    CSSFontFeatureValue* font_feature_value = ConsumeFontFeatureTag(range);
     if (!font_feature_value)
       return nullptr;
     settings->Append(*font_feature_value);
@@ -1582,8 +1583,7 @@ CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange& range) {
   return settings;
 }
 
-cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(
-    CSSParserTokenRange& range) {
+CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
   const unsigned kTagNameLength = 4;
 
@@ -1611,7 +1611,7 @@ cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(
              range.Peek().Id() == CSSValueOff) {
     tag_value = range.ConsumeIncludingWhitespace().Id() == CSSValueOn;
   }
-  return cssvalue::CSSFontFeatureValue::Create(tag, tag_value);
+  return CSSFontFeatureValue::Create(tag, tag_value);
 }
 
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange& range) {
@@ -2249,7 +2249,7 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   range = function_range;
   if (byte_stream->IsEmpty())
     return CSSIdentifierValue::Create(CSSValueNone);
-  return cssvalue::CSSPathValue::Create(std::move(byte_stream));
+  return CSSPathValue::Create(std::move(byte_stream));
 }
 
 CSSValue* ConsumeRay(CSSParserTokenRange& range,

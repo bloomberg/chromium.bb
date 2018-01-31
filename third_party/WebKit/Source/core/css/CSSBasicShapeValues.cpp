@@ -36,6 +36,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+namespace cssvalue {
 
 static String BuildCircleString(const String& radius,
                                 const String& center_x,
@@ -436,4 +437,5 @@ void CSSBasicShapeInsetValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
