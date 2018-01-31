@@ -19,6 +19,7 @@ var engagementTableBody = null;
 var sortReverse = true;
 var sortKey = 'totalScore';
 var configTableBody = null;
+var showNoPlaybacks = false;
 
 /**
  * Creates a single row in the engagement table.
@@ -121,7 +122,8 @@ function renderConfigTable(config) {
 function renderTable() {
   clearTable();
   sortInfo();
-  info.forEach(rowInfo => engagementTableBody.appendChild(createRow(rowInfo)));
+  info.filter(rowInfo => (showNoPlaybacks || rowInfo.mediaPlaybacks > 0))
+      .forEach(rowInfo => engagementTableBody.appendChild(createRow(rowInfo)));
 }
 
 /**
@@ -186,5 +188,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // And deselect everything at the end.
     window.getSelection().removeAllRanges();
   });
+
+  // Add handler to 'show no playbacks' checkbox
+  var showNoPlaybacksCheckbox = $('show-no-playbacks');
+  showNoPlaybacksCheckbox.addEventListener('change', (e) => {
+    showNoPlaybacks = e.target.checked;
+    renderTable();
+  });
+
 });
+
 })();

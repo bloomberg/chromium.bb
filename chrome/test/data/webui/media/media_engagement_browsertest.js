@@ -12,7 +12,7 @@ var EXAMPLE_URL_2 = 'http://shmlexample.com/';
 GEN('#include "chrome/browser/media/media_engagement_service.h"');
 GEN('#include "chrome/browser/media/media_engagement_service_factory.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
-GEN('#include "media/base/media_switches.h"')
+GEN('#include "media/base/media_switches.h"');
 
 function MediaEngagementWebUIBrowserTest() {}
 
@@ -33,6 +33,8 @@ MediaEngagementWebUIBrowserTest.prototype = {
     GEN('    browser()->profile());');
     GEN('service->RecordVisit(GURL("' + EXAMPLE_URL_1 + '"));');
     GEN('service->RecordVisit(GURL("' + EXAMPLE_URL_2 + '"));');
+    GEN('service->RecordPlayback(GURL("' + EXAMPLE_URL_1 + '"));');
+    GEN('service->RecordPlayback(GURL("' + EXAMPLE_URL_2 + '"));');
   },
 
   extraLibraries: [
