@@ -678,11 +678,36 @@ class Generator(generator.Generator):
                                              add_same_module_namespaces=True)
     return self._GetCppWrapperType(kind, add_same_module_namespaces=True)
 
+  def _KindMustBeSerialized(self, kind, processed_kinds=None):
+    if not processed_kinds:
+      processed_kinds = set()
+    if kind in processed_kinds:
+      return False
+
+    if (self._IsTypemappedKind(kind) and
+        self.typemap[self._GetFullMojomNameForKind(kind)]["force_serialize"]):
+      return True
+
+    processed_kinds.add(kind)
+
+    if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+      return any(self._KindMustBeSerialized(field.kind,
+                                            processed_kinds=processed_kinds)
+                 for field in kind.fields)
+
+    return False
+
   def _MethodSupportsLazySerialization(self, method):
+    if not self.support_lazy_serialization:
+      return False
+
     # TODO(crbug.com/753433): Support lazy serialization for methods which pass
     # associated handles.
-    return (self.support_lazy_serialization and
-        not mojom.MethodPassesAssociatedKinds(method))
+    if mojom.MethodPassesAssociatedKinds(method):
+      return False
+
+    return not any(self._KindMustBeSerialized(param.kind) for param in
+                   method.parameters + (method.response_parameters or []))
 
   def _TranslateConstants(self, token, kind):
     if isinstance(token, mojom.NamedValue):

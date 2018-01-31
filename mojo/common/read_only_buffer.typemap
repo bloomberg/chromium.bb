@@ -5,4 +5,4 @@
 mojom = "//mojo/common/read_only_buffer.mojom"
 public_headers = [ "//base/containers/span.h" ]
 traits_headers = [ "//mojo/common/read_only_buffer_struct_traits.h" ]
-type_mappings = [ "mojo.common.mojom.ReadOnlyBuffer=base::span<const uint8_t>[copyable_pass_by_value]" ]
+type_mappings = [ "mojo.common.mojom.ReadOnlyBuffer=base::span<const uint8_t>[copyable_pass_by_value,force_serialize]" ]

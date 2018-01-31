@@ -8,6 +8,6 @@ traits_headers = [
   "//third_party/WebKit/Source/platform/mojo/CommonCustomTypesStructTraits.h",
 ]
 type_mappings = [
-  "mojo.common.mojom.String16=WTF::String[nullable_is_same_type]",
-  "mojo.common.mojom.BigString16=WTF::String[nullable_is_same_type]",
+  "mojo.common.mojom.String16=WTF::String[nullable_is_same_type,force_serialize]",
+  "mojo.common.mojom.BigString16=WTF::String[nullable_is_same_type,force_serialize]",
 ]

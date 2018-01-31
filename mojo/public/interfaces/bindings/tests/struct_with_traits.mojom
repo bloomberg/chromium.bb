@@ -96,3 +96,17 @@ struct EnumWithTraitsContainer {
   EnumWithTraits f_field = EnumWithTraits.VALUE_1;
 };
 
+struct StructForceSerialize {
+  int32 value;
+};
+
+struct StructNestedForceSerialize {
+  StructForceSerialize force;
+};
+
+interface ForceSerializeTester {
+  SendForceSerializedStruct(StructForceSerialize s)
+      => (StructForceSerialize passed);
+  SendNestedForceSerializedStruct(StructNestedForceSerialize s)
+      => (StructNestedForceSerialize passed);
+};
