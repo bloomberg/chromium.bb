@@ -77,7 +77,6 @@ class DataPromoNotificationTest : public testing::Test {
     chromeos::NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
     LoginState::Shutdown();
-    display_service_.reset();
     profile_manager_.reset();
     user_manager_enabler_.reset();
     data_promo_notification_.reset();
