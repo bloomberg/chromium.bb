@@ -92,8 +92,7 @@ TargetAutoAttacher::TargetAutoAttacher(AttachCallback attach_callback,
       detach_callback_(detach_callback),
       render_frame_host_(nullptr),
       auto_attach_(false),
-      wait_for_debugger_on_start_(false),
-      attach_to_frames_(false) {}
+      wait_for_debugger_on_start_(false) {}
 
 TargetAutoAttacher::~TargetAutoAttacher() {}
 
@@ -109,7 +108,7 @@ void TargetAutoAttacher::UpdateServiceWorkers() {
 }
 
 void TargetAutoAttacher::UpdateFrames() {
-  if (!auto_attach_ || !attach_to_frames_)
+  if (!auto_attach_)
     return;
 
   Hosts new_hosts;
@@ -141,7 +140,7 @@ void TargetAutoAttacher::AgentHostClosed(DevToolsAgentHost* host) {
 }
 
 bool TargetAutoAttacher::ShouldThrottleFramesNavigation() {
-  return auto_attach_ && attach_to_frames_;
+  return auto_attach_;
 }
 
 DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
@@ -241,18 +240,6 @@ void TargetAutoAttacher::SetAutoAttach(bool auto_attach,
       auto_attaching_service_workers_ = false;
     }
     DCHECK(auto_attached_hosts_.empty());
-  }
-}
-
-void TargetAutoAttacher::SetAttachToFrames(bool attach_to_frames) {
-  if (attach_to_frames_ == attach_to_frames)
-    return;
-  attach_to_frames_ = attach_to_frames;
-  if (attach_to_frames_) {
-    UpdateFrames();
-  } else {
-    Hosts empty;
-    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
   }
 }
 

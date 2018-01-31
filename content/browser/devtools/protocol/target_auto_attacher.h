@@ -28,7 +28,6 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void SetAutoAttach(bool auto_attach, bool wait_for_debugger_on_start);
-  void SetAttachToFrames(bool attach_to_frames);
 
   void UpdateServiceWorkers();
   void AgentHostClosed(DevToolsAgentHost* host);
@@ -60,7 +59,6 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
 
   bool auto_attach_;
   bool wait_for_debugger_on_start_;
-  bool attach_to_frames_;
   bool auto_attaching_service_workers_ = false;
 
   Hosts auto_attached_hosts_;

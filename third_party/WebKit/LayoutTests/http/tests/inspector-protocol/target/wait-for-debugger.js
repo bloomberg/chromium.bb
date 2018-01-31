@@ -3,7 +3,6 @@
       `Tests that waitForDebuggerOnStart works with out-of-process iframes.`);
 
   await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true});
-  await dp.Target.setAttachToFrames({value: true});
 
   await dp.Page.enable();
   dp.Network.enable();

@@ -5459,11 +5459,6 @@ domain Target
       # Deprecated.
       deprecated optional TargetID targetId
 
-  experimental command setAttachToFrames
-    parameters
-      # Whether to attach to frames.
-      boolean value
-
   # Controls whether to automatically attach to new targets which are considered to be related to
   # this one. When turned on, attaches to all existing related targets as well. When turned off,
   # automatically detaches from all currently attached targets.
