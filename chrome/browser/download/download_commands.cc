@@ -322,7 +322,7 @@ void DownloadCommands::ExecuteCommand(Command command) {
     // 4. User is not in incognito mode.
 #if defined(FULL_SAFE_BROWSING)
       if (download_item_->GetDangerType() ==
-              content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
+              download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
           !download_item_->GetURL().is_empty() &&
           !download_item_->GetBrowserContext()->IsOffTheRecord()) {
         safe_browsing::SafeBrowsingService* sb_service =

@@ -5,8 +5,8 @@
 #include "content/public/browser/download_url_parameters.h"
 
 #include "base/callback.h"
+#include "components/download/public/common/download_save_info.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -48,7 +48,7 @@ DownloadUrlParameters::DownloadUrlParameters(
       fetch_error_body_(false),
       transient_(false),
       traffic_annotation_(traffic_annotation),
-      download_source_(DownloadSource::UNKNOWN) {}
+      download_source_(download::DownloadSource::UNKNOWN) {}
 
 DownloadUrlParameters::~DownloadUrlParameters() {
 }

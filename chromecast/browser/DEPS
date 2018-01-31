@@ -9,6 +9,7 @@ include_rules = [
   "+chromecast/service",
   "+components/cdm/browser",
   "+components/crash",
+  "+components/download/public/common",
   "+components/keyed_service",
   "+components/network_hints/browser",
   "+components/network_session_configurator/common",

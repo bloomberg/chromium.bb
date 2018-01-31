@@ -40,6 +40,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -48,7 +49,6 @@
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -2188,7 +2188,7 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
   StrictMock<content::MockDownloadItem> mock_download_item;
 
   EXPECT_CALL(mock_download_item, GetDangerType())
-      .WillOnce(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
+      .WillOnce(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
   EXPECT_CALL(mock_page_navigator, OpenURL(OpenURLParamsWithContextValue("7")));
 
   download_service_->ShowDetailsForDownload(mock_download_item,

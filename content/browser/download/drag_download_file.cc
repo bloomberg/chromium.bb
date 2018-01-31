@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -99,7 +98,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
                                     weak_ptr_factory_.GetWeakPtr()));
     params->set_file_path(file_path);
     params->set_file(std::move(file));  // Nulls file.
-    params->set_download_source(DownloadSource::DRAG_AND_DROP);
+    params->set_download_source(download::DownloadSource::DRAG_AND_DROP);
     BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext())
         ->DownloadUrl(std::move(params));
   }

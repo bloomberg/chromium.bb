@@ -13,7 +13,6 @@
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/download/url_download_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/redirect_info.h"
@@ -30,7 +29,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
   UrlDownloader(std::unique_ptr<net::URLRequest> request,
                 base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
                 bool is_parallel_request,
-                DownloadSource download_source);
+                download::DownloadSource download_source);
   ~UrlDownloader() override;
 
   static std::unique_ptr<UrlDownloader> BeginDownload(

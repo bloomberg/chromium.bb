@@ -100,7 +100,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_details.h"
@@ -2384,7 +2383,7 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
   dl_params->set_referrer_encoding(params_.frame_charset);
   dl_params->set_suggested_name(params_.suggested_filename);
   dl_params->set_prompt(true);
-  dl_params->set_download_source(content::DownloadSource::CONTEXT_MENU);
+  dl_params->set_download_source(download::DownloadSource::CONTEXT_MENU);
 
   BrowserContext::GetDownloadManager(browser_context_)
       ->DownloadUrl(std::move(dl_params));

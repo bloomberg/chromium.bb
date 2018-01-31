@@ -28,7 +28,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "ui/base/page_transition_types.h"
 
@@ -353,7 +353,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual bool IsDangerous() const = 0;
 
   // Why |safety_state_| is not SAFE.
-  virtual DownloadDangerType GetDangerType() const = 0;
+  virtual download::DownloadDangerType GetDangerType() const = 0;
 
   //    Progress State accessors -----------------------------------------------
 
@@ -447,7 +447,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // TODO(crbug.com/733291): Move DownloadInterruptReason out of here and add a
   // new  Interrupt method instead. Same for other methods supporting
   // interruptions.
-  virtual void OnContentCheckCompleted(DownloadDangerType danger_type,
+  virtual void OnContentCheckCompleted(download::DownloadDangerType danger_type,
                                        DownloadInterruptReason reason) = 0;
 
   // Mark the download to be auto-opened when completed.

@@ -77,7 +77,7 @@ TEST_F(DownloadRequestCoreTest, BuildRangeRequest) {
       BuildDownloadParameters("example.com");
 
   // Check initial states.
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent, params->length());
+  EXPECT_EQ(download::DownloadSaveInfo::kLengthFullContent, params->length());
   EXPECT_EQ(0, params->offset());
   EXPECT_TRUE(params->use_if_range());
 

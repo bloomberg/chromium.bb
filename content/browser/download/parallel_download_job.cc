@@ -193,7 +193,7 @@ void ParallelDownloadJob::BuildParallelRequests() {
 
   DCHECK(!slices_to_download.empty());
   DCHECK_EQ(slices_to_download.back().received_bytes,
-            DownloadSaveInfo::kLengthFullContent);
+            download::DownloadSaveInfo::kLengthFullContent);
 
   ForkSubRequests(slices_to_download);
   RecordParallelDownloadRequestCount(

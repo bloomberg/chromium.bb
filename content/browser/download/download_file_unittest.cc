@@ -117,7 +117,7 @@ enum DownloadFileRenameMethodType { RENAME_AND_UNIQUIFY, RENAME_AND_ANNOTATE };
 // retries renames failed due to ACCESS_DENIED.
 class TestDownloadFileImpl : public DownloadFileImpl {
  public:
-  TestDownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+  TestDownloadFileImpl(std::unique_ptr<download::DownloadSaveInfo> save_info,
                        const base::FilePath& default_downloads_directory,
                        std::unique_ptr<DownloadManager::InputStream> stream,
                        uint32_t download_id,
@@ -221,7 +221,8 @@ class DownloadFileTest : public testing::Test {
         .WillOnce(Invoke(this, &DownloadFileTest::RegisterCallback))
         .RetiresOnSaturation();
 
-    std::unique_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
+    std::unique_ptr<download::DownloadSaveInfo> save_info(
+        new download::DownloadSaveInfo());
     save_info->offset = offset;
     save_info->length = length;
 
@@ -920,7 +921,7 @@ TEST_F(DownloadFileTest, MutipleStreamsWrite) {
   download_file_->AddInputStream(
       std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
-      stream_0_length, DownloadSaveInfo::kLengthFullContent);
+      stream_0_length, download::DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
   base::RunLoop().RunUntilIdle();
 
@@ -971,7 +972,8 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   download_file_->AddInputStream(
       std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[1])),
-      stream_0_length + stream_1_length, DownloadSaveInfo::kLengthFullContent);
+      stream_0_length + stream_1_length,
+      download::DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
   base::RunLoop().RunUntilIdle();
 
@@ -995,8 +997,9 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
 TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
   int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
 
-  ASSERT_TRUE(CreateDownloadFile(0, DownloadSaveInfo::kLengthFullContent, true,
-                                 DownloadItem::ReceivedSlices()));
+  ASSERT_TRUE(CreateDownloadFile(0,
+                                 download::DownloadSaveInfo::kLengthFullContent,
+                                 true, DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData8, 4);
 
@@ -1013,7 +1016,7 @@ TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
   download_file_->AddInputStream(
       std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
-      stream_0_length - 1, DownloadSaveInfo::kLengthFullContent);
+      stream_0_length - 1, download::DownloadSaveInfo::kLengthFullContent);
   base::RunLoop().RunUntilIdle();
 
   SourceStreamTestData stream_data_0(0, stream_0_length, true);
@@ -1054,7 +1057,7 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
   download_file_->AddInputStream(
       std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
-      0, DownloadSaveInfo::kLengthFullContent);
+      0, download::DownloadSaveInfo::kLengthFullContent);
 
   // The stream should get terminated and reset the callback.
   EXPECT_TRUE(sink_callback_.is_null());

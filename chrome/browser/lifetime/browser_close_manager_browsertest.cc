@@ -215,10 +215,11 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   static void SetDangerous(const content::DownloadTargetCallback& callback,
                            const base::FilePath& target_path,
                            content::DownloadItem::TargetDisposition disp,
-                           content::DownloadDangerType danger_type,
+                           download::DownloadDangerType danger_type,
                            const base::FilePath& intermediate_path,
                            content::DownloadInterruptReason reason) {
-    callback.Run(target_path, disp, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
+    callback.Run(target_path, disp,
+                 download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
                  intermediate_path, reason);
   }
 };

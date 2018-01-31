@@ -4,6 +4,7 @@ include_rules = [
   "+components/discardable_memory/common",
   "+components/discardable_memory/service",
   "+components/download/downloader/in_progress",
+  "+components/download/public/common",
   "+components/filesystem",
   "+components/leveldb",
   "+components/link_header_util",

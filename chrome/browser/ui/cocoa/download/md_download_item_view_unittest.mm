@@ -50,7 +50,7 @@ TEST_F(MDDownloadItemViewTest, TestStates) {
 
   ON_CALL(item_, GetDangerType())
       .WillByDefault(
-          testing::Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
+          testing::Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
   ON_CALL(item_, IsDangerous()).WillByDefault(testing::Return(true));
   set_state_and_display();
 

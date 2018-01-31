@@ -107,7 +107,6 @@ jumbo_source_set("browser_sources") {
     "devtools_socket_factory.h",
     "discardable_shared_memory_manager.h",
     "dom_storage_context.h",
-    "download_danger_type.h",
     "download_interrupt_reason_values.h",
     "download_interrupt_reasons.h",
     "download_item.h",
@@ -116,9 +115,6 @@ jumbo_source_set("browser_sources") {
     "download_manager_delegate.cc",
     "download_manager_delegate.h",
     "download_request_utils.h",
-    "download_save_info.cc",
-    "download_save_info.h",
-    "download_source.h",
     "download_url_parameters.cc",
     "download_url_parameters.h",
     "favicon_status.cc",
@@ -310,6 +306,7 @@ jumbo_source_set("browser_sources") {
   ]
 
   public_deps = [
+    "//components/download/public/common:public",
     "//content/public/common:common_sources",
     "//ipc",
     "//mojo/public/cpp/bindings",

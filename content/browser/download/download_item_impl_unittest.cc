@@ -268,8 +268,8 @@ class DownloadItemTest : public testing::Test {
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         next_download_id_(DownloadItem::kInvalidId + 1) {
     create_info_.reset(new DownloadCreateInfo());
-    create_info_->save_info =
-        std::unique_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
+    create_info_->save_info = std::unique_ptr<download::DownloadSaveInfo>(
+        new download::DownloadSaveInfo());
     create_info_->save_info->prompt_for_save_location = false;
     create_info_->url_chain.push_back(GURL("http://example.com/download"));
     create_info_->etag = "SomethingToSatisfyResumption";
@@ -341,8 +341,9 @@ class DownloadItemTest : public testing::Test {
   // Perform the intermediate rename for |item|. The target path for the
   // download will be set to kDummyTargetPath. Returns the MockDownloadFile*
   // that was added to the DownloadItem.
-  MockDownloadFile* DoIntermediateRename(DownloadItemImpl* item,
-                                         DownloadDangerType danger_type) {
+  MockDownloadFile* DoIntermediateRename(
+      DownloadItemImpl* item,
+      download::DownloadDangerType danger_type) {
     EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
     EXPECT_TRUE(item->GetTargetFilePath().empty());
     DownloadTargetCallback callback;
@@ -429,7 +430,7 @@ class DownloadItemTest : public testing::Test {
 TEST_F(DownloadItemTest, NotificationAfterUpdate) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   TestDownloadItemObserver observer(item);
 
@@ -464,7 +465,7 @@ TEST_F(DownloadItemTest, NotificationAfterComplete) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
   DoDestinationComplete(item, download_file);
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
@@ -481,7 +482,7 @@ TEST_F(DownloadItemTest, NotificationAfterDownloadedFileRemoved) {
 TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   EXPECT_CALL(*download_file, Cancel());
   TestDownloadItemObserver observer(item);
 
@@ -518,27 +519,29 @@ TEST_F(DownloadItemTest, NotificationAfterRemove) {
 TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   // Setting to NOT_DANGEROUS does not trigger a notification.
   DownloadItemImpl* safe_item = CreateDownloadItem();
-  MockDownloadFile* download_file =
-      DoIntermediateRename(safe_item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  MockDownloadFile* download_file = DoIntermediateRename(
+      safe_item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   TestDownloadItemObserver safe_observer(safe_item);
 
   safe_item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   EXPECT_TRUE(safe_observer.CheckAndResetDownloadUpdated());
-  safe_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                                     DOWNLOAD_INTERRUPT_REASON_NONE);
+  safe_item->OnContentCheckCompleted(
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(safe_observer.CheckAndResetDownloadUpdated());
   CleanupItem(safe_item, download_file, DownloadItem::IN_PROGRESS);
 
   // Setting to unsafe url or unsafe file should trigger a notification.
   DownloadItemImpl* unsafeurl_item = CreateDownloadItem();
-  download_file =
-      DoIntermediateRename(unsafeurl_item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  download_file = DoIntermediateRename(
+      unsafeurl_item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   TestDownloadItemObserver unsafeurl_observer(unsafeurl_item);
 
   unsafeurl_item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   EXPECT_TRUE(unsafeurl_observer.CheckAndResetDownloadUpdated());
-  unsafeurl_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
-                                          DOWNLOAD_INTERRUPT_REASON_NONE);
+  unsafeurl_item->OnContentCheckCompleted(
+      download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
+      DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(unsafeurl_observer.CheckAndResetDownloadUpdated());
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
@@ -549,14 +552,15 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   CleanupItem(unsafeurl_item, download_file, DownloadItem::IN_PROGRESS);
 
   DownloadItemImpl* unsafefile_item = CreateDownloadItem();
-  download_file =
-      DoIntermediateRename(unsafefile_item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  download_file = DoIntermediateRename(
+      unsafefile_item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   TestDownloadItemObserver unsafefile_observer(unsafefile_item);
 
   unsafefile_item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   EXPECT_TRUE(unsafefile_observer.CheckAndResetDownloadUpdated());
-  unsafefile_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-                                           DOWNLOAD_INTERRUPT_REASON_NONE);
+  unsafefile_item->OnContentCheckCompleted(
+      download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+      DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(unsafefile_observer.CheckAndResetDownloadUpdated());
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
@@ -588,7 +592,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnDownloadTargetDetermined) {
   // Currently, a notification would be generated if the danger type is anything
   // other than NOT_DANGEROUS.
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_FALSE(observer.CheckAndResetDownloadUpdated());
   task_environment_.RunUntilIdle();
@@ -629,7 +633,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_Continue) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Interrupt the download using a continuable interrupt after writing a single
   // byte. An intermediate file with data shouldn't be discarding after a
@@ -684,7 +688,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_Restart) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Interrupt the download, using a restartable interrupt.
   EXPECT_CALL(*download_file, Cancel());
@@ -724,7 +728,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_NeedsUserAction) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Interrupt the download, using a restartable interrupt.
   EXPECT_CALL(*download_file, Cancel());
@@ -751,7 +755,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_ContentLengthMismatch) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Interrupt the download with content length mismatch error. The intermediate
   // file with data shouldn't be discarded.
@@ -794,7 +798,7 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Fail final rename with unresumable reason.
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
@@ -879,7 +883,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
     ASSERT_FALSE(callback.is_null());
     base::ResetAndReturn(&callback).Run(
         target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-        DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
         DOWNLOAD_INTERRUPT_REASON_NONE);
     task_environment_.RunUntilIdle();
 
@@ -922,7 +926,7 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
 
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   ASSERT_TRUE(item->GetResponseHeaders());
   EXPECT_EQ(kFirstResponseCode, item->GetResponseHeaders()->response_code());
   EXPECT_EQ(kContentDisposition, item->GetContentDisposition());
@@ -971,7 +975,7 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   ASSERT_FALSE(target_callback.is_null());
   target_callback.Run(base::FilePath(kDummyTargetPath),
                       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                       base::FilePath(kDummyIntermediatePath),
                       DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
@@ -1007,7 +1011,7 @@ TEST_F(DownloadItemTest, SucceededResumptionUpdatesOriginState) {
 
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _));
   EXPECT_CALL(*download_file, Detach());
   item->DestinationObserverAsWeakPtr()->DestinationError(
@@ -1057,7 +1061,7 @@ TEST_F(DownloadItemTest, ClearReceivedSliceIfEtagChanged) {
 
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _));
   EXPECT_CALL(*download_file, Detach());
@@ -1096,7 +1100,7 @@ TEST_F(DownloadItemTest, ResumeUsesFinalURL) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Interrupt the download, using a continuable interrupt.
   EXPECT_CALL(*download_file, FullPath())
@@ -1135,7 +1139,7 @@ TEST_F(DownloadItemTest, DisplayName) {
       .WillOnce(ScheduleRenameAndUniquifyCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, intermediate_path));
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(FILE_PATH_LITERAL("foo.bar"),
@@ -1186,7 +1190,7 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
 
   download_target_callback.Run(base::FilePath(kDummyTargetPath),
                                DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                                base::FilePath(kDummyIntermediatePath),
                                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
@@ -1229,8 +1233,8 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
   base::FilePath target_path(FILE_PATH_LITERAL("foo"));
   download_target_callback.Run(target_path,
                                DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
-                               DOWNLOAD_INTERRUPT_REASON_NONE);
+                               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                               target_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
 
   // Interrupt reason carried in create info should be recorded.
@@ -1258,7 +1262,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
           DOWNLOAD_INTERRUPT_REASON_NONE, new_intermediate_path));
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
@@ -1299,7 +1303,7 @@ TEST_F(DownloadItemTest, CallbackAfterInterruptedRename) {
       .Times(1);
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
@@ -1315,7 +1319,7 @@ TEST_F(DownloadItemTest, Interrupted) {
   base::HistogramTester histogram_tester;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   const DownloadInterruptReason reason(
       DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
@@ -1362,7 +1366,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Restart) {
       .Times(1);
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
@@ -1406,7 +1410,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
   EXPECT_CALL(*download_file, Detach());
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
@@ -1446,7 +1450,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Failed) {
       .Times(1);
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
@@ -1487,7 +1491,7 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_Cancel) {
   EXPECT_CALL(*download_file, Cancel());
   callback.Run(base::FilePath(FILE_PATH_LITERAL("foo")),
                DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                base::FilePath(FILE_PATH_LITERAL("bar")),
                DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
@@ -1500,7 +1504,7 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_CancelWithEmptyName) {
 
   EXPECT_CALL(*download_file, Cancel());
   callback.Run(base::FilePath(), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
                DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
 }
@@ -1513,7 +1517,7 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_Conflict) {
 
   EXPECT_CALL(*download_file, Cancel());
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
                DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE);
   EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
@@ -1531,7 +1535,7 @@ TEST_F(DownloadItemTest, FileRemoved) {
 TEST_F(DownloadItemTest, DestinationUpdate) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   base::WeakPtr<DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
@@ -1567,7 +1571,7 @@ TEST_F(DownloadItemTest, DestinationError_NoRestartRequired) {
   base::HistogramTester histogram_tester;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   base::WeakPtr<DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
@@ -1601,7 +1605,7 @@ TEST_F(DownloadItemTest, DestinationError_RestartRequired) {
   base::HistogramTester histogram_tester;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   base::WeakPtr<DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
@@ -1632,7 +1636,7 @@ TEST_F(DownloadItemTest, DestinationCompleted) {
   base::HistogramTester histogram_tester;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   base::WeakPtr<DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
@@ -1675,7 +1679,7 @@ TEST_F(DownloadItemTest, DestinationCompleted) {
 TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // InProgress
   ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
@@ -1707,7 +1711,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
   create_info()->save_info->file_path = base::FilePath(kDummyTargetPath);
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // InProgress Temporary
   ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
@@ -1737,7 +1741,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
 TEST_F(DownloadItemTest, EnabledActionsForInterruptedDownload) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   EXPECT_CALL(*download_file, Cancel());
   item->DestinationObserverAsWeakPtr()->DestinationError(
@@ -1754,7 +1758,7 @@ TEST_F(DownloadItemTest, EnabledActionsForInterruptedDownload) {
 TEST_F(DownloadItemTest, EnabledActionsForCancelledDownload) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   EXPECT_CALL(*download_file, Cancel());
   item->Cancel(true);
@@ -1773,7 +1777,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_ReturnTrue) {
   // we complete immediately.
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Drive the delegate interaction.
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
@@ -1804,7 +1808,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockOnce) {
 
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   base::Closure delegate_callback;
   base::Closure copy_delegate_callback;
@@ -1843,7 +1847,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   // we complete immediately.
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Drive the delegate interaction.
   base::Closure delegate_callback;
@@ -1858,7 +1862,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();
   EXPECT_FALSE(item->IsDangerous());
-  item->OnContentCheckCompleted(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+  item->OnContentCheckCompleted(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
                                 DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   copy_delegate_callback.Run();
@@ -1881,7 +1885,8 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   EXPECT_TRUE(item->IsDangerous());
 
   item->ValidateDangerousDownload();
-  EXPECT_EQ(DOWNLOAD_DANGER_TYPE_USER_VALIDATED, item->GetDangerType());
+  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+            item->GetDangerType());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(DownloadItem::COMPLETE, item->GetState());
 }
@@ -1892,7 +1897,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
   // we complete immediately.
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Drive the delegate interaction.
   base::Closure delegate_callback;
@@ -1936,7 +1941,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
 TEST_F(DownloadItemTest, StealDangerousDownloadAndDiscard) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
   ASSERT_TRUE(item->IsDangerous());
   base::FilePath full_path(FILE_PATH_LITERAL("foo.txt"));
   base::FilePath returned_path;
@@ -1958,7 +1963,7 @@ TEST_F(DownloadItemTest, StealDangerousDownloadAndDiscard) {
 TEST_F(DownloadItemTest, StealDangerousDownloadAndKeep) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
   ASSERT_TRUE(item->IsDangerous());
   base::FilePath full_path(FILE_PATH_LITERAL("foo.txt"));
   base::FilePath returned_path;
@@ -1979,7 +1984,7 @@ TEST_F(DownloadItemTest, StealInterruptedContinuableDangerousDownload) {
   base::FilePath returned_path;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
   base::FilePath full_path = item->GetFullPath();
   EXPECT_FALSE(full_path.empty());
   EXPECT_CALL(*download_file, FullPath()).WillOnce(ReturnRefOfCopy(full_path));
@@ -2004,7 +2009,7 @@ TEST_F(DownloadItemTest, StealInterruptedNonContinuableDangerousDownload) {
   base::FilePath returned_path;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
-      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+      DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
   EXPECT_CALL(*download_file, Cancel());
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, 1,
@@ -2288,8 +2293,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
                        destination_observer);
   target_callback.Run(base::FilePath(),
                       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
-                      DOWNLOAD_INTERRUPT_REASON_NONE);
+                      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                      base::FilePath(), DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::CANCELLED, item_->GetState());
   task_environment_.RunUntilIdle();
 }
@@ -2334,7 +2339,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
                        destination_observer);
   target_callback.Run(base::FilePath(kDummyTargetPath),
                       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                       base::FilePath(kDummyIntermediatePath),
                       DOWNLOAD_INTERRUPT_REASON_NONE);
 
@@ -2397,7 +2402,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
                        destination_observer);
   target_callback.Run(base::FilePath(kDummyTargetPath),
                       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                       base::FilePath(kDummyIntermediatePath),
                       DOWNLOAD_INTERRUPT_REASON_NONE);
 

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
-#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_SAVE_INFO_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_SAVE_INFO_H_
 
 #include <stdint.h>
 
@@ -12,16 +12,16 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
+#include "components/download/public/common/download_export.h"
 #include "crypto/secure_hash.h"
 
-namespace content {
+namespace download {
 
 // Holds the information about how to save a download file.
 // In the case of download continuation, |file_path| is set to the current file
 // name, |offset| is set to the point where we left off, and |hash_state| will
 // hold the state of the hash algorithm where we left off.
-struct CONTENT_EXPORT DownloadSaveInfo {
+struct COMPONENTS_DOWNLOAD_EXPORT DownloadSaveInfo {
   // The default value for |length|. Used when request the rest of the file
   // starts from |offset|.
   static const int64_t kLengthFullContent;
@@ -73,6 +73,6 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   DISALLOW_COPY_AND_ASSIGN(DownloadSaveInfo);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_SAVE_INFO_H_

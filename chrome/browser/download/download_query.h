@@ -113,7 +113,7 @@ class DownloadQuery {
   // filter out all items.
   bool AddFilter(const FilterCallback& filter);
   bool AddFilter(FilterType type, const base::Value& value);
-  void AddFilter(content::DownloadDangerType danger);
+  void AddFilter(download::DownloadDangerType danger);
   void AddFilter(content::DownloadItem::DownloadState state);
 
   // Adds a new sorter of type |type| with direction |direction|.  After

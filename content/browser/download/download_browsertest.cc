@@ -31,6 +31,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
@@ -40,7 +41,6 @@
 #include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -165,7 +165,7 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
 
 class DownloadFileWithDelay : public DownloadFileImpl {
  public:
-  DownloadFileWithDelay(std::unique_ptr<DownloadSaveInfo> save_info,
+  DownloadFileWithDelay(std::unique_ptr<download::DownloadSaveInfo> save_info,
                         const base::FilePath& default_download_directory,
                         std::unique_ptr<DownloadManager::InputStream> stream,
                         uint32_t download_id,
@@ -210,7 +210,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
@@ -231,7 +231,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 };
 
 DownloadFileWithDelay::DownloadFileWithDelay(
-    std::unique_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
     uint32_t download_id,
@@ -290,7 +290,7 @@ DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
-    std::unique_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
     uint32_t download_id,
@@ -325,7 +325,7 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
 
 class CountingDownloadFile : public DownloadFileImpl {
  public:
-  CountingDownloadFile(std::unique_ptr<DownloadSaveInfo> save_info,
+  CountingDownloadFile(std::unique_ptr<download::DownloadSaveInfo> save_info,
                        const base::FilePath& default_downloads_directory,
                        std::unique_ptr<DownloadManager::InputStream> stream,
                        uint32_t download_id,
@@ -383,7 +383,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
@@ -397,7 +397,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
 class ErrorInjectionDownloadFile : public DownloadFileImpl {
  public:
   ErrorInjectionDownloadFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
@@ -444,7 +444,7 @@ class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
@@ -2050,7 +2050,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
-      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2113,7 +2113,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
-      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2163,7 +2163,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time(), "fake-etag", std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
-      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2219,7 +2219,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size,
       std::string(std::begin(kPartialHash), std::end(kPartialHash)),
-      DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2282,7 +2282,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size,
       std::string(std::begin(kPartialHash), std::end(kPartialHash)),
-      DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2353,7 +2353,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
-      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2422,7 +2422,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
-      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       std::vector<DownloadItem::ReceivedSlice>());
 
@@ -2984,7 +2984,7 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time(), parameters.etag, parameters.last_modified,
       kIntermediateSize * 3, parameters.size, std::string(),
-      DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
       received_slices);
 

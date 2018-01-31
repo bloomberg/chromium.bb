@@ -22,11 +22,11 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/download/public/common/download_save_info.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/rate_estimator.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -45,7 +45,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // |stream|, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+  DownloadFileImpl(std::unique_ptr<download::DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
                    std::unique_ptr<DownloadManager::InputStream> stream,
                    uint32_t download_id,
@@ -203,7 +203,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  private:
   friend class DownloadFileTest;
 
-  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+  DownloadFileImpl(std::unique_ptr<download::DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
                    uint32_t download_id,
                    base::WeakPtr<DownloadDestinationObserver> observer);
@@ -311,7 +311,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // DownloadSaveInfo provided during construction. Since the DownloadFileImpl
   // can be created on any thread, this holds the save_info_ until it can be
   // used to initialize file_ on the download sequence.
-  std::unique_ptr<DownloadSaveInfo> save_info_;
+  std::unique_ptr<download::DownloadSaveInfo> save_info_;
 
   // The default directory for creating the download file.
   base::FilePath default_download_directory_;

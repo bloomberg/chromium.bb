@@ -24,7 +24,6 @@
 #include "content/browser/loader/web_package_request_handler.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_context.h"

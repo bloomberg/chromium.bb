@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "components/download/public/common/download_source.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/public/browser/download_source.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "content/public/common/referrer.h"
 #include "net/cert/cert_status_flags.h"
@@ -37,11 +37,11 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
 
   DownloadResponseHandler(network::ResourceRequest* resource_request,
                           Delegate* delegate,
-                          std::unique_ptr<DownloadSaveInfo> save_info,
+                          std::unique_ptr<download::DownloadSaveInfo> save_info,
                           bool is_parallel_request,
                           bool is_transient,
                           bool fetch_error_body,
-                          DownloadSource download_source,
+                          download::DownloadSource download_source,
                           std::vector<GURL> url_chain);
   ~DownloadResponseHandler() override;
 
@@ -76,13 +76,13 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
   bool started_;
 
   // Information needed to create DownloadCreateInfo when the time comes.
-  std::unique_ptr<DownloadSaveInfo> save_info_;
+  std::unique_ptr<download::DownloadSaveInfo> save_info_;
   std::vector<GURL> url_chain_;
   std::string method_;
   GURL referrer_;
   bool is_transient_;
   bool fetch_error_body_;
-  DownloadSource download_source_;
+  download::DownloadSource download_source_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
   GURL origin_;

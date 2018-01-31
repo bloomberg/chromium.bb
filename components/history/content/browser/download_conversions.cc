@@ -48,55 +48,55 @@ DownloadState ToHistoryDownloadState(
   return DownloadState::INVALID;
 }
 
-content::DownloadDangerType ToContentDownloadDangerType(
+download::DownloadDangerType ToContentDownloadDangerType(
     DownloadDangerType danger_type) {
   switch (danger_type) {
     case DownloadDangerType::NOT_DANGEROUS:
-      return content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+      return download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
     case DownloadDangerType::DANGEROUS_FILE:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
+      return download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
     case DownloadDangerType::DANGEROUS_URL:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
+      return download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
     case DownloadDangerType::DANGEROUS_CONTENT:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
+      return download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
     case DownloadDangerType::MAYBE_DANGEROUS_CONTENT:
-      return content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
+      return download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
     case DownloadDangerType::UNCOMMON_CONTENT:
-      return content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT;
+      return download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT;
     case DownloadDangerType::USER_VALIDATED:
-      return content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
+      return download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
     case DownloadDangerType::DANGEROUS_HOST:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
+      return download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
     case DownloadDangerType::POTENTIALLY_UNWANTED:
-      return content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
+      return download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
     case DownloadDangerType::INVALID:
       NOTREACHED();
-      return content::DOWNLOAD_DANGER_TYPE_MAX;
+      return download::DOWNLOAD_DANGER_TYPE_MAX;
   }
   NOTREACHED();
-  return content::DOWNLOAD_DANGER_TYPE_MAX;
+  return download::DOWNLOAD_DANGER_TYPE_MAX;
 }
 
 DownloadDangerType ToHistoryDownloadDangerType(
-    content::DownloadDangerType danger_type) {
+    download::DownloadDangerType danger_type) {
   switch (danger_type) {
-    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+    case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
       return DownloadDangerType::NOT_DANGEROUS;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       return DownloadDangerType::DANGEROUS_FILE;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       return DownloadDangerType::DANGEROUS_URL;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       return DownloadDangerType::DANGEROUS_CONTENT;
-    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
       return DownloadDangerType::MAYBE_DANGEROUS_CONTENT;
-    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
       return DownloadDangerType::UNCOMMON_CONTENT;
-    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+    case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
       return DownloadDangerType::USER_VALIDATED;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       return DownloadDangerType::DANGEROUS_HOST;
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return DownloadDangerType::POTENTIALLY_UNWANTED;
     default:
       NOTREACHED();

@@ -50,11 +50,11 @@ mojom::NetworkRequestStatus ConvertInterruptReasonToMojoNetworkRequestStatus(
 DownloadResponseHandler::DownloadResponseHandler(
     network::ResourceRequest* resource_request,
     Delegate* delegate,
-    std::unique_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<download::DownloadSaveInfo> save_info,
     bool is_parallel_request,
     bool is_transient,
     bool fetch_error_body,
-    DownloadSource download_source,
+    download::DownloadSource download_source,
     std::vector<GURL> url_chain)
     : delegate_(delegate),
       started_(false),

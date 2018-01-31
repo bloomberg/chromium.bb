@@ -16,7 +16,6 @@
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -41,7 +40,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   // started_cb will be called exactly once on the UI thread.
   // |id| should be invalid if the id should be automatically assigned.
   DownloadResourceHandler(net::URLRequest* request,
-                          DownloadSource download_source);
+                          download::DownloadSource download_source);
 
   // static
   // This function is passed into ResourceDispatcherHostImpl during its
@@ -57,7 +56,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   // navigation.
   static std::unique_ptr<ResourceHandler> CreateForNewRequest(
       net::URLRequest* request,
-      DownloadSource download_source);
+      download::DownloadSource download_source);
 
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,

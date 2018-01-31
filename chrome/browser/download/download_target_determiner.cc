@@ -653,7 +653,7 @@ DownloadTargetDeterminer::Result
   next_state_ = STATE_CHECK_VISITED_REFERRER_BEFORE;
 
   // If user has validated a dangerous download, don't check.
-  if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED)
+  if (danger_type_ == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED)
     return CONTINUE;
 
   delegate_->CheckDownloadUrl(
@@ -665,7 +665,7 @@ DownloadTargetDeterminer::Result
 }
 
 void DownloadTargetDeterminer::CheckDownloadUrlDone(
-    content::DownloadDangerType danger_type) {
+    download::DownloadDangerType danger_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << "URL Check Result:" << danger_type;
   DCHECK_EQ(STATE_CHECK_VISITED_REFERRER_BEFORE, next_state_);
@@ -680,8 +680,8 @@ DownloadTargetDeterminer::Result
 
   // Checking if there are prior visits to the referrer is only necessary if the
   // danger level of the download depends on the file type.
-  if (danger_type_ != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS &&
-      danger_type_ != content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT)
+  if (danger_type_ != download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS &&
+      danger_type_ != download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT)
     return CONTINUE;
 
   // First determine the danger level assuming that the user doesn't have any
@@ -718,8 +718,8 @@ DownloadTargetDeterminer::Result
   // If the danger level doesn't depend on having visited the refererrer URL or
   // if original profile doesn't have a HistoryService or the referrer url is
   // invalid, then assume the referrer has not been visited before.
-  if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
-    danger_type_ = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
+  if (danger_type_ == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
+    danger_type_ = download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
   return CONTINUE;
 }
 
@@ -730,8 +730,8 @@ void DownloadTargetDeterminer::CheckVisitedReferrerBeforeDone(
   danger_level_ = GetDangerLevel(
       visited_referrer_before ? VISITED_REFERRER : NO_VISITS_TO_REFERRER);
   if (danger_level_ != DownloadFileType::NOT_DANGEROUS &&
-      danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
-    danger_type_ = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
+      danger_type_ == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
+    danger_type_ = download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
   DoLoop();
 }
 
@@ -763,7 +763,7 @@ DownloadTargetDeterminer::Result
   // target path. In practice the temporary download file that was created prior
   // to download filename determination is already named
   // download_->GetForcedFilePath().
-  if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS &&
+  if (danger_type_ == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS &&
       !download_->GetForcedFilePath().empty()) {
     DCHECK_EQ(download_->GetForcedFilePath().value(), local_path_.value());
     intermediate_path_ = local_path_;
@@ -771,14 +771,14 @@ DownloadTargetDeterminer::Result
   }
 
   // Transient downloads don't need to be renamed to intermediate file.
-  if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS &&
+  if (danger_type_ == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS &&
       download_->IsTransient()) {
     intermediate_path_ = local_path_;
     return COMPLETE;
   }
 
   // Other safe downloads get a .crdownload suffix for their intermediate name.
-  if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+  if (danger_type_ == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
     intermediate_path_ = GetCrDownloadPath(local_path_);
     return COMPLETE;
   }
@@ -789,7 +789,7 @@ DownloadTargetDeterminer::Result
   // intermediate file should already be in the correct form.
   if (is_resumption_ && !download_->GetFullPath().empty() &&
       local_path_.DirName() == download_->GetFullPath().DirName()) {
-    DCHECK_NE(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    DCHECK_NE(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
               download_->GetDangerType());
     DCHECK_EQ(kCrdownloadSuffix, download_->GetFullPath().Extension());
     intermediate_path_ = download_->GetFullPath();

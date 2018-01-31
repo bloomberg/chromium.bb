@@ -32,10 +32,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
@@ -206,7 +206,7 @@ void MdDownloadsDOMHandler::SaveDownload(
   // If danger type is NOT DANGEROUS_FILE, chrome shows users a download danger
   // prompt.
   if (download->GetDangerType() !=
-      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+      download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
     ShowDangerPrompt(download);
   } else {
     // If danger type is DANGEROUS_FILE, chrome proceeds to keep this download

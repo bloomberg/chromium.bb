@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "ui/base/page_transition_types.h"
@@ -132,7 +132,7 @@ class FakeDownloadItem : public DownloadItem {
   const std::string& GetHash() const override;
   void DeleteFile(const base::Callback<void(bool)>& callback) override;
   bool IsDangerous() const override;
-  DownloadDangerType GetDangerType() const override;
+  download::DownloadDangerType GetDangerType() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
@@ -147,7 +147,7 @@ class FakeDownloadItem : public DownloadItem {
   bool GetOpened() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
-  void OnContentCheckCompleted(DownloadDangerType danger_type,
+  void OnContentCheckCompleted(download::DownloadDangerType danger_type,
                                DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;

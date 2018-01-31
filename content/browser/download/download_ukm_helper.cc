@@ -20,10 +20,11 @@ int DownloadUkmHelper::CalcExponentialBucket(int value) {
   return static_cast<int>(floor(log10(value + 1) / CalcBucketIncrement()));
 }
 
-void DownloadUkmHelper::RecordDownloadStarted(int download_id,
-                                              ukm::SourceId source_id,
-                                              DownloadContent file_type,
-                                              DownloadSource download_source) {
+void DownloadUkmHelper::RecordDownloadStarted(
+    int download_id,
+    ukm::SourceId source_id,
+    DownloadContent file_type,
+    download::DownloadSource download_source) {
   ukm::builders::Download_Started(source_id)
       .SetDownloadId(download_id)
       .SetFileType(static_cast<int>(file_type))

@@ -14,9 +14,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/download_save_info.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 
@@ -54,7 +54,7 @@ class CONTENT_EXPORT DownloadRequestCore
   DownloadRequestCore(net::URLRequest* request,
                       Delegate* delegate,
                       bool is_parallel_request,
-                      DownloadSource download_source);
+                      download::DownloadSource download_source);
   ~DownloadRequestCore();
 
   // Should be called when the URLRequest::Delegate receives OnResponseStarted.
@@ -124,7 +124,7 @@ class CONTENT_EXPORT DownloadRequestCore
 
   // "Passthrough" fields. These are only kept here so that they can be used to
   // populate the DownloadCreateInfo when the time comes.
-  std::unique_ptr<DownloadSaveInfo> save_info_;
+  std::unique_ptr<download::DownloadSaveInfo> save_info_;
   uint32_t download_id_;
   std::string guid_;
   bool fetch_error_body_;
@@ -160,7 +160,7 @@ class CONTENT_EXPORT DownloadRequestCore
   DownloadInterruptReason abort_reason_;
 
   // Source of the download, used in metrics.
-  DownloadSource download_source_;
+  download::DownloadSource download_source_;
 
   // Each successful OnWillRead will yield a buffer of this size.
   static const int kReadBufSize = 32768;   // bytes

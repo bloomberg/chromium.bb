@@ -18,6 +18,7 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//components/download/public/common:public",
     "//components/history/core/browser",
     "//components/visitedlink/browser",
     "//content/public/browser",

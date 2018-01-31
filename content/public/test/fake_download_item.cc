@@ -345,9 +345,9 @@ bool FakeDownloadItem::IsDangerous() const {
   return false;
 }
 
-DownloadDangerType FakeDownloadItem::GetDangerType() const {
+download::DownloadDangerType FakeDownloadItem::GetDangerType() const {
   NOTREACHED();
-  return DownloadDangerType();
+  return download::DownloadDangerType();
 }
 
 bool FakeDownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
@@ -421,8 +421,9 @@ WebContents* FakeDownloadItem::GetWebContents() const {
   return nullptr;
 }
 
-void FakeDownloadItem::OnContentCheckCompleted(DownloadDangerType danger_type,
-                                               DownloadInterruptReason reason) {
+void FakeDownloadItem::OnContentCheckCompleted(
+    download::DownloadDangerType danger_type,
+    DownloadInterruptReason reason) {
   NOTREACHED();
 }
 

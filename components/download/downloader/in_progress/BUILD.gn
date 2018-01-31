@@ -11,7 +11,6 @@ static_library("in_progress") {
   sources = [
     "download_entry.cc",
     "download_entry.h",
-    "download_source.h",
     "in_progress_cache.h",
     "in_progress_cache_impl.cc",
     "in_progress_cache_impl.h",
@@ -22,6 +21,7 @@ static_library("in_progress") {
   deps = [
     "//base",
     "//components/download/downloader/in_progress/proto",
+    "//components/download/public/common:public",
     "//services/metrics/public/cpp:metrics_cpp",
   ]
 }

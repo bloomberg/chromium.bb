@@ -73,7 +73,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
   if (!download->GetForcedFilePath().empty()) {
     callback.Run(download->GetForcedFilePath(),
                  DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                  download->GetForcedFilePath(), DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
@@ -138,7 +138,7 @@ void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
   if (suppress_prompting_) {
     // Testing exit.
     callback.Run(suggested_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                  suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
                  DOWNLOAD_INTERRUPT_REASON_NONE);
     return;
@@ -184,7 +184,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 #endif
 
   callback.Run(result, DownloadItem::TARGET_DISPOSITION_PROMPT,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result,
                DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 

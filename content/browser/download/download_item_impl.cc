@@ -40,6 +40,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
@@ -57,7 +58,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
@@ -141,25 +141,25 @@ std::string GetDownloadTypeNames(DownloadItem::DownloadType type) {
   }
 }
 
-std::string GetDownloadDangerNames(DownloadDangerType type) {
+std::string GetDownloadDangerNames(download::DownloadDangerType type) {
   switch (type) {
-    case DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+    case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
       return "NOT_DANGEROUS";
-    case DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       return "DANGEROUS_FILE";
-    case DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       return "DANGEROUS_URL";
-    case DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       return "DANGEROUS_CONTENT";
-    case DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
       return "MAYBE_DANGEROUS_CONTENT";
-    case DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
       return "UNCOMMON_CONTENT";
-    case DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+    case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
       return "USER_VALIDATED";
-    case DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       return "DANGEROUS_HOST";
-    case DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return "POTENTIALLY_UNWANTED";
     default:
       NOTREACHED();
@@ -175,7 +175,7 @@ class DownloadItemActivatedData
                             std::string original_url,
                             std::string final_url,
                             std::string file_name,
-                            DownloadDangerType danger_type,
+                            download::DownloadDangerType danger_type,
                             int64_t start_offset,
                             bool has_user_gesture)
       : download_type_(download_type),
@@ -216,7 +216,7 @@ class DownloadItemActivatedData
   std::string original_url_;
   std::string final_url_;
   std::string file_name_;
-  DownloadDangerType danger_type_;
+  download::DownloadDangerType danger_type_;
   int64_t start_offset_;
   bool has_user_gesture_;
   DISALLOW_COPY_AND_ASSIGN(DownloadItemActivatedData);
@@ -310,7 +310,7 @@ DownloadItemImpl::DownloadItemImpl(
     int64_t total_bytes,
     const std::string& hash,
     DownloadItem::DownloadState state,
-    DownloadDangerType danger_type,
+    download::DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
@@ -479,7 +479,7 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   RecordDangerousDownloadAccept(GetDangerType(),
                                 GetTargetFilePath());
 
-  danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
+  danger_type_ = download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
   TRACE_EVENT_INSTANT1("download", "DownloadItemSaftyStateUpdated",
                        TRACE_EVENT_SCOPE_THREAD, "danger_type",
@@ -858,15 +858,15 @@ void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
 }
 
 bool DownloadItemImpl::IsDangerous() const {
-  return (danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED);
+  return (danger_type_ == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+          danger_type_ == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+          danger_type_ == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+          danger_type_ == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
+          danger_type_ == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
+          danger_type_ == download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED);
 }
 
-DownloadDangerType DownloadItemImpl::GetDangerType() const {
+download::DownloadDangerType DownloadItemImpl::GetDangerType() const {
   return danger_type_;
 }
 
@@ -977,8 +977,9 @@ WebContents* DownloadItemImpl::GetWebContents() const {
   return nullptr;
 }
 
-void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
-                                               DownloadInterruptReason reason) {
+void DownloadItemImpl::OnContentCheckCompleted(
+    download::DownloadDangerType danger_type,
+    DownloadInterruptReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(AllDataSaved());
 
@@ -1390,7 +1391,7 @@ void DownloadItemImpl::Init(bool active,
     // Read data from in-progress cache.
     auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
     if (in_progress_entry)
-      download_source_ = ToDownloadSource(in_progress_entry->download_source);
+      download_source_ = in_progress_entry->download_source;
   }
 
   DVLOG(20) << __func__ << "() " << DebugString(true);
@@ -1536,7 +1537,7 @@ void DownloadItemImpl::DetermineDownloadTarget() {
 void DownloadItemImpl::OnDownloadTargetDetermined(
     const base::FilePath& target_path,
     TargetDisposition disposition,
-    DownloadDangerType danger_type,
+    download::DownloadDangerType danger_type,
     const base::FilePath& intermediate_path,
     DownloadInterruptReason interrupt_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -2223,7 +2224,7 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
   }
 }
 
-void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
+void DownloadItemImpl::SetDangerType(download::DownloadDangerType danger_type) {
   if (danger_type != danger_type_) {
     TRACE_EVENT_INSTANT1("download", "DownloadItemSaftyStateUpdated",
                          TRACE_EVENT_SCOPE_THREAD, "danger_type",
@@ -2231,14 +2232,15 @@ void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
   }
   // Only record the Malicious UMA stat if it's going from {not malicious} ->
   // {malicious}.
-  if ((danger_type_ == DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) &&
-      (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
-       danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-       danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
-       danger_type == DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED)) {
+  if ((danger_type_ == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
+       danger_type_ == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+       danger_type_ == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
+       danger_type_ ==
+           download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) &&
+      (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
+       danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+       danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+       danger_type == download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED)) {
     RecordMaliciousDownloadClassified(danger_type);
   }
   danger_type_ = danger_type;

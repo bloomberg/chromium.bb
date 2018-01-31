@@ -478,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
   base::FilePath filename = download_item()->GetFileNameToReportUser();
 
   // Checks the download status.
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             download_item()->GetDangerType());
   EXPECT_TRUE(download_item()->IsDangerous());
 
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
 
   // Checks the download status.
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
             download_item()->GetDangerType());
   EXPECT_FALSE(download_item()->IsDangerous());
 
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
   base::FilePath filename = download_item()->GetFileNameToReportUser();
 
   // Checks the download status.
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             download_item()->GetDangerType());
   EXPECT_TRUE(download_item()->IsDangerous());
 

@@ -44,6 +44,7 @@ jumbo_source_set("browser") {
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
     "//components/download/downloader/in_progress",
+    "//components/download/public/common:public",
     "//components/filesystem:lib",
     "//components/leveldb:lib",
     "//components/link_header_util",

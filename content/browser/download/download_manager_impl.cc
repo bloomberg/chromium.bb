@@ -108,7 +108,7 @@ void CreateInterruptedDownload(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<DownloadCreateInfo> failed_created_info(
       new DownloadCreateInfo(base::Time::Now(),
-                             base::WrapUnique(new DownloadSaveInfo)));
+                             base::WrapUnique(new download::DownloadSaveInfo)));
   failed_created_info->url_chain.push_back(params->url());
   failed_created_info->result = reason;
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
@@ -129,8 +129,8 @@ download::DownloadEntry CreateDownloadEntryFromItem(
     download_id = base::RandUint64();
   } while (download_id == 0);
 
-  return download::DownloadEntry(
-      item.GetGuid(), ToDownloadSource(item.download_source()), download_id);
+  return download::DownloadEntry(item.GetGuid(), item.download_source(),
+                                 download_id);
 }
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
@@ -235,7 +235,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       int64_t total_bytes,
       const std::string& hash,
       DownloadItem::DownloadState state,
-      DownloadDangerType danger_type,
+      download::DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
@@ -379,7 +379,7 @@ void DownloadManagerImpl::DetermineDownloadTarget(
     base::FilePath target_path = item->GetForcedFilePath();
     // TODO(asanka): Determine a useful path if |target_path| is empty.
     callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
                  DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 }
@@ -872,7 +872,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     int64_t total_bytes,
     const std::string& hash,
     DownloadItem::DownloadState state,
-    DownloadDangerType danger_type,
+    download::DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
@@ -943,11 +943,14 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() const {
   int count = 0;
   for (const auto& it : downloads_) {
     if (it.second->GetState() == DownloadItem::IN_PROGRESS &&
-        it.second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
-        it.second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT &&
-        it.second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST &&
         it.second->GetDangerType() !=
-            DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED) {
+            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
+        it.second->GetDangerType() !=
+            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT &&
+        it.second->GetDangerType() !=
+            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST &&
+        it.second->GetDangerType() !=
+            download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED) {
       ++count;
     }
   }

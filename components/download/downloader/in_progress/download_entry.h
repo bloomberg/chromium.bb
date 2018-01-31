@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/download/downloader/in_progress/download_source.h"
+#include "components/download/public/common/download_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace download {

@@ -13,7 +13,6 @@
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
 namespace safe_browsing {
@@ -126,9 +125,9 @@ bool DownloadFeedbackService::GetPingsForDownloadForTesting(
 
 // static
 void DownloadFeedbackService::RecordEligibleDownloadShown(
-    content::DownloadDangerType danger_type) {
+    download::DownloadDangerType danger_type) {
   UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Eligible", danger_type,
-                            content::DOWNLOAD_DANGER_TYPE_MAX);
+                            download::DOWNLOAD_DANGER_TYPE_MAX);
 }
 
 void DownloadFeedbackService::BeginFeedbackForDownload(
@@ -137,7 +136,7 @@ void DownloadFeedbackService::BeginFeedbackForDownload(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Activations",
                             download->GetDangerType(),
-                            content::DOWNLOAD_DANGER_TYPE_MAX);
+                            download::DOWNLOAD_DANGER_TYPE_MAX);
 
   DownloadFeedbackPings* pings = DownloadFeedbackPings::FromDownload(*download);
   DCHECK(pings);

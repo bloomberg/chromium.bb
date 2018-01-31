@@ -7,10 +7,10 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
 
+#include "components/download/public/common/download_source.h"
 #include "content/browser/download/download_content.h"
 #include "content/browser/download/resume_mode.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_source.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -27,7 +27,7 @@ class CONTENT_EXPORT DownloadUkmHelper {
   static void RecordDownloadStarted(int download_id,
                                     ukm::SourceId source_id,
                                     DownloadContent file_type,
-                                    DownloadSource download_source);
+                                    download::DownloadSource download_source);
 
   // Record when the download is interrupted.
   static void RecordDownloadInterrupted(

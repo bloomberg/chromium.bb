@@ -102,14 +102,14 @@ struct DetermineDownloadTargetResult {
 
   base::FilePath target_path;
   content::DownloadItem::TargetDisposition disposition;
-  content::DownloadDangerType danger_type;
+  download::DownloadDangerType danger_type;
   base::FilePath intermediate_path;
   content::DownloadInterruptReason interrupt_reason;
 };
 
 DetermineDownloadTargetResult::DetermineDownloadTargetResult()
     : disposition(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
-      danger_type(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
+      danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
       interrupt_reason(content::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
 // Subclass of the ChromeDownloadManagerDelegate that replaces a few interaction
@@ -119,7 +119,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   explicit TestChromeDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile) {
     ON_CALL(*this, MockCheckDownloadUrl(_, _))
-        .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+        .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     ON_CALL(*this, GetDownloadProtectionService())
         .WillByDefault(Return(nullptr));
     ON_CALL(*this, MockReserveVirtualPath(_, _, _, _, _))
@@ -177,8 +177,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   }
 
   MOCK_METHOD2(MockCheckDownloadUrl,
-               content::DownloadDangerType(DownloadItem*,
-                                           const base::FilePath&));
+               download::DownloadDangerType(DownloadItem*,
+                                            const base::FilePath&));
 
   MOCK_METHOD0(GetDownloadProtectionService,
                safe_browsing::DownloadProtectionService*());
@@ -292,7 +292,7 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
   ON_CALL(*item, GetBrowserContext())
       .WillByDefault(Return(profile()));
   ON_CALL(*item, GetDangerType())
-      .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+      .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   ON_CALL(*item, GetForcedFilePath())
       .WillByDefault(ReturnRefOfCopy(base::FilePath()));
   ON_CALL(*item, GetFullPath())
@@ -342,7 +342,7 @@ void StoreDownloadTargetInfo(
     DetermineDownloadTargetResult* result,
     const base::FilePath& target_path,
     DownloadItem::TargetDisposition target_disposition,
-    content::DownloadDangerType danger_type,
+    download::DownloadDangerType danger_type,
     const base::FilePath& intermediate_path,
     content::DownloadInterruptReason interrupt_reason) {
   result->target_path = target_path;
@@ -523,7 +523,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
       .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   EXPECT_CALL(*delegate(), MockCheckDownloadUrl(_, _))
       .WillRepeatedly(
-          Return(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT));
+          Return(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT));
 
   {
     const std::string kDangerousContentDisposition(
@@ -535,7 +535,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
 
     EXPECT_EQ(DownloadFileType::DANGEROUS,
               DownloadItemModel(download_item.get()).GetDangerLevel());
-    EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
               result.danger_type);
   }
 
@@ -548,7 +548,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
     DetermineDownloadTarget(download_item.get(), &result);
     EXPECT_EQ(DownloadFileType::NOT_DANGEROUS,
               DownloadItemModel(download_item.get()).GetDangerLevel());
-    EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
               result.danger_type);
   }
 
@@ -561,7 +561,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
     DetermineDownloadTarget(download_item.get(), &result);
     EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
               DownloadItemModel(download_item.get()).GetDangerLevel());
-    EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
               result.danger_type);
   }
 }
@@ -648,12 +648,12 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithHistoryDbNextId) {
 namespace {
 
 struct SafeBrowsingTestParameters {
-  content::DownloadDangerType initial_danger_type;
+  download::DownloadDangerType initial_danger_type;
   DownloadFileType::DangerLevel initial_danger_level;
   safe_browsing::DownloadCheckResult verdict;
   DownloadPrefs::DownloadRestriction download_restriction;
 
-  content::DownloadDangerType expected_danger_type;
+  download::DownloadDangerType expected_danger_type;
   bool blocked;
 };
 
@@ -700,162 +700,162 @@ void ChromeDownloadManagerDelegateTestWithSafeBrowsing::TearDown() {
 
 const SafeBrowsingTestParameters kSafeBrowsingTestCases[] = {
     // SAFE verdict for a safe file.
-    {content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    {download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      DownloadFileType::NOT_DANGEROUS, safe_browsing::DownloadCheckResult::SAFE,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+     download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      /*blocked=*/false},
 
     // UNKNOWN verdict for a safe file.
-    {content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    {download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      DownloadFileType::NOT_DANGEROUS,
      safe_browsing::DownloadCheckResult::UNKNOWN,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+     download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      /*blocked=*/false},
 
     // DANGEROUS verdict for a safe file.
-    {content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    {download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      DownloadFileType::NOT_DANGEROUS,
      safe_browsing::DownloadCheckResult::DANGEROUS,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
      /*blocked=*/false},
 
     // UNCOMMON verdict for a safe file.
-    {content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    {download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      DownloadFileType::NOT_DANGEROUS,
      safe_browsing::DownloadCheckResult::UNCOMMON,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
+     download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
      /*blocked=*/false},
 
     // POTENTIALLY_UNWANTED verdict for a safe file.
-    {content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    {download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      DownloadFileType::NOT_DANGEROUS,
      safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
+     download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
      /*blocked=*/false},
 
     // SAFE verdict for a potentially dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::SAFE,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+     download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
      /*blocked=*/false},
 
     // UNKNOWN verdict for a potentially dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::UNKNOWN,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
      /*blocked=*/false},
 
     // UNKNOWN verdict for a potentially dangerous file blocked by policy.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::UNKNOWN,
      DownloadPrefs::DownloadRestriction::DANGEROUS_FILES,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
      /*blocked=*/true},
 
     // DANGEROUS verdict for a potentially dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::DANGEROUS,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
      /*blocked=*/false},
 
     // UNCOMMON verdict for a potentially dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::UNCOMMON,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
+     download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
      /*blocked=*/false},
 
     // POTENTIALLY_UNWANTED verdict for a potentially dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
+     download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
      /*blocked=*/false},
 
     // POTENTIALLY_UNWANTED verdict for a potentially dangerous file, blocked by
     // policy.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
      DownloadPrefs::DownloadRestriction::POTENTIALLY_DANGEROUS_FILES,
 
-     content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
+     download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
      /*blocked=*/true},
 
     // POTENTIALLY_UNWANTED verdict for a potentially dangerous file, not
     // blocked by policy.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
      DownloadPrefs::DownloadRestriction::DANGEROUS_FILES,
 
-     content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
+     download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
      /*blocked=*/false},
 
     // SAFE verdict for a dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::DANGEROUS, safe_browsing::DownloadCheckResult::SAFE,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
      /*blocked=*/false},
 
     // UNKNOWN verdict for a dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::DANGEROUS, safe_browsing::DownloadCheckResult::UNKNOWN,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
      /*blocked=*/false},
 
     // DANGEROUS verdict for a dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::DANGEROUS, safe_browsing::DownloadCheckResult::DANGEROUS,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
      /*blocked=*/false},
 
     // UNCOMMON verdict for a dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::DANGEROUS, safe_browsing::DownloadCheckResult::UNCOMMON,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
+     download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
      /*blocked=*/false},
 
     // POTENTIALLY_UNWANTED verdict for a dangerous file.
-    {content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::DANGEROUS,
      safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
      DownloadPrefs::DownloadRestriction::NONE,
 
-     content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
+     download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
      /*blocked=*/false},
 };
 
@@ -882,13 +882,13 @@ TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing, CheckClientDownload) {
   }
 
   if (kParameters.expected_danger_type !=
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
     if (kParameters.blocked) {
       EXPECT_CALL(*download_item,
                   OnContentCheckCompleted(
                       // Specifying a dangerous type here would take precendence
                       // over the blocking of the file.
-                      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                       content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED));
     } else {
       EXPECT_CALL(*download_item, OnContentCheckCompleted(
@@ -922,7 +922,7 @@ TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
   EXPECT_CALL(*download_protection_service(), MockCheckClientDownload())
       .WillOnce(Return(safe_browsing::DownloadCheckResult::SAFE));
   EXPECT_CALL(*download_item, GetDangerType())
-      .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
 
   base::RunLoop run_loop;
   ASSERT_FALSE(delegate()->ShouldCompleteDownload(download_item.get(),

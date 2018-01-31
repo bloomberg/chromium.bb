@@ -73,7 +73,7 @@ class DownloadItemNotificationTest : public testing::Test {
     ON_CALL(*download_item_, GetTargetFilePath())
         .WillByDefault(ReturnRefOfCopy(download_item_target_path));
     ON_CALL(*download_item_, GetDangerType())
-        .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+        .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     ON_CALL(*download_item_, IsDone()).WillByDefault(Return(false));
     ON_CALL(*download_item_, GetURL()).WillByDefault(ReturnRefOfCopy(
         GURL("http://www.example.com/download.bin")));
