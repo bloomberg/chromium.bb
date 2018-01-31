@@ -656,6 +656,7 @@ void LocationBarViewMac::AnimatePageInfoIfPossible(bool tab_changed) {
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel new_security_level = GetToolbarModel()->GetSecurityLevel(false);
   bool is_new_security_level = security_level_ != new_security_level;
+  SecurityLevel old_security_level = security_level_;
   security_level_ = new_security_level;
 
   if (tab_changed)
@@ -665,6 +666,14 @@ void LocationBarViewMac::AnimatePageInfoIfPossible(bool tab_changed) {
   // isn't updated from a tab switch.
   if (GetPageInfoVerboseType() != PageInfoVerboseType::kSecurity ||
       !HasSecurityVerboseText() || tab_changed) {
+    page_info_decoration_->ShowWithoutAnimation();
+    return;
+  }
+
+  // Do not animate HTTP_SHOW_WARNING to DANGEROUS transitions because they look
+  // messy/confusing.
+  if (old_security_level == security_state::HTTP_SHOW_WARNING &&
+      security_level_ == security_state::DANGEROUS) {
     page_info_decoration_->ShowWithoutAnimation();
     return;
   }
