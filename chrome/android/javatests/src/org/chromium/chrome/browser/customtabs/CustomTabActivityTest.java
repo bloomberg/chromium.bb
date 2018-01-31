@@ -678,8 +678,26 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testOpenInBrowser() throws InterruptedException {
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+    public void testOpenInBrowser() throws InterruptedException, TimeoutException {
+        // Augment the CustomTabsSession to catch the callback.
+        CallbackHelper callbackTriggered = new CallbackHelper();
+        CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+            @Override
+            public void extraCallback(String callbackName, Bundle args) {
+                if (callbackName.equals(CustomTabsConnection.OPEN_IN_BROWSER_CALLBACK)) {
+                    callbackTriggered.notifyCalled();
+                }
+            }
+        });
+
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        intent.setData(Uri.parse(mTestPage));
+        intent.setComponent(new ComponentName(
+                InstrumentationRegistry.getTargetContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addDataScheme(Uri.parse(mTestServer.getURL("/")).getScheme());
         final ActivityMonitor monitor =
@@ -702,6 +720,8 @@ public class CustomTabActivityTest {
                 return InstrumentationRegistry.getInstrumentation().checkMonitorHit(monitor, 1);
             }
         });
+
+        callbackTriggered.waitForCallback(0);
     }
 
     /**
