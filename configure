@@ -626,6 +626,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+TESTS_AS_ROOT_FALSE
+TESTS_AS_ROOT_TRUE
 RUST_DEMANGLE_LIBS
 RUST_DEMANGLE_CFLAGS
 SELFTEST_FALSE
@@ -777,6 +779,7 @@ enable_tools
 enable_system_test_libs
 enable_selftest
 with_rust_demangle
+with_tests_as_root
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1444,6 +1447,9 @@ Optional Packages:
                           Link against the rust-demangle library to demangle
                           Rust language symbols during symbol dumping (default
                           is no) Pass the path to the crate root.
+  --with-tests-as-root    Run the tests as root. Use this on platforms like
+                          travis-ci.org that require root privileges to use
+                          ptrace (default is no)
 
 Some influential environment variables:
   CC          C compiler command
@@ -7870,6 +7876,33 @@ fi
 
 
 
+
+# Check whether --with-tests-as-root was given.
+if test "${with_tests_as_root+set}" = set; then :
+  withval=$with_tests_as_root; case "${withval}" in
+               yes)
+                 tests_as_root=true
+                 ;;
+               no)
+                 tests_as_root=false
+                 ;;
+               *)
+                 as_fn_error $? "--with-tests-as-root can only be \"yes\" or \"no\"" "$LINENO" 5
+                 ;;
+             esac
+else
+  tests_as_root=false
+fi
+
+ if test x$tests_as_root = xtrue; then
+  TESTS_AS_ROOT_TRUE=
+  TESTS_AS_ROOT_FALSE='#'
+else
+  TESTS_AS_ROOT_TRUE='#'
+  TESTS_AS_ROOT_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files breakpad.pc breakpad-client.pc Makefile"
 
 
@@ -8047,6 +8080,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${SELFTEST_TRUE}" && test -z "${SELFTEST_FALSE}"; then
   as_fn_error $? "conditional \"SELFTEST\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TESTS_AS_ROOT_TRUE}" && test -z "${TESTS_AS_ROOT_FALSE}"; then
+  as_fn_error $? "conditional \"TESTS_AS_ROOT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

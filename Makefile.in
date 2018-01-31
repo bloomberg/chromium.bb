@@ -2291,8 +2291,9 @@ CLEANFILES = $(am__append_12)
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk_machine_readable_test
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
+@ANDROID_HOST_FALSE@@TESTS_AS_ROOT_FALSE@LOG_DRIVER = $(top_srcdir)/autotools/test-driver
 # The default Autotools test driver script.
-@ANDROID_HOST_FALSE@LOG_DRIVER = $(top_srcdir)/autotools/test-driver
+@ANDROID_HOST_FALSE@@TESTS_AS_ROOT_TRUE@LOG_DRIVER = $(top_srcdir)/autotools/root-test-driver $(top_srcdir)/autotools/test-driver
 
 # Since Autotools 1.2, tests are run through a special "test driver" script.
 # Unfortunately, it's not possible anymore to specify an alternative shell to

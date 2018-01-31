@@ -246,6 +246,25 @@ AC_ARG_WITH(rust-demangle,
 AC_ARG_VAR([RUST_DEMANGLE_CFLAGS], [Compiler flags for rust-demangle])
 AC_ARG_VAR([RUST_DEMANGLE_LIBS], [Linker flags for rust-demangle])
 
+AC_ARG_WITH(tests-as-root,
+            AS_HELP_STRING([--with-tests-as-root],
+                           [Run the tests as root. Use this on platforms]
+                           [like travis-ci.org that require root privileges]
+                           [to use ptrace (default is no)]),
+            [case "${withval}" in
+               yes)
+                 tests_as_root=true
+                 ;;
+               no)
+                 tests_as_root=false
+                 ;;
+               *)
+                 AC_MSG_ERROR(--with-tests-as-root can only be "yes" or "no")
+                 ;;
+             esac],
+            [tests_as_root=false])
+AM_CONDITIONAL(TESTS_AS_ROOT, test x$tests_as_root = xtrue)
+
 AC_CONFIG_FILES(m4_flatten([
   breakpad.pc
   breakpad-client.pc

@@ -446,8 +446,12 @@ if ANDROID_HOST
 LOG_DRIVER = $(top_srcdir)/android/test-driver
 else
 # The default Autotools test driver script.
+if TESTS_AS_ROOT
+LOG_DRIVER = $(top_srcdir)/autotools/root-test-driver $(top_srcdir)/autotools/test-driver
+else
 LOG_DRIVER = $(top_srcdir)/autotools/test-driver
-endif
+endif !TESTS_AS_ROOT
+endif !ANDROID_HOST
 
 if LINUX_HOST
 src_client_linux_linux_dumper_unittest_helper_SOURCES = \
