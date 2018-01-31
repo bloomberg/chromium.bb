@@ -23,22 +23,17 @@
 #ifdef _WIN_ALL
 
 #define STRICT
-
-#if !defined(CHROMIUM_UNRAR)
 #define UNICODE
 #undef WINVER
 #undef _WIN32_WINNT
 #define WINVER 0x0501
 #define _WIN32_WINNT 0x0501
-#endif  // CHROMIUM_UNRAR
 
-#if !defined(ZIPSFX) && !defined(CHROMIUM_UNRAR)
+#if !defined(ZIPSFX)
 #define RAR_SMP
 #endif
 
-#if !defined(CHROMIUM_UNRAR)
 #define WIN32_LEAN_AND_MEAN
-#endif  // CHROMIUM_UNRAR
 
 #include <windows.h>
 #include <prsht.h>
@@ -70,11 +65,8 @@
   #include <direct.h>
   #include <intrin.h>
 
-#if !defined(CHROMIUM_UNRAR)
   #define USE_SSE
   #define SSE_ALIGNMENT 16
-#endif  // CHROMIUM_UNRAR
-
 #else
   #include <dirent.h>
 #endif // _MSC_VER
