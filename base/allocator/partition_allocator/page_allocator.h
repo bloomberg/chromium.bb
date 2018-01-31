@@ -43,6 +43,9 @@ enum PageAccessibilityConfiguration {
   PageInaccessible,
   PageReadWrite,
   PageReadExecute,
+  // This flag is deprecated and will go away soon.
+  // TODO(bbudge) Remove this as soon as V8 doesn't need RWX pages.
+  PageReadWriteExecute,
 };
 
 // Allocate one or more pages.
