@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_SUBRESOURCE_FILTER_THROTTLE_MANAGER_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_SUBRESOURCE_FILTER_THROTTLE_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <unordered_map>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
@@ -84,6 +86,8 @@ class ContentSubresourceFilterThrottleManager
     return ruleset_handle_.get();
   }
 
+  bool IsFrameTaggedAsAdForTesting(content::RenderFrameHost* frame_host);
+
  protected:
   // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;
@@ -143,8 +147,8 @@ class ContentSubresourceFilterThrottleManager
   // For each RenderFrameHost where the last committed load has subresource
   // filtering activated, owns the corresponding AsyncDocumentSubresourceFilter.
   // It is possible for a frame to have a null filter.
-  std::unordered_map<content::RenderFrameHost*,
-                     std::unique_ptr<AsyncDocumentSubresourceFilter>>
+  std::map<content::RenderFrameHost*,
+           std::unique_ptr<AsyncDocumentSubresourceFilter>>
       activated_frame_hosts_;
 
   // For each ongoing navigation that requires activation state computation,
@@ -157,8 +161,12 @@ class ContentSubresourceFilterThrottleManager
     bool is_ad_subframe = false;
   };
 
-  std::unordered_map<content::NavigationHandle*, OngoingThrottleInfo>
+  std::map<content::NavigationHandle*, OngoingThrottleInfo>
       ongoing_activation_throttles_;
+
+  // Set of frames that have been identified as ads, either through matching the
+  // ruleset or if their parent frame was an ad frame.
+  std::set<content::RenderFrameHost*> ad_frames_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
       scoped_observer_;

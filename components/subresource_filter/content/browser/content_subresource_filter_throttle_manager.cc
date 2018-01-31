@@ -56,6 +56,7 @@ void ContentSubresourceFilterThrottleManager::OnSubresourceFilterGoingAway() {
 void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
     content::RenderFrameHost* frame_host) {
   activated_frame_hosts_.erase(frame_host);
+  ad_frames_.erase(frame_host);
   DestroyRulesetHandleIfNoLongerUsed();
 }
 
@@ -103,6 +104,9 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
 
   content::RenderFrameHost* frame_host =
       navigation_handle->GetRenderFrameHost();
+  if (is_ad_subframe)
+    ad_frames_.insert(frame_host);
+
   frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
       frame_host->GetRoutingID(), filter->activation_state(), is_ad_subframe));
 }
@@ -216,11 +220,21 @@ void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(
     LoadPolicy load_policy) {
   DCHECK(!navigation_handle->IsInMainFrame());
   auto it = ongoing_activation_throttles_.find(navigation_handle);
-  if (it != ongoing_activation_throttles_.end()) {
-    // Note that is_ad_subframe is only relevant for
-    // LoadPolicy:WOULD_DISALLOW(dryrun mode), although also setting it for
-    // DISALLOW for completeness.
-    it->second.is_ad_subframe = load_policy != LoadPolicy::ALLOW;
+  if (it == ongoing_activation_throttles_.end())
+    return;
+
+  // Note that is_ad_subframe is only relevant for
+  // LoadPolicy:WOULD_DISALLOW(dryrun mode), although also setting it for
+  // DISALLOW for completeness.
+  it->second.is_ad_subframe = load_policy != LoadPolicy::ALLOW;
+
+  // If this frame was not identified as an ad via ruleset matching, tag it
+  // based on whether its parent frame is an ad or not.
+  if (!it->second.is_ad_subframe) {
+    content::RenderFrameHost* parent_frame =
+        navigation_handle->GetParentFrame();
+    if (parent_frame && base::ContainsKey(ad_frames_, parent_frame))
+      it->second.is_ad_subframe = true;
   }
 }
 
@@ -245,6 +259,11 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
         weak_ptr_factory_.GetWeakPtr(), base::Unretained(navigation_handle)));
     throttles->push_back(std::move(activation_throttle));
   }
+}
+
+bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAdForTesting(
+    content::RenderFrameHost* frame_host) {
+  return base::ContainsKey(ad_frames_, frame_host);
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>
