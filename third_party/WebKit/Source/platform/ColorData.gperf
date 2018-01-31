@@ -4,12 +4,6 @@
 
 namespace blink {
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-// TODO(thakis): Remove once we use a gperf that no longer produces "register".
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#endif
-
 %}
 %struct-type
 struct NamedColor;
@@ -175,10 +169,6 @@ whitesmoke, 0xfff5f5f5
 yellow, 0xffffff00
 yellowgreen, 0xff9acd32
 %%
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 const struct NamedColor* FindColor(const char* str, unsigned len) {
   return ColorDataHash::findColorImpl(str, len);
