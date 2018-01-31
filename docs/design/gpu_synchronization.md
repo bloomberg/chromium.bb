@@ -92,26 +92,24 @@ use a per-context command queue where this assumption is not true.
 See [issue 510232](http://crbug.com/510243#c23) for an example of a problematic
 sequence:
 
-> In one thread:
->
-> ```
-> MakeCurrent(A);
-> Render1();
-> MakeCurrent(B);
-> Render2();
-> CreateSync(X);```
->
->And in another thread:
->
-> ```
-> MakeCurrent(C);
-> WaitSync(X);
-> Render3();
-> MakeCurrent(D);
-> Render4();```
->
-> The only serialization guarantee is between Render2 and Render3, while Render4
-> could theoretically complete before Render1.
+```
+// In one thread:
+MakeCurrent(A);
+Render1();
+MakeCurrent(B);
+Render2();
+CreateSync(X);
+
+// And in another thread:
+MakeCurrent(C);
+WaitSync(X);
+Render3();
+MakeCurrent(D);
+Render4();
+```
+
+The only serialization guarantee is that Render2 will complete before Render3,
+but Render4 could theoretically complete before Render1.
 
 Chrome assumes that the render steps happen in order Render1, Render2, Render3,
 and Render4, and requires this behavior to ensure security. If the driver doesn't
