@@ -441,7 +441,7 @@ void av1_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
-  const int bits = FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  const int bits = FILTER_BITS - conv_params->round_0;
   (void)filter_params_x;
   (void)subpel_x_q4;
   (void)dst0;
@@ -456,12 +456,8 @@ void av1_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
-#if CONFIG_LOWPRECISION_BLEND
-      if (bits < 0)
-        res = ROUND_POWER_OF_TWO(res, bits);
-      else
-#endif  // CONFIG_LOWPRECISION_BLEND
-        res *= (1 << bits);
+      res *= (1 << bits);
+      res = ROUND_POWER_OF_TWO(res, conv_params->round_1);
       if (conv_params->do_average)
         dst[y * dst_stride + x] += res;
       else
@@ -730,7 +726,7 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
-  const int bits = FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  const int bits = FILTER_BITS - conv_params->round_0;
   (void)filter_params_x;
   (void)subpel_x_q4;
   (void)dst0;
@@ -745,12 +741,8 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
-#if CONFIG_LOWPRECISION_BLEND
-      if (bits < 0)
-        res = ROUND_POWER_OF_TWO(res, bits);
-      else
-#endif  // CONFIG_LOWPRECISION_BLEND
-        res *= (1 << bits);
+      res *= (1 << bits);
+      res = ROUND_POWER_OF_TWO(res, conv_params->round_1);
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;

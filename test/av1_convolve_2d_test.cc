@@ -82,8 +82,16 @@ INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1Convolve2DSrTest,
                             av1_convolve_2d_copy_sr_sse2, 0, 0, 1));
 
 INSTANTIATE_TEST_CASE_P(
+    C_X, AV1Convolve2DSrTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_x_sr_c, 1, 0, 0));
+
+INSTANTIATE_TEST_CASE_P(
     SSE2_X, AV1Convolve2DSrTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_x_sr_sse2, 1, 0, 0));
+
+INSTANTIATE_TEST_CASE_P(
+    C_Y, AV1Convolve2DSrTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_y_sr_c, 0, 1, 0));
 
 INSTANTIATE_TEST_CASE_P(
     SSE2_Y, AV1Convolve2DSrTest,
