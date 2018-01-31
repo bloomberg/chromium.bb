@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS testConstructor0
-FAIL testConstructor1 assert_throws: function "function () { new DOMPoint(1);}" did not throw
+FAIL testConstructor1 assert_throws: function "function() { new DOMPoint(1);}" did not throw
 PASS testConstructor2
 PASS testConstructor3
 PASS testConstructor4
@@ -17,8 +17,8 @@ FAIL testConstructorDOMPoint assert_equals: Expected value for x is 1 expected 1
 PASS testConstructor2undefined
 PASS testConstructorUndefined1
 FAIL testConstructorUndefined2 assert_equals: Expected value for y is NaN expected NaN but got 0
-FAIL testConstructorIllegal1 assert_throws: function "function () { new DOMPointReadOnly();}" did not throw
-FAIL testConstructorIllegal2 assert_throws: function "function () { new DOMPointReadOnly(1, 2, 3, 4);}" did not throw
+FAIL testConstructorIllegal1 assert_throws: function "function() { new DOMPointReadOnly();}" did not throw
+FAIL testConstructorIllegal2 assert_throws: function "function() { new DOMPointReadOnly(1, 2, 3, 4);}" did not throw
 PASS testAttributesUndefined
 PASS testAttributesNaNInfinity
 Harness: the test ran to completion.
