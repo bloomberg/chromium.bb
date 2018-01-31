@@ -43,6 +43,10 @@ void ObjectBackedNativeHandler::Initialize() {
   init_state_ = kInitialized;
 }
 
+bool ObjectBackedNativeHandler::IsInitialized() {
+  return init_state_ == kInitialized;
+}
+
 v8::Local<v8::Object> ObjectBackedNativeHandler::NewInstance() {
   DCHECK_EQ(kInitialized, init_state_)
       << "Initialize() must be called before a new instance is created!";

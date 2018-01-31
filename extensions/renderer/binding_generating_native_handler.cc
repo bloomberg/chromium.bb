@@ -23,6 +23,11 @@ BindingGeneratingNativeHandler::BindingGeneratingNativeHandler(
 
 void BindingGeneratingNativeHandler::Initialize() {}
 
+bool BindingGeneratingNativeHandler::IsInitialized() {
+  // There's no initialization to do, so just always return true.
+  return true;
+}
+
 v8::Local<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
   base::ElapsedTimer timer;
   // This long sequence of commands effectively runs the JavaScript code,
