@@ -86,14 +86,6 @@ if (current_toolchain == host_toolchain) {
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
-
     deps = [
       "//build/config:exe_and_shlib_deps",
 
@@ -111,14 +103,6 @@ if (current_toolchain == host_toolchain) {
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
-
     deps = [
       "//build/config:exe_and_shlib_deps",
 
@@ -138,13 +122,6 @@ if (current_toolchain == host_toolchain) {
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
 
     # Must be compatible with yasm_utils/yasm
     configs -= configs_to_delete
@@ -187,14 +164,6 @@ if (current_toolchain == host_toolchain) {
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
-
     deps = [
       "//build/config:exe_and_shlib_deps",
 
@@ -212,14 +181,6 @@ if (current_toolchain == host_toolchain) {
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
-
     deps = [
       "//build/config:exe_and_shlib_deps",
 
@@ -264,14 +225,6 @@ if (current_toolchain == host_toolchain) {
       # correctly.
       ":re2c_warnings",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
-
     deps = [
       "//build/config:exe_and_shlib_deps",
 
@@ -390,13 +343,6 @@ if (current_toolchain == host_toolchain) {
       # correctly.
       ":yasm_warnings",
     ]
-
-    if (is_win) {
-      # Work around incremental linking randomly creating corrupt binaries,
-      # crbug.com/644525.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs += [ "//build/config/win:no_incremental_linking" ]
-    }
 
     # Disable WPO for yasm: crbug.com/604808
     if (is_official_build && full_wpo_on_official) {
