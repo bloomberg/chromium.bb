@@ -1092,6 +1092,12 @@ void RenderWidgetHostViewMac::OnSynchronizedDisplayPropertiesChanged() {
   browser_compositor_->OnNSViewWasResized();
 }
 
+void RenderWidgetHostViewMac::ResizeDueToAutoResize(const gfx::Size& new_size,
+                                                    uint64_t sequence_number) {
+  browser_compositor_->OnNSViewWillAutoResize(new_size);
+  RenderWidgetHostViewBase::ResizeDueToAutoResize(new_size, sequence_number);
+}
+
 void RenderWidgetHostViewMac::DidNavigate() {
   browser_compositor_->DidNavigate();
 }
@@ -2836,6 +2842,11 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   [super setFrameSize:newSize];
 
   if (!renderWidgetHostView_->render_widget_host_)
+    return;
+
+  // During auto-resize it is the responsibility of the caller to ensure that
+  // the NSView and RenderWidgetHostImpl are kept in sync.
+  if (renderWidgetHostView_->render_widget_host_->auto_resize_enabled())
     return;
 
   if (renderWidgetHostView_->render_widget_host_->delegate())

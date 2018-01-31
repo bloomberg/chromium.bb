@@ -343,6 +343,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool ShouldContinueToPauseForFrame() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void OnSynchronizedDisplayPropertiesChanged() override;
+  void ResizeDueToAutoResize(const gfx::Size& new_size,
+                             uint64_t sequence_number) override;
   void DidNavigate() override;
 
   bool LockMouse() override;

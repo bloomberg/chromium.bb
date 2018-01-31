@@ -323,19 +323,27 @@ void BrowserCompositorMac::SetDisplayColorSpace(
 }
 
 void BrowserCompositorMac::OnNSViewWasResized() {
-  // Update the parameters we will send to the renderer via the
-  // DelgatedFrameHost.
-  gfx::Size dip_size;
+  gfx::Size size_dip;
   float scale_factor = 1.f;
-  GetViewProperties(&dip_size, &scale_factor, nullptr);
-  if (dip_size == delegated_frame_host_size_dip_ &&
+  GetViewProperties(&size_dip, &scale_factor, nullptr);
+  UpdateDelegatedFrameHostSurface(size_dip, scale_factor);
+}
+
+void BrowserCompositorMac::OnNSViewWillAutoResize(const gfx::Size& size_dip) {
+  UpdateDelegatedFrameHostSurface(size_dip, delegated_frame_host_scale_factor_);
+}
+
+void BrowserCompositorMac::UpdateDelegatedFrameHostSurface(
+    const gfx::Size& size_dip,
+    float scale_factor) {
+  if (size_dip == delegated_frame_host_size_dip_ &&
       scale_factor == delegated_frame_host_scale_factor_) {
     return;
   }
 
   delegated_frame_host_surface_id_ =
       parent_local_surface_id_allocator_.GenerateId();
-  delegated_frame_host_size_dip_ = dip_size;
+  delegated_frame_host_size_dip_ = size_dip;
   delegated_frame_host_size_pixels_ = gfx::ConvertSizeToPixel(
       delegated_frame_host_scale_factor_, delegated_frame_host_size_dip_);
   delegated_frame_host_scale_factor_ = scale_factor;
