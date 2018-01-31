@@ -147,8 +147,10 @@ bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
     IntPoint frame_point = GetFrameView()->ContentsToFrame(
         result.GetHitTestLocation().RoundedPoint());
     if (Scrollbar* frame_scrollbar =
-            GetFrameView()->ScrollbarAtFramePoint(frame_point))
+            GetFrameView()->ScrollbarAtFramePoint(frame_point)) {
       result.SetScrollbar(frame_scrollbar);
+      hit_layer = true;
+    }
 
     // If hitTestResult include scrollbar, innerNode should be the parent of the
     // scrollbar.
