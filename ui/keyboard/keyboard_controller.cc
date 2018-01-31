@@ -36,6 +36,7 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
+#include "ui/keyboard/queued_container_type.h"
 #include "ui/wm/core/window_animations.h"
 
 #if defined(OS_CHROMEOS)
@@ -202,12 +203,11 @@ KeyboardController::KeyboardController(std::unique_ptr<KeyboardUI> ui,
       show_on_content_update_(false),
       keyboard_locked_(false),
       state_(KeyboardControllerState::UNKNOWN),
-      enqueued_container_type_(ContainerType::FULL_WIDTH),
       weak_factory_report_lingering_state_(this),
       weak_factory_will_hide_(this) {
   ui_->GetInputMethod()->AddObserver(this);
   ui_->SetController(this);
-  SetContainerBehaviorInternal(enqueued_container_type_);
+  SetContainerBehaviorInternal(ContainerType::FULL_WIDTH);
   ChangeState(KeyboardControllerState::INITIAL);
 }
 
@@ -385,11 +385,8 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 }
 
 void KeyboardController::HideAnimationFinished() {
-  if (state_ != KeyboardControllerState::HIDDEN)
-    return;
-
-  if (enqueued_container_type_ != container_behavior_->GetType()) {
-    SetContainerBehaviorInternal(enqueued_container_type_);
+  if (state_ == KeyboardControllerState::HIDDEN && queued_container_type_) {
+    SetContainerBehaviorInternal(queued_container_type_->container_type());
     ShowKeyboard(false /* lock */);
   }
 }
@@ -624,6 +621,10 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
 
   container_behavior_->DoShowingAnimation(container_.get(), &settings);
 
+  // the queued container behavior will notify JS to change layout when it
+  // gets destroyed.
+  queued_container_type_ = nullptr;
+
   ChangeState(KeyboardControllerState::SHOWN);
   NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
 }
@@ -742,10 +743,20 @@ void KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
 }
 
 void KeyboardController::SetContainerType(const ContainerType type) {
-  if (container_behavior_->GetType() == type)
-    return;
+  SetContainerType(type, base::BindOnce([](bool ignored) { /* noop */ }));
+}
 
-  enqueued_container_type_ = type;
+void KeyboardController::SetContainerType(
+    const ContainerType type,
+    base::OnceCallback<void(bool)> callback) {
+  if (container_behavior_->GetType() == type) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  queued_container_type_ =
+      std::make_unique<QueuedContainerType>(this, type, std::move(callback));
+
   if (state_ == KeyboardControllerState::SHOWN) {
     HideKeyboard(HIDE_REASON_AUTOMATIC);
   } else {
