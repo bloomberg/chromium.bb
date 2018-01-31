@@ -742,7 +742,13 @@ static void setup_segmentation(AV1_COMMON *const cm,
   seg->temporal_update = 0;
 
   seg->enabled = aom_rb_read_bit(rb);
-  if (!seg->enabled) return;
+  if (!seg->enabled) {
+#if CONFIG_SEGMENT_PRED_LAST
+    if (cm->cur_frame->seg_map)
+      memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
+#endif  // CONFIG_SEGMENT_PRED_LAST
+    return;
+  }
 #if CONFIG_SEGMENT_PRED_LAST
   if (cm->seg.enabled && !cm->frame_parallel_decode && cm->prev_frame)
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
