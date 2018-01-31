@@ -1523,9 +1523,7 @@ test("content_unittests") {
 
     # TODO(jam): move these network/ tests to services/network.
     "../network/cors/cors_url_loader_unittest.cc",
-    "../network/network_service_unittest.cc",
     "../network/resource_scheduler_unittest.cc",
-    "../network/url_loader_unittest.cc",
     "../public/common/drop_data_unittest.cc",
     "../public/common/network_connection_tracker_unittest.cc",
     "../public/common/simple_url_loader_unittest.cc",
@@ -2047,10 +2045,7 @@ test("content_unittests") {
 service_manifest("content_unittests_manifest") {
   name = "content_unittests"
   source = "unittests_manifest.json"
-  packaged_services = [
-    "//services/file:manifest",
-    "//services/network:manifest",
-  ]
+  packaged_services = [ "//services/file:manifest" ]
 }
 
 catalog("content_unittests_catalog") {
