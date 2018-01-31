@@ -104,10 +104,7 @@ void ProfilePolicyConnector::Init(
   }
 #endif
 
-  std::unique_ptr<PolicyServiceImpl> policy_service =
-      std::make_unique<PolicyServiceImpl>();
-  policy_service->SetProviders(policy_providers_);
-  policy_service_ = std::move(policy_service);
+  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
 
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {

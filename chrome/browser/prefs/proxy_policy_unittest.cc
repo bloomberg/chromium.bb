@@ -98,8 +98,7 @@ class ProxyPolicyTest : public testing::Test {
 
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
-    policy_service_ = std::make_unique<PolicyServiceImpl>();
-    policy_service_->SetProviders(providers);
+    policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers));
     provider_.Init();
   }
 

@@ -180,9 +180,8 @@ class BrowserPolicyConnectorChromeOS
 
  protected:
   // ChromeBrowserPolicyConnector:
-  void BuildPolicyProviders(
-      std::vector<std::unique_ptr<ConfigurationPolicyProvider>>* providers)
-      override;
+  std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
+  CreatePolicyProviders() override;
 
  private:
   // Set the timezone as soon as the policies are available.

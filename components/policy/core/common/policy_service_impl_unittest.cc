@@ -120,8 +120,7 @@ class PolicyServiceTest : public testing::Test {
     providers.push_back(&provider0_);
     providers.push_back(&provider1_);
     providers.push_back(&provider2_);
-    policy_service_ = std::make_unique<PolicyServiceImpl>();
-    policy_service_->SetProviders(providers);
+    policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers));
   }
 
   void TearDown() override {
@@ -561,8 +560,7 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   providers.push_back(&provider0_);
   providers.push_back(&provider1_);
   providers.push_back(&provider2_);
-  policy_service_ = std::make_unique<PolicyServiceImpl>();
-  policy_service_->SetProviders(providers);
+  policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers));
   EXPECT_FALSE(policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_FALSE(
       policy_service_->IsInitializationComplete(POLICY_DOMAIN_EXTENSIONS));

@@ -26,8 +26,7 @@ ConfigurationPolicyProvider* g_testing_provider = nullptr;
 }  // namespace
 
 BrowserPolicyConnectorBase::BrowserPolicyConnectorBase(
-    const HandlerListFactory& handler_list_factory)
-    : is_initialized_(false) {
+    const HandlerListFactory& handler_list_factory) {
   // GetPolicyService() must be ready after the constructor is done.
   // The connector is created very early during startup, when the browser
   // threads aren't running yet; initialize components that need local_state,
@@ -56,10 +55,8 @@ void BrowserPolicyConnectorBase::Shutdown() {
   is_initialized_ = false;
   if (g_testing_provider)
     g_testing_provider->Shutdown();
-  if (policy_providers_) {
-    for (const auto& provider : *policy_providers_)
-      provider->Shutdown();
-  }
+  for (const auto& provider : policy_providers_)
+    provider->Shutdown();
   // Drop g_testing_provider so that tests executed with --single_process can
   // call SetPolicyProviderForTesting() again. It is still owned by the test.
   g_testing_provider = nullptr;
@@ -75,12 +72,23 @@ CombinedSchemaRegistry* BrowserPolicyConnectorBase::GetSchemaRegistry() {
 }
 
 PolicyService* BrowserPolicyConnectorBase::GetPolicyService() {
-  if (!policy_service_) {
-    g_created_policy_service = true;
-    policy_service_ = std::make_unique<PolicyServiceImpl>();
-    if (policy_providers_ || g_testing_provider)
-      policy_service_->SetProviders(GetProvidersForPolicyService());
-  }
+  if (policy_service_)
+    return policy_service_.get();
+
+  DCHECK(!is_initialized_);
+  is_initialized_ = true;
+
+  policy_providers_ = CreatePolicyProviders();
+
+  if (g_testing_provider)
+    g_testing_provider->Init(GetSchemaRegistry());
+
+  for (const auto& provider : policy_providers_)
+    provider->Init(GetSchemaRegistry());
+
+  g_created_policy_service = true;
+  policy_service_ =
+      std::make_unique<PolicyServiceImpl>(GetProvidersForPolicyService());
   return policy_service_.get();
 }
 
@@ -111,32 +119,6 @@ BrowserPolicyConnectorBase::GetPolicyProviderForTesting() {
   return g_testing_provider;
 }
 
-void BrowserPolicyConnectorBase::SetPolicyProviders(
-    std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers) {
-  // SetPolicyProviders() should only called once.
-  DCHECK(!is_initialized_);
-  policy_providers_ = std::move(providers);
-
-  if (g_testing_provider)
-    g_testing_provider->Init(GetSchemaRegistry());
-
-  for (const auto& provider : *policy_providers_)
-    provider->Init(GetSchemaRegistry());
-
-  is_initialized_ = true;
-
-  if (policy_service_) {
-    if (!policy_service_->has_providers()) {
-      policy_service_->SetProviders(GetProvidersForPolicyService());
-    } else {
-      // GetPolicyService() triggers calling SetProviders() if
-      // |g_testing_provider| has been set. That's the only way that should
-      // result in ending up in this branch.
-      DCHECK(g_testing_provider);
-    }
-  }
-}
-
 std::vector<ConfigurationPolicyProvider*>
 BrowserPolicyConnectorBase::GetProvidersForPolicyService() {
   std::vector<ConfigurationPolicyProvider*> providers;
@@ -144,10 +126,15 @@ BrowserPolicyConnectorBase::GetProvidersForPolicyService() {
     providers.push_back(g_testing_provider);
     return providers;
   }
-  providers.reserve(policy_providers_->size());
-  for (const auto& policy : *policy_providers_)
+  providers.reserve(policy_providers_.size());
+  for (const auto& policy : policy_providers_)
     providers.push_back(policy.get());
   return providers;
+}
+
+std::vector<std::unique_ptr<ConfigurationPolicyProvider>>
+BrowserPolicyConnectorBase::CreatePolicyProviders() {
+  return {};
 }
 
 void BrowserPolicyConnectorBase::OnResourceBundleCreated() {

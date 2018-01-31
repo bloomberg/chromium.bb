@@ -72,25 +72,12 @@ void RemapProxyPolicies(PolicyMap* policies) {
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl() : update_task_ptr_factory_(this) {
-  for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
-    initialization_complete_[domain] = false;
-}
-
-PolicyServiceImpl::~PolicyServiceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (providers_) {
-    for (auto* provider : *providers_)
-      provider->RemoveObserver(this);
-  }
-}
-
-void PolicyServiceImpl::SetProviders(Providers providers) {
-  DCHECK(!providers_);
+PolicyServiceImpl::PolicyServiceImpl(Providers providers)
+    : update_task_ptr_factory_(this) {
   providers_ = std::move(providers);
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
-  for (auto* provider : *providers_) {
+  for (auto* provider : providers_) {
     provider->AddObserver(this);
     for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain) {
       initialization_complete_[domain] &=
@@ -100,6 +87,12 @@ void PolicyServiceImpl::SetProviders(Providers providers) {
   // There are no observers yet, but calls to GetPolicies() should already get
   // the processed policy values.
   MergeAndTriggerUpdates();
+}
+
+PolicyServiceImpl::~PolicyServiceImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (auto* provider : providers_)
+    provider->RemoveObserver(this);
 }
 
 void PolicyServiceImpl::AddObserver(PolicyDomain domain,
@@ -143,7 +136,7 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   if (!callback.is_null())
     refresh_callbacks_.push_back(callback);
 
-  if (!providers_ || providers_->empty()) {
+  if (providers_.empty()) {
     // Refresh is immediately complete if there are no providers. See the note
     // on OnUpdatePolicy() about why this is a posted task.
     update_task_ptr_factory_.InvalidateWeakPtrs();
@@ -153,15 +146,15 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   } else {
     // Some providers might invoke OnUpdatePolicy synchronously while handling
     // RefreshPolicies. Mark all as pending before refreshing.
-    for (auto* provider : *providers_)
+    for (auto* provider : providers_)
       refresh_pending_.insert(provider);
-    for (auto* provider : *providers_)
+    for (auto* provider : providers_)
       provider->RefreshPolicies();
   }
 }
 
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
-  DCHECK_EQ(1, std::count(providers_->begin(), providers_->end(), provider));
+  DCHECK_EQ(1, std::count(providers_.begin(), providers_.end(), provider));
   refresh_pending_.erase(provider);
 
   // Note: a policy change may trigger further policy changes in some providers.
@@ -194,13 +187,11 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // Merge from each provider in their order of priority.
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   PolicyBundle bundle;
-  if (providers_) {
-    for (auto* provider : *providers_) {
-      PolicyBundle provided_bundle;
-      provided_bundle.CopyFrom(provider->policies());
-      RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
-      bundle.MergeFrom(provided_bundle);
-    }
+  for (auto* provider : providers_) {
+    PolicyBundle provided_bundle;
+    provided_bundle.CopyFrom(provider->policies());
+    RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
+    bundle.MergeFrom(provided_bundle);
   }
 
   // Swap first, so that observers that call GetPolicies() see the current
@@ -247,9 +238,6 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 void PolicyServiceImpl::CheckInitializationComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!providers_)
-    return;
-
   // Check if all the providers just became initialized for each domain; if so,
   // notify that domain's observers.
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain) {
@@ -259,7 +247,7 @@ void PolicyServiceImpl::CheckInitializationComplete() {
     PolicyDomain policy_domain = static_cast<PolicyDomain>(domain);
 
     bool all_complete = true;
-    for (auto* provider : *providers_) {
+    for (auto* provider : providers_) {
       if (!provider->IsInitializationComplete(policy_domain)) {
         all_complete = false;
         break;

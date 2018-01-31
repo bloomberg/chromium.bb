@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -73,10 +72,11 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   explicit BrowserPolicyConnectorBase(
       const HandlerListFactory& handler_list_factory);
 
-  // Sets the set of providers, in decreasing order of priority. May only be
-  // called once.
-  void SetPolicyProviders(
-      std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers);
+  // Called from GetPolicyService() to create the set of
+  // ConfigurationPolicyProviders that are used, in decreasing order of
+  // priority.
+  virtual std::vector<std::unique_ptr<ConfigurationPolicyProvider>>
+  CreatePolicyProviders();
 
   // Must be called when ui::ResourceBundle has been loaded, results in running
   // any callbacks scheduled in NotifyWhenResourceBundleReady().
@@ -88,8 +88,10 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   // called.
   std::vector<ConfigurationPolicyProvider*> GetProvidersForPolicyService();
 
-  // Whether SetPolicyProviders() but not Shutdown() has been invoked.
-  bool is_initialized_;
+  // Set to true when the PolicyService has been created, and false in
+  // Shutdown(). Once created the PolicyService is destroyed in the destructor,
+  // not Shutdown().
+  bool is_initialized_ = false;
 
   // Used to convert policies to preferences. The providers declared below
   // may trigger policy updates during shutdown, which will result in
@@ -105,8 +107,7 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   CombinedSchemaRegistry schema_registry_;
 
   // The browser-global policy providers, in decreasing order of priority.
-  base::Optional<std::vector<std::unique_ptr<ConfigurationPolicyProvider>>>
-      policy_providers_;
+  std::vector<std::unique_ptr<ConfigurationPolicyProvider>> policy_providers_;
 
   // Must be deleted before all the policy providers.
   std::unique_ptr<PolicyServiceImpl> policy_service_;
