@@ -189,10 +189,6 @@ int AecDumpMessageFilter::GetIdForDelegate(
 
 void AecDumpMessageFilter::DoEnableAec3(bool enable) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  // TODO(grunell): Remove enabling on delegates when clients have changed to
-  // enable before creating streams.
-  for (auto delegate : delegates_)
-    delegate.second->OnAec3Enable(enable);
   override_aec3_ = enable;
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AecDumpMessageFilter::Send, this,

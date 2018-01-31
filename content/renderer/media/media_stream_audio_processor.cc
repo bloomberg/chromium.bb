@@ -281,26 +281,21 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const AudioProcessingProperties& properties,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
-      has_echo_cancellation_(false),
       playout_data_source_(playout_data_source),
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
       typing_detected_(false),
+      aec_dump_message_filter_(AecDumpMessageFilter::Get()),
       stopped_(false) {
   DCHECK(main_thread_runner_);
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
 
-  // In unit tests not creating a message filter, |aec_dump_message_filter_|
-  // will be null. We can just ignore that below. Other unit tests and browser
-  // tests ensure that we do get the filter when we should.
-  aec_dump_message_filter_ = AecDumpMessageFilter::Get();
-
-  if (aec_dump_message_filter_)
-    override_aec3_ = aec_dump_message_filter_->GetOverrideAec3();
-
   InitializeAudioProcessingModule(properties);
 
+  // In unit tests not creating a message filter, |aec_dump_message_filter_|
+  // will be null. We can just ignore that. Other unit tests and browser tests
+  // ensure that we do get the filter when we should.
   if (aec_dump_message_filter_.get())
     aec_dump_message_filter_->AddDelegate(this);
 }
@@ -443,30 +438,6 @@ void MediaStreamAudioProcessor::OnDisableAecDump() {
   worker_queue_.reset(nullptr);
 }
 
-void MediaStreamAudioProcessor::OnAec3Enable(bool enable) {
-  DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  if (override_aec3_ == enable)
-    return;
-
-  override_aec3_ = enable;
-  if (!has_echo_cancellation_)
-    return;
-
-  auto apm_config = audio_processing_->GetConfig();
-  if (apm_config.echo_canceller3.enabled == enable)
-    return;
-
-  apm_config.echo_canceller3.enabled = enable;
-  audio_processing_->ApplyConfig(apm_config);
-  if (apm_config.echo_canceller3.enabled) {
-    // Do not log any echo information when AEC3 is active, as the echo
-    // information then will not be properly updated.
-    echo_information_.reset();
-  } else {
-    echo_information_ = std::make_unique<EchoInformation>();
-  }
-}
-
 void MediaStreamAudioProcessor::OnIpcClosing() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   aec_dump_message_filter_ = nullptr;
@@ -575,7 +546,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // is handled within this MediaStreamAudioProcessor and does not, by itself,
   // require webrtc::AudioProcessing.
   audio_mirroring_ = properties.goog_audio_mirroring;
-  has_echo_cancellation_ = properties.enable_sw_echo_cancellation;
 
 #if defined(OS_ANDROID)
   const bool goog_experimental_aec = false;
@@ -629,8 +599,26 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0)));
   }
 
+  // Check if experimental echo canceller should be used.
+  if (properties.enable_sw_echo_cancellation) {
+    base::Optional<bool> override_aec3;
+    // In unit tests not creating a message filter, |aec_dump_message_filter_|
+    // will be null. We can just ignore that. Other unit tests and browser tests
+    // ensure that we do get the filter when we should.
+    if (aec_dump_message_filter_)
+      override_aec3 = aec_dump_message_filter_->GetOverrideAec3();
+    using_aec3_ = override_aec3.value_or(
+        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
+  }
+
   // Create and configure the webrtc::AudioProcessing.
-  audio_processing_.reset(webrtc::AudioProcessingBuilder().Create(config));
+  webrtc::AudioProcessingBuilder ap_builder;
+  if (using_aec3_) {
+    ap_builder.SetEchoControlFactory(
+        std::unique_ptr<webrtc::EchoControlFactory>(
+            new webrtc::EchoCanceller3Factory()));
+  }
+  audio_processing_.reset(ap_builder.Create(config));
 
   // Enable the audio processing components.
   webrtc::AudioProcessing::Config apm_config;
@@ -642,20 +630,11 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (properties.enable_sw_echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
 
-    apm_config.echo_canceller3.enabled = override_aec3_.value_or(
-        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
-
-    if (!apm_config.echo_canceller3.enabled) {
-      // Prepare for logging echo information. If there are data remaining in
-      // |echo_information_| we simply discard it.
+    // Prepare for logging echo information. Do not log any echo information
+    // when AEC3 is active, as the echo information then will not be properly
+    // updated.
+    if (!using_aec3_)
       echo_information_ = std::make_unique<EchoInformation>();
-    } else {
-      // Do not log any echo information when AEC3 is active, as the echo
-      // information then will not be properly updated.
-      echo_information_.reset();
-    }
-  } else {
-    apm_config.echo_canceller3.enabled = false;
   }
 
   if (properties.goog_noise_suppression) {
