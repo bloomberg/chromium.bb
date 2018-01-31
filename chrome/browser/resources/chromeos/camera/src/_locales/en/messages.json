@@ -234,11 +234,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Do you really want to remove this item?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Do you really want to remove $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Do you really want to remove these items?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
+    "message": "Do you really want to remove $count$ items?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

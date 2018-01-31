@@ -179,10 +179,13 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
   if (!selectedIndexes.length)
     return;
 
+  var multi = selectedIndexes.length > 1;
+  var param = multi ? selectedIndexes.length.toString() :
+      this.lastSelectedPicture().picture.pictureEntry.name;
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.CONFIRMATION,
-    message: chrome.i18n.getMessage(selectedIndexes.length == 1 ?
-        'deleteConfirmationMsg' : 'deleteMultiConfirmationMsg')
+    message: chrome.i18n.getMessage(multi ?
+        'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param)
   }, function(result) {
     if (!result.isPositive)
       return;
