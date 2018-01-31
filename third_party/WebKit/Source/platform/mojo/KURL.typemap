@@ -12,4 +12,4 @@ deps = [
   "//mojo/public/cpp/bindings",
   "//url",
 ]
-type_mappings = [ "url.mojom.Url=::blink::KURL" ]
+type_mappings = [ "url.mojom.Url=::blink::KURL[force_serialize]" ]

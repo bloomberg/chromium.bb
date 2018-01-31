@@ -7,30 +7,38 @@
 namespace mojo {
 namespace test {
 
-NestedStructWithTraitsImpl::NestedStructWithTraitsImpl() {}
+NestedStructWithTraitsImpl::NestedStructWithTraitsImpl() = default;
 NestedStructWithTraitsImpl::NestedStructWithTraitsImpl(int32_t in_value)
     : value(in_value) {}
 
-StructWithTraitsImpl::StructWithTraitsImpl() {}
+StructWithTraitsImpl::StructWithTraitsImpl() = default;
 
-StructWithTraitsImpl::~StructWithTraitsImpl() {}
+StructWithTraitsImpl::~StructWithTraitsImpl() = default;
 
 StructWithTraitsImpl::StructWithTraitsImpl(const StructWithTraitsImpl& other) =
     default;
 
-MoveOnlyStructWithTraitsImpl::MoveOnlyStructWithTraitsImpl() {}
+MoveOnlyStructWithTraitsImpl::MoveOnlyStructWithTraitsImpl() = default;
 
 MoveOnlyStructWithTraitsImpl::MoveOnlyStructWithTraitsImpl(
     MoveOnlyStructWithTraitsImpl&& other) = default;
 
-MoveOnlyStructWithTraitsImpl::~MoveOnlyStructWithTraitsImpl() {}
+MoveOnlyStructWithTraitsImpl::~MoveOnlyStructWithTraitsImpl() = default;
 
 MoveOnlyStructWithTraitsImpl& MoveOnlyStructWithTraitsImpl::operator=(
     MoveOnlyStructWithTraitsImpl&& other) = default;
 
-UnionWithTraitsInt32::~UnionWithTraitsInt32() {}
+UnionWithTraitsInt32::~UnionWithTraitsInt32() = default;
 
-UnionWithTraitsStruct::~UnionWithTraitsStruct() {}
+UnionWithTraitsStruct::~UnionWithTraitsStruct() = default;
+
+StructForceSerializeImpl::StructForceSerializeImpl() = default;
+
+StructForceSerializeImpl::~StructForceSerializeImpl() = default;
+
+StructNestedForceSerializeImpl::StructNestedForceSerializeImpl() = default;
+
+StructNestedForceSerializeImpl::~StructNestedForceSerializeImpl() = default;
 
 }  // namespace test
 }  // namespace mojo
