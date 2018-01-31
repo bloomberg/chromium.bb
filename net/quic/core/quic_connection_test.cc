@@ -1935,15 +1935,24 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 }
 
 TEST_P(QuicConnectionTest, TooManySentPackets) {
+  SetQuicReloadableFlag(quic_close_session_on_too_many_outstanding_sent_packets,
+                        true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
-  const int num_packets = kMaxTrackedPackets + 100;
+  QuicPacketCount max_tracked_packets = 50;
+  QuicConnectionPeer::SetMaxTrackedPackets(&connection_, max_tracked_packets);
+
+  const int num_packets = max_tracked_packets + 5;
+
   for (int i = 0; i < num_packets; ++i) {
     SendStreamDataToPeer(1, "foo", 3 * i, NO_FIN, nullptr);
   }
 
   // Ack packet 1, which leaves more than the limit outstanding.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS, _,
+                                 ConnectionCloseSource::FROM_SELF));
 
   // Nack the first packet and ack the rest, leaving a huge gap.
   QuicAckFrame frame1 = ConstructAckFrame(num_packets, 1);

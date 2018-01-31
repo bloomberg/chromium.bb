@@ -207,6 +207,7 @@ QuicConnection::QuicConnection(
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
       max_undecryptable_packets_(0),
+      max_tracked_packets_(kMaxTrackedPackets),
       pending_version_negotiation_packet_(false),
       save_crypto_packets_as_termination_packets_(false),
       idle_timeout_connection_close_behavior_(
@@ -1056,6 +1057,7 @@ void QuicConnection::OnPacketComplete() {
   }
 
   ClearLastFrames();
+  CloseIfTooManyOutstandingSentPackets();
 }
 
 void QuicConnection::MaybeQueueAck(bool was_missing) {
@@ -1127,6 +1129,23 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
 
 void QuicConnection::ClearLastFrames() {
   should_last_packet_instigate_acks_ = false;
+}
+
+void QuicConnection::CloseIfTooManyOutstandingSentPackets() {
+  if (!GetQuicReloadableFlag(
+          quic_close_session_on_too_many_outstanding_sent_packets)) {
+    return;
+  }
+
+  // This occurs if we don't discard old packets we've seen fast enough. It's
+  // possible largest observed is less than leaset unacked.
+  if (sent_packet_manager_.GetLargestObserved() >
+      sent_packet_manager_.GetLeastUnacked() + max_tracked_packets_) {
+    CloseConnection(
+        QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
+        QuicStrCat("More than ", max_tracked_packets_, " outstanding."),
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+  }
 }
 
 const QuicFrame QuicConnection::GetUpdatedAckFrame() {

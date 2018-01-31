@@ -835,6 +835,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Deletes and clears any queued packets.
   void ClearQueuedPackets();
 
+  // Closes the connection if the sent packet manager are tracking too many
+  // outstanding packets.
+  void CloseIfTooManyOutstandingSentPackets();
+
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.
   void WriteQueuedPackets();
@@ -969,6 +973,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Maximum number of undecryptable packets the connection will store.
   size_t max_undecryptable_packets_;
+
+  // Maximum number of tracked packets.
+  QuicPacketCount max_tracked_packets_;
 
   // When the version negotiation packet could not be sent because the socket
   // was not writable, this is set to true.
