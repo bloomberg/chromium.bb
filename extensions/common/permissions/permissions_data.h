@@ -277,23 +277,16 @@ class PermissionsData {
   // Must be called with |runtime_lock_| acquired.
   const PermissionSet* GetTabSpecificPermissions(int tab_id) const;
 
-  // Returns true if the |extension| has tab-specific permission to operate on
-  // the tab specified by |tab_id| with the given |url|.
-  // Note that if this returns false, it doesn't mean the extension can't run on
-  // the given tab, only that it does not have tab-specific permission to do so.
-  // Must be called with |runtime_lock_| acquired.
-  bool HasTabSpecificPermissionToExecuteScript(int tab_id,
-                                               const GURL& url) const;
-
   // Returns whether or not the extension is permitted to run on the given page,
-  // checking against |permitted_url_patterns| in addition to blocking special
-  // sites (like the webstore or chrome:// urls).
+  // checking against |permitted_url_patterns| and |tab_url_patterns| in
+  // addition to blocking special sites (like the webstore or chrome:// urls).
   // Must be called with |runtime_lock_| acquired.
   AccessType CanRunOnPage(const Extension* extension,
                           const GURL& document_url,
                           int tab_id,
                           const URLPatternSet& permitted_url_patterns,
                           const URLPatternSet& withheld_url_patterns,
+                          const URLPatternSet* tab_url_patterns,
                           std::string* error) const;
 
   // Check if a specific URL is blocked by policy from extension use at runtime.

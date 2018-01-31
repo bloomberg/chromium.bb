@@ -125,7 +125,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   if (!new_apis.empty() || !new_hosts.is_empty()) {
     granted_extensions_.Insert(extension);
     PermissionSet new_permissions(new_apis, ManifestPermissionSet(), new_hosts,
-                                  URLPatternSet());
+                                  new_hosts);
     permissions_data->UpdateTabSpecificPermissions(tab_id_, new_permissions);
     const content::NavigationEntry* navigation_entry =
         web_contents()->GetController().GetVisibleEntry();
