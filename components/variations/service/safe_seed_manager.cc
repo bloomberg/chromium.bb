@@ -65,12 +65,14 @@ bool SafeSeedManager::ShouldRunInSafeMode() const {
 void SafeSeedManager::SetActiveSeedState(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
-    std::unique_ptr<ClientFilterableState> client_filterable_state) {
+    std::unique_ptr<ClientFilterableState> client_filterable_state,
+    base::Time seed_fetch_time) {
   DCHECK(!has_set_active_seed_state_);
   has_set_active_seed_state_ = true;
 
   active_seed_state_ = std::make_unique<ActiveSeedState>(
-      seed_data, base64_seed_signature, std::move(client_filterable_state));
+      seed_data, base64_seed_signature, std::move(client_filterable_state),
+      seed_fetch_time);
 }
 
 void SafeSeedManager::RecordFetchStarted() {
@@ -92,7 +94,8 @@ void SafeSeedManager::RecordSuccessfulFetch(VariationsSeedStore* seed_store) {
   if (active_seed_state_) {
     seed_store->StoreSafeSeed(active_seed_state_->seed_data,
                               active_seed_state_->base64_seed_signature,
-                              *active_seed_state_->client_filterable_state);
+                              *active_seed_state_->client_filterable_state,
+                              active_seed_state_->seed_fetch_time);
 
     // The active seed state is only needed for the first time this code path is
     // reached, so free up its memory once the data is no longer needed.
@@ -110,10 +113,12 @@ void SafeSeedManager::RecordSuccessfulFetch(VariationsSeedStore* seed_store) {
 SafeSeedManager::ActiveSeedState::ActiveSeedState(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
-    std::unique_ptr<ClientFilterableState> client_filterable_state)
+    std::unique_ptr<ClientFilterableState> client_filterable_state,
+    base::Time seed_fetch_time)
     : seed_data(seed_data),
       base64_seed_signature(base64_seed_signature),
-      client_filterable_state(std::move(client_filterable_state)) {}
+      client_filterable_state(std::move(client_filterable_state)),
+      seed_fetch_time(seed_fetch_time) {}
 
 SafeSeedManager::ActiveSeedState::~ActiveSeedState() = default;
 

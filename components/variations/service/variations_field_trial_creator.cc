@@ -33,6 +33,7 @@
 #include "ui/base/device_form_factor.h"
 
 namespace variations {
+namespace {
 
 // Maximum age permitted for a variations seed, in days.
 const int kMaxVariationsSeedAgeDays = 30;
@@ -141,6 +142,14 @@ void RecordCreateTrialsSeedExpiry(VariationsSeedExpiry expiry_check_result) {
                             VARIATIONS_SEED_EXPIRY_ENUM_SIZE);
 }
 
+// Records the loaded seed's age to an UMA histogram.
+void RecordSeedFreshness(base::TimeDelta seed_age) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", seed_age.InMinutes(),
+                              1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+}
+
+}  // namespace
+
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
     PrefService* local_state,
     VariationsServiceClient* client,
@@ -181,11 +190,9 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   std::unique_ptr<ClientFilterableState> client_filterable_state =
       GetClientFilterableStateForVersion(current_version);
 
-  // TODO(isherman): Record the seed freshness when running in safe mode.
   VariationsSeed seed;
-  bool run_in_safe_mode =
-      safe_seed_manager->ShouldRunInSafeMode() &&
-      GetSeedStore()->LoadSafeSeed(&seed, client_filterable_state.get());
+  bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode() &&
+                          LoadSafeSeed(&seed, client_filterable_state.get());
 
   std::string seed_data;
   std::string base64_seed_signature;
@@ -211,7 +218,8 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   // to save the active state to the safe seed prefs.
   if (!run_in_safe_mode) {
     safe_seed_manager->SetActiveSeedState(seed_data, base64_seed_signature,
-                                          std::move(client_filterable_state));
+                                          std::move(client_filterable_state),
+                                          seed_store_.GetLastFetchTime());
   }
 
   UMA_HISTOGRAM_TIMES("Variations.SeedProcessingTime",
@@ -331,12 +339,6 @@ void VariationsFieldTrialCreator::StorePermanentCountry(
                      new_list_value);
 }
 
-void VariationsFieldTrialCreator::RecordLastFetchTime() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  local_state()->SetTime(prefs::kVariationsLastFetchTime, base::Time::Now());
-}
-
 void VariationsFieldTrialCreator::OverrideVariationsPlatform(
     Study::Platform platform_override) {
   has_platform_override_ = true;
@@ -349,12 +351,11 @@ bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
   if (!GetSeedStore()->LoadSeed(seed, seed_data, base64_signature))
     return false;
 
-  const base::Time last_fetch_time =
-      local_state()->GetTime(prefs::kVariationsLastFetchTime);
+  const base::Time last_fetch_time = seed_store_.GetLastFetchTime();
   if (last_fetch_time.is_null()) {
     // If the last fetch time is missing and we have a seed, then this must be
     // the first run of Chrome. Store the current time as the last fetch time.
-    RecordLastFetchTime();
+    seed_store_.RecordLastFetchTime();
     RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
     return true;
   }
@@ -368,8 +369,24 @@ bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
 
   // Record that a suitably fresh seed was loaded.
   RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_NOT_EXPIRED);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", seed_age.InMinutes(),
-                              1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+  RecordSeedFreshness(seed_age);
+  return true;
+}
+
+bool VariationsFieldTrialCreator::LoadSafeSeed(
+    VariationsSeed* seed,
+    ClientFilterableState* client_state) {
+  base::Time safe_seed_fetch_time;
+  if (!GetSeedStore()->LoadSafeSeed(seed, client_state, &safe_seed_fetch_time))
+    return false;
+
+  // Record the safe seed's age. Note, however, that the safe seed fetch time
+  // pref was added about a milestone later than most of the other safe seed
+  // prefs, so it might be absent. If it's absent, don't attempt to guess what
+  // value to record; just skip recording the metric.
+  if (!safe_seed_fetch_time.is_null())
+    RecordSeedFreshness(base::Time::Now() - safe_seed_fetch_time);
+
   return true;
 }
 

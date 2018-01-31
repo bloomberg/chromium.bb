@@ -95491,10 +95491,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The time interval between when the variations seed was downloaded and when
-    it was loaded for use. Not recorded for expired seeds.
-
-    TODO(isherman): Implement this metric for safe seeds as well. (It's
-    currently not implemented; but also, safe mode is not triggerable.)
+    it was loaded for use. Not recorded for expired seeds, nor when the download
+    time is unknown (typically, for seeds imported via first run).
   </summary>
 </histogram>
 

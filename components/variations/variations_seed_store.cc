@@ -214,7 +214,8 @@ bool VariationsSeedStore::StoreSeedData(
 }
 
 bool VariationsSeedStore::LoadSafeSeed(VariationsSeed* seed,
-                                       ClientFilterableState* client_state) {
+                                       ClientFilterableState* client_state,
+                                       base::Time* seed_fetch_time) {
   std::string unused_seed_data;
   std::string unused_base64_seed_signature;
   LoadSeedResult result = LoadSeedImpl(SeedType::SAFE, seed, &unused_seed_data,
@@ -231,13 +232,15 @@ bool VariationsSeedStore::LoadSafeSeed(VariationsSeed* seed,
       prefs::kVariationsSafeSeedPermanentConsistencyCountry);
   client_state->session_consistency_country = local_state_->GetString(
       prefs::kVariationsSafeSeedSessionConsistencyCountry);
+  *seed_fetch_time = local_state_->GetTime(prefs::kVariationsSafeSeedFetchTime);
   return true;
 }
 
 bool VariationsSeedStore::StoreSafeSeed(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
-    const ClientFilterableState& client_state) {
+    const ClientFilterableState& client_state,
+    base::Time seed_fetch_time) {
   std::string base64_seed_data;
   StoreSeedResult result = VerifyAndCompressSeedData(
       seed_data, base64_seed_signature, false /* fetched_insecurely */,
@@ -299,9 +302,30 @@ bool VariationsSeedStore::StoreSafeSeed(
       local_state_->GetString(prefs::kVariationsCompressedSeed)) {
     local_state_->SetString(prefs::kVariationsCompressedSeed,
                             kIdenticalToSafeSeedSentinel);
+
+    // Moreover, in this case, the last fetch time for the safe seed should
+    // match the latest seed's.
+    seed_fetch_time = GetLastFetchTime();
   }
+  local_state_->SetTime(prefs::kVariationsSafeSeedFetchTime, seed_fetch_time);
 
   return true;
+}
+
+base::Time VariationsSeedStore::GetLastFetchTime() const {
+  return local_state_->GetTime(prefs::kVariationsLastFetchTime);
+}
+
+void VariationsSeedStore::RecordLastFetchTime() {
+  base::Time now = base::Time::Now();
+  local_state_->SetTime(prefs::kVariationsLastFetchTime, now);
+
+  // If the latest and safe seeds are identical, update the fetch time for the
+  // safe seed as well.
+  if (local_state_->GetString(prefs::kVariationsCompressedSeed) ==
+      kIdenticalToSafeSeedSentinel) {
+    local_state_->SetTime(prefs::kVariationsSafeSeedFetchTime, now);
+  }
 }
 
 void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
@@ -342,6 +366,7 @@ const std::string& VariationsSeedStore::GetLatestSerialNumber() {
 void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsCompressedSeed, std::string());
   registry->RegisterStringPref(prefs::kVariationsCountry, std::string());
+  registry->RegisterTimePref(prefs::kVariationsLastFetchTime, base::Time());
   registry->RegisterTimePref(prefs::kVariationsSeedDate, base::Time());
   registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
 
@@ -349,6 +374,7 @@ void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsSafeCompressedSeed,
                                std::string());
   registry->RegisterTimePref(prefs::kVariationsSafeSeedDate, base::Time());
+  registry->RegisterTimePref(prefs::kVariationsSafeSeedFetchTime, base::Time());
   registry->RegisterStringPref(prefs::kVariationsSafeSeedLocale, std::string());
   registry->RegisterStringPref(
       prefs::kVariationsSafeSeedPermanentConsistencyCountry, std::string());
@@ -372,6 +398,7 @@ bool VariationsSeedStore::SignatureVerificationEnabled() {
 void VariationsSeedStore::ClearPrefs(SeedType seed_type) {
   if (seed_type == SeedType::LATEST) {
     local_state_->ClearPref(prefs::kVariationsCompressedSeed);
+    local_state_->ClearPref(prefs::kVariationsLastFetchTime);
     local_state_->ClearPref(prefs::kVariationsSeedDate);
     local_state_->ClearPref(prefs::kVariationsSeedSignature);
     return;
@@ -380,6 +407,7 @@ void VariationsSeedStore::ClearPrefs(SeedType seed_type) {
   DCHECK_EQ(seed_type, SeedType::SAFE);
   local_state_->ClearPref(prefs::kVariationsSafeCompressedSeed);
   local_state_->ClearPref(prefs::kVariationsSafeSeedDate);
+  local_state_->ClearPref(prefs::kVariationsSafeSeedFetchTime);
   local_state_->ClearPref(prefs::kVariationsSafeSeedLocale);
   local_state_->ClearPref(
       prefs::kVariationsSafeSeedPermanentConsistencyCountry);
