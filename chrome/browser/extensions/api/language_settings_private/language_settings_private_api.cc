@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -32,6 +33,7 @@
 #include "chrome/common/extensions/api/language_settings_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/language_model.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -178,15 +180,14 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
 
   // Get the list of available locales (display languages) and convert to a set.
-  const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
-  const std::unordered_set<std::string> locale_set(locales.begin(),
-                                                   locales.end());
+  const base::flat_set<std::string> locale_set(
+      l10n_util::GetAvailableLocales());
 
   // Get the list of spell check languages and convert to a set.
   std::vector<std::string> spellcheck_languages =
       spellcheck::SpellCheckLanguages();
-  const std::unordered_set<std::string> spellcheck_language_set(
-      spellcheck_languages.begin(), spellcheck_languages.end());
+  const base::flat_set<std::string> spellcheck_language_set(
+      std::move(spellcheck_languages));
 
   // Build the language list.
   std::unique_ptr<base::ListValue> language_list(new base::ListValue);
@@ -198,14 +199,19 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     language.native_display_name = entry.native_display_name;
 
     // Set optional fields only if they differ from the default.
-    if (locale_set.count(entry.code) > 0) {
-      language.supports_ui.reset(new bool(true));
-    }
-    if (spellcheck_language_set.count(entry.code) > 0) {
+    if (base::ContainsKey(spellcheck_language_set, entry.code)) {
       language.supports_spellcheck.reset(new bool(true));
     }
     if (entry.supports_translate) {
       language.supports_translate.reset(new bool(true));
+    }
+    if (base::FeatureList::IsEnabled(translate::kRegionalLocalesAsDisplayUI)) {
+      std::string temp_locale = entry.code;
+      if (language::ConvertToActualUILocale(&temp_locale)) {
+        language.supports_ui.reset(new bool(true));
+      }
+    } else if (base::ContainsKey(locale_set, entry.code)) {
+      language.supports_ui.reset(new bool(true));
     }
 
     language_list->Append(language.ToValue());

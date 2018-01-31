@@ -50,6 +50,7 @@ static_library("browser") {
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/language/core/browser",
+    "//components/language/core/common",
     "//components/language_usage_metrics",
     "//components/metrics",
     "//components/pref_registry",

@@ -5,34 +5,16 @@
 #include "components/translate/core/common/translate_util.h"
 
 #include <stddef.h>
+#include <algorithm>
+#include <set>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/string_split.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "url/gurl.h"
-
-namespace {
-
-// Split the |language| into two parts. For example, if |language| is 'en-US',
-// this will be split into the main part 'en' and the tail part '-US'.
-void SplitIntoMainAndTail(const std::string& language,
-                          std::string* main_part,
-                          std::string* tail_part) {
-  DCHECK(main_part);
-  DCHECK(tail_part);
-
-  std::vector<base::StringPiece> chunks = base::SplitStringPiece(
-      language, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (chunks.empty())
-    return;
-
-  chunks[0].CopyToString(main_part);
-  *tail_part = language.substr(main_part->size());
-}
-
-}  // namespace
 
 namespace translate {
 
@@ -86,7 +68,7 @@ void ToTranslateLanguageSynonym(std::string* language) {
   }
 
   std::string main_part, tail_part;
-  SplitIntoMainAndTail(*language, &main_part, &tail_part);
+  language::SplitIntoMainAndTail(*language, &main_part, &tail_part);
   if (main_part.empty())
     return;
 
@@ -127,7 +109,7 @@ void ToChromeLanguageSynonym(std::string* language) {
   }
 
   std::string main_part, tail_part;
-  SplitIntoMainAndTail(*language, &main_part, &tail_part);
+  language::SplitIntoMainAndTail(*language, &main_part, &tail_part);
   if (main_part.empty())
     return;
 
@@ -150,21 +132,6 @@ GURL GetTranslateSecurityOrigin() {
         command_line->GetSwitchValueASCII(switches::kTranslateSecurityOrigin);
   }
   return GURL(security_origin);
-}
-
-bool ContainsSameBaseLanguage(const std::vector<std::string>& list,
-                              const std::string& language_code) {
-  std::string base_language;
-  std::string unused_str;
-  SplitIntoMainAndTail(language_code, &base_language, &unused_str);
-  for (const auto& item : list) {
-    std::string compare_base;
-    SplitIntoMainAndTail(item, &compare_base, &unused_str);
-    if (compare_base == base_language)
-      return true;
-  }
-
-  return false;
 }
 
 }  // namespace translate

@@ -103,6 +103,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -1149,6 +1150,7 @@ void ProfileImpl::ChangeAppLocale(
   if (local_state->IsManagedPreference(prefs::kApplicationLocale))
     return;
   std::string pref_locale = GetPrefs()->GetString(prefs::kApplicationLocale);
+  language::ConvertToActualUILocale(&pref_locale);
   bool do_update_pref = true;
   switch (via) {
     case APP_LOCALE_CHANGED_VIA_SETTINGS:

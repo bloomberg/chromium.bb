@@ -1180,6 +1180,13 @@ const char kReducedReferrerGranularityDescription[] =
     "reduce the amount of information in the 'referer' header for cross-origin "
     "requests.";
 
+extern const char kRegionalLocalesAsDisplayUIName[] =
+    "Allow regional locales as display UI";
+extern const char kRegionalLocalesAsDisplayUIDescription[] =
+    "This flag allows regional locales to be selected as display UI by the "
+    "user in Language Settings. The actual locale of the system is derived "
+    "from the user selection based on some simple fallback logic.";
+
 const char kRemoveUsageOfDeprecatedGaiaSigninEndpointName[] =
     "Remove usage of the deprecated GAIA sign-in endpoint";
 const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[] =

@@ -93,6 +93,7 @@ source_set("chromeos") {
     "//components/keep_alive_registry",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/language/core/common",
     "//components/login",
     "//components/metrics:serialization",
     "//components/metrics/leak_detector",

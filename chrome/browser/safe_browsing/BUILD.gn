@@ -233,6 +233,7 @@ static_library("safe_browsing") {
       deps += [
         "//chrome/services/file_util/public/cpp",
         "//components/content_settings/core/browser:browser",
+        "//components/language/core/common:common",
         "//components/prefs:prefs",
         "//components/safe_browsing/common:safe_browsing_prefs",
         "//components/safe_browsing/db:db",
