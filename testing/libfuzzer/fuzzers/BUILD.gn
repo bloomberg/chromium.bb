@@ -227,6 +227,13 @@ fuzzer_test("v8_regexp_builtins_fuzzer") {
   ]
 }
 
+fuzzer_test("v8_multi_return_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:multi_return_fuzzer",
+  ]
+}
+
 fuzzer_test("v8_wasm_code_fuzzer") {
   sources = []
   deps = [
