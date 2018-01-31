@@ -900,7 +900,10 @@ bool ConsumePosition(CSSParserTokenRange& range,
       PositionFromTwoValues(value1, value2, result_x, result_y);
       return true;
     }
-    context.Count(*threeValuePosition);
+    if (*threeValuePosition == WebFeature::kThreeValuedPositionBackground)
+      context.Count(*threeValuePosition);
+    else
+      context.CountDeprecation(*threeValuePosition);
   }
 
   CSSValue* values[5];

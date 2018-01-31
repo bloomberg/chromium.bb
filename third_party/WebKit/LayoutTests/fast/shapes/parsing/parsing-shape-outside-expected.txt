@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 199: Expressing a position using 3 parts is deprecated and will be removed in M68, around July 2018. Please use <position> syntax instead. See https://www.chromestatus.com/features/5116559680864256 for more details.
 Testing parsing of the shape-outside property.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
