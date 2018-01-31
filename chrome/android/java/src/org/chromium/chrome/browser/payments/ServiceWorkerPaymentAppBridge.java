@@ -305,12 +305,14 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         return new HashMap<String, Pair<String, Bitmap>>();
     }
 
+    @SuppressWarnings("unchecked")
     @CalledByNative
     private static void addPaymentAppInfo(
             Object appsInfo, String scope, @Nullable String name, @Nullable Bitmap icon) {
         ((Map<String, Pair<String, Bitmap>>) appsInfo).put(scope, new Pair<>(name, icon));
     }
 
+    @SuppressWarnings("unchecked")
     @CalledByNative
     private static void onGetServiceWorkerPaymentAppsInfo(
             GetServiceWorkerPaymentAppsInfoCallback callback, Object appsInfo) {

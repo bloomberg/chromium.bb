@@ -151,6 +151,7 @@ public final class RemoteObjectImplTest {
         verify(response, times(2)).call(resultIsOk());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testInvokeMethodOverloadUsingArity() {
         final Consumer<Integer> consumer = (Consumer<Integer>) mock(Consumer.class);

@@ -211,6 +211,7 @@ public class AnnotationProcessingUtilsTest {
         assertEquals(Location.DerivedMethod, ((TargetAnnotation) annotations.get(4)).value());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testAnnotationExtractorSortOrder_UnknownAnnotations() {
         AnnotationExtractor annotationExtractor = new AnnotationExtractor(Target.class);
@@ -224,6 +225,7 @@ public class AnnotationProcessingUtilsTest {
                 contains(Rule.class, Test.class, Override.class, Rule.class, Target.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testAnnotationExtractorSortOrder_KnownAnnotations() {
         AnnotationExtractor annotationExtractor =

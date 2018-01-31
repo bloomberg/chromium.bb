@@ -105,17 +105,18 @@ public class OfflineNotificationBackgroundTaskUnitTest {
     @Mock
     private ChromeBrowserInitializer mChromeBrowserInitializer;
     @Captor
-    ArgumentCaptor<BrowserParts> mBrowserParts;
+    private ArgumentCaptor<BrowserParts> mBrowserParts;
     @Mock
-    OfflinePageBridge mOfflinePageBridge;
+    private OfflinePageBridge mOfflinePageBridge;
     @Mock
-    PrefetchedPagesNotifier mPrefetchedPagesNotifier;
+    private PrefetchedPagesNotifier mPrefetchedPagesNotifier;
 
     private FakeBackgroundTaskScheduler mFakeTaskScheduler;
     private Calendar mCalendar;
 
     private String mContentHost = "www.example.com";
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
