@@ -363,10 +363,6 @@ public class ToolbarSwipeLayout extends Layout {
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
-        // Use the default theme colors if the browser controls are at the bottom.
-        if (fullscreenManager.areBrowserControlsAtBottom()) {
-            for (LayoutTab t : mLayoutTabs) t.setForceDefaultThemeColor(true);
-        }
         assert mSceneLayer != null;
         // contentViewport is intentionally passed for both parameters below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,

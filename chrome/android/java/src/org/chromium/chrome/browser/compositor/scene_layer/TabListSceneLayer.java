@@ -76,17 +76,10 @@ public class TabListSceneLayer extends SceneLayer {
 
             int toolbarBackgroundColor = getTabThemeColor(context, t);
             int textBoxBackgroundColor = t.getTextBoxBackgroundColor();
-            float textBoxAlpha = t.getTextBoxAlpha();
-            if (t.getForceDefaultThemeColor()) {
-                toolbarBackgroundColor = defaultThemeColor;
-                textBoxBackgroundColor = ColorUtils.getTextBoxColorForToolbarBackground(
-                        res, false, toolbarBackgroundColor, useModernDesign);
-                textBoxAlpha = t.isIncognito() ? textBoxAlpha : 1f;
-            }
 
             // In the modern design, the text box is always drawn in the Java layer rather
             // than the compositor layer.
-            if (useModernDesign) textBoxAlpha = 0.f;
+            float textBoxAlpha = useModernDesign ? 0.f : t.getTextBoxAlpha();
 
             int closeButtonColor =
                     ColorUtils.getThemedAssetColor(toolbarBackgroundColor, t.isIncognito());
