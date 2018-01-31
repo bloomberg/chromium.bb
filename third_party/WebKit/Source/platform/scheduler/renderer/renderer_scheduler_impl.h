@@ -110,7 +110,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   static const int kMinExpectedQueueingTimeBucket = 1;
   // The highest bucket for fine-grained Expected Queueing Time reporting, in
   // microseconds.
-  static const int kMaxExpectedQueueingTimeBucket = 4 * 1000 * 1000;
+  static const int kMaxExpectedQueueingTimeBucket = 30 * 1000 * 1000;
   // The number of buckets for fine-grained Expected Queueing Time reporting.
   static const int kNumberExpectedQueueingTimeBuckets = 50;
 

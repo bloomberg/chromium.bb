@@ -71270,12 +71270,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram base="true"
     name="RendererScheduler.ExpectedQueueingTimeByFrameStatus"
     units="microseconds">
+  <obsolete>
+    Replaced with RendererScheduler.ExpectedQueueingTimeByFrameStatus2 as of Feb
+    2018. Buckets were changed.
+  </obsolete>
   <owner>npm@chromium.org</owner>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Expected queueing time split by tasks according to their frame status, in
     microseconds. The sum of the split values will be equal to the total,
     reported on RendererScheduler.ExpectedTaskQueueingDuration2. Recorded for
+    each 1000 ms window.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="RendererScheduler.ExpectedQueueingTimeByFrameStatus2"
+    units="microseconds">
+  <owner>npm@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Expected queueing time split by tasks according to their frame status, in
+    microseconds. The sum of the split values will be equal to the total,
+    reported on RendererScheduler.ExpectedTaskQueueingDuration3. Recorded for
     each 1000 ms window.
   </summary>
 </histogram>
@@ -71297,12 +71314,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram base="true" name="RendererScheduler.ExpectedQueueingTimeByTaskQueue"
     units="microseconds">
+  <obsolete>
+    Replaced with RendererScheduler.ExpectedQueueingTimeByTaskQueue2 as of Feb
+    2018. Buckets were changed.
+  </obsolete>
   <owner>npm@chromium.org</owner>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Expected queueing time split by tasks according to the type of their task
     queue, in microseconds. The sum of the split values should be equal to the
     total, reported on RendererScheduler.ExpectedTaskQueueingDuration2. Recorded
+    for each 1000 ms window.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="RendererScheduler.ExpectedQueueingTimeByTaskQueue2"
+    units="microseconds">
+  <owner>npm@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Expected queueing time split by tasks according to the type of their task
+    queue, in microseconds. The sum of the split values should be equal to the
+    total, reported on RendererScheduler.ExpectedTaskQueueingDuration3. Recorded
     for each 1000 ms window.
   </summary>
 </histogram>
@@ -71344,6 +71378,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.ExpectedTaskQueueingDuration2"
+    units="microseconds">
+  <obsolete>
+    Replaced with RendererScheduler.ExpectedTaskQueueingDuration3 as of Feb
+    2018. Buckets were changed.
+  </obsolete>
+  <owner>tdresser@chromium.org</owner>
+  <owner>npm@chromium.org</owner>
+  <summary>
+    The estimated queueing duration which would be observed for additional high
+    priority tasks posted to the RendererScheduler, in microseconds. Recorded
+    for each 1000 ms window.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.ExpectedTaskQueueingDuration3"
     units="microseconds">
   <owner>tdresser@chromium.org</owner>
   <owner>npm@chromium.org</owner>
@@ -110540,6 +110589,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              frames."/>
   <affected-histogram
       name="RendererScheduler.ExpectedQueueingTimeByFrameStatus"/>
+  <affected-histogram
+      name="RendererScheduler.ExpectedQueueingTimeByFrameStatus2"/>
 </histogram_suffixes>
 
 <histogram_suffixes
@@ -110561,6 +110612,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Other"
       label="Expected Queueing Time from events in any other task queue."/>
   <affected-histogram name="RendererScheduler.ExpectedQueueingTimeByTaskQueue"/>
+  <affected-histogram
+      name="RendererScheduler.ExpectedQueueingTimeByTaskQueue2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler.MainThreadLoadSplit" separator=".">
