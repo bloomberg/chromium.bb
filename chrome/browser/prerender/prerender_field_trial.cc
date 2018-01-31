@@ -68,9 +68,9 @@ const base::Feature kNoStatePrefetchFeature{"NoStatePrefetch",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 void ConfigurePrerender() {
-  PrerenderManager::PrerenderManagerMode overall_mode = ParsePrerenderMode(
-      kNoStatePrefetchFeatureModeParameterName,
-      PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
+  PrerenderManager::PrerenderManagerMode overall_mode =
+      ParsePrerenderMode(kNoStatePrefetchFeatureModeParameterName,
+                         PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
 
   PrerenderManager::SetMode(overall_mode);
   PrerenderManager::SetOmniboxMode(ParsePrerenderMode(
