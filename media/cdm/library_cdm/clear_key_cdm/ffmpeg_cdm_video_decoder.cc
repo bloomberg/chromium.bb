@@ -294,10 +294,7 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(AVFrame* frame,
   AVPixelFormat format = static_cast<AVPixelFormat>(frame->format);
   cdm_video_frame->SetFormat(AVPixelFormatToCdmVideoFormat(format));
 
-  cdm::Size video_frame_size;
-  video_frame_size.width = frame->width;
-  video_frame_size.height = frame->height;
-  cdm_video_frame->SetSize(video_frame_size);
+  cdm_video_frame->SetSize({frame->width, frame->height});
 
   cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, 0);
   cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, y_size);

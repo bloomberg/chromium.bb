@@ -195,9 +195,7 @@ class CdmWrapperImpl : public CdmWrapper {
 
   bool GetStatusForPolicy(uint32_t promise_id,
                           cdm::HdcpVersion min_hdcp_version) override {
-    cdm::Policy policy;
-    policy.min_hdcp_version = min_hdcp_version;
-    cdm_->GetStatusForPolicy(promise_id, policy);
+    cdm_->GetStatusForPolicy(promise_id, {min_hdcp_version});
     return true;
   }
 

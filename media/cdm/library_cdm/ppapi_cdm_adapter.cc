@@ -89,9 +89,8 @@ void ConfigureInputBuffer(const pp::Buffer_Dev& encrypted_buffer,
     subsamples->reserve(encrypted_block_info.num_subsamples);
 
     for (uint32_t i = 0; i < encrypted_block_info.num_subsamples; ++i) {
-      subsamples->push_back(
-          cdm::SubsampleEntry(encrypted_block_info.subsamples[i].clear_bytes,
-                              encrypted_block_info.subsamples[i].cipher_bytes));
+      subsamples->push_back({encrypted_block_info.subsamples[i].clear_bytes,
+                             encrypted_block_info.subsamples[i].cipher_bytes});
     }
 
     input_buffer->subsamples = &(*subsamples)[0];
@@ -556,7 +555,7 @@ void PpapiCdmAdapter::Decrypt(
   LinkedDecryptedBlock decrypted_block(new DecryptedBlockImpl());
 
   if (cdm_) {
-    cdm::InputBuffer input_buffer;
+    cdm::InputBuffer input_buffer = {};
     std::vector<cdm::SubsampleEntry> subsamples;
     ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,
                          &input_buffer);
@@ -578,7 +577,7 @@ void PpapiCdmAdapter::InitializeAudioDecoder(
   PP_DCHECK(deferred_audio_decoder_config_id_ == 0);
   cdm::Status status = cdm::kInitializationError;
   if (cdm_) {
-    cdm::AudioDecoderConfig cdm_decoder_config;
+    cdm::AudioDecoderConfig cdm_decoder_config = {};
     cdm_decoder_config.codec =
         PpAudioCodecToCdmAudioCodec(decoder_config.codec);
     cdm_decoder_config.channel_count = decoder_config.channel_count;
@@ -608,7 +607,7 @@ void PpapiCdmAdapter::InitializeVideoDecoder(
   PP_DCHECK(deferred_video_decoder_config_id_ == 0);
   cdm::Status status = cdm::kInitializationError;
   if (cdm_) {
-    cdm::VideoDecoderConfig cdm_decoder_config;
+    cdm::VideoDecoderConfig cdm_decoder_config = {};
     cdm_decoder_config.codec =
         PpVideoCodecToCdmVideoCodec(decoder_config.codec);
     cdm_decoder_config.profile =
@@ -664,7 +663,7 @@ void PpapiCdmAdapter::DecryptAndDecode(
   // Release a buffer that the caller indicated it is finished with.
   allocator_.Release(encrypted_block_info.tracking_info.buffer_id);
 
-  cdm::InputBuffer input_buffer;
+  cdm::InputBuffer input_buffer = {};
   std::vector<cdm::SubsampleEntry> subsamples;
   if (cdm_ && !encrypted_buffer.is_null()) {
     ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,

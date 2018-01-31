@@ -89,7 +89,7 @@ TEST_F(SimpleCdmAllocatorTest, TransformToVideoFrame) {
 
   // Fill VideoFrameImpl as if it was a small video frame.
   video_frame->SetFormat(cdm::kI420);
-  video_frame->SetSize(cdm::Size(size.width(), size.height()));
+  video_frame->SetSize({size.width(), size.height()});
   video_frame->SetFrameBuffer(TestCdmBuffer::Create(memory_needed));
   video_frame->FrameBuffer()->SetSize(memory_needed);
 
