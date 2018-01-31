@@ -2065,12 +2065,18 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_q_index);
   const int rdmult = av1_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
 #if CONFIG_AOM_QM
+#if CONFIG_AOM_QM_EXT
+  int qmlevel = (xd->lossless[segment_id] || cm->using_qmatrix == 0)
+                    ? NUM_QM_LEVELS - 1
+                    : cm->qm_y;
+#else
   int minqm = cm->min_qmlevel;
   int maxqm = cm->max_qmlevel;
   // Quant matrix only depends on the base QP so there is only one set per frame
   int qmlevel = (xd->lossless[segment_id] || cm->using_qmatrix == 0)
                     ? NUM_QM_LEVELS - 1
                     : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
+#endif  // CONFIG_AOM_QM_EXT
 #endif
 
   // Y
@@ -2100,7 +2106,14 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_NEW_QUANT
 
-  // U
+// U
+#if CONFIG_AOM_QM
+#if CONFIG_AOM_QM_EXT
+  qmlevel = (xd->lossless[segment_id] || cm->using_qmatrix == 0)
+                ? NUM_QM_LEVELS - 1
+                : cm->qm_u;
+#endif
+#endif
   {
     x->plane[1].quant_QTX = quants->u_quant[qindex];
     x->plane[1].quant_fp_QTX = quants->u_quant_fp[qindex];
@@ -2129,7 +2142,14 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
     }
 #endif  // CONFIG_NEW_QUANT
   }
-  // V
+// V
+#if CONFIG_AOM_QM
+#if CONFIG_AOM_QM_EXT
+  qmlevel = (xd->lossless[segment_id] || cm->using_qmatrix == 0)
+                ? NUM_QM_LEVELS - 1
+                : cm->qm_v;
+#endif
+#endif
   {
     x->plane[2].quant_QTX = quants->v_quant[qindex];
     x->plane[2].quant_fp_QTX = quants->v_quant_fp[qindex];
@@ -2181,6 +2201,21 @@ void av1_set_quantizer(AV1_COMMON *cm, int q) {
   cm->u_ac_delta_q = 0;
   cm->v_dc_delta_q = 0;
   cm->v_ac_delta_q = 0;
+#if CONFIG_AOM_QM
+#if CONFIG_AOM_QM_EXT
+  cm->qm_y = aom_get_qmlevel(cm->base_qindex, cm->min_qmlevel, cm->max_qmlevel);
+  cm->qm_u = aom_get_qmlevel(cm->base_qindex + cm->u_ac_delta_q,
+                             cm->min_qmlevel, cm->max_qmlevel);
+
+#if CONFIG_EXT_QM
+  if (!cm->separate_uv_delta_q)
+    cm->qm_v = cm->qm_u;
+  else
+#endif
+    cm->qm_v = aom_get_qmlevel(cm->base_qindex + cm->v_ac_delta_q,
+                               cm->min_qmlevel, cm->max_qmlevel);
+#endif
+#endif
 }
 
 // Table that converts 0-63 Q-range values passed in outside to the Qindex

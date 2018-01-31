@@ -31,6 +31,11 @@ extern "C" {
 #define NUM_QM_LEVELS (1 << QM_LEVEL_BITS)
 /* Range of QMS is between first and last value, with offset applied to inter
  * blocks*/
+#if CONFIG_AOM_QM_EXT
+#define DEFAULT_QM_Y 10
+#define DEFAULT_QM_U 11
+#define DEFAULT_QM_V 12
+#endif  // CONFIG_AOM_QM_EXT
 #define DEFAULT_QM_FIRST 5
 #define DEFAULT_QM_LAST 9
 #endif

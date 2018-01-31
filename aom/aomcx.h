@@ -565,6 +565,45 @@ enum aome_enc_control_id {
    */
   AV1E_SET_QM_MAX,
 
+  /*!\brief Codec control function to set the min quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the flatness for luma (Y).
+   *
+   *  By default, the encoder sets this minimum at half the available
+   *  range.
+   *
+   * Experiment: AOM_QM
+   */
+  AV1E_SET_QM_Y,
+
+  /*!\brief Codec control function to set the min quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the flatness for chroma (U).
+   *
+   *  By default, the encoder sets this minimum at half the available
+   *  range.
+   *
+   * Experiment: AOM_QM
+   */
+  AV1E_SET_QM_U,
+
+  /*!\brief Codec control function to set the min quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the flatness for chrome (V).
+   *
+   *  By default, the encoder sets this minimum at half the available
+   *  range.
+   *
+   * Experiment: AOM_QM
+   */
+  AV1E_SET_QM_V,
+
   /*!\brief Codec control function to encode with dist_8x8.
    *
    *  The dist_8x8 is enabled automatically for model tuning parameters that
@@ -881,6 +920,15 @@ AOM_CTRL_USE_TYPE(AV1E_SET_QM_MIN, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_QM_MAX, unsigned int)
 #define AOM_CTRL_AV1E_SET_QM_MAX
+
+AOM_CTRL_USE_TYPE(AV1E_SET_QM_Y, unsigned int)
+#define AOM_CTRL_AV1E_SET_QM_Y
+
+AOM_CTRL_USE_TYPE(AV1E_SET_QM_U, unsigned int)
+#define AOM_CTRL_AV1E_SET_QM_U
+
+AOM_CTRL_USE_TYPE(AV1E_SET_QM_V, unsigned int)
+#define AOM_CTRL_AV1E_SET_QM_V
 
 AOM_CTRL_USE_TYPE(AV1E_SET_NUM_TG, unsigned int)
 #define AOM_CTRL_AV1E_SET_NUM_TG
