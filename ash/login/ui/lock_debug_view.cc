@@ -288,7 +288,11 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   RebuildDebugUserColumn();
 }
 
-LockDebugView::~LockDebugView() = default;
+LockDebugView::~LockDebugView() {
+  // Make sure debug_data_dispatcher_ lives longer than LockContentsView so
+  // pointer debug_dispatcher_ is always valid for LockContentsView.
+  RemoveChildView(lock_);
+}
 
 void LockDebugView::Layout() {
   views::View::Layout();
