@@ -134,4 +134,16 @@ TEST_F(CompositeEditCommandTest,
       body->InnerHTMLAsString());
 }
 
+TEST_F(CompositeEditCommandTest, InsertNodeOnDisconnectedParent) {
+  SetBodyContent("<p><b></b></p>");
+  SampleCommand& sample = *new SampleCommand(GetDocument());
+  Node* insert_child = GetDocument().QuerySelector("b");
+  Element* ref_child = GetDocument().QuerySelector("p");
+  ref_child->remove();
+  EditingState editing_state;
+  // editing state should abort here.
+  sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
+  EXPECT_TRUE(editing_state.IsAborted());
+}
+
 }  // namespace blink
