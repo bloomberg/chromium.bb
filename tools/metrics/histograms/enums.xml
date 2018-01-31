@@ -25571,6 +25571,7 @@ from previous Chrome versions.
   <int value="-1349532167" label="enable-wifi-credential-sync"/>
   <int value="-1346722635" label="gesture-selection"/>
   <int value="-1344375439" label="ServiceWorkerPaymentApps:disabled"/>
+  <int value="-1343259222" label="RegionalLocalesAsDisplayUI:disabled"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1338306372" label="BrowserTouchBar:enabled"/>
@@ -26372,6 +26373,7 @@ from previous Chrome versions.
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
+  <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
   <int value="807447752" label="ChromeMemex:disabled"/>

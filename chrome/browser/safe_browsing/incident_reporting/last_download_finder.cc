@@ -27,6 +27,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/notification_details.h"
@@ -205,8 +206,10 @@ void PopulateDetailsFromRow(const history::DownloadRow& download,
       download.target_path.BaseName().AsUTF8Unsafe());
   download_request->set_download_type(
       download_protection_util::GetDownloadType(download.target_path));
-  download_request->set_locale(
-      g_browser_process->local_state()->GetString(prefs::kApplicationLocale));
+  std::string pref_locale =
+      g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
+  language::ConvertToActualUILocale(&pref_locale);
+  download_request->set_locale(pref_locale);
 
   details->set_download_time_msec(download.end_time.ToJavaTime());
   // Opened time is unknown for now, so use the download time if the file was
