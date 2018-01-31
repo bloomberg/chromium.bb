@@ -45,8 +45,6 @@ namespace ash {
 //
 class ASH_EXPORT LoginPinView : public NonAccessibleView {
  public:
-  // Spacing between each pin button.
-  static const int kButtonSeparatorSizeDp;
   // Size of each button.
   static const int kButtonSizeDp;
 
