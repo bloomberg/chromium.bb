@@ -2851,7 +2851,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "ReaderForAccessibility"
+                        "AllowReaderForAccessibility"
                     ]
                 }
             ]
