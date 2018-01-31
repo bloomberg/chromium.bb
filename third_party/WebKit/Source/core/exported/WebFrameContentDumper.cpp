@@ -228,9 +228,16 @@ WebString WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
 WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
                                                    size_t max_chars) {
   DCHECK(web_view);
+  WebLocalFrame* frame = web_view->MainFrame()->ToWebLocalFrame();
+  if (!frame)
+    return WebString();
+
   web_view->UpdateAllLifecyclePhases();
-  return WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
-      web_view->MainFrame()->ToWebLocalFrame(), max_chars);
+
+  StringBuilder text;
+  FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),
+                          text);
+  return text.ToString();
 }
 
 WebString WebFrameContentDumper::DumpAsMarkup(WebLocalFrame* frame) {
