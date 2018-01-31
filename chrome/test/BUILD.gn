@@ -3821,7 +3821,10 @@ test("unit_tests") {
     sources +=
         [ "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm" ]
 
-    if (!mac_views_browser) {
+    # TODO(ellyjones): remove this needless if (true). These files are
+    # test sources for the cocoa code; this block should be moved back inline at
+    # the place this variable is used below.
+    if (true) {
       cocoa_test_sources = [
         "../browser/ui/cocoa/accelerators_cocoa_unittest.mm",
         "../browser/ui/cocoa/animatable_image_unittest.mm",
@@ -4005,10 +4008,18 @@ test("unit_tests") {
       ]
     }
 
+    sources += cocoa_test_sources
+
     if (mac_views_browser) {
-      # TODO(tapted): Add chrome_unit_tests_views_non_mac_sources.
-    } else {
-      sources += cocoa_test_sources
+      sources -= [
+        "../browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller_unittest.mm",
+        "../browser/ui/cocoa/bookmarks/bookmark_editor_base_controller_unittest.mm",
+        "../browser/ui/cocoa/bookmarks/bookmark_editor_controller_unittest.mm",
+        "../browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller_unittest.mm",
+        "../browser/ui/cocoa/extensions/extension_installed_bubble_controller_unittest.mm",
+        "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_unittest.mm",
+        "../browser/ui/cocoa/page_info/page_info_bubble_controller_unittest.mm",
+      ]
     }
 
     # TODO(mark): We really want this for all non-static library targets,

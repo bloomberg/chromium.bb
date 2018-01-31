@@ -61,10 +61,3 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
 }
 
 @end
-
-void ShowCertificateViewer(content::WebContents* web_contents,
-                           gfx::NativeWindow parent,
-                           net::X509Certificate* cert) {
-  // Shows a new widget, which owns the delegate.
-  new CertificateAnchorWidgetDelegate(web_contents, cert);
-}

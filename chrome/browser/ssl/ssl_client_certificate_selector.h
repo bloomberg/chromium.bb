@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "net/ssl/client_cert_identity.h"
 
 namespace content {
@@ -31,6 +32,14 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate);
+
+#if defined(OS_MACOSX)
+void ShowSSLClientCertificateSelectorCocoa(
+    content::WebContents* contents,
+    net::SSLCertRequestInfo* cert_request_info,
+    net::ClientCertIdentityList client_certs,
+    std::unique_ptr<content::ClientCertificateDelegate> delegate);
+#endif
 
 }  // namespace chrome
 
