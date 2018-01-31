@@ -92,13 +92,14 @@ void CustomElementDefinition::CheckConstructorResult(
 
 HTMLElement* CustomElementDefinition::CreateElementForConstructor(
     Document& document) {
-  // TODO(kojii): When HTMLElementFactory has an option not to queue
-  // upgrade, call that instead of HTMLElement. HTMLElement is enough
-  // for now, but type extension will require HTMLElementFactory.
-  HTMLElement* element =
-      HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),
-                                        HTMLNames::xhtmlNamespaceURI),
-                          document);
+  HTMLElement* element = HTMLElementFactory::CreateRawHTMLElement(
+      Descriptor().LocalName(), document, kCreatedByCreateElement);
+  if (!element) {
+    element =
+        HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),
+                                          HTMLNames::xhtmlNamespaceURI),
+                            document);
+  }
   // TODO(davaajav): write this as one call to setCustomElementState instead of
   // two
   element->SetCustomElementState(CustomElementState::kUndefined);

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Illegal constructor: localName does not match the HTML element interface
-Found 442 tests; 414 PASS, 28 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 442 tests; 423 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a: Define a customized built-in element
 PASS a: Operator 'new' should instantiate a customized built-in element
 PASS a: document.createElement() should instantiate a customized built-in element
@@ -129,17 +129,9 @@ PASS em: Operator 'new' should instantiate a customized built-in element
 PASS em: document.createElement() should instantiate a customized built-in element
 PASS em: innerHTML should instantiate a customized built-in element
 PASS embed: Define a customized built-in element
-FAIL embed: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL embed: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyEmbed extends HTMLEmbedElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLEmbedElement() { [native code] }"
-FAIL embed: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyEmbed extends HTMLEmbedElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLEmbedElement() { [native code] }"
+PASS embed: Operator 'new' should instantiate a customized built-in element
+PASS embed: document.createElement() should instantiate a customized built-in element
+PASS embed: innerHTML should instantiate a customized built-in element
 PASS fieldset: Define a customized built-in element
 PASS fieldset: Operator 'new' should instantiate a customized built-in element
 PASS fieldset: document.createElement() should instantiate a customized built-in element
@@ -157,17 +149,9 @@ PASS footer: Operator 'new' should instantiate a customized built-in element
 PASS footer: document.createElement() should instantiate a customized built-in element
 PASS footer: innerHTML should instantiate a customized built-in element
 PASS form: Define a customized built-in element
-FAIL form: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL form: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyForm extends HTMLFormElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLFormElement() { [native code] }"
-FAIL form: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyForm extends HTMLFormElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLFormElement() { [native code] }"
+PASS form: Operator 'new' should instantiate a customized built-in element
+PASS form: document.createElement() should instantiate a customized built-in element
+PASS form: innerHTML should instantiate a customized built-in element
 PASS h1: Define a customized built-in element
 PASS h1: Operator 'new' should instantiate a customized built-in element
 PASS h1: document.createElement() should instantiate a customized built-in element
@@ -288,17 +272,9 @@ FAIL noscript: innerHTML should instantiate a customized built-in element assert
   }
 }" but got function "function HTMLElement() { [native code] }"
 PASS object: Define a customized built-in element
-FAIL object: Operator 'new' should instantiate a customized built-in element Illegal constructor
-FAIL object: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyObject extends HTMLObjectElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLObjectElement() { [native code] }"
-FAIL object: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyObject extends HTMLObjectElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLObjectElement() { [native code] }"
+PASS object: Operator 'new' should instantiate a customized built-in element
+PASS object: document.createElement() should instantiate a customized built-in element
+PASS object: innerHTML should instantiate a customized built-in element
 PASS ol: Define a customized built-in element
 PASS ol: Operator 'new' should instantiate a customized built-in element
 PASS ol: document.createElement() should instantiate a customized built-in element
