@@ -4,12 +4,18 @@
 
 #include "services/shape_detection/shape_detection_service.h"
 
+#include <string>
+#include <utility>
+
+#include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/shape_detection/barcode_detection_impl.h"
 #if defined(OS_WIN)
 #include "services/shape_detection/face_detection_provider_win.h"
+#elif defined(OS_MACOSX)
+#include "services/shape_detection/face_detection_provider_mac.h"
 #else
 #include "services/shape_detection/face_detection_provider_impl.h"
 #endif
@@ -47,6 +53,10 @@ void ShapeDetectionService::OnStart() {
   registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&FaceDetectionProviderWin::Create));
+#elif defined(OS_MACOSX)
+  registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&FaceDetectionProviderMac::Create));
 #else
   registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
