@@ -853,6 +853,11 @@ void RenderWidget::OnWasHidden() {
   SetHidden(true);
   for (auto& observer : render_frames_)
     observer.WasHidden();
+
+  // Ack the resize if we have to, so that the next time we're visible we get a
+  // fresh ResizeParams right away; otherwise we'll start painting based on a
+  // stale ResizeParams.
+  DidResizeOrRepaintAck();
 }
 
 void RenderWidget::OnWasShown(
@@ -2161,11 +2166,14 @@ void RenderWidget::SetHidden(bool hidden) {
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
 #endif
 
-  if (is_hidden_) {
-    RenderThreadImpl::current()->WidgetHidden();
-    first_update_visual_state_after_hidden_ = true;
-  } else {
-    RenderThreadImpl::current()->WidgetRestored();
+  // RenderThreadImpl::current() could be null in tests.
+  if (RenderThreadImpl::current()) {
+    if (is_hidden_) {
+      RenderThreadImpl::current()->WidgetHidden();
+      first_update_visual_state_after_hidden_ = true;
+    } else {
+      RenderThreadImpl::current()->WidgetRestored();
+    }
   }
 
   if (render_widget_scheduling_state_)
