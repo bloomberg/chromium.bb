@@ -20,8 +20,63 @@ namespace content {
 
 class MediaStreamAudioSource;
 
+// This class represents the capability of an audio-capture device.
+// It may represent three different things:
+// 1. An audio-capture device that is currently in use.
+// 2. An audio-capture device that is currently not in use, but whose ID and
+//    parameters are known (suitable for device capture, where device IDs are
+//    always known).
+// 3. A "device" whose ID is not known (suitable for content capture, where
+//    it is not possible to have a list of known valid device IDs).
+// In cases (1) and (2), the known device ID introduces a restriction on the
+// acceptable values for the deviceId constraint, while in case (3) no such
+// restriction is imposed and any requested deviceID value will be acceptable
+// while processing constraints.
+class CONTENT_EXPORT AudioDeviceCaptureCapability {
+ public:
+  // This creates an AudioDeviceCaptureCapability that admits all possible
+  // device names and settings. This is intended to be used as the single
+  // capability for getUserMedia() with content capture, where the set of valid
+  // device IDs is infinite.
+  AudioDeviceCaptureCapability();
+
+  // This creates an AudioDeviceCaptureCapability where the device ID is limited
+  // to |device_id| and other settings are limited by the given |parameters|.
+  // |device_id| must not be empty. Intended to be used by getUserMedia() with
+  // device capture for devices that are not currently in use.
+  AudioDeviceCaptureCapability(std::string device_id,
+                               const media::AudioParameters& parameters);
+
+  // This creates an AudioDeviceCaptureCapability where the device ID and other
+  // settings are restricted to the current settings of |source|. Intended to be
+  // used by applyConstraints() for both device and content capture, and by
+  // getUserMedia() with device capture for devices that are currently in use.
+  explicit AudioDeviceCaptureCapability(MediaStreamAudioSource* source);
+
+  // If this capability represents a device currently in use, this method
+  // returns a pointer to the MediaStreamAudioSource object associated with the
+  // device. Otherwise, it returns null.
+  MediaStreamAudioSource* source() const { return source_; }
+
+  // Returns the ID of the device associated with this capability. If empty,
+  // it means that this capability is not associated with a known device and
+  // no restrictions are imposed on the deviceId or other constraints while
+  // processing constraints.
+  const std::string& DeviceID() const;
+
+  // Returns the audio parameters for the device associated with this
+  // capability. If DeviceID() returns an empty string, these parameters contain
+  // default values that work well for content capture.
+  const media::AudioParameters& Parameters() const;
+
+ private:
+  MediaStreamAudioSource* source_ = nullptr;
+  std::string device_id_;
+  media::AudioParameters parameters_;
+};
+
 using AudioDeviceCaptureCapabilities =
-    std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>;
+    std::vector<AudioDeviceCaptureCapability>;
 
 // This function implements the SelectSettings algorithm for audio tracks as
 // described in https://w3c.github.io/mediacapture-main/#dfn-selectsettings

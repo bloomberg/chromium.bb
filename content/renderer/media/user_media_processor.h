@@ -32,6 +32,7 @@ class WebString;
 namespace content {
 
 class AudioCaptureSettings;
+class AudioDeviceCaptureCapability;
 class MediaStreamAudioSource;
 class MediaStreamDeviceObserver;
 class MediaStreamVideoSource;
@@ -239,10 +240,13 @@ class CONTENT_EXPORT UserMediaProcessor
   GetMediaDevicesDispatcher();
 
   void SetupAudioInput();
-  void SelectAudioSettings(
+  void SelectAudioDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
       std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
           audio_input_capabilities);
+  void SelectAudioSettings(
+      const blink::WebUserMediaRequest& web_request,
+      const std::vector<AudioDeviceCaptureCapability>& capabilities);
 
   void SetupVideoInput();
   void SelectVideoDeviceSettings(
