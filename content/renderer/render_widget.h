@@ -963,6 +963,11 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // Keep track of whether we committed after the latest resize that needs to be
+  // acked was received. This helps us make sure we don't ack a resize before
+  // it's committed.
+  bool did_commit_after_resize_ = false;
+
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);

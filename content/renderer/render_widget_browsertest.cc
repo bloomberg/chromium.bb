@@ -85,6 +85,7 @@ TEST_F(RenderWidgetTest, OnResize) {
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
 
   // Clear the flag.
+  widget()->DidCommitCompositorFrame();
   widget()->DidCommitAndDrawCompositorFrame();
 
   // Setting the same size again should not send the ack.
