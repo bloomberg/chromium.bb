@@ -33141,6 +33141,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Generated popup shown (limit once per page)"/>
   <int value="11" label="Editing popup shown (limit once per page)"/>
   <int value="12" label="Generation triggered by autocomplete attributes"/>
+  <int value="13" label="Generation item in the context menu accepted"/>
+  <int value="14" label="Generation item in the context menu shown"/>
 </enum>
 
 <enum name="PasswordImportFromCSVResult">
@@ -39336,9 +39338,10 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ShowAllSavedPasswordsContext">
-  <int value="0" label="No Context"/>
-  <int value="1" label="Password Suggestions"/>
-  <int value="2" label="Manual Fallback"/>
+  <int value="0" label="None"/>
+  <int value="1" label="Under password suggestions"/>
+  <int value="2" label="Standalone suggestion"/>
+  <int value="3" label="Context menu"/>
 </enum>
 
 <enum name="ShutdownReason">
