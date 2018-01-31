@@ -128,7 +128,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
    public:
     static void CreateAndStart(WorkerThreadableLoader*,
                                ThreadableLoadingContext*,
-                               scoped_refptr<WebTaskRunner>,
+                               scoped_refptr<base::SingleThreadTaskRunner>,
                                WorkerThreadLifecycleContext*,
                                std::unique_ptr<CrossThreadResourceRequestData>,
                                const ThreadableLoaderOptions&,

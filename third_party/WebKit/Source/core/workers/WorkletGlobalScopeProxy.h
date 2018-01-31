@@ -5,8 +5,8 @@
 #ifndef WorkletGlobalScopeProxy_h
 #define WorkletGlobalScopeProxy_h
 
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
@@ -29,7 +29,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
       const KURL& module_url_record,
       WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) = 0;
 
   // Notifies that the Worklet object is destroyed. This should be called in the

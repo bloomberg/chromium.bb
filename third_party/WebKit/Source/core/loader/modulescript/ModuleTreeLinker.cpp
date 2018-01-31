@@ -8,7 +8,6 @@
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
 #include "core/script/ModuleScript.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/wtf/Vector.h"

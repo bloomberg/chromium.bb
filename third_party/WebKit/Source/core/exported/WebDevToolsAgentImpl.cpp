@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreInitializer.h"
@@ -259,7 +260,7 @@ class WebDevToolsAgentImpl::Session::IOSession
     : public mojom::blink::DevToolsSession {
  public:
   IOSession(scoped_refptr<base::SingleThreadTaskRunner> session_task_runner,
-            scoped_refptr<WebTaskRunner> agent_task_runner,
+            scoped_refptr<base::SingleThreadTaskRunner> agent_task_runner,
             CrossThreadWeakPersistent<WebDevToolsAgentImpl::Session> session,
             mojom::blink::DevToolsSessionRequest request)
       : session_task_runner_(session_task_runner),
@@ -300,7 +301,7 @@ class WebDevToolsAgentImpl::Session::IOSession
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> session_task_runner_;
-  scoped_refptr<WebTaskRunner> agent_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> agent_task_runner_;
   CrossThreadWeakPersistent<WebDevToolsAgentImpl::Session> session_;
   mojo::Binding<mojom::blink::DevToolsSession> binding_;
 

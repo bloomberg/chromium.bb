@@ -14,7 +14,6 @@
 #include "core/mojo/test/MojoInterfaceRequestEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/Platform.h"

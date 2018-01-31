@@ -403,7 +403,7 @@ void ImageResource::NotifyStartLoad() {
 }
 
 void ImageResource::Finish(double load_finish_time,
-                           WebTaskRunner* task_runner) {
+                           base::SingleThreadTaskRunner* task_runner) {
   if (multipart_parser_) {
     multipart_parser_->Finish();
     if (Data())
@@ -421,7 +421,7 @@ void ImageResource::Finish(double load_finish_time,
 }
 
 void ImageResource::FinishAsError(const ResourceError& error,
-                                  WebTaskRunner* task_runner) {
+                                  base::SingleThreadTaskRunner* task_runner) {
   if (multipart_parser_)
     multipart_parser_->Cancel();
   // TODO(hiroshige): Move setEncodedSize() call to Resource::error() if it

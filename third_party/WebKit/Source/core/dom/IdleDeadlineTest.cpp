@@ -4,7 +4,7 @@
 
 #include "core/dom/IdleDeadline.h"
 
-#include "platform/WebTaskRunner.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/wtf/Time.h"
@@ -20,8 +20,8 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   ~MockIdleDeadlineScheduler() override = default;
 
   // WebScheduler implementation:
-  WebTaskRunner* TimerTaskRunner() override { return nullptr; }
-  WebTaskRunner* V8TaskRunner() override { return nullptr; }
+  base::SingleThreadTaskRunner* TimerTaskRunner() override { return nullptr; }
+  base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }
@@ -33,7 +33,9 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
       WebViewScheduler::WebViewSchedulerDelegate*) override {
     return nullptr;
   }
-  WebTaskRunner* CompositorTaskRunner() override { return nullptr; }
+  base::SingleThreadTaskRunner* CompositorTaskRunner() override {
+    return nullptr;
+  }
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
     return nullptr;
   }

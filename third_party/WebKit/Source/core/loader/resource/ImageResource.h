@@ -86,8 +86,9 @@ class CORE_EXPORT ImageResource final
   void ResponseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
   void AppendData(const char*, size_t) override;
-  void Finish(double finish_time, WebTaskRunner*) override;
-  void FinishAsError(const ResourceError&, WebTaskRunner*) override;
+  void Finish(double finish_time, base::SingleThreadTaskRunner*) override;
+  void FinishAsError(const ResourceError&,
+                     base::SingleThreadTaskRunner*) override;
 
   // For compatibility, images keep loading even if there are HTTP errors.
   bool ShouldIgnoreHTTPStatusCodeErrors() const override { return true; }

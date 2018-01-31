@@ -41,7 +41,6 @@
 #include "core/workers/SharedWorkerReportingProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/WebTaskRunner.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebSharedWorkerClient.h"
 #include "public/web/worker_content_settings_proxy.mojom-blink.h"

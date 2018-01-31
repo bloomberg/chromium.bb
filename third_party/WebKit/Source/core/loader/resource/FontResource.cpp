@@ -119,7 +119,8 @@ void FontResource::SetRevalidatingRequest(const ResourceRequest& request) {
   Resource::SetRevalidatingRequest(request);
 }
 
-void FontResource::StartLoadLimitTimers(WebTaskRunner* task_runner) {
+void FontResource::StartLoadLimitTimers(
+    base::SingleThreadTaskRunner* task_runner) {
   DCHECK(IsLoading());
   DCHECK_EQ(load_limit_state_, kLoadNotStarted);
   load_limit_state_ = kUnderLimit;

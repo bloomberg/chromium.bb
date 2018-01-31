@@ -4,6 +4,7 @@
 
 #include "core/loader/WorkerFetchContext.h"
 
+#include "base/single_thread_task_runner.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
@@ -13,7 +14,6 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkStateNotifier.h"
@@ -222,7 +222,7 @@ const SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
     const ResourceRequest& request,
-    scoped_refptr<WebTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   CountUsage(WebFeature::kOffMainThreadFetch);
   if (!url_loader_factory_)
     url_loader_factory_ = web_context_->CreateURLLoaderFactory();
@@ -351,7 +351,8 @@ void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     out_request.SetRequestorOrigin(GetSecurityOrigin());
 }
 
-scoped_refptr<WebTaskRunner> WorkerFetchContext::GetLoadingTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerFetchContext::GetLoadingTaskRunner() {
   return loading_task_runner_;
 }
 

@@ -5,10 +5,10 @@
 #ifndef Modulator_h
 #define Modulator_h
 
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/CoreExport.h"
 #include "core/script/ModuleImportMeta.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/V8PerContextData.h"
 #include "platform/heap/Handle.h"
@@ -85,7 +85,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   void TraceWrappers(const ScriptWrappableVisitor*) const override {}
 
   virtual ScriptModuleResolver* GetScriptModuleResolver() = 0;
-  virtual WebTaskRunner* TaskRunner() = 0;
+  virtual base::SingleThreadTaskRunner* TaskRunner() = 0;
   virtual ReferrerPolicy GetReferrerPolicy() = 0;
 
   // Returns the security origin of the "fetch client settings object".

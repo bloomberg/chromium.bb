@@ -294,7 +294,8 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
   return frame;
 }
 
-scoped_refptr<WebTaskRunner> FrameFetchContext::GetLoadingTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+FrameFetchContext::GetLoadingTaskRunner() {
   if (IsDetached())
     return FetchContext::GetLoadingTaskRunner();
   return GetFrame()->GetTaskRunner(TaskType::kNetworking);
@@ -1196,7 +1197,7 @@ void FrameFetchContext::ParseAndPersistClientHints(
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
     const ResourceRequest& request,
-    scoped_refptr<WebTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!IsDetached());
   WrappedResourceRequest webreq(request);
   if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {

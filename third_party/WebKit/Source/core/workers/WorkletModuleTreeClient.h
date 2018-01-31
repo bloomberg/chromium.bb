@@ -5,9 +5,9 @@
 #ifndef WorkletModuleTreeClient_h
 #define WorkletModuleTreeClient_h
 
+#include "base/single_thread_task_runner.h"
 #include "core/script/Modulator.h"
 #include "core/workers/WorkletPendingTasks.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/GarbageCollected.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ class WorkletModuleTreeClient final : public ModuleTreeClient {
  public:
   WorkletModuleTreeClient(
       Modulator*,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 
   // Implements ModuleTreeClient.
@@ -29,7 +29,7 @@ class WorkletModuleTreeClient final : public ModuleTreeClient {
 
  private:
   Member<Modulator> modulator_;
-  scoped_refptr<WebTaskRunner> outside_settings_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner_;
   CrossThreadPersistent<WorkletPendingTasks> pending_tasks_;
 };
 

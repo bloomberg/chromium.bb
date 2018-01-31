@@ -31,13 +31,13 @@
 #ifndef WebLocalFrameImpl_h
 #define WebLocalFrameImpl_h
 
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
 #include "core/exported/WebInputMethodControllerImpl.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebFrameWidgetBase.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"

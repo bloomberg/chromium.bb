@@ -24,9 +24,11 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   ~MockScriptedIdleTaskControllerScheduler() override = default;
 
   // WebScheduler implementation:
-  WebTaskRunner* TimerTaskRunner() override { return nullptr; }
-  WebTaskRunner* CompositorTaskRunner() override { return nullptr; }
-  WebTaskRunner* V8TaskRunner() override { return nullptr; }
+  base::SingleThreadTaskRunner* TimerTaskRunner() override { return nullptr; }
+  base::SingleThreadTaskRunner* CompositorTaskRunner() override {
+    return nullptr;
+  }
+  base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }

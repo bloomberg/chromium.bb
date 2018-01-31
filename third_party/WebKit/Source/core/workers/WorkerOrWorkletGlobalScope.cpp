@@ -176,8 +176,8 @@ void WorkerOrWorkletGlobalScope::SetModulator(Modulator* modulator) {
   modulator_ = modulator;
 }
 
-scoped_refptr<WebTaskRunner> WorkerOrWorkletGlobalScope::GetTaskRunner(
-    TaskType type) {
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   DCHECK(IsContextThread());
   return GetThread()->GetTaskRunner(type);
 }

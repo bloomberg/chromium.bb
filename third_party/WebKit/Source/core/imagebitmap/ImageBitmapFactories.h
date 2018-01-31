@@ -32,6 +32,7 @@
 #define ImageBitmapFactories_h
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/image_bitmap_source.h"
@@ -41,7 +42,6 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/geometry/IntRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -132,7 +132,7 @@ class ImageBitmapFactories final
 
     void ScheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
     void DecodeImageOnDecoderThread(
-        scoped_refptr<WebTaskRunner>,
+        scoped_refptr<base::SingleThreadTaskRunner>,
         DOMArrayBuffer*,
         const String& premultiply_alpha_option,
         const String& color_space_conversion_option);

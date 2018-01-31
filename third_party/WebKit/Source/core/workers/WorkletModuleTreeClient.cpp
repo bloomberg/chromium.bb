@@ -14,7 +14,7 @@ namespace blink {
 
 WorkletModuleTreeClient::WorkletModuleTreeClient(
     Modulator* modulator,
-    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks)
     : modulator_(modulator),
       outside_settings_task_runner_(std::move(outside_settings_task_runner)),

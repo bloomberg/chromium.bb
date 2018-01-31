@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/TaskType.h"
@@ -74,7 +74,7 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
   // thread. Note that this unconditionally calls reportLoad unlike allowLoad,
   // because there aren't developer-invisible connections (like speculative
   // preloads) happening here.
-  scoped_refptr<WebTaskRunner> task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       execution_context_->GetTaskRunner(TaskType::kNetworking);
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   task_runner->PostTask(

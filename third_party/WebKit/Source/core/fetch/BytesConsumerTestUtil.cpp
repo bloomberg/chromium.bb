@@ -5,7 +5,6 @@
 #include "core/fetch/BytesConsumerTestUtil.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"

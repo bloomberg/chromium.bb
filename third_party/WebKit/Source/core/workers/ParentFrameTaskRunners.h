@@ -7,10 +7,10 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/TaskTypeTraits.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
@@ -41,13 +41,13 @@ class CORE_EXPORT ParentFrameTaskRunners final
 
   // Might return nullptr for unsupported task types. This can be called from
   // any threads.
-  scoped_refptr<WebTaskRunner> Get(TaskType);
+  scoped_refptr<base::SingleThreadTaskRunner> Get(TaskType);
 
   void Trace(blink::Visitor*) override;
 
  private:
   using TaskRunnerHashMap = HashMap<TaskType,
-                                    scoped_refptr<WebTaskRunner>,
+                                    scoped_refptr<base::SingleThreadTaskRunner>,
                                     WTF::IntHash<TaskType>,
                                     TaskTypeTraits>;
 

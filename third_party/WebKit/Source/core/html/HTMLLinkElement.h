@@ -25,6 +25,7 @@
 #define HTMLLinkElement_h
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
@@ -35,7 +36,6 @@
 #include "core/html/RelList.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
@@ -151,7 +151,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   void DidStopLinkPrerender() override;
   void DidSendLoadForLinkPrerender() override;
   void DidSendDOMContentLoadedForLinkPrerender() override;
-  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
   Member<LinkResource> link_;
   Member<LinkLoader> link_loader_;

@@ -5,9 +5,9 @@
 #ifndef WorkletModuleResponsesMapProxy_h
 #define WorkletModuleResponsesMapProxy_h
 
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/workers/WorkletModuleResponsesMap.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
@@ -24,8 +24,8 @@ class CORE_EXPORT WorkletModuleResponsesMapProxy
 
   static WorkletModuleResponsesMapProxy* Create(
       WorkletModuleResponsesMap*,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
-      scoped_refptr<WebTaskRunner> inside_settings_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner);
 
   void ReadEntry(const FetchParameters&, Client*);
 
@@ -34,15 +34,15 @@ class CORE_EXPORT WorkletModuleResponsesMapProxy
  private:
   WorkletModuleResponsesMapProxy(
       WorkletModuleResponsesMap*,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
-      scoped_refptr<WebTaskRunner> inside_settings_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner);
 
   void ReadEntryOnMainThread(std::unique_ptr<CrossThreadFetchParametersData>,
                              Client*);
 
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
-  scoped_refptr<WebTaskRunner> outside_settings_task_runner_;
-  scoped_refptr<WebTaskRunner> inside_settings_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner_;
 };
 
 }  // namespace blink

@@ -63,7 +63,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/font_family_names.h"
 #include "platform/runtime_enabled_features.h"

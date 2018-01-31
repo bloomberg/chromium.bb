@@ -32,8 +32,8 @@ WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
   return nullptr;
 }
 
-scoped_refptr<WebTaskRunner> MainThreadWorkletGlobalScope::GetTaskRunner(
-    TaskType type) {
+scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadWorkletGlobalScope::GetTaskRunner(TaskType type) {
   DCHECK(IsContextThread());
   // MainThreadWorkletGlobalScope lives on the main thread and its GetThread()
   // doesn't return a valid worker thread. Instead, retrieve a task runner

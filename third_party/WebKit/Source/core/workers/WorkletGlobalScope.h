@@ -6,13 +6,13 @@
 #define WorkletGlobalScope_h
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkletModuleResponsesMapProxy.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -66,7 +66,7 @@ class CORE_EXPORT WorkletGlobalScope
       const KURL& module_url_record,
       WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 
   WorkletModuleResponsesMapProxy* ModuleResponsesMapProxy() const;

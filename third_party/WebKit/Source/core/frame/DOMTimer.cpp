@@ -186,7 +186,7 @@ void DOMTimer::Fired() {
   action->Dispose();
 }
 
-scoped_refptr<WebTaskRunner> DOMTimer::TimerTaskRunner() const {
+scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
   return GetExecutionContext()->Timers()->TimerTaskRunner();
 }
 

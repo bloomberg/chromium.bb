@@ -302,7 +302,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileError::ErrorCode) {
 
 void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
     DOMArrayBuffer* array_buffer) {
-  scoped_refptr<WebTaskRunner> task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Platform::Current()->CurrentThread()->GetWebTaskRunner();
   BackgroundTaskRunner::PostOnBackgroundThread(
       FROM_HERE,
@@ -314,7 +314,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
-    scoped_refptr<WebTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     DOMArrayBuffer* array_buffer,
     const String& premultiply_alpha_option,
     const String& color_space_conversion_option) {

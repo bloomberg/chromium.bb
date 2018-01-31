@@ -12,7 +12,6 @@
 #include "core/script/ModuleMap.h"
 #include "core/script/ModuleScript.h"
 #include "core/script/ScriptModuleResolverImpl.h"
-#include "platform/WebTaskRunner.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {

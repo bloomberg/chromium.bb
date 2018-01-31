@@ -4,12 +4,12 @@
 
 #include "core/workers/Worklet.h"
 
+#include "base/single_thread_task_runner.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/fetch/Request.h"
 #include "core/workers/WorkletPendingTasks.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
@@ -106,7 +106,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // document's responsible event loop. In our implementation, we use the
   // document's UnspecedLoading task runner as that is what we commonly use for
   // module loading.
-  scoped_refptr<WebTaskRunner> outside_settings_task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kUnspecedLoading);
 
   // Step 8: "Let moduleResponsesMap be worklet's module responses map."

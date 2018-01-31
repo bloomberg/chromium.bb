@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebAssociatedURLLoader.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
@@ -32,7 +32,7 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
                           WebAssociatedURLLoaderClient*) override;
   void Cancel() override;
   void SetDefersLoading(bool) override;
-  void SetLoadingTaskRunner(blink::WebTaskRunner*) override;
+  void SetLoadingTaskRunner(base::SingleThreadTaskRunner*) override;
 
   // Called by |m_observer| to handle destruction of the Document associated
   // with the frame given to the constructor.

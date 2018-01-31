@@ -1349,7 +1349,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 void HTMLCanvasElement::SetPlaceholderFrame(
     scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-    scoped_refptr<WebTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     unsigned resource_id) {
   OffscreenCanvasPlaceholder::SetPlaceholderFrame(
       std::move(image), std::move(dispatcher), std::move(task_runner),

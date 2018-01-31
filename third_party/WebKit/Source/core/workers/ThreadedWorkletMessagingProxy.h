@@ -25,7 +25,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
       const KURL& module_url_record,
       WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
-      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) final;
   void WorkletObjectDestroyed() final;
   void TerminateWorkletGlobalScope() final;
