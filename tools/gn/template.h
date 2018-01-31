@@ -52,7 +52,15 @@ class Template : public base::RefCountedThreadSafe<Template> {
   Template();
   ~Template();
 
-  std::unique_ptr<Scope> closure_;
+  // It's important that this Scope is const. A template can be referenced by
+  // the root BUILDCONFIG file and then duplicated to all threads. Therefore,
+  // this scope must be usable from multiple threads at the same time.
+  //
+  // When executing a template, a new scope will be created as a child of this
+  // one, which will reference it as mutable or not according to the mutability
+  // of this value.
+  std::unique_ptr<const Scope> closure_;
+
   const FunctionCallNode* definition_;
 };
 
