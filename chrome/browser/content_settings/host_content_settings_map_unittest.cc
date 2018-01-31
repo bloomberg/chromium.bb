@@ -1737,3 +1737,68 @@ TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {
       invalid_url, invalid_url,
       CONTENT_SETTINGS_TYPE_POPUPS));
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Test that existing Flash preferences should get copied into the
+// |CONTENT_SETTINGS_TYPE_PLUGINS_DATA| setting on the creation of a new
+// |HostContentSettingsMap|.
+TEST_F(HostContentSettingsMapTest, PluginDataMigration) {
+  TestingProfile profile;
+  // Set a website-specific Flash preference and a pattern exception.
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+      "{\"https://urlwithflashchanged.com:443,*\":{\"setting\":1}, "
+      "\"[*.]patternurl.com:443,*\":{\"setting\":1}}");
+  profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS), *value);
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  // Check it was copied successfully.
+  const GURL url1("https://urlwithflashchanged.com");
+  EXPECT_NE(nullptr, map->GetWebsiteSetting(url1, url1,
+                                            CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                            std::string(), nullptr));
+  // Check other urls were not affected.
+  const GURL url2("https://urlwithflashdefault.com");
+  EXPECT_EQ(nullptr, map->GetWebsiteSetting(url2, url2,
+                                            CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                            std::string(), nullptr));
+  // Check patterns are also unaffected.
+  const GURL pattern("[*.]patternurl.com");
+  EXPECT_EQ(nullptr, map->GetWebsiteSetting(pattern, pattern,
+                                            CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                            std::string(), nullptr));
+}
+
+// If there are existing |CONTENT_SETTINGS_TYPE_PLUGINS_DATA| preferences
+// stored, check we skip the migration.
+TEST_F(HostContentSettingsMapTest, PluginDataMigrated) {
+  TestingProfile profile;
+  // Set a website-specific Flash preference and another preference indicating
+  // that the Flash setting has changed for a different website.
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+      "{\"https://unmigratedurl.com:443,*\":{\"setting\":1}}");
+  profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS), *value);
+  value = base::JSONReader::Read(
+      "{\"https://"
+      "example.com:443,*\":{\"setting\":{\"flashPreviouslyChanged\":true}}}");
+  profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS_DATA),
+                          *value);
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  // Check it was copied successfully.
+  const GURL flash_data_url("https://example.com");
+  EXPECT_NE(nullptr, map->GetWebsiteSetting(flash_data_url, flash_data_url,
+                                            CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                            std::string(), nullptr));
+  // Check the migration code was not run (i.e. the other Flash preference set
+  // above was not migrated). Theoretically this should never happen, but this
+  // scenario is useful for testing.
+  const GURL unmigrated_url("https://unmigratedurl.com");
+  EXPECT_EQ(nullptr, map->GetWebsiteSetting(unmigrated_url, unmigrated_url,
+                                            CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                            std::string(), nullptr));
+}
+#endif

@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
@@ -371,6 +372,11 @@ class HostContentSettingsMap : public content_settings::Observer,
       const GURL& secondary_url,
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern);
+
+  // Make sure existing non-default Flash settings set by the user are marked to
+  // always show the Flash setting for this site in Page Info.
+  // TODO(patricialor): Remove after m66 (migration code).
+  void InitializePluginsDataSettings();
 
 #ifndef NDEBUG
   // This starts as the thread ID of the thread that constructs this

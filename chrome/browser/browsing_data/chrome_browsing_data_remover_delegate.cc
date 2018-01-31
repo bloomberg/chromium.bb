@@ -785,6 +785,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveCountsByUrl(
         filter);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_PLUGINS_DATA, base::Time(),
+        base::Bind(&WebsiteSettingsFilterAdapter, filter));
+#endif
   }
 
   //////////////////////////////////////////////////////////////////////////////

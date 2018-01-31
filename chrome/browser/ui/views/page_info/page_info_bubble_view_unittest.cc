@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -22,6 +24,7 @@
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -33,6 +36,10 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#endif
 
 const char* kUrl = "http://www.example.com/index.html";
 
@@ -195,6 +202,40 @@ class PageInfoBubbleViewTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTest);
 };
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Waits until a change is observed in content settings.
+class FlashContentSettingsChangeWaiter : public content_settings::Observer {
+ public:
+  explicit FlashContentSettingsChangeWaiter(Profile* profile)
+      : profile_(profile) {
+    HostContentSettingsMapFactory::GetForProfile(profile)->AddObserver(this);
+  }
+  ~FlashContentSettingsChangeWaiter() override {
+    HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(
+        this);
+  }
+
+  // content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override {
+    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+      Proceed();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  void Proceed() { run_loop_.Quit(); }
+
+  Profile* profile_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlashContentSettingsChangeWaiter);
+};
+#endif
+
 }  // namespace
 
 // Each permission selector row is like this: [icon] [label] [selector]
@@ -221,9 +262,8 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   list.back().is_incognito = false;
   list.back().setting = CONTENT_SETTING_BLOCK;
 
-  // Initially, no permissions are shown because they are all set to default,
-  // except for Flash.
-  int num_expected_children = 3;
+  // Initially, no permissions are shown because they are all set to default.
+  int num_expected_children = 0;
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 
   num_expected_children += kViewsPerPermissionRow * list.size();
@@ -280,8 +320,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
 
 // Test UI construction and reconstruction with USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
-  // One permission row is always shown here (Flash). https://crbug.com/791142
-  const int kExpectedChildren = kViewsPerPermissionRow;
+  const int kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
@@ -349,3 +388,49 @@ TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
   size_t index = api_->GetCookiesLinkText().find(expected);
   EXPECT_NE(std::string::npos, index);
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
+  Profile* profile = web_contents_helper_.profile();
+  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
+      profile, profile->GetResourceContext());
+  FlashContentSettingsChangeWaiter waiter(profile);
+
+  const GURL url(kUrl);
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  // Make sure the site being tested doesn't already have this marker set.
+  EXPECT_EQ(nullptr,
+            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                   std::string(), nullptr));
+  EXPECT_EQ(0, api_->permissions_view()->child_count());
+
+  // Change the Flash setting.
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+  waiter.Wait();
+
+  // Check that this site has now been marked for displaying Flash always.
+  EXPECT_NE(nullptr,
+            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                   std::string(), nullptr));
+
+  // Check the Flash permission is now showing since it's non-default.
+  api_->CreateView();
+  const int kPermissionLabelIndex = 1;
+  views::Label* label = static_cast<views::Label*>(
+      api_->permissions_view()->child_at(kPermissionLabelIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
+
+  // Change the Flash setting back to the default.
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(), CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(kViewsPerPermissionRow, api_->permissions_view()->child_count());
+
+  // Check the Flash permission is still showing since the user changed it
+  // previously.
+  label = static_cast<views::Label*>(
+      api_->permissions_view()->child_at(kPermissionLabelIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
+}
+#endif
