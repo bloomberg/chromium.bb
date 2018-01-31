@@ -478,6 +478,10 @@ bool GLSurfaceGLX::InitializeExtensionSettingsOneOff() {
 
   if (!g_glx_get_msc_rate_oml_supported && g_glx_sgi_video_sync_supported) {
     Display* video_sync_display = gfx::OpenNewXDisplay();
+    if (!video_sync_display) {
+      LOG(ERROR) << "Could not open video sync display";
+      return false;
+    }
     if (!CreateDummyWindow(video_sync_display)) {
       LOG(ERROR) << "CreateDummyWindow(video_sync_display) failed";
       return false;
