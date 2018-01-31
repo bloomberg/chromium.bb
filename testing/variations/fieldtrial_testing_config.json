@@ -2137,13 +2137,18 @@
     "NetAdaptiveProxyConnectionTimeout": [
         {
             "platforms": [
-                "android"
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_1_m5",
+                    "name": "Enabled_Forced",
                     "params": {
-                        "transport_rtt_multiplier": "5"
+                        "non_ssl_http_rtt_multiplier": "6",
+                        "ssl_http_rtt_multiplier": "8"
                     }
                 }
             ]
