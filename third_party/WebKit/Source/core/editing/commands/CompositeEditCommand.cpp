@@ -288,6 +288,7 @@ void CompositeEditCommand::InsertNodeBefore(
     ShouldAssumeContentIsAlwaysEditable
         should_assume_content_is_always_editable) {
   DCHECK_NE(GetDocument().body(), ref_child);
+  ABORT_EDITING_COMMAND_IF(!ref_child->parentNode());
   // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
