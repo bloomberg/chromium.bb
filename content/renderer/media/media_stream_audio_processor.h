@@ -107,11 +107,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
 
   // AecDumpMessageFilter::AecDumpDelegate implementation.
   // Called on the main render thread.
-  // TODO(grunell): Remove OnAec3Enable when clients have changed to enable
-  // before creating streams.
   void OnAecDumpFile(const IPC::PlatformFileForTransit& file_handle) override;
   void OnDisableAecDump() override;
-  void OnAec3Enable(bool enable) override;
   void OnIpcClosing() override;
 
   // Returns true if MediaStreamAudioProcessor would modify the audio signal,
@@ -122,6 +119,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
 
  protected:
   ~MediaStreamAudioProcessor() override;
+
+  // True if AEC3 is used, false if it's not or no AEC is used at all. Used for
+  // verification in tests.
+  bool using_aec3_ = false;
 
  private:
   friend class MediaStreamAudioProcessorTest;
@@ -179,12 +180,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
 
   // Module to handle processing and format conversion.
   std::unique_ptr<webrtc::AudioProcessing> audio_processing_;
-  bool has_echo_cancellation_;
-  // When this variable is not set, the use of AEC3 is governed by the Finch
-  // experiment and/or WebRTC's own default. When set to true/false, Finch and
-  // WebRTC defaults will be overridden, and AEC3/AEC2 (respectively) will be
-  // used.
-  base::Optional<bool> override_aec3_;
 
   // FIFO to provide 10 ms capture chunks.
   std::unique_ptr<MediaStreamAudioFifo> capture_fifo_;

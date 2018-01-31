@@ -30,7 +30,6 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
     virtual void OnAecDumpFile(
         const IPC::PlatformFileForTransit& file_handle) = 0;
     virtual void OnDisableAecDump() = 0;
-    virtual void OnAec3Enable(bool enable) = 0;
     virtual void OnIpcClosing() = 0;
   };
 
@@ -61,6 +60,12 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
 
  protected:
   ~AecDumpMessageFilter() override;
+
+  // When this variable is not set, the use of AEC3 is governed by the Finch
+  // experiment and/or WebRTC's own default. When set to true/false, Finch and
+  // WebRTC defaults will be overridden, and AEC3/AEC2 (respectively) will be
+  // used.
+  base::Optional<bool> override_aec3_;
 
  private:
   // Sends an IPC message using |sender_|.
@@ -112,12 +117,6 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
 
   // The singleton instance for this filter.
   static AecDumpMessageFilter* g_filter;
-
-  // When this variable is not set, the use of AEC3 is governed by the Finch
-  // experiment and/or WebRTC's own default. When set to true/false, Finch and
-  // WebRTC defaults will be overridden, and AEC3/AEC2 (respectively) will be
-  // used.
-  base::Optional<bool> override_aec3_;
 
   DISALLOW_COPY_AND_ASSIGN(AecDumpMessageFilter);
 };
