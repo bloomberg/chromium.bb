@@ -258,5 +258,12 @@ void QuicConnectionPeer::SetNoStopWaitingFrames(QuicConnection* connection,
   connection->no_stop_waiting_frames_ = no_stop_waiting_frames;
 }
 
+// static
+void QuicConnectionPeer::SetMaxTrackedPackets(
+    QuicConnection* connection,
+    QuicPacketCount max_tracked_packets) {
+  connection->max_tracked_packets_ = max_tracked_packets;
+}
+
 }  // namespace test
 }  // namespace net
