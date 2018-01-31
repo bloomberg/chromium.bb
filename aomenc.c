@@ -457,7 +457,7 @@ static const arg_def_t enable_qm =
 static const arg_def_t qm_min = ARG_DEF(
     NULL, "qm-min", 1, "Min quant matrix flatness (0..15), default is 8");
 static const arg_def_t qm_max = ARG_DEF(
-    NULL, "qm-max", 1, "Max quant matrix flatness (0..15), default is 16");
+    NULL, "qm-max", 1, "Max quant matrix flatness (0..15), default is 15");
 #endif
 #if CONFIG_DIST_8X8
 static const arg_def_t enable_dist_8x8 =
