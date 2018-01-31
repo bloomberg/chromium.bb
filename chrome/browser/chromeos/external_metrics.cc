@@ -12,14 +12,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "components/metrics/metrics_service.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,13 +99,8 @@ void ExternalMetrics::RecordHistogram(const metrics::MetricSample& sample) {
     return;
   }
 
-  base::HistogramBase* counter =
-      base::Histogram::FactoryGet(sample.name(),
-                                  sample.min(),
-                                  sample.max(),
-                                  sample.bucket_count(),
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(sample.sample());
+  base::UmaHistogramCustomCounts(sample.name(), sample.sample(), sample.min(),
+                                 sample.max(), sample.bucket_count());
 }
 
 void ExternalMetrics::RecordLinearHistogram(
@@ -117,21 +110,13 @@ void ExternalMetrics::RecordLinearHistogram(
     DLOG(ERROR) << "Invalid linear histogram: " << sample.name();
     return;
   }
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      sample.name(),
-      1,
-      sample.max(),
-      sample.max() + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(sample.sample());
+  base::UmaHistogramExactLinear(sample.name(), sample.sample(), sample.max());
 }
 
 void ExternalMetrics::RecordSparseHistogram(
     const metrics::MetricSample& sample) {
   CHECK_EQ(metrics::MetricSample::SPARSE_HISTOGRAM, sample.type());
-  base::HistogramBase* counter = base::SparseHistogram::FactoryGet(
-      sample.name(), base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter->Add(sample.sample());
+  base::UmaHistogramSparse(sample.name(), sample.sample());
 }
 
 int ExternalMetrics::CollectEvents() {
