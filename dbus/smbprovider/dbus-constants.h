@@ -24,6 +24,7 @@ const char kDeleteEntryMethod[] = "DeleteEntry";
 const char kCreateFileMethod[] = "CreateFile";
 const char kTruncateMethod[] = "Truncate";
 const char kWriteFileMethod[] = "WriteFile";
+const char kCreateDirectoryMethod[] = "CreateDirectory";
 
 }  // namespace smbprovider
 

@@ -154,3 +154,15 @@ message WriteFileOptionsProto {
   // Length of data being written.
   optional int32 length = 4;
 }
+
+// Used for passing inputs into SmbProvider.CreateDirectory().
+message CreateDirectoryOptionsProto {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Path of the directory to be created. Paths are relative to the mount root.
+  // (e.g. "/testfolder/dogs")
+  optional string directory_path = 2;
+  // Boolean indicating whether the create should be recursive, meaning the
+  // parent directories will also be created if they currently don't exist.
+  optional bool recursive = 3;
+}
