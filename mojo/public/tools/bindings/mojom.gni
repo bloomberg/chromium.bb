@@ -934,6 +934,9 @@ template("mojom") {
           "//mojo/public/java:system_java",
         ]
 
+        # Disable warnings/checks on these generated files.
+        chromium_code = false
+
         foreach(d, all_deps) {
           # Resolve the name, so that a target //mojo/something becomes
           # //mojo/something:something and we can append "_java" to get the java

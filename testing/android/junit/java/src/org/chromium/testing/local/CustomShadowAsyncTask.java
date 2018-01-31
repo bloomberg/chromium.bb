@@ -19,9 +19,10 @@ import java.util.concurrent.Executor;
 @Implements(AsyncTask.class)
 public class CustomShadowAsyncTask<Params, Progress, Result>
         extends ShadowAsyncTask<Params, Progress, Result> {
+    @SafeVarargs
     @Override
     @Implementation
-    public AsyncTask<Params, Progress, Result> executeOnExecutor(
+    public final AsyncTask<Params, Progress, Result> executeOnExecutor(
             Executor executor, Params... params) {
         return super.execute(params);
     }

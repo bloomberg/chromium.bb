@@ -68,7 +68,7 @@ public class ImageFetcherTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+        CardsVariationParameters.setTestVariationParams(new HashMap<>());
 
         mSuggestionsDeps.getFactory().largeIconBridge = mLargeIconBridge;
         mSuggestionsDeps.getFactory().thumbnailProvider = mThumbnailProvider;
@@ -76,6 +76,7 @@ public class ImageFetcherTest {
         mSuggestionsDeps.getFactory().suggestionsSource = mSuggestionsSource;
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testFaviconFetch() {
         ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
@@ -106,6 +107,7 @@ public class ImageFetcherTest {
         verify(mThumbnailProvider).cancelRetrieval(eq(request));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testArticleThumbnailFetch() {
         ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
