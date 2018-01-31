@@ -16,6 +16,9 @@ my $filesize = stat($name)->size;
 my $kbPerSec = $query->param('throttle');
 my $chunkPerSec = $kbPerSec * 1024 / CHUNK_SIZE_BYTES;
 
+# Get limit at which to stop throttling, assuming parameter is in bytes.
+my $limit = $query->param('limit') || 0;
+
 # Get MIME type if provided.  Default to video/mp4.
 my $type = $query->param('type') || "video/mp4";
 
@@ -80,7 +83,9 @@ while (($n = read FILE, $data, 1024) != 0) {
 
     # Throttle if there is some.
     if ($chunkPerSec > 0) {
-        select(undef, undef, undef, 1.0 / $chunkPerSec);
+        if ($limit == 0 || $total < $limit) {
+            select(undef, undef, undef, 1.0 / $chunkPerSec);
+        }
     }
 }
 close(FILE);
