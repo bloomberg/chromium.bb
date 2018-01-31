@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -580,6 +581,11 @@
 
 - (void)scrollFullscreenToTopWithAnimator:
     (FullscreenScrollToTopAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+- (void)showToolbarForForgroundWithAnimator:
+    (FullscreenForegroundAnimator*)animator {
   [self addFullscreenAnimationsToAnimator:animator];
 }
 

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 
 class FullscreenController;
+@class FullscreenForegroundAnimator;
 @class FullscreenScrollEndAnimator;
 @class FullscreenScrollToTopAnimator;
 
@@ -42,6 +43,13 @@ class FullscreenControllerObserver {
   virtual void FullscreenWillScrollToTop(
       FullscreenController* controller,
       FullscreenScrollToTopAnimator* animator) {}
+
+  // Invoked when the application is about to enter the foreground.
+  // FullscreenUIElements are expected to add animations to |animator| to show
+  // the toolbar.
+  virtual void FullscreenWillEnterForeground(
+      FullscreenController* controller,
+      FullscreenForegroundAnimator* animator) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerObserver);
