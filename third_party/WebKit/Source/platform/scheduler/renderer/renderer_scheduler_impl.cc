@@ -2516,7 +2516,7 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
   UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
                       queueing_time);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "RendererScheduler.ExpectedTaskQueueingDuration2",
+      "RendererScheduler.ExpectedTaskQueueingDuration3",
       queueing_time.InMicroseconds(), kMinExpectedQueueingTimeBucket,
       kMaxExpectedQueueingTimeBucket, kNumberExpectedQueueingTimeBuckets);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
