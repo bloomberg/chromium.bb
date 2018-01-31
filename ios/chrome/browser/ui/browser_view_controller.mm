@@ -4023,7 +4023,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // progress of 1.0 fully shows the headers and a progress of 0.0 fully hides
 // them.
 - (void)updateHeadersForFullscreenProgress:(CGFloat)progress {
-  CGFloat offset = AlignValueToPixel((1.0 - progress) * [self toolbarHeight]);
+  CGFloat toolbarHeightFullscreen = 0;
+  if (IsUIRefreshPhase1Enabled()) {
+    toolbarHeightFullscreen = kToolbarHeightFullscreen;
+  }
+  CGFloat offset = AlignValueToPixel(
+      (1.0 - progress) * ([self toolbarHeight] - toolbarHeightFullscreen));
   [self setFramesForHeaders:[self headerViews] atOffset:offset];
 }
 

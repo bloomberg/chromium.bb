@@ -9,6 +9,7 @@
 #endif
 
 const CGFloat kToolbarHeight = 56;
+const CGFloat kToolbarHeightFullscreen = 35;
 
 const int64_t kNonInitialImageAdditionDelayNanosec = 500000LL;
 
