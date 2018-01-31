@@ -15,21 +15,16 @@ DesktopMediaPickerCocoa::~DesktopMediaPickerCocoa() {
 }
 
 void DesktopMediaPickerCocoa::Show(
-    content::WebContents* web_contents,
-    gfx::NativeWindow context,
-    gfx::NativeWindow parent,
-    const base::string16& app_name,
-    const base::string16& target_name,
+    const DesktopMediaPicker::Params& params,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
-    bool request_audio,
     const DoneCallback& done_callback) {
   controller_.reset([[DesktopMediaPickerController alloc]
       initWithSourceLists:std::move(source_lists)
-                   parent:parent
+                   parent:params.parent
                  callback:done_callback
-                  appName:app_name
-               targetName:target_name
-             requestAudio:request_audio]);
+                  appName:params.app_name
+               targetName:params.target_name
+             requestAudio:params.request_audio]);
   [controller_ showWindow:nil];
 }
 
