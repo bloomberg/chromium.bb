@@ -1,63 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This file contains definitions of resources that are used in policy
-templates and will be translated for each locale. -->
+templates and will be translated for each locale.
+For the mapping 'lang' to policy_templates filename see crbug.com/806577.
+-->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
       output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="app/policy/translations/policy_templates_am.json" type="policy_templates" lang="am" />
-    <output filename="app/policy/translations/policy_templates_ar.json" type="policy_templates" lang="ar" />
-    <output filename="app/policy/translations/policy_templates_bg.json" type="policy_templates" lang="bg" />
-    <output filename="app/policy/translations/policy_templates_bn.json" type="policy_templates" lang="bn" />
-    <output filename="app/policy/translations/policy_templates_ca.json" type="policy_templates" lang="ca" />
-    <output filename="app/policy/translations/policy_templates_cs.json" type="policy_templates" lang="cs" />
-    <output filename="app/policy/translations/policy_templates_da.json" type="policy_templates" lang="da" />
-    <output filename="app/policy/translations/policy_templates_de.json" type="policy_templates" lang="de" />
-    <output filename="app/policy/translations/policy_templates_el.json" type="policy_templates" lang="el" />
+    <output filename="app/policy/translations/policy_templates_ar-EG.json" type="policy_templates" lang="ar" />
+    <output filename="app/policy/translations/policy_templates_bg-BG.json" type="policy_templates" lang="bg" />
+    <output filename="app/policy/translations/policy_templates_ms-BN.json" type="policy_templates" lang="bn" />
+    <output filename="app/policy/translations/policy_templates_ca-ES.json" type="policy_templates" lang="ca" />
+    <output filename="app/policy/translations/policy_templates_cs-CZ.json" type="policy_templates" lang="cs" />
+    <output filename="app/policy/translations/policy_templates_da-DK.json" type="policy_templates" lang="da" />
+    <output filename="app/policy/translations/policy_templates_de-DE.json" type="policy_templates" lang="de" />
+    <output filename="app/policy/translations/policy_templates_el-GR.json" type="policy_templates" lang="el" />
     <output filename="app/policy/translations/policy_templates_en-GB.json" type="policy_templates" lang="en-GB" />
     <output filename="app/policy/translations/policy_templates_en-US.json" type="policy_templates" lang="en" />
-    <output filename="app/policy/translations/policy_templates_es.json" type="policy_templates" lang="es" />
+    <output filename="app/policy/translations/policy_templates_es-ES.json" type="policy_templates" lang="es" />
     <output filename="app/policy/translations/policy_templates_es-419.json" type="policy_templates" lang="es-419" />
-    <output filename="app/policy/translations/policy_templates_et.json" type="policy_templates" lang="et" />
-    <output filename="app/policy/translations/policy_templates_fa.json" type="policy_templates" lang="fa" />
-    <output filename="app/policy/translations/policy_templates_fi.json" type="policy_templates" lang="fi" />
+    <output filename="app/policy/translations/policy_templates_et-EE.json" type="policy_templates" lang="et" />
+    <output filename="app/policy/translations/policy_templates_fa-IR.json" type="policy_templates" lang="fa" />
+    <output filename="app/policy/translations/policy_templates_fi-FI.json" type="policy_templates" lang="fi" />
     <output filename="app/policy/translations/policy_templates_fil.json" type="policy_templates" lang="fil" />
-    <output filename="app/policy/translations/policy_templates_fr.json" type="policy_templates" lang="fr" />
-    <output filename="app/policy/translations/policy_templates_gu.json" type="policy_templates" lang="gu" />
-    <output filename="app/policy/translations/policy_templates_he.json" type="policy_templates" lang="he" />
-    <output filename="app/policy/translations/policy_templates_hi.json" type="policy_templates" lang="hi" />
-    <output filename="app/policy/translations/policy_templates_hr.json" type="policy_templates" lang="hr" />
-    <output filename="app/policy/translations/policy_templates_hu.json" type="policy_templates" lang="hu" />
-    <output filename="app/policy/translations/policy_templates_id.json" type="policy_templates" lang="id" />
-    <output filename="app/policy/translations/policy_templates_it.json" type="policy_templates" lang="it" />
-    <output filename="app/policy/translations/policy_templates_ja.json" type="policy_templates" lang="ja" />
-    <output filename="app/policy/translations/policy_templates_kn.json" type="policy_templates" lang="kn" />
-    <output filename="app/policy/translations/policy_templates_ko.json" type="policy_templates" lang="ko" />
-    <output filename="app/policy/translations/policy_templates_lt.json" type="policy_templates" lang="lt" />
-    <output filename="app/policy/translations/policy_templates_lv.json" type="policy_templates" lang="lv" />
+    <output filename="app/policy/translations/policy_templates_fr-FR.json" type="policy_templates" lang="fr" />
+    <output filename="app/policy/translations/policy_templates_gu-IN.json" type="policy_templates" lang="gu" />
+    <output filename="app/policy/translations/policy_templates_he-IL.json" type="policy_templates" lang="he" />
+    <output filename="app/policy/translations/policy_templates_hi-IN.json" type="policy_templates" lang="hi" />
+    <output filename="app/policy/translations/policy_templates_hr-HR.json" type="policy_templates" lang="hr" />
+    <output filename="app/policy/translations/policy_templates_hu-HU.json" type="policy_templates" lang="hu" />
+    <output filename="app/policy/translations/policy_templates_id-ID.json" type="policy_templates" lang="id" />
+    <output filename="app/policy/translations/policy_templates_it-IT.json" type="policy_templates" lang="it" />
+    <output filename="app/policy/translations/policy_templates_ja-JP.json" type="policy_templates" lang="ja" />
+    <output filename="app/policy/translations/policy_templates_kn-IN.json" type="policy_templates" lang="kn" />
+    <output filename="app/policy/translations/policy_templates_ko-KR.json" type="policy_templates" lang="ko" />
+    <output filename="app/policy/translations/policy_templates_lt-LT.json" type="policy_templates" lang="lt" />
+    <output filename="app/policy/translations/policy_templates_lv-LV.json" type="policy_templates" lang="lv" />
     <output filename="app/policy/translations/policy_templates_ml.json" type="policy_templates" lang="ml" />
-    <output filename="app/policy/translations/policy_templates_mr.json" type="policy_templates" lang="mr" />
-    <output filename="app/policy/translations/policy_templates_ms.json" type="policy_templates" lang="ms" />
-    <output filename="app/policy/translations/policy_templates_nl.json" type="policy_templates" lang="nl" />
-    <output filename="app/policy/translations/policy_templates_nb.json" type="policy_templates" lang="no" />
-    <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
-    <output filename="app/policy/translations/policy_templates_pl.json" type="policy_templates" lang="pl" />
+    <output filename="app/policy/translations/policy_templates_mr-IN.json" type="policy_templates" lang="mr" />
+    <output filename="app/policy/translations/policy_templates_ms-MY.json" type="policy_templates" lang="ms" />
+    <output filename="app/policy/translations/policy_templates_nl-NL.json" type="policy_templates" lang="nl" />
+    <output filename="app/policy/translations/policy_templates_nb-NO.json" type="policy_templates" lang="no" />
+    <output filename="app/policy/translations/policy_templates_pl-PL.json" type="policy_templates" lang="pl" />
     <output filename="app/policy/translations/policy_templates_pt-BR.json" type="policy_templates" lang="pt-BR" />
     <output filename="app/policy/translations/policy_templates_pt-PT.json" type="policy_templates" lang="pt-PT" />
-    <output filename="app/policy/translations/policy_templates_ro.json" type="policy_templates" lang="ro" />
-    <output filename="app/policy/translations/policy_templates_ru.json" type="policy_templates" lang="ru" />
-    <output filename="app/policy/translations/policy_templates_sk.json" type="policy_templates" lang="sk" />
-    <output filename="app/policy/translations/policy_templates_sl.json" type="policy_templates" lang="sl" />
-    <output filename="app/policy/translations/policy_templates_sr.json" type="policy_templates" lang="sr" />
-    <output filename="app/policy/translations/policy_templates_sv.json" type="policy_templates" lang="sv" />
-    <output filename="app/policy/translations/policy_templates_sw.json" type="policy_templates" lang="sw" />
-    <output filename="app/policy/translations/policy_templates_ta.json" type="policy_templates" lang="ta" />
-    <output filename="app/policy/translations/policy_templates_te.json" type="policy_templates" lang="te" />
-    <output filename="app/policy/translations/policy_templates_th.json" type="policy_templates" lang="th" />
-    <output filename="app/policy/translations/policy_templates_tr.json" type="policy_templates" lang="tr" />
-    <output filename="app/policy/translations/policy_templates_uk.json" type="policy_templates" lang="uk" />
-    <output filename="app/policy/translations/policy_templates_vi.json" type="policy_templates" lang="vi" />
+    <output filename="app/policy/translations/policy_templates_ro-RO.json" type="policy_templates" lang="ro" />
+    <output filename="app/policy/translations/policy_templates_ru-RU.json" type="policy_templates" lang="ru" />
+    <output filename="app/policy/translations/policy_templates_sk-SK.json" type="policy_templates" lang="sk" />
+    <output filename="app/policy/translations/policy_templates_sl-SI.json" type="policy_templates" lang="sl" />
+    <output filename="app/policy/translations/policy_templates_Cy-sr-SP.json" type="policy_templates" lang="sr" />
+    <output filename="app/policy/translations/policy_templates_sv-SE.json" type="policy_templates" lang="sv" />
+    <output filename="app/policy/translations/policy_templates_sw-KE.json" type="policy_templates" lang="sw" />
+    <output filename="app/policy/translations/policy_templates_ta-IN.json" type="policy_templates" lang="ta" />
+    <output filename="app/policy/translations/policy_templates_te-IN.json" type="policy_templates" lang="te" />
+    <output filename="app/policy/translations/policy_templates_th-TH.json" type="policy_templates" lang="th" />
+    <output filename="app/policy/translations/policy_templates_tr-TR.json" type="policy_templates" lang="tr" />
+    <output filename="app/policy/translations/policy_templates_uk-UA.json" type="policy_templates" lang="uk" />
+    <output filename="app/policy/translations/policy_templates_vi-VN.json" type="policy_templates" lang="vi" />
     <output filename="app/policy/translations/policy_templates_zh-CN.json" type="policy_templates" lang="zh-CN" />
     <output filename="app/policy/translations/policy_templates_zh-TW.json" type="policy_templates" lang="zh-TW" />
   </outputs>
