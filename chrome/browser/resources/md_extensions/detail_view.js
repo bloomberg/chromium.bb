@@ -134,6 +134,20 @@ cr.define('extensions', function() {
     },
 
     /**
+     * The returned class is only used in
+     * LazyBackgroundPageApiTest.UpdateExtensionsPage test, to register a
+     * MutationObserver.
+     *
+     * @param {!chrome.developerPrivate.ExtensionView} view
+     * @return {string}
+     * @private
+     */
+    computeInspectCssClass_: function(view) {
+      return view.url.endsWith('_generated_background_page.html') ? 'bg-page' :
+                                                                    '';
+    },
+
+    /**
      * @return {boolean}
      * @private
      */
