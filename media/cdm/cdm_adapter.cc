@@ -381,8 +381,7 @@ void ToCdmInputBuffer(const scoped_refptr<DecoderBuffer>& encrypted_buffer,
   if (num_subsamples > 0) {
     subsamples->reserve(num_subsamples);
     for (const auto& sample : decrypt_config->subsamples()) {
-      subsamples->push_back(
-          cdm::SubsampleEntry(sample.clear_bytes, sample.cypher_bytes));
+      subsamples->push_back({sample.clear_bytes, sample.cypher_bytes});
     }
   }
 
@@ -686,7 +685,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
 
   TRACE_EVENT0("media", "CdmAdapter::Decrypt");
 
-  cdm::InputBuffer input_buffer;
+  cdm::InputBuffer input_buffer = {};
   std::vector<cdm::SubsampleEntry> subsamples;
   std::unique_ptr<DecryptedBlockImpl> decrypted_block(new DecryptedBlockImpl());
 
@@ -717,7 +716,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(audio_init_cb_.is_null());
 
-  cdm::AudioDecoderConfig cdm_decoder_config;
+  cdm::AudioDecoderConfig cdm_decoder_config = {};
   cdm_decoder_config.codec = ToCdmAudioCodec(config.codec());
   cdm_decoder_config.channel_count =
       ChannelLayoutToChannelCount(config.channel_layout());
@@ -752,7 +751,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(video_init_cb_.is_null());
 
-  cdm::VideoDecoderConfig cdm_decoder_config;
+  cdm::VideoDecoderConfig cdm_decoder_config = {};
   cdm_decoder_config.codec = ToCdmVideoCodec(config.codec());
   cdm_decoder_config.profile = ToCdmVideoCodecProfile(config.profile());
   cdm_decoder_config.format = ToCdmVideoFormat(config.format());
@@ -789,7 +788,7 @@ void CdmAdapter::DecryptAndDecodeAudio(
 
   TRACE_EVENT0("media", "CdmAdapter::DecryptAndDecodeAudio");
 
-  cdm::InputBuffer input_buffer;
+  cdm::InputBuffer input_buffer = {};
   std::vector<cdm::SubsampleEntry> subsamples;
   std::unique_ptr<AudioFramesImpl> audio_frames(new AudioFramesImpl());
 
@@ -824,7 +823,7 @@ void CdmAdapter::DecryptAndDecodeVideo(
 
   TRACE_EVENT0("media", "CdmAdapter::DecryptAndDecodeVideo");
 
-  cdm::InputBuffer input_buffer;
+  cdm::InputBuffer input_buffer = {};
   std::vector<cdm::SubsampleEntry> subsamples;
   std::unique_ptr<VideoFrameImpl> video_frame = helper_->CreateCdmVideoFrame();
 

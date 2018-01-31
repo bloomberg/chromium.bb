@@ -94,7 +94,7 @@ TEST_F(MojoCdmAllocatorTest, CreateCdmVideoFrame) {
   // Create a VideoFrameImpl and initialize it.
   std::unique_ptr<VideoFrameImpl> video_frame = CreateCdmVideoFrame();
   video_frame->SetFormat(cdm::kI420);
-  video_frame->SetSize(cdm::Size(kWidth, kHeight));
+  video_frame->SetSize({kWidth, kHeight});
   video_frame->SetStride(VideoFrameImpl::kYPlane,
                          static_cast<uint32_t>(VideoFrame::RowBytes(
                              VideoFrame::kYPlane, kFormat, kWidth)));

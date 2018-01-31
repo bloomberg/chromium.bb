@@ -221,7 +221,7 @@ void ConvertCdmKeysInfo(const media::CdmKeysInfo& keys_info,
                         std::vector<cdm::KeyInformation>* keys_vector) {
   keys_vector->reserve(keys_info.size());
   for (const auto& key_info : keys_info) {
-    cdm::KeyInformation key;
+    cdm::KeyInformation key = {};
     key.key_id = key_info->key_id.data();
     key.key_id_size = key_info->key_id.size();
     key.status = ConvertKeyStatus(key_info->status);
