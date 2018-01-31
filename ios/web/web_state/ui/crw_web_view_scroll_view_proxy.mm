@@ -21,6 +21,7 @@
   id _observers;
   std::unique_ptr<UIScrollViewContentInsetAdjustmentBehavior>
       _pendingContentInsetAdjustmentBehavior API_AVAILABLE(ios(11.0));
+  std::unique_ptr<BOOL> _pendingClipsToBounds;
 }
 
 // Returns the key paths that need to be observed for UIScrollView.
@@ -73,6 +74,10 @@
   scrollView.delegate = self;
   [self startObservingScrollView:scrollView];
   _scrollView = scrollView;
+  if (_pendingClipsToBounds) {
+    scrollView.clipsToBounds = *_pendingClipsToBounds;
+    _pendingClipsToBounds.reset();
+  }
 
   // Assigns |contentInsetAdjustmentBehavior| which was set before setting the
   // scroll view.
@@ -105,6 +110,21 @@
 
 - (void)setBounces:(BOOL)bounces {
   [_scrollView setBounces:bounces];
+}
+
+- (BOOL)clipsToBounds {
+  if (_pendingClipsToBounds) {
+    return *_pendingClipsToBounds;
+  }
+  return _scrollView.clipsToBounds;
+}
+
+- (void)setClipsToBounds:(BOOL)clipsToBounds {
+  if (_scrollView) {
+    _scrollView.clipsToBounds = clipsToBounds;
+  } else {
+    _pendingClipsToBounds = std::make_unique<BOOL>(clipsToBounds);
+  }
 }
 
 - (BOOL)isDecelerating {
