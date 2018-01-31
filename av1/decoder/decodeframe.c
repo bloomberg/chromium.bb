@@ -53,7 +53,7 @@
 #include "av1/common/seg_common.h"
 #include "av1/common/thread_common.h"
 #include "av1/common/tile_common.h"
-
+#include "av1/common/warped_motion.h"
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/decodemv.h"
 #include "av1/decoder/decoder.h"
@@ -61,9 +61,6 @@
 #include "av1/decoder/decodetxb.h"
 #endif
 #include "av1/decoder/detokenize.h"
-#include "av1/decoder/symbolrate.h"
-
-#include "av1/common/warped_motion.h"
 
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
@@ -2023,10 +2020,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       td->cm = cm;
       td->xd = pbi->mb;
       td->xd.corrupted = 0;
-      td->xd.counts =
-          cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD
-              ? &cm->counts
-              : NULL;
+      td->xd.counts = NULL;
       av1_zero(td->dqcoeff);
       av1_tile_init(&td->xd.tile, td->cm, tile_row, tile_col);
       setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
@@ -2096,9 +2090,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
         for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
              mi_col += cm->mib_size) {
-#if CONFIG_SYMBOLRATE
-          av1_record_superblock(td->xd.counts);
-#endif
           decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                            cm->sb_size);
         }
@@ -3622,9 +3613,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
           num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
       make_update_tile_list_dec(pbi, cm->largest_tile_id, num_bwd_ctxs,
                                 tile_ctxs);
-#if CONFIG_SYMBOLRATE
-      av1_dump_symbol_rate(cm);
-#endif
       av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                  num_bwd_ctxs);
       av1_average_tile_intra_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,

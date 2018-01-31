@@ -81,8 +81,7 @@ set(AOM_AV1_DECODER_SOURCES
     "${AOM_ROOT}/av1/decoder/detokenize.c"
     "${AOM_ROOT}/av1/decoder/detokenize.h"
     "${AOM_ROOT}/av1/decoder/dthread.c"
-    "${AOM_ROOT}/av1/decoder/dthread.h"
-    "${AOM_ROOT}/av1/decoder/symbolrate.h")
+    "${AOM_ROOT}/av1/decoder/dthread.h")
 
 if (CONFIG_OBU)
   list(APPEND AOM_AV1_DECODER_SOURCES

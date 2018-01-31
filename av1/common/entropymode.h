@@ -250,12 +250,6 @@ typedef struct FRAME_COUNTS {
                                    [SIG_COEF_CONTEXTS_EOB][NUM_BASE_LEVELS + 1];
 #endif  // CONFIG_LV_MAP
 
-#if CONFIG_SYMBOLRATE
-  unsigned int superblock_num;
-  unsigned int coeff_num[COEFF_LEVELS];  // 0: zero coeff 1: non-zero coeff
-  unsigned int symbol_num[2];  // 0: entropy symbol 1: non-entropy symbol
-#endif
-
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
   unsigned int zeromv_mode[GLOBALMV_MODE_CONTEXTS][2];
   unsigned int refmv_mode[REFMV_MODE_CONTEXTS][2];

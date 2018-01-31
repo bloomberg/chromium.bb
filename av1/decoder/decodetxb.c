@@ -15,20 +15,16 @@
 #include "av1/common/txb_common.h"
 #include "av1/decoder/decodemv.h"
 #include "av1/decoder/decodetxb.h"
-#include "av1/decoder/symbolrate.h"
 
 #define ACCT_STR __func__
 
-static int read_golomb(MACROBLOCKD *xd, aom_reader *r, FRAME_COUNTS *counts) {
-#if !CONFIG_SYMBOLRATE
-  (void)counts;
-#endif
+static int read_golomb(MACROBLOCKD *xd, aom_reader *r) {
   int x = 1;
   int length = 0;
   int i = 0;
 
   while (!i) {
-    i = av1_read_record_bit(counts, r, ACCT_STR);
+    i = aom_read_bit(r, ACCT_STR);
     ++length;
     if (length >= 32) {
       aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
@@ -39,7 +35,7 @@ static int read_golomb(MACROBLOCKD *xd, aom_reader *r, FRAME_COUNTS *counts) {
 
   for (i = 0; i < length - 1; ++i) {
     x <<= 1;
-    x += av1_read_record_bit(counts, r, ACCT_STR);
+    x += aom_read_bit(r, ACCT_STR);
   }
 
   return x - 1;
@@ -66,11 +62,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             const TXB_CTX *const txb_ctx, const TX_SIZE tx_size,
                             int16_t *const max_scan_line, int *const eob) {
   FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-#if TXCOEFF_TIMER
-  FRAME_COUNTS *const counts = NULL;
-#else
-  FRAME_COUNTS *const counts = xd->counts;
-#endif
   const int32_t max_value = (1 << (7 + xd->bd)) - 1;
   const int32_t min_value = -(1 << (7 + xd->bd));
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
@@ -136,78 +127,48 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
   switch (eob_multi_size) {
     case 0:
-      eob_pt = av1_read_record_symbol(
-                   counts, r, ec_ctx->eob_flag_cdf16[plane_type][eob_multi_ctx],
-                   5, ACCT_STR) +
-               1;
+      eob_pt =
+          aom_read_symbol(r, ec_ctx->eob_flag_cdf16[plane_type][eob_multi_ctx],
+                          5, ACCT_STR) +
+          1;
       break;
     case 1:
-      eob_pt = av1_read_record_symbol(
-                   counts, r, ec_ctx->eob_flag_cdf32[plane_type][eob_multi_ctx],
-                   6, ACCT_STR) +
-               1;
+      eob_pt =
+          aom_read_symbol(r, ec_ctx->eob_flag_cdf32[plane_type][eob_multi_ctx],
+                          6, ACCT_STR) +
+          1;
       break;
     case 2:
-      eob_pt = av1_read_record_symbol(
-                   counts, r, ec_ctx->eob_flag_cdf64[plane_type][eob_multi_ctx],
-                   7, ACCT_STR) +
-               1;
+      eob_pt =
+          aom_read_symbol(r, ec_ctx->eob_flag_cdf64[plane_type][eob_multi_ctx],
+                          7, ACCT_STR) +
+          1;
       break;
     case 3:
       eob_pt =
-          av1_read_record_symbol(
-              counts, r, ec_ctx->eob_flag_cdf128[plane_type][eob_multi_ctx], 8,
-              ACCT_STR) +
+          aom_read_symbol(r, ec_ctx->eob_flag_cdf128[plane_type][eob_multi_ctx],
+                          8, ACCT_STR) +
           1;
       break;
     case 4:
       eob_pt =
-          av1_read_record_symbol(
-              counts, r, ec_ctx->eob_flag_cdf256[plane_type][eob_multi_ctx], 9,
-              ACCT_STR) +
+          aom_read_symbol(r, ec_ctx->eob_flag_cdf256[plane_type][eob_multi_ctx],
+                          9, ACCT_STR) +
           1;
       break;
     case 5:
       eob_pt =
-          av1_read_record_symbol(
-              counts, r, ec_ctx->eob_flag_cdf512[plane_type][eob_multi_ctx], 10,
-              ACCT_STR) +
+          aom_read_symbol(r, ec_ctx->eob_flag_cdf512[plane_type][eob_multi_ctx],
+                          10, ACCT_STR) +
           1;
       break;
     case 6:
     default:
-      eob_pt =
-          av1_read_record_symbol(
-              counts, r, ec_ctx->eob_flag_cdf1024[plane_type][eob_multi_ctx],
-              11, ACCT_STR) +
-          1;
+      eob_pt = aom_read_symbol(
+                   r, ec_ctx->eob_flag_cdf1024[plane_type][eob_multi_ctx], 11,
+                   ACCT_STR) +
+               1;
       break;
-  }
-  if (counts) {
-    switch (eob_multi_size) {
-      case 0:
-        ++counts->eob_multi16[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-      case 1:
-        ++counts->eob_multi32[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-      case 2:
-        ++counts->eob_multi64[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-      case 3:
-        ++counts->eob_multi128[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-      case 4:
-        ++counts->eob_multi256[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-      case 5:
-        ++counts->eob_multi512[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-      case 6:
-      default:
-        ++counts->eob_multi1024[plane_type][eob_multi_ctx][eob_pt - 1];
-        break;
-    }
   }
 
   // printf("Dec: ");
@@ -220,7 +181,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
 
     for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
-      bit = av1_read_record_bit(counts, r, ACCT_STR);
+      bit = aom_read_bit(r, ACCT_STR);
       // printf("eob_bit:\n");
       if (bit) {
         eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1 - i));
@@ -245,16 +206,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx];
       nsymbs = 4;
     }
-    const int level = av1_read_record_symbol(counts, r, cdf, nsymbs, ACCT_STR) +
-                      (c == *eob - 1);
-    if (counts) {
-      if (c == *eob - 1) {
-        ++counts
-              ->coeff_base_eob_multi[txs_ctx][plane_type][coeff_ctx][level - 1];
-      } else {
-        ++counts->coeff_base_multi[txs_ctx][plane_type][coeff_ctx][level];
-      }
-    }
+    const int level =
+        aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + (c == *eob - 1);
 
     // printf("base_cdf: %d %d %2d\n", txs_ctx, plane_type, coeff_ctx);
     // printf("base_cdf: %d %d %2d : %3d %3d %3d\n", txs_ctx, plane_type,
@@ -297,7 +250,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       *sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx],
                               2, ACCT_STR);
     } else {
-      *sign = av1_read_record_bit(counts, r, ACCT_STR);
+      *sign = aom_read_bit(r, ACCT_STR);
     }
     if (*sign) tcoeffs[pos] = -tcoeffs[pos];
   }
@@ -317,17 +270,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
 #endif
       for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
-        int k = av1_read_record_symbol(
-            counts, r,
-            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx],
+        int k = aom_read_symbol(
+            r, ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx],
             BR_CDF_SIZE, ACCT_STR);
         *level += k;
-        if (counts) {
-          for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++)
-            if (lps == k) break;
-          ++counts->coeff_lps_multi[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx]
-                                   [k];
-        }
         if (k < BR_CDF_SIZE - 1) break;
       }
       if (*level <= NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
@@ -352,7 +298,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // decode 0-th order Golomb code
       *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
       // Save golomb in tcoeffs because adding it to level may incur overflow
-      tran_low_t t = *level + read_golomb(xd, r, counts);
+      tran_low_t t = *level + read_golomb(xd, r);
       cul_level += (int)t;
 #if CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
