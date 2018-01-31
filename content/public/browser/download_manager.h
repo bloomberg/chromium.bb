@@ -165,7 +165,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       int64_t total_bytes,
       const std::string& hash,
       DownloadItem::DownloadState state,
-      DownloadDangerType danger_type,
+      download::DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,

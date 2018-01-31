@@ -18,7 +18,7 @@
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "ppapi/features/features.h"
@@ -249,7 +249,7 @@ class DownloadTargetDeterminer
 
   // Callback invoked after the delegate has checked the download URL. Sets the
   // danger type of the download to |danger_type|.
-  void CheckDownloadUrlDone(content::DownloadDangerType danger_type);
+  void CheckDownloadUrlDone(download::DownloadDangerType danger_type);
 
   // Checks if the user has visited the referrer URL of the download prior to
   // today. The actual check is only performed if it would be needed to
@@ -317,7 +317,7 @@ class DownloadTargetDeterminer
   bool should_notify_extensions_;
   bool create_target_directory_;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
-  content::DownloadDangerType danger_type_;
+  download::DownloadDangerType danger_type_;
   safe_browsing::DownloadFileType::DangerLevel danger_level_;
   base::FilePath virtual_path_;
   base::FilePath local_path_;

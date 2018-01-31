@@ -86,7 +86,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_METHOD1(DeleteFile, void(const base::Callback<void(bool)>&));
   MOCK_CONST_METHOD0(IsDangerous, bool());
-  MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
+  MOCK_CONST_METHOD0(GetDangerType, download::DownloadDangerType());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
   MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_CONST_METHOD0(PercentComplete, int());
@@ -108,7 +108,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_METHOD2(OnContentCheckCompleted,
-               void(DownloadDangerType, DownloadInterruptReason));
+               void(download::DownloadDangerType, DownloadInterruptReason));
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_METHOD1(SetLastAccessTime, void(base::Time));

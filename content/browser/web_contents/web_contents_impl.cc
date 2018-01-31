@@ -3368,7 +3368,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
       params->add_request_header(key_value.first, key_value.second);
     }
   }
-  params->set_download_source(DownloadSource::WEB_CONTENTS_API);
+  params->set_download_source(download::DownloadSource::WEB_CONTENTS_API);
   BrowserContext::GetDownloadManager(GetBrowserContext())
       ->DownloadUrl(std::move(params));
 }

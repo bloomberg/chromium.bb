@@ -14,7 +14,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 
 namespace base {
 class TaskRunner;
@@ -65,7 +65,7 @@ class DownloadFeedbackService {
 
   // Records histogram for download feedback option shown to user.
   static void RecordEligibleDownloadShown(
-      content::DownloadDangerType danger_type);
+      download::DownloadDangerType danger_type);
 
   // Begin download feedback for |download|. Then delete download file if
   // |download_command| is DISCARD, or run the KEEP command otherwise.This must

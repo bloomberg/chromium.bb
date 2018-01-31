@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 
 #include "chrome/browser/download/download_path_reservation_tracker.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 
 // Record the total number of items and the number of in-progress items showing
 // in the shelf when it closes.  Set |autoclose| to true when the shelf is
@@ -100,11 +100,11 @@ void RecordDownloadSource(ChromeDownloadSource source);
 
 // Record that a download warning was shown.
 void RecordDangerousDownloadWarningShown(
-    content::DownloadDangerType danger_type);
+    download::DownloadDangerType danger_type);
 
 // Record that the user opened the confirmation dialog for a dangerous download.
 void RecordOpenedDangerousConfirmDialog(
-    content::DownloadDangerType danger_type);
+    download::DownloadDangerType danger_type);
 
 // Record how a download was opened.
 void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method);

@@ -55,7 +55,7 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
   // RecordDownloadStarted
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   DownloadContent file_type = DownloadContent::AUDIO;
-  DownloadSource download_source = DownloadSource::UNKNOWN;
+  download::DownloadSource download_source = download::DownloadSource::UNKNOWN;
   DownloadUkmHelper::RecordDownloadStarted(download_id_, source_id, file_type,
                                            download_source);
 

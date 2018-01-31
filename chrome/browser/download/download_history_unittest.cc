@@ -347,7 +347,7 @@ class DownloadHistoryTest : public testing::Test {
     info->total_bytes = 100;
     info->state = history::ToHistoryDownloadState(state);
     info->danger_type = history::ToHistoryDownloadDangerType(
-        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
     info->interrupt_reason = history::ToHistoryDownloadInterruptReason(
         content::DOWNLOAD_INTERRUPT_REASON_NONE);
     info->id =
@@ -398,7 +398,7 @@ class DownloadHistoryTest : public testing::Test {
         .WillRepeatedly(Return(info->total_bytes));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
     EXPECT_CALL(item(index), GetDangerType())
-        .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+        .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     EXPECT_CALL(item(index), GetLastReason())
         .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
     EXPECT_CALL(item(index), GetOpened()).WillRepeatedly(Return(info->opened));
@@ -705,7 +705,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
 
   // danger_type
   EXPECT_CALL(item(0), GetDangerType())
-      .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT));
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT));
   info.danger_type = history::DownloadDangerType::DANGEROUS_CONTENT;
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info, false);

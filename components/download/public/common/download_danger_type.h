@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_DANGER_TYPE_H_
-#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_DANGER_TYPE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_DANGER_TYPE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_DANGER_TYPE_H_
 
-namespace content {
+namespace download {
 
 // This enum is also used by histograms.  Do not change the ordering or remove
 // items.
@@ -49,6 +49,6 @@ enum DownloadDangerType {
   DOWNLOAD_DANGER_TYPE_MAX
 };
 
-}
+}  // namespace download
 
-#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_DANGER_TYPE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_DANGER_TYPE_H_

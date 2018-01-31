@@ -31,7 +31,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD5(OnDownloadTargetDetermined,
                void(const base::FilePath&,
                     TargetDisposition,
-                    DownloadDangerType,
+                    download::DownloadDangerType,
                     const base::FilePath&,
                     DownloadInterruptReason));
   MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
@@ -70,7 +70,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
   MOCK_METHOD2(OnContentCheckCompleted,
-               void(DownloadDangerType, DownloadInterruptReason));
+               void(download::DownloadDangerType, DownloadInterruptReason));
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_METHOD1(SetTotalBytes, void(int64_t));
@@ -99,7 +99,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
-  MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
+  MOCK_CONST_METHOD0(GetDangerType, download::DownloadDangerType());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetForcedFilePath, const base::FilePath&());

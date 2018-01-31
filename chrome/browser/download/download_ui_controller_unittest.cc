@@ -232,7 +232,7 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetLastModifiedTime())
       .WillRepeatedly(ReturnRefOfCopy(std::string()));
   EXPECT_CALL(*item, GetDangerType())
-      .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   EXPECT_CALL(*item, GetLastReason())
       .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
   EXPECT_CALL(*item, GetReceivedBytes()).WillRepeatedly(Return(0));

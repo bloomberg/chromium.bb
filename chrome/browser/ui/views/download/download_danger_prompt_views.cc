@@ -12,10 +12,10 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -172,12 +172,12 @@ base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
   switch (download_->GetDangerType()) {
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return l10n_util::GetStringUTF16(IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE);
-    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
       return l10n_util::GetStringUTF16(IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE);
     default: {
       return l10n_util::GetStringUTF16(
@@ -259,42 +259,42 @@ base::string16 DownloadDangerPromptViews::GetCancelButtonTitle() const {
 base::string16 DownloadDangerPromptViews::GetMessageBody() const {
   if (show_context_) {
     switch (download_->GetDangerType()) {
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
         return l10n_util::GetStringFUTF16(
             IDS_PROMPT_DANGEROUS_DOWNLOAD,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:  // Fall through
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:  // Fall through
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
         return l10n_util::GetStringFUTF16(
             IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
-      case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
+      case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
         return l10n_util::GetStringFUTF16(
             IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
-      case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
+      case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
         return l10n_util::GetStringFUTF16(
             IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
-      case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
-      case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
-      case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
-      case content::DOWNLOAD_DANGER_TYPE_MAX: {
+      case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+      case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+      case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+      case download::DOWNLOAD_DANGER_TYPE_MAX: {
         break;
       }
     }
   } else {
     switch (download_->GetDangerType()) {
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-      case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
-      case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
         return l10n_util::GetStringUTF16(
             IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY);
       }

@@ -10,13 +10,13 @@
 #include "base/strings/stringprintf.h"
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
+#include "components/download/public/common/download_save_info.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -59,7 +59,7 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
     DownloadUrlParameters* params) {
   auto headers = std::make_unique<net::HttpRequestHeaders>();
   if (params->offset() == 0 &&
-      params->length() == DownloadSaveInfo::kLengthFullContent) {
+      params->length() == download::DownloadSaveInfo::kLengthFullContent) {
     AppendExtraHeaders(headers.get(), params);
     return headers;
   }
@@ -78,7 +78,7 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
 
   // Add "Range" header.
   std::string range_header =
-      (params->length() == DownloadSaveInfo::kLengthFullContent)
+      (params->length() == download::DownloadSaveInfo::kLengthFullContent)
           ? base::StringPrintf("bytes=%" PRId64 "-", params->offset())
           : base::StringPrintf("bytes=%" PRId64 "-%" PRId64, params->offset(),
                                params->offset() + params->length() - 1);
@@ -268,7 +268,7 @@ CreateURLRequestOnIOThread(DownloadUrlParameters* params) {
 
 DownloadInterruptReason HandleSuccessfulServerResponse(
     const net::HttpResponseHeaders& http_headers,
-    DownloadSaveInfo* save_info,
+    download::DownloadSaveInfo* save_info,
     bool fetch_error_body) {
   DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
   switch (http_headers.response_code()) {
@@ -333,7 +333,7 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       // Server should send partial content when "If-Match" or
       // "If-Unmodified-Since" check passes, and the range request header has
       // last byte position. e.g. "Range:bytes=50-99".
-      if (save_info->length != DownloadSaveInfo::kLengthFullContent &&
+      if (save_info->length != download::DownloadSaveInfo::kLengthFullContent &&
           !fetch_error_body)
         return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
@@ -409,61 +409,6 @@ void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
       headers->HasHeaderValue("Accept-Ranges", "bytes") ||
       (headers->HasHeader("Content-Range") &&
        headers->response_code() == net::HTTP_PARTIAL_CONTENT);
-}
-
-download::DownloadSource ToDownloadSource(
-    content::DownloadSource download_source) {
-  switch (download_source) {
-    case DownloadSource::UNKNOWN:
-      return download::DownloadSource::UNKNOWN;
-    case DownloadSource::NAVIGATION:
-      return download::DownloadSource::NAVIGATION;
-    case DownloadSource::DRAG_AND_DROP:
-      return download::DownloadSource::DRAG_AND_DROP;
-    case DownloadSource::FROM_RENDERER:
-      return download::DownloadSource::FROM_RENDERER;
-    case DownloadSource::EXTENSION_API:
-      return download::DownloadSource::EXTENSION_API;
-    case DownloadSource::EXTENSION_INSTALLER:
-      return download::DownloadSource::EXTENSION_INSTALLER;
-    case DownloadSource::INTERNAL_API:
-      return download::DownloadSource::INTERNAL_API;
-    case DownloadSource::WEB_CONTENTS_API:
-      return download::DownloadSource::WEB_CONTENTS_API;
-    case DownloadSource::OFFLINE_PAGE:
-      return download::DownloadSource::OFFLINE_PAGE;
-    case DownloadSource::CONTEXT_MENU:
-      return download::DownloadSource::CONTEXT_MENU;
-  }
-  NOTREACHED();
-  return download::DownloadSource::UNKNOWN;
-}
-
-DownloadSource ToDownloadSource(download::DownloadSource download_source) {
-  switch (download_source) {
-    case download::DownloadSource::UNKNOWN:
-      return DownloadSource::UNKNOWN;
-    case download::DownloadSource::NAVIGATION:
-      return DownloadSource::NAVIGATION;
-    case download::DownloadSource::DRAG_AND_DROP:
-      return DownloadSource::DRAG_AND_DROP;
-    case download::DownloadSource::FROM_RENDERER:
-      return DownloadSource::FROM_RENDERER;
-    case download::DownloadSource::EXTENSION_API:
-      return DownloadSource::EXTENSION_API;
-    case download::DownloadSource::EXTENSION_INSTALLER:
-      return DownloadSource::EXTENSION_INSTALLER;
-    case download::DownloadSource::INTERNAL_API:
-      return DownloadSource::INTERNAL_API;
-    case download::DownloadSource::WEB_CONTENTS_API:
-      return DownloadSource::WEB_CONTENTS_API;
-    case download::DownloadSource::OFFLINE_PAGE:
-      return DownloadSource::OFFLINE_PAGE;
-    case download::DownloadSource::CONTEXT_MENU:
-      return DownloadSource::CONTEXT_MENU;
-  }
-  NOTREACHED();
-  return DownloadSource::UNKNOWN;
 }
 
 base::Optional<download::DownloadEntry> GetInProgressEntry(

@@ -61,7 +61,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   static DownloadRequestData* Get(const net::URLRequest* request);
   static void Detach(net::URLRequest* request);
 
-  std::unique_ptr<DownloadSaveInfo> TakeSaveInfo() {
+  std::unique_ptr<download::DownloadSaveInfo> TakeSaveInfo() {
     return std::move(save_info_);
   }
   uint32_t download_id() const { return download_id_; }
@@ -76,7 +76,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
  private:
   static const int kKey;
 
-  std::unique_ptr<DownloadSaveInfo> save_info_;
+  std::unique_ptr<download::DownloadSaveInfo> save_info_;
   uint32_t download_id_ = DownloadItem::kInvalidId;
   std::string guid_;
   bool fetch_error_body_ = false;
@@ -94,7 +94,7 @@ void DownloadRequestData::Attach(net::URLRequest* request,
                                  uint32_t download_id) {
   auto request_data = std::make_unique<DownloadRequestData>();
   request_data->save_info_.reset(
-      new DownloadSaveInfo(parameters->GetSaveInfo()));
+      new download::DownloadSaveInfo(parameters->GetSaveInfo()));
   request_data->download_id_ = download_id;
   request_data->guid_ = parameters->guid();
   request_data->fetch_error_body_ = parameters->fetch_error_body();
@@ -142,10 +142,11 @@ std::string DownloadRequestUtils::GetRequestOriginFromRequest(
   return std::string();  // Empty string if data does not exist.
 }
 
-DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
-                                         Delegate* delegate,
-                                         bool is_parallel_request,
-                                         DownloadSource download_source)
+DownloadRequestCore::DownloadRequestCore(
+    net::URLRequest* request,
+    Delegate* delegate,
+    bool is_parallel_request,
+    download::DownloadSource download_source)
     : delegate_(delegate),
       request_(request),
       download_id_(DownloadItem::kInvalidId),
@@ -191,7 +192,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
     DownloadRequestData::Detach(request_);
     is_partial_request_ = save_info_->offset > 0;
   } else {
-    save_info_.reset(new DownloadSaveInfo);
+    save_info_.reset(new download::DownloadSaveInfo);
     ResourceRequestInfoImpl* request_info =
         ResourceRequestInfoImpl::ForRequest(request_);
     if (request_info && request_info->suggested_filename().has_value()) {

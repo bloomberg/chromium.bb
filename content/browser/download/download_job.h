@@ -12,7 +12,6 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
 namespace content {

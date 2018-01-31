@@ -23,7 +23,7 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -183,7 +183,7 @@ class ChromeDownloadManagerDelegate
 
   // Return true if the downloaded file should be blocked based on the current
   // download restriction pref and |danger_type|.
-  bool ShouldBlockFile(content::DownloadDangerType danger_type) const;
+  bool ShouldBlockFile(download::DownloadDangerType danger_type) const;
 
   void MaybeSendDangerousDownloadOpenedReport(content::DownloadItem* download,
                                               bool show_download_in_folder);

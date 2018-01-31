@@ -441,7 +441,7 @@ TEST_F(ParallelDownloadJobTest, RemainingContentWillFinishSoon) {
 
 // Test that parallel request is not created until download file is initialized.
 TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
-  auto save_info = std::make_unique<DownloadSaveInfo>();
+  auto save_info = std::make_unique<download::DownloadSaveInfo>();
   StrictMock<MockByteStreamReader>* input_stream =
       new StrictMock<MockByteStreamReader>();
   auto observer =

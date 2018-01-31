@@ -27,7 +27,7 @@ MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
                        0,
                        std::string(),
                        DownloadItem::COMPLETE,
-                       DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                        DOWNLOAD_INTERRUPT_REASON_NONE,
                        false,
                        base::Time(),

@@ -11,7 +11,7 @@
 #include "chrome/browser/download/download_confirmation_reason.h"
 #include "chrome/browser/download/download_confirmation_result.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 
 namespace base {
 class FilePath;
@@ -58,8 +58,8 @@ class DownloadTargetDeterminerDelegate {
   // Callback to be invoked after CheckDownloadUrl() completes. The parameter to
   // the callback should indicate the danger type of the download based on the
   // results of the URL check.
-  typedef base::Callback<void(content::DownloadDangerType danger_type)>
-  CheckDownloadUrlCallback;
+  typedef base::Callback<void(download::DownloadDangerType danger_type)>
+      CheckDownloadUrlCallback;
 
   // Callback to be invoked after GetFileMimeType() completes. The parameter
   // should be the MIME type of the requested file. If no MIME type can be

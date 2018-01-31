@@ -266,38 +266,39 @@ void RecordBandwidthMetric(const std::string& metric, int bandwidth) {
 }
 
 // Records a histogram with download source suffix.
-std::string CreateHistogramNameWithSuffix(const std::string& name,
-                                          DownloadSource download_source) {
+std::string CreateHistogramNameWithSuffix(
+    const std::string& name,
+    download::DownloadSource download_source) {
   std::string suffix;
   switch (download_source) {
-    case DownloadSource::UNKNOWN:
+    case download::DownloadSource::UNKNOWN:
       suffix = "UnknownSource";
       break;
-    case DownloadSource::NAVIGATION:
+    case download::DownloadSource::NAVIGATION:
       suffix = "Navigation";
       break;
-    case DownloadSource::DRAG_AND_DROP:
+    case download::DownloadSource::DRAG_AND_DROP:
       suffix = "DragAndDrop";
       break;
-    case DownloadSource::FROM_RENDERER:
+    case download::DownloadSource::FROM_RENDERER:
       suffix = "FromRenderer";
       break;
-    case DownloadSource::EXTENSION_API:
+    case download::DownloadSource::EXTENSION_API:
       suffix = "ExtensionAPI";
       break;
-    case DownloadSource::EXTENSION_INSTALLER:
+    case download::DownloadSource::EXTENSION_INSTALLER:
       suffix = "ExtensionInstaller";
       break;
-    case DownloadSource::INTERNAL_API:
+    case download::DownloadSource::INTERNAL_API:
       suffix = "InternalAPI";
       break;
-    case DownloadSource::WEB_CONTENTS_API:
+    case download::DownloadSource::WEB_CONTENTS_API:
       suffix = "WebContentsAPI";
       break;
-    case DownloadSource::OFFLINE_PAGE:
+    case download::DownloadSource::OFFLINE_PAGE:
       suffix = "OfflinePage";
       break;
-    case DownloadSource::CONTEXT_MENU:
+    case download::DownloadSource::CONTEXT_MENU:
       suffix = "ContextMenu";
       break;
   }
@@ -313,7 +314,7 @@ void RecordDownloadCount(DownloadCountTypes type) {
 }
 
 void RecordDownloadCountWithSource(DownloadCountTypes type,
-                                   DownloadSource download_source) {
+                                   download::DownloadSource download_source) {
   RecordDownloadCount(type);
 
   std::string name =
@@ -324,7 +325,7 @@ void RecordDownloadCountWithSource(DownloadCountTypes type,
 void RecordDownloadCompleted(const base::TimeTicks& start,
                              int64_t download_len,
                              bool is_parallelizable,
-                             DownloadSource download_source) {
+                             download::DownloadSource download_source) {
   RecordDownloadCountWithSource(COMPLETED_COUNT, download_source);
   UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
@@ -345,7 +346,7 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t total,
                                bool is_parallelizable,
                                bool is_parallel_download_enabled,
-                               DownloadSource download_source) {
+                               download::DownloadSource download_source) {
   RecordDownloadCountWithSource(INTERRUPTED_COUNT, download_source);
   if (is_parallelizable) {
     RecordParallelizableDownloadCount(INTERRUPTED_COUNT,
@@ -439,18 +440,17 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
-void RecordMaliciousDownloadClassified(DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("Download.MaliciousDownloadClassified",
-                            danger_type,
-                            DOWNLOAD_DANGER_TYPE_MAX);
+void RecordMaliciousDownloadClassified(
+    download::DownloadDangerType danger_type) {
+  UMA_HISTOGRAM_ENUMERATION("Download.MaliciousDownloadClassified", danger_type,
+                            download::DOWNLOAD_DANGER_TYPE_MAX);
 }
 
-void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
+void RecordDangerousDownloadAccept(download::DownloadDangerType danger_type,
                                    const base::FilePath& file_path) {
-  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
-                            danger_type,
-                            DOWNLOAD_DANGER_TYPE_MAX);
-  if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated", danger_type,
+                            download::DOWNLOAD_DANGER_TYPE_MAX);
+  if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
     base::UmaHistogramSparse(
         "Download.DangerousFile.DangerousDownloadValidated",
         GetDangerousFileType(file_path));
@@ -458,21 +458,21 @@ void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
 }
 
 void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
-                                    DownloadDangerType danger_type,
+                                    download::DownloadDangerType danger_type,
                                     const base::FilePath& file_path) {
   switch (reason) {
     case DOWNLOAD_DISCARD_DUE_TO_USER_ACTION:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.UserDiscard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
-      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+      UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", danger_type,
+                                download::DOWNLOAD_DANGER_TYPE_MAX);
+      if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
         base::UmaHistogramSparse("Download.DangerousFile.UserDiscard",
                                  GetDangerousFileType(file_path));
       }
       break;
     case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.Discard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
-      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+      UMA_HISTOGRAM_ENUMERATION("Download.Discard", danger_type,
+                                download::DOWNLOAD_DANGER_TYPE_MAX);
+      if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
         base::UmaHistogramSparse("Download.DangerousFile.Discard",
                                  GetDangerousFileType(file_path));
       }

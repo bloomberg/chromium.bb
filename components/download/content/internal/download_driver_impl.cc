@@ -168,7 +168,7 @@ void DownloadDriverImpl::Start(
   if (request_params.fetch_error_body)
     download_url_params->set_fetch_error_body(true);
   download_url_params->set_download_source(
-      content::DownloadSource::INTERNAL_API);
+      download::DownloadSource::INTERNAL_API);
 
   download_manager_->DownloadUrl(std::move(download_url_params));
 }

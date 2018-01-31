@@ -7,7 +7,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "content/public/browser/download_save_info.h"
+#include "components/download/public/common/download_save_info.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -54,7 +54,8 @@ std::vector<DownloadItem::ReceivedSlice> FindSlicesForRemainingContent(
 
   // Last slice is a half open slice, which results in sending range request
   // like "Range:50-" to fetch from 50 bytes to the end of the file.
-  new_slices.emplace_back(current_offset, DownloadSaveInfo::kLengthFullContent);
+  new_slices.emplace_back(current_offset,
+                          download::DownloadSaveInfo::kLengthFullContent);
   return new_slices;
 }
 
@@ -62,7 +63,7 @@ std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
     const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
   std::vector<DownloadItem::ReceivedSlice> result;
   if (received_slices.empty()) {
-    result.emplace_back(0, DownloadSaveInfo::kLengthFullContent);
+    result.emplace_back(0, download::DownloadSaveInfo::kLengthFullContent);
     return result;
   }
 
@@ -77,7 +78,8 @@ std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
     std::vector<DownloadItem::ReceivedSlice>::const_iterator next =
         std::next(iter);
     if (next == received_slices.end()) {
-      result.emplace_back(offset, DownloadSaveInfo::kLengthFullContent);
+      result.emplace_back(offset,
+                          download::DownloadSaveInfo::kLengthFullContent);
       break;
     }
 

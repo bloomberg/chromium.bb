@@ -16,18 +16,21 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
+namespace download {
+struct DownloadSaveInfo;
+}
+
 namespace content {
 
 class DownloadDestinationObserver;
 class DownloadFile;
-struct DownloadSaveInfo;
 
 class CONTENT_EXPORT DownloadFileFactory {
  public:
   virtual ~DownloadFileFactory();
 
   virtual DownloadFile* CreateFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,

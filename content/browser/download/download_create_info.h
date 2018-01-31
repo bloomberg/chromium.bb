@@ -15,12 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_save_info.h"
+#include "components/download/public/common/download_source.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_save_info.h"
-#include "content/public/browser/download_source.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
@@ -36,7 +36,7 @@ namespace content {
 // want to pass |DownloadItem|s between threads.
 struct CONTENT_EXPORT DownloadCreateInfo {
   DownloadCreateInfo(const base::Time& start_time,
-                     std::unique_ptr<DownloadSaveInfo> save_info);
+                     std::unique_ptr<download::DownloadSaveInfo> save_info);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
@@ -100,7 +100,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   DownloadInterruptReason result;
 
   // The download file save info.
-  std::unique_ptr<DownloadSaveInfo> save_info;
+  std::unique_ptr<download::DownloadSaveInfo> save_info;
 
   // The handle to the URLRequest sourcing this download.
   std::unique_ptr<DownloadRequestHandleInterface> request_handle;
@@ -148,7 +148,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   ukm::SourceId ukm_source_id;
 
   // Source of the download, used in metrics.
-  DownloadSource download_source = DownloadSource::UNKNOWN;
+  download::DownloadSource download_source = download::DownloadSource::UNKNOWN;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);

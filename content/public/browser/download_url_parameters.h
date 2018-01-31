@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "components/download/public/common/download_save_info.h"
+#include "components/download/public/common/download_source.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_save_info.h"
-#include "content/public/browser/download_source.h"
 #include "content/public/common/referrer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -246,7 +246,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   }
 
   // Sets the download source, which will be used in metrics recording.
-  void set_download_source(DownloadSource download_source) {
+  void set_download_source(download::DownloadSource download_source) {
     download_source_ = download_source;
   }
 
@@ -301,13 +301,13 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
   // STATE CHANGING: All save_info_ sub-objects will be in an indeterminate
   // state following this call.
-  DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
+  download::DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
 
   const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotation() {
     return traffic_annotation_;
   }
 
-  DownloadSource download_source() const { return download_source_; }
+  download::DownloadSource download_source() const { return download_source_; }
 
  private:
   OnStartedCallback callback_;
@@ -327,7 +327,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int render_view_host_routing_id_;
   int render_frame_host_routing_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  DownloadSaveInfo save_info_;
+  download::DownloadSaveInfo save_info_;
   GURL url_;
   bool do_not_prompt_for_login_;
   bool fetch_error_body_;
@@ -336,7 +336,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   std::string request_origin_;
-  DownloadSource download_source_;
+  download::DownloadSource download_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

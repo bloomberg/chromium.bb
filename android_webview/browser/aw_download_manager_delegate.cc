@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_download_manager_delegate.h"
 
 #include "base/files/file_path.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
 namespace android_webview {
@@ -20,7 +20,7 @@ bool AwDownloadManagerDelegate::DetermineDownloadTarget(
   // could have already finished by the time DownloadStarting is called.
   callback.Run(base::FilePath() /* Empty file path for cancel */,
                content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
                content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   return true;
 }

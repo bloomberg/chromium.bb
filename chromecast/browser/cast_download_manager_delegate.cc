@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 
@@ -31,7 +31,7 @@ bool CastDownloadManagerDelegate::DetermineDownloadTarget(
     const content::DownloadTargetCallback& callback) {
   base::FilePath empty;
   callback.Run(empty, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, empty,
+               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, empty,
                content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   return true;
 }

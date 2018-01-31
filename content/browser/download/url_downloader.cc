@@ -89,7 +89,7 @@ UrlDownloader::UrlDownloader(
     std::unique_ptr<net::URLRequest> request,
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     bool is_parallel_request,
-    DownloadSource download_source)
+    download::DownloadSource download_source)
     : request_(std::move(request)),
       delegate_(delegate),
       core_(request_.get(), this, is_parallel_request, download_source),

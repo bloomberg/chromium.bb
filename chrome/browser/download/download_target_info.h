@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
-#include "content/public/browser/download_danger_type.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 
@@ -30,7 +30,7 @@ struct DownloadTargetInfo {
   content::DownloadItem::TargetDisposition target_disposition;
 
   // Danger type of the download.
-  content::DownloadDangerType danger_type;
+  download::DownloadDangerType danger_type;
 
   // The danger type of the download could be set to MAYBE_DANGEROUS_CONTENT if
   // the file type is handled by SafeBrowsing. However, if the SafeBrowsing

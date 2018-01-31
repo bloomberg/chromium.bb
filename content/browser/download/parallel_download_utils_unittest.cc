@@ -8,7 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/public/browser/download_save_info.h"
+#include "components/download/public/common/download_save_info.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,14 +20,14 @@ TEST(ParallelDownloadUtilsTest, FindSlicesToDownload) {
       FindSlicesToDownload(downloaded_slices);
   EXPECT_EQ(1u, slices_to_download.size());
   EXPECT_EQ(0, slices_to_download[0].offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+  EXPECT_EQ(download::DownloadSaveInfo::kLengthFullContent,
             slices_to_download[0].received_bytes);
 
   downloaded_slices.emplace_back(0, 500);
   slices_to_download = FindSlicesToDownload(downloaded_slices);
   EXPECT_EQ(1u, slices_to_download.size());
   EXPECT_EQ(500, slices_to_download[0].offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+  EXPECT_EQ(download::DownloadSaveInfo::kLengthFullContent,
             slices_to_download[0].received_bytes);
 
   // Create a gap between slices.
@@ -37,7 +37,7 @@ TEST(ParallelDownloadUtilsTest, FindSlicesToDownload) {
   EXPECT_EQ(500, slices_to_download[0].offset);
   EXPECT_EQ(500, slices_to_download[0].received_bytes);
   EXPECT_EQ(1500, slices_to_download[1].offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+  EXPECT_EQ(download::DownloadSaveInfo::kLengthFullContent,
             slices_to_download[1].received_bytes);
 
   // Fill the gap.
@@ -46,7 +46,7 @@ TEST(ParallelDownloadUtilsTest, FindSlicesToDownload) {
   slices_to_download = FindSlicesToDownload(downloaded_slices);
   EXPECT_EQ(1u, slices_to_download.size());
   EXPECT_EQ(1500, slices_to_download[0].offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+  EXPECT_EQ(download::DownloadSaveInfo::kLengthFullContent,
             slices_to_download[0].received_bytes);
 
   // Create a new gap at the beginning.
@@ -56,7 +56,7 @@ TEST(ParallelDownloadUtilsTest, FindSlicesToDownload) {
   EXPECT_EQ(0, slices_to_download[0].offset);
   EXPECT_EQ(500, slices_to_download[0].received_bytes);
   EXPECT_EQ(1500, slices_to_download[1].offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+  EXPECT_EQ(download::DownloadSaveInfo::kLengthFullContent,
             slices_to_download[1].received_bytes);
 }
 

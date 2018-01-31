@@ -59,7 +59,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -193,7 +192,7 @@ const char* const kDangerStrings[] = {
   kDangerHost,
   kDangerUnwanted
 };
-static_assert(arraysize(kDangerStrings) == content::DOWNLOAD_DANGER_TYPE_MAX,
+static_assert(arraysize(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
               "kDangerStrings should have DOWNLOAD_DANGER_TYPE_MAX elements");
 
 // Note: Any change to the state strings, should be accompanied by a
@@ -207,22 +206,22 @@ const char* const kStateStrings[] = {
 static_assert(arraysize(kStateStrings) == DownloadItem::MAX_DOWNLOAD_STATE,
               "kStateStrings should have MAX_DOWNLOAD_STATE elements");
 
-const char* DangerString(content::DownloadDangerType danger) {
+const char* DangerString(download::DownloadDangerType danger) {
   DCHECK(danger >= 0);
-  DCHECK(danger < static_cast<content::DownloadDangerType>(
-      arraysize(kDangerStrings)));
-  if (danger < 0 || danger >= static_cast<content::DownloadDangerType>(
-      arraysize(kDangerStrings)))
+  DCHECK(danger <
+         static_cast<download::DownloadDangerType>(arraysize(kDangerStrings)));
+  if (danger < 0 || danger >= static_cast<download::DownloadDangerType>(
+                                  arraysize(kDangerStrings)))
     return "";
   return kDangerStrings[danger];
 }
 
-content::DownloadDangerType DangerEnumFromString(const std::string& danger) {
+download::DownloadDangerType DangerEnumFromString(const std::string& danger) {
   for (size_t i = 0; i < arraysize(kDangerStrings); ++i) {
     if (danger == kDangerStrings[i])
-      return static_cast<content::DownloadDangerType>(i);
+      return static_cast<download::DownloadDangerType>(i);
   }
-  return content::DOWNLOAD_DANGER_TYPE_MAX;
+  return download::DOWNLOAD_DANGER_TYPE_MAX;
 }
 
 const char* StateString(DownloadItem::DownloadState state) {
@@ -563,9 +562,9 @@ void RunDownloadQuery(
   std::string danger_string =
       downloads::ToString(query_in.danger);
   if (!danger_string.empty()) {
-    content::DownloadDangerType danger_type = DangerEnumFromString(
-        danger_string);
-    if (danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
+    download::DownloadDangerType danger_type =
+        DangerEnumFromString(danger_string);
+    if (danger_type == download::DOWNLOAD_DANGER_TYPE_MAX) {
       *error = errors::kInvalidDangerType;
       return;
     }
@@ -1089,7 +1088,7 @@ bool DownloadsDownloadFunction::RunAsync() {
       creator_suggested_filename, options.conflict_action));
   // Prevent login prompts for 401/407 responses.
   download_params->set_do_not_prompt_for_login(true);
-  download_params->set_download_source(content::DownloadSource::EXTENSION_API);
+  download_params->set_download_source(download::DownloadSource::EXTENSION_API);
 
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       current_profile);

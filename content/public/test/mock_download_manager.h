@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +48,7 @@ class MockDownloadManager : public DownloadManager {
     int64_t total_bytes;
     std::string hash;
     DownloadItem::DownloadState state;
-    DownloadDangerType danger_type;
+    download::DownloadDangerType danger_type;
     DownloadInterruptReason interrupt_reason;
     bool opened;
     base::Time last_access_time;
@@ -76,7 +75,7 @@ class MockDownloadManager : public DownloadManager {
         int64_t total_bytes,
         const std::string& hash,
         DownloadItem::DownloadState state,
-        DownloadDangerType danger_type,
+        download::DownloadDangerType danger_type,
         DownloadInterruptReason interrupt_reason,
         bool opened,
         base::Time last_access_time,
@@ -139,7 +138,7 @@ class MockDownloadManager : public DownloadManager {
       int64_t total_bytes,
       const std::string& hash,
       DownloadItem::DownloadState state,
-      DownloadDangerType danger_type,
+      download::DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,

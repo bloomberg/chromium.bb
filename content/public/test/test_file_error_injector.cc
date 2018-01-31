@@ -31,7 +31,7 @@ namespace {
 // A class that performs file operations and injects errors.
 class DownloadFileWithError: public DownloadFileImpl {
  public:
-  DownloadFileWithError(std::unique_ptr<DownloadSaveInfo> save_info,
+  DownloadFileWithError(std::unique_ptr<download::DownloadSaveInfo> save_info,
                         const base::FilePath& default_download_directory,
                         std::unique_ptr<DownloadManager::InputStream> stream,
                         uint32_t download_id,
@@ -108,7 +108,7 @@ static void RenameErrorCallback(
 }
 
 DownloadFileWithError::DownloadFileWithError(
-    std::unique_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
     uint32_t download_id,
@@ -283,7 +283,7 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
@@ -309,7 +309,7 @@ DownloadFileWithErrorFactory::DownloadFileWithErrorFactory(
 DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 
 DownloadFile* DownloadFileWithErrorFactory::CreateFile(
-    std::unique_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
     uint32_t download_id,

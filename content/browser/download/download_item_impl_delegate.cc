@@ -5,6 +5,7 @@
 #include "content/browser/download/download_item_impl_delegate.h"
 
 #include "base/logging.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/browser/download/download_item_impl.h"
 
 namespace content {
@@ -32,7 +33,7 @@ void DownloadItemImplDelegate::DetermineDownloadTarget(
   // TODO(rdsmith/asanka): Do something useful if forced file path is null.
   base::FilePath target_path(download->GetForcedFilePath());
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 

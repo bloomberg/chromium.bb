@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package metadata_pb;
 
 // This should stay in sync with the download::DownloadSource enum in
-// components/download/downloader/in_progress/download_source.h.
+// components/download/public/core/download_source.h.
 enum DownloadSource {
   UNKNOWN = 0;
   NAVIGATION = 1;
