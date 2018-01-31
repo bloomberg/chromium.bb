@@ -437,6 +437,11 @@ class LocationBarView : public LocationBar,
   // A list of all bubble descendants ordered by focus.
   std::vector<BubbleIconView*> bubble_icons_;
 
+  // The security level when the location bar was last updated. Used to decide
+  // whether to animate security level transitions.
+  security_state::SecurityLevel last_update_security_level_ =
+      security_state::NONE;
+
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
 
