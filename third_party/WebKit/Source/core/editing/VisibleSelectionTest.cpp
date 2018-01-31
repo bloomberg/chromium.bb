@@ -213,20 +213,21 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
 
 // For http://wkb.ug/32622
 TEST_F(VisibleSelectionTest, ExpandUsingGranularityWithEmptyCell) {
-  SetBodyContent(
+  const SelectionInDOMTree& selection_in_dom_tree = SetSelectionTextToBody(
       "<div contentEditable><table cellspacing=0><tr>"
-      "<td id='first' width='50' height='25pt'></td>"
+      "<td id='first' width='50' height='25pt'>|</td>"
       "<td id='second' width='50' height='25pt'></td>"
       "</tr></table></div>");
-  Element* const first = GetDocument().getElementById("first");
   const VisibleSelectionInFlatTree& selection =
       CreateVisibleSelectionWithGranularity(
-          SelectionInFlatTree::Builder()
-              .Collapse(PositionInFlatTree(first, 0))
-              .Build(),
+          ConvertToSelectionInFlatTree(selection_in_dom_tree),
           TextGranularity::kWord);
-  EXPECT_EQ(PositionInFlatTree(first, 0), selection.Start());
-  EXPECT_EQ(PositionInFlatTree(first, 0), selection.End());
+  EXPECT_EQ(
+      "<div contenteditable><table cellspacing=\"0\"><tbody><tr>"
+      "<td height=\"25pt\" id=\"first\" width=\"50\">|</td>"
+      "<td height=\"25pt\" id=\"second\" width=\"50\"></td>"
+      "</tr></tbody></table></div>",
+      GetSelectionTextInFlatTreeFromBody(selection.AsSelection()));
 }
 
 TEST_F(VisibleSelectionTest, Initialisation) {
