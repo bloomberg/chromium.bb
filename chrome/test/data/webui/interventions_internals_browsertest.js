@@ -193,7 +193,6 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_a',
         url: {url: 'Some gurl.spec()_a'},
         time: 1507221689240,  // Oct 05 2017 16:41:29 UTC
-        expectedTime: '10/05/2017 09:41:29.240',
         pageId: 0,
       },
       {
@@ -201,7 +200,6 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_b',
         url: {url: 'Some gurl.spec()_b'},
         time: 758675653000,  // Jan 15 1994 23:14:13 UTC
-        expectedTime: '01/15/1994 15:14:13.000',
         pageId: 0,
       },
       {
@@ -209,7 +207,6 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_c',
         url: {url: 'Some gurl.spec()_c'},
         time: -314307870000,  // Jan 16 1960 04:15:30 UTC
-        expectedTime: '01/15/1960 20:15:30.000',
         pageId: 0,
       },
     ];
@@ -228,7 +225,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
                                                 // log table).
 
       expectEquals(
-          log.expectedTime, row.querySelector('.log-time').textContent);
+          getTimeFormat(log.time), row.querySelector('.log-time').textContent);
       expectEquals(log.type, row.querySelector('.log-type').textContent);
       expectEquals(
           log.description, row.querySelector('.log-description').textContent);
