@@ -279,7 +279,9 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                            {FeaturePolicyFeature::kMagnetometer,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {FeaturePolicyFeature::kUnsizedMedia,
-                            FeaturePolicy::FeatureDefault::EnableForAll}}));
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {FeaturePolicyFeature::kPictureInPicture,
+                            FeaturePolicy::FeatureDefault::EnableForSelf}}));
   return default_feature_list;
 }
 

@@ -700,6 +700,8 @@ modules_dependency_idl_files =
           "payments/PaymentAppServiceWorkerRegistration.idl",
           "permissions/NavigatorPermissions.idl",
           "permissions/WorkerNavigatorPermissions.idl",
+          "picture_in_picture/DocumentPictureInPicture.idl",
+          "picture_in_picture/HTMLVideoElementPictureInPicture.idl",
           "plugins/NavigatorPlugins.idl",
           "presentation/NavigatorPresentation.idl",
           "push_messaging/ServiceWorkerGlobalScopePush.idl",

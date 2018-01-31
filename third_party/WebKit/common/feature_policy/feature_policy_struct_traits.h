@@ -65,6 +65,8 @@ STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kGyroscope,
                    ::blink::mojom::FeaturePolicyFeature::kGyroscope);
 STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kMagnetometer,
                    ::blink::mojom::FeaturePolicyFeature::kMagnetometer);
+STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kPictureInPicture,
+                   ::blink::mojom::FeaturePolicyFeature::kPictureInPicture);
 
 // TODO(crbug.com/789818) - Merge these 2 WebSandboxFlags enums.
 STATIC_ASSERT_ENUM(::blink::WebSandboxFlags::kNone,

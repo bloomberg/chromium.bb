@@ -1,0 +1,68 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "modules/picture_in_picture/PictureInPictureController.h"
+
+#include "core/dom/Document.h"
+#include "platform/feature_policy/FeaturePolicy.h"
+
+namespace blink {
+
+PictureInPictureController::PictureInPictureController(Document& document)
+    : Supplement<Document>(document) {}
+
+PictureInPictureController::~PictureInPictureController() = default;
+
+// static
+PictureInPictureController& PictureInPictureController::Ensure(
+    Document& document) {
+  PictureInPictureController* controller =
+      static_cast<PictureInPictureController*>(
+          Supplement<Document>::From(document, SupplementName()));
+  if (!controller) {
+    controller = new PictureInPictureController(document);
+    ProvideTo(document, SupplementName(), controller);
+  }
+  return *controller;
+}
+
+// static
+const char* PictureInPictureController::SupplementName() {
+  return "PictureInPictureController";
+}
+
+bool PictureInPictureController::PictureInPictureEnabled() const {
+  return GetStatus() == Status::kEnabled;
+}
+
+PictureInPictureController::Status PictureInPictureController::GetStatus()
+    const {
+  DCHECK(GetSupplementable());
+
+  // If document is not allowed to use the policy-controlled feature named
+  // "picture-in-picture", return kDisabledByFeaturePolicy status.
+  LocalFrame* frame = GetSupplementable()->GetFrame();
+  if (IsSupportedInFeaturePolicy(
+          blink::FeaturePolicyFeature::kPictureInPicture) &&
+      !frame->IsFeatureEnabled(
+          blink::FeaturePolicyFeature::kPictureInPicture)) {
+    return Status::kDisabledByFeaturePolicy;
+  }
+
+  // TODO(crbug.com/806249): Handle status when disabled by attribute
+
+  // `picture_in_picture_enabled_` is set to false by the embedder when it
+  // or the system forbids the page from using Picture-in-Picture.
+  if (!picture_in_picture_enabled_)
+    return Status::kDisabledBySystem;
+
+  return Status::kEnabled;
+}
+
+void PictureInPictureController::SetPictureInPictureEnabledForTesting(
+    bool value) {
+  picture_in_picture_enabled_ = value;
+}
+
+}  // namespace blink
