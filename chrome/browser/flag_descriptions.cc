@@ -1537,6 +1537,12 @@ const char kTrySupportedChannelLayoutsDescription[] =
     "to do stereo to surround expansion if supported. May expose third party "
     "driver bugs, use with caution.";
 
+const char kUnifiedConsentName[] = "Unified Consent";
+const char kUnifiedConsentDescription[] =
+    "Enables a unified management of user consent for privacy-related "
+    "features. This includes new confirmation screens and improved settings "
+    "pages.";
+
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
