@@ -175,6 +175,14 @@ if (use_allocator == "tcmalloc") {
       #"win_allocator.cc",
     ]
 
+    # Not included on mips64el.
+    if (current_cpu == "mips64el") {
+      sources -= [
+        "$tcmalloc_dir/src/base/linuxthreads.cc",
+        "$tcmalloc_dir/src/base/linuxthreads.h",
+      ]
+    }
+
     # Disable the heap checker in tcmalloc.
     defines = [ "NO_HEAP_CHECK" ]
 

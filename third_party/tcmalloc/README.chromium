@@ -111,3 +111,4 @@ Modifications:
 - Fix potential missing nul character in symbol names produced by addr2line-pdb.
 - Remove superfluous size_t value >= 0 check.
 - Make kFooType in tcmalloc.cc truly const.
+- Added support for mips64el.
