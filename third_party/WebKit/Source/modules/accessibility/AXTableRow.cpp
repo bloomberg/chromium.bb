@@ -72,7 +72,7 @@ AccessibilityRole AXTableRow::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
     return aria_role_;
 
-  return kRowRole;
+  return ParentTable()->IsDataTable() ? kRowRole : kLayoutTableRowRole;
 }
 
 bool AXTableRow::IsTableRow() const {

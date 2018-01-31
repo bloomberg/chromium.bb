@@ -172,6 +172,14 @@ ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role) {
       return ax::mojom::Role::kInputTime;
     case blink::kWebAXRoleLabel:
       return ax::mojom::Role::kLabelText;
+    case blink::kWebAXRoleLayoutTable:
+      return ax::mojom::Role::kLayoutTable;
+    case blink::kWebAXRoleLayoutTableCell:
+      return ax::mojom::Role::kLayoutTableCell;
+    case blink::kWebAXRoleLayoutTableColumn:
+      return ax::mojom::Role::kLayoutTableColumn;
+    case blink::kWebAXRoleLayoutTableRow:
+      return ax::mojom::Role::kLayoutTableRow;
     case blink::kWebAXRoleLegend:
       return ax::mojom::Role::kLegend;
     case blink::kWebAXRoleLink:

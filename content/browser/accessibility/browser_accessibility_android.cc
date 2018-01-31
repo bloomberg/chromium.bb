@@ -631,6 +631,12 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kLabelText:
       // No role description.
       break;
+    case ax::mojom::Role::kLayoutTable:
+    case ax::mojom::Role::kLayoutTableCell:
+    case ax::mojom::Role::kLayoutTableColumn:
+    case ax::mojom::Role::kLayoutTableRow:
+      // No role description.
+      break;
     case ax::mojom::Role::kLegend:
       // No role description.
       break;

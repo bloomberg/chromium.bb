@@ -131,5 +131,4 @@ AXWebArea
 ++++++++AXStaticText AXValue='B'
 ++++AXColumn
 ++++AXGroup
-++AXGroup
-++++AXStaticText AXValue='Alphabet'
+++AXStaticText AXValue='Alphabet'

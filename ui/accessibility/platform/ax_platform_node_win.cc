@@ -2529,6 +2529,18 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kLegend:
       return ROLE_SYSTEM_TEXT;
 
+    case ax::mojom::Role::kLayoutTable:
+      return ROLE_SYSTEM_TABLE;
+
+    case ax::mojom::Role::kLayoutTableCell:
+      return ROLE_SYSTEM_CELL;
+
+    case ax::mojom::Role::kLayoutTableColumn:
+      return ROLE_SYSTEM_COLUMN;
+
+    case ax::mojom::Role::kLayoutTableRow:
+      return ROLE_SYSTEM_ROW;
+
     case ax::mojom::Role::kLink:
       return ROLE_SYSTEM_LINK;
 
@@ -3100,6 +3112,8 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
       }
     }
   }
+  if (GetData().role == ax::mojom::Role::kLayoutTable)
+    result.push_back(base::string16(L"layout-guess:true"));
 
   // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
   if (IsTableLikeRole(GetData().role)) {

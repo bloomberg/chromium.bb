@@ -124,6 +124,14 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("InputTime");
     case blink::kWebAXRoleLabel:
       return result.append("Label");
+    case blink::kWebAXRoleLayoutTable:
+      return result.append("LayoutTable");
+    case blink::kWebAXRoleLayoutTableCell:
+      return result.append("LayoutTableCell");
+    case blink::kWebAXRoleLayoutTableColumn:
+      return result.append("LayoutTableColumn");
+    case blink::kWebAXRoleLayoutTableRow:
+      return result.append("LayoutTableRow");
     case blink::kWebAXRoleLegend:
       return result.append("Legend");
     case blink::kWebAXRoleLink:

@@ -325,6 +325,14 @@ const char* ToString(ax::mojom::Role role) {
       return "inputTime";
     case ax::mojom::Role::kLabelText:
       return "labelText";
+    case ax::mojom::Role::kLayoutTable:
+      return "layoutTable";
+    case ax::mojom::Role::kLayoutTableCell:
+      return "layoutTableCell";
+    case ax::mojom::Role::kLayoutTableColumn:
+      return "layoutTableColumn";
+    case ax::mojom::Role::kLayoutTableRow:
+      return "layoutTableRow";
     case ax::mojom::Role::kLegend:
       return "legend";
     case ax::mojom::Role::kLineBreak:
@@ -585,6 +593,14 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kInputTime;
   if (0 == strcmp(role, "labelText"))
     return ax::mojom::Role::kLabelText;
+  if (0 == strcmp(role, "layoutTable"))
+    return ax::mojom::Role::kLayoutTable;
+  if (0 == strcmp(role, "layoutTableCell"))
+    return ax::mojom::Role::kLayoutTableCell;
+  if (0 == strcmp(role, "layoutTableColumn"))
+    return ax::mojom::Role::kLayoutTableColumn;
+  if (0 == strcmp(role, "layoutTableRow"))
+    return ax::mojom::Role::kLayoutTableRow;
   if (0 == strcmp(role, "legend"))
     return ax::mojom::Role::kLegend;
   if (0 == strcmp(role, "lineBreak"))
