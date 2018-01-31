@@ -69,8 +69,8 @@ def GenerateCommentForBlock(block_name, block_data):
   if block_name == "OCSP RESPONSE":
     tmp_file_path = "tmp_ocsp.der"
     WriteStringToFile(block_data, tmp_file_path)
-    p = subprocess.Popen(["openssl", "ocsp", "-resp_text", "-respin",
-                          tmp_file_path],
+    p = subprocess.Popen(["openssl", "ocsp", "-noverify", "-resp_text",
+                          "-respin", tmp_file_path],
                           stdin=subprocess.PIPE,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
@@ -85,6 +85,7 @@ def GenerateCommentForBlock(block_name, block_data):
       stdout_data = stdout_data.replace("-----", "~~~~~")
       return '$ openssl ocsp -resp_text -respin <([%s])\n%s' % (block_name,
                                                                 stdout_data)
+    print 'Error pretty printing OCSP response:\n',stderr_data
 
   # Otherwise try pretty printing using asn1parse.
 
