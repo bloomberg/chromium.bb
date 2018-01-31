@@ -99,9 +99,10 @@ class MediaTransferProtocolManager {
    public:
     virtual ~Observer() {}
 
-    // A function called after a MTP storage has been attached / detached.
-    virtual void StorageChanged(bool is_attached,
-                                const std::string& storage_name) = 0;
+    // Functions called after a MTP storage has been attached / detached.
+    virtual void StorageAttached(
+        const device::mojom::MtpStorageInfo& storage_info) = 0;
+    virtual void StorageDetached(const std::string& storage_name) = 0;
   };
 
   virtual ~MediaTransferProtocolManager() {}
