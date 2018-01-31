@@ -35,6 +35,8 @@ jumbo_component("keyboard") {
     "keyboard_util.h",
     "notification_manager.cc",
     "notification_manager.h",
+    "queued_container_type.cc",
+    "queued_container_type.h",
   ]
 
   defines = [ "KEYBOARD_IMPLEMENTATION" ]

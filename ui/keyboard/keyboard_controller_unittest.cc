@@ -176,6 +176,32 @@ class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestKeyboardLayoutDelegate);
 };
 
+class SetModeCallbackInvocationCounter {
+ public:
+  SetModeCallbackInvocationCounter() : weak_factory_invoke_(this) {}
+
+  void Invoke(bool status) {
+    if (status)
+      invocation_count_success_++;
+    else
+      invocation_count_failure_++;
+  }
+
+  base::OnceCallback<void(bool)> GetInvocationCallback() {
+    return base::BindOnce(&SetModeCallbackInvocationCounter::Invoke,
+                          weak_factory_invoke_.GetWeakPtr());
+  }
+
+  int invocation_count_for_status(bool status) {
+    return status ? invocation_count_success_ : invocation_count_failure_;
+  }
+
+ private:
+  int invocation_count_success_ = 0;
+  int invocation_count_failure_ = 0;
+  base::WeakPtrFactory<SetModeCallbackInvocationCounter> weak_factory_invoke_;
+};
+
 }  // namespace
 
 class KeyboardControllerTest : public testing::Test,
@@ -655,13 +681,27 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
   EXPECT_FALSE(notified_is_available());
 
-  controller()->SetContainerType(ContainerType::FLOATING);
+  SetModeCallbackInvocationCounter invocation_counter;
+  controller()->SetContainerType(ContainerType::FLOATING,
+                                 invocation_counter.GetInvocationCallback());
+  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(true));
+  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
   ShowKeyboard();
   RunAnimationForLayer(layer);
+  EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
+  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
   // Visible bounds and occluding bounds are now different.
   EXPECT_EQ(keyboard_container()->bounds(), notified_visible_bounds());
   EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
   EXPECT_TRUE(notified_is_available());
+
+  // callback should do nothing when container mode is set to the current active
+  // container type. An unnecessary call gets registered synchronously as a
+  // failure status to the callback.
+  controller()->SetContainerType(ContainerType::FLOATING,
+                                 invocation_counter.GetInvocationCallback());
+  EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
+  EXPECT_EQ(1, invocation_counter.invocation_count_for_status(false));
 }
 
 // Show keyboard during keyboard hide animation should abort the hide animation
