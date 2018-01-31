@@ -214,9 +214,10 @@ const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
 const char kHistogramFirstScrollInputAfterFirstPaint[] =
     "PageLoad.InputTiming.NavigationToFirstScroll.AfterPaint";
 
-const char kHistogramTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
-const char kHistogramNetworkBytes[] = "PageLoad.Experimental.Bytes.Network";
-const char kHistogramCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
+const char kHistogramPageLoadTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
+const char kHistogramPageLoadNetworkBytes[] =
+    "PageLoad.Experimental.Bytes.Network";
+const char kHistogramPageLoadCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 
 const char kHistogramLoadTypeTotalBytesForwardBack[] =
     "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
@@ -762,9 +763,10 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   DCHECK_GE(cache_bytes_, 0);
   int64_t total_bytes = network_bytes_ + cache_bytes_;
 
-  PAGE_BYTES_HISTOGRAM(internal::kHistogramNetworkBytes, network_bytes_);
-  PAGE_BYTES_HISTOGRAM(internal::kHistogramCacheBytes, cache_bytes_);
-  PAGE_BYTES_HISTOGRAM(internal::kHistogramTotalBytes, total_bytes);
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadNetworkBytes,
+                       network_bytes_);
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadCacheBytes, cache_bytes_);
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadTotalBytes, total_bytes);
 
   switch (GetPageLoadType(transition_)) {
     case LOAD_TYPE_RELOAD:

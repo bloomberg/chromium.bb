@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   // Force navigation to another page, which should force logging of histograms
   // persisted at the end of the page load lifetime.
   NavigateToUntrackedUrl();
-  histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramPageLoadTotalBytes, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
 
@@ -1124,11 +1124,12 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
   // navigation to another page.
   NavigateToUntrackedUrl();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramPageLoadTotalBytes, 1);
 
   // Verify that there is a single sample recorded in the 10kB bucket (the size
   // of the main HTML response).
-  histogram_tester_.ExpectBucketCount(internal::kHistogramTotalBytes, 10, 1);
+  histogram_tester_.ExpectBucketCount(internal::kHistogramPageLoadTotalBytes,
+                                      10, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSizeChildFrame) {
@@ -1145,11 +1146,12 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSizeChildFrame) {
   // navigation to another page.
   NavigateToUntrackedUrl();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramPageLoadTotalBytes, 1);
 
   // Verify that there is a single sample recorded in the 10kB bucket (the size
   // of the iframe response).
-  histogram_tester_.ExpectBucketCount(internal::kHistogramTotalBytes, 10, 1);
+  histogram_tester_.ExpectBucketCount(internal::kHistogramPageLoadTotalBytes,
+                                      10, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1176,7 +1178,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   NavigateToUntrackedUrl();
 
-  histogram_tester_.ExpectUniqueSample(internal::kHistogramTotalBytes, 0, 1);
+  histogram_tester_.ExpectUniqueSample(internal::kHistogramPageLoadTotalBytes,
+                                       0, 1);
 }
 
 // Test UseCounter Features observed in the main frame are recorded, exactly
