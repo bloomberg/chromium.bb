@@ -340,7 +340,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
 
-  bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
+  bool ShouldContinueToPauseForFrame() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void OnSynchronizedDisplayPropertiesChanged() override;
   void DidNavigate() override;
@@ -617,17 +617,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   int tab_show_sequence_ = 0;
 
   std::unique_ptr<CursorManager> cursor_manager_;
-
-  enum class RepaintState {
-    // No repaint in progress.
-    None,
-
-    // Synchronously waiting for a new frame.
-    Paused,
-
-    // Screen updates are disabled while a new frame is swapped in.
-    ScreenUpdatesDisabled,
-  } repaint_state_ = RepaintState::None;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

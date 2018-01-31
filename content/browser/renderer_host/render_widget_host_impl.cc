@@ -944,54 +944,26 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   TRACE_EVENT0("browser",
       "RenderWidgetHostImpl::PauseForPendingResizeOrRepaints");
 
-  if (!CanPauseForPendingResizeOrRepaints())
-    return;
-
-  WaitForSurface();
-}
-
-bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
   // Do not pause if the view is hidden.
   if (is_hidden())
-    return false;
+    return;
 
   // Do not pause if there is not a paint or resize already coming.
   if (!repaint_ack_pending_ && !resize_ack_pending_)
-    return false;
+    return;
 
   if (!renderer_compositor_frame_sink_.is_bound())
-    return false;
+    return;
 
-  return true;
-}
+  if (!view_)
+    return;
 
-void RenderWidgetHostImpl::WaitForSurface() {
   // How long to (synchronously) wait for the renderer to respond with a
   // new frame when our current frame doesn't exist or is the wrong size.
   // This timeout impacts the "choppiness" of our window resize.
   const int kPaintMsgTimeoutMS = 167;
 
-  if (!view_)
-    return;
-
-  // The view_size will be current_size_ for auto-sized views and otherwise the
-  // size of the view_. (For auto-sized views, current_size_ is updated during
-  // ResizeACK messages.)
-  gfx::Size view_size = current_size_;
-  if (!auto_resize_enabled_) {
-    // Get the desired size from the current view bounds.
-    gfx::Rect view_rect = view_->GetViewBounds();
-    if (view_rect.IsEmpty())
-      return;
-    view_size = view_rect.size();
-  }
-
-  TRACE_EVENT2("renderer_host",
-               "RenderWidgetHostImpl::WaitForSurface",
-               "width",
-               base::IntToString(view_size.width()),
-               "height",
-               base::IntToString(view_size.height()));
+  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WaitForSurface");
 
   // We should not be asked to paint while we are hidden.  If we are hidden,
   // then it means that our consumer failed to call WasShown.
@@ -1004,18 +976,8 @@ void RenderWidgetHostImpl::WaitForSurface() {
       &in_get_backing_store_, true);
 
   // We might have a surface that we can use already.
-  if (view_->HasAcceleratedSurface(view_size))
+  if (!view_->ShouldContinueToPauseForFrame())
     return;
-
-  // Request that the renderer produce a frame of the right size, if it
-  // hasn't been requested already.
-  if (!repaint_ack_pending_ && !resize_ack_pending_) {
-    repaint_start_time_ = TimeTicks::Now();
-    repaint_ack_pending_ = true;
-    TRACE_EVENT_ASYNC_BEGIN0(
-        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
-    Send(new ViewMsg_Repaint(routing_id_, view_size));
-  }
 
   // Pump a nested run loop until we time out or get a frame of the right
   // size.
@@ -1025,11 +987,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
   while (1) {
     TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForSingleTaskToRun");
     if (ui::WindowResizeHelperMac::Get()->WaitForSingleTaskToRun(time_left)) {
-      // For auto-resized views, current_size_ determines the view_size and it
-      // may have changed during the handling of an ResizeACK message.
-      if (auto_resize_enabled_)
-        view_size = current_size_;
-      if (view_->HasAcceleratedSurface(view_size))
+      if (!view_->ShouldContinueToPauseForFrame())
         break;
     }
     time_left = timeout_time - TimeTicks::Now();

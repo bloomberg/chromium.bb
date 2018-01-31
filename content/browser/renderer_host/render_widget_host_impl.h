@@ -337,13 +337,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // the renderer to arrive. If pending resize messages are for an old window
   // size, then also pump through a new resize message if there is time.
   void PauseForPendingResizeOrRepaints();
-
-  // Whether pausing may be useful.
-  bool CanPauseForPendingResizeOrRepaints();
-
-  // Wait for a surface matching the size of the widget's view, possibly
-  // blocking until the renderer sends a new frame.
-  void WaitForSurface();
 #endif
 
   bool resize_ack_pending_for_testing() { return resize_ack_pending_; }

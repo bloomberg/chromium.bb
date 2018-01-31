@@ -887,11 +887,6 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
   support_->RequestCopyOfSurface(std::move(request));
 }
 
-bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
-    const gfx::Size& desired_size) {
-  return false;
-}
-
 void RenderWidgetHostViewChildFrame::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   if (renderer_compositor_frame_sink_)

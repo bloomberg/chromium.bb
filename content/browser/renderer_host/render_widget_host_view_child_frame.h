@@ -122,7 +122,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
-  bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
   void DidCreateNewRendererCompositorFrameSink(
