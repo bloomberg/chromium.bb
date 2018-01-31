@@ -6,7 +6,7 @@
 #define CONFIG_THIS_YEAR 2018
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "Microsoft (R) C/C++ Optimizing Compiler Version 19.11.25507.1 for x86"
+#define CC_IDENT "Microsoft (R) C/C++ Optimizing Compiler Version 19.11.25507.1 for x86"
 #define av_restrict __restrict
 #define EXTERN_PREFIX "_"
 #define EXTERN_ASM _
