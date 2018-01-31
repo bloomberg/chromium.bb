@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 
@@ -26,10 +27,6 @@ constexpr char kConnectionNamespace[] =
     "urn:x-cast:com.google.cast.tp.connection";
 constexpr char kReceiverNamespace[] = "urn:x-cast:com.google.cast.receiver";
 
-// Sender and receiver IDs to use for platform messages.
-constexpr char kPlatformSenderId[] = "sender-0";
-constexpr char kPlatformReceiverId[] = "receiver-0";
-
 // Text payload keys.
 constexpr char kTypeNodeId[] = "type";
 constexpr char kRequestIdNodeId[] = "requestId";
@@ -39,6 +36,14 @@ constexpr char kKeepAlivePingType[] = "PING";
 constexpr char kKeepAlivePongType[] = "PONG";
 constexpr char kGetAppAvailabilityRequestType[] = "GET_APP_AVAILABILITY";
 constexpr char kConnectionRequestType[] = "CONNECT";
+
+// The value used for "sdkType" in a virtual connect request. Historically, this
+// value is used in the Media Router extension, but here it is reused in Chrome.
+constexpr int kVirtualConnectSdkType = 2;
+
+// The value used for "connectionType" in a virtual connect request. This value
+// stands for CONNECTION_TYPE_LOCAL, which is the only type used in Chrome.
+constexpr int kVirtualConnectTypeLocal = 1;
 
 void FillCommonCastMessageFields(CastMessage* message,
                                  const std::string& source_id,
@@ -63,6 +68,23 @@ CastMessage CreateKeepAliveMessage(const char* keep_alive_type) {
   return output;
 }
 
+// Returns the value to be set as the "platform" value in a virtual connect
+// request. The value is platform-dependent and is taken from the Platform enum
+// defined in third_party/metrics_proto/cast_logs.proto.
+int GetVirtualConnectPlatformValue() {
+#if defined(OS_WIN)
+  return 3;
+#elif defined(OS_MACOSX)
+  return 4;
+#elif defined(OS_CHROMEOS)
+  return 5;
+#elif defined(OS_LINUX)
+  return 6;
+#else
+  return 0;
+#endif
+}
+
 }  // namespace
 
 bool IsCastMessageValid(const CastMessage& message_proto) {
@@ -76,26 +98,23 @@ bool IsCastMessageValid(const CastMessage& message_proto) {
           message_proto.has_payload_binary());
 }
 
-std::unique_ptr<Value> GetDictionaryFromCastMessage(
+std::unique_ptr<base::DictionaryValue> GetDictionaryFromCastMessage(
     const CastMessage& message) {
   if (!message.has_payload_utf8())
     return nullptr;
 
-  std::unique_ptr<Value> parsed_payload(
+  return base::DictionaryValue::From(
       base::JSONReader::Read(message.payload_utf8()));
-  if (!parsed_payload || !parsed_payload->is_dict())
-    return nullptr;
-
-  return parsed_payload;
 }
 
 CastMessageType ParseMessageType(const CastMessage& message) {
-  std::unique_ptr<Value> dictionary = GetDictionaryFromCastMessage(message);
+  std::unique_ptr<base::DictionaryValue> dictionary =
+      GetDictionaryFromCastMessage(message);
   if (!dictionary)
     return CastMessageType::kOther;
 
-  const base::Value* type_string =
-      dictionary->FindKeyOfType(kTypeNodeId, base::Value::Type::STRING);
+  const Value* type_string =
+      dictionary->FindKeyOfType(kTypeNodeId, Value::Type::STRING);
   if (!type_string)
     return CastMessageType::kOther;
 
@@ -193,17 +212,48 @@ CastMessage CreateKeepAlivePongMessage() {
   return CreateKeepAliveMessage(kKeepAlivePongType);
 }
 
-CastMessage CreateVirtualConnectionRequest(const std::string& source_id,
-                                           const std::string& destination_id) {
+CastMessage CreateVirtualConnectionRequest(
+    const std::string& source_id,
+    const std::string& destination_id,
+    VirtualConnectionType connection_type,
+    const std::string& user_agent,
+    const std::string& browser_version) {
+  DCHECK(destination_id != kPlatformReceiverId || connection_type == kStrong);
+
   CastMessage output;
   FillCommonCastMessageFields(&output, source_id, destination_id,
                               kConnectionNamespace);
   output.set_payload_type(
       CastMessage::PayloadType::CastMessage_PayloadType_STRING);
 
+  // Parse system_version from user agent string. It contains platform, OS and
+  // CPU info and is contained in the first set of parentheses of the user
+  // agent string (e.g., X11; Linux x86_64).
+  std::string system_version;
+  size_t start_index = user_agent.find('(');
+  if (start_index != std::string::npos) {
+    size_t end_index = user_agent.find(')', start_index + 1);
+    if (end_index != std::string::npos) {
+      system_version =
+          user_agent.substr(start_index + 1, end_index - start_index - 1);
+    }
+  }
+
   Value dict(Value::Type::DICTIONARY);
   dict.SetKey(kTypeNodeId, Value(kConnectionRequestType));
-  // TODO(crbug.com/698940): Populate other optional fields.
+  dict.SetKey("userAgent", Value(user_agent));
+  dict.SetKey("connType", Value(connection_type));
+
+  Value sender_info(Value::Type::DICTIONARY);
+  sender_info.SetKey("sdkType", Value(kVirtualConnectSdkType));
+  sender_info.SetKey("version", Value(browser_version));
+  sender_info.SetKey("browserVersion", Value(browser_version));
+  sender_info.SetKey("platform", Value(GetVirtualConnectPlatformValue()));
+  sender_info.SetKey("connectionType", Value(kVirtualConnectTypeLocal));
+  if (!system_version.empty())
+    sender_info.SetKey("systemVersion", Value(system_version));
+
+  dict.SetKey("senderInfo", std::move(sender_info));
   CHECK(base::JSONWriter::Write(dict, output.mutable_payload_utf8()));
   return output;
 }

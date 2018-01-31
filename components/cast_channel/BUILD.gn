@@ -12,6 +12,8 @@ static_library("cast_channel") {
     "cast_channel_util.h",
     "cast_framer.cc",
     "cast_framer.h",
+    "cast_message_handler.cc",
+    "cast_message_handler.h",
     "cast_message_util.cc",
     "cast_message_util.h",
     "cast_socket.cc",
@@ -31,7 +33,9 @@ static_library("cast_channel") {
     "//components/cast_channel/proto:cast_channel_proto",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/version_info",
     "//content/public/browser",
+    "//content/public/common",
     "//crypto",
     "//net",
   ]
@@ -59,6 +63,7 @@ source_set("unit_tests") {
   sources = [
     "cast_auth_util_unittest.cc",
     "cast_framer_unittest.cc",
+    "cast_message_handler_unittest.cc",
     "cast_socket_service_unittest.cc",
     "cast_socket_unittest.cc",
     "cast_transport_unittest.cc",

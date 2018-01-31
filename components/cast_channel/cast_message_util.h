@@ -15,6 +15,10 @@ class AuthContext;
 class CastMessage;
 class DeviceAuthMessage;
 
+// Sender and receiver IDs to use for platform messages.
+constexpr char kPlatformSenderId[] = "sender-0";
+constexpr char kPlatformReceiverId[] = "receiver-0";
+
 // Cast application protocol message types.
 enum class CastMessageType { kOther, kPing, kPong };
 
@@ -23,7 +27,7 @@ bool IsCastMessageValid(const CastMessage& message_proto);
 
 // Parses and returns the UTF-8 payload from |message|. Returns nullptr
 // if the UTF-8 payload doesn't exist, or if it is not a dictionary.
-std::unique_ptr<base::Value> GetDictionaryFromCastMessage(
+std::unique_ptr<base::DictionaryValue> GetDictionaryFromCastMessage(
     const CastMessage& message);
 
 // Parses the JSON-encoded payload of |message| and returns the value in the
@@ -58,10 +62,23 @@ bool IsPlatformSenderMessage(const CastMessage& message);
 CastMessage CreateKeepAlivePingMessage();
 CastMessage CreateKeepAlivePongMessage();
 
+enum VirtualConnectionType {
+  kStrong = 0,
+  // kWeak = 1 not used.
+  kInvisible = 2
+};
+
 // Creates a virtual connection request message for |source_id| and
-// |destination_id|.
-CastMessage CreateVirtualConnectionRequest(const std::string& source_id,
-                                           const std::string& destination_id);
+// |destination_id|. |user_agent| and |browser_version| will be included with
+// the request.
+// If |destination_id| is kPlatformReceiverId, then |connection_type| must be
+// kStrong. Otherwise |connection_type| can be either kStrong or kInvisible.
+CastMessage CreateVirtualConnectionRequest(
+    const std::string& source_id,
+    const std::string& destination_id,
+    VirtualConnectionType connection_type,
+    const std::string& user_agent,
+    const std::string& browser_version);
 
 // Creates an app availability request for |app_id| from |source_id| with
 // ID |request_id|.
