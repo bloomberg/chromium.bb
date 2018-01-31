@@ -1297,6 +1297,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 void NavigationRequest::CommitErrorPage(
     RenderFrameHostImpl* render_frame_host,
     const base::Optional<std::string>& error_page_content) {
+  UpdateRequestNavigationParamsHistory();
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   navigation_handle_->ReadyToCommitNavigation(render_frame_host);
   render_frame_host->FailedNavigation(common_params_, request_params_,
@@ -1305,6 +1306,7 @@ void NavigationRequest::CommitErrorPage(
 }
 
 void NavigationRequest::CommitNavigation() {
+  UpdateRequestNavigationParamsHistory();
   DCHECK(response_ || !IsURLHandledByNetworkStack(common_params_.url) ||
          navigation_handle_->IsSameDocument());
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
@@ -1450,6 +1452,15 @@ NavigationRequest::CheckLegacyProtocolInSubresource() const {
   parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING, console_message);
 
   return LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST;
+}
+
+void NavigationRequest::UpdateRequestNavigationParamsHistory() {
+  NavigationController* navigation_controller =
+      frame_tree_node_->navigator()->GetController();
+  request_params_.current_history_list_offset =
+      navigation_controller->GetCurrentEntryIndex();
+  request_params_.current_history_list_length =
+      navigation_controller->GetEntryCount();
 }
 
 }  // namespace content

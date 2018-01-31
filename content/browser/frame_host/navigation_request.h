@@ -294,6 +294,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   LegacyProtocolInSubresourceCheckResult CheckLegacyProtocolInSubresource()
       const;
 
+  // Called before a commit. Updates the history index and length held in
+  // RequestNavigationParams. This is used to update this shared state with the
+  // renderer process.
+  void UpdateRequestNavigationParamsHistory();
+
   FrameTreeNode* frame_tree_node_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
