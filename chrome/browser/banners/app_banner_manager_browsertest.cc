@@ -190,24 +190,26 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                      AppBannerManagerTest* manager,
                      const std::string& url,
                      const std::vector<double>& engagement_scores,
-                     const std::string& setup_script,
                      WebappInstallSource expected_install_source,
                      InstallableStatusCode expected_code_for_histogram,
-                     bool expected_to_record_minutes_histogram) {
-    RunBannerTest(browser, manager, url, engagement_scores, setup_script,
+                     bool expected_to_record_minutes_histogram,
+                     bool expected_to_show) {
+    RunBannerTest(browser, manager, url, engagement_scores,
                   expected_install_source, expected_code_for_histogram,
-                  expected_to_record_minutes_histogram, base::string16());
+                  expected_to_record_minutes_histogram, expected_to_show,
+                  base::string16(), ui::PAGE_TRANSITION_TYPED);
   }
 
   void RunBannerTest(Browser* browser,
                      AppBannerManagerTest* manager,
                      const std::string& url,
                      const std::vector<double>& engagement_scores,
-                     const std::string& setup_script,
                      WebappInstallSource expected_install_source,
                      InstallableStatusCode expected_code_for_histogram,
                      bool expected_to_record_minutes_histogram,
-                     const base::string16 expected_tab_title) {
+                     bool expected_to_show,
+                     const base::string16 expected_tab_title,
+                     ui::PageTransition transition) {
     base::HistogramTester histograms;
     GURL test_url = embedded_test_server()->GetURL(url);
 
@@ -234,21 +236,17 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
       ++iterations;
     }
 
-    // The final loop should have set sufficient engagement for the banner to
-    // trigger. Spin the run loop and wait for the manager to finish.
+    // On the final loop, we expect the banner pipeline to trigger - the
+    // navigation should generate the final engagement to show the banner. Spin
+    // the run loop and wait for the manager to finish.
     base::RunLoop run_loop;
     manager->clear_will_show();
     manager->PrepareDone(run_loop.QuitClosure());
-    NavigateParams nav_params(browser, test_url, ui::PAGE_TRANSITION_LINK);
+    NavigateParams nav_params(browser, test_url, transition);
     ui_test_utils::NavigateToURL(&nav_params);
-    if (!setup_script.empty()) {
-      EXPECT_TRUE(content::ExecuteScript(
-          browser->tab_strip_model()->GetActiveWebContents(), setup_script));
-    }
     run_loop.Run();
 
-    EXPECT_EQ(expected_code_for_histogram == SHOWING_WEB_APP_BANNER,
-              manager->banner_shown());
+    EXPECT_EQ(expected_to_show, manager->banner_shown());
     EXPECT_EQ(expected_install_source, manager->install_source());
 
     // Generally the manager will be in the complete state, however some test
@@ -282,7 +280,6 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
   void TriggerBannerFlowWithNavigation(Browser* browser,
                                        AppBannerManagerTest* manager,
                                        const GURL& url,
-                                       const std::string& setup_script,
                                        bool expected_will_show,
                                        State expected_state) {
     // Use NavigateToURLWithDisposition as it isn't overloaded, so can be used
@@ -292,23 +289,18 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
         base::BindOnce(&ui_test_utils::NavigateToURLWithDisposition, browser,
                        url, WindowOpenDisposition::CURRENT_TAB,
                        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION),
-        setup_script, expected_will_show, expected_state);
+        expected_will_show, expected_state);
   }
 
   void TriggerBannerFlow(Browser* browser,
                          AppBannerManagerTest* manager,
                          base::OnceClosure trigger_task,
-                         const std::string& setup_script,
                          bool expected_will_show,
                          State expected_state) {
     base::RunLoop run_loop;
     manager->clear_will_show();
     manager->PrepareDone(run_loop.QuitClosure());
     std::move(trigger_task).Run();
-    if (!setup_script.empty()) {
-      EXPECT_TRUE(content::ExecuteScript(
-          browser->tab_strip_model()->GetActiveWebContents(), setup_script));
-    }
     run_loop.Run();
 
     EXPECT_EQ(expected_will_show, manager->banner_shown());
@@ -321,9 +313,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerCreated) {
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{0, 10};
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -332,9 +324,10 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true, base::string16(),
+                ui::PAGE_TRANSITION_LINK);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -343,9 +336,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{0, 1, 2, 3, 4, 5, 10};
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -354,33 +347,33 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{0, 10};
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true);
 
   AppBannerManager::SetTimeDeltaForTesting(1);
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(), WebappInstallSource::COUNT,
-                PREVIOUSLY_IGNORED, false);
+                engagement_scores, WebappInstallSource::COUNT,
+                PREVIOUSLY_IGNORED, false, false);
 
   AppBannerManager::SetTimeDeltaForTesting(13);
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(), WebappInstallSource::COUNT,
-                PREVIOUSLY_IGNORED, false);
+                engagement_scores, WebappInstallSource::COUNT,
+                PREVIOUSLY_IGNORED, false, false);
 
   AppBannerManager::SetTimeDeltaForTesting(14);
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, false);
+                SHOWING_WEB_APP_BANNER, false, true);
 
   AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(90, 2);
 
   AppBannerManager::SetTimeDeltaForTesting(16);
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, false);
+                SHOWING_WEB_APP_BANNER, false, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -391,9 +384,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   RunBannerTest(browser(), manager.get(),
                 GetURLOfPageWithServiceWorkerAndManifest(
                     "/banners/manifest_no_type.json"),
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -404,9 +397,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   RunBannerTest(browser(), manager.get(),
                 GetURLOfPageWithServiceWorkerAndManifest(
                     "/banners/manifest_no_type_caps.json"),
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, NoManifest) {
@@ -414,8 +407,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, NoManifest) {
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
   RunBannerTest(browser(), manager.get(), "/banners/no_manifest_test_page.html",
-                engagement_scores, std::string(), WebappInstallSource::COUNT,
-                NO_MANIFEST, false);
+                engagement_scores, WebappInstallSource::COUNT, NO_MANIFEST,
+                false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, MissingManifest) {
@@ -425,8 +418,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, MissingManifest) {
   RunBannerTest(browser(), manager.get(),
                 GetURLOfPageWithServiceWorkerAndManifest(
                     "/banners/manifest_missing.json"),
-                engagement_scores, std::string(), WebappInstallSource::COUNT,
-                MANIFEST_EMPTY, false);
+                engagement_scores, WebappInstallSource::COUNT, MANIFEST_EMPTY,
+                false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -440,42 +433,40 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   // onbeforeinstallprompt attribute.
   // Note that this test does not call beforeinstallpromptevent.prompt(); it
   // merely ensures that the event was sent and received by the page.
-  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, "verifyEvents('beforeinstallprompt')",
-                WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true,
-                base::ASCIIToUTF16("Got beforeinstallprompt: listener, attr"));
+  RunBannerTest(
+      browser(), manager.get(), "/banners/beforeinstallprompt_test_page.html",
+      engagement_scores, WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
+      SHOWING_WEB_APP_BANNER, true, true,
+      base::ASCIIToUTF16("Got beforeinstallprompt: listener, attr"),
+      ui::PAGE_TRANSITION_TYPED);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CancelBannerDirect) {
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
-  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores,
-                "addPromptListener(PromptAction.CANCEL_PROMPT)",
-                WebappInstallSource::COUNT, RENDERER_CANCELLED, false);
+  RunBannerTest(browser(), manager.get(), "/banners/cancel_test_page.html",
+                engagement_scores, WebappInstallSource::COUNT,
+                RENDERER_CANCELLED, false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PromptBanner) {
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{0, 5, 10};
-  RunBannerTest(
-      browser(), manager.get(), "/banners/manifest_test_page.html",
-      engagement_scores, "addPromptListener(PromptAction.CALL_PROMPT_DELAYED)",
-      WebappInstallSource::API_BROWSER_TAB, SHOWING_WEB_APP_BANNER, true);
+  RunBannerTest(browser(), manager.get(), "/banners/prompt_test_page.html",
+                engagement_scores, WebappInstallSource::API_BROWSER_TAB,
+                SHOWING_WEB_APP_BANNER, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PromptBannerInHandler) {
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{0, 2, 5, 10};
-  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores,
-                "addPromptListener(PromptAction.CALL_PROMPT_IN_HANDLER)",
+  RunBannerTest(browser(), manager.get(),
+                "/banners/prompt_in_handler_test_page.html", engagement_scores,
                 WebappInstallSource::API_BROWSER_TAB, SHOWING_WEB_APP_BANNER,
-                true);
+                true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -483,18 +474,16 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
-  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores,
-                "addPromptListener(PromptAction.CALL_PROMPT_IN_HANDLER)",
+  RunBannerTest(browser(), manager.get(),
+                "/banners/prompt_in_handler_test_page.html", engagement_scores,
                 WebappInstallSource::API_BROWSER_TAB, SHOWING_WEB_APP_BANNER,
-                true);
+                true, true);
   std::string cancel_test_page_url =
-      GetURLOfPageWithManifest("/banners/manifest_test_page.html?manifest=",
+      GetURLOfPageWithManifest("/banners/cancel_test_page.html?manifest=",
                                "/banners/manifest_different_start_url.json");
   RunBannerTest(browser(), manager.get(), cancel_test_page_url,
-                engagement_scores,
-                "addPromptListener(PromptAction.CANCEL_PROMPT)",
-                WebappInstallSource::COUNT, RENDERER_CANCELLED, false);
+                engagement_scores, WebappInstallSource::COUNT,
+                RENDERER_CANCELLED, false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerInIFrame) {
@@ -502,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerInIFrame) {
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
   RunBannerTest(browser(), manager.get(), "/banners/iframe_test_page.html",
-                engagement_scores, std::string(), WebappInstallSource::COUNT,
-                NO_MANIFEST, false);
+                engagement_scores, WebappInstallSource::COUNT, NO_MANIFEST,
+                false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, DoesNotShowInIncognito) {
@@ -514,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, DoesNotShowInIncognito) {
   std::vector<double> engagement_scores{10};
   RunBannerTest(incognito_browser, manager.get(),
                 "/banners/manifest_test_page.html", engagement_scores,
-                std::string(), WebappInstallSource::COUNT, IN_INCOGNITO, false);
+                WebappInstallSource::COUNT, IN_INCOGNITO, false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -526,9 +515,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, std::string(),
+                engagement_scores,
                 WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB,
-                SHOWING_WEB_APP_BANNER, true);
+                SHOWING_WEB_APP_BANNER, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -539,10 +528,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
-  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores,
-                "addPromptListener(PromptAction.CANCEL_PROMPT)",
-                WebappInstallSource::COUNT, RENDERER_CANCELLED, false);
+  RunBannerTest(browser(), manager.get(), "/banners/cancel_test_page.html",
+                engagement_scores, WebappInstallSource::COUNT,
+                RENDERER_CANCELLED, false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -554,18 +542,16 @@ IN_PROC_BROWSER_TEST_F(
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
-  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores,
-                "addPromptListener(PromptAction.CALL_PROMPT_IN_HANDLER)",
+  RunBannerTest(browser(), manager.get(),
+                "/banners/prompt_in_handler_test_page.html", engagement_scores,
                 WebappInstallSource::API_BROWSER_TAB, SHOWING_WEB_APP_BANNER,
-                true);
+                true, true);
   std::string cancel_test_page_url =
-      GetURLOfPageWithManifest("/banners/manifest_test_page.html?manifest=",
+      GetURLOfPageWithManifest("/banners/cancel_test_page.html?manifest=",
                                "/banners/manifest_different_start_url.json");
   RunBannerTest(browser(), manager.get(), cancel_test_page_url,
-                engagement_scores,
-                "addPromptListener(PromptAction.CANCEL_PROMPT)",
-                WebappInstallSource::COUNT, RENDERER_CANCELLED, false);
+                engagement_scores, WebappInstallSource::COUNT,
+                RENDERER_CANCELLED, false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -587,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   // First run through: expect the manager to end up stopped in the pending
   // state, without showing a banner.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
-                                  std::string(), false /* expected_will_show */,
+                                  false /* expected_will_show */,
                                   State::PENDING_ENGAGEMENT);
 
   // Trigger an engagement increase that signals observers and expect the banner
@@ -598,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                      base::Unretained(service),
                      browser()->tab_strip_model()->GetActiveWebContents(),
                      ui::PageTransition::PAGE_TRANSITION_TYPED),
-      std::string(), true /* expected_will_show */, State::COMPLETE);
+      true /* expected_will_show */, State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
@@ -619,12 +605,12 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   // First run through: expect the manager to end up stopped in the pending
   // state, without showing a banner.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
-                                  std::string(), false /* expected_will_show */,
+                                  false /* expected_will_show */,
                                   State::PENDING_ENGAGEMENT);
 
   // Navigate and expect Stop() to be called.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), GURL("about:blank"),
-                                  std::string(), false /* expected_will_show */,
+                                  false /* expected_will_show */,
                                   State::INACTIVE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
@@ -648,12 +634,12 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
   // Navigate and expect the manager to end up waiting for prompt to be called.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
-                                  std::string(), false /* expected_will_show */,
+                                  false /* expected_will_show */,
                                   State::PENDING_PROMPT);
 
   // Navigate and expect Stop() to be called.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), GURL("about:blank"),
-                                  std::string(), false /* expected_will_show */,
+                                  false /* expected_will_show */,
                                   State::INACTIVE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
@@ -671,23 +657,21 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
   SiteEngagementService* service =
       SiteEngagementService::Get(browser()->profile());
-  GURL test_url =
-      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/prompt_no_preventdefault_test_page.html");
   service->ResetBaseScoreForURL(test_url, 10);
 
   // Navigate to page and get the pipeline started.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
-                                  "addPromptListener(PromptAction.STASH_EVENT)",
                                   false /* expected_will_show */,
                                   State::PENDING_PROMPT);
 
   // Now let the page call prompt without a gesture, an error should be
   // generated.
-  TriggerBannerFlow(
-      browser(), manager.get(),
-      base::BindOnce(&ExecuteScript, browser(), "callStashedPrompt();",
-                     false /* with_gesture */),
-      std::string(), false /* expected_will_show */, State::COMPLETE);
+  TriggerBannerFlow(browser(), manager.get(),
+                    base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
+                                   false /* with_gesture */),
+                    false /* expected_will_show */, State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
@@ -704,22 +688,20 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
   SiteEngagementService* service =
       SiteEngagementService::Get(browser()->profile());
-  GURL test_url =
-      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/prompt_no_preventdefault_test_page.html");
   service->ResetBaseScoreForURL(test_url, 10);
 
   // Navigate to page and get the pipeline started.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
-                                  "addPromptListener(PromptAction.STASH_EVENT)",
                                   false /* expected_will_show */,
                                   State::PENDING_PROMPT);
 
   // Now let the page call prompt with a gesture. The banner should be shown.
-  TriggerBannerFlow(
-      browser(), manager.get(),
-      base::BindOnce(&ExecuteScript, browser(), "callStashedPrompt();",
-                     true /* with_gesture */),
-      std::string(), true /* expected_will_show */, State::COMPLETE);
+  TriggerBannerFlow(browser(), manager.get(),
+                    base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
+                                   true /* with_gesture */),
+                    true /* expected_will_show */, State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
@@ -736,22 +718,20 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
   SiteEngagementService* service =
       SiteEngagementService::Get(browser()->profile());
-  GURL test_url =
-      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/prompt_no_preventdefault_test_page.html");
   service->ResetBaseScoreForURL(test_url, 10);
 
   // Navigate to page and get the pipeline started.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
-                                  "addPromptListener(PromptAction.STASH_EVENT)",
                                   false /* expected_will_show */,
                                   State::PENDING_PROMPT);
 
   // Call prompt to show the banner.
-  TriggerBannerFlow(
-      browser(), manager.get(),
-      base::BindOnce(&ExecuteScript, browser(), "callStashedPrompt();",
-                     true /* with_gesture */),
-      std::string(), true /* expected_will_show */, State::COMPLETE);
+  TriggerBannerFlow(browser(), manager.get(),
+                    base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
+                                   true /* with_gesture */),
+                    true /* expected_will_show */, State::COMPLETE);
 
   // Dismiss the banner.
   base::RunLoop run_loop;
@@ -761,11 +741,10 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   run_loop.Run();
 
   // Call prompt again to show the banner again.
-  TriggerBannerFlow(
-      browser(), manager.get(),
-      base::BindOnce(&ExecuteScript, browser(), "callStashedPrompt();",
-                     true /* with_gesture */),
-      std::string(), true /* expected_will_show */, State::COMPLETE);
+  TriggerBannerFlow(browser(), manager.get(),
+                    base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
+                                   true /* with_gesture */),
+                    true /* expected_will_show */, State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,

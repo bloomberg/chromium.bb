@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>Web app banner test page</title>
+    <script src="main.js"></script>
+    <script>
+      // If a "manifest=/path/to/manifest.json" query argument is provided to
+      // the URL accessing this page, that path is injected as the manifest tag.
+      // Otherwise, "manifest.json" is used as the manifest tag.
+      addManifestLinkTag();
+
+      window.addEventListener('beforeinstallprompt', function(e) {
+        console.log('Preventing banner from appearing');
+        e.preventDefault();
+
+        // Navigate the window to trigger the banner cancellation.
+        window.location.href = "/";
+      });
+    </script>
+  </head>
+  <body onload="initialize()">Cancels the banner.</body>
+</html>

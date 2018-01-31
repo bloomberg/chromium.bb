@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Web app banner test page</title>
+    <link rel="manifest" href="manifest.json" />
+    <script src="main.js"></script>
+    <script>
+      function callPrompt(event) {
+        event.prompt();
+      }
+
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        setTimeout(callPrompt, 0, e);
+      });
+
+    </script>
+  </head>
+  <body onload="initialize()">Cancels the banner, then prompts for it to be shown later.</body>
+</html>
