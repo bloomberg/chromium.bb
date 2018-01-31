@@ -20,6 +20,10 @@ message MediaPerception {
   // A single FramePerception message or array of perceptions (if reporting the
   // results from multiple frames).
   repeated FramePerception frame_perception = 2;
+
+  // A single AudioPerception message or array of audio perceptions (if
+  // reporting the results from multiple audio frames).
+  repeated AudioPerception audio_perception = 3;
 }
 
 // Used to transmit a history of image frames and their associated annotations.
@@ -72,8 +76,55 @@ message State {
 // This is the output of the MediaPerceptionSinkCalculator.
 message PerceptionSample {
   optional FramePerception frame_perception = 1;
+
   // The image frame data associated with the frame perception.
   optional ImageFrame image_frame = 2;
+
+  optional AudioPerception audio_perception = 3;
+}
+
+// Audio perception results for an audio frame.
+message AudioPerception {
+  // A timestamp in microseconds attached when this message was generated.
+  optional uint64 timestamp_us = 1;
+
+  // Audio localization results for an audio frame.
+  optional AudioLocalization audio_localization = 2;
+
+  // Human presence detection results for an audio frame.
+  optional AudioHumanPresenceDetection audio_human_presence_detection = 3;
+}
+
+// An estimate of the direction that the sound is coming from.
+message AudioLocalization {
+  // An angle in radians in the horizontal plane. It roughly points to the peak
+  // in the probability distribution of azimuth defined below.
+  optional double azimuth_radians = 1;
+
+  // A probability distribution for the current snapshot in time that shows the
+  // likelihood of a sound source being at a particular azimuth. For example,
+  // azimuthScores = [0.1, 0.2, 0.3, 0.4] means that the probability that the
+  // sound is coming from an azimuth of 0, pi/2, pi, 3*pi/2 is 0.1, 0.2, 0.3 and
+  // 0.4, respectively.
+  repeated double azimuth_scores = 2;
+}
+
+// Detection of human presence close to the microphone.
+message AudioHumanPresenceDetection {
+  // Indicates a probability in [0, 1] interval that a human has caused a sound
+  // close to the microphone.
+  optional double human_presence_likelihood = 1;
+
+  // Estimate of the noise spectrogram.
+  optional AudioSpectrogram noise_spectrogram = 2;
+
+  // Spectrogram of an audio frame.
+  optional AudioSpectrogram frame_spectrogram = 3;
+}
+
+// Spectrogram of an audio frame.
+message AudioSpectrogram {
+  repeated double values = 1;
 }
 
 // This message stores the image frame along with the meta data.
@@ -106,6 +157,50 @@ message FramePerception {
 
   // Latency measurement for a list of packet streams in drishti graph.
   repeated PacketLatency packet_latency = 6;
+
+  // Human presence detection results for a video frame.
+  optional VideoHumanPresenceDetection video_human_presence_detection = 7;
+}
+
+// Detection of human presence close to the camera.
+message VideoHumanPresenceDetection {
+  // Indicates a probability in [0, 1] interval that a human is present in the
+  // video frame.
+  optional double human_presence_likelihood = 1;
+
+  // Indicates a probability in [0, 1] interval that motion has been detected
+  // in the video frame.
+  optional double motion_detected_likelihood = 2;
+
+  // Type of lighting conditions.
+  enum LightCondition {
+    UNSPECIFIED = 0;
+
+    // No noticeable change occurred.
+    NO_CHANGE = 1;
+
+    // Light was switched on in the room.
+    TURNED_ON = 2;
+
+    // Light was switched off in the room.
+    TURNED_OFF = 3;
+
+    // Light gradually got dimmer (for example, due to a sunset).
+    DIMMER = 4;
+
+    // Light gradually got brighter (for example, due to a sunrise).
+    BRIGHTER = 5;
+
+    // Black frame detected - the current frame contains only noise.
+    BLACK_FRAME = 6;
+  }
+
+  // Indicates lighting condition in the video frame.
+  optional LightCondition light_condition = 3;
+
+  // Indicates a probability in [0, 1] interval that light condition value is
+  // correct.
+  optional double light_condition_likelihood = 4;
 }
 
 message Entity {

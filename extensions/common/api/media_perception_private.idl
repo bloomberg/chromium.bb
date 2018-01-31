@@ -192,6 +192,47 @@ namespace mediaPerceptionPrivate {
     long? latencyUsec;
   };
 
+  // Type of lighting conditions.
+  enum LightCondition {
+    UNSPECIFIED,
+
+    // No noticeable change occurred.
+    NO_CHANGE,
+
+    // Light was switched on in the room.
+    TURNED_ON,
+
+    // Light was switched off in the room.
+    TURNED_OFF,
+
+    // Light gradually got dimmer (for example, due to a sunset).
+    DIMMER,
+
+    // Light gradually got brighter (for example, due to a sunrise).
+    BRIGHTER,
+
+    // Black frame was detected - the current frame contains only noise.
+    BLACK_FRAME
+  };
+
+  // Detection of human presence close to the camera.
+  dictionary VideoHumanPresenceDetection {
+    // Indicates a probability in [0, 1] interval that a human is present in
+    // the video frame.
+    double? humanPresenceLikelihood;
+
+    // Indicates a probability in [0, 1] that motion has been detected in the
+    // video frame.
+    double? motionDetectedLikelihood;
+
+    // Indicates lighting condition in the video frame.
+    LightCondition? lightCondition;
+
+    // Indicates a probablity in [0, 1] interval that
+    // <code>lightCondition</code> value is correct.
+    double? lightConditionLikelihood;
+  };
+
   // The set of computer vision metadata for an image frame.
   dictionary FramePerception {
     long? frameId;
@@ -208,6 +249,53 @@ namespace mediaPerceptionPrivate {
 
     // Processing latency for a list of packets.
     PacketLatency[]? packetLatency;
+
+    // Human presence detection results for a video frame.
+    VideoHumanPresenceDetection? videoHumanPresenceDetection;
+  };
+
+  // An estimate of the direction that the sound is coming from.
+  dictionary AudioLocalization {
+    // An angle in radians in the horizontal plane. It roughly points to the
+    // peak in the probability distribution of azimuth defined below.
+    double? azimuthRadians;
+
+    // A probability distribution for the current snapshot in time that shows
+    // the likelihood of a sound source being at a particular azimuth. For
+    // example, <code>azimuthScores = [0.1, 0.2, 0.3, 0.4]</code> means that
+    // the probability that the sound is coming from an azimuth of 0, pi/2, pi,
+    // 3*pi/2 is 0.1, 0.2, 0.3 and 0.4, respectively.
+    double[]? azimuthScores;
+  };
+
+  // Spectrogram of an audio frame.
+  dictionary AudioSpectrogram {
+    double[]? values;
+  };
+
+  // Detection of human presence close to the microphone.
+  dictionary AudioHumanPresenceDetection {
+    // Indicates a probability in [0, 1] interval that a human has caused a
+    // sound close to the microphone.
+    double? humanPresenceLikelihood;
+
+    // Estimate of the noise spectrogram.
+    AudioSpectrogram? noiseSpectrogram;
+
+    // Spectrogram of an audio frame.
+    AudioSpectrogram? frameSpectrogram;
+  };
+
+  // Audio perception results for an audio frame.
+  dictionary AudioPerception {
+    // A timestamp in microseconds attached when this message was generated.
+    double? timestampUs;
+
+    // Audio localization results for an audio frame.
+    AudioLocalization? audioLocalization;
+
+    // Audio human presence detection results for an audio frame.
+    AudioHumanPresenceDetection? audioHumanPresenceDetection;
   };
 
   dictionary MediaPerception {
@@ -219,6 +307,9 @@ namespace mediaPerceptionPrivate {
 
     // An array of framePerceptions.
     FramePerception[]? framePerceptions;
+
+    // An array of audio perceptions.
+    AudioPerception[]? audioPerceptions;
   };
 
   enum ImageFormat {
@@ -247,6 +338,9 @@ namespace mediaPerceptionPrivate {
 
     // The image frame data for the associated FramePerception object.
     ImageFrame? imageFrame;
+
+    // The audio perception results for an audio frame.
+    AudioPerception? audioPerception;
   };
 
   dictionary Diagnostics {
