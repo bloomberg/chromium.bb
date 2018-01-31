@@ -526,7 +526,8 @@ void Geolocation::PageVisibilityChanged() {
 }
 
 bool Geolocation::HasPendingActivity() const {
-  return !one_shots_.IsEmpty() || !one_shots_being_invoked_.IsEmpty();
+  return !one_shots_.IsEmpty() || !one_shots_being_invoked_.IsEmpty() ||
+         !watchers_.IsEmpty() || !watchers_being_invoked_.IsEmpty();
 }
 
 void Geolocation::OnGeolocationConnectionError() {
