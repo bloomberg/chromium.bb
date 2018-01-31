@@ -855,12 +855,17 @@ void RenderWidget::OnWasHidden() {
     observer.WasHidden();
 }
 
-void RenderWidget::OnWasShown(bool needs_repainting,
-                              const ui::LatencyInfo& latency_info) {
+void RenderWidget::OnWasShown(
+    bool needs_repainting,
+    const ui::LatencyInfo& latency_info,
+    const base::Optional<ResizeParams>& resize_params) {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
   // During shutdown we can just ignore this message.
   if (!GetWebWidget())
     return;
+
+  if (resize_params)
+    OnResize(*resize_params);
 
   was_shown_time_ = base::TimeTicks::Now();
   // See OnWasHidden

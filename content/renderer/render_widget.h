@@ -553,7 +553,8 @@ class CONTENT_EXPORT RenderWidget
   void OnDisableDeviceEmulation();
   virtual void OnWasHidden();
   virtual void OnWasShown(bool needs_repainting,
-                          const ui::LatencyInfo& latency_info);
+                          const ui::LatencyInfo& latency_info,
+                          const base::Optional<ResizeParams>& resize_params);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestMoveAck();
