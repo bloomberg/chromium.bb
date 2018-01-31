@@ -1002,7 +1002,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
 // Tests that hosted app URLs loaded in iframes of non-app pages won't cause an
 // OOPIF unless there is another reason to create it, but popups from outside
 // the app will swap into the app.
-IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, FromOutsideHostedApp) {
+// TODO(crbug.com/807471): Flaky on Windows 7.
+#if defined(OS_WIN)
+#define MAYBE_FromOutsideHostedApp DISABLED_FromOutsideHostedApp
+#else
+#define MAYBE_FromOutsideHostedApp FromOutsideHostedApp
+#endif
+IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, MAYBE_FromOutsideHostedApp) {
   // Set up and launch the hosted app.
   GURL app_url =
       embedded_test_server()->GetURL("app.site.com", "/frame_tree/simple.htm");
