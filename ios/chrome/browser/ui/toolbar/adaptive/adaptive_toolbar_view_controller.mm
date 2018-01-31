@@ -41,7 +41,6 @@
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
   self.view.progressBar.hidden = YES;
-  // TODO(crbug.com/804848): Have the correct appearance on NTP.
   // TODO(crbug.com/804850): Have the correct background color for incognito
   // NTP.
 }

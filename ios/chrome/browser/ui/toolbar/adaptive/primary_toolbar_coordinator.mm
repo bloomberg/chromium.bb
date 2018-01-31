@@ -109,15 +109,27 @@
 #pragma mark - FakeboxFocuser
 
 - (void)focusFakebox {
-  // TODO(crbug.com/803372): Implement that.
+  if (IsIPadIdiom()) {
+    // On iPhone there is no visible omnibox, so there's no need to indicate
+    // interaction was initiated from the fakebox.
+    [self.locationBarCoordinator focusOmniboxFromFakebox];
+  }
+
+  [self.locationBarCoordinator focusOmnibox];
 }
 
 - (void)onFakeboxBlur {
-  // TODO(crbug.com/803372): Implement that.
+  DCHECK(!IsIPadIdiom());
+  // Hide the toolbar if the NTP is currently displayed.
+  web::WebState* webState = self.webStateList->GetActiveWebState();
+  if (webState && IsVisibleUrlNewTabPage(webState)) {
+    self.viewController.view.hidden = YES;
+  }
 }
 
 - (void)onFakeboxAnimationComplete {
-  // TODO(crbug.com/803372): Implement that.
+  DCHECK(!IsIPadIdiom());
+  self.viewController.view.hidden = NO;
 }
 
 // TODO(crbug.com/786940): This protocol should move to the ViewController
