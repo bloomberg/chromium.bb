@@ -105,11 +105,6 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
         base::WrapUnique(test_settings_ui_delegate_));
   }
 
-  void TearDown() override {
-    display_service_.reset();
-    BrowserWithTestWindowTest::TearDown();
-  }
-
   std::string GetActiveHostNotificationId() {
     return std::string(TetherNotificationPresenter::kActiveHostNotificationId);
   }
