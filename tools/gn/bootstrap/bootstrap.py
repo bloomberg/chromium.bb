@@ -662,8 +662,6 @@ def write_gn_ninja(path, root_gen_dir, options):
     }
 
   if is_linux or is_aix:
-    ldflags.extend(['-pthread'])
-
     static_libraries['xdg_user_dirs'] = {
         'sources': [
             'base/third_party/xdg_user_dirs/xdg_user_dir_lookup.cc',
@@ -689,6 +687,85 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/threading/platform_thread_linux.cc',
     ])
     if is_linux:
+      libcxx_root = SRC_ROOT + '/buildtools/third_party/libc++/trunk'
+      libcxxabi_root = SRC_ROOT + '/buildtools/third_party/libc++abi/trunk'
+      cflags_cc.extend([
+          '-nostdinc++',
+          '-isystem' + libcxx_root + '/include',
+          '-isystem' + libcxxabi_root + '/include',
+      ])
+      ldflags.extend(['-nodefaultlibs'])
+      libs.extend([
+          '-lc',
+          '-lgcc_s',
+          '-lm',
+          '-lpthread',
+      ])
+      static_libraries['libc++'] = {
+          'sources': [
+              libcxx_root + '/src/algorithm.cpp',
+              libcxx_root + '/src/any.cpp',
+              libcxx_root + '/src/bind.cpp',
+              libcxx_root + '/src/chrono.cpp',
+              libcxx_root + '/src/condition_variable.cpp',
+              libcxx_root + '/src/debug.cpp',
+              libcxx_root + '/src/exception.cpp',
+              libcxx_root + '/src/functional.cpp',
+              libcxx_root + '/src/future.cpp',
+              libcxx_root + '/src/hash.cpp',
+              libcxx_root + '/src/ios.cpp',
+              libcxx_root + '/src/iostream.cpp',
+              libcxx_root + '/src/locale.cpp',
+              libcxx_root + '/src/memory.cpp',
+              libcxx_root + '/src/mutex.cpp',
+              libcxx_root + '/src/new.cpp',
+              libcxx_root + '/src/optional.cpp',
+              libcxx_root + '/src/random.cpp',
+              libcxx_root + '/src/regex.cpp',
+              libcxx_root + '/src/shared_mutex.cpp',
+              libcxx_root + '/src/stdexcept.cpp',
+              libcxx_root + '/src/string.cpp',
+              libcxx_root + '/src/strstream.cpp',
+              libcxx_root + '/src/system_error.cpp',
+              libcxx_root + '/src/thread.cpp',
+              libcxx_root + '/src/typeinfo.cpp',
+              libcxx_root + '/src/utility.cpp',
+              libcxx_root + '/src/valarray.cpp',
+              libcxx_root + '/src/variant.cpp',
+              libcxx_root + '/src/vector.cpp',
+          ],
+          'tool': 'cxx',
+          'cflags': cflags + [
+              '-D_LIBCPP_NO_EXCEPTIONS',
+              '-D_LIBCPP_BUILDING_LIBRARY',
+              '-DLIBCXX_BUILDING_LIBCXXABI',
+          ]
+      }
+      static_libraries['libc++abi'] = {
+          'sources': [
+              libcxxabi_root + '/src/abort_message.cpp',
+              libcxxabi_root + '/src/cxa_aux_runtime.cpp',
+              libcxxabi_root + '/src/cxa_default_handlers.cpp',
+              libcxxabi_root + '/src/cxa_demangle.cpp',
+              libcxxabi_root + '/src/cxa_exception_storage.cpp',
+              libcxxabi_root + '/src/cxa_guard.cpp',
+              libcxxabi_root + '/src/cxa_handlers.cpp',
+              libcxxabi_root + '/src/cxa_noexception.cpp',
+              libcxxabi_root + '/src/cxa_unexpected.cpp',
+              libcxxabi_root + '/src/cxa_vector.cpp',
+              libcxxabi_root + '/src/cxa_virtual.cpp',
+              libcxxabi_root + '/src/fallback_malloc.cpp',
+              libcxxabi_root + '/src/private_typeinfo.cpp',
+              libcxxabi_root + '/src/stdlib_exception.cpp',
+              libcxxabi_root + '/src/stdlib_stdexcept.cpp',
+              libcxxabi_root + '/src/stdlib_typeinfo.cpp',
+          ],
+          'tool': 'cxx',
+          'cflags': cflags + [
+              '-DLIBCXXABI_SILENT_TERMINATE',
+              '-D_LIBCXXABI_NO_EXCEPTIONS',
+          ]
+      }
       static_libraries['base']['sources'].extend([
         'base/allocator/allocator_shim.cc',
         'base/allocator/allocator_shim_default_dispatch_to_glibc.cc',
@@ -701,6 +778,7 @@ def write_gn_ninja(path, root_gen_dir, options):
          'base/third_party/libevent/epoll.c',
       ])
     else:
+      ldflags.extend(['-pthread'])
       libs.extend(['-lrt'])
       static_libraries['base']['sources'].extend([
           'base/process/internal_aix.cc'
