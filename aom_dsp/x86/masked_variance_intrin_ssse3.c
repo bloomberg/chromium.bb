@@ -1095,18 +1095,3 @@ INLINE void aom_comp_mask_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
     i += 2;
   } while (i < height);
 }
-
-void aom_comp_mask_upsampled_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
-                                        int width, int height, int subpel_x_q3,
-                                        int subpel_y_q3, const uint8_t *ref,
-                                        int ref_stride, const uint8_t *mask,
-                                        int mask_stride, int invert_mask) {
-  if (subpel_x_q3 || subpel_y_q3) {
-    aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
-                       ref_stride);
-    ref = comp_pred;
-    ref_stride = width;
-  }
-  aom_comp_mask_pred_ssse3(comp_pred, pred, width, height, ref, ref_stride,
-                           mask, mask_stride, invert_mask);
-}
