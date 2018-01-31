@@ -94,7 +94,13 @@ class VariationsFieldTrialCreator {
   // contain the raw pref values.
   bool LoadSeed(VariationsSeed* seed,
                 std::string* seed_data,
-                std::string* base64_signature);
+                std::string* base64_signature) WARN_UNUSED_RESULT;
+
+  // Loads the safe seed from the variations store into |seed| and updates any
+  // relevant fields in |client_state|. If the load succeeds, records metrics
+  // about the loaded seed. Returns whether the load succeeded.
+  bool LoadSafeSeed(VariationsSeed* seed,
+                    ClientFilterableState* client_state) WARN_UNUSED_RESULT;
 
   // Creates field trials based on the variations seed loaded from local state.
   // If there is a problem loading the seed data, all trials specified by the

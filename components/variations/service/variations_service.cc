@@ -376,7 +376,6 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   SafeSeedManager::RegisterPrefs(registry);
   VariationsSeedStore::RegisterPrefs(registry);
 
-  registry->RegisterTimePref(prefs::kVariationsLastFetchTime, base::Time());
   // This preference will only be written by the policy service, which will fill
   // it according to a value stored in the User Policy.
   registry->RegisterStringPref(prefs::kVariationsRestrictParameter,
@@ -738,7 +737,7 @@ void VariationsService::PerformSimulationWithVersion(
 }
 
 void VariationsService::RecordSuccessfulFetch() {
-  field_trial_creator_.RecordLastFetchTime();
+  field_trial_creator_.seed_store()->RecordLastFetchTime();
   safe_seed_manager_.RecordSuccessfulFetch(field_trial_creator_.seed_store());
 }
 

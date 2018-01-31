@@ -24,7 +24,7 @@ const char kVariationsFailedToFetchSeedStreak[] =
     "variations_failed_to_fetch_seed_streak";
 
 // The serialized base::Time from the last successful seed fetch (i.e. when the
-// Variations server responds with 200 or 304).
+// Variations server responds with 200 or 304). This is a client timestamp.
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 
 // Pair of <Chrome version string, country code string> representing the country
@@ -49,10 +49,21 @@ const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
 // https://docs.google.com/document/d/17UN2pLSa5JZqk8f3LeYZIftXewxqcITotgalTrJvGSY
 const char kVariationsSafeCompressedSeed[] = "variations_safe_compressed_seed";
 
-// The serialized base::Time at which the last known "safe" seed was received.
-// An empty/default-constructed base::Time time if there is no known "safe"
-// seed.
+// The serialized base::Time used for safe seed expiry checks. This is usually
+// the time at which the last known "safe" seed was received, though it could
+// potentially be a build timestamp instead, if the received date is unknown. An
+// empty (default-constructed) base::Time if there is no known "safe" seed. This
+// is a server-provided timestamp.
 const char kVariationsSafeSeedDate[] = "variations_safe_seed_date";
+
+// The serialized base::Time from the fetch corresponding to the safe seed, i.e.
+// a copy of the last value stored to the |kVariationsLastFetchTime| pref that
+// corresponded to the same seed contents as the safe seed. This is a client
+// timestamp.
+// Note: This pref was added about a milestone after most of the other safe seed
+// prefs, and so might be missing for some clients that otherwise have safe seed
+// data.
+const char kVariationsSafeSeedFetchTime[] = "variations_safe_seed_fetch_time";
 
 // The active client locale that was successfully used in association with the
 // last known "safe" seed.
@@ -74,7 +85,8 @@ const char kVariationsSafeSeedSessionConsistencyCountry[] =
 // base64-encoded. Empty if there is no known "safe" seed.
 const char kVariationsSafeSeedSignature[] = "variations_safe_seed_signature";
 
-// The serialized base::Time from the last seed received.
+// The serialized base::Time from the last seed received. This is a
+// server-provided timestamp.
 const char kVariationsSeedDate[] = "variations_seed_date";
 
 // Digital signature of the binary variations seed data, base64-encoded.

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -41,7 +42,8 @@ class SafeSeedManager {
   virtual void SetActiveSeedState(
       const std::string& seed_data,
       const std::string& base64_seed_signature,
-      std::unique_ptr<ClientFilterableState> client_filterable_state);
+      std::unique_ptr<ClientFilterableState> client_filterable_state,
+      base::Time seed_fetch_time);
 
   // Records that a fetch has started: pessimistically increments the
   // corresponding failure streak for safe mode.
@@ -59,7 +61,8 @@ class SafeSeedManager {
     ActiveSeedState(
         const std::string& seed_data,
         const std::string& base64_seed_signature,
-        std::unique_ptr<ClientFilterableState> client_filterable_state);
+        std::unique_ptr<ClientFilterableState> client_filterable_state,
+        base::Time seed_fetch_time);
     ~ActiveSeedState();
 
     // The serialized variations seed data.
@@ -70,6 +73,10 @@ class SafeSeedManager {
 
     // The client state which is used for filtering studies.
     const std::unique_ptr<ClientFilterableState> client_filterable_state;
+
+    // The latest timestamp at which this seed was fetched. This is always a
+    // client-side timestamp, never a server-provided timestamp.
+    const base::Time seed_fetch_time;
   };
   std::unique_ptr<ActiveSeedState> active_seed_state_;
 
