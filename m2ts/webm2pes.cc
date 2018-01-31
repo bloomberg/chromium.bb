@@ -429,8 +429,14 @@ bool Webm2Pes::WritePesPacket(const VideoFrame& frame,
 
   Ranges frame_ranges;
   if (frame.codec() == VideoFrame::kVP9) {
-    const bool has_superframe_index = ParseVP9SuperFrameIndex(
-        frame.buffer().data.get(), frame.buffer().length, &frame_ranges);
+    bool error = false;
+    const bool has_superframe_index =
+        ParseVP9SuperFrameIndex(frame.buffer().data.get(),
+                                frame.buffer().length, &frame_ranges, &error);
+    if (error) {
+      std::fprintf(stderr, "Webm2Pes: Superframe index parse failed.\n");
+      return false;
+    }
     if (has_superframe_index == false) {
       frame_ranges.push_back(Range(0, frame.buffer().length));
     }
@@ -449,6 +455,11 @@ bool Webm2Pes::WritePesPacket(const VideoFrame& frame,
     std::size_t extra_bytes = 0;
     if (packet_payload_range.length > kMaxPayloadSize) {
       extra_bytes = packet_payload_range.length - kMaxPayloadSize;
+    }
+    if (packet_payload_range.length + packet_payload_range.offset >
+        frame.buffer().length) {
+      std::fprintf(stderr, "Webm2Pes: Invalid frame length.\n");
+      return false;
     }
 
     // First packet of new frame. Always include PTS and BCMV header.

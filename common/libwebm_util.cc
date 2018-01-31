@@ -7,8 +7,10 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "common/libwebm_util.h"
 
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <limits>
 
 namespace libwebm {
 
@@ -23,9 +25,12 @@ std::int64_t Khz90TicksToNanoseconds(std::int64_t ticks) {
 }
 
 bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
-                             std::size_t frame_length, Ranges* frame_ranges) {
-  if (frame == nullptr || frame_length == 0 || frame_ranges == nullptr)
+                             std::size_t frame_length, Ranges* frame_ranges,
+                             bool* error) {
+  if (frame == nullptr || frame_length == 0 || frame_ranges == nullptr ||
+      error == nullptr) {
     return false;
+  }
 
   bool parse_ok = false;
   const std::uint8_t marker = frame[frame_length - 1];
@@ -40,7 +45,9 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
     const std::size_t index_length = 2 + length_field_size * num_frames;
 
     if (frame_length < index_length) {
-      std::fprintf(stderr, "VP9Parse: Invalid superframe index size.\n");
+      std::fprintf(stderr,
+                   "VP9ParseSuperFrameIndex: Invalid superframe index size.\n");
+      *error = true;
       return false;
     }
 
@@ -53,11 +60,20 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
       const std::uint8_t* byte = frame + length + 1;
 
       std::size_t frame_offset = 0;
+
       for (int i = 0; i < num_frames; ++i) {
         std::uint32_t child_frame_length = 0;
 
         for (int j = 0; j < length_field_size; ++j) {
           child_frame_length |= (*byte++) << (j * 8);
+        }
+
+        if (length - frame_offset < child_frame_length) {
+          std::fprintf(stderr,
+                       "ParseVP9SuperFrameIndex: Invalid superframe, sub frame "
+                       "larger than entire frame.\n");
+          *error = true;
+          return false;
         }
 
         frame_ranges->push_back(Range(frame_offset, child_frame_length));
@@ -66,12 +82,14 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
 
       if (static_cast<int>(frame_ranges->size()) != num_frames) {
         std::fprintf(stderr, "VP9Parse: superframe index parse failed.\n");
+        *error = true;
         return false;
       }
 
       parse_ok = true;
     } else {
       std::fprintf(stderr, "VP9Parse: Invalid superframe index.\n");
+      *error = true;
     }
   }
   return parse_ok;
