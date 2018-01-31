@@ -71,9 +71,7 @@ class StackSamplingConfiguration {
     // Chrome-wide configurations set in the browser process.
     PROFILE_DISABLED,
     PROFILE_CONTROL,
-    PROFILE_BROWSER_PROCESS,
-    PROFILE_GPU_PROCESS,
-    PROFILE_BROWSER_AND_GPU_PROCESS,
+    PROFILE_ENABLED,
 
     // Configuration set in the child processes, which receive their enable
     // state on the command line from the browser process.
