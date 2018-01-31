@@ -161,20 +161,32 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
 std::vector<std::string> InspectorMemoryAgent::Symbolize(
     const std::vector<void*>& addresses) {
   // TODO(alph): Move symbolization to the client.
-  std::vector<std::string> result;
-  base::debug::StackTrace trace(addresses.data(), addresses.size());
-  std::string text = trace.ToString();
+  std::vector<void*> addresses_to_symbolize;
+  for (void* address : addresses) {
+    if (!symbols_cache_.Contains(address))
+      addresses_to_symbolize.push_back(address);
+  }
 
+  std::string text = base::debug::StackTrace(addresses_to_symbolize.data(),
+                                             addresses_to_symbolize.size())
+                         .ToString();
+  // Populate cache with new entries.
   size_t next_pos;
-  for (size_t pos = 0;; pos = next_pos + 1) {
+  for (size_t pos = 0, i = 0;; pos = next_pos + 1, ++i) {
     next_pos = text.find('\n', pos);
     if (next_pos == std::string::npos)
       break;
     std::string line = text.substr(pos, next_pos - pos);
     size_t space_pos = line.rfind(' ');
-    result.push_back(
-        line.substr(space_pos == std::string::npos ? 0 : space_pos + 1));
+    std::string name =
+        line.substr(space_pos == std::string::npos ? 0 : space_pos + 1);
+    symbols_cache_.insert(addresses_to_symbolize[i], name);
   }
+
+  std::vector<std::string> result;
+  for (void* address : addresses)
+    result.push_back(symbols_cache_.at(address));
+
   return result;
 }
 

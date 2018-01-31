@@ -84,6 +84,7 @@ class CORE_EXPORT InspectorMemoryAgent final
   std::unique_ptr<PrepareForLeakDetectionCallback> callback_;
   Member<InspectedFrames> frames_;
   uint32_t profile_id_ = 0;
+  HashMap<void*, std::string> symbols_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorMemoryAgent);
 };
