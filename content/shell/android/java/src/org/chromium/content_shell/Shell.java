@@ -144,7 +144,7 @@ public class Shell extends LinearLayout {
     }
 
     @Override
-    @SuppressLint("WrongViewCast") // TODO(crbug.com/799070): File bug.
+    @SuppressLint("WrongViewCast") // TODO(crbug.com/807732): Fix or justify.
     protected void onFinishInflate() {
         super.onFinishInflate();
 
