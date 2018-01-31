@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -78,13 +79,15 @@ class MockRefresh : public OverscrollRefresh {
 class OverscrollControllerAndroidUnitTest : public testing::Test {
  public:
   OverscrollControllerAndroidUnitTest() {
+    dip_scale_ = 560;
     std::unique_ptr<MockGlow> glow_ptr = std::make_unique<MockGlow>();
     std::unique_ptr<MockRefresh> refresh_ptr = std::make_unique<MockRefresh>();
     compositor_ = std::make_unique<MockCompositor>();
     glow_ = glow_ptr.get();
     refresh_ = refresh_ptr.get();
     controller_ = OverscrollControllerAndroid::CreateForTests(
-        compositor_.get(), 560, std::move(glow_ptr), std::move(refresh_ptr));
+        compositor_.get(), dip_scale_, std::move(glow_ptr),
+        std::move(refresh_ptr));
   }
 
   ui::DidOverscrollParams CreateVerticalOverscrollParams() {
@@ -93,6 +96,12 @@ class OverscrollControllerAndroidUnitTest : public testing::Test {
     params.latest_overscroll_delta = gfx::Vector2dF(0, 1);
     params.current_fling_velocity = gfx::Vector2dF(0, 1);
     params.causal_event_viewport_point = gfx::PointF(100, 100);
+    if (IsUseZoomForDSFEnabled()) {
+      params.accumulated_overscroll.Scale(dip_scale_);
+      params.latest_overscroll_delta.Scale(dip_scale_);
+      params.current_fling_velocity.Scale(dip_scale_);
+      params.causal_event_viewport_point.Scale(dip_scale_);
+    }
     return params;
   }
 
@@ -101,6 +110,7 @@ class OverscrollControllerAndroidUnitTest : public testing::Test {
   MockRefresh* refresh_;
   std::unique_ptr<MockCompositor> compositor_;
   std::unique_ptr<OverscrollControllerAndroid> controller_;
+  float dip_scale_;
 };
 
 TEST_F(OverscrollControllerAndroidUnitTest,
@@ -174,6 +184,11 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   params.accumulated_overscroll = gfx::Vector2dF(1, 1);
   params.latest_overscroll_delta = gfx::Vector2dF(1, 1);
   params.current_fling_velocity = gfx::Vector2dF(1, 1);
+  if (IsUseZoomForDSFEnabled()) {
+    params.accumulated_overscroll.Scale(dip_scale_);
+    params.latest_overscroll_delta.Scale(dip_scale_);
+    params.current_fling_velocity.Scale(dip_scale_);
+  }
 
   EXPECT_CALL(*refresh_, OnOverscrolled()).Times(0);
   EXPECT_CALL(*refresh_, Reset());
