@@ -299,22 +299,19 @@ bool LayoutFlexibleBox::HasLeftOverflow() const {
 }
 
 void LayoutFlexibleBox::MergeAnonymousFlexItems(LayoutObject* remove_child) {
-  // When we remove a flex item, and the previous and next in-flow siblings of
-  // the item are text nodes wrapped in anonymous flex items, the adjacent text
-  // nodes need to be merged into the same flex item.
-  LayoutObject* prev_in_flow =
-      ToLayoutBox(remove_child)->PreviousInFlowSiblingBox();
-  if (!prev_in_flow || !prev_in_flow->IsAnonymousBlock())
+  // When we remove a flex item, and the previous and next siblings of the item
+  // are text nodes wrapped in anonymous flex items, the adjacent text nodes
+  // need to be merged into the same flex item.
+  LayoutObject* prev = remove_child->PreviousSibling();
+  if (!prev || !prev->IsAnonymousBlock())
     return;
-  LayoutObject* next_in_flow =
-      ToLayoutBox(remove_child)->NextInFlowSiblingBox();
-  if (!next_in_flow || !next_in_flow->IsAnonymousBlock())
+  LayoutObject* next = remove_child->NextSibling();
+  if (!next || !next->IsAnonymousBlock())
     return;
-  ToLayoutBoxModelObject(next_in_flow)
-      ->MoveAllChildrenTo(ToLayoutBoxModelObject(prev_in_flow));
-  ToLayoutBlockFlow(next_in_flow)->DeleteLineBoxTree();
-  next_in_flow->Destroy();
-  intrinsic_size_along_main_axis_.erase(next_in_flow);
+  ToLayoutBoxModelObject(next)->MoveAllChildrenTo(ToLayoutBoxModelObject(prev));
+  ToLayoutBlockFlow(next)->DeleteLineBoxTree();
+  next->Destroy();
+  intrinsic_size_along_main_axis_.erase(next);
 }
 
 void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
