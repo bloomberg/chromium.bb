@@ -32,12 +32,6 @@ cr.define('settings', function() {
      * 'profile-stats-count-ready' WebUI listener event.
      */
     getProfileStatsCount() {}
-
-    /**
-     * Returns a Promise that's true if the profile manages supervised users.
-     * @return {!Promise<boolean>}
-     */
-    getProfileManagesSupervisedUsers() {}
   }
 
   /**
@@ -52,11 +46,6 @@ cr.define('settings', function() {
     /** @override */
     getProfileStatsCount() {
       chrome.send('getProfileStatsCount');
-    }
-
-    /** @override */
-    getProfileManagesSupervisedUsers() {
-      return cr.sendWithPromise('getProfileManagesSupervisedUsers');
     }
   }
 

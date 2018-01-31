@@ -8,7 +8,6 @@ class TestProfileInfoBrowserProxy extends TestBrowserProxy {
     super([
       'getProfileInfo',
       'getProfileStatsCount',
-      'getProfileManagesSupervisedUsers',
     ]);
 
     this.fakeProfileInfo = {
@@ -27,11 +26,5 @@ class TestProfileInfoBrowserProxy extends TestBrowserProxy {
   /** @override */
   getProfileStatsCount() {
     this.methodCalled('getProfileStatsCount');
-  }
-
-  /** @override */
-  getProfileManagesSupervisedUsers() {
-    this.methodCalled('getProfileManagesSupervisedUsers');
-    return Promise.resolve(false);
   }
 }

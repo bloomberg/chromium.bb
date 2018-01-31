@@ -258,16 +258,6 @@
         </div>
 </if>
 
-        <template is="dom-if" if="[[profileManagesSupervisedUsers_]]">
-          <a id="manageSupervisedUsersContainer"
-              class="settings-box inherit-color no-outline" tabindex="-1"
-              target="_blank" href="$i18n{supervisedUsersUrl}">
-            <div class="start">$i18n{manageSupervisedUsers}</div>
-            <button class="icon-external" is="paper-icon-button-light"
-                actionable aria-label="$i18n{manageSupervisedUsers}">
-            </button>
-          </a>
-        </template>
       </neon-animatable>
       <template is="dom-if" route-path="/syncSetup"
           no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
@@ -298,10 +288,7 @@
         <settings-subpage
             associated-control="[[$$('#manage-other-people-subpage-trigger')]]"
             page-title="$i18n{manageOtherPeople}">
-          <settings-users-page
-              prefs="{{prefs}}"
-              profile-manages-supervised-users=
-                  "[[profileManagesSupervisedUsers_]]">
+          <settings-users-page prefs="{{prefs}}">
           </settings-users-page>
         </settings-subpage>
       </template>
