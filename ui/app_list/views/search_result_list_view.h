@@ -31,6 +31,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   bool IsResultViewSelected(const SearchResultView* result_view) const;
 
+  // Helper function to get SearchResultView at given |index|.
+  SearchResultView* GetResultViewAt(size_t index);
+
   void SearchResultActivated(SearchResultView* view, int event_flags);
 
   void SearchResultActionActivated(SearchResultView* view,
@@ -51,11 +54,8 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
                            bool directional_movement) override;
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
-  views::View* GetSelectedView() const override;
-  views::View* GetFirstResultView() override;
-  void SetFirstResultSelected(bool selected) override;
-
-  views::View* results_container_for_test() const { return results_container_; }
+  views::View* GetSelectedView() override;
+  SearchResultBaseView* GetFirstResultView() override;
 
  private:
   friend class test::SearchResultListViewTest;
@@ -63,9 +63,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
-
-  // Helper function to get SearchResultView at given |index|.
-  SearchResultView* GetResultViewAt(int index) const;
 
   // Overridden from views::View:
   void Layout() override;
@@ -75,6 +72,8 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   AppListViewDelegate* view_delegate_;  // Not owned.
 
   views::View* results_container_;
+
+  std::vector<SearchResultView*> search_result_views_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };

@@ -23,6 +23,7 @@
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/app_list/views/search_result_base_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -77,6 +77,8 @@ component("app_list") {
     "views/search_result_actions_view_delegate.h",
     "views/search_result_answer_card_view.cc",
     "views/search_result_answer_card_view.h",
+    "views/search_result_base_view.cc",
+    "views/search_result_base_view.h",
     "views/search_result_container_view.cc",
     "views/search_result_container_view.h",
     "views/search_result_list_view.cc",
