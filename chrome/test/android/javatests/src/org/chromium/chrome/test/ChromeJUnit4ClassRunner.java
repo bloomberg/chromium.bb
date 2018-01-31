@@ -4,23 +4,40 @@
 
 package org.chromium.chrome.test;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.text.TextUtils;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
-import org.chromium.chrome.test.ChromeInstrumentationTestRunner.ChromeRestrictionSkipCheck;
+import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.vr_shell.VrClassesWrapper;
+import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettingsHook;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.test.util.UiDisableIfSkipCheck;
 import org.chromium.ui.test.util.UiRestrictionSkipCheck;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 /**
  * A custom runner for //chrome JUnit4 tests.
@@ -51,5 +68,115 @@ public class ChromeJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     protected void initCommandLineForTest() {
         CommandLineInitUtil.initCommandLine(
                 InstrumentationRegistry.getTargetContext(), CommandLineFlags.getTestCmdLineFile());
+    }
+
+    private static class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
+        private VrDaydreamApi mDaydreamApi;
+        private boolean mAttemptedToGetApi;
+
+        public ChromeRestrictionSkipCheck(Context targetContext) {
+            super(targetContext);
+        }
+
+        @SuppressWarnings("unchecked")
+        private VrDaydreamApi getDaydreamApi() {
+            if (!mAttemptedToGetApi) {
+                mAttemptedToGetApi = true;
+                try {
+                    Class<? extends VrClassesWrapper> vrClassesBuilderClass =
+                            (Class<? extends VrClassesWrapper>) Class.forName(
+                                    "org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl");
+                    Constructor<?> vrClassesBuilderConstructor =
+                            vrClassesBuilderClass.getConstructor();
+                    VrClassesWrapper vrClassesBuilder =
+                            (VrClassesWrapper) vrClassesBuilderConstructor.newInstance();
+                    mDaydreamApi = vrClassesBuilder.createVrDaydreamApi(getTargetContext());
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                        | IllegalArgumentException | InvocationTargetException
+                        | NoSuchMethodException e) {
+                    return null;
+                }
+            }
+            return mDaydreamApi;
+        }
+
+        private boolean isDaydreamReady() {
+            return getDaydreamApi() == null ? false : getDaydreamApi().isDaydreamReadyDevice();
+        }
+
+        private boolean isDaydreamViewPaired() {
+            if (getDaydreamApi() == null) {
+                return false;
+            }
+            // isDaydreamCurrentViewer() creates a concrete instance of DaydreamApi,
+            // which can only be done on the main thread
+            FutureTask<Boolean> checker = new FutureTask<>(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return getDaydreamApi().isDaydreamCurrentViewer();
+                }
+            });
+            ThreadUtils.runOnUiThreadBlocking(checker);
+            try {
+                return checker.get().booleanValue();
+            } catch (CancellationException | InterruptedException | ExecutionException
+                    | IllegalArgumentException e) {
+                return false;
+            }
+        }
+
+        private boolean isDonEnabled() {
+            // We can't directly check whether the VR DON flow is enabled since
+            // we don't have permission to read the VrCore settings file. Instead,
+            // pass a flag.
+            return CommandLine.getInstance().hasSwitch("don-enabled");
+        }
+
+        @Override
+        protected boolean restrictionApplies(String restriction) {
+            if (TextUtils.equals(
+                        restriction, ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+                    && (ConnectionResult.SUCCESS
+                               != GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                                          getTargetContext()))) {
+                return true;
+            }
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_OFFICIAL_BUILD)
+                    && (!ChromeVersionInfo.isOfficialBuild())) {
+                return true;
+            }
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM)
+                    || TextUtils.equals(restriction,
+                               ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)) {
+                boolean isDaydream = isDaydreamReady();
+                if (TextUtils.equals(
+                            restriction, ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM)
+                        && !isDaydream) {
+                    return true;
+                } else if (TextUtils.equals(restriction,
+                                   ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
+                        && isDaydream) {
+                    return true;
+                }
+            }
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM)
+                    || TextUtils.equals(restriction,
+                               ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)) {
+                boolean daydreamViewPaired = isDaydreamViewPaired();
+                if (TextUtils.equals(
+                            restriction, ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM)
+                        && !daydreamViewPaired) {
+                    return true;
+                } else if (TextUtils.equals(restriction,
+                                   ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+                        && daydreamViewPaired) {
+                    return true;
+                }
+            }
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED)) {
+                return !isDonEnabled();
+            }
+            return false;
+        }
     }
 }
