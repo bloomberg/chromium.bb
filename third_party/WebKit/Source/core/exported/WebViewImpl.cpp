@@ -3267,11 +3267,6 @@ WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()
   return local_frame ? local_frame->GetInputMethodController() : nullptr;
 }
 
-void WebViewImpl::RequestDecode(const PaintImage& image,
-                                base::OnceCallback<void(bool)> callback) {
-  layer_tree_view_->RequestDecode(image, std::move(callback));
-}
-
 Color WebViewImpl::BaseBackgroundColor() const {
   return base_background_color_override_enabled_
              ? base_background_color_override_
