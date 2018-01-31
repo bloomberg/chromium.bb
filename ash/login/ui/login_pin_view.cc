@@ -44,9 +44,12 @@ constexpr const char kLoginPinViewClassName[] = "LoginPinView";
 
 // How long does the user have to long-press the backspace button before it
 // auto-submits?
-const int kInitialBackspaceDelayMs = 500;
+constexpr int kInitialBackspaceDelayMs = 500;
 // After the first auto-submit, how long until the next backspace event fires?
-const int kRepeatingBackspaceDelayMs = 150;
+constexpr int kRepeatingBackspaceDelayMs = 150;
+
+// Size of the md-ripple when a PIN button is tapped.
+constexpr int kRippleSizeDp = 54;
 
 base::string16 GetButtonLabelForNumber(int value) {
   DCHECK(value >= 0 && value < int{arraysize(kPinLabels)});
@@ -86,6 +89,9 @@ class BasePinButton : public LoginButton, public views::ButtonListener {
   }
 
   ~BasePinButton() override = default;
+
+  // LoginButton:
+  int GetInkDropRadius() const override { return kRippleSizeDp / 2; }
 
   // views::ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override {
@@ -142,9 +148,7 @@ class DigitPinButton : public BasePinButton {
 }  // namespace
 
 // static
-const int LoginPinView::kButtonSeparatorSizeDp = 30;
-// static
-const int LoginPinView::kButtonSizeDp = 48;
+const int LoginPinView::kButtonSizeDp = 78;
 
 // A PIN button that displays backspace icon.
 class LoginPinView::BackspacePinButton : public BasePinButton {
@@ -255,14 +259,14 @@ LoginPinView::LoginPinView(const OnPinKey& on_key,
   // Builds and returns a new view which contains a row of the PIN keyboard.
   auto build_and_add_row = [this]() {
     auto* row = new NonAccessibleView();
-    row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(), kButtonSeparatorSizeDp));
+    row->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
     AddChildView(row);
     return row;
   };
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), kButtonSeparatorSizeDp));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   // 1-2-3
   auto* row = build_and_add_row();

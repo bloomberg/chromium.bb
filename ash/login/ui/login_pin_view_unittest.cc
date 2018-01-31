@@ -107,18 +107,12 @@ TEST_F(LoginPinViewTest, ButtonSpacingAndSize) {
   // Validate each x or y coordinate has the correct distance between it and the
   // next one. This is correct because we have already validated button size.
   EXPECT_EQ(3u, sorted_x.size());
-  for (size_t i = 0; i < sorted_x.size() - 1; ++i) {
-    EXPECT_EQ(sorted_x[i] + LoginPinView::kButtonSizeDp +
-                  LoginPinView::kButtonSeparatorSizeDp,
-              sorted_x[i + 1]);
-  }
+  for (size_t i = 0; i < sorted_x.size() - 1; ++i)
+    EXPECT_EQ(sorted_x[i] + LoginPinView::kButtonSizeDp, sorted_x[i + 1]);
 
   EXPECT_EQ(4u, sorted_y.size());
-  for (size_t i = 0; i < sorted_y.size() - 1; ++i) {
-    EXPECT_EQ(sorted_y[i] + LoginPinView::kButtonSizeDp +
-                  LoginPinView::kButtonSeparatorSizeDp,
-              sorted_y[i + 1]);
-  }
+  for (size_t i = 0; i < sorted_y.size() - 1; ++i)
+    EXPECT_EQ(sorted_y[i] + LoginPinView::kButtonSizeDp, sorted_y[i + 1]);
 }
 
 // Verifies that holding the backspace button automatically triggers and begins
