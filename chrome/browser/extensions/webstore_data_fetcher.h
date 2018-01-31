@@ -37,15 +37,17 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
                       const std::string webstore_item_id);
   ~WebstoreDataFetcher() override;
 
-  // Makes this request use a POST instead of GET, and sends |json| in the
-  // body of the request. If |json| is empty, this is a no-op.
-  void SetJsonPostData(const std::string& json);
+  // Makes this request use a POST instead of GET, and sends |data| in the
+  // body of the request. If |data| is empty, this is a no-op.
+  void SetPostData(const std::string& data);
 
   void Start();
 
   void set_max_auto_retries(int max_retries) {
     max_auto_retries_ = max_retries;
   }
+
+  std::string upload_content_type() const { return upload_content_type_; }
 
  private:
   void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
@@ -58,7 +60,8 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
   net::URLRequestContextGetter* request_context_;
   GURL referrer_url_;
   std::string id_;
-  std::string json_post_data_;
+  std::string post_data_;
+  std::string upload_content_type_;
 
   // For fetching webstore JSON data.
   std::unique_ptr<net::URLFetcher> webstore_data_url_fetcher_;

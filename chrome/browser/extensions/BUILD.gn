@@ -849,6 +849,8 @@ static_library("extensions") {
     "//components/proxy_config",
     "//components/rappor",
     "//components/resources",
+    "//components/safe_browsing:csd_proto",
+    "//components/safe_browsing:features",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing/db:database_manager",
     "//components/search_engines",

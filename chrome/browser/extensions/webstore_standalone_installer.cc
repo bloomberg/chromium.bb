@@ -69,9 +69,8 @@ void WebstoreStandaloneInstaller::BeginInstall() {
       GetRequestorURL(),
       id_));
 
-  std::string json_post_data = GetJsonPostData();
-  if (!json_post_data.empty())
-    webstore_data_fetcher_->SetJsonPostData(json_post_data);
+  webstore_data_fetcher_->SetPostData(
+      GetPostData(webstore_data_fetcher_->upload_content_type()));
 
   webstore_data_fetcher_->Start();
 }
@@ -157,7 +156,8 @@ WebstoreStandaloneInstaller::GetLocalizedExtensionForDisplay() {
   return localized_extension_for_display_.get();
 }
 
-std::string WebstoreStandaloneInstaller::GetJsonPostData() {
+std::string WebstoreStandaloneInstaller::GetPostData(
+    const std::string& upload_content_type_unused) {
   return std::string();
 }
 
