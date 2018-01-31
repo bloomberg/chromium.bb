@@ -90,17 +90,15 @@ int SuggestionsContainerView::GetYSize() {
   return 0;
 }
 
-views::View* SuggestionsContainerView::GetSelectedView() const {
+views::View* SuggestionsContainerView::GetSelectedView() {
   return IsValidSelectionIndex(selected_index())
              ? search_result_tile_views_[selected_index()]
              : nullptr;
 }
 
-views::View* SuggestionsContainerView::GetFirstResultView() {
+SearchResultBaseView* SuggestionsContainerView::GetFirstResultView() {
   return nullptr;
 }
-
-void SuggestionsContainerView::SetFirstResultSelected(bool selected) {}
 
 const char* SuggestionsContainerView::GetClassName() const {
   return "SuggestionsContainerView";

@@ -133,14 +133,6 @@ TEST_F(SearchResultAnswerCardViewTest, Basic) {
   EXPECT_EQ(1, GetYSize());
 }
 
-TEST_F(SearchResultAnswerCardViewTest, ButtonBackground) {
-  views::View* button = result_view()->parent();
-  EXPECT_EQ(kAnswerCardSelectedColor, button->background()->get_color());
-
-  ClearSelectedIndex();
-  EXPECT_EQ(nullptr, button->background());
-}
-
 TEST_F(SearchResultAnswerCardViewTest, KeyboardEvents) {
   EXPECT_TRUE(KeyPress(ui::VKEY_RETURN));
   EXPECT_EQ(1, GetOpenResultCountAndReset(0));

@@ -8,14 +8,14 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/model/search/search_result_observer.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/views/search_result_base_view.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -23,12 +23,10 @@ namespace app_list {
 
 // Container of the search answer view.
 class SearchResultAnswerCardView::SearchAnswerContainerView
-    : public views::Button,
-      public views::ButtonListener,
-      public SearchResultObserver {
+    : public SearchResultBaseView {
  public:
   explicit SearchAnswerContainerView(AppListViewDelegate* view_delegate)
-      : Button(this), view_delegate_(view_delegate) {
+      : view_delegate_(view_delegate) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     // Center the card horizontally in the container. Padding is set on the
     // server.
@@ -42,17 +40,6 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   ~SearchAnswerContainerView() override {
     if (search_result_)
       search_result_->RemoveObserver(this);
-  }
-
-  bool selected() const { return selected_; }
-
-  void SetSelected(bool selected) {
-    if (selected == selected_)
-      return;
-    selected_ = selected;
-    UpdateBackgroundColor();
-    if (selected)
-      ScrollRectToVisible(GetLocalBounds());
   }
 
   bool SetSearchResult(SearchResult* search_result) {
@@ -87,15 +74,12 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     return "SearchAnswerContainerView";
   }
 
-  void OnBlur() override {
-    SetSelected(false);
-    Button::OnBlur();
-  }
+  void OnBlur() override { SetBackgroundHighlighted(false); }
 
   void OnFocus() override {
-    SetSelected(true);
+    ScrollRectToVisible(GetLocalBounds());
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-    Button::OnFocus();
+    SetBackgroundHighlighted(true);
   }
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {
@@ -114,6 +98,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     node_data->SetName(accessible_name());
   }
 
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    if (background_highlighted())
+      canvas->FillRect(GetContentsBounds(), kAnswerCardSelectedColor);
+  }
+
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
@@ -128,18 +117,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   void OnResultDestroying() override { search_result_ = nullptr; }
 
  private:
-  void UpdateBackgroundColor() {
-    if (selected_) {
-      SetBackground(views::CreateSolidBackground(kAnswerCardSelectedColor));
-    } else {
-      SetBackground(nullptr);
-    }
-
-    SchedulePaint();
-  }
-
   AppListViewDelegate* const view_delegate_;  // Not owned.
-  bool selected_ = false;
   SearchResult* search_result_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerContainerView);
@@ -184,22 +162,17 @@ int SearchResultAnswerCardView::DoUpdate() {
   parent()->SetVisible(have_result);
 
   set_container_score(have_result ? display_results.front()->relevance() : 0);
-  if (title_changed && search_answer_container_view_->selected())
+  if (title_changed && search_answer_container_view_->HasFocus()) {
     search_answer_container_view_->NotifyAccessibilityEvent(
         ax::mojom::Event::kSelection, true);
+  }
   return have_result ? 1 : 0;
 }
 
 void SearchResultAnswerCardView::UpdateSelectedIndex(int old_selected,
                                                      int new_selected) {
-  if (new_selected == old_selected)
-    return;
-
-  const bool is_selected = new_selected == 0;
-  search_answer_container_view_->SetSelected(is_selected);
-  if (is_selected)
-    search_answer_container_view_->NotifyAccessibilityEvent(
-        ax::mojom::Event::kSelection, true);
+  // TODO(weidongg): This implementation is deprecated and should be removed as
+  // part of removing "pseudo-focus" logic work (https://crbug.com/766807).
 }
 
 bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -211,20 +184,14 @@ bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
   return SearchResultContainerView::OnKeyPressed(event);
 }
 
-views::View* SearchResultAnswerCardView::GetSelectedView() const {
-  return search_answer_container_view_->selected()
-             ? search_answer_container_view_
-             : nullptr;
+views::View* SearchResultAnswerCardView::GetSelectedView() {
+  // TODO(weidongg): This implementation is deprecated and should be removed as
+  // part of removing "pseudo-focus" logic work (https://crbug.com/766807).
+  return nullptr;
 }
 
-views::View* SearchResultAnswerCardView::GetFirstResultView() {
+SearchResultBaseView* SearchResultAnswerCardView::GetFirstResultView() {
   return num_results() <= 0 ? nullptr : search_answer_container_view_;
-}
-
-void SearchResultAnswerCardView::SetFirstResultSelected(bool selected) {
-  if (num_results() <= 0)
-    return;
-  search_answer_container_view_->SetSelected(selected);
 }
 
 views::View* SearchResultAnswerCardView::GetSearchAnswerContainerViewForTest()
