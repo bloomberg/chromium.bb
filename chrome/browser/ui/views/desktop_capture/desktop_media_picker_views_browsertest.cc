@@ -33,10 +33,14 @@ class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
       source_lists.push_back(std::make_unique<FakeDesktopMediaList>(type));
     }
 
-    picker_->Show(web_contents, native_window, nullptr,
-                  base::ASCIIToUTF16("app_name"),
-                  base::ASCIIToUTF16("target_name"), std::move(source_lists),
-                  true, DesktopMediaPicker::DoneCallback());
+    DesktopMediaPicker::Params picker_params;
+    picker_params.web_contents = web_contents;
+    picker_params.context = native_window;
+    picker_params.app_name = base::ASCIIToUTF16("app_name");
+    picker_params.target_name = base::ASCIIToUTF16("target_name");
+    picker_params.request_audio = true;
+    picker_->Show(picker_params, std::move(source_lists),
+                  DesktopMediaPicker::DoneCallback());
   }
 
  private:

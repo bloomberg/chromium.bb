@@ -426,6 +426,8 @@ source_set("chromeos") {
     "arc/process/arc_process_service.h",
     "arc/screen_capture/arc_screen_capture_bridge.cc",
     "arc/screen_capture/arc_screen_capture_bridge.h",
+    "arc/screen_capture/arc_screen_capture_session.cc",
+    "arc/screen_capture/arc_screen_capture_session.h",
     "arc/tracing/arc_tracing_bridge.cc",
     "arc/tracing/arc_tracing_bridge.h",
     "arc/tts/arc_tts_service.cc",
