@@ -64,7 +64,7 @@ size_t BackUpToLineBegin(const std::string& data, size_t offset) {
 }
 
 // Assumes DoesLineBeginWithComment(), this strips the # character from the
-// beginning and normalizes preceeding whitespace.
+// beginning and normalizes preceding whitespace.
 std::string StripHashFromLine(const base::StringPiece& line) {
   // Replace the # sign and everything before it with 3 spaces, so that a
   // normal comment that has a space after the # will be indented 4 spaces
@@ -361,7 +361,7 @@ Usage
 
       The output will list the declaration location, current value for the
       build, default value (if different than the current value), and comment
-      preceeding the declaration.
+      preceding the declaration.
 
       If --short is specified, only the names and current values will be
       printed.

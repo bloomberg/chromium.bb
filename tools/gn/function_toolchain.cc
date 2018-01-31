@@ -324,7 +324,7 @@ Toolchain overview
   When a target has a dependency on a target using different toolchain (see "gn
   help labels" for how to specify this), GN will start a build using that
   secondary toolchain to resolve the target. GN will load the build config file
-  with the build arguements overridden as specified in the toolchain_args.
+  with the build arguments overridden as specified in the toolchain_args.
   Because the default toolchain is already known, calls to
   set_default_toolchain() are ignored.
 
@@ -843,7 +843,7 @@ R"(  Compiler tools have the notion of a single input and a single output, along
         prefixed by the "lib_switch".
 
         As a special case to support Mac, libraries with names ending in
-        ".framework" will be added to the {{libs}} with "-framework" preceeding
+        ".framework" will be added to the {{libs}} with "-framework" preceding
         it, and the lib prefix will be ignored.
 
         Example: "-lfoo -lbar"
@@ -870,7 +870,7 @@ R"(  Compiler tools have the notion of a single input and a single output, along
         Example: ".so"
 
     {{solibs}}
-        Extra libraries from shared library dependencide not specified in the
+        Extra libraries from shared library dependencies not specified in the
         {{inputs}}. This is the list of link_output files from shared libraries
         (if the solink tool specifies a "link_output" variable separate from
         the "depend_output").
@@ -897,7 +897,7 @@ R"(  The static library ("alink") tool allows {{arflags}} plus the common tool
 
   The compile_xcassets tool will be called with one or more source (each an
   asset catalog) that needs to be compiled to a single output. The following
-  substitutions are avaiable:
+  substitutions are available:
 
     {{inputs}}
         Expands to the list of .xcassets to use as input to compile the asset

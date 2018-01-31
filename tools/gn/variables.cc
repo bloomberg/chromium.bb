@@ -383,23 +383,23 @@ Example
 
 // Target variables ------------------------------------------------------------
 
-#define COMMON_ORDERING_HELP \
-    "\n" \
-    "Ordering of flags and values\n" \
-    "\n" \
-    "  1. Those set on the current target (not in a config).\n" \
-    "  2. Those set on the \"configs\" on the target in order that the\n" \
-    "     configs appear in the list.\n" \
-    "  3. Those set on the \"all_dependent_configs\" on the target in order\n" \
-    "     that the configs appear in the list.\n" \
-    "  4. Those set on the \"public_configs\" on the target in order that\n" \
-    "     those configs appear in the list.\n" \
-    "  5. all_dependent_configs pulled from dependencies, in the order of\n" \
-    "     the \"deps\" list. This is done recursively. If a config appears\n" \
-    "     more than once, only the first occurance will be used.\n" \
-    "  6. public_configs pulled from dependencies, in the order of the\n" \
-    "     \"deps\" list. If a dependency is public, they will be applied\n" \
-    "     recursively.\n"
+#define COMMON_ORDERING_HELP                                                 \
+  "\n"                                                                       \
+  "Ordering of flags and values\n"                                           \
+  "\n"                                                                       \
+  "  1. Those set on the current target (not in a config).\n"                \
+  "  2. Those set on the \"configs\" on the target in order that the\n"      \
+  "     configs appear in the list.\n"                                       \
+  "  3. Those set on the \"all_dependent_configs\" on the target in order\n" \
+  "     that the configs appear in the list.\n"                              \
+  "  4. Those set on the \"public_configs\" on the target in order that\n"   \
+  "     those configs appear in the list.\n"                                 \
+  "  5. all_dependent_configs pulled from dependencies, in the order of\n"   \
+  "     the \"deps\" list. This is done recursively. If a config appears\n"  \
+  "     more than once, only the first occurence will be used.\n"            \
+  "  6. public_configs pulled from dependencies, in the order of the\n"      \
+  "     \"deps\" list. If a dependency is public, they will be applied\n"    \
+  "     recursively.\n"
 
 const char kAllDependentConfigs[] = "all_dependent_configs";
 const char kAllDependentConfigs_HelpShort[] =
@@ -1074,7 +1074,7 @@ const char kDeps_Help[] =
   A list of target labels.
 
   Specifies private dependencies of a target. Private dependencies are
-  propagated up the dependency tree and linked to dependant targets, but do not
+  propagated up the dependency tree and linked to dependent targets, but do not
   grant the ability to include headers from the dependency. Public configs are
   not forwarded.
 
@@ -1087,7 +1087,7 @@ Details of dependency propagation
   Executables, shared libraries, and complete static libraries will link all
   propagated targets and stop propagation. Actions and copy steps also stop
   propagation, allowing them to take a library as an input but not force
-  dependants to link to it.
+  dependents to link to it.
 
   Propagation of all_dependent_configs and public_configs happens independently
   of target type. all_dependent_configs are always propagated across all types
@@ -1759,7 +1759,7 @@ Sources for binary targets
 
   As a special case, a file ending in ".def" will be treated as a Windows
   module definition file. It will be appended to the link line with a
-  preceeding "/DEF:" string. There must be at most one .def file in a target
+  preceding "/DEF:" string. There must be at most one .def file in a target
   and they do not cross dependency boundaries (so specifying a .def file in a
   static library or source set will have no effect on the executable or shared
   library they're linked into).

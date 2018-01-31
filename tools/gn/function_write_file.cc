@@ -35,7 +35,7 @@ const char kWriteFile_Help[] =
   that depend on this file.
 
   One use for write_file is to write a list of inputs to an script that might
-  be too long for the command line. However, it is preferrable to use response
+  be too long for the command line. However, it is preferable to use response
   files for this purpose. See "gn help response_file_contents".
 
   TODO(brettw) we probably need an optional third argument to control list
