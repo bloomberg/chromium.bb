@@ -66,8 +66,8 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onStart() {
         super.onStart();
-        if (SigninManager.get(getActivity()).isSigninSupported()) {
-            SigninManager.get(getActivity()).addSignInStateObserver(this);
+        if (SigninManager.get().isSigninSupported()) {
+            SigninManager.get().addSignInStateObserver(this);
             mSignInPreference.registerForUpdates();
         }
     }
@@ -75,8 +75,8 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onStop() {
         super.onStop();
-        if (SigninManager.get(getActivity()).isSigninSupported()) {
-            SigninManager.get(getActivity()).removeSignInStateObserver(this);
+        if (SigninManager.get().isSigninSupported()) {
+            SigninManager.get().removeSignInStateObserver(this);
             mSignInPreference.unregisterForUpdates();
         }
     }
@@ -158,7 +158,7 @@ public class MainPreferences extends PreferenceFragment
     }
 
     private void updatePreferences() {
-        if (SigninManager.get(getActivity()).isSigninSupported()) {
+        if (SigninManager.get().isSigninSupported()) {
             addPreferenceIfAbsent(PREF_SIGN_IN);
         } else {
             removePreferenceIfPresent(PREF_SIGN_IN);

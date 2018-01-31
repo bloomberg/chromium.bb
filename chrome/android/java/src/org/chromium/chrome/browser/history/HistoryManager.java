@@ -169,7 +169,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             }});
 
         // 9. Listen to changes in sign in state.
-        SigninManager.get(mActivity).addSignInStateObserver(this);
+        SigninManager.get().addSignInStateObserver(this);
 
         // 10. Create PrefChangeRegistrar to receive notifications on preference changes.
         mPrefChangeRegistrar = new PrefChangeRegistrar();
@@ -268,7 +268,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mHistoryAdapter.onDestroyed();
         mLargeIconBridge.destroy();
         mLargeIconBridge = null;
-        SigninManager.get(mActivity).removeSignInStateObserver(this);
+        SigninManager.get().removeSignInStateObserver(this);
         mPrefChangeRegistrar.destroy();
     }
 

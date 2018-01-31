@@ -92,8 +92,7 @@ public class SyncTest {
                 new Criteria("Timed out checking that isSignedInOnNative() == true") {
                     @Override
                     public boolean isSatisfied() {
-                        return SigninManager.get(mSyncTestRule.getTargetContext())
-                                .isSignedInOnNative();
+                        return SigninManager.get().isSignedInOnNative();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
@@ -107,8 +106,7 @@ public class SyncTest {
                 new Criteria("Timed out checking that isSignedInOnNative() == false") {
                     @Override
                     public boolean isSatisfied() {
-                        return !SigninManager.get(mSyncTestRule.getTargetContext())
-                                        .isSignedInOnNative();
+                        return !SigninManager.get().isSignedInOnNative();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
