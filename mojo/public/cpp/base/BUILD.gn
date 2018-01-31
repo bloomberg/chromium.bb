@@ -41,15 +41,29 @@ component("shared_typemap_traits") {
   ]
 }
 
+source_set("mojom_traits") {
+  sources = [
+    "big_string_mojom_traits.cc",
+    "big_string_mojom_traits.h",
+  ]
+  deps = [
+    ":base",
+    ":shared_typemap_traits",
+    "//mojo/public/mojom/base",
+  ]
+}
+
 source_set("tests") {
   testonly = true
 
   sources = [
     "big_buffer_unittest.cc",
+    "big_string_unittest.cc",
   ]
 
   public_deps = [
     ":base",
+    ":mojom_traits",
     ":shared_typemap_traits",
     "//base",
     "//mojo/public/cpp/test_support:test_utils",
