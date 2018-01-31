@@ -106,4 +106,39 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFullscreenBrowserTest,
   EXPECT_EQ(1, CountLinks(manager->GetRoot()));
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityFullscreenBrowserTest, InsideIFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  FakeFullscreenDelegate delegate;
+  shell()->web_contents()->SetDelegate(&delegate);
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      embedded_test_server()->GetURL("/accessibility/fullscreen/iframe.html"));
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  BrowserAccessibilityManager* manager =
+      web_contents->GetRootBrowserAccessibilityManager();
+
+  // Initially there's just one link, in the top frame.
+  EXPECT_EQ(1, CountLinks(manager->GetRoot()));
+
+  // Enter fullscreen by finding the button and performing the default action,
+  // which is to click it.
+  BrowserAccessibility* button = FindButton(manager->GetRoot());
+  ASSERT_NE(nullptr, button);
+  manager->DoDefaultAction(*button);
+
+  // After entering fullscreen, the page will add an iframe with a link inside
+  // in the inert part of the page, then exit fullscreen and change the button
+  // text to "Done". Then the link inside the iframe should also be exposed.
+  WaitForAccessibilityTreeToContainNodeWithName(web_contents, "Done");
+  EXPECT_EQ(2, CountLinks(manager->GetRoot()));
+}
+
 }  // namespace content

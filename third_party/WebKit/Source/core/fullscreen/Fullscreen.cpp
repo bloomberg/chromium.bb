@@ -898,6 +898,12 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
       if (LocalFrameView* frame_view = frame->View())
         frame_view->SetNeedsPaintPropertyUpdate();
     }
+
+    // Descendant frames may have been inert because their owner iframes were
+    // outside of fullscreen element. SetIsInert recurses through subframes to
+    // propagate the inert bit as needed.
+    frame->SetIsInert(GetDocument()->LocalOwner() &&
+                      GetDocument()->LocalOwner()->IsInert());
   }
 
   // TODO(foolip): This should not call |UpdateStyleAndLayoutTree()|.
