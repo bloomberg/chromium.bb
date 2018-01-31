@@ -35,10 +35,11 @@ std::vector<cryptauth::RemoteDevice> RemoveDuplicatesFromVector(
 }  // namespace
 
 // static
-uint32_t MessageTransferOperation::kMaxConnectionAttemptsPerDevice = 3;
+const uint32_t MessageTransferOperation::kMaxEmptyScansPerDevice = 3;
 
 // static
-uint32_t MessageTransferOperation::kDefaultTimeoutSeconds = 10;
+const uint32_t MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice =
+    6;
 
 MessageTransferOperation::MessageTransferOperation(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
@@ -109,42 +110,22 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
     return;
   }
 
-  // TODO(khorimoto): Use |status_change_detail| to provide better retry
-  // handling. See https://crbug.com/805218.
-
-  if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
-    StartTimerForDevice(*remote_device);
-    OnDeviceAuthenticated(*remote_device);
-  } else if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED) {
-    // Note: In success cases, the channel advances from DISCONNECTED to
-    // CONNECTING to CONNECTED to AUTHENTICATING to AUTHENTICATED. If the
-    // channel fails to advance at any of those stages, it transitions back to
-    // DISCONNECTED and starts over.
-
-    uint32_t num_attempts_so_far;
-    if (remote_device_to_num_attempts_map_.find(*remote_device) ==
-        remote_device_to_num_attempts_map_.end()) {
-      num_attempts_so_far = 0;
-    } else {
-      num_attempts_so_far = remote_device_to_num_attempts_map_[*remote_device];
-    }
-
-    num_attempts_so_far++;
-    remote_device_to_num_attempts_map_[*remote_device] = num_attempts_so_far;
-
-    PA_LOG(INFO) << "Connection attempt failed for device with ID "
-                 << remote_device->GetTruncatedDeviceIdForLogs() << ". "
-                 << "Number of failures so far: " << num_attempts_so_far;
-
-    if (num_attempts_so_far >= kMaxConnectionAttemptsPerDevice) {
-      PA_LOG(INFO) << "Connection retry limit reached for device with ID "
-                   << remote_device->GetTruncatedDeviceIdForLogs() << ". "
-                   << "Unregistering device.";
-
-      // If the number of failures so far is equal to the maximum allowed number
-      // of connection attempts, give up and unregister the device.
-      UnregisterDevice(*remote_device);
-    }
+  switch (new_status) {
+    case cryptauth::SecureChannel::Status::AUTHENTICATED:
+      StartTimerForDevice(*remote_device);
+      OnDeviceAuthenticated(*remote_device);
+      break;
+    case cryptauth::SecureChannel::Status::DISCONNECTED:
+      HandleDeviceDisconnection(*remote_device, status_change_detail);
+      break;
+    default:
+      // Note: In success cases, the channel advances from DISCONNECTED to
+      // CONNECTING to CONNECTED to AUTHENTICATING to AUTHENTICATED. If the
+      // channel fails to advance at any of those stages, it transitions back to
+      // DISCONNECTED and starts over. There is no need for special handling for
+      // any of these interim states since they will eventually progress to
+      // either AUTHENTICATED or DISCONNECTED.
+      break;
   }
 }
 
@@ -174,7 +155,7 @@ void MessageTransferOperation::UnregisterDevice(
   // cause the original reference to be deleted.
   cryptauth::RemoteDevice remote_device_copy = remote_device;
 
-  remote_device_to_num_attempts_map_.erase(remote_device_copy);
+  remote_device_to_attempts_map_.erase(remote_device_copy);
   remote_devices_.erase(std::remove(remote_devices_.begin(),
                                     remote_devices_.end(), remote_device_copy),
                         remote_devices_.end());
@@ -201,6 +182,70 @@ uint32_t MessageTransferOperation::GetTimeoutSeconds() {
 void MessageTransferOperation::SetTimerFactoryForTest(
     std::unique_ptr<TimerFactory> timer_factory_for_test) {
   timer_factory_ = std::move(timer_factory_for_test);
+}
+
+void MessageTransferOperation::HandleDeviceDisconnection(
+    const cryptauth::RemoteDevice& remote_device,
+    BleConnectionManager::StateChangeDetail status_change_detail) {
+  ConnectAttemptCounts& attempts_for_device =
+      remote_device_to_attempts_map_[remote_device];
+
+  switch (status_change_detail) {
+    case BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE:
+      PA_LOG(ERROR) << "State transitioned to DISCONNECTED, but no "
+                    << "StateChangeDetail was provided. Treating this as a "
+                    << "failure to discover the device.";
+    // Note: Intentional fall-through to next case.
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION:
+      ++attempts_for_device.empty_scan_attempts;
+      PA_LOG(INFO) << "Connection attempt failed; could not discover the "
+                   << "device with ID "
+                   << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                   << "Number of failures to establish connection: "
+                   << attempts_for_device.empty_scan_attempts;
+
+      if (attempts_for_device.empty_scan_attempts >= kMaxEmptyScansPerDevice) {
+        PA_LOG(INFO) << "Reached retry limit for failing to discover the "
+                     << "device with ID "
+                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                     << "Unregistering device.";
+        UnregisterDevice(remote_device);
+      }
+      break;
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED:
+      ++attempts_for_device.gatt_connection_attempts;
+      PA_LOG(INFO) << "Connection attempt failed; GATT connection error for "
+                   << "device with ID "
+                   << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                   << "Number of GATT error: "
+                   << attempts_for_device.gatt_connection_attempts;
+
+      if (attempts_for_device.gatt_connection_attempts >=
+          kMaxGattConnectionAttemptsPerDevice) {
+        PA_LOG(INFO) << "Reached retry limit for GATT connection errors for "
+                     << "device with ID "
+                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                     << "Unregistering device.";
+        UnregisterDevice(remote_device);
+      }
+      break;
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_INTERRUPTED_BY_HIGHER_PRIORITY:
+      // If the connection attempt was interrupted by a higher-priority message,
+      // this is not a true failure. There is nothing to do until the next state
+      // change occurs.
+      break;
+    case BleConnectionManager::StateChangeDetail::
+        STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED:
+      // This state change is expected to be handled as a result of calls to
+      // UnregisterDevice(). There is no need for special handling.
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void MessageTransferOperation::StartTimerForDevice(

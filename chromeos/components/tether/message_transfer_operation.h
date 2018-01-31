@@ -23,6 +23,21 @@ class TimerFactory;
 // from remote devices.
 class MessageTransferOperation : public BleConnectionManager::Observer {
  public:
+  // The number of times to attempt to connect to a device without receiving any
+  // response before giving up. When a connection to a device is attempted, a
+  // BLE discovery session listens for advertisements from the remote device as
+  // the first step of the connection; if no advertisement is picked up, it is
+  // likely that the remote device is not nearby or is not currently responding
+  // to Instant Tethering requests.
+  static const uint32_t kMaxEmptyScansPerDevice;
+
+  // The number of times to attempt a GATT connection to a device, after a BLE
+  // discovery session has already detected a nearby device. GATT connections
+  // may fail for a variety of reasons, but most failures are ephemeral. Thus,
+  // more connection attempts are allowed in such cases since it is likely that
+  // a subsequent attempt will succeed. See https://crbug.com/805218.
+  static const uint32_t kMaxGattConnectionAttemptsPerDevice;
+
   MessageTransferOperation(
       const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
       BleConnectionManager* connection_manager);
@@ -91,21 +106,28 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   friend class HostScannerOperationTest;
   friend class MessageTransferOperationTest;
 
-  static uint32_t kMaxConnectionAttemptsPerDevice;
-
   // The default number of seconds an operation should wait before a timeout
   // occurs. Once this amount of time passes, the connection will be closed.
   // Classes deriving from MessageTransferOperation should override
   // GetTimeoutSeconds() if they desire a different duration.
-  static uint32_t kDefaultTimeoutSeconds;
+  static constexpr const uint32_t kDefaultTimeoutSeconds = 10;
 
-  void SetTimerFactoryForTest(
-      std::unique_ptr<TimerFactory> timer_factory_for_test);
+  struct ConnectAttemptCounts {
+    uint32_t empty_scan_attempts = 0;
+    uint32_t gatt_connection_attempts = 0;
+  };
+
+  void HandleDeviceDisconnection(
+      const cryptauth::RemoteDevice& remote_device,
+      BleConnectionManager::StateChangeDetail status_change_detail);
   void StartTimerForDevice(const cryptauth::RemoteDevice& remote_device);
   void StopTimerForDeviceIfRunning(
       const cryptauth::RemoteDevice& remote_device);
   void OnTimeout(const cryptauth::RemoteDevice& remote_device);
   cryptauth::RemoteDevice* GetRemoteDevice(const std::string& device_id);
+
+  void SetTimerFactoryForTest(
+      std::unique_ptr<TimerFactory> timer_factory_for_test);
 
   std::vector<cryptauth::RemoteDevice> remote_devices_;
   BleConnectionManager* connection_manager_;
@@ -114,8 +136,8 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   bool initialized_ = false;
   bool shutting_down_ = false;
   MessageType message_type_for_connection_;
-  std::map<cryptauth::RemoteDevice, uint32_t>
-      remote_device_to_num_attempts_map_;
+  std::map<cryptauth::RemoteDevice, ConnectAttemptCounts>
+      remote_device_to_attempts_map_;
   std::map<cryptauth::RemoteDevice, std::unique_ptr<base::Timer>>
       remote_device_to_timer_map_;
   base::WeakPtrFactory<MessageTransferOperation> weak_ptr_factory_;

@@ -22,8 +22,6 @@ namespace tether {
 
 namespace {
 
-const size_t kMaxConnectionAttemptsPerDevice = 3;
-
 constexpr base::TimeDelta kKeepAliveTickleResponseTime =
     base::TimeDelta::FromSeconds(3);
 
@@ -142,8 +140,9 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
 
 TEST_F(KeepAliveOperationTest, TestCannotConnect) {
   // Simulate the device failing to connect.
-  fake_ble_connection_manager_->SimulateFailedConnectionAttempts(
-      test_device_.GetDeviceId(), kMaxConnectionAttemptsPerDevice);
+  fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
+      test_device_.GetDeviceId(),
+      MessageTransferOperation::kMaxEmptyScansPerDevice);
 
   // The maximum number of connection failures has occurred.
   EXPECT_TRUE(test_observer_->has_run_callback());
