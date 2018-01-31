@@ -104,7 +104,10 @@ def main():
     rc = 0
     try:
       env['CHROME_HEADLESS'] = '1'
-      rc = common.run_command([sys.executable] + rest_args + sharding_args + [
+      main_command = [sys.executable]
+      if not os.getenv('VIRTUAL_ENV'):
+        main_command = ['vpython']
+      rc = common.run_command(main_command + rest_args + sharding_args + [
         '--write-full-results-to', args.isolated_script_test_output
       ], env=env)
     except Exception:

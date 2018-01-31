@@ -124,3 +124,19 @@ wheel: <
   name: "infra/python/wheels/simplejson/${vpython_platform}"
   version: "version:3.13.2"
 >
+
+# Used by:
+#   content/test/gpu/gpu_tests/color_profile_manager_mac.py
+wheel: <
+  name: "infra/python/wheels/pyobjc/${vpython_platform}"
+  version: "version:4.1"
+  match_tag: < platform: "macosx_10_10_intel" >
+>
+# TODO(crbug.com/804174): roll out support in vpython for
+# "not_match_tag", then uncomment this.
+# wheel: <
+#   name: "infra/python/wheels/pyobjc/${vpython_platform}"
+#   version: "version:2.5.1"
+#   match_tag: < platform: "macosx_10_6_intel" >
+#   not_match_tag: < platform: "macosx_10_10_intel" >
+# >
