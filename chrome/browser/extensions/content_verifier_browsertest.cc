@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -461,9 +462,6 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     EnableExtension(id);
     EXPECT_TRUE(job_observer.WaitForExpectedJobs());
   }
-
- protected:
-  GURL page_url_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
@@ -582,6 +580,39 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
     }
   }
   EXPECT_TRUE(found);
+}
+
+// Tests that verification failure during navigating to an extension resource
+// correctly disables the extension.
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest, VerificationFailureOnNavigate) {
+  // |unload_observer| needs to destroy before the ExtensionRegistry gets
+  // deleted, which happens before TearDownOnMainThread is called.
+  // TODO(lazyboy): Use TestExtensionRegistryObserver.
+  RegistryObserver unload_observer(ExtensionRegistry::Get(profile()));
+  const Extension* extension = InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("content_verifier/dot_slash_paths.crx"), 1);
+  ASSERT_TRUE(extension);
+  const ExtensionId kExtensionId = extension->id();
+  const base::FilePath::CharType kResource[] = FILE_PATH_LITERAL("page.html");
+  {
+    // Modify content so that content verification fails.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath real_path = extension->path().Append(kResource);
+    std::string extra = "some_extra_function_call();";
+    ASSERT_TRUE(base::AppendToFile(real_path, extra.data(), extra.size()));
+  }
+
+  GURL page_url = extension->GetResourceURL("page.html");
+  // Wait for 0 navigations to complete because with PlzNavigate it's racy
+  // when the didstop IPC arrives relative to the tab being closed. The
+  // wait call below is what the tests care about.
+  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser(), page_url, 0, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  EXPECT_TRUE(unload_observer.WaitForUnload(kExtensionId));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int reasons = prefs->GetDisableReasons(kExtensionId);
+  EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
 }
 
 class ContentVerifierPolicyTest : public ContentVerifierTest {
