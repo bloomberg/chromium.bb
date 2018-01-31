@@ -243,14 +243,6 @@ fuzzer_test("v8_wasm_compile_fuzzer") {
   libfuzzer_options = [ "max_len=500" ]
 }
 
-fuzzer_test("v8_wasm_call_fuzzer") {
-  sources = []
-  deps = [
-    "//v8:wasm_call_fuzzer",
-  ]
-  libfuzzer_options = [ "max_len=500" ]
-}
-
 fuzzer_test("v8_wasm_fuzzer") {
   sources = []
   deps = [
