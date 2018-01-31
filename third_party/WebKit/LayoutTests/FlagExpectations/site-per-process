@@ -270,3 +270,5 @@ crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ance
 crbug.com/801992 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-width.html [ Crash ]
 crbug.com/801992 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Pass Timeout ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
+
+crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
