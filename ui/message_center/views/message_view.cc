@@ -26,6 +26,8 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
+namespace message_center {
+
 namespace {
 
 const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
@@ -37,8 +39,7 @@ bool sidebar_enabled = false;
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
-base::string16 CreateAccessibleName(
-    const message_center::Notification& notification) {
+base::string16 CreateAccessibleName(const Notification& notification) {
   if (!notification.accessible_name().empty())
     return notification.accessible_name();
 
@@ -46,10 +47,8 @@ base::string16 CreateAccessibleName(
   std::vector<base::string16> accessible_lines = {
       notification.title(), notification.message(),
       notification.context_message()};
-  std::vector<message_center::NotificationItem> items = notification.items();
-  for (size_t i = 0;
-       i < items.size() && i < message_center::kNotificationMaximumItems;
-       ++i) {
+  std::vector<NotificationItem> items = notification.items();
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
     accessible_lines.push_back(items[i].title + base::ASCIIToUTF16(" ") +
                                items[i].message);
   }
@@ -60,13 +59,11 @@ bool ShouldRoundMessageViewCorners() {
 #if defined(OS_CHROMEOS)
   return true;
 #else
-  return message_center::IsNewStyleNotificationEnabled();
+  return IsNewStyleNotificationEnabled();
 #endif
 }
 
 }  // namespace
-
-namespace message_center {
 
 // static
 const char MessageView::kViewClassName[] = "MessageView";

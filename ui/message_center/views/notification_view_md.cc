@@ -111,12 +111,12 @@ constexpr int kCompactTitleMessageViewSpacing = 12;
 constexpr int kProgressBarHeight = 4;
 
 constexpr int kMessageViewWidthWithIcon =
-    message_center::kNotificationWidth - kIconViewSize.width() -
+    kNotificationWidth - kIconViewSize.width() -
     kLeftContentPaddingWithIcon.left() - kLeftContentPaddingWithIcon.right() -
     kContentRowPadding.left() - kContentRowPadding.right();
 
 constexpr int kMessageViewWidth =
-    message_center::kNotificationWidth - kLeftContentPadding.left() -
+    kNotificationWidth - kLeftContentPadding.left() -
     kLeftContentPadding.right() - kContentRowPadding.left() -
     kContentRowPadding.right();
 
@@ -162,7 +162,7 @@ class ClickActivator : public ui::EventHandler {
 
 // ItemView ////////////////////////////////////////////////////////////////////
 
-ItemView::ItemView(const message_center::NotificationItem& item) {
+ItemView::ItemView(const NotificationItem& item) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0));
 
@@ -172,8 +172,8 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   title->SetFontList(font_list);
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title->SetEnabledColor(message_center::kRegularTextColorMD);
-  title->SetBackgroundColor(message_center::kDimTextBackgroundColor);
+  title->SetEnabledColor(kRegularTextColorMD);
+  title->SetBackgroundColor(kDimTextBackgroundColor);
   AddChildView(title);
 
   views::Label* message = new views::Label(l10n_util::GetStringFUTF16(
@@ -182,7 +182,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(kDimTextColorMD);
-  message->SetBackgroundColor(message_center::kDimTextBackgroundColor);
+  message->SetBackgroundColor(kDimTextBackgroundColor);
   AddChildView(message);
 }
 
@@ -313,8 +313,7 @@ LargeImageContainerView::LargeImageContainerView()
     : image_view_(new LargeImageView()) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(kLargeImageContainerPadding));
-  SetBackground(
-      views::CreateSolidBackground(message_center::kImageBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kImageBackgroundColor));
   AddChildView(image_view_);
 }
 
@@ -848,10 +847,9 @@ void NotificationViewMD::RequestFocusOnCloseButton() {
 
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
-  header_row_->SetAccentColor(
-      notification.accent_color() == SK_ColorTRANSPARENT
-          ? message_center::kNotificationDefaultAccentColor
-          : notification.accent_color());
+  header_row_->SetAccentColor(notification.accent_color() == SK_ColorTRANSPARENT
+                                  ? kNotificationDefaultAccentColor
+                                  : notification.accent_color());
   header_row_->SetTimestamp(notification.timestamp());
 
   base::string16 app_name = notification.display_source();
@@ -957,8 +955,8 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
   if (!progress_bar_view_) {
     progress_bar_view_ = new views::ProgressBar(kProgressBarHeight,
                                                 /* allow_round_corner */ false);
-    progress_bar_view_->SetBorder(views::CreateEmptyBorder(
-        message_center::kProgressBarTopPadding, 0, 0, 0));
+    progress_bar_view_->SetBorder(
+        views::CreateEmptyBorder(kProgressBarTopPadding, 0, 0, 0));
     left_content_->AddChildView(progress_bar_view_);
   }
 
@@ -1088,8 +1086,7 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
   for (size_t i = 0; i < buttons.size(); ++i) {
     ButtonInfo button_info = buttons[i];
     if (new_buttons) {
-      bool is_inline_reply =
-          button_info.type == message_center::ButtonType::TEXT;
+      bool is_inline_reply = button_info.type == ButtonType::TEXT;
       NotificationButtonMD* button = new NotificationButtonMD(
           this, is_inline_reply, button_info.title, button_info.placeholder);
       action_buttons_.push_back(button);

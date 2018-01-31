@@ -178,7 +178,7 @@ bool MessageCenterImpl::IsQuietMode() const {
   return notification_list_->quiet_mode();
 }
 
-message_center::Notification* MessageCenterImpl::FindVisibleNotificationById(
+Notification* MessageCenterImpl::FindVisibleNotificationById(
     const std::string& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return notification_list_->GetNotificationById(id);

@@ -18,7 +18,7 @@
 namespace message_center {
 namespace {
 
-class TestNotificationDelegate : public message_center::NotificationDelegate {
+class TestNotificationDelegate : public NotificationDelegate {
  public:
   TestNotificationDelegate() = default;
 
@@ -54,12 +54,11 @@ class NotificationMenuModelTest : public testing::Test {
 
   Notification* AddNotification(const std::string& id, NotifierId notifier_id) {
     std::unique_ptr<Notification> notification(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, id,
+        NOTIFICATION_TYPE_SIMPLE, id,
         base::ASCIIToUTF16("Test Web Notification"),
         base::ASCIIToUTF16("Notification message body."), gfx::Image(),
         base::ASCIIToUTF16("www.test.org"), GURL(), notifier_id,
-        message_center::RichNotificationData(),
-        new TestNotificationDelegate()));
+        RichNotificationData(), new TestNotificationDelegate()));
     Notification* notification_ptr = notification.get();
     message_center_->AddNotification(std::move(notification));
     return notification_ptr;
@@ -81,11 +80,11 @@ TEST_F(NotificationMenuModelTest, ContextMenuTestWithMessageCenter) {
 
   NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      message_center::NOTIFICATION_TYPE_SIMPLE, id2,
+      NOTIFICATION_TYPE_SIMPLE, id2,
       base::ASCIIToUTF16("Test Web Notification"),
       base::ASCIIToUTF16("Notification message body."), gfx::Image(),
-      display_source, GURL(), notifier_id2,
-      message_center::RichNotificationData(), new TestNotificationDelegate());
+      display_source, GURL(), notifier_id2, RichNotificationData(),
+      new TestNotificationDelegate());
 
   std::unique_ptr<ui::MenuModel> model(
       std::make_unique<NotificationMenuModel>(*notification));

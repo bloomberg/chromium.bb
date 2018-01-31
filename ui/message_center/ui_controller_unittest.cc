@@ -19,7 +19,7 @@ using base::ASCIIToUTF16;
 namespace message_center {
 namespace {
 
-class TestNotificationDelegate : public message_center::NotificationDelegate {
+class TestNotificationDelegate : public NotificationDelegate {
  public:
   TestNotificationDelegate() = default;
 
@@ -78,13 +78,11 @@ class UiControllerTest : public testing::Test {
   }
 
   Notification* AddNotification(const std::string& id, NotifierId notifier_id) {
-    std::unique_ptr<Notification> notification(
-        new Notification(message_center::NOTIFICATION_TYPE_SIMPLE, id,
-                         ASCIIToUTF16("Test Web Notification"),
-                         ASCIIToUTF16("Notification message body."),
-                         gfx::Image(), ASCIIToUTF16("www.test.org"), GURL(),
-                         notifier_id, message_center::RichNotificationData(),
-                         new TestNotificationDelegate()));
+    std::unique_ptr<Notification> notification(new Notification(
+        NOTIFICATION_TYPE_SIMPLE, id, ASCIIToUTF16("Test Web Notification"),
+        ASCIIToUTF16("Notification message body."), gfx::Image(),
+        ASCIIToUTF16("www.test.org"), GURL(), notifier_id,
+        RichNotificationData(), new TestNotificationDelegate()));
     Notification* notification_ptr = notification.get();
     message_center_->AddNotification(std::move(notification));
     return notification_ptr;
@@ -185,12 +183,11 @@ TEST_F(UiControllerTest, MessageCenterReopenPopupsForSystemPriority) {
   ASSERT_FALSE(ui_controller_->message_center_visible());
 
   std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "MessageCenterReopnPopupsForSystemPriority",
+      NOTIFICATION_TYPE_SIMPLE, "MessageCenterReopnPopupsForSystemPriority",
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."), gfx::Image(),
       ASCIIToUTF16("www.test.org"), GURL(), DummyNotifierId(),
-      message_center::RichNotificationData(), NULL /* delegate */));
+      RichNotificationData(), NULL /* delegate */));
   notification->SetSystemPriority();
   message_center_->AddNotification(std::move(notification));
 

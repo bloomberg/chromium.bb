@@ -53,10 +53,8 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
   bool message_center_visible() { return message_center_visible_; }
   bool popups_visible() { return popups_visible_; }
   UiDelegate* delegate() { return delegate_; }
-  const message_center::MessageCenter* message_center() const {
-    return message_center_;
-  }
-  message_center::MessageCenter* message_center() { return message_center_; }
+  const MessageCenter* message_center() const { return message_center_; }
+  MessageCenter* message_center() { return message_center_; }
 
   // Overridden from MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
@@ -77,7 +75,7 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
   void NotifyUiControllerChanged();
   void HidePopupBubbleInternal();
 
-  message_center::MessageCenter* message_center_;
+  MessageCenter* message_center_;
   bool message_center_visible_ = false;
   bool popups_visible_ = false;
   UiDelegate* delegate_;

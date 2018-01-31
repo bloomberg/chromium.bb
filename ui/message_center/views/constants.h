@@ -31,11 +31,9 @@ const int kNotificationSettingsPadding = 5;
 // Character limit = pixels per line * line limit / min. pixels per character.
 const int kMinPixelsPerTitleCharacter = 4;
 const size_t kMessageCharacterLimit =
-    message_center::kNotificationWidth *
-        message_center::kMessageExpandedLineLimit / 3;
+    kNotificationWidth * kMessageExpandedLineLimit / 3;
 const size_t kContextMessageCharacterLimit =
-    message_center::kNotificationWidth *
-    message_center::kContextMessageLineLimit / 3;
+    kNotificationWidth * kContextMessageLineLimit / 3;
 
 }  // namespace message_center
 

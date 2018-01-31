@@ -562,10 +562,10 @@ TEST_F(NotificationViewTest, FormatContextMessageTest) {
       "veryveryveryveryveyryveryveryveryveryveyryveryvery.veryveryveyrylong."
       "chromium.org/hello";
 
-  Notification notification1(
-      NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
-      base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
-      GURL(), message_center::NotifierId(GURL()), *data(), NULL);
+  Notification notification1(NOTIFICATION_TYPE_BASE_FORMAT, std::string(""),
+                             base::UTF8ToUTF16(""), base::UTF8ToUTF16(""),
+                             CreateTestImage(80, 80), base::UTF8ToUTF16(""),
+                             GURL(), NotifierId(GURL()), *data(), NULL);
   notification1.set_context_message(base::ASCIIToUTF16(kRegularContextText));
 
   base::string16 result =
@@ -579,7 +579,7 @@ TEST_F(NotificationViewTest, FormatContextMessageTest) {
   Notification notification2(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
       base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
-      GURL(kUrlContext), message_center::NotifierId(GURL()), *data(), NULL);
+      GURL(kUrlContext), NotifierId(GURL()), *data(), NULL);
   notification2.set_context_message(base::ASCIIToUTF16(""));
 
   result = notification_view()->FormatContextMessage(notification2);
@@ -590,7 +590,7 @@ TEST_F(NotificationViewTest, FormatContextMessageTest) {
   Notification notification3(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
       base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
-      GURL(kChromeUrl), message_center::NotifierId(GURL()), *data(), NULL);
+      GURL(kChromeUrl), NotifierId(GURL()), *data(), NULL);
   notification3.set_context_message(base::ASCIIToUTF16(""));
   result = notification_view()->FormatContextMessage(notification3);
   EXPECT_TRUE(result.empty());
@@ -599,7 +599,7 @@ TEST_F(NotificationViewTest, FormatContextMessageTest) {
   Notification notification4(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
       base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
-      GURL(kLongUrlContext), message_center::NotifierId(GURL()), *data(), NULL);
+      GURL(kLongUrlContext), NotifierId(GURL()), *data(), NULL);
   notification4.set_context_message(base::ASCIIToUTF16(""));
   result = notification_view()->FormatContextMessage(notification4);
 
