@@ -148,6 +148,18 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleCreateFileCallback, &callback);
   }
 
+  void Truncate(int32_t mount_id,
+                const base::FilePath& file_path,
+                int64_t length,
+                StatusCallback callback) override {
+    smbprovider::TruncateOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_file_path(file_path.value());
+    options.set_length(length);
+    CallMethod(smbprovider::kTruncateMethod, options,
+               &SmbProviderClientImpl::HandleTruncateCallback, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -281,6 +293,17 @@ class SmbProviderClientImpl : public SmbProviderClient {
                                 dbus::Response* response) {
     if (!response) {
       DLOG(ERROR) << "CreateFile: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
+    }
+    dbus::MessageReader reader(response);
+    std::move(callback).Run(GetErrorFromReader(&reader));
+  }
+
+  // Handles D-Bus callback for Truncate.
+  void HandleTruncateCallback(StatusCallback callback,
+                              dbus::Response* response) {
+    if (!response) {
+      DLOG(ERROR) << "Truncate: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
     }
     dbus::MessageReader reader(response);
