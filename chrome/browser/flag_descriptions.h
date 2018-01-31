@@ -940,6 +940,9 @@ extern const char kTranslateRankerEnforcementDescription[];
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 
+extern const char kUnifiedConsentName[];
+extern const char kUnifiedConsentDescription[];
+
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 

@@ -25427,6 +25427,7 @@ from previous Chrome versions.
   <int value="-1691281364" label="enable-notification-action-icons"/>
   <int value="-1686782572" label="ChromeHomeInactivitySheetExpansion:disabled"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
+  <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1670137340"
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
@@ -25979,6 +25980,7 @@ from previous Chrome versions.
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
+  <int value="-284547865" label="UnifiedConsent:enabled"/>
   <int value="-281844827" label="AutofillCreditCardAblationExperiment:enabled"/>
   <int value="-280111192" label="AutofillUpstreamSendDetectedValues:enabled"/>
   <int value="-279920685" label="affiliation-based-matching:enabled"/>
