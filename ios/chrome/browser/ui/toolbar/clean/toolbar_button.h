@@ -21,11 +21,12 @@
 // or WebState.
 @property(nonatomic, assign) BOOL hiddenInCurrentState;
 // Named of the layout guide this button should be constrained to, if not nil.
+// The constraints to the layout guide are only valid when the button is
+// displayed. Also, they can be dropped/changed upon size class changes or
+// rotations. Any view constrained to them is expected to be dismissed on such
+// events.
 @property(nonatomic, strong) GuideName* guideName;
-// Priority of the constraints between the layout guide and the button, when
-// activated. Use different priorities to avoid having conflicting constraints
-// when moving the layout guide from one button to another.
-@property(nonatomic, assign) UILayoutPriority constraintPriority;
+
 // Returns a ToolbarButton using the three images parameters for their
 // respective state.
 + (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage

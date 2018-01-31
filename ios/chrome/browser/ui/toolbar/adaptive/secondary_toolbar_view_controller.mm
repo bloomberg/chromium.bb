@@ -31,8 +31,6 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
-  self.view.toolsMenuButton.constraintPriority =
-      kSecondaryToolbarButtonPriority;
 }
 
 @end
