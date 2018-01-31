@@ -24,15 +24,13 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Top anchor at the bottom of the safeAreaLayoutGuide. Used so views don't
-// overlap with the Status Bar.
-@property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
-
 // The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
 
 // Container for the location bar.
 @property(nonatomic, strong, readonly) UIView* locationBarContainer;
+// The height of the container for the location bar.
+@property(nonatomic, strong, readonly) NSLayoutConstraint* locationBarHeight;
 
 // StackView containing the leading buttons (relative to the location bar).
 // It should only contain ToolbarButtons.

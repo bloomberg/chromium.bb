@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -65,12 +67,6 @@
 
   self.view =
       [[PrimaryToolbarView alloc] initWithButtonFactory:self.buttonFactory];
-
-  if (@available(iOS 11, *)) {
-    self.view.topSafeAnchor = self.view.safeAreaLayoutGuide.topAnchor;
-  } else {
-    self.view.topSafeAnchor = self.topLayoutGuide.bottomAnchor;
-  }
 
   // This method cannot be called from the init as the topSafeAnchor can only be
   // set to topLayoutGuide after the view creation on iOS 10.
@@ -129,9 +125,16 @@
 #pragma mark - FullscreenUIElement
 
 - (void)updateForFullscreenProgress:(CGFloat)progress {
-  self.view.leadingStackView.alpha = progress;
-  self.view.trailingStackView.alpha = progress;
-  // TODO(crbug.com/804731): Update the location bar constraints.
+  CGFloat alphaValue = fmax(progress * 2 - 1, 0);
+  self.view.leadingStackView.alpha = alphaValue;
+  self.view.trailingStackView.alpha = alphaValue;
+  self.view.locationBarHeight.constant =
+      AlignValueToPixel(kToolbarHeightFullscreen +
+                        (kToolbarHeight - kToolbarHeightFullscreen) * progress -
+                        2 * kLocationBarVerticalMargin);
+  self.view.locationBarContainer.backgroundColor =
+      [self.buttonFactory.toolbarConfiguration.omniboxBackgroundColor
+          colorWithAlphaComponent:alphaValue];
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
