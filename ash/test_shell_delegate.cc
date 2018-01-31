@@ -5,14 +5,12 @@
 #include "ash/test_shell_delegate.h"
 
 #include "ash/accessibility/default_accessibility_delegate.h"
-#include "ash/shell.h"
+#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wallpaper/test_wallpaper_delegate.h"
 #include "base/logging.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/image/image.h"
-#include "ui/keyboard/keyboard_test_util.h"
 
 namespace ash {
 
@@ -41,8 +39,7 @@ void TestShellDelegate::PreInit() {}
 void TestShellDelegate::PreShutdown() {}
 
 std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
-  return std::make_unique<keyboard::TestKeyboardUI>(
-      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod());
+  return std::make_unique<TestKeyboardUI>();
 }
 
 void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
