@@ -710,13 +710,15 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
     // The NoSessionID variant was deprecated.
     {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
      switches::kTLS13VariantDisabled},
-    {flag_descriptions::kTLS13VariantExperiment2, switches::kTLS13Variant,
-     switches::kTLS13VariantExperiment2},
+    // The Experiment2 variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
     // The Experiment3 variant was deprecated.
     {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
      switches::kTLS13VariantDisabled},
-    {flag_descriptions::kTLS13VariantDraft22, switches::kTLS13Variant,
-     switches::kTLS13VariantDraft22},
+    // The Draft22 variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
     {flag_descriptions::kTLS13VariantDraft23, switches::kTLS13Variant,
      switches::kTLS13VariantDraft23},
 };
