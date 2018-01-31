@@ -544,7 +544,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);
 #if defined(OS_ANDROID)
-  void OnUndoScrollFocusedEditableNodeIntoRect();
   void OnUpdateBrowserControlsState(bool enable_hiding,
                                     bool enable_showing,
                                     bool animate);
