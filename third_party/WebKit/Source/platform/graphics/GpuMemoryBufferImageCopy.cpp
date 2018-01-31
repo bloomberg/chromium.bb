@@ -17,11 +17,9 @@ namespace blink {
 GpuMemoryBufferImageCopy::GpuMemoryBufferImageCopy(
     gpu::gles2::GLES2Interface* gl)
     : gl_(gl) {
-  gl_->GenFramebuffers(1, &draw_frame_buffer_);
 }
 
 GpuMemoryBufferImageCopy::~GpuMemoryBufferImageCopy() {
-  gl_->DeleteFramebuffers(1, &draw_frame_buffer_);
 }
 
 bool GpuMemoryBufferImageCopy::EnsureMemoryBuffer(int width, int height) {
@@ -72,9 +70,6 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferImageCopy::CopyImage(Image* image) {
     gl_->BindTexImage2DCHROMIUM(target, image_id);
   }
   gl_->BindTexture(GL_TEXTURE_2D, 0);
-  gl_->BindFramebuffer(GL_DRAW_FRAMEBUFFER, draw_frame_buffer_);
-  gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
-                            dest_texture_id, 0);
 
   // Bind the read framebuffer to our image.
   StaticBitmapImage* static_image = static_cast<StaticBitmapImage*>(image);
@@ -86,19 +81,12 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferImageCopy::CopyImage(Image* image) {
   gl_->WaitSyncTokenCHROMIUM(sync_token.GetData());
   GLuint source_texture_id = gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
-  GLuint read_frame_buffer;
-  gl_->GenFramebuffers(1, &read_frame_buffer);
-  gl_->BindFramebuffer(GL_READ_FRAMEBUFFER, read_frame_buffer);
-  gl_->FramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
-                            source_texture_id, 0);
 
-  // Copy the read framebuffer to the draw framebuffer.
-  gl_->BlitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height,
-                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  gl_->CopySubTextureCHROMIUM(source_texture_id, 0, GL_TEXTURE_2D,
+                              dest_texture_id, 0, 0, 0, 0, 0, width, height,
+                              false, false, false);
 
   // Cleanup the read framebuffer, associated image and texture.
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  gl_->DeleteFramebuffers(1, &read_frame_buffer);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   gl_->DeleteTextures(1, &source_texture_id);
 
