@@ -55,10 +55,17 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
+  if (!handle.mach_port) {
+    LOG(ERROR) << "Invalid IOSurface mach port returned to client.";
+    return nullptr;
+  }
+
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       IOSurfaceLookupFromMachPort(handle.mach_port.get()));
-  if (!io_surface)
+  if (!io_surface) {
+    LOG(ERROR) << "Failed to open IOSurface via mach port returned to client.";
     return nullptr;
+  }
 
   return base::WrapUnique(
       new GpuMemoryBufferImplIOSurface(handle.id, size, format, callback,
