@@ -63,11 +63,19 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
   void SetBackgroundColor(SkColor background_color);
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
-  void OnNSViewWasResized();
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void SetWantsAnimateOnlyBeginFrames();
+
+  // Update the renderer's SurfaceId to reflect the current dimensions of the
+  // NSView. This will allocate a new SurfaceId if the dimensions have indeed
+  // changed.
+  void OnNSViewWasResized();
+
+  // Update the renderer's SurfaceId to reflect |size_dip| in anticipation of
+  // the NSView resizing during auto-resize.
+  void OnNSViewWillAutoResize(const gfx::Size& size_dip);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.
@@ -187,7 +195,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
       nullptr;
 
   // The surface for the delegated frame host, rendered into by the renderer
-  // process. Updated by OnNSViewWasResized.
+  // process.
+  void UpdateDelegatedFrameHostSurface(const gfx::Size& size_dip,
+                                       float scale_factor);
   viz::LocalSurfaceId delegated_frame_host_surface_id_;
   gfx::Size delegated_frame_host_size_pixels_;
   gfx::Size delegated_frame_host_size_dip_;
