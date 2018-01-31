@@ -196,33 +196,14 @@ void DevToolsSession::flushProtocolNotifications() {
 }
 
 void DevToolsSession::DispatchProtocolMessage(
-    blink::mojom::DevToolsMessageChunkPtr chunk) {
-  if (chunk->is_first && !response_message_buffer_.empty()) {
-    ReceivedBadMessage();
-    return;
-  }
-
-  response_message_buffer_ += std::move(chunk->data);
-
-  if (!chunk->is_last)
-    return;
-
-  if (!chunk->post_state.empty())
-    state_cookie_ = std::move(chunk->post_state);
-  waiting_for_response_messages_.erase(chunk->call_id);
-  std::string message;
-  message.swap(response_message_buffer_);
+    const std::string& message,
+    int call_id,
+    const base::Optional<std::string>& state) {
+  if (state.has_value())
+    state_cookie_ = state.value();
+  waiting_for_response_messages_.erase(call_id);
   client_->DispatchProtocolMessage(agent_host_, message);
   // |this| may be deleted at this point.
-}
-
-void DevToolsSession::ReceivedBadMessage() {
-  MojoConnectionDestroyed();
-  RenderProcessHost* process = RenderProcessHost::FromID(process_host_id_);
-  if (process) {
-    bad_message::ReceivedBadMessage(
-        process, bad_message::RFH_INCONSISTENT_DEVTOOLS_MESSAGE);
-  }
 }
 
 }  // namespace content

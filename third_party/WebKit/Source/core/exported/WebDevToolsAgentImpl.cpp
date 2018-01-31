@@ -104,10 +104,6 @@ bool IsMainFrame(WebLocalFrameImpl* frame) {
   return frame->ViewImpl() && !frame->Parent();
 }
 
-// TODO(dgozman): somehow get this from a mojo config.
-// See kMaximumMojoMessageSize in services/service_manager/embedder/main.cc.
-const size_t kMaxDevToolsMessageChunkSize = 128 * 1024 * 1024 / 8;
-
 bool ShouldInterruptForMethod(const String& method) {
   // Keep in sync with DevToolsSession::ShouldSendOnIO.
   // TODO(dgozman): find a way to share this.
@@ -365,22 +361,7 @@ void WebDevToolsAgentImpl::Session::SendProtocolMessage(int session_id,
   // protocol response in any of them.
   if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
     agent_->FlushProtocolNotifications();
-
-  bool single_chunk = response.length() < kMaxDevToolsMessageChunkSize;
-  for (size_t pos = 0; pos < response.length();
-       pos += kMaxDevToolsMessageChunkSize) {
-    mojom::blink::DevToolsMessageChunkPtr chunk =
-        mojom::blink::DevToolsMessageChunk::New();
-    chunk->is_first = pos == 0;
-    chunk->is_last = pos + kMaxDevToolsMessageChunkSize >= response.length();
-    chunk->call_id = chunk->is_last ? call_id : 0;
-    chunk->post_state =
-        chunk->is_last && !state.IsNull() ? state : g_empty_string;
-    chunk->data = single_chunk
-                      ? response
-                      : response.Substring(pos, kMaxDevToolsMessageChunkSize);
-    host_ptr_->DispatchProtocolMessage(std::move(chunk));
-  }
+  host_ptr_->DispatchProtocolMessage(response, call_id, state);
 }
 
 void WebDevToolsAgentImpl::Session::DispatchProtocolMessageInternal(
