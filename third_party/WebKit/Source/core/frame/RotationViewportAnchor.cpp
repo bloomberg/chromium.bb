@@ -13,6 +13,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/geometry/DoubleRect.h"
 
 namespace blink {
@@ -22,21 +23,28 @@ namespace {
 static const float kViewportAnchorRelativeEpsilon = 0.1f;
 static const int kViewportToNodeMaxRelativeArea = 2;
 
-Node* FindNonEmptyAnchorNode(const IntPoint& point,
+Node* FindNonEmptyAnchorNode(const FloatPoint& absolute_point,
                              const IntRect& view_rect,
                              EventHandler& event_handler) {
+  IntPoint point = FlooredIntPoint(absolute_point);
   Node* node = event_handler
                    .HitTestResultAtPoint(point, HitTestRequest::kReadOnly |
                                                     HitTestRequest::kActive)
                    .InnerNode();
 
+  if (!node)
+    return nullptr;
+
   // If the node bounding box is sufficiently large, make a single attempt to
   // find a smaller node; the larger the node bounds, the greater the
   // variability under resize.
+  IntSize node_size =
+      node->GetLayoutObject()
+          ? node->GetLayoutObject()->AbsoluteBoundingBoxRect().Size()
+          : IntSize();
   const int max_node_area =
       view_rect.Width() * view_rect.Height() * kViewportToNodeMaxRelativeArea;
-  if (node && node->BoundingBox().Width() * node->BoundingBox().Height() >
-                  max_node_area) {
+  if (node_size.Width() * node_size.Height() > max_node_area) {
     IntSize point_offset = view_rect.Size();
     point_offset.Scale(kViewportAnchorRelativeEpsilon);
     node = event_handler
@@ -46,8 +54,11 @@ Node* FindNonEmptyAnchorNode(const IntPoint& point,
                .InnerNode();
   }
 
-  while (node && node->BoundingBox().IsEmpty())
+  while (node &&
+         (!node->GetLayoutObject() ||
+          node->GetLayoutObject()->AbsoluteBoundingBoxRect().IsEmpty())) {
     node = node->parentNode();
+  }
 
   return node;
 }
@@ -142,20 +153,22 @@ void RotationViewportAnchor::SetAnchor() {
 
   // Note, we specifically convert to the rootFrameView contents here, rather
   // than the layout viewport. That's because hit testing works from the
-  // LocalFrameView's content coordinates even if it's not the layout viewport.
-  const FloatPoint anchor_point_in_contents = root_frame_view_->FrameToContents(
-      visual_viewport_->ViewportToRootFrame(anchor_offset));
+  // LocalFrameView's absolute coordinates even if it's not the layout viewport.
+  const FloatPoint anchor_point_in_document =
+      root_frame_view_->RootFrameToDocument(
+          visual_viewport_->ViewportToRootFrame(anchor_offset));
 
   Node* node = FindNonEmptyAnchorNode(
-      FlooredIntPoint(anchor_point_in_contents), inner_view_rect,
-      root_frame_view_->GetFrame().GetEventHandler());
-  if (!node)
+      root_frame_view_->DocumentToAbsolute(anchor_point_in_document),
+      inner_view_rect, root_frame_view_->GetFrame().GetEventHandler());
+  if (!node || !node->GetLayoutObject())
     return;
 
   anchor_node_ = node;
-  anchor_node_bounds_ = node->BoundingBox();
+  anchor_node_bounds_ = root_frame_view_->AbsoluteToDocument(
+      LayoutRect(node->GetLayoutObject()->AbsoluteBoundingBoxRect()));
   anchor_in_node_coords_ =
-      anchor_point_in_contents - FloatPoint(anchor_node_bounds_.Location());
+      anchor_point_in_document - FloatPoint(anchor_node_bounds_.Location());
   anchor_in_node_coords_.Scale(1.f / anchor_node_bounds_.Width(),
                                1.f / anchor_node_bounds_.Height());
 }
@@ -222,10 +235,12 @@ void RotationViewportAnchor::ComputeOrigins(
 
 FloatPoint RotationViewportAnchor::GetInnerOrigin(
     const FloatSize& inner_size) const {
-  if (!anchor_node_ || !anchor_node_->isConnected())
+  if (!anchor_node_ || !anchor_node_->isConnected() ||
+      !anchor_node_->GetLayoutObject())
     return visual_viewport_in_document_;
 
-  const LayoutRect current_node_bounds = anchor_node_->BoundingBox();
+  const LayoutRect current_node_bounds = root_frame_view_->AbsoluteToDocument(
+      LayoutRect(anchor_node_->GetLayoutObject()->AbsoluteBoundingBoxRect()));
   if (anchor_node_bounds_ == current_node_bounds)
     return visual_viewport_in_document_;
 

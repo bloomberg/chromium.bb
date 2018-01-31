@@ -63,6 +63,8 @@ class CORE_EXPORT RotationViewportAnchor {
   FloatSize normalized_visual_viewport_offset_;
 
   Member<Node> anchor_node_;
+
+  // In Document coordinates.
   LayoutRect anchor_node_bounds_;
 
   FloatSize anchor_in_inner_view_coords_;
