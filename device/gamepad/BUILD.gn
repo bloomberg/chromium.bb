@@ -66,6 +66,8 @@ component("gamepad") {
     "raw_input_data_fetcher_win.h",
     "raw_input_gamepad_device_win.cc",
     "raw_input_gamepad_device_win.h",
+    "switch_pro_controller_base.cc",
+    "switch_pro_controller_base.h",
     "udev_gamepad_linux.cc",
     "udev_gamepad_linux.h",
     "xbox_controller_mac.h",
