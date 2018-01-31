@@ -211,6 +211,9 @@ bool IsSupportedInFeaturePolicy(FeaturePolicyFeature feature) {
     case FeaturePolicyFeature::kAmbientLightSensor:
     case FeaturePolicyFeature::kGyroscope:
     case FeaturePolicyFeature::kMagnetometer:
+      return true;
+    case FeaturePolicyFeature::kPictureInPicture:
+      return RuntimeEnabledFeatures::PictureInPictureAPIEnabled();
     case FeaturePolicyFeature::kSyncXHR:
       return true;
     case FeaturePolicyFeature::kVibrate:
@@ -246,6 +249,10 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     default_feature_name_map.Set("gyroscope", FeaturePolicyFeature::kGyroscope);
     default_feature_name_map.Set("magnetometer",
                                  FeaturePolicyFeature::kMagnetometer);
+    if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
+      default_feature_name_map.Set("picture-in-picture",
+                                   FeaturePolicyFeature::kPictureInPicture);
+    }
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("vibrate", FeaturePolicyFeature::kVibrate);
       default_feature_name_map.Set("cookie",

@@ -84,6 +84,8 @@ enum FeaturePolicyFeature {
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
   kUnsizedMedia,
+  // Controls access to Picture-in-Picture.
+  kPictureInPicture,
 };
 
 // This struct holds feature policy whitelist data that needs to be replicated

@@ -828,6 +828,10 @@
       settable_from_internals: true,
     },
     {
+      name: "PictureInPictureAPI",
+      status: "test",
+    },
+    {
       name: "PreciseMemoryInfo",
     },
     {
