@@ -142,6 +142,10 @@ class CC_EXPORT LayerTreeSettings {
 
   // Whether to use edge anti-aliasing for all layer types that supports it.
   bool enable_edge_anti_aliasing = true;
+
+  // Whether to request presentation time regardless if existance of
+  // presentation time callbacks.
+  bool always_request_presentation_time = false;
 };
 
 }  // namespace cc
