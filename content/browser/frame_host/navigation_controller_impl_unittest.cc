@@ -39,6 +39,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_type.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -243,6 +244,13 @@ class NavigationControllerTest
         contents()->GetFrameTree()->root()->navigation_request();
     CHECK(navigation_request);
     return navigation_request->common_params().url;
+  }
+
+  content::PreviewsState GetLastNavigationPreviewsState() {
+    NavigationRequest* navigation_request =
+        contents()->GetFrameTree()->root()->navigation_request();
+    CHECK(navigation_request);
+    return navigation_request->common_params().previews_state;
   }
 
  protected:
@@ -1481,7 +1489,6 @@ TEST_F(NavigationControllerTest, ReloadWithGuest) {
   EXPECT_EQ(entry1, entry2);
 }
 
-#if !defined(OS_ANDROID)  // http://crbug.com/157428
 namespace {
 void SetOriginalURL(const GURL& url,
                     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
@@ -1546,7 +1553,48 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
-#endif  // !defined(OS_ANDROID)
+TEST_F(NavigationControllerTest,
+       ReloadDisablePreviewReloadsOriginalRequestURL) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL original_url("http://foo1");
+  const GURL final_url("http://foo2");
+  auto set_original_url_callback = base::Bind(SetOriginalURL, original_url);
+
+  // Load up the original URL, but get redirected.
+  controller.LoadURL(original_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  int entry_id = controller.GetPendingEntry()->GetUniqueID();
+  EXPECT_EQ(0U, navigation_entry_changed_counter_);
+  EXPECT_EQ(0U, navigation_list_pruned_counter_);
+  main_test_rfh()->PrepareForCommitWithServerRedirect(final_url);
+  main_test_rfh()->SendNavigateWithModificationCallback(
+      entry_id, true, final_url, set_original_url_callback);
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+  entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
+
+  // The NavigationEntry should save both the original URL and the final
+  // redirected URL.
+  EXPECT_EQ(original_url,
+            controller.GetVisibleEntry()->GetOriginalRequestURL());
+  EXPECT_EQ(final_url, controller.GetVisibleEntry()->GetURL());
+
+  // Reload with previews disabled.
+  controller.Reload(ReloadType::DISABLE_PREVIEWS, false);
+  EXPECT_EQ(0U, navigation_entry_changed_counter_);
+  EXPECT_EQ(0U, navigation_list_pruned_counter_);
+
+  // The reload is pending.  The request should point to the original URL.
+  EXPECT_EQ(original_url, navigated_url());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_TRUE(HasNavigationRequest());
+  EXPECT_EQ(content::PREVIEWS_NO_TRANSFORM, GetLastNavigationPreviewsState());
+}
 
 // Test that certain non-persisted NavigationEntryImpl values get reset after
 // commit.
