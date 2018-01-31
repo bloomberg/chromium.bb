@@ -81,6 +81,7 @@ class CONTENT_EXPORT InputRouterImpl
                 bool frame_handler) override;
   void ProgressFling(base::TimeTicks current_time) override;
   void StopFling() override;
+  bool FlingCancellationIsDeferred() override;
 
   // InputHandlerHost impl
   void CancelTouchTimeout() override;
@@ -125,6 +126,8 @@ class CONTENT_EXPORT InputRouterImpl
   // FlingControllerClient
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
+  void SendGeneratedGestureScrollEvents(
+      const GestureEventWithLatencyInfo& gesture_event) override;
   void SetNeedsBeginFrameForFlingProgress() override;
 
   // MouseWheelEventQueueClient

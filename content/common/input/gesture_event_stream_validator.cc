@@ -21,8 +21,10 @@ GestureEventStreamValidator::GestureEventStreamValidator()
 GestureEventStreamValidator::~GestureEventStreamValidator() {
 }
 
-bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
-                                           std::string* error_msg) {
+bool GestureEventStreamValidator::Validate(
+    const blink::WebGestureEvent& event,
+    const bool fling_cancellation_is_deferred,
+    std::string* error_msg) {
   DCHECK(error_msg);
   error_msg->clear();
   if (!WebInputEvent::IsGestureEventType(event.GetType())) {
@@ -31,7 +33,7 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
   }
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
-      if (scrolling_)
+      if (scrolling_ && !fling_cancellation_is_deferred)
         error_msg->append("Scroll begin during scroll\n");
       if (pinching_)
         error_msg->append("Scroll begin during pinch\n");
@@ -51,7 +53,8 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
         error_msg->append("Fling start outside of scroll\n");
       if (pinching_)
         error_msg->append("Flinging while pinching\n");
-      scrolling_ = false;
+      // Don't reset scrolling_ since the GSE sent by the fling_controller_ at
+      // the end of the fling resets it.
       break;
     case WebInputEvent::kGestureScrollEnd:
       if (!scrolling_)
@@ -109,6 +112,12 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
     error_msg->append("Gesture event source is uninitialized.\n");
 
   return error_msg->empty();
+}
+
+bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
+                                           std::string* error_msg) {
+  return Validate(event, /* fling_cancellation_is_deferred = */ false,
+                  error_msg);
 }
 
 }  // namespace content
