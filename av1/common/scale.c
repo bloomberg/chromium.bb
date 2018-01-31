@@ -190,11 +190,9 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
   // subpel_x_q4 == 0 && subpel_y_q4 == 0
   sf->convolve[0][0][1] = av1_jnt_convolve_2d_copy;
   // subpel_x_q4 == 0
-  // place holder
-  sf->convolve[0][1][1] = av1_jnt_convolve_2d;
+  sf->convolve[0][1][1] = av1_jnt_convolve_y;
   // subpel_y_q4 == 0
-  // place holder
-  sf->convolve[1][0][1] = av1_jnt_convolve_2d;
+  sf->convolve[1][0][1] = av1_jnt_convolve_x;
   // subpel_x_q4 != 0 && subpel_y_q4 != 0
   sf->convolve[1][1][1] = av1_jnt_convolve_2d;
 #else
