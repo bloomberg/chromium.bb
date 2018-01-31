@@ -1183,6 +1183,23 @@ IntRect AbsoluteCaretBoundsOf(const VisiblePosition& visible_position) {
   return AbsoluteCaretBoundsOfAlgorithm<EditingStrategy>(visible_position);
 }
 
+// TODO(editing-dev): This function does pretty much the same thing as
+// |AbsoluteCaretBoundsOf()|. Consider merging them.
+IntRect AbsoluteCaretRectOfPosition(const PositionWithAffinity& position,
+                                    LayoutUnit* extra_width_to_end_of_line) {
+  const LocalCaretRect local_caret_rect =
+      LocalCaretRectOfPosition(position, extra_width_to_end_of_line);
+  if (!local_caret_rect.layout_object)
+    return IntRect();
+
+  const IntRect local_rect = PixelSnappedIntRect(local_caret_rect.rect);
+  return local_rect == IntRect()
+             ? IntRect()
+             : local_caret_rect.layout_object
+                   ->LocalToAbsoluteQuad(FloatRect(local_rect))
+                   .EnclosingBoundingBox();
+}
+
 template <typename Strategy>
 static IntRect AbsoluteSelectionBoundsOfAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {

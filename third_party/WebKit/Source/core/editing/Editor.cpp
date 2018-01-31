@@ -45,7 +45,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/RenderedPosition.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisiblePosition.h"
@@ -1476,15 +1475,15 @@ IntRect Editor::FirstRectForRange(const EphemeralRange& range) const {
   const PositionWithAffinity start_position(
       CreateVisiblePosition(range.StartPosition()).DeepEquivalent(),
       TextAffinity::kDownstream);
-  const IntRect start_caret_rect = RenderedPosition::AbsoluteRect(
-      start_position, &extra_width_to_end_of_line);
+  const IntRect start_caret_rect =
+      AbsoluteCaretRectOfPosition(start_position, &extra_width_to_end_of_line);
   if (start_caret_rect.IsEmpty())
     return IntRect();
 
   const PositionWithAffinity end_position(
       CreateVisiblePosition(range.EndPosition()).DeepEquivalent(),
       TextAffinity::kUpstream);
-  const IntRect end_caret_rect = RenderedPosition::AbsoluteRect(end_position);
+  const IntRect end_caret_rect = AbsoluteCaretRectOfPosition(end_position);
   if (end_caret_rect.IsEmpty())
     return IntRect();
 
