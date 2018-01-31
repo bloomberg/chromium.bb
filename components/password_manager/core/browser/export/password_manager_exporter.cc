@@ -17,13 +17,16 @@
 
 namespace {
 
-std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
-  for (const auto& form : password_list) {
-    ret_val.push_back(std::make_unique<autofill::PasswordForm>(*form));
-  }
-  return ret_val;
+// A wrapper for |write_function|, which can be bound and keep a copy of its
+// data on the closure.
+bool Write(int (*write_function)(const base::FilePath& filename,
+                                 const char* data,
+                                 int size),
+           const base::FilePath& destination,
+           const std::string& serialised) {
+  int written =
+      write_function(destination, serialised.c_str(), serialised.size());
+  return written == static_cast<int>(serialised.size());
 }
 
 }  // namespace
@@ -45,15 +48,33 @@ PasswordManagerExporter::PasswordManagerExporter(
 PasswordManagerExporter::~PasswordManagerExporter() {}
 
 void PasswordManagerExporter::PreparePasswordsForExport() {
-  password_list_ = credential_provider_interface_->GetAllPasswords();
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
+      credential_provider_interface_->GetAllPasswords();
+  size_t password_list_size = password_list.size();
 
-  if (IsReadyForExport())
-    Export();
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
+                     base::Passed(std::move(password_list))),
+      base::BindOnce(&PasswordManagerExporter::SetSerialisedPasswordList,
+                     weak_factory_.GetWeakPtr(), password_list_size));
 }
 
 void PasswordManagerExporter::SetDestination(
     const base::FilePath& destination) {
   destination_ = destination;
+
+  if (IsReadyForExport())
+    Export();
+
+  OnProgress(ExportProgressStatus::IN_PROGRESS, std::string());
+}
+
+void PasswordManagerExporter::SetSerialisedPasswordList(
+    size_t count,
+    const std::string& serialised) {
+  serialised_password_list_ = serialised;
+  password_count_ = count;
 
   if (IsReadyForExport())
     Export();
@@ -64,7 +85,8 @@ void PasswordManagerExporter::Cancel() {
   weak_factory_.InvalidateWeakPtrs();
 
   destination_.clear();
-  password_list_.clear();
+  serialised_password_list_.clear();
+  password_count_ = 0;
 
   OnProgress(ExportProgressStatus::FAILED_CANCELLED, std::string());
 }
@@ -82,33 +104,31 @@ void PasswordManagerExporter::SetWriteForTesting(
 }
 
 bool PasswordManagerExporter::IsReadyForExport() {
-  return !destination_.empty() && !password_list_.empty();
+  return !destination_.empty() && !serialised_password_list_.empty();
 }
 
 void PasswordManagerExporter::Export() {
-  UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
-                       password_list_.size());
-
-  OnProgress(ExportProgressStatus::IN_PROGRESS, std::string());
-
+  base::FilePath destination_copy_(destination_);
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
-                     base::Passed(CopyOf(password_list_))),
-      base::BindOnce(&PasswordManagerExporter::OnPasswordsSerialised,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(std::move(destination_))));
+      base::BindOnce(::Write, write_function_, std::move(destination_copy_),
+                     std::move(serialised_password_list_)),
+      base::BindOnce(&PasswordManagerExporter::OnPasswordsExported,
+                     weak_factory_.GetWeakPtr(), std::move(destination_),
+                     password_count_));
 
-  password_list_.clear();
   destination_.clear();
+  serialised_password_list_.clear();
+  password_count_ = 0;
 }
 
-void PasswordManagerExporter::OnPasswordsSerialised(
+void PasswordManagerExporter::OnPasswordsExported(
     const base::FilePath& destination,
-    const std::string& serialised) {
-  int written =
-      write_function_(destination, serialised.c_str(), serialised.size());
-  if (written == static_cast<int>(serialised.size())) {
+    int count,
+    bool success) {
+  if (success) {
+    UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
+                         count);
     OnProgress(ExportProgressStatus::SUCCEEDED, std::string());
   } else {
     OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
