@@ -32,7 +32,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
 
   ~LayoutWorklet() override;
 
-  typedef HeapHashMap<String, TraceWrapperMember<DocumentLayoutDefinition>>
+  typedef HeapHashMap<String, Member<DocumentLayoutDefinition>>
       DocumentDefinitionMap;
   DocumentDefinitionMap* GetDocumentDefinitionMap() {
     return &document_definition_map_;
