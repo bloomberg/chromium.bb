@@ -1765,6 +1765,12 @@ crbug.com/805061 external/wpt/custom-elements/upgrading/Node-cloneNode.html [ Cr
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/resource-timing/resource_timing.worker.html [ Timeout ]
+crbug.com/626703 [ Linux Mac ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/local-url-inherit-controller.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/astral-bidi/adlam-anti-ref.html [ Pass Failure ]
+crbug.com/626703 external/wpt/css/css-text/astral-bidi/cypriot-anti-ref.html [ Pass Failure ]
+crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/service-workers/service-worker/local-url-inherit-controller.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/logical-props-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/ch-units-vrl-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/ch-units-vrl-006.html [ Failure ]
