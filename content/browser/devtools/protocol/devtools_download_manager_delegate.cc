@@ -177,7 +177,7 @@ void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(
 
   callback.Run(suggested_path,
                content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
                suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
                content::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
