@@ -178,12 +178,6 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
                             ResourceType::kIsNotMainResource, load_type);
 }
 
-bool IsClientHintsAllowed(const KURL& url) {
-  return (url.ProtocolIs("http") || url.ProtocolIs("https")) &&
-         (SecurityOrigin::IsSecure(url) ||
-          SecurityOrigin::Create(url)->IsLocalhost());
-}
-
 }  // namespace
 
 struct FrameFetchContext::FrozenState final
@@ -528,14 +522,11 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                               ->Loader()
                               .GetProvisionalDocumentLoader()) {
     FrameClientHintsPreferencesContext hints_context(GetFrame());
-    if (!blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled() ||
-        IsClientHintsAllowed(response.Url())) {
-      // If the persistent client hint feature is enabled, then client hints
-      // should be allowed only on secure URLs.
-      document_loader_->GetClientHintsPreferences()
-          .UpdateFromAcceptClientHintsHeader(
-              response.HttpHeaderField(HTTPNames::Accept_CH), &hints_context);
-    }
+    document_loader_->GetClientHintsPreferences()
+        .UpdateFromAcceptClientHintsHeader(
+            response.HttpHeaderField(HTTPNames::Accept_CH), response.Url(),
+            &hints_context);
+
     // When response is received with a provisional docloader, the resource
     // haven't committed yet, and we cannot load resources, only preconnect.
     resource_loading_policy = LinkLoader::kDoNotLoadResources;
@@ -851,7 +842,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled()) {
     // If the feature is enabled, then client hints are allowed only on secure
     // URLs.
-    if (!IsClientHintsAllowed(request.Url()))
+    if (!ClientHintsPreferences::IsClientHintsAllowed(request.Url()))
       return;
 
     // Check if |url| is allowed to run JavaScript. If not, client hints are not
@@ -1184,9 +1175,6 @@ bool FrameFetchContext::ShouldSendClientHint(
 
 void FrameFetchContext::ParseAndPersistClientHints(
     const ResourceResponse& response) {
-  if (!IsClientHintsAllowed(response.Url()))
-    return;
-
   ClientHintsPreferences hints_preferences;
   WebEnabledClientHints enabled_client_hints;
   TimeDelta persist_duration;

@@ -20,6 +20,7 @@
 #include "public/platform/WebClientHintsType.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 
 namespace blink {
 
@@ -208,9 +209,12 @@ class HTMLPreloadScannerTest : public PageTestBase {
   void RunSetUp(
       ViewportState viewport_state,
       PreloadState preload_state = kPreloadEnabled,
-      ReferrerPolicy document_referrer_policy = kReferrerPolicyDefault) {
+      ReferrerPolicy document_referrer_policy = kReferrerPolicyDefault,
+      bool use_secure_document_url = false) {
     HTMLParserOptions options(&GetDocument());
-    KURL document_url("http://whatever.test/");
+    KURL document_url = KURL("http://whatever.test/");
+    if (use_secure_document_url)
+      document_url = KURL("https://whatever.test/");
     GetDocument().SetURL(document_url);
     GetDocument().SetSecurityOrigin(SecurityOrigin::Create(document_url));
     GetDocument().GetSettings()->SetViewportEnabled(viewport_state ==
@@ -594,9 +598,56 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
   };
 
   for (const auto& test_case : test_cases) {
-    RunSetUp(kViewportDisabled);
+    RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+             true /* use_secure_document_url */);
     Test(test_case);
   }
+}
+
+TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
+  ClientHintsPreferences all;
+  all.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+  all.SetShouldSendForTesting(mojom::WebClientHintsType::kResourceWidth);
+  all.SetShouldSendForTesting(mojom::WebClientHintsType::kViewportWidth);
+
+  const PreloadScannerTestCase expect_no_client_hint = {
+      "http://example.test",
+      "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
+      "wutever, dpr \t'><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
+      "640w'>",
+      "blabla.gif",
+      "http://example.test/",
+      Resource::kImage,
+      450};
+
+  const PreloadScannerTestCase expect_client_hint = {
+      "http://example.test",
+      "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
+      "wutever, dpr \t'><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
+      "640w'>",
+      "blabla.gif",
+      "http://example.test/",
+      Resource::kImage,
+      450,
+      all};
+
+  // For an insecure document, client hint should not be attached.
+  WebRuntimeFeatures::EnableClientHintsPersistent(true);
+  RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+           false /* use_secure_document_url */);
+  Test(expect_no_client_hint);
+
+  // For a secure document, client hint should be attached.
+  RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+           true /* use_secure_document_url */);
+  Test(expect_client_hint);
+
+  // For an insecure document, client hint should be attached if the persistent
+  // client hints are not enabled.
+  WebRuntimeFeatures::EnableClientHintsPersistent(false);
+  RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
+           false /* use_secure_document_url */);
+  Test(expect_client_hint);
 }
 
 TEST_F(HTMLPreloadScannerTest, testPreconnect) {

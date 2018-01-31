@@ -15,7 +15,7 @@ namespace blink {
 
 class ClientHintsPreferencesTest : public ::testing::Test {};
 
-TEST_F(ClientHintsPreferencesTest, Basic) {
+TEST_F(ClientHintsPreferencesTest, BasicSecure) {
   struct TestCase {
     const char* header_value;
     bool expectation_resource_width;
@@ -32,7 +32,8 @@ TEST_F(ClientHintsPreferencesTest, Basic) {
 
   for (const auto& test_case : cases) {
     ClientHintsPreferences preferences;
-    preferences.UpdateFromAcceptClientHintsHeader(test_case.header_value,
+    const KURL kurl(String::FromUTF8("https://www.google.com/"));
+    preferences.UpdateFromAcceptClientHintsHeader(test_case.header_value, kurl,
                                                   nullptr);
     EXPECT_EQ(
         test_case.expectation_resource_width,
@@ -45,7 +46,7 @@ TEST_F(ClientHintsPreferencesTest, Basic) {
 
     // Calling UpdateFromAcceptClientHintsHeader with empty header should have
     // no impact on client hint preferences.
-    preferences.UpdateFromAcceptClientHintsHeader("", nullptr);
+    preferences.UpdateFromAcceptClientHintsHeader("", kurl, nullptr);
     EXPECT_EQ(
         test_case.expectation_resource_width,
         preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth));
@@ -57,7 +58,7 @@ TEST_F(ClientHintsPreferencesTest, Basic) {
 
     // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
     // have no impact on client hint preferences.
-    preferences.UpdateFromAcceptClientHintsHeader("foobar", nullptr);
+    preferences.UpdateFromAcceptClientHintsHeader("foobar", kurl, nullptr);
     EXPECT_EQ(
         test_case.expectation_resource_width,
         preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth));
@@ -66,6 +67,18 @@ TEST_F(ClientHintsPreferencesTest, Basic) {
     EXPECT_EQ(
         test_case.expectation_viewport_width,
         preferences.ShouldSend(mojom::WebClientHintsType::kViewportWidth));
+  }
+}
+
+TEST_F(ClientHintsPreferencesTest, Insecure) {
+  for (const auto& use_secure_url : {false, true}) {
+    ClientHintsPreferences preferences;
+    const KURL kurl = use_secure_url
+                          ? KURL(String::FromUTF8("https://www.google.com/"))
+                          : KURL(String::FromUTF8("http://www.google.com/"));
+    preferences.UpdateFromAcceptClientHintsHeader("dpr", kurl, nullptr);
+    EXPECT_EQ(use_secure_url,
+              preferences.ShouldSend(mojom::WebClientHintsType::kDpr));
   }
 }
 
