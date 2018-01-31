@@ -3472,7 +3472,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
             nullptr);
 }
 
-static unsigned NumFragments(LayoutObject* obj) {
+static unsigned NumFragments(const LayoutObject* obj) {
   unsigned count = 0;
   auto* fragment = &obj->FirstFragment();
   while (fragment) {
@@ -3482,7 +3482,7 @@ static unsigned NumFragments(LayoutObject* obj) {
   return count;
 }
 
-static const FragmentData& FragmentAt(LayoutObject* obj, unsigned count) {
+static const FragmentData& FragmentAt(const LayoutObject* obj, unsigned count) {
   auto* fragment = &obj->FirstFragment();
   while (count > 0) {
     count--;
@@ -4892,6 +4892,25 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClip) {
   const auto* properties2 = PaintPropertiesForElement("div2");
   ASSERT_NE(nullptr, properties2);
   EXPECT_EQ(nullptr, properties2->OverflowControlsClip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar { width: 20px }</style>
+    <div id='container' style='margin-top: 50px; overflow-y: scroll'>
+      <div style='columns: 2; height: 40px'>
+        <div id='content' style='width: 20px; height: 20px'>TEST</div>
+      </div>
+    </div>
+  )HTML");
+
+  // container establishes paint_offset_root because it has scrollbar.
+  EXPECT_NE(nullptr,
+            PaintPropertiesForElement("container")->PaintOffsetTranslation());
+
+  const auto* content = GetLayoutObjectByElementId("content");
+  EXPECT_EQ(LayoutPoint(), content->FirstFragment().PaintOffset());
+  EXPECT_EQ(LayoutRect(0, 0, 20, 20), content->FirstFragment().VisualRect());
 }
 
 }  // namespace blink
