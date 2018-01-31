@@ -711,6 +711,9 @@ class CORE_EXPORT LocalFrameView final
   LayoutPoint DocumentToAbsolute(const LayoutPoint&) const;
   LayoutRect DocumentToAbsolute(const LayoutRect&) const;
 
+  LayoutPoint AbsoluteToDocument(const LayoutPoint&) const;
+  LayoutRect AbsoluteToDocument(const LayoutRect&) const;
+
   // Handles painting of the contents of the view as well as the scrollbars.
   void Paint(GraphicsContext&,
              const GlobalPaintFlags,
