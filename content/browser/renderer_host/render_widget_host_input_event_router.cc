@@ -209,27 +209,6 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     needs_transform_point = false;
   }
 
-  if (target && target->IsRenderWidgetHostViewGuest()) {
-    RenderWidgetHostViewBase* owner_view =
-        static_cast<RenderWidgetHostViewGuest*>(target)
-            ->GetOwnerRenderWidgetHostView();
-    // In case there is nested RenderWidgetHostViewGuests (i.e., PDF inside
-    // <webview>), we will need the owner view of the top-most guest for input
-    // routing.
-    while (owner_view->IsRenderWidgetHostViewGuest()) {
-      owner_view = static_cast<RenderWidgetHostViewGuest*>(owner_view)
-                       ->GetOwnerRenderWidgetHostView();
-    }
-
-    if (owner_view != root_view) {
-      needs_transform_point = true;
-    } else {
-      needs_transform_point = false;
-      transformed_point = event.PositionInWidget();
-    }
-    target = owner_view;
-  }
-
   if (needs_transform_point) {
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), target, &transformed_point)) {
