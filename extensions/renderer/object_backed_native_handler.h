@@ -28,6 +28,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   // NativeHandler:
   void Initialize() final;
+  bool IsInitialized() final;
   // Create an object with bindings to the native functions defined through
   // RouteHandlerFunction().
   v8::Local<v8::Object> NewInstance() override;
