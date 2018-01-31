@@ -55,6 +55,7 @@
 - (void)start {
   self.viewController = [[PrimaryToolbarViewController alloc] init];
   self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
+  self.viewController.dispatcher = self.dispatcher;
 
   [self setUpLocationBar];
   self.viewController.locationBarView = self.locationBarCoordinator.view;

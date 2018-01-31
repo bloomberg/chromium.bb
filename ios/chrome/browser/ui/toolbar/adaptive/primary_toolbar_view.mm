@@ -264,4 +264,10 @@
   return _allButtons;
 }
 
+#pragma mark - AdaptiveToolbarView
+
+- (ToolbarButton*)omniboxButton {
+  return nil;
+}
+
 @end
