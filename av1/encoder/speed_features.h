@@ -349,6 +349,10 @@ typedef struct SPEED_FEATURES {
 
   TX_TYPE_SEARCH tx_type_search;
 
+  // Skip split transform block partition when the collocated bigger block
+  // is selected as all zero coefficients.
+  int txb_split_cap;
+
   // Used if partition_search_type = FIXED_SIZE_PARTITION
   BLOCK_SIZE always_this_block_size;
 

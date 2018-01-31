@@ -3947,6 +3947,10 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   int tx_split_prune_flag = 0;
   if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE)
     tx_split_prune_flag = ((x->tx_search_prune[0] >> TX_TYPES) & 1);
+
+  if (cpi->sf.txb_split_cap)
+    if (p->eobs[block] == 0) tx_split_prune_flag = 1;
+
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0) {
     const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
