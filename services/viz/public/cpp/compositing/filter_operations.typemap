@@ -4,5 +4,10 @@
 
 mojom = "//services/viz/public/interfaces/compositing/filter_operations.mojom"
 public_headers = [ "//cc/paint/filter_operations.h" ]
-traits_headers = [ "//services/viz/public/cpp/compositing/filter_operations_struct_traits.h" ]
+traits_headers = [
+  "//services/viz/public/cpp/compositing/filter_operations_struct_traits.h",
+]
+sources = [
+  "//services/viz/public/cpp/compositing/filter_operations_struct_traits.cc",
+]
 type_mappings = [ "viz.mojom.FilterOperations=cc::FilterOperations" ]

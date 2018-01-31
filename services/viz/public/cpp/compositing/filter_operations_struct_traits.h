@@ -5,8 +5,12 @@
 #ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 
-#include "cc/paint/filter_operations.h"
 #include "services/viz/public/interfaces/compositing/filter_operations.mojom-shared.h"
+
+namespace cc {
+class FilterOperation;
+class FilterOperations;
+}  // namespace cc
 
 namespace mojo {
 
@@ -14,18 +18,10 @@ template <>
 struct StructTraits<viz::mojom::FilterOperationsDataView,
                     cc::FilterOperations> {
   static const std::vector<cc::FilterOperation>& operations(
-      const cc::FilterOperations& operations) {
-    return operations.operations();
-  }
+      const cc::FilterOperations& operations);
 
   static bool Read(viz::mojom::FilterOperationsDataView data,
-                   cc::FilterOperations* out) {
-    std::vector<cc::FilterOperation> operations;
-    if (!data.ReadOperations(&operations))
-      return false;
-    *out = cc::FilterOperations(std::move(operations));
-    return true;
-  }
+                   cc::FilterOperations* out);
 };
 
 }  // namespace mojo
