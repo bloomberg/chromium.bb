@@ -440,7 +440,7 @@ std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
-    PrefRegistry* pref_registry,
+    const scoped_refptr<PrefRegistry>& pref_registry,
     bool async,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
   sync_preferences::PrefServiceSyncableFactory factory;
@@ -450,7 +450,7 @@ std::unique_ptr<PrefService> CreateLocalState(
                                    std::unique_ptr<PrefFilter>()),
                  NULL,  // extension_prefs
                  async);
-  return factory.Create(pref_registry, std::move(delegate));
+  return factory.Create(pref_registry.get(), std::move(delegate));
 }
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
@@ -459,7 +459,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
-    user_prefs::PrefRegistrySyncable* pref_registry,
+    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
@@ -471,16 +471,19 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
       base::MakeUnique<ResetOnLoadObserverImpl>(profile_path),
       mojo::MakeRequest(&reset_on_load_observer));
   sync_preferences::PrefServiceSyncableFactory factory;
-  const scoped_refptr<PersistentPrefStore> user_pref_store =
+  scoped_refptr<PersistentPrefStore> user_pref_store(
       CreateProfilePrefStoreManager(profile_path)
           ->CreateProfilePrefStore(
               GetTrackingConfiguration(), kTrackedPrefsReportingIDsCount,
               std::move(io_task_runner), std::move(reset_on_load_observer),
-              std::move(validation_delegate));
+              std::move(validation_delegate)));
   PrepareFactory(&factory, profile_path, policy_service,
                  supervised_user_settings, user_pref_store, extension_prefs,
                  async);
-  return factory.CreateSyncable(pref_registry, std::move(delegate));
+  std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
+      factory.CreateSyncable(pref_registry.get(), std::move(delegate));
+
+  return pref_service;
 }
 
 void DisableDomainCheckForTesting() {

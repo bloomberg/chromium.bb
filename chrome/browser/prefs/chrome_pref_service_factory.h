@@ -68,7 +68,7 @@ std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
-    PrefRegistry* pref_registry,
+    const scoped_refptr<PrefRegistry>& pref_registry,
     bool async,
     std::unique_ptr<PrefValueStore::Delegate> delegate);
 
@@ -78,7 +78,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
-    user_prefs::PrefRegistrySyncable* pref_registry,
+    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     std::unique_ptr<PrefValueStore::Delegate> delegate);

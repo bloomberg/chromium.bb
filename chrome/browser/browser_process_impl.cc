@@ -1034,7 +1034,7 @@ void BrowserProcessImpl::CreateLocalState() {
 
   base::FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
-  const auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
 
   // Register local state preferences.
   RegisterLocalState(pref_registry.get());
@@ -1043,7 +1043,7 @@ void BrowserProcessImpl::CreateLocalState() {
   delegate->InitPrefRegistry(pref_registry.get());
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_path, local_state_task_runner_.get(), policy_service(),
-      pref_registry.get(), false, std::move(delegate));
+      pref_registry, false, std::move(delegate));
   DCHECK(local_state_);
 
   pref_change_registrar_.Init(local_state_.get());
