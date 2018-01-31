@@ -146,8 +146,18 @@ FileBrowserBackgroundImpl.prototype.ready = function(callback) {
  *     devicePath.
  * @private
  */
-FileBrowserBackgroundImpl.prototype.handleViewEvent_ =
-    function(event) {
+FileBrowserBackgroundImpl.prototype.handleViewEvent_ = function(event) {
+  util.doIfPrimaryContext(() => {
+    this.handleViewEventInternal_(event);
+  });
+};
+
+/**
+ * @param {!Event} event An event with the volumeId or
+ *     devicePath.
+ * @private
+ */
+FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
   volumeManagerFactory.getInstance()
       .then(
           (/**
@@ -468,6 +478,17 @@ FileBrowserBackgroundImpl.prototype.findFocusedWindow_ = function() {
  * @private
  */
 FileBrowserBackgroundImpl.prototype.onMountCompleted_ = function(event) {
+  util.doIfPrimaryContext(() => {
+    this.onMountCompletedInternal_(event);
+  });
+};
+
+/**
+ * @param {!Object} event Event details.
+ * @private
+ */
+FileBrowserBackgroundImpl.prototype.onMountCompletedInternal_ = function(
+    event) {
   // If there is no focused window, then create a new one opened on the
   // mounted FSP volume.
   this.findFocusedWindow_().then(function(key) {
