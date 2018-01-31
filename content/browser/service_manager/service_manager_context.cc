@@ -56,7 +56,7 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/interfaces/constants.mojom.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -321,7 +321,7 @@ std::unique_ptr<service_manager::Service> CreateNetworkService() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::BindRepeating(
       [](network::mojom::NetworkServiceTestRequest request) {}));
-  return std::make_unique<network::NetworkServiceImpl>(std::move(registry));
+  return std::make_unique<network::NetworkService>(std::move(registry));
 }
 
 }  // namespace

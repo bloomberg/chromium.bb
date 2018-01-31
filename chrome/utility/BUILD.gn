@@ -44,7 +44,7 @@ static_library("utility") {
     "//media",
     "//net:net_with_v8",
     "//printing/features",
-    "//services/network/public/cpp",
+    "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",

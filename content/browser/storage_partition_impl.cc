@@ -45,7 +45,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/blob_registry_impl.h"
@@ -267,8 +267,7 @@ class StoragePartitionImpl::NetworkContextOwner {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context_getter_ = std::move(context_getter);
     network_context_ = std::make_unique<network::NetworkContext>(
-        static_cast<network::NetworkServiceImpl*>(GetNetworkServiceImpl()),
-        std::move(network_context_request),
+        GetNetworkServiceImpl(), std::move(network_context_request),
         context_getter_->GetURLRequestContext());
   }
 

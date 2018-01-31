@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
@@ -19,7 +20,7 @@ class ThrottlingNetworkInterceptor;
 
 // ThrottlingController manages interceptors identified by client id
 // and their throttling conditions.
-class ThrottlingController {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingController {
  public:
   // Applies network emulation configuration.
   static void SetConditions(const std::string& client_id,

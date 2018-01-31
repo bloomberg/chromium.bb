@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -28,7 +29,7 @@ namespace network {
 
 // UploadProgressTracker watches the upload progress of a URL loading, and sends
 // the progress to the client in a suitable granularity and frequency.
-class UploadProgressTracker {
+class COMPONENT_EXPORT(NETWORK_SERVICE) UploadProgressTracker {
  public:
   using UploadProgressReportCallback =
       base::RepeatingCallback<void(const net::UploadProgress&)>;

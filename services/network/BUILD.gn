@@ -8,7 +8,7 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
-static_library("network_service") {
+component("network_service") {
   sources = [
     "cache_url_loader.cc",
     "cache_url_loader.h",
@@ -24,8 +24,8 @@ static_library("network_service") {
     "network_context.h",
     "network_sandbox_hook_linux.cc",
     "network_sandbox_hook_linux.h",
-    "network_service_impl.cc",
-    "network_service_impl.h",
+    "network_service.cc",
+    "network_service.h",
     "network_service_url_loader_factory.cc",
     "network_service_url_loader_factory.h",
     "proxy_config_service_mojo.cc",
@@ -53,6 +53,7 @@ static_library("network_service") {
     "url_loader.cc",
     "url_loader.h",
     "url_request_context_builder_mojo.cc",
+    "url_request_context_builder_mojo.h",
   ]
 
   deps = [
@@ -90,6 +91,8 @@ static_library("network_service") {
     ]
     deps += [ "//net:net_browser_services" ]
   }
+
+  defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 }
 
 source_set("tests") {

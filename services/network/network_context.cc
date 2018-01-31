@@ -40,19 +40,19 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cache_url_loader.h"
 #include "services/network/http_server_properties_pref_delegate.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/network_service_url_loader_factory.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/ignore_errors_cert_verifier.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/cpp/url_request_context_builder_mojo.h"
 #include "services/network/restricted_cookie_manager.h"
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
 #include "services/network/udp_socket_factory.h"
 #include "services/network/url_loader.h"
+#include "services/network/url_request_context_builder_mojo.h"
 
 namespace network {
 
@@ -85,7 +85,7 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
 
 }  // namespace
 
-NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
+NetworkContext::NetworkContext(NetworkService* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
@@ -104,7 +104,7 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
 // constructors. Can only share them once consumer code is ready for its
 // corresponding options to be overwritten.
 NetworkContext::NetworkContext(
-    NetworkServiceImpl* network_service,
+    NetworkService* network_service,
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params,
     std::unique_ptr<URLRequestContextBuilderMojo> builder)
@@ -120,7 +120,7 @@ NetworkContext::NetworkContext(
       std::make_unique<CookieManager>(url_request_context_->cookie_store());
 }
 
-NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
+NetworkContext::NetworkContext(NetworkService* network_service,
                                mojom::NetworkContextRequest request,
                                net::URLRequestContext* url_request_context)
     : network_service_(network_service),

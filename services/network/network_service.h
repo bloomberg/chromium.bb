@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_NETWORK_SERVICE_IMPL_H_
-#define SERVICES_NETWORK_NETWORK_SERVICE_IMPL_H_
+#ifndef SERVICES_NETWORK_NETWORK_SERVICE_H_
+#define SERVICES_NETWORK_NETWORK_SERVICE_H_
 
 #include <memory>
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/network_change_manager.h"
-#include "services/network/public/cpp/network_service.h"
+#include "services/network/network_service.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -21,37 +22,60 @@
 namespace net {
 class NetLog;
 class LoggingNetworkChangeObserver;
+class URLRequestContext;
 }  // namespace net
 
 namespace network {
 
 class NetworkContext;
+class URLRequestContextBuilderMojo;
 
-class NetworkServiceImpl : public service_manager::Service,
-                           public NetworkService {
+class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
+    : public service_manager::Service,
+      public network::mojom::NetworkService {
  public:
   // |net_log| is an optional shared NetLog, which will be used instead of the
   // service's own NetLog. It must outlive the NetworkService.
   //
   // TODO(https://crbug.com/767450): Once the NetworkService can always create
   // its own NetLog in production, remove the |net_log| argument.
-  NetworkServiceImpl(std::unique_ptr<service_manager::BinderRegistry> registry,
-                     mojom::NetworkServiceRequest request = nullptr,
-                     net::NetLog* net_log = nullptr);
+  NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
+                 mojom::NetworkServiceRequest request = nullptr,
+                 net::NetLog* net_log = nullptr);
 
-  ~NetworkServiceImpl() override;
+  ~NetworkService() override;
 
+  // Can be used to seed a NetworkContext with a consumer-configured
+  // URLRequestContextBuilder, which |params| will then be applied to. The
+  // results URLRequestContext will be written to |url_request_context|, which
+  // is owned by the NetworkContext, and can be further modified before first
+  // use. The returned NetworkContext must be destroyed before the
+  // NetworkService.
+  //
+  // This method is intended to ease the transition to an out-of-process
+  // NetworkService, and will be removed once that ships. It should only be
+  // called if the network service is disabled.
   std::unique_ptr<mojom::NetworkContext> CreateNetworkContextWithBuilder(
       mojom::NetworkContextRequest request,
       mojom::NetworkContextParamsPtr params,
       std::unique_ptr<URLRequestContextBuilderMojo> builder,
-      net::URLRequestContext** url_request_context) override;
+      net::URLRequestContext** url_request_context);
 
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.
   void Bind(mojom::NetworkServiceRequest request);
 
-  static std::unique_ptr<NetworkServiceImpl> CreateForTesting();
+  // Creates a NetworkService instance on the current thread, optionally using
+  // the passed-in NetLog. Does not take ownership of |net_log|. Must be
+  // destroyed before |net_log|.
+  //
+  // TODO(https://crbug.com/767450): Make it so NetworkService can always create
+  // its own NetLog, instead of sharing one.
+  static std::unique_ptr<NetworkService> Create(
+      network::mojom::NetworkServiceRequest request,
+      net::NetLog* net_log = nullptr);
+
+  static std::unique_ptr<NetworkService> CreateForTesting();
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.
@@ -110,9 +134,9 @@ class NetworkServiceImpl : public service_manager::Service,
 
   bool quic_disabled_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_NETWORK_SERVICE_IMPL_H_
+#endif  // SERVICES_NETWORK_NETWORK_SERVICE_H_

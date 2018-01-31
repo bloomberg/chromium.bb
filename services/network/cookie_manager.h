@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_store.h"
@@ -23,7 +24,8 @@ namespace network {
 // This is an IO thread object; all methods on this object must be called on
 // the IO thread.  Note that this does not restrict the locations from which
 // mojo messages may be sent to the object.
-class CookieManager : public network::mojom::CookieManager {
+class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
+    : public network::mojom::CookieManager {
  public:
   // Construct a CookieService that can serve mojo requests for the underlying
   // cookie store.  |*cookie_store| must outlive this object.

@@ -30,6 +30,7 @@ include_rules = [
   "+extensions/utility",
   "+media",
   "+services/network/public",
+  "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
   "+services/service_manager/embedder",
   "+services/service_manager/public/cpp",

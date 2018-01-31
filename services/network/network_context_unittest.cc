@@ -46,7 +46,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/proxy_config.mojom.h"
@@ -73,7 +73,7 @@ class NetworkContextTest : public testing::Test {
   NetworkContextTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        network_service_(NetworkServiceImpl::CreateForTesting()) {}
+        network_service_(NetworkService::CreateForTesting()) {}
   ~NetworkContextTest() override {}
 
   std::unique_ptr<NetworkContext> CreateContextWithParams(
@@ -110,7 +110,7 @@ class NetworkContextTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<NetworkServiceImpl> network_service_;
+  std::unique_ptr<NetworkService> network_service_;
   // Stores the NetworkContextPtr of the most recently created NetworkContext,
   // since destroying this before the NetworkContext itself triggers deletion of
   // the NetworkContext. These tests are probably fine anyways, since the

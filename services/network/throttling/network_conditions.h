@@ -8,12 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace network {
 
 // NetworkConditions holds information about desired network conditions.
-class NetworkConditions {
+class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkConditions {
  public:
   NetworkConditions();
   ~NetworkConditions();

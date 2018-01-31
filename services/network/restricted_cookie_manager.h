@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +28,8 @@ namespace network {
 // Instances of this class must be created and used on the I/O thread. Instances
 // are created by CreateMojoService() and are bound to the lifetimes of the
 // mojo connections that they serve, via mojo::StrongBinding.
-class RestrictedCookieManager : public mojom::RestrictedCookieManager {
+class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
+    : public mojom::RestrictedCookieManager {
  public:
   RestrictedCookieManager(net::CookieStore* cookie_store,
                           int render_process_id,

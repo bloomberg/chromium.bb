@@ -10,7 +10,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -19,7 +19,7 @@ namespace content {
 namespace {
 
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
-network::NetworkServiceImpl* g_network_service;
+network::NetworkService* g_network_service;
 
 void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
   if (g_network_service) {
@@ -29,7 +29,7 @@ void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
     return;
   }
 
-  g_network_service = new network::NetworkServiceImpl(
+  g_network_service = new network::NetworkService(
       nullptr, std::move(request), GetContentClient()->browser()->GetNetLog());
 }
 
@@ -66,7 +66,7 @@ network::NetworkService* GetNetworkServiceImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   if (!g_network_service) {
-    g_network_service = new network::NetworkServiceImpl(
+    g_network_service = new network::NetworkService(
         nullptr, nullptr, GetContentClient()->browser()->GetNetLog());
   }
 

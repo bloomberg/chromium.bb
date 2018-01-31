@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
@@ -41,7 +42,8 @@ class ThrottlingUploadDataStream;
 // parameter is saved and replaced with proxy callback. Fail method should be
 // used to simulate network outage. It runs saved callback (if any) with
 // net::ERR_INTERNET_DISCONNECTED result value.
-class ThrottlingNetworkTransaction : public net::HttpTransaction {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingNetworkTransaction
+    : public net::HttpTransaction {
  public:
   static const char kDevToolsEmulateNetworkConditionsClientId[];
 

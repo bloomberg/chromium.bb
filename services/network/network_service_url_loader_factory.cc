@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/url_loader.h"
 
@@ -31,7 +31,7 @@ void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   bool report_raw_headers = false;
   if (url_request.report_raw_headers) {
-    const NetworkServiceImpl* service = context_->network_service();
+    const NetworkService* service = context_->network_service();
     report_raw_headers = service && service->HasRawHeadersAccess(process_id_);
     if (!report_raw_headers)
       DLOG(ERROR) << "Denying raw headers request by process " << process_id_;

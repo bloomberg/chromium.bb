@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -26,7 +27,8 @@ class IOBuffer;
 namespace network {
 
 // A subclass of net::UploadElementReader to read data pipes.
-class DataPipeElementReader : public net::UploadElementReader {
+class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeElementReader
+    : public net::UploadElementReader {
  public:
   // |resource_request_body| is just passed in to keep the object around for the
   // life of the ElementReader.
