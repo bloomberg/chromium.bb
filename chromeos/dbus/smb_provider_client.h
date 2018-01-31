@@ -102,6 +102,13 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
                           const base::FilePath& file_path,
                           StatusCallback callback) = 0;
 
+  // Calls Truncate. Using the corresponding mount |mount_id|, this truncates
+  // the file in |file_path| to the desired |length|.
+  virtual void Truncate(int32_t mount_id,
+                        const base::FilePath& file_path,
+                        int64_t length,
+                        StatusCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();
