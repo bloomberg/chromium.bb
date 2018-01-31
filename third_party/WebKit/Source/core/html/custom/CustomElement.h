@@ -70,9 +70,6 @@ class CORE_EXPORT CustomElement {
 
   static HTMLElement* CreateCustomElementSync(Document&, const QualifiedName&);
   static HTMLElement* CreateCustomElementSync(Document&,
-                                              const AtomicString& local_name,
-                                              CustomElementDefinition*);
-  static HTMLElement* CreateCustomElementSync(Document&,
                                               const QualifiedName&,
                                               CustomElementDefinition*);
   static HTMLElement* CreateCustomElementAsync(Document&,
