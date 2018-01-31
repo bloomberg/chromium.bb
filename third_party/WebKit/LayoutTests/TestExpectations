@@ -6,13 +6,12 @@
 Bug(intentional) harness-tests/crash.html [ Crash ]
 Bug(intentional) harness-tests/timeout.html [ Timeout ]
 
+crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
+
 # ====== Oilpan-only failures from here ======
 # Most of these actually cause the tests to report success, rather than
 # failure. Expected outputs will be adjusted for the better once Oilpan
 # has been well and truly enabled always.
-
-crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
-
 # ====== Oilpan-only failures until here ======
 
 # ====== Browserside navigation from here ======
