@@ -1660,6 +1660,7 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t presentation_token,
                                                   base::TimeTicks time,
                                                   base::TimeDelta refresh,
                                                   uint32_t flags) {
+  TRACE_EVENT_MARK_WITH_TIMESTAMP0("cc,benchmark", "FramePresented", time);
   std::vector<int> source_frames;
   auto iter = presentation_token_to_frame_.begin();
   for (; iter != presentation_token_to_frame_.end() &&

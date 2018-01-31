@@ -312,7 +312,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
   sync_tree->set_source_frame_number(SourceFrameNumber());
 
   // Set presentation token if any pending .
-  bool request_presentation_time = false;
+  bool request_presentation_time = settings_.always_request_presentation_time;
   if (!pending_presentation_time_callbacks_.empty()) {
     request_presentation_time = true;
     frame_to_presentation_time_callbacks_[SourceFrameNumber()] =

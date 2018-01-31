@@ -594,6 +594,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.enable_image_animations =
       cmd.HasSwitch(switches::kEnableCompositorImageAnimations);
 
+  settings.always_request_presentation_time =
+      cmd.HasSwitch(cc::switches::kAlwaysRequestPresentationTime);
+
   return settings;
 }
 
