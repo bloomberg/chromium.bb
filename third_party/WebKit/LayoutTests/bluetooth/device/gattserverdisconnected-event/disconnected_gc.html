@@ -6,12 +6,11 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-let test_desc = 'A device disconnecting after the BluetoothDevice object has ' +
-    'been gced should not access freed memory.';
-let fake_peripheral;
+const test_desc = 'A device disconnecting after the BluetoothDevice object ' +
+    'has been GC\'ed should not access freed memory.';
+
 bluetooth_test(() => getHealthThermometerDevice()
-  .then(_ => ({fake_peripheral} = _))
-  .then(() => {
+  .then(({fake_peripheral}) => {
     // 1. Disconnect.
     fake_peripheral.simulateGATTDisconnection();
     // 2. Run garbage collection.
@@ -20,5 +19,6 @@ bluetooth_test(() => getHealthThermometerDevice()
   })
   // 3. Wait 50ms after the GC runs for the disconnection event to come back.
   // There's nothing to assert other than that only valid memory is used.
-  .then(() => new Promise(resolve => step_timeout(resolve, 50))), test_desc);
+  .then(() => new Promise(resolve => step_timeout(resolve, 50))),
+  test_desc);
 </script>

@@ -6,14 +6,14 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-let test_desc = 'A device disconnecting while connected should fire the ' +
+const test_desc = 'A device disconnecting while connected should fire the ' +
     'gattserverdisconnected event.';
-let device, fake_peripheral;
+
 bluetooth_test(() => getHealthThermometerDevice()
-  .then(_ => ({device, fake_peripheral} = _))
-  .then(() => {
+  .then(({device, fake_peripheral}) => {
     fake_peripheral.simulateGATTDisconnection();
     return eventPromise(device, 'gattserverdisconnected');
   })
-  .then(e => assert_true(e.bubbles)), test_desc);
+  .then(e => assert_true(e.bubbles)),
+  test_desc);
 </script>
