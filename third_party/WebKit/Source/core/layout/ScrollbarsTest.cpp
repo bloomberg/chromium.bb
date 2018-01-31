@@ -1656,6 +1656,55 @@ TEST_P(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
   EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
 }
 
+TEST_P(ScrollbarsTest, MouseOverIFrameScrollbar) {
+  WebView().Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    iframe {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <iframe id='iframe' src='iframe.html'>
+    </iframe>
+  )HTML");
+
+  frame_resource.Complete(R"HTML(
+  <!DOCTYPE html>
+  <style>
+  body {
+    margin: 0;
+    height :500px;
+  }
+  </style>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+  Element* iframe = document.getElementById("iframe");
+  DCHECK(iframe);
+
+  // Ensure hittest has scrollbar.
+  HitTestResult hit_test_result = HitTest(196, 10);
+  EXPECT_TRUE(hit_test_result.InnerElement());
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  EXPECT_TRUE(hit_test_result.GetScrollbar()->Enabled());
+
+  // Mouse over scrollbar.
+  HandleMouseMoveEvent(196, 5);
+
+  // IFRAME hover.
+  EXPECT_EQ(document.HoverElement(), iframe);
+}
+
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {
  public:
   void PrepareTest(const String& track_style) {
