@@ -394,7 +394,7 @@ ProfileImpl::ProfileImpl(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : path_(path),
       io_task_runner_(std::move(io_task_runner)),
-      pref_registry_(base::MakeRefCounted<user_prefs::PrefRegistrySyncable>()),
+      pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
@@ -503,8 +503,8 @@ ProfileImpl::ProfileImpl(
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_, std::move(pref_validation_delegate),
         profile_policy_connector_->policy_service(), supervised_user_settings,
-        CreateExtensionPrefStore(this, false), pref_registry_.get(),
-        async_prefs, GetIOTaskRunner(), std::move(delegate));
+        CreateExtensionPrefStore(this, false), pref_registry_, async_prefs,
+        GetIOTaskRunner(), std::move(delegate));
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }

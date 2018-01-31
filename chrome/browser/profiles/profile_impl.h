@@ -228,7 +228,7 @@ class ProfileImpl : public Profile {
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |io_data_| and others store pointers to |prefs_| and shall be destructed
   // first.
-  const scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
+  scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   // See comment in GetOffTheRecordPrefs. Field exists so something owns the
   // dummy.
