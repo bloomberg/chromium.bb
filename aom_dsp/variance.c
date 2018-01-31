@@ -1029,17 +1029,17 @@ void aom_comp_mask_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
                           const uint8_t *mask, int mask_stride,
                           int invert_mask) {
   int i, j;
-
+  const uint8_t *src0 = invert_mask ? pred : ref;
+  const uint8_t *src1 = invert_mask ? ref : pred;
+  const int stride0 = invert_mask ? width : ref_stride;
+  const int stride1 = invert_mask ? ref_stride : width;
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-      if (!invert_mask)
-        comp_pred[j] = AOM_BLEND_A64(mask[j], ref[j], pred[j]);
-      else
-        comp_pred[j] = AOM_BLEND_A64(mask[j], pred[j], ref[j]);
+      comp_pred[j] = AOM_BLEND_A64(mask[j], src0[j], src1[j]);
     }
     comp_pred += width;
-    pred += width;
-    ref += ref_stride;
+    src0 += stride0;
+    src1 += stride1;
     mask += mask_stride;
   }
 }
