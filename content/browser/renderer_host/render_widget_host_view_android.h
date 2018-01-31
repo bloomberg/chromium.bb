@@ -135,7 +135,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
-  bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
   gfx::Rect GetBoundsInRootWindow() override;

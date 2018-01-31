@@ -161,11 +161,6 @@ SkColor TestRenderWidgetHostView::background_color() const {
   return background_color_;
 }
 
-bool TestRenderWidgetHostView::HasAcceleratedSurface(
-      const gfx::Size& desired_size) {
-  return false;
-}
-
 #if defined(OS_MACOSX)
 
 void TestRenderWidgetHostView::SetActive(bool active) {

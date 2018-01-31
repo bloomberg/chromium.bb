@@ -344,14 +344,6 @@ void BrowserCompositorMac::OnNSViewWasResized() {
       cc::DeadlinePolicy::UseExistingDeadline());
 }
 
-bool BrowserCompositorMac::HasFrameOfSize(const gfx::Size& desired_size) {
-  if (recyclable_compositor_) {
-    return recyclable_compositor_->accelerated_widget_mac()->HasFrameOfSize(
-        desired_size);
-  }
-  return false;
-}
-
 void BrowserCompositorMac::UpdateVSyncParameters(
     const base::TimeTicks& timebase,
     const base::TimeDelta& interval) {
@@ -538,6 +530,18 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
   recyclable_compositor_->compositor()->SetScaleAndSize(
       compositor_scale_factor_, compositor_size_pixels_,
       compositor_surface_id_);
+
+  // Disable screen updates until the frame of the new size appears (because the
+  // content is drawn in the GPU process, it may change before we want it to).
+  if (repaint_state_ == RepaintState::Paused) {
+    gfx::Size compositor_size_dip = gfx::ConvertSizeToDIP(
+        compositor_scale_factor_, compositor_size_pixels_);
+    if (compositor_size_dip == delegated_frame_host_size_pixels_ ||
+        repaint_auto_resize_enabled_) {
+      NSDisableScreenUpdates();
+      repaint_state_ = RepaintState::ScreenUpdatesDisabled;
+    }
+  }
 }
 
 void BrowserCompositorMac::OnBeginFrame(base::TimeTicks frame_time) {
@@ -567,6 +571,25 @@ void BrowserCompositorMac::DidNavigate() {
 
 void BrowserCompositorMac::DidReceiveFirstFrameAfterNavigation() {
   client_->DidReceiveFirstFrameAfterNavigation();
+}
+
+void BrowserCompositorMac::BeginPauseForFrame(bool auto_resize_enabled) {
+  repaint_auto_resize_enabled_ = auto_resize_enabled;
+  repaint_state_ = RepaintState::Paused;
+}
+
+void BrowserCompositorMac::EndPauseForFrame() {
+  if (repaint_state_ == RepaintState::ScreenUpdatesDisabled)
+    NSEnableScreenUpdates();
+  repaint_state_ = RepaintState::None;
+}
+
+bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
+  if (!recyclable_compositor_)
+    return false;
+
+  return !recyclable_compositor_->accelerated_widget_mac()->HasFrameOfSize(
+      delegated_frame_host_size_dip_);
 }
 
 }  // namespace content

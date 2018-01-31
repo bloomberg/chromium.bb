@@ -993,14 +993,6 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
   selection_controller_client_->OnScrollCompleted();
 }
 
-bool RenderWidgetHostViewAura::HasAcceleratedSurface(
-    const gfx::Size& desired_size) {
-  // Aura doesn't use GetBackingStore for accelerated pages, so it doesn't
-  // matter what is returned here as GetBackingStore is the only caller of this
-  // method. TODO(jbates) implement this if other Aura code needs it.
-  return false;
-}
-
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   aura::Window* top_level = window_->GetToplevelWindow();
   gfx::Rect bounds(top_level->GetBoundsInScreen());

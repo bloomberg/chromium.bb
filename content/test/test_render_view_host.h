@@ -114,7 +114,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override {}
-  bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;

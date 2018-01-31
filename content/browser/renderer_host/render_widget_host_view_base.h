@@ -435,11 +435,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // the page has changed.
   virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
 
-  // Return true if the view has an accelerated surface that contains the last
-  // presented frame for the view. If |desired_size| is non-empty, true is
-  // returned only if the accelerated surface size matches.
-  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
-
   // Compute the orientation type of the display assuming it is a mobile device.
   static ScreenOrientationValues GetOrientationTypeForMobile(
       const display::Display& display);
@@ -505,6 +500,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       int routing_id,
       ui::mojom::WindowTreeClientPtr renderer_window_tree_client);
   void OnChildFrameDestroyed(int routing_id);
+#endif
+
+#if defined(OS_MACOSX)
+  // Use only for resize on macOS. Returns true if there is not currently a
+  // frame of the view's size being displayed.
+  virtual bool ShouldContinueToPauseForFrame();
 #endif
 
   virtual void DidNavigate() {}
