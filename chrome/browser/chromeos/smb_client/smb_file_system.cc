@@ -320,7 +320,10 @@ AbortCallback SmbFileSystem::Truncate(
     const base::FilePath& file_path,
     int64_t length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  GetSmbProviderClient()->Truncate(
+      GetMountId(), file_path, length,
+      base::BindOnce(&SmbFileSystem::HandleRequestTruncateCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
 
@@ -491,6 +494,12 @@ void SmbFileSystem::HandleRequestReadFileCallback(
     total_read += bytes_read;
   }
   callback.Run(total_read, false /* has_more */, base::File::FILE_OK);
+}
+
+void SmbFileSystem::HandleRequestTruncateCallback(
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    smbprovider::ErrorType error) const {
+  callback.Run(TranslateError(error));
 }
 
 base::WeakPtr<file_system_provider::ProvidedFileSystemInterface>
