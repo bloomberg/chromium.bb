@@ -237,6 +237,9 @@ extern const char* const kHangoutsExtensionIds[6];
 // Error message when enterprise policy blocks scripting of webpage.
 extern const char kPolicyBlockedScripting[];
 
+// The default block size for hashing used in content verification.
+extern const int kContentVerificationDefaultBlockSize;
+
 }  // namespace extension_misc
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_

@@ -207,6 +207,14 @@ TEST_F(ContentVerifyJobUnittest, ContentMismatch) {
   RunContentMismatchTest("console.log('modified');");
 }
 
+// Similar to ContentMismatch, but uses a file size > 4k.
+// Regression test for https://crbug.com/804630.
+TEST_F(ContentVerifyJobUnittest, ContentMismatchWithLargeFile) {
+  std::string content_larger_than_block_size(
+      extension_misc::kContentVerificationDefaultBlockSize + 1, ';');
+  RunContentMismatchTest(content_larger_than_block_size);
+}
+
 // Tests that extension resources that are originally 0 byte behave correctly
 // with content verification.
 TEST_F(ContentVerifyJobUnittest, LegitimateZeroByteFile) {
