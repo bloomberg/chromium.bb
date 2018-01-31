@@ -6,16 +6,16 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  const EXPECTED_VALUE = [0, 1, 2];
-  return getUserDescriptionDescriptor()
-    .then(({descriptor, fake_descriptor}) => {
-      return fake_descriptor.setNextReadResponse(GATT_SUCCESS, EXPECTED_VALUE)
-        .then(() => descriptor.readValue())
-        .then(value => {
-          assert_array_equals(Array.from(new Uint8Array(
-            value.buffer)), EXPECTED_VALUE);
-        });
-    });
-}, 'A read request succeeds and returns the descriptor\'s value.');
+const test_desc = 'A read request succeeds and returns the descriptor\'s value.';
+const EXPECTED_VALUE = [0, 1, 2];
+let descriptor, fake_descriptor;
+
+bluetooth_test(() => getUserDescriptionDescriptor()
+    .then(_ => ({descriptor, fake_descriptor} = _))
+    .then(() =>
+        fake_descriptor.setNextReadResponse(GATT_SUCCESS, EXPECTED_VALUE))
+    .then(() => descriptor.readValue())
+    .then(value => assert_array_equals(Array.from(new Uint8Array(
+        value.buffer)), EXPECTED_VALUE)),
+    test_desc);
 </script>
