@@ -26,7 +26,9 @@ class InteractionMediaQueriesDynamicTest : public ContentBrowserTest {
 
 }  //  namespace
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
+// Disable test on Android ASAN bot: crbug.com/807420
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_ANDROID) && !defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(InteractionMediaQueriesDynamicTest,
                        PointerMediaQueriesDynamic) {
   GURL test_url = GetTestUrl("", "interaction-mq-dynamic.html");
