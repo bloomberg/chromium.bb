@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -62,6 +63,13 @@ class ScopedResourceOverride {
   DISALLOW_COPY_AND_ASSIGN(ScopedResourceOverride);
 };
 
+#if defined(OS_MACOSX)
+// Mac OS X uses titlecase so expect title case to be present in the string.
+constexpr char const* kExpectedDomainSameSite = "This Site";
+#else
+constexpr char const* kExpectedDomainSameSite = "this site";
+#endif  // defined(OS_MACOSX)
+
 const struct {
   const char* const user_visible_url;
   const char* const form_origin_url;
@@ -73,17 +81,17 @@ const struct {
 } kDomainsTestCases[] = {
     // Same domains.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     false, PasswordTitleType::SAVE_PASSWORD, "this site", 0, 0},
+     false, PasswordTitleType::SAVE_PASSWORD, kExpectedDomainSameSite, 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     true, PasswordTitleType::SAVE_PASSWORD, "this site", 12, 29},
+     true, PasswordTitleType::SAVE_PASSWORD, kExpectedDomainSameSite, 12, 29},
 
     // Different subdomains.
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", false,
-     PasswordTitleType::SAVE_PASSWORD, "this site", 0, 0},
+     PasswordTitleType::SAVE_PASSWORD, kExpectedDomainSameSite, 0, 0},
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", true,
-     PasswordTitleType::SAVE_PASSWORD, "this site", 12, 29},
+     PasswordTitleType::SAVE_PASSWORD, kExpectedDomainSameSite, 12, 29},
 
     // Different domains.
     {"https://another.org", "https://example.com:/login#form?value=3", false,
@@ -107,9 +115,9 @@ const struct {
 
     // Update bubble, same domains.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     false, PasswordTitleType::UPDATE_PASSWORD, "this site", 0, 0},
+     false, PasswordTitleType::UPDATE_PASSWORD, kExpectedDomainSameSite, 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     true, PasswordTitleType::UPDATE_PASSWORD, "this site", 12, 29},
+     true, PasswordTitleType::UPDATE_PASSWORD, kExpectedDomainSameSite, 12, 29},
 
     // Update bubble, different domains.
     {"https://another.org", "http://example.com/login#form?value=3", false,
@@ -119,28 +127,34 @@ const struct {
 
     // Same domains, federated credential.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     false, PasswordTitleType::SAVE_ACCOUNT, "this site", 0, 0},
+     false, PasswordTitleType::SAVE_ACCOUNT, kExpectedDomainSameSite, 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     true, PasswordTitleType::SAVE_ACCOUNT, "this site", 12, 29},
+     true, PasswordTitleType::SAVE_ACCOUNT, kExpectedDomainSameSite, 12, 29},
 
     // Different subdomains, federated credential.
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", false,
-     PasswordTitleType::SAVE_ACCOUNT, "this site", 0, 0},
+     PasswordTitleType::SAVE_ACCOUNT, kExpectedDomainSameSite, 0, 0},
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", true,
-     PasswordTitleType::SAVE_ACCOUNT, "this site", 12, 29}};
+     PasswordTitleType::SAVE_ACCOUNT, kExpectedDomainSameSite, 12, 29}};
 
 }  // namespace
 
 // Test for GetSavePasswordDialogTitleTextAndLinkRange().
 TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
+#if defined(OS_MACOSX)
+  constexpr char const* kExpectedUpdateString = "Update";
+  constexpr char const* kExpectedSaveString = "Save";
+#else
+  constexpr char const* kExpectedUpdateString = "update";
+  constexpr char const* kExpectedSaveString = "save";
+#endif
   for (size_t i = 0; i < arraysize(kDomainsTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "user_visible_url = "
                                     << kDomainsTestCases[i].user_visible_url
                                     << ", form_origin_url = "
                                     << kDomainsTestCases[i].form_origin_url);
-
     base::string16 title;
     gfx::Range title_link_range;
     GetSavePasswordDialogTitleTextAndLinkRange(
@@ -159,10 +173,10 @@ TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
               title_link_range.end());
     if (kDomainsTestCases[i].bubble_type ==
         PasswordTitleType::UPDATE_PASSWORD) {
-      EXPECT_TRUE(title.find(base::ASCIIToUTF16("update")) !=
+      EXPECT_TRUE(title.find(base::ASCIIToUTF16(kExpectedUpdateString)) !=
                   base::string16::npos);
     } else {
-      EXPECT_TRUE(title.find(base::ASCIIToUTF16("save")) !=
+      EXPECT_TRUE(title.find(base::ASCIIToUTF16(kExpectedSaveString)) !=
                   base::string16::npos);
     }
   }
