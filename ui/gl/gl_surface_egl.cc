@@ -29,6 +29,7 @@
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_make_current.h"
@@ -983,7 +984,8 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     vsync_provider_internal_ =
         std::make_unique<EGLSyncControlVSyncProvider>(surface_);
   }
-
+  presentation_helper_ =
+      std::make_unique<GLSurfacePresentationHelper>(GetVSyncProvider());
   return true;
 }
 
@@ -1036,11 +1038,16 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
   use_egl_timestamps_ = !supported_egl_timestamps_.empty();
 }
 
+bool NativeViewGLSurfaceEGL::SupportsPresentationCallback() {
+  return true;
+}
+
 bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
   return true;
 }
 
 void NativeViewGLSurfaceEGL::Destroy() {
+  presentation_helper_ = nullptr;
   vsync_provider_internal_ = nullptr;
 
   if (surface_) {
@@ -1058,7 +1065,6 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
 
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
       "width", GetSize().width(),
       "height", GetSize().height());
@@ -1075,17 +1081,16 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
         !!eglGetNextFrameIdANDROID(GetDisplay(), surface_, &newFrameId);
   }
 
+  GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
+      presentation_helper_.get(), callback);
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
              << GetLastEGLErrorString();
-    return gfx::SwapResult::SWAP_FAILED;
-  }
-
-  if (use_egl_timestamps_) {
+    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
+  } else if (use_egl_timestamps_) {
     UpdateSwapEvents(newFrameId, newFrameIdIsValid);
   }
-
-  return gfx::SwapResult::SWAP_ACK;
+  return scoped_swap_buffers.result();
 }
 
 void NativeViewGLSurfaceEGL::UpdateSwapEvents(EGLuint64KHR newFrameId,
@@ -1273,21 +1278,22 @@ bool NativeViewGLSurfaceEGL::BuffersFlipped() const {
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
     const std::vector<int>& rects,
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   DCHECK(supports_swap_buffer_with_damage_);
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;
   }
 
+  GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
+      presentation_helper_.get(), callback);
   if (!eglSwapBuffersWithDamageKHR(GetDisplay(), surface_,
                                    const_cast<EGLint*>(rects.data()),
                                    static_cast<EGLint>(rects.size() / 4))) {
     DVLOG(1) << "eglSwapBuffersWithDamageKHR failed with error "
              << GetLastEGLErrorString();
-    return gfx::SwapResult::SWAP_FAILED;
+    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
   }
-  return gfx::SwapResult::SWAP_ACK;
+  return scoped_swap_buffers.result();
 }
 
 gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
@@ -1296,7 +1302,6 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
     int width,
     int height,
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   DCHECK(supports_post_sub_buffer_);
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
@@ -1308,12 +1313,15 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
     // bottom left.
     y = GetSize().height() - y - height;
   }
+
+  GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
+      presentation_helper_.get(), callback);
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
     DVLOG(1) << "eglPostSubBufferNV failed with error "
              << GetLastEGLErrorString();
-    return gfx::SwapResult::SWAP_FAILED;
+    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
   }
-  return gfx::SwapResult::SWAP_ACK;
+  return scoped_swap_buffers.result();
 }
 
 bool NativeViewGLSurfaceEGL::SupportsCommitOverlayPlanes() {
@@ -1326,13 +1334,21 @@ bool NativeViewGLSurfaceEGL::SupportsCommitOverlayPlanes() {
 
 gfx::SwapResult NativeViewGLSurfaceEGL::CommitOverlayPlanes(
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   DCHECK(SupportsCommitOverlayPlanes());
   // Here we assume that the overlays scheduled on this surface will display
   // themselves to the screen right away in |CommitAndClearPendingOverlays|,
   // rather than being queued and waiting for a "swap" signal.
-  return CommitAndClearPendingOverlays() ? gfx::SwapResult::SWAP_ACK
-                                         : gfx::SwapResult::SWAP_FAILED;
+  GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
+      presentation_helper_.get(), callback);
+  if (!CommitAndClearPendingOverlays())
+    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
+  return scoped_swap_buffers.result();
+}
+
+bool NativeViewGLSurfaceEGL::OnMakeCurrent(GLContext* context) {
+  if (presentation_helper_)
+    presentation_helper_->OnMakeCurrent(context, this);
+  return GLSurfaceEGL::OnMakeCurrent(context);
 }
 
 gfx::VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {

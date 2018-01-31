@@ -28,6 +28,8 @@
 
 namespace gl {
 
+class GLSurfacePresentationHelper;
+
 // If adding a new type, also add it to EGLDisplayType in
 // tools/metrics/histograms/histograms.xml. Don't remove or reorder entries.
 enum DisplayType {
@@ -104,10 +106,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
                          std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
   // Implement GLSurface.
-  using GLSurfaceEGL::Initialize;
   bool Initialize(GLSurfaceFormat format) override;
   bool SupportsSwapTimestamps() const override;
   void SetEnableSwapTimestamps() override;
+  bool SupportsPresentationCallback() override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -127,6 +129,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool SupportsCommitOverlayPlanes() override;
   gfx::SwapResult CommitOverlayPlanes(
       const PresentationCallback& callback) override;
+  bool OnMakeCurrent(GLContext* context) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
@@ -179,6 +182,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   std::vector<const char*> supported_event_names_;
 
   base::queue<SwapInfo> swap_info_queue_;
+
+  std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };
