@@ -4,6 +4,13 @@
 
 ; --- The contents of common.sb implicitly included here. ---
 
+; Params specific to ppapi.
+(define ppapi-plugin-0 "PPAPI_PATH_0")
+(define ppapi-plugin-1 "PPAPI_PATH_1")
+(define ppapi-plugin-2 "PPAPI_PATH_2")
+(define ppapi-plugin-3 "PPAPI_PATH_3")
+(define ppapi-plugin-4 "PPAPI_PATH_4")
+
 ; Needed for Fonts.
 (allow-font-access)
 
@@ -19,3 +26,15 @@
 (allow file-read-data
   (subpath "/System/Library/CoreServices/SystemAppearance.bundle")
   (path "/System/Library/Colors/System.clr/System.clr"))
+
+; Allow the ppapi plugin binaries to be loaded.
+(if (param-defined? ppapi-plugin-0)
+  (allow file-read-data (subpath (param ppapi-plugin-0))))
+(if (param-defined? ppapi-plugin-1)
+  (allow file-read-data (subpath (param ppapi-plugin-1))))
+(if (param-defined? ppapi-plugin-2)
+  (allow file-read-data (subpath (param ppapi-plugin-2))))
+(if (param-defined? ppapi-plugin-3)
+  (allow file-read-data (subpath (param ppapi-plugin-3))))
+(if (param-defined? ppapi-plugin-4)
+  (allow file-read-data (subpath (param ppapi-plugin-4))))
