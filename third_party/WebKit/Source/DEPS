@@ -9,6 +9,7 @@ include_rules = [
     "+base/memory/ptr_util.h",
     "+base/memory/weak_ptr.h",
     "+base/single_thread_task_runner.h",
+    "+base/thread_annotations.h",
     "+base/time/time.h",
     "+build",
     "+services/service_manager/public/cpp/connector.h",

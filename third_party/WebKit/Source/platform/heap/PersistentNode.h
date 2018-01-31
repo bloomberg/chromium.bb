@@ -175,14 +175,14 @@ class CrossThreadPersistentRegion final {
   void AllocatePersistentNode(PersistentNode*& persistent_node,
                               void* self,
                               TraceCallback trace) {
-    MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+    RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
     PersistentNode* node =
         persistent_region_->AllocatePersistentNode(self, trace);
     ReleaseStore(reinterpret_cast<void* volatile*>(&persistent_node), node);
   }
 
   void FreePersistentNode(PersistentNode*& persistent_node) {
-    MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+    RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
     // When the thread that holds the heap object that the cross-thread
     // persistent shuts down, prepareForThreadStateTermination() will clear out
     // the associated CrossThreadPersistent<> and PersistentNode so as to avoid

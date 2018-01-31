@@ -32,6 +32,7 @@
 #define ThreadingPrimitives_h
 
 #include "base/macros.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -90,10 +91,15 @@ class WTF_EXPORT MutexBase {
   DISALLOW_COPY_AND_ASSIGN(MutexBase);
 };
 
-class WTF_EXPORT Mutex : public MutexBase {
+class LOCKABLE WTF_EXPORT Mutex : public MutexBase {
  public:
   Mutex() : MutexBase(false) {}
-  bool TryLock();
+  bool TryLock() EXCLUSIVE_TRYLOCK_FUNCTION(true);
+
+  // lock() and unlock() are overridden solely for the purpose of annotating
+  // them. The compiler is expected to optimize the calls away.
+  void lock() EXCLUSIVE_LOCK_FUNCTION() { MutexBase::lock(); }
+  void unlock() UNLOCK_FUNCTION() { MutexBase::unlock(); }
 };
 
 class WTF_EXPORT RecursiveMutex : public MutexBase {
@@ -102,7 +108,22 @@ class WTF_EXPORT RecursiveMutex : public MutexBase {
   bool TryLock();
 };
 
-typedef Locker<MutexBase> MutexLocker;
+class SCOPED_LOCKABLE MutexLocker final {
+  STACK_ALLOCATED();
+
+ public:
+  MutexLocker(Mutex& mutex) EXCLUSIVE_LOCK_FUNCTION(mutex) : mutex_(mutex) {
+    mutex_.lock();
+  }
+  ~MutexLocker() UNLOCK_FUNCTION() { mutex_.unlock(); }
+
+ private:
+  Mutex& mutex_;
+
+  DISALLOW_COPY_AND_ASSIGN(MutexLocker);
+};
+
+using RecursiveMutexLocker = Locker<RecursiveMutex>;
 
 class MutexTryLocker final {
   STACK_ALLOCATED();
@@ -160,6 +181,7 @@ using WTF::Mutex;
 using WTF::RecursiveMutex;
 using WTF::MutexLocker;
 using WTF::MutexTryLocker;
+using WTF::RecursiveMutexLocker;
 using WTF::ThreadCondition;
 
 #if defined(OS_WIN)

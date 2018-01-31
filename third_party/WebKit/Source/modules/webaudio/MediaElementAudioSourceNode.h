@@ -29,6 +29,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_annotations.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/audio/MultiChannelResampler.h"
@@ -61,8 +62,14 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   // MediaElementAudioSourceNode.
   void SetFormat(size_t number_of_channels, float sample_rate);
   void OnCurrentSrcChanged(const KURL& current_src);
-  void lock();
-  void unlock();
+  void lock() EXCLUSIVE_LOCK_FUNCTION(GetProcessLock());
+  void unlock() UNLOCK_FUNCTION(GetProcessLock());
+
+  // For thread safety analysis only.  Does not actually return mu.
+  Mutex* GetProcessLock() LOCK_RETURNED(process_lock_) {
+    NOTREACHED();
+    return nullptr;
+  }
 
  private:
   MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement&);
@@ -134,8 +141,10 @@ class MediaElementAudioSourceNode final : public AudioNode,
   // AudioSourceProviderClient functions:
   void SetFormat(size_t number_of_channels, float sample_rate) override;
   void OnCurrentSrcChanged(const KURL& current_src) override;
-  void lock() override;
-  void unlock() override;
+  void lock() override EXCLUSIVE_LOCK_FUNCTION(
+      GetMediaElementAudioSourceHandler().GetProcessLock());
+  void unlock() override
+      UNLOCK_FUNCTION(GetMediaElementAudioSourceHandler().GetProcessLock());
 
  private:
   MediaElementAudioSourceNode(BaseAudioContext&, HTMLMediaElement&);
