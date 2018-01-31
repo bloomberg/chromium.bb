@@ -150,7 +150,7 @@ class GpuTestTriggerer(object):
     if not all(isinstance(entry, dict) for entry in self._gpu_configs):
       raise ValueError('GPU configurations must all be dictionaries')
 
-  def query_swarming_for_gpu_configs(self):
+  def query_swarming_for_gpu_configs(self, verbose):
     # Query Swarming to figure out which bots are available.
     for config in self._gpu_configs:
       values = []
@@ -172,7 +172,8 @@ class GpuTestTriggerer(object):
                                  '0',
                                  '--json',
                                  temp_file,
-                                 ('bots/count?%s' % query_arg)])
+                                 ('bots/count?%s' % query_arg)],
+                                verbose)
         if ret:
           raise Exception('Error running swarming.py')
         with open(temp_file) as fp:
@@ -182,10 +183,15 @@ class GpuTestTriggerer(object):
         # Be robust against errors in computation.
         available = max(0, count - int(query_result['busy']))
         self._bot_statuses.append({'total': count, 'available': available})
+        if verbose:
+          idx = len(self._bot_statuses) - 1
+          print 'GPU config %d: %s' % (idx, str(self._bot_statuses[idx]))
       finally:
         self.delete_temp_file(temp_file)
     # Sum up the total count of all bots.
     self._total_bots = sum(x['total'] for x in self._bot_statuses)
+    if verbose:
+      print 'Total bots: %d' % (self._total_bots)
 
   def remove_swarming_dimension(self, args, dimension):
     for i in xrange(len(args)):
@@ -196,7 +202,7 @@ class GpuTestTriggerer(object):
   def choose_random_int(self, max_num):
     return random.randint(1, max_num)
 
-  def pick_gpu_configuration(self):
+  def pick_gpu_configuration(self, verbose):
     # These are the rules used:
     # 1. If any configuration has bots available, pick the configuration with
     #    the most bots available.
@@ -216,6 +222,8 @@ class GpuTestTriggerer(object):
           max_val = avail
       self._bot_statuses[max_index]['available'] -= 1
       assert self._bot_statuses[max_index]['available'] >= 0
+      if verbose:
+        print 'Chose GPU config %d because bots were available' % (max_index)
       return max_index
     # Case 2.
     # We want to choose a bot uniformly at random from all of the bots specified
@@ -225,6 +233,8 @@ class GpuTestTriggerer(object):
     r = self.choose_random_int(self._total_bots)
     for i, status in enumerate(self._bot_statuses):
       if r <= status['total']:
+        if verbose:
+          print 'Chose GPU config %d stochastically' % (i)
         return i
       r -= status['total']
     raise Exception('Should not reach here')
@@ -247,7 +257,10 @@ class GpuTestTriggerer(object):
     with open(output_file, 'w') as f:
       json.dump(merged_json, f)
 
-  def run_swarming(self, args):
+  def run_swarming(self, args, verbose):
+    if verbose:
+      print 'Running Swarming with args:'
+      print str(args)
     return subprocess.call([sys.executable, SWARMING_PY] + args)
 
   def trigger_tasks(self, args, remaining):
@@ -262,8 +275,9 @@ class GpuTestTriggerer(object):
       Exit code for the script.
     """
     remaining = self.filter_swarming_py_path_arg(remaining)
+    verbose = args.gpu_trigger_script_verbose
     self.parse_gpu_configs(args)
-    self.query_swarming_for_gpu_configs()
+    self.query_swarming_for_gpu_configs(verbose)
 
     # In the remaining arguments, find the Swarming dimensions that are
     # specified by the GPU configs and remove them, because for each shard,
@@ -282,14 +296,14 @@ class GpuTestTriggerer(object):
       # 1. Pick which GPU configuration to use.
       # 2. Insert that GPU configuration's dimensions as command line
       #    arguments, and invoke "swarming.py trigger".
-      gpu_index = self.pick_gpu_configuration()
+      gpu_index = self.pick_gpu_configuration(verbose)
       # Holds the results of the swarming.py trigger call.
       try:
         json_temp = self.make_temp_file(prefix='trigger_gpu_test',
                                         suffix='.json')
         args_to_pass = self.modify_args(filtered_remaining_args, gpu_index, i,
                                         args.shards, json_temp)
-        ret = self.run_swarming(args_to_pass)
+        ret = self.run_swarming(args_to_pass, verbose)
         if ret:
           sys.stderr.write('Failed to trigger a task, aborting\n')
           return ret
@@ -318,6 +332,8 @@ def main():
                       help='The GPU configurations to trigger tasks on, in the'
                       ' form of a JSON array of dictionaries. At least one'
                       ' entry in this dictionary is required.')
+  parser.add_argument('--gpu-trigger-script-verbose', type=bool, default=False,
+                      help='Turn on verbose logging')
   parser.add_argument('--dump-json', required=True,
                       help='(Swarming Trigger Script API) Where to dump the'
                       ' resulting json which indicates which tasks were'

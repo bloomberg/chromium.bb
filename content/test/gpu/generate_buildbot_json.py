@@ -2562,7 +2562,9 @@ def add_common_test_properties(test, tester_config):
       'args': [
         '--gpu-trigger-configs',
         json.dumps(tester_config['swarming_dimensions'] +
-                   tester_config.get('alternate_swarming_dimensions', []))
+                   tester_config.get('alternate_swarming_dimensions', [])),
+        '--gpu-trigger-script-verbose',
+        'True'
       ],
     }
 
