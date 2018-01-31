@@ -921,12 +921,14 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
-    public void testSearchBarBackButtonBringsBackGeneralPrefs() throws Exception {
+    public void testSearchBarBackButtonRestoresGeneralPrefs() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
+        Espresso.onView(withId(R.id.search_src_text))
+                .perform(click(), typeText("Zeu"), closeSoftKeyboard());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
         Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
@@ -947,12 +949,14 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
-    public void testSearchBarBackKeyBringsBackGeneralPrefs() throws Exception {
+    public void testSearchBarBackKeyRestoresGeneralPrefs() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
+        Espresso.onView(withId(R.id.search_src_text))
+                .perform(click(), typeText("Zeu"), closeSoftKeyboard());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
         Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());

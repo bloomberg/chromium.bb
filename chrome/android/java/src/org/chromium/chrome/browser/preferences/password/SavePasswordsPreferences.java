@@ -189,6 +189,7 @@ public class SavePasswordsPreferences
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                searchView.setQuery(null, false);
                 filterPasswords(null); // Reset filter to bring back all preferences.
                 return true; // Continue collapsing.
             }
