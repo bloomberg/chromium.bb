@@ -5227,8 +5227,10 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_LOOPFILTER_LEVEL
   }
 
+#if CONFIG_LOOP_RESTORATION
   if (!no_restoration)
     av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
+#endif  // CONFIG_LOOP_RESTORATION
 
   if (no_cdef) {
     cm->cdef_bits = 0;

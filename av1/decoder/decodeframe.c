@@ -602,7 +602,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                              int mi_row, int mi_col, aom_reader *r,
                              BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
-  const int num_planes = av1_num_planes(cm);
   const int num_8x8_wh = mi_size_wide[bsize];
   const int hbs = num_8x8_wh >> 1;
   PARTITION_TYPE partition;
@@ -617,6 +616,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
 #if CONFIG_LOOP_RESTORATION
+  const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
@@ -3567,11 +3567,13 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     return;
   }
 
+#if CONFIG_LOOP_RESTORATION
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
   }
+#endif  // CONFIG_LOOP_RESTORATION
 
   if (!cm->skip_loop_filter &&
 #if CONFIG_INTRABC

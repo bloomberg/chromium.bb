@@ -2028,7 +2028,6 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
                            const TOKENEXTRA *const tok_end, int mi_row,
                            int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const int hbs = mi_size_wide[bsize] / 2;
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2041,6 +2040,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
 #if CONFIG_LOOP_RESTORATION
+  const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
@@ -4608,7 +4608,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
                                        int insert_frame_header_obu_flag,
                                        uint8_t obu_extension_header) {
   AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
   aom_writer mode_bc;
   int tile_row, tile_col;
   TOKENEXTRA *(*const tok_buffers)[MAX_TILE_COLS] = cpi->tile_tok;
@@ -4807,6 +4806,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
+        const int num_planes = av1_num_planes(cm);
         av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
