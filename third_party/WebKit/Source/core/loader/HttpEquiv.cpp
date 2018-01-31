@@ -95,7 +95,7 @@ void HttpEquiv::ProcessHttpEquivAcceptCH(Document& document,
   UseCounter::Count(document, WebFeature::kClientHintsMetaAcceptCH);
   FrameClientHintsPreferencesContext hints_context(document.GetFrame());
   document.GetClientHintsPreferences().UpdateFromAcceptClientHintsHeader(
-      content, &hints_context);
+      content, document.Url(), &hints_context);
 }
 
 void HttpEquiv::ProcessHttpEquivDefaultStyle(Document& document,

@@ -789,9 +789,10 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
                                                  "accept-ch")) {
             const typename Token::Attribute* content_attribute =
                 token.GetAttributeItem(contentAttr);
-            if (content_attribute)
+            if (content_attribute) {
               client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
-                  content_attribute->Value(), nullptr);
+                  content_attribute->Value(), document_url_, nullptr);
+            }
           }
           return;
         }
