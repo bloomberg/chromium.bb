@@ -9,19 +9,31 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/toolbar/clean/toolbar_button_tints.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// The number of dots drawn.
-const int kNumberOfDots = 3;
+// *** Constants for the non-adaptive toolbar, 3 vertical dots. ***
 // Position of the topmost dot.
-const CGFloat kDotOffsetX = 22;
-const CGFloat kDotOffsetY = 18;
+const CGFloat kDotOffsetXVertical = 22;
+const CGFloat kDotOffsetYVertical = 18;
 // Vertical space between dots.
 const CGFloat kVerticalSpaceBetweenDots = 6;
+
+// *** Constants for the adaptive toolbar, 3 horizontal dots. ***
+// Position of the left most dot.
+const CGFloat kDotOffsetXHorizontal = 22;
+const CGFloat kDotOffsetYHorizontal = 18;
+// Horizontal space between dots.
+const CGFloat kHorizontalSpaceBetweenDots = 6;
+
+// The maximum width of the segment/dots.
+const CGFloat kMaxWidthOfStroke = 7.4;
+// The number of dots drawn.
+const int kNumberOfDots = 3;
 // The duration of the animation, in seconds.
 const CFTimeInterval kAnimationDuration = 1;
 // The frame offset at which the animation to the intermediary value finishes.
@@ -32,8 +44,6 @@ const int kIntermediaryValueEndFrame = 29;
 const int kFinalValueBeginFrame = 37;
 // The number of frames between the start of each dot's animation.
 const double kFramesBetweenAnimationOfEachDot = 3;
-// The maximum width of the segment/dots.
-const CGFloat kMaxWidthOfSegment = 7.4;
 // Constants for the properties of the stroke during the animations.
 // The strokeEnd is slightly more than 0.5, because if the strokeEnd is
 // exactly equal to strokeStart, the line is not drawn.
@@ -158,12 +168,14 @@ const CGFloat kLineWidthAtApogee = 3;
 
   pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
   for (NSUInteger i = 0; i < kNumberOfDots; i++) {
-    const CGFloat x = kDotOffsetX;
-    const CGFloat y = kDotOffsetY + kVerticalSpaceBetweenDots * i;
+    const CGFloat x = [self firstDotXOffset] + [self horizontalSpacing] * i;
+    const CGFloat y = [self firstDotYOffset] + [self verticalSpacing] * i;
 
     UIBezierPath* path = [UIBezierPath bezierPath];
-    [path moveToPoint:CGPointMake(x - kMaxWidthOfSegment * 0.5, y)];
-    [path addLineToPoint:CGPointMake(x + kMaxWidthOfSegment * 0.5, y)];
+    [path moveToPoint:CGPointMake(x - [self segmentWidth] * 0.5,
+                                  y - [self segmentHeight] * 0.5)];
+    [path addLineToPoint:CGPointMake(x + [self segmentWidth] * 0.5,
+                                     y + [self segmentHeight] * 0.5)];
 
     CAShapeLayer* pathLayer = [CAShapeLayer layer];
     [pathLayer setFrame:self.bounds];
@@ -337,6 +349,62 @@ const CGFloat kLineWidthAtApogee = 3;
   // Recreate the CAShapeLayers in case the tint code changed while the
   // animation was going on.
   [self initializeShapeLayers];
+}
+
+#pragma mark - Private
+
+// Returns the X offset of the first dot.
+- (CGFloat)firstDotXOffset {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kDotOffsetXHorizontal;
+  } else {
+    return kDotOffsetXVertical;
+  }
+}
+
+// Returns the Y offset of the first dot.
+- (CGFloat)firstDotYOffset {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kDotOffsetYHorizontal;
+  } else {
+    return kDotOffsetYVertical;
+  }
+}
+
+// Returns the vertical spacing between two dots.
+- (CGFloat)verticalSpacing {
+  if (IsUIRefreshPhase1Enabled()) {
+    return 0;
+  } else {
+    return kVerticalSpaceBetweenDots;
+  }
+}
+
+// Returns the horizontal spacing between two dots.
+- (CGFloat)horizontalSpacing {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kHorizontalSpaceBetweenDots;
+  } else {
+    return 0;
+  }
+}
+
+// Returns the width of a segment used in animation.
+- (CGFloat)segmentWidth {
+  if (IsUIRefreshPhase1Enabled()) {
+    return 0;
+  } else {
+    return kMaxWidthOfStroke;
+  }
+}
+
+// Returns the height of a segment used in animation.
+- (CGFloat)segmentHeight {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kMaxWidthOfStroke;
+  } else {
+    return 0;
+  }
 }
 
 @end
