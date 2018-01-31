@@ -7,6 +7,7 @@ include_rules = [
   "+cc/output",
   "+cc/resources",
   "+cc/scheduler",
+  "+components/viz/service/surfaces",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/GLES2",
@@ -28,6 +29,7 @@ specific_include_rules = {
   ],
   ".*_(unit|pixel|perf)test\.cc": [
     "+cc/test",
+    "+components/viz/service/display_embedder",
     "+components/viz/service/frame_sinks",
     "+components/viz/test",
     "+gpu/GLES2",
