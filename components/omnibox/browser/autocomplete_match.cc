@@ -26,6 +26,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -185,8 +186,15 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 }
 
 // static
-const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
+const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
+                                                           bool is_bookmark) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  const bool is_touch_ui =
+      base::FeatureList::IsEnabled(features::kTouchableChrome);
+
+  if (is_bookmark)
+    return is_touch_ui ? omnibox::kTouchableBookmarkIcon : omnibox::kStarIcon;
+
   switch (type) {
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:
@@ -199,7 +207,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
     case Type::CLIPBOARD:
     case Type::PHYSICAL_WEB:
     case Type::PHYSICAL_WEB_OVERFLOW:
-      return omnibox::kHttpIcon;
+      return is_touch_ui ? omnibox::kTouchablePageIcon : omnibox::kHttpIcon;
 
     case Type::TAB_SEARCH:
       return omnibox::kTabIcon;
@@ -213,7 +221,8 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
     case Type::VOICE_SUGGEST:
-      return vector_icons::kSearchIcon;
+      return is_touch_ui ? omnibox::kTouchableSearchIcon
+                         : vector_icons::kSearchIcon;
 
     case Type::EXTENSION_APP:
       return omnibox::kExtensionAppIcon;

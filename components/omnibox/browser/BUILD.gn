@@ -31,6 +31,9 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "star.1x.icon",
     "star.icon",
     "tab.icon",
+    "touchable_bookmark.icon",
+    "touchable_page.icon",
+    "touchable_search.icon",
   ]
 }
 
