@@ -36,6 +36,8 @@
 @property(nonatomic, strong, readonly) ToolbarButton* bookmarkButton;
 // Button to display the tools menu.
 @property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
+// Button to display the tools menu.
+@property(nonatomic, strong, readonly) ToolbarButton* omniboxButton;
 
 // The following 2 properties are for the two buttons to navigate forward that
 // are visible in various mutually exclusive configurations of the toolbar.

@@ -12431,12 +12431,26 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileToolbarOmniboxShortcut">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed the omnibox shortcut on the toolbar. iOS only.
+  </description>
+</action>
+
 <action name="MobileToolbarReload">
   <owner>tedchoc@chromium.org</owner>
   <description>
     User pressed the reload icon in the toolbar.  Pre-M55, MobileToolbarReload
     accounted for all reload actions.  M55+, this metric only refers to reloads
     that occurred from the toolbar.
+  </description>
+</action>
+
+<action name="MobileToolbarShareMenu">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed the toolbar's button to open the share menu. iOS only.
   </description>
 </action>
 

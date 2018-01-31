@@ -57,8 +57,6 @@
 
   self.started = YES;
 
-  self.viewController.dispatcher = self.dispatcher;
-
   self.mediator = [[ToolbarMediator alloc] init];
   self.mediator.voiceSearchProvider =
       ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();

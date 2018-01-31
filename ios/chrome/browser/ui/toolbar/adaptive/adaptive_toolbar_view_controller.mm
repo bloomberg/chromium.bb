@@ -5,12 +5,14 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller.h"
 
 #import "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -52,6 +54,11 @@
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   [self updateAllButtonsVisibility];
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self addStandardActionsForAllButtons];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -136,6 +143,46 @@
 - (void)updateAllButtonsVisibility {
   for (ToolbarButton* button in self.view.allButtons) {
     [button updateHiddenInCurrentSizeClass];
+  }
+}
+
+// Registers the actions which will be triggered when tapping a button.
+- (void)addStandardActionsForAllButtons {
+  for (ToolbarButton* button in self.view.allButtons) {
+    if (button != self.view.toolsMenuButton) {
+      [button addTarget:self.dispatcher
+                    action:@selector(cancelOmniboxEdit)
+          forControlEvents:UIControlEventTouchUpInside];
+    }
+    [button addTarget:self
+                  action:@selector(recordUserMetrics:)
+        forControlEvents:UIControlEventTouchUpInside];
+  }
+}
+
+// Records the use of a button.
+- (IBAction)recordUserMetrics:(id)sender {
+  if (sender == self.view.backButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarBack"));
+  } else if (sender == self.view.forwardLeadingButton ||
+             sender == self.view.forwardTrailingButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarForward"));
+  } else if (sender == self.view.reloadButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarReload"));
+  } else if (sender == self.view.stopButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarStop"));
+  } else if (sender == self.view.bookmarkButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarToggleBookmark"));
+  } else if (sender == self.view.toolsMenuButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
+  } else if (sender == self.view.tabGridButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShowStackView"));
+  } else if (sender == self.view.shareButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
+  } else if (sender == self.view.omniboxButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
+  } else {
+    NOTREACHED();
   }
 }
 
