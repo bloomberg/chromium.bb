@@ -232,10 +232,13 @@ void LockManager::QueryState(QueryStateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const url::Origin& origin = bindings_.dispatch_context().origin;
-  if (!base::ContainsKey(origins_, origin))
+  if (!base::ContainsKey(origins_, origin)) {
+    std::move(callback).Run(std::vector<blink::mojom::LockInfoPtr>(),
+                            std::vector<blink::mojom::LockInfoPtr>());
     return;
-  OriginState& state = origins_[origin];
+  }
 
+  OriginState& state = origins_[origin];
   std::move(callback).Run(state.SnapshotRequested(), state.SnapshotHeld());
 }
 
