@@ -612,6 +612,9 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
     cpi->is_arf_filter_off[which_arf] = 1;
   else
     cpi->is_arf_filter_off[which_arf] = 0;
+#if CONFIG_FILM_GRAIN_SHOWEX
+  cpi->common.showable_frame = cpi->is_arf_filter_off[which_arf];
+#endif
 
   frames_to_blur_backward = (frames_to_blur / 2);
   frames_to_blur_forward = ((frames_to_blur - 1) / 2);

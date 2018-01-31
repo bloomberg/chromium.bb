@@ -2209,14 +2209,32 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   pars->random_seed = aom_rb_read_literal(rb, 16);
 
   pars->update_parameters = aom_rb_read_bit(rb);
-  if (!pars->update_parameters) {
-    if (cm->frame_type != INTER_FRAME) {
-      aom_internal_error(
-          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-          "Film grain parameters prediction is only allowed in inter-frames");
-    }
+
+  if (!pars->update_parameters && cm->frame_type != INTER_FRAME) {
+    aom_internal_error(
+        &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+        "Film grain parameters prediction is only allowed in inter-frames");
     return;
   }
+
+#if CONFIG_FILM_GRAIN_SHOWEX
+  if (!pars->update_parameters) {
+    // inherit parameters from a previous reference frame
+    RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
+    int film_grain_params_ref_idx = aom_rb_read_literal(rb, 3);
+    int buf_idx = cm->ref_frame_map[film_grain_params_ref_idx];
+    if (!frame_bufs[buf_idx].film_grain_params_present) {
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "Film grain reference parameters not available");
+    }
+    uint16_t random_seed = pars->random_seed;
+    *pars = frame_bufs[buf_idx].film_grain_params;  // inherit paramaters
+    pars->random_seed = random_seed;                // with new random seed
+    return;
+  }
+#else
+  if (!pars->update_parameters) return;
+#endif
 
   // Scaling functions parameters
 
@@ -2745,8 +2763,18 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->lf.filter_level[1] = 0;
     cm->show_frame = 1;
 
+#if CONFIG_FILM_GRAIN_SHOWEX
+    if (!frame_bufs[frame_to_show].showable_frame) {
+      aom_merge_corrupted_flag(&xd->corrupted, 1);
+    }
+    frame_bufs[frame_to_show].showable_frame = 0;
+#endif
 #if CONFIG_FILM_GRAIN
+#if CONFIG_FILM_GRAIN_SHOWEX
+    cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
+#else
     av1_read_film_grain(cm, rb);
+#endif
 #endif
 
 #if CONFIG_FWD_KF
@@ -2898,6 +2926,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
     if (cm->intra_only) {
+#if CONFIG_FILM_GRAIN
+      cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
+#endif
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
 #if CONFIG_FRAME_SIZE
       setup_frame_size(cm, frame_size_override_flag, rb);
@@ -3243,10 +3274,25 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
+#if CONFIG_FILM_GRAIN_SHOWEX
+  cm->showable_frame = 0;
+  if (!cm->show_frame) {
+    // See if this frame can be used as show_existing_frame in future
+    cm->showable_frame = aom_rb_read_bit(rb);
+  }
+  cm->cur_frame->showable_frame = cm->showable_frame;
+#endif
 #if CONFIG_FILM_GRAIN
+  cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
+#if CONFIG_FILM_GRAIN_SHOWEX
+  if (cm->show_frame || cm->showable_frame) {
+    av1_read_film_grain(cm, rb);
+  }
+#else
   if (cm->show_frame) {
     av1_read_film_grain(cm, rb);
   }
+#endif
 #endif
 
 #if !CONFIG_TILE_INFO_FIRST

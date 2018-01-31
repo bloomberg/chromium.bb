@@ -152,7 +152,11 @@ typedef struct {
   int width;
   int height;
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
+#if CONFIG_FILM_GRAIN_SHOWEX
+  int showable_frame;  // frame can be used as show existing frame in future
+#endif
 #if CONFIG_FILM_GRAIN
+  int film_grain_params_present;
   aom_film_grain_t film_grain_params;
 #endif
   aom_codec_frame_buffer_t raw_frame_buffer;
@@ -296,6 +300,9 @@ typedef struct AV1Common {
   FRAME_TYPE frame_type;
 
   int show_frame;
+#if CONFIG_FILM_GRAIN_SHOWEX
+  int showable_frame;  // frame can be used as show existing frame in future
+#endif
   int last_show_frame;
   int show_existing_frame;
   // Flag for a frame used as a reference - not written to the bitstream
