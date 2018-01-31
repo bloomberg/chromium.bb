@@ -382,6 +382,7 @@ Still reading?
   <issue id="UsesMinSdkAttributes" severity="Error">
     <ignore regexp="AndroidManifest.xml"/>
   </issue>
+  <!-- TODO(crbug.com/807734): Investigate and possible remove this -->
   <issue id="UseSparseArrays" severity="ignore"/>
   <issue id="ValidFragment" severity="Error">
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java"/>

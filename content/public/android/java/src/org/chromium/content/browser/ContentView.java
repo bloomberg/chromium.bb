@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
@@ -15,7 +14,6 @@ import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
@@ -178,7 +176,6 @@ public class ContentView extends FrameLayout
         return getEventForwarder().onDragEvent(event, this);
     }
 
-    @SuppressLint("ClickableViewAccessibility") // TODO(crbug.com/799070): Fix this.
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return getEventForwarder().onTouchEvent(event);
