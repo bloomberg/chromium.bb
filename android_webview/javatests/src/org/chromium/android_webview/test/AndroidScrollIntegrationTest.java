@@ -324,6 +324,13 @@ public class AndroidScrollIntegrationTest {
         final int targetScrollYPix = (int) Math.ceil(targetScrollYCss * deviceDIPScale);
         final JavascriptEventObserver onscrollObserver = new JavascriptEventObserver();
 
+        double expectedScrollXCss = targetScrollXCss;
+        double expectedScrollYCss = targetScrollYCss;
+        if (UseZoomForDSFPolicy.isUseZoomForDSFEnabled()) {
+            expectedScrollXCss = (double) targetScrollXPix / deviceDIPScale;
+            expectedScrollYCss = (double) targetScrollYPix / deviceDIPScale;
+        }
+
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() ->
                 onscrollObserver.register(testContainerView.getWebContents(), "onscrollObserver"));
 
@@ -332,8 +339,8 @@ public class AndroidScrollIntegrationTest {
         scrollToOnMainSync(testContainerView, targetScrollXPix, targetScrollYPix);
 
         onscrollObserver.waitForEvent(WAIT_TIMEOUT_MS);
-        assertScrollInJs(testContainerView.getAwContents(), contentsClient,
-                targetScrollXCss, targetScrollYCss);
+        assertScrollInJs(testContainerView.getAwContents(), contentsClient, expectedScrollXCss,
+                expectedScrollYCss);
     }
 
     @Test
