@@ -479,6 +479,11 @@
       "whitelist": [
         "B44D08FD98F1523ED5837D78D0A606EA9D6206E5"  // Web Store
       ]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["platform_app"],
+      "session_types": ["kiosk"]
     }
   ],
   "mediaGalleries": {

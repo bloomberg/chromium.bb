@@ -171,6 +171,11 @@ void TestExtensionsBrowserClient::PermitExternalProtocolHandler() {
 
 bool TestExtensionsBrowserClient::IsRunningInForcedAppMode() { return false; }
 
+bool TestExtensionsBrowserClient::IsAppModeForcedForApp(
+    const ExtensionId& extension_id) {
+  return false;
+}
+
 bool TestExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
   return false;
 }

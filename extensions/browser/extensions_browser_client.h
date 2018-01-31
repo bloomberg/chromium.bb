@@ -15,6 +15,7 @@
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -185,6 +186,10 @@ class ExtensionsBrowserClient {
 
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;
+
+  // Returns whether the system is run in forced app mode for app with the
+  // provided extension ID.
+  virtual bool IsAppModeForcedForApp(const ExtensionId& id) = 0;
 
   // Return true if the user is logged in as a public session.
   virtual bool IsLoggedInAsPublicAccount() = 0;
