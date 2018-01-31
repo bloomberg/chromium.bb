@@ -5,24 +5,17 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarButton ()
-// Constraints for the named layout guide.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* namedGuideConstraints;
-@end
-
 @implementation ToolbarButton
 @synthesize visibilityMask = _visibilityMask;
 @synthesize guideName = _guideName;
-@synthesize constraintPriority = _constraintPriority;
 @synthesize hiddenInCurrentSizeClass = _hiddenInCurrentSizeClass;
 @synthesize hiddenInCurrentState = _hiddenInCurrentState;
-@synthesize namedGuideConstraints = _namedGuideConstraints;
 
 + (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage
                             imageForHighlightedState:(UIImage*)highlightedImage
@@ -34,7 +27,6 @@
   [button setImage:highlightedImage forState:UIControlStateSelected];
   button.titleLabel.textAlignment = NSTextAlignmentCenter;
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  button.constraintPriority = UILayoutPriorityRequired;
   return button;
 }
 
@@ -50,14 +42,6 @@
     self.imageView.frame = AlignRectToPixel(self.imageView.frame);
     self.titleLabel.frame = self.bounds;
   }
-}
-
-#pragma mark - Property accessors
-
-- (void)setGuideName:(GuideName*)guideName {
-  _guideName = guideName;
-  [NSLayoutConstraint deactivateConstraints:self.namedGuideConstraints];
-  self.namedGuideConstraints = nil;
 }
 
 #pragma mark - Public Methods
@@ -113,30 +97,29 @@
 // Checks if the button should be visible based on its hiddenInCurrentSizeClass
 // and hiddenInCurrentState properties, then updates its visibility accordingly.
 - (void)setHiddenForCurrentStateAndSizeClass {
+  BOOL previouslyHidden = self.hidden;
   self.hidden = self.hiddenInCurrentState || self.hiddenInCurrentSizeClass;
 
-  if (!self.namedGuideConstraints && self.guideName) {
-    // The guide name can be set before the button is added to the view
-    // hierarchy. Checking here if the constraints are set to prevent it.
-    UILayoutGuide* guide = FindNamedGuide(_guideName, self);
+  if (!self.hidden && previouslyHidden != self.hidden && self.guideName) {
+    // The button is appearing. At this point, if it has a layout guide
+    // associated, it should constraint it to itself.
+    UILayoutGuide* guide = FindNamedGuide(self.guideName, self);
     if (!guide)
       return;
 
-    self.namedGuideConstraints = @[
-      [guide.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-      [guide.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-      [guide.topAnchor constraintEqualToAnchor:self.topAnchor],
-      [guide.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
-    ];
-    for (NSLayoutConstraint* constraint in self.namedGuideConstraints) {
-      constraint.priority = self.constraintPriority;
-    }
-  }
+    // Removes the layout guide from its superview and re-add it to deactivate
+    // all constraints associated with this layout guide. As the layout guide is
+    // supposed to be associated only with this button and all components using
+    // those layout guide should close themselves when size class is changing,
+    // it should work.
+    UIView* guideOwner = guide.owningView;
+    [guideOwner removeLayoutGuide:guide];
+    [guideOwner addLayoutGuide:guide];
 
-  if (self.hidden) {
-    [NSLayoutConstraint deactivateConstraints:self.namedGuideConstraints];
-  } else {
-    [NSLayoutConstraint activateConstraints:self.namedGuideConstraints];
+    AddSameConstraints(guide, self);
+
+    // Make sure the constraints are taken into account.
+    [guideOwner layoutIfNeeded];
   }
 }
 

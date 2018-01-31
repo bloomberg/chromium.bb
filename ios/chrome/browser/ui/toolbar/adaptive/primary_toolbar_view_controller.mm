@@ -80,21 +80,11 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Adds the layout guide to the buttons. Adds the priorities such as the
-  // layout guide constraints does not conflict with others set by other
-  // toolbar.
+  // Adds the layout guide to the buttons.
   self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
-  self.view.toolsMenuButton.constraintPriority =
-      kPrimaryToolbarTrailingButtonPriority;
   self.view.forwardLeadingButton.guideName = kForwardButtonGuide;
-  self.view.forwardLeadingButton.constraintPriority =
-      kPrimaryToolbarLeadingButtonPriority;
   self.view.forwardTrailingButton.guideName = kForwardButtonGuide;
-  self.view.forwardTrailingButton.constraintPriority =
-      kPrimaryToolbarTrailingButtonPriority;
   self.view.backButton.guideName = kBackButtonGuide;
-  self.view.backButton.constraintPriority =
-      kPrimaryToolbarLeadingButtonPriority;
 
   // Add navigation popup menu triggers.
   [self addLongPressGestureToView:self.view.backButton];

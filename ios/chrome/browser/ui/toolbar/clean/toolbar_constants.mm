@@ -39,17 +39,6 @@ const CGFloat kBackButtonImageInset = -9;
 const CGFloat kForwardButtonImageInset = -7;
 const CGFloat kLeadingLocationBarButtonImageInset = 15;
 
-// The priority is not UILayoutPriorityHigh as it should be
-// UILayoutPriorityRequired aside from the very small time interval during
-// which they are conflicting. Also, it allows to have potentially more
-// priorities.
-const UILayoutPriority kPrimaryToolbarLeadingButtonPriority =
-    UILayoutPriorityRequired;
-const UILayoutPriority kPrimaryToolbarTrailingButtonPriority =
-    kPrimaryToolbarLeadingButtonPriority - 1;
-const UILayoutPriority kSecondaryToolbarButtonPriority =
-    kPrimaryToolbarTrailingButtonPriority - 1;
-
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
 
 const LayoutOffset kToolbarButtonAnimationOffset = -10.0;

@@ -17,6 +17,11 @@
 
 // ViewController for the adaptive toolbar. This ViewController is the super
 // class of the different implementation (primary or secondary).
+// This class and its subclasses are constraining some named layout guides to
+// their buttons. All of those constraints are dropped upon size class changes
+// and rotations. Any view constrained to a layout guide is expected to be
+// dismissed on such events. For example, the tools menu is closed upon
+// rotation.
 @interface AdaptiveToolbarViewController : UIViewController<ToolbarConsumer>
 
 // Button factory.
