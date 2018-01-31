@@ -24,19 +24,6 @@ namespace blink {
 
 namespace {
 
-static const char descriptorNamesStringPool[]  = {
-{% for descriptor in descriptors %}
-  "{{descriptor.name}}\0"
-{% endfor %}
-};
-
-static const unsigned short descriptorStringOffsets[] = {
-  0, // Invalid. Should not be reached.
-{% for offset in descriptor_offsets %}
-  {{offset}},
-{% endfor %}
-};
-
 %}
 
 %struct-type
@@ -97,15 +84,6 @@ static AtRuleDescriptorID AsAtRuleDescriptorID(
 
 }  // namespace
 
-const char* GetDescriptorName(AtRuleDescriptorID descriptor_id) {
-  DCHECK_NE(AtRuleDescriptorID::Invalid, descriptor_id);
-  DCHECK_LT(static_cast<unsigned short>(descriptor_id), numAtRuleDescriptors);
-  unsigned short id = static_cast<unsigned short>(descriptor_id);
-  unsigned short offset = descriptorStringOffsets[id];
-  return &descriptorNamesStringPool[offset];
-}
-
-
 AtRuleDescriptorID AsAtRuleDescriptorID(StringView string) {
   unsigned length = string.length();
   return string.Is8Bit()
@@ -132,6 +110,7 @@ AtRuleDescriptorID CSSPropertyIDAsAtRuleDescriptor(CSSPropertyID id) {
     return AtRuleDescriptorID::{{descriptor.upper_camel_name}};
 {% endfor %}
   default:
+    NOTREACHED();
     return AtRuleDescriptorID::Invalid;
   }
 }

@@ -42,8 +42,7 @@ class AtRuleNamesWriter(json5_generator.Writer):
                 descriptor['name'])
             descriptor['enum_value'] = first_descriptor_id + offset
             self._character_offsets.append(chars_used)
-            # Add 1 to account for null terminator.
-            chars_used = chars_used + len(descriptor['name']) + 1
+            chars_used += len(descriptor['name'])
             self._longest_name_length = max(
                 len(descriptor['name']),
                 len(descriptor['alias']),

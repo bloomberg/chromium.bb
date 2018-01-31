@@ -18,20 +18,9 @@ enum class AtRuleDescriptorID {
 {% endfor %}
 };
 
-struct AtRuleDescriptorIDHash {
-  STATIC_ONLY(AtRuleDescriptorIDHash);
-  static unsigned GetHash(AtRuleDescriptorID id) {
-    return WTF::HashInt(static_cast<unsigned>(id));
-  }
-  static bool Equal(AtRuleDescriptorID a, AtRuleDescriptorID b) {
-    return a == b;
-  }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
 const int numAtRuleDescriptors = {{descriptors_count}};
 
-const char* GetDescriptorName(AtRuleDescriptorID);
+const char* getValueName(AtRuleDescriptorID);
 
 AtRuleDescriptorID AsAtRuleDescriptorID(StringView string);
 
@@ -39,12 +28,5 @@ CSSPropertyID AtRuleDescriptorIDAsCSSPropertyID(AtRuleDescriptorID);
 AtRuleDescriptorID CSSPropertyIDAsAtRuleDescriptor(CSSPropertyID id);
 
 } // namespace blink
-
-namespace WTF {
-template <>
-struct DefaultHash<blink::AtRuleDescriptorID> {
-  using Hash = blink::AtRuleDescriptorIDHash;
-};
-} // namespace WTF
 
 #endif  // AtRuleDescriptors_h

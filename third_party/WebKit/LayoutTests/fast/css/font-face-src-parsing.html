@@ -1,198 +1,165 @@
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
 <!-- Valid src descriptor rules. -->
 <style>
 @font-face {
-  font-family: Font1;
-  src: url(font.ttf);
+    src: url(font.ttf);
 }
 @font-face {
-  font-family: Font2;
-  src: url(http://foo/bar/font.ttf);
+    src: url(http://foo/bar/font.ttf);
 }
 @font-face {
-  font-family: Font3;
-  src: url(font.svg#id);
+    src: url(font.svg#id);
 }
 @font-face {
-  font-family: Font4;
-  src: url(font.ttf) format("truetype");
+    src: url(font.ttf) format("truetype");
 }
 @font-face {
-  font-family: Font5;
-  src: url(font.woff) format("woff"), local(font2);
+    src: url(font.woff) format("woff"), local(font2);
 }
 @font-face {
-  font-family: Font6;
-  src: url(font.ttf) format("truetype"), url(font2.ttf);
+    src: url(font.ttf) format("truetype"), url(font2.ttf);
 }
 @font-face {
-  font-family: Font7;
-  src: url(font.ttf), url(font2.ttf) format("truetype");
+    src: url(font.ttf), url(font2.ttf) format("truetype");
 }
 @font-face {
-  font-family: Font8;
-  src: url(font.ttf), local(font2), url(font3.otf) format("opentype"), local(foo bar);
+    src: url(font.ttf), local(font2), url(font3.otf) format("opentype"), local(foo bar);
 }
 @font-face {
-  font-family: Font9;
-  src: url("font3.otf") format("opentype"), local("foo bar");
+    src: local(foo);
 }
 @font-face {
-  font-family: Font10;
-  src: local(foo);
+    src: local(font), local(foo bar);
 }
 @font-face {
-  font-family: Font11;
-  src: local(font), local(foo bar);
+    src: local("foo");
 }
 @font-face {
-  font-family: Font12;
-  src: local("foo");
+    src: local("\"foo\"");
 }
 @font-face {
-  font-family: Font13;
-  src: local("\"foo\"");
+    src: local(" foo");
 }
 @font-face {
-  font-family: Font14;
-  src: local(" foo");
+    src: local("foo ");
 }
 @font-face {
-  font-family: Font15;
-  src: local("foo ");
+    src: local(" foo ");
 }
 @font-face {
-  font-family: Font16;
-  src: local(" foo ");
+    src: local("foo bar");
 }
 @font-face {
-  font-family: Font17;
-  src: local("foo bar");
+    src: local('w\\d w');
 }
 @font-face {
-  font-family: Font18;
-  src: local('w\\d w');
+    src: local(' x x\\9 x ');
 }
 @font-face {
-  font-family: Font19;
-  src: local(' x x\\9 x ');
-}
-@font-face {
-  font-family: Font20;
-  src: local('y y\\9 y');
+    src: local('y y\\9 y');
 }
 </style>
 
 <!-- Invalid src descriptor rules. -->
 <style>
 @font-face {
-  font-family: Font21;
-  src: url(font.ttf invalid);
+    src: url(font.ttf invalid);
 }
 @font-face {
-  font-family: Font22;
-  src: url(font.ttf),;
+    src: url(font.ttf),;
 }
 @font-face {
-  font-family: Font23;
-  src: url(font.ttf), local(font2),;
+    src: url(font.ttf), local(font2),;
 }
 @font-face {
-  font-family: Font24;
-  src: ,local(font);
+    src: ,local(font);
 }
 @font-face {
-  font-family: Font25;
-  src: url(font.ttf), invalid();
+    src: url(font.ttf), invalid();
 }
 @font-face {
-  font-family: Font26;
-  src: url(foo.ttf) invalid;
+    src: url(foo.ttf) invalid;
 }
 
 @font-face {
-  font-family: Font27;
-  src: url(foo.ttf), invalid;
+    src: url(foo.ttf), invalid;
 }
 @font-face {
-  font-family: Font28;
-  src: url(foo.ttf) "invalid";
+    src: url(foo.ttf) "invalid";
 }
 @font-face {
-  font-family: Font29;
-  src: url(foo.ttf) !important;
+    src: url(foo.ttf) !important;
 }
 @font-face {
-  font-family: Font30;
-  src: initial;
+    src: initial;
 }
 @font-face {
-  font-family: Font31;
-  src: inherit;
+    src: inherit;
 }
 @font-face {
-  font-family: Font32;
-  src: unset;
+    src: unset;
 }
 </style>
+<p>Test parsing the src descriptor of @font-face.</p>
+
+<p>Valid rules form the stylesheet:</p>
+<div id="validResult"></div>
+
+<p>Expected result for valid rules:</p>
+<pre id="validExpected">
+@font-face { src: url("font.ttf"); }
+@font-face { src: url("http://foo/bar/font.ttf"); }
+@font-face { src: url("font.svg#id"); }
+@font-face { src: url("font.ttf") format("truetype"); }
+@font-face { src: url("font.woff") format("woff"), local("font2"); }
+@font-face { src: url("font.ttf") format("truetype"), url("font2.ttf"); }
+@font-face { src: url("font.ttf"), url("font2.ttf") format("truetype"); }
+@font-face { src: url("font.ttf"), local("font2"), url("font3.otf") format("opentype"), local("foo bar"); }
+@font-face { src: url("font3.otf") format("opentype"), local("foo bar"); }
+@font-face { src: local("foo"); }
+@font-face { src: local("font"), local("foo bar"); }
+@font-face { src: local("foo"); }
+@font-face { src: local("\"foo\""); }
+@font-face { src: local(" foo"); }
+@font-face { src: local("foo "); }
+@font-face { src: local(" foo "); }
+@font-face { src: local("foo bar"); }
+@font-face { src: local("w\d w"); }
+@font-face { src: local(" x x\9 x "); }
+@font-face { src: local("y y\9 y"); }
+</pre>
+
+<p>Invalid rules form the stylesheet:</p>
+<pre id="invalidResult"></pre>
+
+<p>Expected result for invalid rules:</p>
+<pre id="invalidExpected">@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
+</pre>
 
 <script>
-const expectedSerializationForValidValues = [
-  '@font-face { font-family: Font1; src: url("font.ttf"); }',
-  '@font-face { font-family: Font2; src: url("http://foo/bar/font.ttf"); }',
-  '@font-face { font-family: Font3; src: url("font.svg#id"); }',
-  '@font-face { font-family: Font4; src: url("font.ttf") format("truetype"); }',
-  '@font-face { font-family: Font5; src: url("font.woff") format("woff"), local("font2"); }',
-  '@font-face { font-family: Font6; src: url("font.ttf") format("truetype"), url("font2.ttf"); }',
-  '@font-face { font-family: Font7; src: url("font.ttf"), url("font2.ttf") format("truetype"); }',
-  '@font-face { font-family: Font8; src: url("font.ttf"), local("font2"), url("font3.otf") format("opentype"), local("foo bar"); }',
-  '@font-face { font-family: Font9; src: url("font3.otf") format("opentype"), local("foo bar"); }',
-  '@font-face { font-family: Font10; src: local("foo"); }',
-  '@font-face { font-family: Font11; src: local("font"), local("foo bar"); }',
-  '@font-face { font-family: Font12; src: local("foo"); }',
-  '@font-face { font-family: Font13; src: local("\\"foo\\""); }',
-  '@font-face { font-family: Font14; src: local(" foo"); }',
-  '@font-face { font-family: Font15; src: local("foo "); }',
-  '@font-face { font-family: Font16; src: local(" foo "); }',
-  '@font-face { font-family: Font17; src: local("foo bar"); }',
-  '@font-face { font-family: Font18; src: local("w\\\\d w"); }',
-  '@font-face { font-family: Font19; src: local(" x x\\\\9 x "); }',
-  '@font-face { font-family: Font20; src: local("y y\\\\9 y"); }',
-];
+if (window.testRunner)
+    testRunner.dumpAsText();
 
 var validRules = document.styleSheets[0].cssRules;
+var result = '';
 for (var i = 0; i < validRules.length; ++i) {
-  const expected = expectedSerializationForValidValues[i];
-  test(() => {
-    assert_equals(
-        validRules[i].cssText.replace(/file:.*LayoutTests\/fast\/css\//, ''),
-        expected);
-  }, expected + ' round trips through parsing and serialization');
+    var itemText = validRules.item(i).cssText.replace(/file:.*LayoutTests\/fast\/css\//, '');
+    result += itemText + '\n';
 }
-
-const expectedSerializationForInvalidValues = [
-  {src: 'url(font.ttf invalid)', expected: '@font-face { font-family: Font21; }'},
-  {src: 'url(font.ttf),', expected: '@font-face { font-family: Font22; }'},
-  {src: 'url(font.ttf), local(font2),', expected: '@font-face { font-family: Font23; }'},
-  {src: ',local(font)', expected: '@font-face { font-family: Font24; }'},
-  {src: 'url(font.ttf), invalid()', expected: '@font-face { font-family: Font25; }'},
-  {src: 'url(foo.ttf) invalid', expected: '@font-face { font-family: Font26; }'},
-  {src: 'url(foo.ttf), invalid', expected: '@font-face { font-family: Font27; }'},
-  {src: 'url(foo.ttf) "invalid"', expected: '@font-face { font-family: Font28; }'},
-  {src: 'url(foo.ttf) !important', expected: '@font-face { font-family: Font29; }'},
-  {src: 'initial', expected: '@font-face { font-family: Font30; }'},
-  {src: 'inherit', expected: '@font-face { font-family: Font31; }'},
-  {src: 'unset', expected: '@font-face { font-family: Font32; }'},
-];
+document.getElementById('validResult').innerText = result;
 
 var invalidRules = document.styleSheets[1].cssRules;
+result = '';
 for (var i = 0; i < invalidRules.length; ++i) {
-  var value = expectedSerializationForInvalidValues[i];
-  test(() => {
-    assert_equals(
-        invalidRules[i].cssText.replace(/file:.*LayoutTests\/fast\/css\//, ''),
-        value.expected);
-  }, 'Invalid src value "' + value.src + '" fails to parse');
+    var itemText = invalidRules.item(i).cssText.replace(/file:.*LayoutTests\/fast\/css\//, '');
+    result += itemText + '\n';
 }
+document.getElementById('invalidResult').innerText = result;
 </script>

@@ -206,13 +206,6 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDeclaration(
   return ParseFontFaceDescriptor(id, range, context);
 }
 
-CSSValue* AtRuleDescriptorParser::ParseAtRule(AtRuleDescriptorID id,
-                                              const String& value,
-                                              const CSSParserContext& context) {
-  // TODO(meade): Handle other descriptor types here.
-  return ParseFontFaceDescriptor(id, value, context);
-}
-
 bool AtRuleDescriptorParser::ParseAtRule(
     AtRuleDescriptorID id,
     CSSParserTokenRange& range,

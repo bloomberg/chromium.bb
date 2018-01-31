@@ -16,7 +16,6 @@
 #include "core/css/StyleRuleNamespace.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/AtRuleDescriptorParser.h"
-#include "core/css/parser/AtRuleDescriptorValueSet.h"
 #include "core/css/parser/CSSAtRuleID.h"
 #include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSLazyPropertyParserImpl.h"
@@ -200,8 +199,6 @@ bool CSSParserImpl::ParseDeclarationList(
   StyleRule::RuleType rule_type = StyleRule::kStyle;
   if (declaration->CssParserMode() == kCSSViewportRuleMode)
     rule_type = StyleRule::kViewport;
-  if (declaration->CssParserMode() == kCSSFontFaceRuleMode)
-    rule_type = StyleRule::kFontFace;
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
   parser.ConsumeDeclarationList(stream, rule_type);
@@ -707,12 +704,8 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
     style_sheet_->SetHasFontFaceRule();
 
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
-  StyleRuleFontFace* result =
-      StyleRuleFontFace::Create(AtRuleDescriptorValueSet::Create(
-          parsed_properties_, kCSSFontFaceRuleMode,
-          AtRuleDescriptorValueSet::kFontFaceType));
-  parsed_properties_.clear();
-  return result;
+  return StyleRuleFontFace::Create(
+      CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
