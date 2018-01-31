@@ -42,10 +42,8 @@ struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
   TransmissionType transmission_type;
   // In flight packets have not been abandoned or lost.
   bool in_flight;
-  // True if the packet can never be acked, so it can be removed.  Occurs when
-  // a packet is never sent, after it is acknowledged once, or if it's a crypto
-  // packet we never expect to receive an ack for.
-  bool is_unackable;
+  // State of this packet.
+  SentPacketState state;
   // True if the packet contains stream data from the crypto stream.
   bool has_crypto_handshake;
   // Non-zero if the packet needs padding if it's retransmitted.

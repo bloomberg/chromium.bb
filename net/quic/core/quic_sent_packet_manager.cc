@@ -14,6 +14,7 @@
 #include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_pending_retransmission.h"
+#include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
@@ -297,7 +298,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       // These packets are still in flight.
       break;
     }
-    if (it->is_unackable) {
+    if (!QuicUtils::IsAckable(it->state)) {
       continue;
     }
     if (!ack_frame.packets.Contains(packet_number)) {
@@ -481,7 +482,7 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   }
   unacked_packets_.RemoveFromInFlight(info);
   unacked_packets_.RemoveRetransmittability(info);
-  info->is_unackable = true;
+  info->state = ACKED;
 }
 
 bool QuicSentPacketManager::HasUnackedPackets() const {

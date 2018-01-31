@@ -2199,9 +2199,6 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
 }
 
 TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
-  SetQuicReloadableFlag(quic_strict_ack_handling,
-                     true);
-
   // clang-format off
   PacketFragments packet = {
       // public flags (8 byte connection_id)

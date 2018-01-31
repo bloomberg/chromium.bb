@@ -114,7 +114,10 @@ void QuicServer::Initialize() {
 QuicServer::~QuicServer() = default;
 
 bool QuicServer::CreateUDPSocketAndListen(const QuicSocketAddress& address) {
-  fd_ = QuicSocketUtils::CreateUDPSocket(address, &overflow_supported_);
+  fd_ = QuicSocketUtils::CreateUDPSocket(
+      address,
+      /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
+      /*send_buffer_size =*/kDefaultSocketReceiveBuffer, &overflow_supported_);
   if (fd_ < 0) {
     QUIC_LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
     return false;

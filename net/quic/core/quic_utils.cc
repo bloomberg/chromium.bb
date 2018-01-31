@@ -259,4 +259,9 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
   QUIC_BUG_IF(buffer_length > 0) << "Failed to copy entire length to buffer.";
 }
 
+// static
+bool QuicUtils::IsAckable(SentPacketState state) {
+  return state != NEVER_SENT && state != ACKED && state != UNACKABLE;
+}
+
 }  // namespace net

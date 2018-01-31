@@ -29,7 +29,9 @@ class QuicSocketUtilsTest : public QuicTest {
 
   int CreateUDPSocket(const QuicSocketAddress& address) {
     bool overflow_supported = false;
-    int fd = QuicSocketUtils::CreateUDPSocket(address, &overflow_supported);
+    int fd = QuicSocketUtils::CreateUDPSocket(
+        address, /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
+        /*send_buffer_size =*/kDefaultSocketReceiveBuffer, &overflow_supported);
     if (fd != -1) {
       open_sockets_.push_back(fd);
     }

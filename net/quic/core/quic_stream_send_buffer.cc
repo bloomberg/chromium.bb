@@ -16,9 +16,7 @@
 namespace net {
 
 BufferedSlice::BufferedSlice(QuicMemSlice mem_slice, QuicStreamOffset offset)
-    : slice(std::move(mem_slice)),
-      offset(offset),
-      outstanding_data_length(slice.length()) {}
+    : slice(std::move(mem_slice)), offset(offset) {}
 
 BufferedSlice::BufferedSlice(BufferedSlice&& other) = default;
 
@@ -31,16 +29,13 @@ bool StreamPendingRetransmission::operator==(
   return offset == other.offset && length == other.length;
 }
 
-QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator,
-                                           bool allow_multiple_acks_for_data)
+QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator)
     : stream_offset_(0),
       allocator_(allocator),
       stream_bytes_written_(0),
       stream_bytes_outstanding_(0),
-      allow_multiple_acks_for_data_(allow_multiple_acks_for_data),
       write_index_(-1),
-      use_write_index_(allow_multiple_acks_for_data_ &&
-                       GetQuicReloadableFlag(quic_use_write_index)) {}
+      use_write_index_(GetQuicReloadableFlag(quic_use_write_index)) {}
 
 QuicStreamSendBuffer::~QuicStreamSendBuffer() {}
 
@@ -178,9 +173,7 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
     return true;
   }
   QuicIntervalSet<QuicStreamOffset> newly_acked(offset, offset + data_length);
-  if (allow_multiple_acks_for_data_) {
-    newly_acked.Difference(bytes_acked_);
-  }
+  newly_acked.Difference(bytes_acked_);
   for (const auto& interval : newly_acked) {
     *newly_acked_length += (interval.max() - interval.min());
   }
@@ -188,54 +181,28 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
     return false;
   }
   stream_bytes_outstanding_ -= *newly_acked_length;
-  if (allow_multiple_acks_for_data_) {
-    bytes_acked_.Add(offset, offset + data_length);
-    pending_retransmissions_.Difference(offset, offset + data_length);
-    while (!buffered_slices_.empty() &&
-           bytes_acked_.Contains(buffered_slices_.front().offset,
-                                 buffered_slices_.front().offset +
-                                     buffered_slices_.front().slice.length())) {
-      // Remove data which stops waiting for acks. Please note, data can be
-      // acked out of order, but send buffer is cleaned up in order.
-      if (use_write_index_) {
-        QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_write_index, 2, 2);
-        QUIC_BUG_IF(write_index_ == 0)
-            << "Fail to advance current_write_slice_. It points to the slice "
-               "whose data has all be written and ACK'ed or ignored. "
-               "current_write_slice_ offset "
-            << buffered_slices_[write_index_].offset << " length "
-            << buffered_slices_[write_index_].slice.length();
-        if (write_index_ > 0) {
-          // If write index is pointing to any slice, reduce the index as the
-          // slices are all shifted to the left by one.
-          --write_index_;
-        }
-      }
-      buffered_slices_.pop_front();
-    }
-    return true;
-  }
-
-  for (BufferedSlice& slice : buffered_slices_) {
-    if (offset < slice.offset) {
-      break;
-    }
-    if (offset >= slice.offset + slice.slice.length()) {
-      continue;
-    }
-    QuicByteCount slice_offset = offset - slice.offset;
-    QuicByteCount removing_length =
-        std::min(data_length, slice.slice.length() - slice_offset);
-    slice.outstanding_data_length -= removing_length;
-    offset += removing_length;
-    data_length -= removing_length;
-  }
-  DCHECK_EQ(0u, data_length);
-
-  // Remove data which stops waiting for acks. Please note, data can be
-  // acked out of order, but send buffer is cleaned up in order.
+  bytes_acked_.Add(offset, offset + data_length);
+  pending_retransmissions_.Difference(offset, offset + data_length);
   while (!buffered_slices_.empty() &&
-         buffered_slices_.front().outstanding_data_length == 0) {
+         bytes_acked_.Contains(buffered_slices_.front().offset,
+                               buffered_slices_.front().offset +
+                                   buffered_slices_.front().slice.length())) {
+    // Remove data which stops waiting for acks. Please note, data can be
+    // acked out of order, but send buffer is cleaned up in order.
+    if (use_write_index_) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_write_index, 2, 2);
+      QUIC_BUG_IF(write_index_ == 0)
+          << "Fail to advance current_write_slice_. It points to the slice "
+             "whose data has all be written and ACK'ed or ignored. "
+             "current_write_slice_ offset "
+          << buffered_slices_[write_index_].offset << " length "
+          << buffered_slices_[write_index_].slice.length();
+      if (write_index_ > 0) {
+        // If write index is pointing to any slice, reduce the index as the
+        // slices are all shifted to the left by one.
+        --write_index_;
+      }
+    }
     buffered_slices_.pop_front();
   }
   return true;

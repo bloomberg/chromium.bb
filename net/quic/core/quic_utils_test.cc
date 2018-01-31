@@ -100,6 +100,16 @@ TEST_F(QuicUtilsTest, ReferenceTest) {
                 reinterpret_cast<const char*>(data.data()), data.size())));
 }
 
+TEST_F(QuicUtilsTest, IsUnackable) {
+  for (size_t i = FIRST_PACKET_STATE; i <= LAST_PACKET_STATE; ++i) {
+    if (i == NEVER_SENT || i == ACKED || i == UNACKABLE) {
+      EXPECT_FALSE(QuicUtils::IsAckable(static_cast<SentPacketState>(i)));
+    } else {
+      EXPECT_TRUE(QuicUtils::IsAckable(static_cast<SentPacketState>(i)));
+    }
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

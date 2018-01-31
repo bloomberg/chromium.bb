@@ -64,9 +64,7 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                            bool fin_acked,
                                            QuicTime::Delta ack_delay_time) {
   QuicIntervalSet<QuicStreamOffset> newly_acked(offset, offset + data_length);
-  if (session()->allow_multiple_acks_for_data()) {
-    newly_acked.Difference(bytes_acked());
-  }
+  newly_acked.Difference(bytes_acked());
   for (const auto& acked : newly_acked) {
     QuicStreamOffset acked_offset = acked.min();
     QuicByteCount acked_length = acked.max() - acked.min();
