@@ -174,9 +174,6 @@ public class WebVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
-    @DisableIf.Build(message = "Flaky on L crbug.com/713781",
-            sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
-            sdk_is_less_than = Build.VERSION_CODES.M)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
