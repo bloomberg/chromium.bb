@@ -49,10 +49,6 @@ vars = {
   # custom_vars.
   'checkout_src_internal': False,
 
-  # By default, do not check out Google's internal dependencies. This can be
-  # overridden e.g. with custom_vars.
-  'checkout_google_internal': False,
-
   # Fetch the additional packages and files needed to run all of the
   # telemetry tests. This is false by default as some stuff is only
   # privately accessible.
@@ -249,11 +245,6 @@ deps = {
   'src/ios/third_party/ochamcrest/src': {
       'url': Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + '92d9c14d13bb864255e65c09383564653896916b',
       'condition': 'checkout_ios',
-  },
-
-  'src/ios_internal': {
-      'url': 'https://chrome-internal.googlesource.com/chrome/ios_internal.git' + '@' + '3fd2cebe6fc1ccd43675a23d492c323aa42e3b81',
-      'condition': 'checkout_ios and checkout_google_internal',
   },
 
   'src/media/cdm/api':
@@ -1377,8 +1368,4 @@ recursedeps = [
   ("src/third_party/angle", "DEPS.chromium"),
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',
-  # src/ios_internal has its own DEPS file (named DEPS.chromium until the
-  # transition to gclient conditions is complete, see http://crbug.com/803846
-  # for progress).
-  ('src/ios_internal', 'DEPS.chromium'),
 ]
