@@ -65,8 +65,7 @@ bool QuicClientEpollNetworkHelper::CreateUDPSocketAndBind(
     int bind_to_port) {
   epoll_server_->set_timeout_in_us(50 * 1000);
 
-  int fd =
-      QuicSocketUtils::CreateUDPSocket(server_address, &overflow_supported_);
+  int fd = CreateUDPSocket(server_address, &overflow_supported_);
   if (fd < 0) {
     return false;
   }
@@ -144,6 +143,11 @@ void QuicClientEpollNetworkHelper::OnEvent(int fd, EpollEvent* event) {
           overflow_supported_ ? &packets_dropped_ : nullptr);
       --times_to_read;
     }
+    if (packets_dropped_ > 100) {
+      QUIC_LOG_FIRST_N(ERROR, 50)
+          << packets_dropped_
+          << " packets droped in the socket receive buffer.";
+    }
     if (client_->connected() && more_to_read) {
       event->out_ready_mask |= EPOLLIN;
     }
@@ -189,4 +193,12 @@ void QuicClientEpollNetworkHelper::ProcessPacket(
   client_->session()->ProcessUdpPacket(self_address, peer_address, packet);
 }
 
+int QuicClientEpollNetworkHelper::CreateUDPSocket(
+    QuicSocketAddress server_address,
+    bool* overflow_supported) {
+  return QuicSocketUtils::CreateUDPSocket(
+      server_address,
+      /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
+      /*send_buffer_size =*/kDefaultSocketReceiveBuffer, overflow_supported);
+}
 }  // namespace net

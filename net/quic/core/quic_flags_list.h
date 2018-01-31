@@ -119,30 +119,17 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing,
           true)
 
-// If true, allow stream data and control frames to be acked multiple times.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2,
-          true)
-
 // If true, calculate stream sequencer buffer block count in a way that
 // guaranteed to be 2048.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2,
           true)
 
-// If true, use deframer from net/quic/http instead of net/http2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_hq_deframer, true)
-
-// If true, then 1) at sender, avoid sending empty acks, 2) at receiver, close
-// connection when a ack frame\'s first block length is 0, unless the ack is
-// completely empty.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_strict_ack_handling, true)
-
 // If true, fixes for the two bugs described in crbug.com/723604 will be
 // enabled.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_2rtt_drop_client_cached_certs,
-          false)
+          true)
 
 // If true, limit quic stream length to be below 2^62.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)

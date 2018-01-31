@@ -121,6 +121,8 @@ class QuicSocketUtils {
   // Returns the created FD if successful, -1 otherwise.
   // |overflow_supported| is set to true if the socket supports it.
   static int CreateUDPSocket(const QuicSocketAddress& address,
+                             int32_t receive_buffer_size,
+                             int32_t send_buffer_size,
                              bool* overflow_supported);
 
  private:

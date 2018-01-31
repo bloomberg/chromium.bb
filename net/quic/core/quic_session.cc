@@ -59,13 +59,8 @@ QuicSession::QuicSession(QuicConnection* connection,
       goaway_received_(false),
       control_frame_manager_(this),
       can_use_slices_(GetQuicReloadableFlag(quic_use_mem_slices)),
-      allow_multiple_acks_for_data_(
-          GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)),
       session_unblocks_stream_(
           GetQuicReloadableFlag(quic_streams_unblocked_by_session)) {
-  if (allow_multiple_acks_for_data_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
-  }
   if (use_control_frame_manager()) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_control_frame_manager);
   }

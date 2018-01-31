@@ -54,9 +54,7 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
                         public QuicStreamFrameDataProducer {
  public:
   explicit PacketCollector(QuicBufferAllocator* allocator)
-      : send_buffer_(
-            allocator,
-            GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {}
+      : send_buffer_(allocator) {}
   ~PacketCollector() override = default;
 
   // QuicPacketCreator::DelegateInterface methods:

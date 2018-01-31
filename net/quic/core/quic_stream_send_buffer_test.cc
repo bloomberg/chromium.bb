@@ -26,10 +26,7 @@ struct iovec MakeIovec(QuicStringPiece data) {
 
 class QuicStreamSendBufferTest : public QuicTest {
  public:
-  QuicStreamSendBufferTest()
-      : send_buffer_(
-            &allocator_,
-            GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
+  QuicStreamSendBufferTest() : send_buffer_(&allocator_) {
     EXPECT_EQ(0u, send_buffer_.size());
     EXPECT_EQ(0u, send_buffer_.stream_bytes_written());
     EXPECT_EQ(0u, send_buffer_.stream_bytes_outstanding());
@@ -106,8 +103,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   // Invalid data copy.
   QuicDataWriter writer3(4000, buf, HOST_BYTE_ORDER);
   EXPECT_FALSE(send_buffer_.WriteStreamData(3000, 1024, &writer3));
-  if (GetQuicReloadableFlag(quic_use_write_index) &&
-      GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
+  if (GetQuicReloadableFlag(quic_use_write_index)) {
     EXPECT_DFATAL(send_buffer_.WriteStreamData(0, 4000, &writer3),
                   "Writer fails to write.");
   } else {
@@ -168,9 +164,6 @@ TEST_F(QuicStreamSendBufferTest, RemoveStreamFrameAcrossBoundries) {
 }
 
 TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
-  if (!GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
-    return;
-  }
   WriteAllData();
   QuicByteCount newly_acked_length;
   EXPECT_TRUE(send_buffer_.OnStreamDataAcked(100, 1500, &newly_acked_length));
@@ -194,9 +187,6 @@ TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
 }
 
 TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
-  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
-    return;
-  }
   WriteAllData();
   EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(0, 3840));
   EXPECT_FALSE(send_buffer_.HasPendingRetransmission());
@@ -238,8 +228,7 @@ TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
 }
 
 TEST_F(QuicStreamSendBufferTest, CurrentWriteIndex) {
-  if (!GetQuicReloadableFlag(quic_use_write_index) ||
-      !GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
+  if (!GetQuicReloadableFlag(quic_use_write_index)) {
     return;
   }
   char buf[4000];

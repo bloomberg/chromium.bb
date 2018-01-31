@@ -36,10 +36,6 @@ struct BufferedSlice {
   QuicMemSlice slice;
   // Location of this data slice in the stream.
   QuicStreamOffset offset;
-  // Length of payload which is outstanding and waiting for acks.
-  // TODO(fayang): remove this field when deprecating
-  // quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
-  QuicByteCount outstanding_data_length;
 };
 
 struct StreamPendingRetransmission {
@@ -61,8 +57,7 @@ struct StreamPendingRetransmission {
 // across slice boundaries.
 class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
  public:
-  explicit QuicStreamSendBuffer(QuicBufferAllocator* allocator,
-                                bool allow_multiple_acks_for_data);
+  explicit QuicStreamSendBuffer(QuicBufferAllocator* allocator);
   QuicStreamSendBuffer(const QuicStreamSendBuffer& other) = delete;
   QuicStreamSendBuffer(QuicStreamSendBuffer&& other) = delete;
   ~QuicStreamSendBuffer();
@@ -153,9 +148,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // Offsets of data that has been acked.
   QuicIntervalSet<QuicStreamOffset> bytes_acked_;
 
-  // Latch value for quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
-  const bool allow_multiple_acks_for_data_;
-
   // Data considered as lost and needs to be retransmitted.
   QuicIntervalSet<QuicStreamOffset> pending_retransmissions_;
 
@@ -163,8 +155,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // time. -1 if send buffer is empty or all data has been written.
   int32_t write_index_;
 
-  // True if quic_reloadable_flag_quic_stream_send_buffer_write_index and
-  // allow_multiple_acks_for_data_ are both true.
+  // Latched value of quic_reloadable_flag_quic_stream_send_buffer_write_index.
   const bool use_write_index_;
 };
 

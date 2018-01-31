@@ -78,7 +78,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
                                    size_t frame_len,
                                    const QuicHeaderList& header_list);
 
-  // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
+  // Sends contents of |iov| to hq_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov, QuicTime timestamp);
 
   // Writes |headers| for the stream |id| to the dedicated headers stream.
@@ -196,16 +196,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   bool IsConnected() { return connection()->connected(); }
 
-  // Sets how much encoded data the hpack decoder of h2_deframer_ is willing to
+  // Sets how much encoded data the hpack decoder of hq_deframer_ is willing to
   // buffer.
   void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
-    if (use_hq_deframer_) {
-      hq_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-          max_decode_buffer_size_bytes);
-    } else {
-      h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-          max_decode_buffer_size_bytes);
-    }
+    hq_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+        max_decode_buffer_size_bytes);
   }
 
   void set_max_uncompressed_header_bytes(
@@ -275,11 +270,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   QuicTime cur_max_timestamp_;
   QuicTime prev_max_timestamp_;
 
-  // TODO(ckrasic): remove |use_hq_deframer_| and |h2_deframer_| when
-  // FLAGS_quic_reloadable_flag_quic_enable_hq_deframer is deprecated.
-  bool use_hq_deframer_;
   SpdyFramer spdy_framer_;
-  Http2DecoderAdapter h2_deframer_;
   QuicHttpDecoderAdapter hq_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 

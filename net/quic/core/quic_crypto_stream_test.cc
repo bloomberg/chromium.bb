@@ -130,9 +130,6 @@ TEST_F(QuicCryptoStreamTest, NoConnectionLevelFlowControl) {
 }
 
 TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
-  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
-    return;
-  }
   InSequence s;
   // Send [0, 1350) in ENCRYPTION_NONE.
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
@@ -169,9 +166,6 @@ TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
 }
 
 TEST_F(QuicCryptoStreamTest, NeuterUnencryptedStreamData) {
-  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
-    return;
-  }
   // Send [0, 1350) in ENCRYPTION_NONE.
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
   string data(1350, 'a');

@@ -219,7 +219,7 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     }
     case PING_FRAME: {
-      os << "type { PING_FRAME } ";
+      os << "type { PING_FRAME } " << frame.ping_frame;
       break;
     }
     case MTU_DISCOVERY_FRAME: {

@@ -258,6 +258,22 @@ enum StreamSendingState {
   FIN_AND_PADDING,
 };
 
+enum SentPacketState : uint8_t {
+  // The packet has been sent and waiting to be acked.
+  OUTSTANDING,
+  FIRST_PACKET_STATE = OUTSTANDING,
+  // The packet was never sent.
+  NEVER_SENT,
+  // The packet has been acked.
+  ACKED,
+  // This packet is not expected to be acked.
+  UNACKABLE,
+
+  // TODO(fayang): Add more packet state corresponding to retransmission types
+  // in TransmissionType.
+  LAST_PACKET_STATE = UNACKABLE,
+};
+
 // Information about a newly acknowledged packet.
 struct AckedPacket {
   AckedPacket(QuicPacketNumber packet_number,

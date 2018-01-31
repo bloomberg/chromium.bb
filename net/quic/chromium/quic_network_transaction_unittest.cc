@@ -2058,14 +2058,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       10, kHeadersStreamId, true, false, settings_offset, settings_data));
 
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        11, true, QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        11, true, QuicTime::Delta::Infinite(), 0, 1, 1,
-        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      11, true, QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
@@ -2162,14 +2156,8 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       12, kHeadersStreamId, true, false, settings_offset, settings_data));
   // RTO 5
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        13, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        13, true, QuicTime::Delta::Infinite(), 0, 1, 1, QUIC_TOO_MANY_RTOS,
-        "5 consecutive retransmission timeouts"));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      13, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2269,14 +2257,8 @@ TEST_P(QuicNetworkTransactionTest,
   quic_data.AddWrite(client_maker_.MakeDataPacket(13, kHeadersStreamId, true,
                                                   false, 0, request_data));
   // RTO 5
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        14, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        14, true, QuicTime::Delta::Infinite(), 0, 1, 1, QUIC_TOO_MANY_RTOS,
-        "5 consecutive retransmission timeouts"));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      14, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2434,14 +2416,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       10, kHeadersStreamId, true, false, settings_offset, settings_data));
 
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        11, true, QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        11, true, QuicTime::Delta::Infinite(), 0, 1, 1,
-        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      11, true, QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
@@ -2560,14 +2536,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       10, kHeadersStreamId, true, false, settings_offset, settings_data));
 
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        11, true, QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        11, true, QuicTime::Delta::Infinite(), 0, 1, 1,
-        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      11, true, QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
@@ -2810,14 +2780,8 @@ TEST_P(QuicNetworkTransactionTest,
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       12, kHeadersStreamId, true, false, settings_offset, settings_data));
 
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        13, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        13, true, QuicTime::Delta::Infinite(), 0, 1, 1, QUIC_TOO_MANY_RTOS,
-        "5 consecutive retransmission timeouts"));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      13, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2943,14 +2907,8 @@ TEST_P(QuicNetworkTransactionTest,
   quic_data.AddWrite(client_maker_.MakeDataPacket(13, kHeadersStreamId, true,
                                                   false, 0, request_data));
   // RTO 5
-  if (FLAGS_quic_reloadable_flag_quic_strict_ack_handling) {
-    quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
-        14, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
-  } else {
-    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
-        14, true, QuicTime::Delta::Infinite(), 0, 1, 1, QUIC_TOO_MANY_RTOS,
-        "5 consecutive retransmission timeouts"));
-  }
+  quic_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      14, true, QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts"));
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);

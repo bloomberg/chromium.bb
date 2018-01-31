@@ -2123,8 +2123,6 @@ TEST_P(QuicConnectionTest, RecordSentTimeBeforePacketSent) {
 
 TEST_P(QuicConnectionTest, FramePacking) {
   // Send two stream frames in 1 packet by queueing them.
-  // If quic_strict_ack_handling is false, the packet
-  // also bundles an empty ack frame and a stop_waiting frame.
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   {
     QuicConnection::ScopedPacketFlusher flusher(&connection_,
@@ -2139,25 +2137,15 @@ TEST_P(QuicConnectionTest, FramePacking) {
   // Parse the last packet and ensure it's an ack and two stream frames from
   // two different streams.
   if (GetParam().no_stop_waiting) {
-    EXPECT_EQ(GetQuicReloadableFlag(quic_strict_ack_handling) ? 2u : 3u,
-              writer_->frame_count());
+    EXPECT_EQ(2u, writer_->frame_count());
     EXPECT_TRUE(writer_->stop_waiting_frames().empty());
   } else {
-    EXPECT_EQ(GetQuicReloadableFlag(quic_strict_ack_handling) ? 2u : 4u,
-              writer_->frame_count());
-
-    if (GetQuicReloadableFlag(quic_strict_ack_handling)) {
-      EXPECT_TRUE(writer_->stop_waiting_frames().empty());
-    } else {
-      EXPECT_FALSE(writer_->stop_waiting_frames().empty());
-    }
+    EXPECT_EQ(2u, writer_->frame_count());
+    EXPECT_TRUE(writer_->stop_waiting_frames().empty());
   }
 
-  if (GetQuicReloadableFlag(quic_strict_ack_handling)) {
-    EXPECT_TRUE(writer_->ack_frames().empty());
-  } else {
-    EXPECT_FALSE(writer_->ack_frames().empty());
-  }
+  EXPECT_TRUE(writer_->ack_frames().empty());
+
   ASSERT_EQ(2u, writer_->stream_frames().size());
   EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0]->stream_id);
   EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1]->stream_id);

@@ -1388,9 +1388,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (GetQuicReloadableFlag(quic_strict_ack_handling) &&
-      first_block_length == 0) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_strict_ack_handling);
+  if (first_block_length == 0) {
     // For non-empty ACKs, the first block length must be non-zero.
     if (largest_acked != 0 || num_ack_blocks != 0) {
       set_detailed_error(

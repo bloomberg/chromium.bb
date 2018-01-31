@@ -81,6 +81,12 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
   // Otherwise, return -1.
   int GetLatestFD() const;
 
+  // Create socket for connection to |server_address| with default socket
+  // options.
+  // Return fd index.
+  virtual int CreateUDPSocket(QuicSocketAddress server_address,
+                              bool* overflow_supported);
+
   QuicClientBase* client() { return client_; }
 
   void set_max_reads_per_epoll_loop(int num_reads) {

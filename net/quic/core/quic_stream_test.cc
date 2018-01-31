@@ -1045,7 +1045,6 @@ TEST_F(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
 }
 
 TEST_F(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
-  SetQuicReloadableFlag(quic_allow_multiple_acks_for_data2, true);
   Initialize(kShouldProcessData);
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
@@ -1102,9 +1101,6 @@ TEST_F(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
 }
 
 TEST_F(QuicStreamTest, OnStreamFrameLost) {
-  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
-    return;
-  }
   Initialize(kShouldProcessData);
 
   // Send [0, 9).
