@@ -953,7 +953,13 @@ Element* Document::createElement(const AtomicString& local_name,
 
   // 2. localName converted to ASCII lowercase
   const AtomicString& converted_local_name = ConvertLocalName(local_name);
+  QualifiedName q_name(g_null_atom, converted_local_name,
+                       IsXHTMLDocument() || IsHTMLDocument()
+                           ? HTMLNames::xhtmlNamespaceURI
+                           : g_null_atom);
 
+  // TODO(tkent): Share the code with createElementNS(namespace_uri,
+  // qualified_name, string_or_options, exception_state).
   bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
   bool create_v1_builtin =
       string_or_options.IsDictionary() &&
@@ -968,7 +974,7 @@ Element* Document::createElement(const AtomicString& local_name,
 
   // 4. Let definition be result of lookup up custom element definition
   CustomElementDefinition* definition = nullptr;
-  if (is_v1) {
+  if (is_v1 && q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
     // Is the runtime flag enabled for customized builtin elements?
     const CustomElementDescriptor desc =
         RuntimeEnabledFeatures::CustomElementsBuiltinEnabled()
@@ -992,20 +998,12 @@ Element* Document::createElement(const AtomicString& local_name,
   Element* element;
 
   if (definition) {
-    element = CustomElement::CreateCustomElementSync(
-        *this, converted_local_name, definition);
+    element = CustomElement::CreateCustomElementSync(*this, q_name, definition);
   } else if (V0CustomElement::IsValidName(local_name) &&
              RegistrationContext()) {
-    element = RegistrationContext()->CreateCustomTagElement(
-        *this,
-        QualifiedName(g_null_atom, converted_local_name, xhtmlNamespaceURI));
+    element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
   } else {
-    element =
-        CreateRawElement(QualifiedName(g_null_atom, converted_local_name,
-                                       IsXHTMLDocument() || IsHTMLDocument()
-                                           ? HTMLNames::xhtmlNamespaceURI
-                                           : g_null_atom),
-                         kCreatedByCreateElement);
+    element = CreateRawElement(q_name, kCreatedByCreateElement);
   }
 
   // 8. If 'is' is non-null, set 'is' attribute

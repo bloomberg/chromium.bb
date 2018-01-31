@@ -103,16 +103,6 @@ HTMLElement* CustomElement::CreateCustomElementSync(
   return CreateCustomElementSync(document, tag_name, definition);
 }
 
-HTMLElement* CustomElement::CreateCustomElementSync(
-    Document& document,
-    const AtomicString& local_name,
-    CustomElementDefinition* definition) {
-  return CreateCustomElementSync(
-      document,
-      QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI),
-      definition);
-}
-
 // https://dom.spec.whatwg.org/#concept-create-element
 HTMLElement* CustomElement::CreateCustomElementSync(
     Document& document,
