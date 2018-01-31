@@ -45,8 +45,9 @@ class CORE_EXPORT IdlenessDetector
 
   // The page is quiet if there are no more than 2 active network requests for
   // this duration of time.
-  static constexpr double kNetworkQuietWindowSeconds = 0.5;
-  static constexpr double kNetworkQuietWatchdogSeconds = 2;
+  static constexpr TimeDelta kNetworkQuietWindow =
+      TimeDelta::FromMilliseconds(500);
+  static constexpr TimeDelta kNetworkQuietWatchdog = TimeDelta::FromSeconds(2);
   static constexpr int kNetworkQuietMaximumConnections = 2;
 
   // scheduler::TaskTimeObserver implementation
@@ -58,9 +59,13 @@ class CORE_EXPORT IdlenessDetector
 
   Member<LocalFrame> local_frame_;
   bool task_observer_added_;
+
+  bool in_network_0_quiet_period_ = true;
+  bool in_network_2_quiet_period_ = true;
+
   // Store the accumulated time of network quiet.
-  double network_0_quiet_ = 0;
-  double network_2_quiet_ = 0;
+  TimeTicks network_0_quiet_;
+  TimeTicks network_2_quiet_;
   // Record the actual start time of network quiet.
   TimeTicks network_0_quiet_start_time_;
   TimeTicks network_2_quiet_start_time_;

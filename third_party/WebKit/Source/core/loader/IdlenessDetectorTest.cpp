@@ -25,12 +25,8 @@ class IdlenessDetectorTest : public PageTestBase {
   }
 
   bool HadNetworkQuiet() {
-    return Detector()->network_2_quiet_ == -1 &&
-           Detector()->network_0_quiet_ == -1;
-  }
-
-  double NetworkQuietStartTime() {
-    return TimeTicksInSeconds(Detector()->network_2_quiet_start_time_);
+    return !Detector()->in_network_2_quiet_period_ &&
+           !Detector()->in_network_0_quiet_period_;
   }
 
   void WillProcessTask(double start_time) {
