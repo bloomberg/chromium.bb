@@ -181,7 +181,9 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
 
     base::FilePath full_path =
         unzipped_path.Append(base::FilePath(unexpected_resource_path));
-    base::WriteFile(full_path, "42", sizeof("42"));
+    const std::string kContent("42");
+    EXPECT_EQ(static_cast<int>(kContent.size()),
+              base::WriteFile(full_path, kContent.data(), kContent.size()));
 
     std::string contents;
     base::ReadFileToString(full_path, &contents);
