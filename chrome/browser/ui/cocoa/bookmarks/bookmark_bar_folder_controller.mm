@@ -590,9 +590,14 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 }
 
 // Set our window level to the right spot so we're above the menubar, dock, etc.
-// Factored out so we can override/noop in a unit test.
+// Factored out so we can override/noop in a unit test. This uses
+// NSStatusWindowLevel specifically so that this menu will be at the same level
+// as the "poof" animation window created by NSShowAnimationEffect(). This is
+// lower than the level of other popup menus (which are at
+// NSPopUpMenuWindowLevel) so this menu *could* get overdrawn by other menus,
+// but that shouldn't happen in practice.
 - (void)configureWindowLevel {
-  [[self window] setLevel:NSPopUpMenuWindowLevel];
+  [[self window] setLevel:NSStatusWindowLevel];
 }
 
 - (int)menuHeightForButtonCount:(int)buttonCount {
@@ -2072,9 +2077,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   else if (buttonCount > 0)
     [self adjustWindowForButtonCount:buttonCount];
 
-  if (animate && !ignoreAnimations_)
+  if (animate && !ignoreAnimations_) {
     NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                           NSZeroSize, nil, nil, nil);
+  }
 }
 
 - (id<BookmarkButtonControllerProtocol>)controllerForNode:
