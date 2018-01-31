@@ -30,6 +30,11 @@
 
   var consoleEditor;
 
+  /**
+   * @param {string} text
+   * @param {!Array<string>} expected
+   * @param {boolean=} force
+   */
   function testCompletions(text, expected, force) {
     var cursorPosition = text.indexOf('|');
 
@@ -41,8 +46,11 @@
     consoleEditor._autocompleteController.autocomplete(force);
     return TestRunner.addSnifferPromise(consoleEditor._autocompleteController, '_onSuggestionsShownForTest').then(checkExpected);
 
+    /**
+     * @param {!Array<{text: string, title: string}>} suggestions
+     */
     function checkExpected(suggestions) {
-      var completions = new Map(suggestions.map(suggestion => [suggestion.text, suggestion]));
+      var completions = new Map(suggestions.map(suggestion => [suggestion, suggestion.text])).inverse();
       var message = 'Checking \'' + text.replace('\n', '\\n').replace('\r', '\\r') + '\'';
 
       if (force)
@@ -52,10 +60,12 @@
 
       for (var i = 0; i < expected.length; i++) {
         if (completions.has(expected[i])) {
-          if (completions.get(expected[i]).title)
-            TestRunner.addResult('Found: ' + expected[i] + ', displayed as ' + completions.get(expected[i]).title);
-          else
-            TestRunner.addResult('Found: ' + expected[i]);
+          for (var completion of completions.get(expected[i])) {
+            if (completion.title)
+              TestRunner.addResult('Found: ' + expected[i] + ', displayed as ' + completion.title);
+            else
+              TestRunner.addResult('Found: ' + expected[i]);
+          }
         } else {
           TestRunner.addResult('Not Found: ' + expected[i]);
         }
@@ -122,6 +132,8 @@
     () => testCompletions('complicatedObject[\'\\\'sing', ['\'\\\'single-qouted\\\'\']']),
     () => testCompletions('complicatedObject["\'single-qou', ['"\'single-qouted\'"]']),
     () => testCompletions('complicatedObject["\\"double-qouted\\"', ['"\\"double-qouted\\""]']),
-    () => testCompletions('complicatedObject["notDangerous();', ['"notDangerous();"]'])
+    () => testCompletions('complicatedObject["notDangerous();', ['"notDangerous();"]']),
+    () => testCompletions('queryOb', ["queryObjects"]),
+    () => testCompletions('fun', ['function'])
   ]).then(TestRunner.completeTest);
 })();

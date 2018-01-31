@@ -155,4 +155,10 @@ Found: "\"double-qouted\""], displayed as "\"double-qouted\""
 Checking 'complicatedObject["notDangerous();'
 Found: "notDangerous();"], displayed as "notDangerous();"
 
+Checking 'queryOb'
+Found: queryObjects
+
+Checking 'fun'
+Found: function
+
 
