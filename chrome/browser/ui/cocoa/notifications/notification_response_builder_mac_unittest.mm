@@ -5,11 +5,26 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
+
+STATIC_ASSERT_ENUM(NOTIFICATION_CLICK, NotificationCommon::CLICK);
+STATIC_ASSERT_ENUM(NOTIFICATION_CLOSE, NotificationCommon::CLOSE);
+STATIC_ASSERT_ENUM(NOTIFICATION_DISABLE_PERMISSION,
+                   NotificationCommon::DISABLE_PERMISSION);
+STATIC_ASSERT_ENUM(NOTIFICATION_SETTINGS, NotificationCommon::SETTINGS);
+STATIC_ASSERT_ENUM(NOTIFICATION_OPERATION_MAX,
+                   NotificationCommon::OPERATION_MAX);
+
+#undef STATIC_ASSERT_ENUM
 
 class NotificationResponseBuilderMacTest : public testing::Test {
  protected:
@@ -52,7 +67,7 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClick) {
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
 
-  EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_CLICK, operation.intValue);
   EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
             buttonIndex.intValue);
 }
@@ -74,7 +89,7 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
 
-  EXPECT_EQ(2 /* NOTIFICATION_SETTINGS */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_SETTINGS, operation.intValue);
   EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
             buttonIndex.intValue);
 }
@@ -99,7 +114,7 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
-  EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_CLICK, operation.intValue);
   EXPECT_EQ(0, buttonIndex.intValue);
 }
 
@@ -124,7 +139,7 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
-  EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_CLICK, operation.intValue);
   EXPECT_EQ(1, buttonIndex.intValue);
 }
 
@@ -152,7 +167,7 @@ TEST_F(NotificationResponseBuilderMacTest,
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
-  EXPECT_EQ(2 /* NOTIFICATION_SETTINGS */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_SETTINGS, operation.intValue);
   EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
             buttonIndex.intValue);
 }
@@ -174,7 +189,7 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClose) {
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
-  EXPECT_EQ(1 /* NOTIFICATION_CLOSE */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_CLOSE, operation.intValue);
   EXPECT_EQ(notification_constants::kNotificationInvalidButtonIndex,
             buttonIndex.intValue);
 }
@@ -201,6 +216,6 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationExtension) {
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
-  EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
+  EXPECT_EQ(NOTIFICATION_CLICK, operation.intValue);
   EXPECT_EQ(1, buttonIndex.intValue);
 }
