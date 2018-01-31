@@ -857,6 +857,14 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return YES;
 
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+
+  std::vector<Profile*> added_profiles;
+  for (Profile* p : profiles) {
+    if (p->HasOffTheRecordProfile())
+      added_profiles.push_back(p->GetOffTheRecordProfile());
+  }
+  profiles.insert(profiles.end(), added_profiles.begin(), added_profiles.end());
+
   for (size_t i = 0; i < profiles.size(); ++i) {
     DownloadCoreService* download_core_service =
         DownloadCoreServiceFactory::GetForBrowserContext(profiles[i]);
