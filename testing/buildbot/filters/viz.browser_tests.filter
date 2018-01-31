@@ -39,6 +39,9 @@
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
 
+# Flaky timeouts. http://crbug.com/807773
+-PDFExtensionClipboardTest.*
+
 # WebViewBrowserTest::ScrollWaiter Doesn't Work in Viz crbug.com/796336
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/0
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/1
