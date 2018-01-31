@@ -297,7 +297,7 @@
                   $i18n{noActiveViews}
                 </li>
                 <template is="dom-repeat" items="[[data.views]]">
-                  <li>
+                  <li class$="[[computeInspectCssClass_(item)]]">
                     <a is="action-link" class="inspectable-view"
                         on-tap="onInspectTap_">
                       [[computeInspectLabel_(item)]]

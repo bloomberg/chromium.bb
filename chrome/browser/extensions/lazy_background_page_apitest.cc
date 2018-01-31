@@ -22,9 +22,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -619,6 +621,85 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
         "    ele[0].innerHTML.search('(Inactive)') > 0);",
         &is_inactive));
   }
+  EXPECT_TRUE(is_inactive);
+}
+
+// TODO(dpapad): Remove the _MD suffix once the non-MD test is deleted.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage_MD) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kMaterialDesignExtensions} /* enabled */, {} /* disabled */);
+
+  // Need to turn on developer mode, otherwise the info to be tested is not
+  // displayed in chrome://extensions.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDeveloperMode, true);
+
+  // Need to get the extension ID first, before opening the corresponding
+  // details page on chrome://extensions.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ResultCatcher catcher;
+  base::FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page")
+                              .AppendASCII("wait_for_view");
+  const Extension* extension = LoadExtension(extdir);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // The extension should've opened a new tab to an extension page.
+  EXPECT_EQ(
+      extension->GetResourceURL("extension_page.html").spec(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec());
+
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  std::string details_page_url = chrome::kChromeUIExtensionsURL;
+  details_page_url += "?id=" + extension->id();
+  ui_test_utils::NavigateToURL(browser(), GURL(details_page_url));
+  auto* extensions_page = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Lazy Background Page still exists, because the extension created a new tab
+  // to an extension page.
+  EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
+
+  // Use a MutationObserver to detect that the bakground page is marked as
+  // "Inactive" after the tab that triggered the extension is closed. This test
+  // assumes certain IDs and DOM structure.
+  const char setup_js[] =
+      R"(function observe() {
+           const detailView = document.querySelector('extensions-manager').
+               shadowRoot.querySelector('extensions-detail-view');
+           const bgViewLink = detailView.shadowRoot.querySelector(
+             '#inspect-views .bg-page > a');
+
+           return new Promise(resolve => {
+             let observer = new MutationObserver((mutations, observer) => {
+               observer.disconnect();
+
+               resolve(!mutations[0].oldValue.includes('(Inactive)') &&
+                   bgViewLink.textContent.includes('(Inactive)'));
+             });
+             observer.observe(bgViewLink.childNodes[0],
+                 {characterData: true, characterDataOldValue: true});
+           });
+         }
+
+         const whenDone = observe();
+        )";
+  EXPECT_TRUE(
+      content::ExecuteScript(extensions_page, base::StringPrintf(setup_js)));
+
+  // Close the new tab.
+  LazyBackgroundObserver page_complete;
+  browser()->tab_strip_model()->CloseWebContentsAt(1,
+                                                   TabStripModel::CLOSE_NONE);
+
+  bool is_inactive = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      extensions_page,
+      "whenDone.then(result => {"
+      "  window.domAutomationController.send(result);"
+      "});",
+      &is_inactive));
+  EXPECT_TRUE(is_inactive);
 }
 
 // Tests that the lazy background page will be unloaded if the onSuspend event
