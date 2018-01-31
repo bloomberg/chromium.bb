@@ -901,7 +901,7 @@ bool CreateOCSPRequest(const ParsedCertificate* cert,
   if (!EVP_marshal_digest_algorithm(&req_cert, md))
     return false;
 
-  AppendHashAsOctetString(md, &req_cert, issuer->tbs().issuer_tlv);
+  AppendHashAsOctetString(md, &req_cert, issuer->tbs().subject_tlv);
 
   der::Input key_tlv;
   if (!GetSubjectPublicKeyBytes(issuer->tbs().spki_tlv, &key_tlv))
