@@ -214,13 +214,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // Configures |builder|'s ProxyResolutionService based on prefs and policies.
   void SetUpProxyService(network::URLRequestContextBuilderMojo* builder) const;
 
-  // Gets a pointer to the NetworkService. Can only be called on the UI thread.
-  // When out-of-process NetworkService is enabled, this is a reference to the
-  // NetworkService created through ServiceManager; when out-of-process
-  // NetworkService is not enabld, this is a Mojo interface to the IOThread's
-  // in-process NetworkService that lives on the IO thread.
-  network::mojom::NetworkService* GetNetworkServiceOnUIThread();
-
   certificate_transparency::TreeStateTracker* ct_tree_tracker() const;
 
  private:
