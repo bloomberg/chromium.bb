@@ -100,7 +100,13 @@ class BrowserProcessImplTest : public ::testing::Test {
 // This test crashes on ChromeOS because it relies on NetworkHandler which
 // cannot be used in test.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-TEST_F(BrowserProcessImplTest, LifeCycle) {
+// TODO(crbug.com/807386): Flaky on Linux TSAN.
+#if defined(OS_LINUX)
+#define MAYBE_LifeCycle DISABLED_LifeCycle
+#else
+#define MAYBE_LifeCycle LifeCycle
+#endif
+TEST_F(BrowserProcessImplTest, MAYBE_LifeCycle) {
   // Setup the BrowserProcessImpl and the threads.
   browser_process_impl()->Init();
   browser_process_impl()->PreCreateThreads(*command_line());
