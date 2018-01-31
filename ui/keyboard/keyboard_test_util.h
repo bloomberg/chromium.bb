@@ -9,7 +9,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/dummy_input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace gfx {
@@ -34,7 +33,7 @@ void WaitControllerStateChangesTo(const KeyboardControllerState state);
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                        int keyboard_height);
 
-class KEYBOARD_EXPORT TestKeyboardUI : public KeyboardUI {
+class TestKeyboardUI : public KeyboardUI {
  public:
   TestKeyboardUI(ui::InputMethod* input_method);
   ~TestKeyboardUI() override;
