@@ -442,12 +442,11 @@ public class SavePasswordsPreferencesTest {
     /**
      * Check that if "PasswordExport" feature is not explicitly enabled, there is no menu item to
      * export passwords.
-     * TODO(crbug.com/788701): Add the @DisableFeatures annotation once exporting gets enabled by
-     * default, and remove completely once the feature is gone.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisableFeatures("PasswordExport")
     public void testExportMenuMissing() throws Exception {
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
 
