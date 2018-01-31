@@ -174,22 +174,8 @@ Manifest::Type Extension::GetType() const {
 // static
 GURL Extension::GetResourceURL(const GURL& extension_url,
                                const std::string& relative_path) {
-  DCHECK(extension_url.SchemeIs(extensions::kExtensionScheme));
-  DCHECK_EQ("/", extension_url.path());
-
-  std::string path = relative_path;
-
-  // If the relative path starts with "/", it is "absolute" relative to the
-  // extension base directory, but extension_url is already specified to refer
-  // to that base directory, so strip the leading "/" if present.
-  if (relative_path.size() > 0 && relative_path[0] == '/')
-    path = relative_path.substr(1);
-
-  GURL ret_val = GURL(extension_url.spec() + path);
-  DCHECK(base::StartsWith(ret_val.spec(), extension_url.spec(),
-                          base::CompareCase::INSENSITIVE_ASCII));
-
-  return ret_val;
+  DCHECK(extension_url.SchemeIs(kExtensionScheme));
+  return extension_url.Resolve(relative_path);
 }
 
 bool Extension::ResourceMatches(const URLPatternSet& pattern_set,
