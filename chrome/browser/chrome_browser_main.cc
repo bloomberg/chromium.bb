@@ -418,7 +418,7 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
 
 void ConvertFlagsToSwitches() {
 #if !defined(OS_CHROMEOS)
-  // Convert active labs into switches. This needs to be done before
+  // Convert active flags into switches. This needs to be done before
   // ui::ResourceBundle::InitSharedInstanceWithLocale as some loaded resources
   // are affected by experiment flags (--touch-optimized-ui in particular). On
   // ChromeOS system level flags are applied from the device settings from the
