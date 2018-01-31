@@ -259,10 +259,4 @@ void LayoutTestContentRendererClient::
   }
 }
 
-bool LayoutTestContentRendererClient::AllowIdleMediaSuspend() {
-  // Disable idle media suspend to avoid layout tests getting into accidentally
-  // bad states if they take too long to run.
-  return false;
-}
-
 }  // namespace content
