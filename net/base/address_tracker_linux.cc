@@ -437,9 +437,14 @@ void AddressTrackerLinux::CloseSocket() {
 }
 
 bool AddressTrackerLinux::IsTunnelInterface(int interface_index) const {
-  // Linux kernel drivers/net/tun.c uses "tun" name prefix.
   char buf[IFNAMSIZ] = {0};
-  return strncmp(get_interface_name_(interface_index, buf), "tun", 3) == 0;
+  return IsTunnelInterfaceName(get_interface_name_(interface_index, buf));
+}
+
+// static
+bool AddressTrackerLinux::IsTunnelInterfaceName(const char* name) {
+  // Linux kernel drivers/net/tun.c uses "tun" name prefix.
+  return strncmp(name, "tun", 3) == 0;
 }
 
 void AddressTrackerLinux::UpdateCurrentConnectionType() {
