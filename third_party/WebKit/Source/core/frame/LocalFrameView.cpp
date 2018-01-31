@@ -3656,13 +3656,19 @@ LayoutPoint LocalFrameView::ConvertFromLayoutObject(
 LayoutPoint LocalFrameView::ConvertToLayoutObject(
     const LayoutObject& layout_object,
     const LayoutPoint& frame_point) const {
-  LayoutPoint point = frame_point;
+  return LayoutPoint(
+      ConvertToLayoutObject(layout_object, FloatPoint(frame_point)));
+}
+
+FloatPoint LocalFrameView::ConvertToLayoutObject(
+    const LayoutObject& layout_object,
+    const FloatPoint& frame_point) const {
+  FloatPoint point = frame_point;
 
   // Convert from LocalFrameView coords into page ("absolute") coordinates.
-  point += LayoutSize(ScrollX(), ScrollY());
+  point += FloatSize(ScrollX(), ScrollY());
 
-  return LayoutPoint(
-      layout_object.AbsoluteToLocal(FloatPoint(point), kUseTransforms));
+  return layout_object.AbsoluteToLocal(point, kUseTransforms);
 }
 
 IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
@@ -3785,17 +3791,31 @@ LayoutPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
 
 LayoutPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const LayoutPoint& parent_point) const {
+  return LayoutPoint(
+      ConvertFromContainingEmbeddedContentView(DoublePoint(parent_point)));
+}
+
+FloatPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
+    const FloatPoint& parent_point) const {
+  return FloatPoint(
+      ConvertFromContainingEmbeddedContentView(DoublePoint(parent_point)));
+}
+
+DoublePoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
+    const DoublePoint& parent_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
     auto* layout_object = frame_->OwnerLayoutObject();
     if (!layout_object)
       return parent_point;
 
-    LayoutPoint point =
-        parent->ConvertToLayoutObject(*layout_object, parent_point);
+    DoublePoint point = DoublePoint(parent->ConvertToLayoutObject(
+        *layout_object, FloatPoint(parent_point)));
     // Subtract borders and padding
-    point.Move((-layout_object->BorderLeft() - layout_object->PaddingLeft()),
-               (-layout_object->BorderTop() - layout_object->PaddingTop()));
+    point.Move(
+        (-layout_object->BorderLeft() - layout_object->PaddingLeft())
+            .ToDouble(),
+        (-layout_object->BorderTop() - layout_object->PaddingTop()).ToDouble());
     return point;
   }
 
@@ -3811,7 +3831,7 @@ IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
 IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const IntPoint& parent_point) const {
   return RoundedIntPoint(
-      ConvertFromContainingEmbeddedContentView(LayoutPoint(parent_point)));
+      ConvertFromContainingEmbeddedContentView(DoublePoint(parent_point)));
 }
 
 void LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(
@@ -5085,24 +5105,11 @@ LayoutPoint LocalFrameView::ConvertFromRootFrame(
 
 FloatPoint LocalFrameView::ConvertFromRootFrame(
     const FloatPoint& point_in_root_frame) const {
-  // FrameViews / windows are required to be IntPoint aligned, but we may
-  // need to convert FloatPoint values within them (eg. for event
-  // co-ordinates).
-  IntPoint floored_point = FlooredIntPoint(point_in_root_frame);
-  FloatPoint parent_point = ConvertFromRootFrame(floored_point);
-  FloatSize window_fraction = point_in_root_frame - floored_point;
-  // Use linear interpolation handle any fractional value (eg. for iframes
-  // subject to a transform beyond just a simple translation).
-  // FIXME: Add FloatPoint variants of all co-ordinate space conversion APIs.
-  if (!window_fraction.IsEmpty()) {
-    const int kFactor = 1000;
-    IntPoint parent_line_end = ConvertFromRootFrame(
-        floored_point + RoundedIntSize(window_fraction.ScaledBy(kFactor)));
-    FloatSize parent_fraction =
-        (parent_line_end - parent_point).ScaledBy(1.0f / kFactor);
-    parent_point.Move(parent_fraction);
+  if (LocalFrameView* parent = ParentFrameView()) {
+    FloatPoint parent_point = parent->ConvertFromRootFrame(point_in_root_frame);
+    return ConvertFromContainingEmbeddedContentView(parent_point);
   }
-  return parent_point;
+  return point_in_root_frame;
 }
 
 IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentViewToScrollbar(
