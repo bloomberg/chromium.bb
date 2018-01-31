@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 
 namespace password_manager {
@@ -96,6 +97,10 @@ class PasswordManagerExporter {
   // The destination which was provided and where the password list will be
   // sent. It will be cleared once exporting is complete.
   base::FilePath destination_;
+
+  // The moment in time that we started reading and serialising the password
+  // list. Useful for metrics.
+  base::Time export_preparation_started_;
 
   // The function which does the actual writing. It should point to
   // base::WriteFile, unless it's changed for testing purposes.

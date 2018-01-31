@@ -12870,6 +12870,12 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="EXPECT_CT_HEADER_PROCESSED"/>
 </enum>
 
+<enum name="ExportPasswordsResult">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Canceled by the user"/>
+  <int value="2" label="Write failed"/>
+</enum>
+
 <enum name="ExtensionBackgroundPageType">
   <int value="0" label="None"/>
   <int value="1" label="Persistent"/>
