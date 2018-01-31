@@ -480,8 +480,6 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 // Show a MD snack bar with |message| and provide haptic feedback. The haptic
 // feedback is either for success or for error, depending on |success|.
 - (void)showToast:(NSString*)message forSuccess:(BOOL)success {
-  // TODO(crbug.com/159166): Route this through some delegate API to be able
-  // to mock it in the unittest, and avoid having an EGTest just for that?
   TriggerHapticFeedbackForNotification(success
                                            ? UINotificationFeedbackTypeSuccess
                                            : UINotificationFeedbackTypeError);
