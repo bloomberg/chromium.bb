@@ -6,14 +6,18 @@
 #define CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_IMPL_H_
 
 #include <stdint.h>
-#include <memory>
 
+#include <memory>
+#include <string>
+
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/webauth/collected_client_data.h"
 #include "content/common/content_export.h"
 #include "device/u2f/register_response_data.h"
 #include "device/u2f/sign_response_data.h"
+#include "device/u2f/u2f_transport_protocol.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h"
 #include "url/origin.h"
@@ -23,7 +27,6 @@ class OneShotTimer;
 }
 
 namespace device {
-class U2fDiscovery;
 class U2fRequest;
 enum class U2fReturnCode : uint8_t;
 }  // namespace device
@@ -41,7 +44,9 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
  public:
   explicit AuthenticatorImpl(RenderFrameHost* render_frame_host);
 
-  // Permits setting connector and timer for testing.
+  // Permits setting connector and timer for testing. Using this constructor
+  // will also empty out the protocol set, since no device discovery will take
+  // place during tests.
   AuthenticatorImpl(RenderFrameHost* render_frame_host,
                     service_manager::Connector*,
                     std::unique_ptr<base::OneShotTimer>);
@@ -79,8 +84,13 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::BindingSet<webauth::mojom::Authenticator> bindings_;
-  std::unique_ptr<device::U2fDiscovery> u2f_discovery_;
   std::unique_ptr<device::U2fRequest> u2f_request_;
+
+  // Support both HID and BLE.
+  base::flat_set<device::U2fTransportProtocol> protocols_ = {
+      device::U2fTransportProtocol::kUsbHumanInterfaceDevice,
+      device::U2fTransportProtocol::kBluetoothLowEnergy};
+
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
 

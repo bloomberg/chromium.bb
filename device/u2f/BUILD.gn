@@ -61,6 +61,7 @@ source_set("u2f") {
     "u2f_return_code.h",
     "u2f_sign.cc",
     "u2f_sign.h",
+    "u2f_transport_protocol.h",
   ]
 
   deps = [
