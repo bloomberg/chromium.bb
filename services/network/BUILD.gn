@@ -106,6 +106,7 @@ source_set("tests") {
     "udp_socket_factory_unittest.cc",
     "udp_socket_unittest.cc",
     "upload_progress_tracker_unittest.cc",
+    "url_loader_unittest.cc",
   ]
 
   if (!is_ios) {
@@ -114,7 +115,6 @@ source_set("tests") {
       # http://crbug.com/803149
       "network_service_unittest.cc",
       "proxy_resolver_factory_mojo_unittest.cc",
-      "url_loader_unittest.cc",
     ]
   }
 
