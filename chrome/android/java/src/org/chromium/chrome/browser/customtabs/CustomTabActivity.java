@@ -1020,8 +1020,10 @@ public class CustomTabActivity extends ChromeActivity {
             RecordUserAction.record("MobileMenuAddToBookmarks");
             return true;
         } else if (id == R.id.open_in_browser_id) {
-            openCurrentUrlInBrowser(false);
-            RecordUserAction.record("CustomTabsMenuOpenInChrome");
+            if (openCurrentUrlInBrowser(false)) {
+                RecordUserAction.record("CustomTabsMenuOpenInChrome");
+                mConnection.notifyOpenInBrowser(mSession);
+            }
             return true;
         } else if (id == R.id.info_menu_id) {
             if (getTabModelSelector().getCurrentTab() == null) return false;
