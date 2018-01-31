@@ -139,10 +139,11 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   static RenderViewImpl* FromRoutingID(int routing_id);
 
   // May return NULL when the view is closing.
-  blink::WebView* webview() const;
+  blink::WebView* webview();
+  const blink::WebView* webview() const;
 
   // Returns the RenderWidget for this RenderView.
-  RenderWidget* GetWidget() const;
+  RenderWidget* GetWidget();
 
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;

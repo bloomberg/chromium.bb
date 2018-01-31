@@ -1045,7 +1045,11 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-blink::WebView* RenderViewImpl::webview() const {
+blink::WebView* RenderViewImpl::webview() {
+  return webview_;
+}
+
+const blink::WebView* RenderViewImpl::webview() const {
   return webview_;
 }
 
@@ -1819,8 +1823,8 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   return RenderWidget::Send(message);
 }
 
-RenderWidget* RenderViewImpl::GetWidget() const {
-  return const_cast<RenderWidget*>(static_cast<const RenderWidget*>(this));
+RenderWidget* RenderViewImpl::GetWidget() {
+  return this;
 }
 
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
