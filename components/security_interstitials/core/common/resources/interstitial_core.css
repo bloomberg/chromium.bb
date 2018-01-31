@@ -9,6 +9,7 @@ a {
 body {
   background-color: rgb(247, 247, 247);
   color: rgb(100, 100, 100);
+  word-wrap: break-word;
 }
 
 #details-button {
