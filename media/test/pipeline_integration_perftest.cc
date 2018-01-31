@@ -38,12 +38,8 @@ static void RunPlaybackBenchmark(const std::string& filename,
     }
   }
 
-  perf_test::PrintResult(name,
-                         "",
-                         filename,
-                         iterations / time_seconds,
-                         "runs/s",
-                         true);
+  perf_test::PrintResult(name, "", filename, iterations / time_seconds,
+                         "runs/s", true);
 }
 
 static void RunVideoPlaybackBenchmark(const std::string& filename,
@@ -56,17 +52,26 @@ static void RunAudioPlaybackBenchmark(const std::string& filename,
   RunPlaybackBenchmark(filename, name, kBenchmarkIterationsAudio, true);
 }
 
-TEST(PipelineIntegrationPerfTest, AudioPlaybackBenchmark) {
-  RunAudioPlaybackBenchmark("sfx_f32le.wav", "clockless_playback");
-  RunAudioPlaybackBenchmark("sfx_s24le.wav", "clockless_playback");
-  RunAudioPlaybackBenchmark("sfx_s16le.wav", "clockless_playback");
-  RunAudioPlaybackBenchmark("sfx_u8.wav", "clockless_playback");
-  RunAudioPlaybackBenchmark("sfx.flac", "clockless_playback");
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  RunAudioPlaybackBenchmark("sfx.mp3", "clockless_playback");
-  RunAudioPlaybackBenchmark("sfx-flac.mp4", "clockless_playback");
-#endif
+class ClocklessAudioPipelineIntegrationPerfTest
+    : public testing::TestWithParam<const char*> {};
+
+TEST_P(ClocklessAudioPipelineIntegrationPerfTest, PlaybackBenchmark) {
+  RunAudioPlaybackBenchmark(GetParam(), "clockless_playback");
 }
+
+static const char* kAudioTestFiles[] {
+  "sfx_s16le.wav", "sfx.ogg", "sfx.mp3",
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+      "sfx.m4a",
+#endif
+};
+
+// For simplicity we only test codecs with above 2% daily usage as measured by
+// the Media.AudioCodec histogram.
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    ClocklessAudioPipelineIntegrationPerfTest,
+    testing::ValuesIn(kAudioTestFiles));
 
 TEST(PipelineIntegrationPerfTest, VP8PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear_silent.webm", "clockless_video_playback_vp8");
@@ -76,16 +81,7 @@ TEST(PipelineIntegrationPerfTest, VP9PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear-vp9.webm", "clockless_video_playback_vp9");
 }
 
-// Android doesn't build Theora support.
-#if !defined(OS_ANDROID)
-TEST(PipelineIntegrationPerfTest, TheoraPlaybackBenchmark) {
-  RunVideoPlaybackBenchmark("bear_silent.ogv",
-                            "clockless_video_playback_theora");
-}
-#endif
-
-// PipelineIntegrationTests can't play h264 content.
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 TEST(PipelineIntegrationPerfTest, MP4PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear_silent.mp4", "clockless_video_playback_mp4");
 }
