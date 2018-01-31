@@ -185,14 +185,6 @@ bool PermissionSet::HasExplicitAccessToOrigin(
   return explicit_hosts().MatchesURL(origin);
 }
 
-bool PermissionSet::HasScriptableAccessToURL(
-    const GURL& origin) const {
-  // We only need to check our host list to verify access. The host list should
-  // already reflect any special rules (such as chrome://favicon, all hosts
-  // access, etc.).
-  return scriptable_hosts().MatchesURL(origin);
-}
-
 bool PermissionSet::HasEffectiveAccessToAllHosts() const {
   // There are two ways this set can have effective access to all hosts:
   //  1) it has an <all_urls> URL pattern.
