@@ -13,6 +13,7 @@
     - [MSVC builds](#microsoft-visual-studio-builds)
     - [Xcode builds](#xcode-builds)
     - [Emscripten builds](#emscripten-builds)
+    - [Extra Build Flags](#extra-build-flags)
 2. [Testing the library](#testing-the-av1-codec)
     - [Basics](#testing-basics)
         - [Unit tests](#1_unit-tests)
@@ -267,6 +268,24 @@ appropriately using the emsdk\_env script.
     $ path/to/AOMAnalyzer path/to/examples/inspect.js path/to/av1/input/file
 ~~~
 
+### Extra build flags
+
+Three variables allow for passing of additional flags to the build system.
+
+- AOM\_EXTRA\_C\_FLAGS
+- AOM\_EXTRA\_CXX\_FLAGS
+- AOM\_EXTRA\_EXE\_LINKER\_FLAGS
+
+The build system attempts to ensure the flags passed through the above variables
+are passed to tools last in order to allow for override of default behavior.
+These flags can be used, for example, to enable asserts in a release build:
+
+~~~
+    $ cmake path/to/aom \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DAOM_EXTRA_C_FLAGS=-UNDEBUG \
+        -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG
+~~~
 
 ## Testing the AV1 codec
 
