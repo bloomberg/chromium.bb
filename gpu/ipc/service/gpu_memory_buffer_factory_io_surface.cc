@@ -34,7 +34,7 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     int client_id,
     SurfaceHandle surface_handle) {
   // Don't clear anonymous io surfaces.
-  bool should_clear = (client_id != 0);
+  bool should_clear = (client_id != kAnonymousClientId);
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format, should_clear));
   if (!io_surface) {
@@ -54,6 +54,17 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   handle.type = gfx::IO_SURFACE_BUFFER;
   handle.id = id;
   handle.mach_port.reset(IOSurfaceCreateMachPort(io_surface));
+
+  // TODO(ccameron): This should never happen, but a similar call to
+  // IOSurfaceLookupFromMachPort is failing below. This should determine if
+  // the lifetime of the underlying IOSurface determines the failure.
+  // https://crbug.com/795649
+  CHECK(handle.mach_port);
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_recreated(
+      IOSurfaceLookupFromMachPort(handle.mach_port.get()));
+  CHECK_NE(nullptr, io_surface_recreated.get())
+      << "Failed to reconstitute still-existing IOSurface from mach port.";
+
   return handle;
 }
 
@@ -112,10 +123,17 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
   gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId(next_anonymous_image_id_++), size, format, usage,
       kAnonymousClientId, gpu::kNullSurfaceHandle);
+  if (handle.is_null())
+    return scoped_refptr<gl::GLImage>();
 
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-  io_surface.reset(IOSurfaceLookupFromMachPort(handle.mach_port.get()));
-  DCHECK_NE(nullptr, io_surface.get());
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      IOSurfaceLookupFromMachPort(handle.mach_port.get()));
+  // TODO(ccameron): This should never happen, but has been seen in the wild. If
+  // this happens frequently, it can be replaced by directly using the allocated
+  // IOSurface, rather than going through the handle creation.
+  // https://crbug.com/795649
+  CHECK_NE(nullptr, io_surface.get())
+      << "Failed to reconstitute just-created IOSurface from mach port.";
 
   scoped_refptr<gl::GLImageIOSurface> image(
       gl::GLImageIOSurface::Create(size, internalformat));

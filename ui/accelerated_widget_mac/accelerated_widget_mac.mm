@@ -148,12 +148,17 @@ void AcceleratedWidgetMac::UpdateCALayerTree(
     GotCALayerFrame(base::scoped_nsobject<CALayer>(remote_layer_.get(),
                                                    base::scoped_policy::RETAIN),
                     ca_layer_params.pixel_size, ca_layer_params.scale_factor);
-  } else {
+  } else if (ca_layer_params.io_surface_mach_port) {
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
         IOSurfaceLookupFromMachPort(ca_layer_params.io_surface_mach_port));
     if (!io_surface) {
       LOG(ERROR) << "Unable to open IOSurface for frame.";
     }
+    GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
+                      ca_layer_params.scale_factor);
+  } else {
+    LOG(ERROR) << "Frame had neither valid CAContext nor valid IOSurface.";
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
     GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
                       ca_layer_params.scale_factor);
   }
