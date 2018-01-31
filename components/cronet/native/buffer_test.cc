@@ -68,8 +68,14 @@ TEST_F(BufferTest, TestInitWithAlloc) {
   ASSERT_FALSE(on_destroy_called());
 }
 
+#if defined(ADDRESS_SANITIZER)
+// ASAN malloc by default triggers crash instead of returning null on failure.
+#define MAYBE_TestInitWithHugeAllocFails DISABLED_TestInitWithHugeAllocFails
+#else
+#define MAYBE_TestInitWithHugeAllocFails TestInitWithHugeAllocFails
+#endif
 // Example of allocating buffer with hugereasonable size.
-TEST_F(BufferTest, TestInitWithHugeAllocFails) {
+TEST_F(BufferTest, MAYBE_TestInitWithHugeAllocFails) {
   // Create Cronet buffer and allocate buffer data.
   Cronet_BufferPtr buffer = Cronet_Buffer_Create();
   Cronet_Buffer_InitWithAlloc(buffer, 1000 * 1000 * 1000 * 1000);
