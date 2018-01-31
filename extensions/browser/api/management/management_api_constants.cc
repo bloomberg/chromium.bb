@@ -44,5 +44,8 @@ const char kInvalidURLError[] = "The URL \"*\" is invalid.";
 const char kEmptyTitleError[] = "The title can not be empty.";
 const char kGenerateAppForLinkInstallError[] =
     "Failed to install the generated app.";
+const char kNotAllowedInKioskError[] = "Not allowed in kiosk.";
+const char kCannotChangePrimaryKioskAppError[] =
+    "Cannot change the primary kiosk app state.";
 
 }  // namespace extension_management_api_constants

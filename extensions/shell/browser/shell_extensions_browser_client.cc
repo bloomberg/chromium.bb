@@ -178,6 +178,11 @@ bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
 }
 
+bool ShellExtensionsBrowserClient::IsAppModeForcedForApp(
+    const ExtensionId& extension_id) {
+  return false;
+}
+
 bool ShellExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
   return false;
 }

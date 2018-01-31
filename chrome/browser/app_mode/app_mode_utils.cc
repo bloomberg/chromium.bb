@@ -9,10 +9,27 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chrome {
+
+namespace {
+
+// If the device is running in forced app mode, returns the ID of the app for
+// which the device is forced in app mode. Otherwise, returns nullopt.
+base::Optional<std::string> GetForcedAppModeApp() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kForceAppMode) ||
+      !command_line->HasSwitch(switches::kAppId)) {
+    return base::nullopt;
+  }
+
+  return command_line->GetSwitchValueASCII(switches::kAppId);
+}
+
+}  // namespace
 
 bool IsCommandAllowedInAppMode(int command_id) {
   DCHECK(IsRunningInForcedAppMode());
@@ -47,10 +64,19 @@ bool IsRunningInAppMode() {
 }
 
 bool IsRunningInForcedAppMode() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return (command_line->HasSwitch(switches::kForceAppMode) &&
-          command_line->HasSwitch(switches::kAppId)) ||
-         command_line->HasSwitch(switches::kForceAndroidAppMode);
+  return GetForcedAppModeApp().has_value() ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kForceAndroidAppMode);
+}
+
+bool IsRunningInForcedAppModeForApp(const std::string& app_id) {
+  DCHECK(!app_id.empty());
+
+  base::Optional<std::string> forced_app_mode_app = GetForcedAppModeApp();
+  if (!forced_app_mode_app.has_value())
+    return false;
+
+  return app_id == forced_app_mode_app.value();
 }
 
 }  // namespace chrome
