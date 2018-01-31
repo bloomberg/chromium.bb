@@ -10,6 +10,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 
 import org.junit.After;
@@ -22,6 +23,8 @@ import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.IconType;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -43,6 +46,22 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
 
     private final Bitmap mFavicon = Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_8888);
     private MediaNotificationTestTabHolder mTabHolder;
+
+    // Mock LargeIconBridge that runs callback using the given favicon.
+    private class TestLargeIconBridge extends LargeIconBridge {
+        private LargeIconCallback mCallback;
+
+        @Override
+        public boolean getLargeIconForUrl(
+                final String pageUrl, int desiredSizePx, final LargeIconCallback callback) {
+            mCallback = callback;
+            return true;
+        }
+
+        public void runCallback(Bitmap favicon) {
+            mCallback.onLargeIconAvailable(favicon, Color.BLACK, false, IconType.INVALID);
+        }
+    }
 
     @Before
     @Override
@@ -89,6 +108,32 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
         mTabHolder.simulateFaviconUpdated(mFavicon);
         assertEquals(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? null : mFavicon,
                 getDisplayedIcon());
+    }
+
+    @Test
+    public void testGetNullNotificationIcon() {
+        mTabHolder.simulateFaviconUpdated(null);
+        TestLargeIconBridge largeIconBridge = new TestLargeIconBridge();
+        mTabHolder.mMediaSessionTabHelper.mLargeIconBridge = largeIconBridge;
+
+        mTabHolder.simulateMediaSessionStateChanged(true, false);
+        assertEquals(null, getDisplayedIcon());
+
+        largeIconBridge.runCallback(null);
+        assertEquals(null, getDisplayedIcon());
+    }
+
+    @Test
+    public void testGetNotificationIcon() {
+        mTabHolder.simulateFaviconUpdated(null);
+        TestLargeIconBridge largeIconBridge = new TestLargeIconBridge();
+        mTabHolder.mMediaSessionTabHelper.mLargeIconBridge = largeIconBridge;
+
+        mTabHolder.simulateMediaSessionStateChanged(true, false);
+        assertEquals(null, getDisplayedIcon());
+
+        largeIconBridge.runCallback(mFavicon);
+        assertEquals(mFavicon, getDisplayedIcon());
     }
 
     private Bitmap getDisplayedIcon() {
