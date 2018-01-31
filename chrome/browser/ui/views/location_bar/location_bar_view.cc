@@ -618,6 +618,7 @@ void LocationBarView::Update(const WebContents* contents) {
       ShouldShowLocationIconText(),
       !contents && ShouldAnimateLocationIconTextVisibilityChange());
   OnChanged();  // NOTE: Calls Layout().
+  last_update_security_level_ = GetToolbarModel()->GetSecurityLevel(false);
 }
 
 void LocationBarView::ResetTabState(WebContents* contents) {
@@ -877,10 +878,13 @@ bool LocationBarView::ShouldShowLocationIconText() const {
 }
 
 bool LocationBarView::ShouldAnimateLocationIconTextVisibilityChange() const {
-  // Text for extension URLs should not be animated (their security level is
-  // SecurityLevel::NONE).
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
+  // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
+  // transition can look confusing/messy.
+  if (level == SecurityLevel::DANGEROUS &&
+      last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
+    return false;
   return level == SecurityLevel::DANGEROUS ||
          level == SecurityLevel::HTTP_SHOW_WARNING;
 }
