@@ -707,9 +707,12 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
 TEST_F(CorePageLoadMetricsObserverTest, BytesAndResourcesCounted) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   NavigateAndCommit(GURL(kDefaultTestUrl2));
-  histogram_tester().ExpectTotalCount(internal::kHistogramTotalBytes, 1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramNetworkBytes, 1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramCacheBytes, 1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramPageLoadTotalBytes,
+                                      1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramPageLoadNetworkBytes,
+                                      1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramPageLoadCacheBytes,
+                                      1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramTotalCompletedResources, 1);
   histogram_tester().ExpectTotalCount(

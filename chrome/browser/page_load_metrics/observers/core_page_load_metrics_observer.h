@@ -55,9 +55,9 @@ extern const char kHistogramTimeToInteractiveStatus[];
 extern const char kHistogramFirstNonScrollInputAfterFirstPaint[];
 extern const char kHistogramFirstScrollInputAfterFirstPaint[];
 
-extern const char kHistogramTotalBytes[];
-extern const char kHistogramNetworkBytes[];
-extern const char kHistogramCacheBytes[];
+extern const char kHistogramPageLoadTotalBytes[];
+extern const char kHistogramPageLoadNetworkBytes[];
+extern const char kHistogramPageLoadCacheBytes[];
 
 extern const char kHistogramLoadTypeTotalBytesForwardBack[];
 extern const char kHistogramLoadTypeNetworkBytesForwardBack[];
