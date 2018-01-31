@@ -92,7 +92,7 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, TLS13VariantEnabled) {
       base::MakeRefCounted<TestingPrefStore>();
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(switches::kTLS13Variant, "experiment2");
+  command_line.AppendSwitchASCII(switches::kTLS13Variant, "draft23");
 
   sync_preferences::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
@@ -113,7 +113,7 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, TLS13VariantEnabled) {
   config_service->GetSSLConfig(&ssl_config);
   // Command-line flags should be respected.
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
-  EXPECT_EQ(net::kTLS13VariantExperiment2, ssl_config.tls13_variant);
+  EXPECT_EQ(net::kTLS13VariantDraft23, ssl_config.tls13_variant);
 }
 
 // Test that setting a disabled TLS 1.3 variant correctly sets SSLVersionMax.

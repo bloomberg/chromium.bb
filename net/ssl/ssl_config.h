@@ -36,8 +36,6 @@ enum TokenBindingParam {
 };
 
 enum TLS13Variant {
-  kTLS13VariantExperiment2,
-  kTLS13VariantDraft22,
   kTLS13VariantDraft23,
 };
 

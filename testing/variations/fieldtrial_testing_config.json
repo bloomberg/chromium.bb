@@ -3697,18 +3697,6 @@
                     "params": {
                         "variant": "draft23"
                     }
-                },
-                {
-                    "name": "Experiment2V4",
-                    "params": {
-                        "variant": "experiment2"
-                    }
-                },
-                {
-                    "name": "Draft22V4",
-                    "params": {
-                        "variant": "draft22"
-                    }
                 }
             ]
         }
