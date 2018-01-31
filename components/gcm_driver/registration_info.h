@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/time/time.h"
 
 namespace gcm  {
 
@@ -48,6 +49,7 @@ struct RegistrationInfo {
 
   // Every registration is associated with an application.
   std::string app_id;
+  base::Time last_validated;
 };
 
 // For GCM registration.

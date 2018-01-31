@@ -63,6 +63,7 @@ const uint64_t kDeviceSecurityToken2 = 2222;
 const int64_t kSettingsCheckinInterval = 16 * 60 * 60;
 const char kProductCategoryForSubtypes[] = "com.chrome.macosx";
 const char kExtensionAppId[] = "abcdefghijklmnopabcdefghijklmnop";
+const char kRegistrationId[] = "reg_id";
 const char kSubtypeAppId[] = "app_id";
 const char kSender[] = "project_id";
 const char kSender2[] = "project_id2";
@@ -768,6 +769,26 @@ TEST_F(GCMClientImplTest, DestroyStoreWhenNotNeeded) {
   EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());
   EXPECT_FALSE(device_checkin_info().android_id);
   EXPECT_FALSE(device_checkin_info().secret);
+}
+
+TEST_F(GCMClientImplTest, SerializeAndDeserialize) {
+  std::vector<std::string> senders{"sender"};
+  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
+  gcm_info->app_id = kExtensionAppId;
+  gcm_info->sender_ids = senders;
+  gcm_info->last_validated = clock()->Now();
+
+  std::string serialized_key = gcm_info->GetSerializedKey();
+  std::string serialized_value = gcm_info->GetSerializedValue(kRegistrationId);
+  auto gcm_info_deserialized = std::make_unique<GCMRegistrationInfo>();
+  std::string registration_id_deserialized;
+  ASSERT_TRUE(gcm_info_deserialized->Deserialize(
+      serialized_key, serialized_value, &registration_id_deserialized));
+
+  EXPECT_EQ(gcm_info->app_id, gcm_info_deserialized->app_id);
+  EXPECT_EQ(gcm_info->sender_ids, gcm_info_deserialized->sender_ids);
+  EXPECT_EQ(gcm_info->last_validated, gcm_info_deserialized->last_validated);
+  EXPECT_EQ(kRegistrationId, registration_id_deserialized);
 }
 
 TEST_F(GCMClientImplTest, RegisterApp) {
