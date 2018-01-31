@@ -9,7 +9,6 @@ import("//testing/test.gni")
 source_set("lib") {
   sources = [
     "barcode_detection_impl.h",
-    "face_detection_provider_impl.h",
     "shape_detection_service.cc",
     "shape_detection_service.h",
     "text_detection_impl.h",
@@ -23,12 +22,13 @@ source_set("lib") {
       "detection_utils_mac.mm",
       "face_detection_impl_mac.h",
       "face_detection_impl_mac.mm",
+      "face_detection_provider_mac.h",
+      "face_detection_provider_mac.mm",
       "text_detection_impl_mac.h",
       "text_detection_impl_mac.mm",
     ]
     libs = [ "QuartzCore.framework" ]
   } else if (is_win) {
-    sources -= [ "face_detection_provider_impl.h" ]
     sources += [
       "barcode_detection_impl.cc",
       "detection_utils_win.cc",
@@ -44,6 +44,7 @@ source_set("lib") {
     sources += [
       "barcode_detection_impl.cc",
       "face_detection_provider_impl.cc",
+      "face_detection_provider_impl.h",
       "text_detection_impl.cc",
     ]
   }

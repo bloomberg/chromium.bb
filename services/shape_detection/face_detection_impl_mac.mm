@@ -5,19 +5,9 @@
 #include "services/shape_detection/face_detection_impl_mac.h"
 
 #include "base/mac/scoped_cftyperef.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_mac.h"
-#include "services/shape_detection/face_detection_provider_impl.h"
 
 namespace shape_detection {
-
-void FaceDetectionProviderImpl::CreateFaceDetection(
-    shape_detection::mojom::FaceDetectionRequest request,
-    shape_detection::mojom::FaceDetectorOptionsPtr options) {
-  mojo::MakeStrongBinding(
-      std::make_unique<FaceDetectionImplMac>(std::move(options)),
-      std::move(request));
-}
 
 FaceDetectionImplMac::FaceDetectionImplMac(
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
