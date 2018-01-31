@@ -139,26 +139,15 @@ class NotificationButtonMD : public views::LabelButton {
 
 class NotificationInputDelegate {
  public:
-  virtual void SetNormalImageToReplyButton() = 0;
-  virtual void SetPlaceholderImageToReplyButton() = 0;
   virtual void OnNotificationInputSubmit(size_t index,
                                          const base::string16& text) = 0;
   virtual ~NotificationInputDelegate() = default;
 };
 
-class NotificationInputTextfieldMD : public views::Textfield,
-                                     public views::TextfieldController {
+class NotificationInputTextfieldMD : public views::Textfield {
  public:
-  NotificationInputTextfieldMD(NotificationInputDelegate* delegate);
+  NotificationInputTextfieldMD(views::TextfieldController* controller);
   ~NotificationInputTextfieldMD() override;
-
-  void CheckUpdateImage();
-  bool HandleKeyEvent(views::Textfield* sender,
-                      const ui::KeyEvent& key_event) override;
-  bool HandleMouseEvent(views::Textfield* sender,
-                        const ui::MouseEvent& mouse_event) override;
-  bool HandleGestureEvent(views::Textfield* sender,
-                          const ui::GestureEvent& gesture_event) override;
 
   void set_index(size_t index) { index_ = index; }
   void set_placeholder(const base::string16& placeholder);
@@ -166,10 +155,6 @@ class NotificationInputTextfieldMD : public views::Textfield,
   size_t index() const { return index_; };
 
  private:
-  NotificationInputDelegate* const delegate_;
-
-  bool is_empty_ = true;
-
   // |index_| is the notification action index that should be passed as the
   // argument of ClickOnNotificationButtonWithReply.
   size_t index_ = 0;
@@ -190,7 +175,8 @@ class NotificationInputReplyButtonMD : public views::ImageButton {
 };
 
 class NotificationInputContainerMD : public views::InkDropHostView,
-                                     public views::ButtonListener {
+                                     public views::ButtonListener,
+                                     public views::TextfieldController {
  public:
   NotificationInputContainerMD(NotificationInputDelegate* delegate);
   ~NotificationInputContainerMD() override;
@@ -202,6 +188,11 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
+
+  // Overridden from views::TextfieldController:
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
+  void OnAfterUserAction(views::Textfield* sender) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -256,8 +247,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void OnSettingsButtonPressed() override;
 
   // Overridden from NotificationInputDelegate:
-  void SetNormalImageToReplyButton() override;
-  void SetPlaceholderImageToReplyButton() override;
   void OnNotificationInputSubmit(size_t index,
                                  const base::string16& text) override;
 
