@@ -14,6 +14,12 @@
 #pragma warning(disable : 4302 4311)
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+// TODO(thakis): Remove once we use a gperf that no longer produces "register".
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#endif
+
 namespace blink {
 
 namespace {
@@ -41,6 +47,10 @@ struct Property;
 {% endif %}
 {% endfor %}
 %%
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 const Property* FindDescriptor(const char* str, unsigned int len) {
   return AtRuleDescriptorHash::findDescriptorImpl(str, len);
