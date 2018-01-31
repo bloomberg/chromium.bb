@@ -39617,6 +39617,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Empty stream 2 file removed"/>
 </enum>
 
+<enum name="SimpleCache.FileDescriptorLimiterOp">
+  <int value="0" label="Close file"/>
+  <int value="1" label="Reopen file successfully"/>
+  <int value="2" label="Fail to reopen file"/>
+</enum>
+
 <enum name="SimpleCache.FileDescriptorLimitStatus">
   <int value="0" label="Unsupported"/>
   <int value="1" label="Supported but failed"/>
