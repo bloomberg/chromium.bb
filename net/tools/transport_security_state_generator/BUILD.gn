@@ -66,11 +66,4 @@ executable("transport_security_state_generator") {
     "//crypto",
     "//third_party/boringssl",
   ]
-
-  if (is_win) {
-    # Work around incremental linking randomly creating corrupt binaries,
-    # crbug.com/644525.
-    configs -= [ "//build/config/win:default_incremental_linking" ]
-    configs += [ "//build/config/win:no_incremental_linking" ]
-  }
 }
