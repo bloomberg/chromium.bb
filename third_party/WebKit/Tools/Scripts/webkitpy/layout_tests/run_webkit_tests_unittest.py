@@ -31,7 +31,6 @@
 import json
 import re
 import StringIO
-import sys
 import unittest
 
 from webkitpy.common import exit_codes
@@ -422,6 +421,18 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         # Now check that we don't run anything.
         self.assertEqual(get_tests_run(['--skipped=always', 'passes/skipped/skip.html']), [])
+
+    def test_gtest_also_run_disabled_tests(self):
+        self.assertEqual(
+            sorted(get_tests_run(['--gtest_also_run_disabled_tests', 'passes'])),
+            sorted(get_tests_run(['--skipped=ignore', 'passes']))
+        )
+
+    def test_gtest_also_run_disabled_tests_overrides_skipped(self):
+        self.assertEqual(
+            sorted(get_tests_run(['--gtest_also_run_disabled_tests', '--skipped=always', 'passes'])),
+            sorted(get_tests_run(['--skipped=ignore', 'passes']))
+        )
 
     def test_iterations(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
