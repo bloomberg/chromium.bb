@@ -23,7 +23,7 @@
 #include "net/url_request/url_request_context.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"

@@ -21,7 +21,7 @@
 #include "media/media_features.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
@@ -175,7 +175,7 @@ void UtilityServiceFactory::OnLoadFailed() {
 
 std::unique_ptr<service_manager::Service>
 UtilityServiceFactory::CreateNetworkService() {
-  return std::make_unique<network::NetworkServiceImpl>(
+  return std::make_unique<network::NetworkService>(
       std::move(network_registry_));
 }
 

@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -28,7 +29,7 @@ class URLRequestContext;
 }  // namespace net
 
 namespace network {
-class NetworkServiceImpl;
+class NetworkService;
 class UDPSocketFactory;
 class URLLoader;
 class URLRequestContextBuilderMojo;
@@ -41,20 +42,21 @@ class URLRequestContextBuilderMojo;
 // destroyed when either one is torn down.
 //
 // When the network service is disabled, NetworkContexts may be created through
-// NetworkServiceImpl::CreateNetworkContextWithBuilder, and take in a
+// NetworkService::CreateNetworkContextWithBuilder, and take in a
 // URLRequestContextBuilderMojo to seed construction of the NetworkContext's
 // URLRequestContext. When that happens, the consumer takes ownership of the
 // NetworkContext directly, has direct access to its URLRequestContext, and is
 // responsible for destroying it before the NetworkService.
-class NetworkContext : public mojom::NetworkContext {
+class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
+    : public mojom::NetworkContext {
  public:
-  NetworkContext(NetworkServiceImpl* network_service,
+  NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
                  mojom::NetworkContextParamsPtr params);
 
   // Temporary constructor that allows creating an in-process NetworkContext
   // with a pre-populated URLRequestContextBuilderMojo.
-  NetworkContext(NetworkServiceImpl* network_service,
+  NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
                  mojom::NetworkContextParamsPtr params,
                  std::unique_ptr<URLRequestContextBuilderMojo> builder);
@@ -62,7 +64,7 @@ class NetworkContext : public mojom::NetworkContext {
   // Creates a NetworkContext that wraps a consumer-provided URLRequestContext
   // that the NetworkContext does not own.
   // TODO(mmenke):  Remove this constructor when the network service ships.
-  NetworkContext(NetworkServiceImpl* network_service,
+  NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
                  net::URLRequestContext* url_request_context);
 
@@ -75,7 +77,7 @@ class NetworkContext : public mojom::NetworkContext {
 
   net::URLRequestContext* url_request_context() { return url_request_context_; }
 
-  NetworkServiceImpl* network_service() { return network_service_; }
+  NetworkService* network_service() { return network_service_; }
 
   // These are called by individual url loaders as they are being created and
   // destroyed.
@@ -103,7 +105,7 @@ class NetworkContext : public mojom::NetworkContext {
                          bool include_subdomains,
                          AddHSTSForTestingCallback callback) override;
 
-  // Called when the associated NetworkServiceImpl is going away. Guaranteed to
+  // Called when the associated NetworkService is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.
   void Cleanup();
 
@@ -128,7 +130,7 @@ class NetworkContext : public mojom::NetworkContext {
   URLRequestContextOwner MakeURLRequestContext(
       mojom::NetworkContextParams* network_context_params);
 
-  NetworkServiceImpl* const network_service_;
+  NetworkService* const network_service_;
 
   // Holds owning pointer to |url_request_context_|. Will contain a nullptr for
   // |url_request_context| when the NetworkContextImpl doesn't own its own

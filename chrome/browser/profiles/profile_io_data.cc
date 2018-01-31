@@ -109,11 +109,11 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/ignore_errors_cert_verifier.h"
-#include "services/network/public/cpp/network_service.h"
 #include "services/network/public/cpp/proxy_config_traits.h"
-#include "services/network/public/cpp/url_request_context_builder_mojo.h"
+#include "services/network/url_request_context_builder_mojo.h"
 #include "third_party/WebKit/public/public_features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -21,7 +22,7 @@ namespace network {
 // done through mojo on the main thread. This registers itself to receive
 // broadcasts from net::NetworkChangeNotifier and rebroadcasts the notifications
 // to mojom::NetworkChangeManagerClients through mojo pipes.
-class NetworkChangeManager
+class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkChangeManager
     : public mojom::NetworkChangeManager,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:

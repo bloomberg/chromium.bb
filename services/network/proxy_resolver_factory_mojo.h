@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -26,7 +27,8 @@ namespace network {
 
 // Implementation of ProxyResolverFactory that connects to a Mojo service to
 // create implementations of a Mojo proxy resolver to back a ProxyResolverMojo.
-class ProxyResolverFactoryMojo : public net::ProxyResolverFactory {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolverFactoryMojo
+    : public net::ProxyResolverFactory {
  public:
   ProxyResolverFactoryMojo(
       proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,

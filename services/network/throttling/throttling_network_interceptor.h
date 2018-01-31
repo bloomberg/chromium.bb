@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 
@@ -26,7 +27,7 @@ class NetworkConditions;
 
 // ThrottlingNetworkInterceptor emulates network conditions for transactions
 // with specific client id.
-class ThrottlingNetworkInterceptor {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingNetworkInterceptor {
  public:
   using ThrottleCallback = base::Callback<void(int, int64_t)>;
 

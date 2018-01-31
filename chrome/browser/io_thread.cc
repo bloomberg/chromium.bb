@@ -95,11 +95,11 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/ignore_errors_cert_verifier.h"
-#include "services/network/public/cpp/network_service.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/cpp/url_request_context_builder_mojo.h"
+#include "services/network/url_request_context_builder_mojo.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

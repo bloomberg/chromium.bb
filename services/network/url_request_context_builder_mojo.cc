@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/url_request_context_builder_mojo.h"
+#include "services/network/url_request_context_builder_mojo.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"

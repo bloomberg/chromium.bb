@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
@@ -34,6 +35,7 @@ namespace network {
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyResolutionService.
+COMPONENT_EXPORT(NETWORK_SERVICE)
 std::unique_ptr<net::ProxyResolutionService> CreateProxyServiceUsingMojoFactory(
     proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,

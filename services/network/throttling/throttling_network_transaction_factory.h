@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction_factory.h"
@@ -20,7 +21,8 @@ class HttpTransaction;
 namespace network {
 
 // NetworkTransactionFactory wraps HttpNetworkTransactions.
-class ThrottlingNetworkTransactionFactory : public net::HttpTransactionFactory {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingNetworkTransactionFactory
+    : public net::HttpTransactionFactory {
  public:
   explicit ThrottlingNetworkTransactionFactory(
       net::HttpNetworkSession* session);

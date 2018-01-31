@@ -55,7 +55,9 @@ include_rules = [
   "+services/identity/public",
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",
+  "+services/network/network_service.h",
   "+services/network/public",
+  "+services/network/url_request_context_builder_mojo.h",
   "+services/preferences/public/cpp",
   "+services/preferences/public/interfaces",
   "+services/proxy_resolver",  # Android runs the packaged proxy resolver

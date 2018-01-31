@@ -23,6 +23,7 @@ include_rules = [
   "+services/device/public/cpp/generic_sensor",
   "+services/network/public/cpp",
   "+services/network/public/interfaces",
+  "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
   "+services/service_manager/public",
   "+ui/base/resource/data_pack.h",

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_CONTEXT_BUILDER_MOJO_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_CONTEXT_BUILDER_MOJO_H_
+#ifndef SERVICES_NETWORK_URL_REQUEST_CONTEXT_BUILDER_MOJO_H_
+#define SERVICES_NETWORK_URL_REQUEST_CONTEXT_BUILDER_MOJO_H_
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
@@ -30,7 +31,8 @@ namespace network {
 // responsible for providing the proxy_resolver::mojom::ProxyResolverFactory.
 // If a ProxyResolutionService is set directly via the URLRequestContextBuilder
 // API, it will be used instead.
-class URLRequestContextBuilderMojo : public net::URLRequestContextBuilder {
+class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
+    : public net::URLRequestContextBuilder {
  public:
   URLRequestContextBuilderMojo();
   ~URLRequestContextBuilderMojo() override;
@@ -74,4 +76,4 @@ class URLRequestContextBuilderMojo : public net::URLRequestContextBuilder {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_CONTEXT_BUILDER_MOJO_H_
+#endif  // SERVICES_NETWORK_URL_REQUEST_CONTEXT_BUILDER_MOJO_H_

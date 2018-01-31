@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
 #define SERVICES_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -20,8 +21,9 @@ class ProxyConfig;
 namespace network {
 
 // ProxyConfigService that gets its proxy configuration over a Mojo pipe.
-class ProxyConfigServiceMojo : public net::ProxyConfigService,
-                               public mojom::ProxyConfigClient {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
+    : public net::ProxyConfigService,
+      public mojom::ProxyConfigClient {
  public:
   // |proxy_config_client_request| is the Mojo pipe over which new
   // configurations are received. |initial_proxy_config| is the initial proxy

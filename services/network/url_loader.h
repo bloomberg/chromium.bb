@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -30,7 +31,9 @@ class NetworkContext;
 class NetToMojoPendingBuffer;
 struct ResourceResponse;
 
-class URLLoader : public mojom::URLLoader, public net::URLRequest::Delegate {
+class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
+    : public mojom::URLLoader,
+      public net::URLRequest::Delegate {
  public:
   URLLoader(NetworkContext* context,
             mojom::URLLoaderRequest url_loader_request,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/network_service_impl.h"
+#include "services/network/network_service.h"
 
 #include <utility>
 
@@ -20,7 +20,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/cpp/url_request_context_builder_mojo.h"
+#include "services/network/url_request_context_builder_mojo.h"
 
 namespace network {
 
@@ -50,14 +50,7 @@ CreateNetworkChangeNotifierIfNeeded() {
 
 }  // namespace
 
-std::unique_ptr<NetworkService> NetworkService::Create(
-    mojom::NetworkServiceRequest request,
-    net::NetLog* net_log) {
-  return std::make_unique<NetworkServiceImpl>(nullptr, std::move(request),
-                                              net_log);
-}
-
-class NetworkServiceImpl::MojoNetLog : public net::NetLog {
+class NetworkService::MojoNetLog : public net::NetLog {
  public:
   MojoNetLog() {}
 
@@ -89,7 +82,7 @@ class NetworkServiceImpl::MojoNetLog : public net::NetLog {
   DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
 };
 
-NetworkServiceImpl::NetworkServiceImpl(
+NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojom::NetworkServiceRequest request,
     net::NetLog* net_log)
@@ -101,7 +94,7 @@ NetworkServiceImpl::NetworkServiceImpl(
   if (registry_) {
     DCHECK(!request.is_pending());
     registry_->AddInterface<mojom::NetworkService>(
-        base::BindRepeating(&NetworkServiceImpl::Bind, base::Unretained(this)));
+        base::BindRepeating(&NetworkService::Bind, base::Unretained(this)));
   } else if (request.is_pending()) {
     Bind(std::move(request));
   }
@@ -127,7 +120,7 @@ NetworkServiceImpl::NetworkServiceImpl(
       new net::LoggingNetworkChangeObserver(net_log_));
 }
 
-NetworkServiceImpl::~NetworkServiceImpl() {
+NetworkService::~NetworkService() {
   // Call each Network and ask it to release its net::URLRequestContext, as they
   // may have references to shared objects owned by the NetworkService. The
   // NetworkContexts deregister themselves in Cleanup(), so have to be careful.
@@ -135,8 +128,14 @@ NetworkServiceImpl::~NetworkServiceImpl() {
     (*network_contexts_.begin())->Cleanup();
 }
 
+std::unique_ptr<NetworkService> NetworkService::Create(
+    mojom::NetworkServiceRequest request,
+    net::NetLog* net_log) {
+  return std::make_unique<NetworkService>(nullptr, std::move(request), net_log);
+}
+
 std::unique_ptr<mojom::NetworkContext>
-NetworkServiceImpl::CreateNetworkContextWithBuilder(
+NetworkService::CreateNetworkContextWithBuilder(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params,
     std::unique_ptr<URLRequestContextBuilderMojo> builder,
@@ -148,30 +147,28 @@ NetworkServiceImpl::CreateNetworkContextWithBuilder(
   return network_context;
 }
 
-std::unique_ptr<NetworkServiceImpl> NetworkServiceImpl::CreateForTesting() {
-  return base::WrapUnique(new NetworkServiceImpl(
-      std::make_unique<service_manager::BinderRegistry>()));
+std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
+  return base::WrapUnique(
+      new NetworkService(std::make_unique<service_manager::BinderRegistry>()));
 }
 
-void NetworkServiceImpl::RegisterNetworkContext(
-    NetworkContext* network_context) {
+void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
   DCHECK_EQ(0u, network_contexts_.count(network_context));
   network_contexts_.insert(network_context);
   if (quic_disabled_)
     network_context->DisableQuic();
 }
 
-void NetworkServiceImpl::DeregisterNetworkContext(
-    NetworkContext* network_context) {
+void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
   DCHECK_EQ(1u, network_contexts_.count(network_context));
   network_contexts_.erase(network_context);
 }
 
-void NetworkServiceImpl::SetClient(mojom::NetworkServiceClientPtr client) {
+void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
   client_ = std::move(client);
 }
 
-void NetworkServiceImpl::CreateNetworkContext(
+void NetworkService::CreateNetworkContext(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params) {
   // The NetworkContext will destroy itself on connection error, or when the
@@ -179,7 +176,7 @@ void NetworkServiceImpl::CreateNetworkContext(
   new NetworkContext(this, std::move(request), std::move(params));
 }
 
-void NetworkServiceImpl::DisableQuic() {
+void NetworkService::DisableQuic() {
   quic_disabled_ = true;
 
   for (auto* network_context : network_contexts_) {
@@ -187,7 +184,7 @@ void NetworkServiceImpl::DisableQuic() {
   }
 }
 
-void NetworkServiceImpl::SetRawHeadersAccess(uint32_t process_id, bool allow) {
+void NetworkService::SetRawHeadersAccess(uint32_t process_id, bool allow) {
   DCHECK(process_id);
   if (allow)
     processes_with_raw_headers_access_.insert(process_id);
@@ -195,7 +192,7 @@ void NetworkServiceImpl::SetRawHeadersAccess(uint32_t process_id, bool allow) {
     processes_with_raw_headers_access_.erase(process_id);
 }
 
-bool NetworkServiceImpl::HasRawHeadersAccess(uint32_t process_id) const {
+bool NetworkService::HasRawHeadersAccess(uint32_t process_id) const {
   // Allow raw headers for browser-initiated requests.
   if (!process_id)
     return true;
@@ -203,23 +200,23 @@ bool NetworkServiceImpl::HasRawHeadersAccess(uint32_t process_id) const {
          processes_with_raw_headers_access_.end();
 }
 
-net::NetLog* NetworkServiceImpl::net_log() const {
+net::NetLog* NetworkService::net_log() const {
   return net_log_;
 }
 
-void NetworkServiceImpl::GetNetworkChangeManager(
+void NetworkService::GetNetworkChangeManager(
     mojom::NetworkChangeManagerRequest request) {
   network_change_manager_->AddRequest(std::move(request));
 }
 
-void NetworkServiceImpl::OnBindInterface(
+void NetworkService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void NetworkServiceImpl::Bind(mojom::NetworkServiceRequest request) {
+void NetworkService::Bind(mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 }
