@@ -357,7 +357,7 @@ static void dealloc_arrays(aom_film_grain_t *params, int ***pred_pos_luma,
 }
 
 // get a number between 0 and 2^bits - 1
-int get_random_number(int bits) {
+static INLINE int get_random_number(int bits) {
   uint16_t bit;
   bit = ((random_register >> 0) ^ (random_register >> 1) ^
          (random_register >> 3) ^ (random_register >> 12)) &
