@@ -70,6 +70,28 @@ def MakePackagePath(file_path, roots):
   raise Exception('Error: no matching root paths found for \'%s\'.' % file_path)
 
 
+def _GetStrippedPath(bin_path):
+  """Finds the stripped version of the binary |bin_path| in the build
+  output directory."""
+
+  if not '.unstripped' in bin_path:
+    raise Exception('File "%s" is not in an .unstripped directory.' % bin_path)
+
+  return os.path.normpath(os.path.join(bin_path,
+                                       os.path.pardir,
+                                       os.path.pardir,
+                                       os.path.basename(bin_path)))
+
+
+def _IsBinary(path):
+  """Checks if the file at |path| is an ELF executable by inspecting its FourCC
+  header."""
+
+  with open(path, 'rb') as f:
+    file_tag = f.read(4)
+  return file_tag == '\x7fELF'
+
+
 def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
   with open(output_path, 'w') as output:
     # Process the runtime deps file for file paths, recursively walking
@@ -91,11 +113,15 @@ def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
     # Format and write out the manifest contents.
     app_found = False
     for next_file in expanded_files:
+      if _IsBinary(next_file):
+        next_file = _GetStrippedPath(next_file)
+
       in_package_path = MakePackagePath(os.path.join(out_dir, next_file),
                                         [root_dir, out_dir])
       if in_package_path == app_name:
         in_package_path = 'bin/app'
         app_found = True
+
       output.write('%s=%s\n' % (in_package_path, next_file))
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
