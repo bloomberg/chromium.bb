@@ -30,6 +30,7 @@ Refer to README.md for content description and update process.
  <item id="brandcode_config" hash_code="109679553" type="0" content_hash_code="128843792" os_list="linux,windows" file_path="chrome/browser/profile_resetter/brandcode_config_fetcher.cc"/>
  <item id="captive_portal_service" hash_code="88754904" type="0" content_hash_code="70737580" os_list="linux,windows" file_path="chrome/browser/captive_portal/captive_portal_service.cc"/>
  <item id="cast_keep_alive_delegate" hash_code="134755844" type="0" content_hash_code="66118796" os_list="linux,windows" file_path="components/cast_channel/keep_alive_delegate.cc"/>
+ <item id="cast_message_handler" hash_code="87558948" type="0" content_hash_code="49684899" os_list="linux,windows" file_path="components/cast_channel/cast_message_handler.cc"/>
  <item id="cast_socket" hash_code="115192205" type="0" content_hash_code="63056899" os_list="linux,windows" file_path="components/cast_channel/cast_socket.cc"/>
  <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport_impl.cc"/>
  <item id="certificate_verifier" hash_code="113553577" type="0" content_hash_code="62346354" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_impl.cc"/>

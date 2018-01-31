@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "components/cast_channel/cast_socket.h"
 
 namespace cast_channel {
