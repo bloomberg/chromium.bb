@@ -32,8 +32,13 @@
     var isSearchable = (view instanceof UI.SearchableView);
     var compontentView = view;
     var typeName = 'unknown';
+    var searchableView = view;
+    if (view instanceof SourceFrame.ResourceSourceFrame._SearchableContainer) {
+      isSearchable = true;
+      searchableView = view.children()[0];
+    }
     if (isSearchable)
-      compontentView = view._searchProvider;
+      compontentView = searchableView._searchProvider;
 
     if (compontentView instanceof SourceFrame.ResourceSourceFrame) {
       typeName = 'ResourceSourceFrame';
@@ -60,7 +65,7 @@
     TestRunner.addResult('Type: ' + typeName);
 
     if (isSearchable)
-      testSearches(view, searches);
+      testSearches(searchableView, searches);
 
     callback();
   }

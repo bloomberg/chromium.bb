@@ -69,19 +69,19 @@ Testing with MimeType: text/plain, and StatusCode: 200
 Content: This
 <b>is a </b><br /><br />test.
 
-ResourceType(xhr): SearchableView > widget vbox
-ResourceType(fetch): SearchableView > widget vbox
-ResourceType(document): SearchableView > widget vbox
-ResourceType(other): SearchableView > widget vbox
+ResourceType(xhr): _SearchableContainer > SearchableView > widget vbox
+ResourceType(fetch): _SearchableContainer > SearchableView > widget vbox
+ResourceType(document): _SearchableContainer > SearchableView > widget vbox
+ResourceType(other): _SearchableContainer > SearchableView > widget vbox
 
 XML With Unknown MIME
 Testing with MimeType: text/foobar, and StatusCode: 200
 Content: <bar><foo/></bar>
 
-ResourceType(xhr): SearchableView > widget vbox
-ResourceType(fetch): SearchableView > widget vbox
-ResourceType(document): SearchableView > widget vbox
-ResourceType(other): SearchableView > widget vbox
+ResourceType(xhr): _SearchableContainer > SearchableView > widget vbox
+ResourceType(fetch): _SearchableContainer > SearchableView > widget vbox
+ResourceType(document): _SearchableContainer > SearchableView > widget vbox
+ResourceType(other): _SearchableContainer > SearchableView > widget vbox
 
 XML With Error 500
 Testing with MimeType: text/xml, and StatusCode: 500
@@ -96,10 +96,10 @@ Unknown MIME Text With Error 500
 Testing with MimeType: text/foobar, and StatusCode: 500
 Content: Foo Bar
 
-ResourceType(xhr): SearchableView > widget vbox
-ResourceType(fetch): SearchableView > widget vbox
-ResourceType(document): SearchableView > widget vbox
-ResourceType(other): SearchableView > widget vbox
+ResourceType(xhr): _SearchableContainer > SearchableView > widget vbox
+ResourceType(fetch): _SearchableContainer > SearchableView > widget vbox
+ResourceType(document): _SearchableContainer > SearchableView > widget vbox
+ResourceType(other): _SearchableContainer > SearchableView > widget vbox
 
 Binary Image File
 Testing with MimeType: image/png, and StatusCode: 200
