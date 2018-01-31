@@ -829,6 +829,34 @@
       reportTestSuccess();
     }).catch(failTest);
   }
+
+  function getUserMediaEchoCancellationOnAndOff() {
+    var stream;
+    navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId: {exact: "default"},
+        echoCancellation: {exact: true}
+      }
+    }).then(s => {
+      stream = s;
+      assertTrue(stream.getAudioTracks()[0].getSettings().echoCancellation);
+      // Chromium's current implementation does not support tracks from the
+      // same source to have different echo cancellation settings. This
+      // getUserMedia() call is expected to fail.
+      navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: {exact: "default"},
+          echoCancellation: {exact: false}
+        }
+      }).then(
+          s => failTest("Unexpected accepted promise from getUserMedia()"),
+          e => {
+            assertEquals(e.name, "OverconstrainedError");
+            stream.getAudioTracks()[0].stop();
+            reportTestSuccess();
+          });
+    }).catch(failTest);
+  }
   </script>
 </head>
 <body>

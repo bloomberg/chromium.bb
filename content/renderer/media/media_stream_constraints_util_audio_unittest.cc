@@ -63,39 +63,38 @@ class MediaStreamConstraintsUtilAudioTest
  public:
   void SetUp() override {
     ResetFactory();
-    if (!IsDeviceCapture())
-      return;
+    if (IsDeviceCapture()) {
+      capabilities_.emplace_back(
+          "default_device",
+          media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 media::CHANNEL_LAYOUT_STEREO,
+                                 media::AudioParameters::kAudioCDSampleRate, 16,
+                                 1000));
 
-    blink::mojom::AudioInputDeviceCapabilitiesPtr device =
-        blink::mojom::AudioInputDeviceCapabilities::New();
-    device->device_id = "default_device";
-    device->parameters = media::AudioParameters(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO,
-        media::AudioParameters::kAudioCDSampleRate, 16, 1000);
-    capabilities_.push_back(std::move(device));
+      media::AudioParameters hw_echo_canceller_parameters(
+          media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+          media::CHANNEL_LAYOUT_STEREO,
+          media::AudioParameters::kAudioCDSampleRate, 24, 1000);
+      hw_echo_canceller_parameters.set_effects(
+          media::AudioParameters::ECHO_CANCELLER);
+      capabilities_.emplace_back("hw_echo_canceller_device",
+                                 hw_echo_canceller_parameters);
 
-    device = blink::mojom::AudioInputDeviceCapabilities::New();
-    device->device_id = "hw_echo_canceller_device";
-    device->parameters = media::AudioParameters(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO,
-        media::AudioParameters::kAudioCDSampleRate, 24, 1000);
-    device->parameters.set_effects(media::AudioParameters::ECHO_CANCELLER);
-    capabilities_.push_back(std::move(device));
+      media::AudioParameters geometry_parameters(
+          media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+          media::CHANNEL_LAYOUT_STEREO,
+          media::AudioParameters::kAudioCDSampleRate, 16, 1000);
+      geometry_parameters.set_mic_positions(kMicPositions);
+      capabilities_.emplace_back("geometry device", geometry_parameters);
 
-    device = blink::mojom::AudioInputDeviceCapabilities::New();
-    device->device_id = "geometry device";
-    device->parameters = media::AudioParameters(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO,
-        media::AudioParameters::kAudioCDSampleRate, 16, 1000);
-    device->parameters.set_mic_positions(kMicPositions);
-    capabilities_.push_back(std::move(device));
-
-    default_device_ = capabilities_[0].get();
-    hw_echo_canceller_device_ = capabilities_[1].get();
-    geometry_device_ = capabilities_[2].get();
+      default_device_ = &capabilities_[0];
+      hw_echo_canceller_device_ = &capabilities_[1];
+      geometry_device_ = &capabilities_[2];
+    } else {
+      // For content capture, use a single capability that admits all possible
+      // settings.
+      capabilities_.emplace_back();
+    }
   }
 
  protected:
@@ -125,6 +124,7 @@ class MediaStreamConstraintsUtilAudioTest
       bool disable_local_echo,
       bool render_to_associated_sink) {
     MediaStreamDevice device;
+    device.id = "processed_source";
     device.type = GetMediaStreamType();
     if (render_to_associated_sink)
       device.matched_output_device_id = std::string("some_device_id");
@@ -318,17 +318,16 @@ class MediaStreamConstraintsUtilAudioTest
     }
   }
 
-  void CheckDevice(
-      const blink::mojom::AudioInputDeviceCapabilities& expected_device,
-      const AudioCaptureSettings& result) {
-    EXPECT_EQ(expected_device.device_id, result.device_id());
-    EXPECT_EQ(expected_device.parameters.sample_rate(),
+  void CheckDevice(const AudioDeviceCaptureCapability& expected_device,
+                   const AudioCaptureSettings& result) {
+    EXPECT_EQ(expected_device.DeviceID(), result.device_id());
+    EXPECT_EQ(expected_device.Parameters().sample_rate(),
               result.device_parameters().sample_rate());
-    EXPECT_EQ(expected_device.parameters.bits_per_sample(),
+    EXPECT_EQ(expected_device.Parameters().bits_per_sample(),
               result.device_parameters().bits_per_sample());
-    EXPECT_EQ(expected_device.parameters.channels(),
+    EXPECT_EQ(expected_device.Parameters().channels(),
               result.device_parameters().channels());
-    EXPECT_EQ(expected_device.parameters.effects(),
+    EXPECT_EQ(expected_device.Parameters().effects(),
               result.device_parameters().effects());
   }
 
@@ -355,10 +354,9 @@ class MediaStreamConstraintsUtilAudioTest
 
   MockConstraintFactory constraint_factory_;
   AudioDeviceCaptureCapabilities capabilities_;
-  const blink::mojom::AudioInputDeviceCapabilities* default_device_ = nullptr;
-  const blink::mojom::AudioInputDeviceCapabilities* hw_echo_canceller_device_ =
-      nullptr;
-  const blink::mojom::AudioInputDeviceCapabilities* geometry_device_ = nullptr;
+  const AudioDeviceCaptureCapability* default_device_ = nullptr;
+  const AudioDeviceCaptureCapability* hw_echo_canceller_device_ = nullptr;
+  const AudioDeviceCaptureCapability* geometry_device_ = nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
 
  private:
@@ -520,18 +518,18 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, IdealArbitraryDeviceID) {
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
   for (const auto& device : capabilities_) {
     constraint_factory_.basic().device_id.SetExact(
-        blink::WebString::FromASCII(device->device_id));
+        blink::WebString::FromASCII(device.DeviceID()));
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    CheckDevice(*device, result);
+    CheckDevice(device, result);
     CheckBoolDefaults(AudioSettingsBoolMembers(),
                       {&AudioProcessingProperties::enable_sw_echo_cancellation},
                       result);
     bool has_hw_echo_cancellation =
-        device->parameters.effects() & media::AudioParameters::ECHO_CANCELLER;
-    EXPECT_EQ(!has_hw_echo_cancellation,
+        device.Parameters().effects() & media::AudioParameters::ECHO_CANCELLER;
+    EXPECT_EQ(IsDeviceCapture() && !has_hw_echo_cancellation,
               result.audio_processing_properties().enable_sw_echo_cancellation);
-    if (&*device == geometry_device_) {
+    if (&device == geometry_device_) {
       EXPECT_EQ(kMicPositions,
                 result.audio_processing_properties().goog_array_geometry);
     } else {
@@ -619,7 +617,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithHw) {
       for (bool value : kBoolValues) {
         ResetFactory();
         constraint_factory_.basic().device_id.SetExact(
-            blink::WebString::FromASCII(hw_echo_canceller_device_->device_id));
+            blink::WebString::FromASCII(hw_echo_canceller_device_->DeviceID()));
         ((constraint_factory_.*accessor)().echo_cancellation.*
          set_function)(value);
         auto result = SelectSettings();
@@ -715,7 +713,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, GoogEchoCancellationWithHw) {
       for (bool value : kBoolValues) {
         ResetFactory();
         constraint_factory_.basic().device_id.SetExact(
-            blink::WebString::FromASCII(hw_echo_canceller_device_->device_id));
+            blink::WebString::FromASCII(hw_echo_canceller_device_->DeviceID()));
         ((constraint_factory_.*accessor)().goog_echo_cancellation.*
          set_function)(value);
         auto result = SelectSettings();
@@ -956,7 +954,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, DeviceGeometry) {
     return;
 
   constraint_factory_.basic().device_id.SetExact(
-      blink::WebString::FromASCII(geometry_device_->device_id));
+      blink::WebString::FromASCII(geometry_device_->DeviceID()));
 
   {
     const blink::WebString kValidGeometry =
@@ -1233,6 +1231,52 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
           source.get(), constraint_factory_.CreateWebMediaConstraints());
       EXPECT_TRUE(result.HasValue());
     }
+  }
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
+  // The distinction of used and unused sources is relevant only for device
+  // capture.
+  if (!IsDeviceCapture())
+    return;
+
+  AudioProcessingProperties properties;
+  properties.enable_sw_echo_cancellation = true;
+
+  std::unique_ptr<ProcessedLocalAudioSource> processed_source =
+      GetProcessedLocalAudioSource(properties, false /* hotword_enabled */,
+                                   false /* disable_local_echo */,
+                                   false /* render_to_associated_sink */);
+
+  const std::string kUnusedDeviceID = "unused_device";
+  AudioDeviceCaptureCapabilities capabilities;
+  capabilities.emplace_back(processed_source.get());
+  capabilities.emplace_back(kUnusedDeviceID,
+                            media::AudioParameters::UnavailableDeviceParams());
+
+  {
+    constraint_factory_.Reset();
+    constraint_factory_.basic().echo_cancellation.SetExact(false);
+
+    auto result = SelectSettingsAudioCapture(
+        capabilities, constraint_factory_.CreateWebMediaConstraints(),
+        false /* should_disable_hardware_noise_suppression */);
+    EXPECT_TRUE(result.HasValue());
+    EXPECT_EQ(result.device_id(), kUnusedDeviceID);
+    EXPECT_FALSE(
+        result.audio_processing_properties().enable_sw_echo_cancellation);
+  }
+
+  {
+    constraint_factory_.Reset();
+    constraint_factory_.basic().echo_cancellation.SetExact(true);
+    auto result = SelectSettingsAudioCapture(
+        capabilities, constraint_factory_.CreateWebMediaConstraints(),
+        false /* should_disable_hardware_noise_suppression */);
+    EXPECT_TRUE(result.HasValue());
+    EXPECT_EQ(result.device_id(), processed_source->device().id);
+    EXPECT_TRUE(
+        result.audio_processing_properties().enable_sw_echo_cancellation);
   }
 }
 
