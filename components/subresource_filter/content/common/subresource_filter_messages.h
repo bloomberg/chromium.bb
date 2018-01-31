@@ -58,8 +58,9 @@ IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
 // mojom::FrameNavigationControl::CommitNavigation.
 //
 // If no message arrives, the default behavior is ActivationLevel::DISABLED.
-IPC_MESSAGE_ROUTED1(SubresourceFilterMsg_ActivateForNextCommittedLoad,
-                    subresource_filter::ActivationState /* activation_state */)
+IPC_MESSAGE_ROUTED2(SubresourceFilterMsg_ActivateForNextCommittedLoad,
+                    subresource_filter::ActivationState /* activation_state */,
+                    bool /* is_ad_subframe */)
 
 // ----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

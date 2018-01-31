@@ -102,6 +102,9 @@ class ContentSubresourceFilterThrottleManager
       content::NavigationHandle* navigation_handle,
       ActivationDecision activation_decision,
       const ActivationState& activation_state) override;
+  void OnSubframeNavigationEvaluated(
+      content::NavigationHandle* navigation_handle,
+      LoadPolicy load_policy) override;
 
  private:
   std::unique_ptr<SubframeNavigationFilteringThrottle>
@@ -147,8 +150,14 @@ class ContentSubresourceFilterThrottleManager
   // For each ongoing navigation that requires activation state computation,
   // keeps track of the throttle that is carrying out that computation, so that
   // the result can be retrieved when the navigation is ready to commit.
-  std::unordered_map<content::NavigationHandle*,
-                     ActivationStateComputingNavigationThrottle*>
+  // is_ad_subframe is set if SubframeNavigationFilteringThrottle finds that the
+  // subframe URL matches the ruleset.
+  struct OngoingThrottleInfo {
+    ActivationStateComputingNavigationThrottle* throttle = nullptr;
+    bool is_ad_subframe = false;
+  };
+
+  std::unordered_map<content::NavigationHandle*, OngoingThrottleInfo>
       ongoing_activation_throttles_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
