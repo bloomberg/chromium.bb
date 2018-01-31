@@ -23,9 +23,6 @@ jumbo_source_set("network_sources") {
   visibility = [
     ":network",
     "//content",  # For the component build.
-    "//content/app:*",
-    "//content/utility:utility",
-    "//services/network/public/cpp/*",
 
     # For use by StoragePartition.
     # TODO(mmenke): Remove when network service ships.
@@ -47,11 +44,8 @@ jumbo_source_set("network_sources") {
     "//base",
     "//content:export",
     "//content/common",
-    "//content/common:mojo_bindings",
     "//content/public/common:common_sources",
     "//net",
-    "//services/network:network_service",
     "//services/network/public/cpp",
-    "//services/proxy_resolver/public/interfaces",
   ]
 }

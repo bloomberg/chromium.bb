@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/public/common/content_paths.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -47,26 +46,21 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-using network::NetworkContext;
-using network::URLLoader;
-
-namespace content {
+namespace network {
 
 namespace {
 
-static network::ResourceRequest CreateResourceRequest(const char* method,
-                                                      const GURL& url) {
-  network::ResourceRequest request;
+static ResourceRequest CreateResourceRequest(const char* method,
+                                             const GURL& url) {
+  ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
   request.site_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
   request.is_main_frame = true;
-  request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
   return request;
 }
@@ -185,7 +179,7 @@ class URLLoaderTest : public testing::Test {
   URLLoaderTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        context_(network::NetworkContext::CreateForTesting()) {
+        context_(NetworkContext::CreateForTesting()) {
     net::URLRequestFailedJob::AddUrlHandler();
   }
   ~URLLoaderTest() override {
@@ -194,7 +188,7 @@ class URLLoaderTest : public testing::Test {
 
   void SetUp() override {
     test_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+        base::FilePath(FILE_PATH_LITERAL("services/test/data")));
     // This Unretained is safe because test_server_ is owned by |this|.
     test_server_.RegisterRequestMonitor(
         base::Bind(&URLLoaderTest::Monitor, base::Unretained(this)));
@@ -208,17 +202,17 @@ class URLLoaderTest : public testing::Test {
   // block on trying to write the body buffer.
   int Load(const GURL& url, std::string* body = nullptr) WARN_UNUSED_RESULT {
     DCHECK(!ran_);
-    network::mojom::URLLoaderPtr loader;
+    mojom::URLLoaderPtr loader;
 
-    network::ResourceRequest request =
+    ResourceRequest request =
         CreateResourceRequest(!request_body_ ? "GET" : "POST", url);
-    uint32_t options = network::mojom::kURLLoadOptionNone;
+    uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_with_response_)
-      options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
+      options |= mojom::kURLLoadOptionSendSSLInfoWithResponse;
     if (sniff_)
-      options |= network::mojom::kURLLoadOptionSniffMimeType;
+      options |= mojom::kURLLoadOptionSniffMimeType;
     if (send_ssl_for_cert_error_)
-      options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+      options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
     if (request_body_)
       request.request_body = request_body_;
@@ -322,13 +316,16 @@ class URLLoaderTest : public testing::Test {
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   NetworkContext* context() { return context_.get(); }
-  network::TestURLLoaderClient* client() { return &client_; }
+  TestURLLoaderClient* client() { return &client_; }
   void DestroyContext() { context_.reset(); }
 
   // Returns the path of the requested file in the test data directory.
   base::FilePath GetTestFilePath(const std::string& file_name) {
     base::FilePath file_path;
-    PathService::Get(DIR_TEST_DATA, &file_path);
+    PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
+    file_path = file_path.Append(FILE_PATH_LITERAL("services"));
+    file_path = file_path.Append(FILE_PATH_LITERAL("test"));
+    file_path = file_path.Append(FILE_PATH_LITERAL("data"));
     return file_path.AppendASCII(file_name);
   }
 
@@ -359,8 +356,7 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     expect_redirect_ = true;
   }
-  void set_request_body(
-      scoped_refptr<network::ResourceRequestBody> request_body) {
+  void set_request_body(scoped_refptr<ResourceRequestBody> request_body) {
     request_body_ = request_body;
   }
 
@@ -454,13 +450,13 @@ class URLLoaderTest : public testing::Test {
   bool send_ssl_with_response_ = false;
   bool send_ssl_for_cert_error_ = false;
   bool expect_redirect_ = false;
-  scoped_refptr<network::ResourceRequestBody> request_body_;
+  scoped_refptr<ResourceRequestBody> request_body_;
 
   // Used to ensure that methods are called either before or after a request is
   // made, since the test fixture is meant to be used only once.
   bool ran_ = false;
   net::test_server::HttpRequest sent_request_;
-  network::TestURLLoaderClient client_;
+  TestURLLoaderClient client_;
 };
 
 TEST_F(URLLoaderTest, Basic) {
@@ -474,7 +470,7 @@ TEST_F(URLLoaderTest, Empty) {
 TEST_F(URLLoaderTest, BasicSSL) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   GURL url = https_server.GetURL("/simple_page.html");
@@ -489,7 +485,7 @@ TEST_F(URLLoaderTest, BasicSSL) {
 TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   GURL url = https_server.GetURL("/simple_page.html");
@@ -563,9 +559,9 @@ TEST_F(URLLoaderTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
 
 TEST_F(URLLoaderTest, DestroyContextWithLiveRequest) {
   GURL url = test_server()->GetURL("/hung-after-headers");
-  network::ResourceRequest request = CreateResourceRequest("GET", url);
+  ResourceRequest request = CreateResourceRequest("GET", url);
 
-  network::mojom::URLLoaderPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext, so
   // don't hold on to a pointer to it.
   base::WeakPtr<URLLoader> loader_impl =
@@ -721,10 +717,10 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       }));
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request =
+  ResourceRequest request =
       CreateResourceRequest("GET", server.GetURL("/hello.html"));
 
-  network::mojom::URLLoaderPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
   new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
                 client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -763,10 +759,9 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
                                                                  kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request =
-      CreateResourceRequest("GET", server.GetURL(kPath));
+  ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
-  network::mojom::URLLoaderPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
   new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
                 client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -821,10 +816,9 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
                                                                  kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request =
-      CreateResourceRequest("GET", server.GetURL(kPath));
+  ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
-  network::mojom::URLLoaderPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
   new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
                 client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -868,10 +862,9 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
                                                                  kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request =
-      CreateResourceRequest("GET", server.GetURL(kPath));
+  ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
-  network::mojom::URLLoaderPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
   new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
                 client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -909,10 +902,9 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
                                                                  kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request =
-      CreateResourceRequest("GET", server.GetURL(kPath));
+  ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
-  network::mojom::URLLoaderPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
   new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
                 client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -956,8 +948,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
 TEST_F(URLLoaderTest, UploadBytes) {
   const std::string kRequestBody = "Request Body";
 
-  scoped_refptr<network::ResourceRequestBody> request_body(
-      new network::ResourceRequestBody());
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
   request_body->AppendBytes(kRequestBody.c_str(), kRequestBody.length());
   set_request_body(std::move(request_body));
 
@@ -973,8 +964,7 @@ TEST_F(URLLoaderTest, UploadFile) {
   ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
       << "File not found: " << file_path.value();
 
-  scoped_refptr<network::ResourceRequestBody> request_body(
-      new network::ResourceRequestBody());
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
   request_body->AppendFileRange(
       file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
   set_request_body(std::move(request_body));
@@ -992,8 +982,7 @@ TEST_F(URLLoaderTest, UploadFileWithRange) {
       << "File not found: " << file_path.value();
   expected_body = expected_body.substr(1, expected_body.size() - 2);
 
-  scoped_refptr<network::ResourceRequestBody> request_body(
-      new network::ResourceRequestBody());
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
   request_body->AppendFileRange(file_path, 1, expected_body.size(),
                                 base::Time());
   set_request_body(std::move(request_body));
@@ -1010,8 +999,7 @@ TEST_F(URLLoaderTest, UploadRawFile) {
   ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
       << "File not found: " << file_path.value();
 
-  scoped_refptr<network::ResourceRequestBody> request_body(
-      new network::ResourceRequestBody());
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
   request_body->AppendRawFileRange(
       OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
       std::numeric_limits<uint64_t>::max(), base::Time());
@@ -1030,8 +1018,7 @@ TEST_F(URLLoaderTest, UploadRawFileWithRange) {
       << "File not found: " << file_path.value();
   expected_body = expected_body.substr(1, expected_body.size() - 2);
 
-  scoped_refptr<network::ResourceRequestBody> request_body(
-      new network::ResourceRequestBody());
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
   request_body->AppendRawFileRange(OpenFileForUpload(file_path),
                                    GetTestFilePath("should_be_ignored"), 1,
                                    expected_body.size(), base::Time());
@@ -1046,12 +1033,11 @@ TEST_F(URLLoaderTest, UploadRawFileWithRange) {
 TEST_F(URLLoaderTest, UploadDataPipe) {
   const std::string kRequestBody = "Request Body";
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  auto data_pipe_getter = std::make_unique<network::TestDataPipeGetter>(
+  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
 
-  auto resource_request_body =
-      base::MakeRefCounted<network::ResourceRequestBody>();
+  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1064,12 +1050,11 @@ TEST_F(URLLoaderTest, UploadDataPipe) {
 TEST_F(URLLoaderTest, UploadDataPipe_Redirect307) {
   const std::string kRequestBody = "Request Body";
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  auto data_pipe_getter = std::make_unique<network::TestDataPipeGetter>(
+  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
 
-  auto resource_request_body =
-      base::MakeRefCounted<network::ResourceRequestBody>();
+  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
   set_expect_redirect();
@@ -1090,12 +1075,11 @@ TEST_F(URLLoaderTest, UploadDataPipeWithLotsOfData) {
   while (request_body.size() < 5 * 1024 * 1024)
     request_body.append("foppity");
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  auto data_pipe_getter = std::make_unique<network::TestDataPipeGetter>(
+  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       request_body, mojo::MakeRequest(&data_pipe_getter_ptr));
 
-  auto resource_request_body =
-      base::MakeRefCounted<network::ResourceRequestBody>();
+  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1107,13 +1091,12 @@ TEST_F(URLLoaderTest, UploadDataPipeWithLotsOfData) {
 TEST_F(URLLoaderTest, UploadDataPipeError) {
   const std::string kRequestBody = "Request Body";
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  auto data_pipe_getter = std::make_unique<network::TestDataPipeGetter>(
+  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
   data_pipe_getter->set_start_error(net::ERR_ACCESS_DENIED);
 
-  auto resource_request_body =
-      base::MakeRefCounted<network::ResourceRequestBody>();
+  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1123,13 +1106,12 @@ TEST_F(URLLoaderTest, UploadDataPipeError) {
 TEST_F(URLLoaderTest, UploadDataPipeClosedEarly) {
   const std::string kRequestBody = "Request Body";
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  auto data_pipe_getter = std::make_unique<network::TestDataPipeGetter>(
+  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
   data_pipe_getter->set_pipe_closed_early(true);
 
-  auto resource_request_body =
-      base::MakeRefCounted<network::ResourceRequestBody>();
+  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1144,8 +1126,7 @@ TEST_F(URLLoaderTest, UploadDoubleRawFile) {
   ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
       << "File not found: " << file_path.value();
 
-  scoped_refptr<network::ResourceRequestBody> request_body(
-      new network::ResourceRequestBody());
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
   request_body->AppendRawFileRange(
       OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
       std::numeric_limits<uint64_t>::max(), base::Time());
@@ -1250,4 +1231,4 @@ TEST_F(URLLoaderTest, CertStatusOnResponse) {
             client()->response_head().cert_status);
 }
 
-}  // namespace content
+}  // namespace network

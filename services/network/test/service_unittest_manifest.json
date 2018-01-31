@@ -1,15 +1,15 @@
 {
-  "name": "content_unittests",
-  "display_name": "Content Unittests",
+  "name": "network_unittests",
+  "display_name": "Network Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
-         ]
+        ]
       },
       "requires": {
-        "file": [ "file:filesystem", "file:leveldb" ]
+        "network": [ "network_service" ]
       }
     }
   }
