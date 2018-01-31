@@ -138,7 +138,8 @@ int main(int argc, const char *argv[]) {
   int unit_number = 0;
   while (ReadTemporalUnit(&input_ctx, &unit_size)) {
     printf("Temporal unit %d\n", unit_number);
-    if (!aom_tools::DumpObu(input_ctx.unit_buffer, unit_size)) {
+    if (!aom_tools::DumpObu(input_ctx.unit_buffer,
+                            static_cast<int>(unit_size))) {
       fprintf(stderr, "Error: Temporal Unit parse failed on unit number %d.\n",
               unit_number);
       return EXIT_FAILURE;
