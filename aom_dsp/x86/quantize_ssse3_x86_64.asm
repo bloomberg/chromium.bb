@@ -45,7 +45,7 @@ cglobal quantize_%1, 0, %2, 15, coeff, ncoeff, skip, zbin, round, quant, \
   psrlw                           m1, 1                    ; m1 = (m1 + 1) / 2
 %endif
   mova                            m3, [r2q]                ; m3 = dequant
-  psubw                           m0, [pw_1]
+  psubw                           m0, [GLOBAL(pw_1)]
   mov                             r2, shiftmp
   mov                             r3, qcoeffmp
   mova                            m4, [r2]                 ; m4 = shift
