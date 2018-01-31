@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 
-#include <memory>
+#include <algorithm>
+#include <string>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
@@ -42,14 +44,16 @@ const char kModesAndCredentialsLengthMismatch[] =
     "|modes| and |credentials| must have the same number of elements";
 const char kMultipleModesNotSupported[] =
     "At most one quick unlock mode can be active.";
+
 // PINs greater in length than |kMinLengthForWeakPin| will be checked for
 // weakness.
-const int kMinLengthForNonWeakPin = 2;
+constexpr size_t kMinLengthForNonWeakPin = 2U;
+
 // A list of the most commmonly used PINs, whose digits are not all the same,
 // increasing or decreasing. This list is taken from
 // www.datagenetics.com/blog/september32012/.
-const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
-                                 "1122", "1313", "2001", "1010"};
+constexpr const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
+                                           "1122", "1313", "2001", "1010"};
 
 // Returns the active set of quick unlock modes.
 QuickUnlockModeList ComputeActiveModes(Profile* profile) {
@@ -83,52 +87,42 @@ bool IsPinNumeric(const std::string& pin) {
   return std::all_of(pin.begin(), pin.end(), ::isdigit);
 }
 
-void GetSanitizedPolicyPinMinMaxLength(PrefService* pref_service,
-                                       int* out_min_length,
-                                       int* out_max_length) {
-  DCHECK(out_min_length && out_max_length);
-
-  int min_length = pref_service->GetInteger(prefs::kPinUnlockMinimumLength);
+// Reads and sanitizes the pin length policy.
+// Returns the minimum and maximum required pin lengths.
+// - minimum must be at least 1.
+// - maximum must be at least |min_length|, or 0.
+std::pair<int, int> GetSanitizedPolicyPinMinMaxLength(
+    PrefService* pref_service) {
+  int min_length =
+      std::max(pref_service->GetInteger(prefs::kPinUnlockMinimumLength), 1);
   int max_length = pref_service->GetInteger(prefs::kPinUnlockMaximumLength);
+  max_length = max_length > 0 ? std::max(max_length, min_length) : 0;
 
-  // Sanitize the policy input.
-  if (min_length < 1)
-    min_length = 1;
-  if (max_length < 0)
-    max_length = 0;
-
-  if (max_length != 0 && max_length < min_length)
-    max_length = min_length;
-
-  *out_min_length = min_length;
-  *out_max_length = max_length;
+  DCHECK_GE(min_length, 1);
+  DCHECK_GE(max_length, 0);
+  return std::make_pair(min_length, max_length);
 }
 
-// Checks whether a given |pin| is valid given the PIN min/max policies in
-// |pref_service|. If |length_problem| is a valid pointer return the type of
-// problem.
-bool IsPinLengthValid(const std::string& pin,
-                      PrefService* pref_service,
-                      CredentialProblem* length_problem) {
-  int min_length, max_length;
-  GetSanitizedPolicyPinMinMaxLength(pref_service, &min_length, &max_length);
+// Checks whether a given |pin| has any problems given the PIN min/max policies
+// in |pref_service|. Returns CREDENTIAL_PROBLEM_NONE if |pin| has no problems,
+// or another CREDENTIAL_PROBLEM_ enum value to indicate the detected problem.
+CredentialProblem GetCredentialProblemForPin(const std::string& pin,
+                                             PrefService* pref_service) {
+  int min_length;
+  int max_length;
+  std::tie(min_length, max_length) =
+      GetSanitizedPolicyPinMinMaxLength(pref_service);
 
   // Check if the PIN is shorter than the minimum specified length.
-  if (static_cast<int>(pin.size()) < min_length) {
-    if (length_problem)
-      *length_problem = CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT;
-    return false;
-  }
+  if (pin.size() < static_cast<size_t>(min_length))
+    return CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT;
 
   // If the maximum specified length is zero, there is no maximum length.
   // Otherwise check if the PIN is longer than the maximum specified length.
-  if (max_length != 0 && static_cast<int>(pin.size()) > max_length) {
-    if (length_problem)
-      *length_problem = CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG;
-    return false;
-  }
+  if (max_length != 0 && pin.size() > static_cast<size_t>(max_length))
+    return CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG;
 
-  return true;
+  return CredentialProblem::CREDENTIAL_PROBLEM_NONE;
 }
 
 // Checks if a given |pin| is weak or not. A PIN is considered weak if it:
@@ -141,21 +135,19 @@ bool IsPinLengthValid(const std::string& pin,
 bool IsPinDifficultEnough(const std::string& pin) {
   // If the pin length is |kMinLengthForNonWeakPin| or less, there is no need to
   // check for same character and increasing pin.
-  if (static_cast<int>(pin.size()) <= kMinLengthForNonWeakPin)
+  if (pin.size() <= kMinLengthForNonWeakPin)
     return true;
 
   // Check if it is on the list of most common PINs.
-  if (std::find(kMostCommonPins, std::end(kMostCommonPins), pin) !=
-      std::end(kMostCommonPins)) {
+  if (base::ContainsValue(kMostCommonPins, pin))
     return false;
-  }
 
   // Check for same digits, increasing and decreasing PIN simultaneously.
   bool is_same = true;
   // TODO(sammiequon): Should longer PINs (5+) be still subjected to this?
   bool is_increasing = true;
   bool is_decreasing = true;
-  for (int i = 1; i < static_cast<int>(pin.length()); ++i) {
+  for (size_t i = 1; i < pin.length(); ++i) {
     const char previous = pin[i - 1];
     const char current = pin[i];
 
@@ -235,25 +227,19 @@ QuickUnlockPrivateCheckCredentialFunction::Run() {
   bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
 
   // Check and return the problems.
-  if (!IsPinNumeric(credential)) {
-    result->errors.push_back(
-        CredentialProblem::CREDENTIAL_PROBLEM_CONTAINS_NONDIGIT);
-  }
+  std::vector<CredentialProblem>& warnings = result->warnings;
+  std::vector<CredentialProblem>& errors = result->errors;
+  if (!IsPinNumeric(credential))
+    errors.push_back(CredentialProblem::CREDENTIAL_PROBLEM_CONTAINS_NONDIGIT);
 
-  CredentialProblem length_problem = CredentialProblem::CREDENTIAL_PROBLEM_NONE;
-  // Note: This function call writes values |length_problem|.
-  if (!IsPinLengthValid(credential, pref_service, &length_problem)) {
-    DCHECK_NE(length_problem, CredentialProblem::CREDENTIAL_PROBLEM_NONE);
-    result->errors.push_back(length_problem);
-  }
+  CredentialProblem length_problem =
+      GetCredentialProblemForPin(credential, pref_service);
+  if (length_problem != CredentialProblem::CREDENTIAL_PROBLEM_NONE)
+    errors.push_back(length_problem);
 
   if (!IsPinDifficultEnough(credential)) {
-    if (allow_weak) {
-      result->warnings.push_back(
-          CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK);
-    } else {
-      result->errors.push_back(CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK);
-    }
+    auto& log = allow_weak ? warnings : errors;
+    log.push_back(CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK);
   }
 
   return RespondNow(ArgumentList(CheckCredential::Results::Create(*result)));
@@ -272,10 +258,9 @@ QuickUnlockPrivateGetCredentialRequirementsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   auto result = std::make_unique<CredentialRequirements>();
-
-  GetSanitizedPolicyPinMinMaxLength(
-      Profile::FromBrowserContext(browser_context())->GetPrefs(),
-      &result->min_length, &result->max_length);
+  std::tie(result->min_length, result->max_length) =
+      GetSanitizedPolicyPinMinMaxLength(
+          Profile::FromBrowserContext(browser_context())->GetPrefs());
 
   return RespondNow(
       ArgumentList(GetCredentialRequirements::Results::Create(*result)));
@@ -317,20 +302,22 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
 
-  for (size_t j = 0; j < params_->modes.size(); ++j) {
-    if (params_->credentials[j].empty())
+  for (size_t i = 0; i < params_->modes.size(); ++i) {
+    if (params_->credentials[i].empty())
       continue;
 
-    if (params_->modes[j] != QuickUnlockMode::QUICK_UNLOCK_MODE_PIN)
+    if (params_->modes[i] != QuickUnlockMode::QUICK_UNLOCK_MODE_PIN)
       continue;
 
-    if (!IsPinNumeric(params_->credentials[j]))
+    if (!IsPinNumeric(params_->credentials[i]))
       return RespondNow(ArgumentList(SetModes::Results::Create(false)));
 
-    if (!IsPinLengthValid(params_->credentials[j], pref_service, nullptr))
+    CredentialProblem problem =
+        GetCredentialProblemForPin(params_->credentials[i], pref_service);
+    if (problem != CredentialProblem::CREDENTIAL_PROBLEM_NONE)
       return RespondNow(ArgumentList(SetModes::Results::Create(false)));
 
-    if (!allow_weak && !IsPinDifficultEnough(params_->credentials[j])) {
+    if (!allow_weak && !IsPinDifficultEnough(params_->credentials[i])) {
       return RespondNow(ArgumentList(SetModes::Results::Create(false)));
     }
   }
@@ -352,10 +339,10 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   // Lazily allocate the authenticator. We do this here, instead of in the ctor,
   // so that tests can install a fake.
   DCHECK(!extended_authenticator_);
-  if (authenticator_allocator_.is_null())
-    extended_authenticator_ = chromeos::ExtendedAuthenticator::Create(this);
-  else
+  if (authenticator_allocator_)
     extended_authenticator_ = authenticator_allocator_.Run(this);
+  else
+    extended_authenticator_ = chromeos::ExtendedAuthenticator::Create(this);
 
   // The extension function needs to stay alive while the authenticator is
   // running the password check. Add a ref before the authenticator starts, and
@@ -410,6 +397,7 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
   std::string pin_credential;
 
   // Compute needed changes.
+  DCHECK_EQ(params_->credentials.size(), params_->modes.size());
   for (size_t i = 0; i < params_->modes.size(); ++i) {
     const QuickUnlockMode mode = params_->modes[i];
     const std::string& credential = params_->credentials[i];
@@ -439,15 +427,15 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
 void QuickUnlockPrivateSetModesFunction::FireEvent(
     const QuickUnlockModeList& modes) {
   // Allow unit tests to override how events are raised/handled.
-  if (!modes_changed_handler_.is_null()) {
+  if (modes_changed_handler_) {
     modes_changed_handler_.Run(modes);
     return;
   }
 
   std::unique_ptr<base::ListValue> args = OnActiveModesChanged::Create(modes);
-  std::unique_ptr<Event> event(
-      new Event(events::QUICK_UNLOCK_PRIVATE_ON_ACTIVE_MODES_CHANGED,
-                OnActiveModesChanged::kEventName, std::move(args)));
+  auto event = std::make_unique<Event>(
+      events::QUICK_UNLOCK_PRIVATE_ON_ACTIVE_MODES_CHANGED,
+      OnActiveModesChanged::kEventName, std::move(args));
   EventRouter::Get(browser_context())->BroadcastEvent(std::move(event));
 }
 
