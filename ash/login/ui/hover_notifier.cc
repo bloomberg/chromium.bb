@@ -18,7 +18,7 @@ HoverNotifier::~HoverNotifier() {
   target_view_->RemovePreTargetHandler(this);
 }
 
-void HoverNotifier::OnMouseEvent(ui::MouseEvent* event) {
+void HoverNotifier::OnEvent(ui::Event* event) {
   bool has_hover = target_view_->IsMouseHovered();
   if (has_hover == had_hover_)
     return;
