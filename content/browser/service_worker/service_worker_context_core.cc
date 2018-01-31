@@ -299,6 +299,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       dispatcher_hosts_(std::move(old_context->dispatcher_hosts_)),
       providers_(old_context->providers_.release()),
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
+      loader_factory_getter_(old_context->loader_factory_getter()),
       next_handle_id_(old_context->next_handle_id_),
       was_service_worker_registered_(
           old_context->was_service_worker_registered_),
