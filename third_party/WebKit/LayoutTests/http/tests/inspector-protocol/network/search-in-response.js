@@ -4,8 +4,7 @@
   await dp.Network.enable();
 
   var url = testRunner.url('./resources/final.js');
-  session.evaluate(`fetch("${url}")
-                      .then(response => response.arrayBuffer());`);
+  session.evaluate(`fetch("${url}");`);
 
   var requestWillBeSent = (await dp.Network.onceRequestWillBeSent()).params;
   testRunner.log(`Request for ${requestWillBeSent.request.url}`);

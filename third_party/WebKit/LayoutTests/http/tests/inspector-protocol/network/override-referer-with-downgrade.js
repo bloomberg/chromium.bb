@@ -5,8 +5,7 @@
 
   dp.Network.enable();
   await dp.Network.setExtraHTTPHeaders({headers: {'ReFeReR': 'https://127.0.0.1:8000/'}});
-  session.evaluate(`fetch('${testRunner.url('./resources/echo-headers.php?headers=HTTP_REFERER')}')
-                      .then(response => response.arrayBuffer())`);
+  session.evaluate(`fetch('${testRunner.url('./resources/echo-headers.php?headers=HTTP_REFERER')}')`);
 
   var response = (await dp.Network.onceLoadingFinished()).params;
   var content = await dp.Network.getResponseBody({requestId: response.requestId});
