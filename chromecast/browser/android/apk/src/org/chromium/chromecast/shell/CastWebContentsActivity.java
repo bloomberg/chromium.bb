@@ -96,6 +96,10 @@ public class CastWebContentsActivity extends Activity {
 
     protected void handleIntent(Intent intent) {
         final Bundle bundle = intent.getExtras();
+        if (bundle == null) {
+            Log.i(TAG, "Intent without bundle received!");
+            return;
+        }
         final String uriString = bundle.getString(CastWebContentsComponent.INTENT_EXTRA_URI);
         if (uriString == null) {
             Log.i(TAG, "Intent without uri received!");
