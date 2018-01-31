@@ -240,6 +240,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
   PreviewsInfoBarTabHelper::CreateForWebContents(web_contents);
+  safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
+      profile, web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
@@ -293,8 +295,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
       web_contents);
-  safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
-      profile, web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(features::kTabMetricsLogging))
     resource_coordinator::TabActivityWatcher::WatchWebContents(web_contents);
