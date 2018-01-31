@@ -461,7 +461,6 @@ public class ChromeTabbedActivity
                 // these intents come from.
                 if (externalId == IntentHandler.ExternalAppId.CHROME
                         && 0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE)
-                        && CommandLine.isInitialized()
                         && !CommandLine.getInstance().hasSwitch(
                                    ChromeSwitches.DONT_CRASH_ON_VIEW_MAIN_INTENTS)) {
                     String intentInfo = intent.toString();

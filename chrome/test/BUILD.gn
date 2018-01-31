@@ -2778,9 +2778,12 @@ test("unit_tests") {
       "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
     ]
     deps += [
-      ":unit_tests_java",
+      "//base:base_java",
+      "//chrome/android:app_hooks_java",
+      "//chrome/android:chrome_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
+      "//content/public/android:content_java",
       "//v8:v8_external_startup_data_assets",
     ]
 
@@ -4323,17 +4326,7 @@ if (is_win) {
   }
 }
 
-if (is_android) {
-  android_library("unit_tests_java") {
-    java_files = [ "android/unit_tests_apk/src/org/chromium/chrome/unit_tests_apk/ChromeNativeTestApplication.java" ]
-    deps = [
-      "//base:base_java",
-      "//chrome/android:app_hooks_java",
-      "//chrome/android:chrome_java",
-      "//content/public/android:content_java",
-    ]
-  }
-} else {
+if (!is_android) {
   static_library("test_support_ui") {
     defines = []
     testonly = true

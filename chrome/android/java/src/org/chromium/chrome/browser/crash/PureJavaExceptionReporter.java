@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 /**
@@ -69,25 +67,6 @@ public class PureJavaExceptionReporter {
     public static void reportJavaException(Throwable javaException) {
         PureJavaExceptionReporter reporter = new PureJavaExceptionReporter();
         reporter.createAndUploadReport(javaException);
-    }
-
-    /**
-     * Detect if the current process is isolated.
-     *
-     * @return whether the process is isolated, or null if cannot determine.
-     */
-    public static Boolean detectIsIsolatedProcess() {
-        try {
-            Method isIsolatedMethod = android.os.Process.class.getMethod("isIsolated");
-            Object retVal = isIsolatedMethod.invoke(null);
-            if (retVal == null || !(retVal instanceof Boolean)) {
-                return null;
-            }
-            return (Boolean) retVal;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            return null;
-        }
     }
 
     @VisibleForTesting

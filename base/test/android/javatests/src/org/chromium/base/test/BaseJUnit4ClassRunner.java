@@ -19,6 +19,7 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.DisableIfSkipCheck;
@@ -168,13 +169,17 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @Override
     public void run(RunNotifier notifier) {
+        ContextUtils.initApplicationContext(
+                InstrumentationRegistry.getTargetContext().getApplicationContext());
         if (shouldListTests(InstrumentationRegistry.getArguments())) {
             for (Description child : getDescription().getChildren()) {
                 notifier.fireTestStarted(child);
                 notifier.fireTestFinished(child);
             }
         } else {
-            initCommandLineForTest();
+            if (!CommandLine.isInitialized()) {
+                initCommandLineForTest();
+            }
             super.run(notifier);
         }
     }

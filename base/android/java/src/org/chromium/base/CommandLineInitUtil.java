@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 
 import java.io.File;
 
@@ -15,8 +16,6 @@ import java.io.File;
  * Provides implementation of command line initialization for Android.
  */
 public final class CommandLineInitUtil {
-    private static final String TAG = "CommandLineInitUtil";
-
     /**
      * The location of the command line file needs to be in a protected
      * directory so requires root access to be tweaked, i.e., no other app in a
@@ -39,24 +38,29 @@ public final class CommandLineInitUtil {
 
     /**
      * Initializes the CommandLine class, pulling command line arguments from {@code fileName}.
-     * @param context  The {@link Context} to use to query whether or not this application is being
-     *                 debugged, and whether or not the publicly writable command line file should
-     *                 be used.
      * @param fileName The name of the command line file to pull arguments from.
      */
-    public static void initCommandLine(Context context, String fileName) {
-        if (!CommandLine.isInitialized()) {
-            File commandLineFile = getAlternativeCommandLinePath(context, fileName);
-            if (commandLineFile != null) {
-                Log.i(TAG,
-                        "Initializing command line from alternative file "
-                                + commandLineFile.getPath());
-            } else {
-                commandLineFile = new File(COMMAND_LINE_FILE_PATH, fileName);
-                Log.d(TAG, "Initializing command line from " + commandLineFile.getPath());
-            }
-            CommandLine.initFromFile(commandLineFile.getPath());
+    public static void initCommandLine(String fileName) {
+        initCommandLine(fileName, null);
+    }
+
+    /**
+     * Initializes the CommandLine class, pulling command line arguments from {@code fileName}.
+     * @param fileName The name of the command line file to pull arguments from.
+     * @param shouldUseDebugFlags If non-null, returns whether debug flags are allowed to be used.
+     *     Called only when the usual checks indicate that they may not be.
+     */
+    public static void initCommandLine(
+            String fileName, @Nullable Supplier<Boolean> shouldUseDebugFlags) {
+        assert !CommandLine.isInitialized();
+        File commandLineFile = new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, fileName);
+        // shouldUseDebugCommandLine() uses IPC, so don't bother calling it if no flags file exists.
+        boolean debugFlagsExist = commandLineFile.exists();
+        if (!debugFlagsExist || !shouldUseDebugCommandLine()
+                || (shouldUseDebugFlags != null && !shouldUseDebugFlags.get())) {
+            commandLineFile = new File(COMMAND_LINE_FILE_PATH, fileName);
         }
+        CommandLine.initFromFile(commandLineFile.getPath());
     }
 
     /**
@@ -64,28 +68,15 @@ public final class CommandLineInitUtil {
      * - The current build is "eng" or "userdebug", OR
      * - adb is enabled and this is the debug app.
      */
-    private static File getAlternativeCommandLinePath(Context context, String fileName) {
-        File alternativeCommandLineFile =
-                new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, fileName);
-        if (!alternativeCommandLineFile.exists()) return null;
-        try {
-            if (BuildInfo.isDebugAndroid()) {
-                return alternativeCommandLineFile;
-            }
+    private static boolean shouldUseDebugCommandLine() {
+        // TODO(crbug/784947): Allow /data/local/tmp if enabled in chrome://settings.
+        Context context = ContextUtils.getApplicationContext();
+        String debugApp = Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1
+                ? getDebugAppPreJBMR1(context)
+                : getDebugAppJBMR1(context);
 
-            String debugApp = Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1
-                    ? getDebugAppPreJBMR1(context)
-                    : getDebugAppJBMR1(context);
-
-            if (debugApp != null
-                    && debugApp.equals(context.getApplicationContext().getPackageName())) {
-                return alternativeCommandLineFile;
-            }
-        } catch (RuntimeException e) {
-            Log.e(TAG, "Unable to detect alternative command line file");
-        }
-
-        return null;
+        // Check isDebugAndroid() last to get full code coverage when using userdebug devices.
+        return context.getPackageName().equals(debugApp) || BuildInfo.isDebugAndroid();
     }
 
     @SuppressLint("NewApi")

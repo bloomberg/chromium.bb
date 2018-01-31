@@ -4,13 +4,10 @@
 
 package org.chromium.mojo;
 
-import android.support.test.InstrumentationRegistry;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -24,8 +21,6 @@ public class MojoTestRule implements TestRule {
     private long mTestEnvironmentPointer;
 
     public void ruleSetUp() throws Exception {
-        ContextUtils.initApplicationContext(
-                InstrumentationRegistry.getTargetContext().getApplicationContext());
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         nativeInit();
         mTestEnvironmentPointer = nativeSetupTestEnvironment();
