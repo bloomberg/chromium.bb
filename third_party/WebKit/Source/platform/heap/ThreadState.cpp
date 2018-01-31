@@ -1281,7 +1281,8 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     // allocate or free PersistentNodes and we can't handle
     // that. Grabbing this lock also prevents non-attached threads
     // from accessing any GCed heap while a GC runs.
-    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+    RecursiveMutexLocker persistent_lock(
+        ProcessHeap::CrossThreadPersistentMutex());
 
     {
       TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",

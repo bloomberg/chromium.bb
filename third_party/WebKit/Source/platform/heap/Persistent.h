@@ -186,7 +186,8 @@ class PersistentBase {
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
     if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+      RecursiveMutexLocker persistent_lock(
+          ProcessHeap::CrossThreadPersistentMutex());
       raw_ = ptr;
     } else {
       raw_ = ptr;
@@ -833,7 +834,7 @@ template <typename T>
 struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
   static blink::CrossThreadPersistent<T> Unwrap(
       const blink::CrossThreadWeakPersistent<T>& wrapped) {
-    WTF::MutexLocker persistent_lock(
+    WTF::RecursiveMutexLocker persistent_lock(
         blink::ProcessHeap::CrossThreadPersistentMutex());
     return blink::CrossThreadPersistent<T>(wrapped.Get());
   }
