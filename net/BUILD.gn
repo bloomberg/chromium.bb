@@ -5169,6 +5169,7 @@ test("net_unittests") {
     "quic/platform/api/quic_test_random.h",
     "quic/platform/api/quic_text_utils_test.cc",
     "quic/platform/api/quic_url_test.cc",
+    "quic/platform/api/quic_url_utils_test.cc",
     "quic/platform/impl/quic_chromium_clock_test.cc",
     "quic/platform/impl/quic_test_random_impl.cc",
     "quic/platform/impl/quic_test_random_impl.h",
