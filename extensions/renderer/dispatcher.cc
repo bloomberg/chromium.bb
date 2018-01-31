@@ -1181,10 +1181,9 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
   URLPatternSet old_effective =
       extension->permissions_data()->GetEffectiveHostPermissions();
   extension->permissions_data()->UpdateTabSpecificPermissions(
-      tab_id,
-      extensions::PermissionSet(extensions::APIPermissionSet(),
-                                extensions::ManifestPermissionSet(), new_hosts,
-                                extensions::URLPatternSet()));
+      tab_id, extensions::PermissionSet(extensions::APIPermissionSet(),
+                                        extensions::ManifestPermissionSet(),
+                                        new_hosts, new_hosts));
 
   if (update_origin_whitelist) {
     UpdateOriginPermissions(

@@ -319,11 +319,8 @@ bool PermissionsData::CanAccessPage(const Extension* extension,
                                     const GURL& document_url,
                                     int tab_id,
                                     std::string* error) const {
-  base::AutoLock auto_lock(runtime_lock_);
-  AccessType result =
-      CanRunOnPage(extension, document_url, tab_id,
-                   active_permissions_unsafe_->explicit_hosts(),
-                   withheld_permissions_unsafe_->explicit_hosts(), error);
+  AccessType result = GetPageAccess(extension, document_url, tab_id, error);
+
   // TODO(rdevlin.cronin) Update callers so that they only need ACCESS_ALLOWED.
   return result == ACCESS_ALLOWED || result == ACCESS_WITHHELD;
 }
@@ -334,20 +331,22 @@ PermissionsData::AccessType PermissionsData::GetPageAccess(
     int tab_id,
     std::string* error) const {
   base::AutoLock auto_lock(runtime_lock_);
-  return CanRunOnPage(extension, document_url, tab_id,
-                      active_permissions_unsafe_->explicit_hosts(),
-                      withheld_permissions_unsafe_->explicit_hosts(), error);
+
+  const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
+  return CanRunOnPage(
+      extension, document_url, tab_id,
+      active_permissions_unsafe_->explicit_hosts(),
+      withheld_permissions_unsafe_->explicit_hosts(),
+      tab_permissions ? &tab_permissions->explicit_hosts() : nullptr, error);
 }
 
 bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
                                                 const GURL& document_url,
                                                 int tab_id,
                                                 std::string* error) const {
-  base::AutoLock auto_lock(runtime_lock_);
   AccessType result =
-      CanRunOnPage(extension, document_url, tab_id,
-                   active_permissions_unsafe_->scriptable_hosts(),
-                   withheld_permissions_unsafe_->scriptable_hosts(), error);
+      GetContentScriptAccess(extension, document_url, tab_id, error);
+
   // TODO(rdevlin.cronin) Update callers so that they only need ACCESS_ALLOWED.
   return result == ACCESS_ALLOWED || result == ACCESS_WITHHELD;
 }
@@ -358,9 +357,13 @@ PermissionsData::AccessType PermissionsData::GetContentScriptAccess(
     int tab_id,
     std::string* error) const {
   base::AutoLock auto_lock(runtime_lock_);
-  return CanRunOnPage(extension, document_url, tab_id,
-                      active_permissions_unsafe_->scriptable_hosts(),
-                      withheld_permissions_unsafe_->scriptable_hosts(), error);
+
+  const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
+  return CanRunOnPage(
+      extension, document_url, tab_id,
+      active_permissions_unsafe_->scriptable_hosts(),
+      withheld_permissions_unsafe_->scriptable_hosts(),
+      tab_permissions ? &tab_permissions->scriptable_hosts() : nullptr, error);
 }
 
 bool PermissionsData::CanCaptureVisiblePage(int tab_id,
@@ -390,25 +393,10 @@ bool PermissionsData::CanCaptureVisiblePage(int tab_id,
 
 const PermissionSet* PermissionsData::GetTabSpecificPermissions(
     int tab_id) const {
-  CHECK_GE(tab_id, 0);
   runtime_lock_.AssertAcquired();
   TabPermissionsMap::const_iterator iter =
       tab_specific_permissions_.find(tab_id);
   return iter != tab_specific_permissions_.end() ? iter->second.get() : nullptr;
-}
-
-bool PermissionsData::HasTabSpecificPermissionToExecuteScript(
-    int tab_id,
-    const GURL& url) const {
-  runtime_lock_.AssertAcquired();
-  if (tab_id >= 0) {
-    const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
-    if (tab_permissions &&
-        tab_permissions->explicit_hosts().MatchesSecurityOrigin(url)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool PermissionsData::IsRuntimeBlockedHostUnsafe(const GURL& url) const {
@@ -423,6 +411,7 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     int tab_id,
     const URLPatternSet& permitted_url_patterns,
     const URLPatternSet& withheld_url_patterns,
+    const URLPatternSet* tab_url_patterns,
     std::string* error) const {
   runtime_lock_.AssertAcquired();
   if (g_policy_delegate && !g_policy_delegate->CanExecuteScriptOnPage(
@@ -439,7 +428,7 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
   if (IsRestrictedUrl(document_url, extension, error))
     return ACCESS_DENIED;
 
-  if (HasTabSpecificPermissionToExecuteScript(tab_id, document_url))
+  if (tab_url_patterns && tab_url_patterns->MatchesURL(document_url))
     return ACCESS_ALLOWED;
 
   if (permitted_url_patterns.MatchesURL(document_url))
