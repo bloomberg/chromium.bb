@@ -167,9 +167,10 @@ void WriteMemoryMaps(const ExportParams& params, std::ostream& out) {
 }
 
 // Inserts or retrieves the ID for a string in the string table.
-size_t AddOrGetString(const std::string& str, StringTable* string_table) {
-  // The lowest ID should be 1. The chrome://tracing UI doesn't handle ID 0.
-  auto result = string_table->emplace(str, string_table->size() + 1);
+size_t AddOrGetString(const std::string& str,
+                      StringTable* string_table,
+                      ExportParams* params) {
+  auto result = string_table->emplace(str, params->next_id++);
   // "result.first" is an iterator into the map.
   return result.first->second;
 }
@@ -178,7 +179,7 @@ size_t AddOrGetString(const std::string& str, StringTable* string_table) {
 // Strings are added for each referenced context and a mapping between
 // context IDs and string IDs is filled in for each.
 void FillContextStrings(const UniqueAllocationMap& allocations,
-                        const std::map<std::string, int>& context_map,
+                        ExportParams* params,
                         StringTable* string_table,
                         std::map<int, size_t>* context_to_string_map) {
   std::set<int> used_context;
@@ -187,25 +188,24 @@ void FillContextStrings(const UniqueAllocationMap& allocations,
 
   if (used_context.find(kUnknownTypeId) != used_context.end()) {
     // Hard code a string for the unknown context type.
-    context_to_string_map->emplace(kUnknownTypeId,
-                                   AddOrGetString("[unknown]", string_table));
+    context_to_string_map->emplace(
+        kUnknownTypeId, AddOrGetString("[unknown]", string_table, params));
   }
 
   // The context map is backwards from what we need, so iterate through the
   // whole thing and see which ones are used.
-  for (const auto& context : context_map) {
+  for (const auto& context : params->context_map) {
     if (used_context.find(context.second) != used_context.end()) {
-      size_t string_id = AddOrGetString(context.first, string_table);
+      size_t string_id = AddOrGetString(context.first, string_table, params);
       context_to_string_map->emplace(context.second, string_id);
     }
   }
 }
 
 size_t AddOrGetBacktraceNode(BacktraceNode node,
-                             BacktraceTable* backtrace_table) {
-  // The lowest ID should be 1. The chrome://tracing UI doesn't handle ID 0.
-  auto result =
-      backtrace_table->emplace(std::move(node), backtrace_table->size() + 1);
+                             BacktraceTable* backtrace_table,
+                             ExportParams* params) {
+  auto result = backtrace_table->emplace(std::move(node), params->next_id++);
   // "result.first" is an iterator into the map.
   return result.first->second;
 }
@@ -213,18 +213,17 @@ size_t AddOrGetBacktraceNode(BacktraceNode node,
 // Returns the index into nodes of the node to reference for this stack. That
 // node will reference its parent node, etc. to allow the full stack to
 // be represented.
-size_t AppendBacktraceStrings(
-    const Backtrace& backtrace,
-    BacktraceTable* backtrace_table,
-    StringTable* string_table,
-    const std::unordered_map<uint64_t, std::string>& mapped_strings) {
+size_t AppendBacktraceStrings(const Backtrace& backtrace,
+                              BacktraceTable* backtrace_table,
+                              StringTable* string_table,
+                              ExportParams* params) {
   int parent = -1;
   // Addresses must be outputted in reverse order.
   for (const Address& addr : base::Reversed(backtrace.addrs())) {
     size_t sid;
-    auto it = mapped_strings.find(addr.value);
-    if (it != mapped_strings.end()) {
-      sid = AddOrGetString(it->second, string_table);
+    auto it = params->mapped_strings.find(addr.value);
+    if (it != params->mapped_strings.end()) {
+      sid = AddOrGetString(it->second, string_table, params);
     } else {
       static constexpr char kPcPrefix[] = "pc:";
       // std::numeric_limits<>::digits gives the number of bits in the value.
@@ -236,9 +235,10 @@ size_t AppendBacktraceStrings(
           (std::numeric_limits<decltype(addr.value)>::digits / 4);
       char buf[kBufSize];
       snprintf(buf, kBufSize, "%s%" PRIx64, kPcPrefix, addr.value);
-      sid = AddOrGetString(buf, string_table);
+      sid = AddOrGetString(buf, string_table, params);
     }
-    parent = AddOrGetBacktraceNode(BacktraceNode(sid, parent), backtrace_table);
+    parent = AddOrGetBacktraceNode(BacktraceNode(sid, parent), backtrace_table,
+                                   params);
   }
   return parent;  // Last item is the end of this stack.
 }
@@ -379,12 +379,12 @@ void WriteAllocatorNodes(const UniqueAllocationMap& allocations,
 ExportParams::ExportParams() = default;
 ExportParams::~ExportParams() = default;
 
-void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
+void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
                                            std::ostream& out) {
   // Start dictionary.
   out << "{\n";
 
-  WriteMemoryMaps(params, out);
+  WriteMemoryMaps(*params, out);
   out << ",\n";
 
   // Write level of detail.
@@ -395,7 +395,7 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   size_t total_size[kAllocatorCount] = {0};
   size_t total_count[kAllocatorCount] = {0};
   UniqueAllocationMap filtered_allocations[kAllocatorCount];
-  for (const auto& alloc_pair : params.allocs) {
+  for (const auto& alloc_pair : params->allocs) {
     uint32_t allocator_index =
         static_cast<uint32_t>(alloc_pair.first.allocator());
     size_t alloc_count = alloc_pair.second;
@@ -418,8 +418,8 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   for (uint32_t i = 0; i < kAllocatorCount; i++) {
     for (auto alloc = filtered_allocations[i].begin();
          alloc != filtered_allocations[i].end();) {
-      if (alloc->second.size < params.min_size_threshold &&
-          alloc->second.count < params.min_count_threshold) {
+      if (alloc->second.size < params->min_size_threshold &&
+          alloc->second.count < params->min_count_threshold) {
         alloc = filtered_allocations[i].erase(alloc);
       } else {
         ++alloc;
@@ -439,8 +439,8 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   // mapping from allocation context_id to string ID.
   std::map<int, size_t> context_to_string_map;
   for (uint32_t i = 0; i < kAllocatorCount; i++) {
-    FillContextStrings(filtered_allocations[i], params.context_map,
-                       &string_table, &context_to_string_map);
+    FillContextStrings(filtered_allocations[i], params, &string_table,
+                       &context_to_string_map);
   }
 
   // Find all backtraces referenced by the set and not filtered. The backtrace
@@ -460,8 +460,8 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   BacktraceTable nodes;
   VLOG(1) << "Number of backtraces " << backtraces.size();
   for (auto& bt : backtraces)
-    bt.second = AppendBacktraceStrings(*bt.first, &nodes, &string_table,
-                                       params.mapped_strings);
+    bt.second =
+        AppendBacktraceStrings(*bt.first, &nodes, &string_table, params);
 
   // Maps section.
   out << "\"maps\": {\n";

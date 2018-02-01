@@ -47,11 +47,20 @@ struct ExportParams {
   // anonymizes the trace, since the paths could potentially contain a username.
   // However, it prevents symbolization of locally built instances of Chrome.
   bool strip_path_from_mapped_files = false;
+
+  // The heaps_v2 trace format requires that ids are unique across heap dumps in
+  // a single trace. This class is currently stateless, and does not know
+  // whether a heap dump will be in a trace with other heap dumps. To work
+  // around this, just make all IDs unique. The parameter is an input parameter
+  // that tells the exporter which ID to start from. It is also an output
+  // parameter, and tells the caller the next unused ID.
+  // See https://crbug.com/808066.
+  size_t next_id = 1;
 };
 
 // Creates a JSON string representing a JSON dictionary that contains memory
 // maps and v2 format stack traces.
-void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
+void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
                                            std::ostream& out);
 
 }  // namespace profiling

@@ -289,10 +289,13 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   params.min_size_threshold = keep_small_allocations ? 0 : kMinSizeThreshold;
   params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;
   params.strip_path_from_mapped_files = strip_path_from_mapped_files;
+  params.next_id = next_id_;
 
   std::ostringstream oss;
-  ExportMemoryMapsAndV2StackTraceToJSON(params, oss);
+  ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);
   std::string reply = oss.str();
+
+  next_id_ = params.next_id;
 
   mojo::ScopedSharedBufferHandle buffer =
       mojo::SharedBufferHandle::Create(reply.size());

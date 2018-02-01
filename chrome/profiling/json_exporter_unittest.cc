@@ -160,7 +160,7 @@ TEST(ProfilingJsonExporterTest, Simple) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
-  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -327,7 +327,7 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kSizeThreshold;
   params.min_count_threshold = kCountThreshold;
-  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -394,7 +394,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
-  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -453,7 +453,7 @@ TEST(ProfilingJsonExporterTest, Context) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
-  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
