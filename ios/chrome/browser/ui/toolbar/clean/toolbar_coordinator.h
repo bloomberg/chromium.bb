@@ -16,7 +16,6 @@
 @protocol BrowserCommands;
 @protocol OmniboxFocuser;
 @class ToolbarButtonUpdater;
-@protocol ToolbarCommands;
 @protocol ToolbarCoordinatorDelegate;
 @protocol UrlLoader;
 @protocol VoiceSearchControllerDelegate;
@@ -37,7 +36,7 @@ class WebState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;

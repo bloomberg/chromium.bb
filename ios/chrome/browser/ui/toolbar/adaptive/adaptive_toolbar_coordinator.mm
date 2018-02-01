@@ -96,10 +96,6 @@
 
 #pragma mark - ToolbarCommands
 
-- (void)contractToolbar {
-  // TODO(crbug.com/801082): Implement that.
-}
-
 - (void)triggerToolsMenuButtonAnimation {
   [self.viewController.toolsMenuButton triggerAnimation];
 }

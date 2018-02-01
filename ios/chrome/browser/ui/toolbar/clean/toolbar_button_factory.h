@@ -14,7 +14,6 @@
 @protocol OmniboxFocuser;
 @class ToolbarButton;
 @class ToolbarButtonVisibilityConfiguration;
-@protocol ToolbarCommands;
 @class ToolbarTabGridButton;
 @class ToolbarToolsMenuButton;
 @class ToolbarConfiguration;
@@ -34,7 +33,7 @@
     ToolbarConfiguration* toolbarConfiguration;
 // Dispatcher used to initialize targets for the buttons.
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
 // Configuration object for the visibility of the buttons.
 @property(nonatomic, strong)
