@@ -536,6 +536,55 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, BackFollowedByReload) {
   EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
 }
 
+// Test that a navigation response can be entirely fetched, even after the
+// NavigationURLLoader has been deleted.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
+                       FetchResponseAfterNavigationURLLoaderDeleted) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/main_document");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load a new document.
+  GURL url(embedded_test_server()->GetURL("/main_document"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // The navigation starts.
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // A NavigationRequest exists at this point.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetMainFrame()
+                            ->frame_tree_node();
+  EXPECT_TRUE(root->navigation_request());
+
+  // The response's headers are received.
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "...");
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+
+  // The renderer commits the navigation and the browser deletes its
+  // NavigationRequest.
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_FALSE(root->navigation_request());
+
+  // The NavigationURLLoader has been deleted by now. Check that the renderer
+  // can still receive more bytes.
+  DOMMessageQueue dom_message_queue(WebContents::FromRenderFrameHost(
+      shell()->web_contents()->GetMainFrame()));
+  response.Send(
+      "<script>window.domAutomationController.send('done');</script>");
+  std::string done;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&done));
+  EXPECT_EQ("\"done\"", done);
+}
+
 // Navigation are started in the browser process. After the headers are
 // received, the URLLoaderClient is transfered from the browser process to the
 // renderer process. This test ensures that when the the URLLoader is deleted
