@@ -1315,7 +1315,6 @@ crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-w
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-006.xht [ Failure ]
 
-crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-004.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-003.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-002.html [ Failure ]
