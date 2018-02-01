@@ -57,6 +57,9 @@ if (!is_win) {
 
     # Assertion failures in skia are uninteresting. Don't use debug builds on
     # CF.
+    if (is_debug) {
+      all_dependent_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+    }
   }
 
   proto_library("skia_image_filter_proto") {
