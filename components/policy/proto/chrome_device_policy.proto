@@ -938,6 +938,19 @@ message UnaffiliatedArcAllowedProto {
   optional bool unaffiliated_arc_allowed = 1;
 }
 
+// Allowed encryption types for requesting Kerberos tickets from Active
+// Directory servers. Applies to Active Directory management mode only.
+message DeviceKerberosEncryptionTypesProto {
+  enum Types {
+    ENC_TYPES_ALL = 0;     // AES + RC4_HMAC.
+    ENC_TYPES_STRONG = 1;  // AES only.
+    ENC_TYPES_LEGACY = 2;  // RC4_HMAC only.
+    // Next ID to use: 3
+  }
+
+  optional Types types = 1 [default = ENC_TYPES_STRONG];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1016,4 +1029,6 @@ message ChromeDeviceSettingsProto {
       device_login_screen_auto_select_certificate_for_urls = 62;
   optional UnaffiliatedArcAllowedProto unaffiliated_arc_allowed = 63;
   optional NetworkHostnameProto network_hostname = 64;
+  optional DeviceKerberosEncryptionTypesProto device_kerberos_encryption_types =
+      65;
 }

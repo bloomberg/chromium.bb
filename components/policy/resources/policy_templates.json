@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 414
+#   For your editing convenience: highest ID currently used: 415
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -5029,6 +5029,50 @@
       'tags': ['full-admin-access'],
       'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
       'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
+    },
+    {
+      'name': 'DeviceKerberosEncryptionTypes',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'All',
+          'value': 0,
+          'caption': '''All''',
+        },
+        {
+          'name': 'Strong',
+          'value': 1,
+          'caption': '''Strong''',
+        },
+        {
+          'name': 'Legacy',
+          'value': 2,
+          'caption': '''Legacy''',
+        },
+      ],
+      'supported_on': ['chrome_os:66-'],
+      'supported_chrome_os_management': ['active_directory'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 1,
+      'id': 415,
+      'caption': '''Allowed Kerberos encryption types''',
+      'tags': ['system-security'],
+      'desc': '''Sets encryption types that are allowed when requesting Kerberos tickets from an <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> server.
+
+      If the policy is set to 'All', both the AES encryption types 'aes256-cts-hmac-sha1-96' and 'aes128-cts-hmac-sha1-96' as well as the RC4 encryption type 'rc4-hmac' are allowed. AES encryption takes preference if the server supports both types. Note that RC4 is considered weak and the server should be reconfigured if possible to support AES encryption.
+
+      If the policy is set to 'Strong' or if it is unset, only the AES encryption types are allowed.
+
+      If the policy is set to 'Legacy', only the RC4 encryption type is allowed. This option is insecure and should only be needed in very specific circumstances.
+
+      See also https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.''',
     },
     {
       'name': 'CloudPrintSubmitEnabled',
