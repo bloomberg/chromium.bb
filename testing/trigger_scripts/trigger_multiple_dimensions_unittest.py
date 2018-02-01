@@ -3,20 +3,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Tests for trigger_gpu_test.py."""
+"""Tests for trigger_multiple_dimensions.py."""
 
 import unittest
 
-import trigger_gpu_test
+import trigger_multiple_dimensions
 
 class Args(object):
-  pass
+  def __init__(self):
+    self.shards = 1
+    self.dump_json = ''
+    self.multiple_trigger_configs = []
+    self.multiple_dimension_script_verbose = False
 
-class FakeTriggerer(trigger_gpu_test.GpuTestTriggerer):
-  def __init__(self, gpu_configs, bot_statuses,
+
+class FakeTriggerer(trigger_multiple_dimensions.MultiDimensionTestTriggerer):
+  def __init__(self, bot_configs, bot_statuses,
                use_superclass_random_number_generator, first_random_number):
     super(FakeTriggerer, self).__init__()
-    self._gpu_configs = gpu_configs
+    self._bot_configs = bot_configs
     self._bot_statuses = bot_statuses
     self._swarming_runs = []
     self._files = {}
@@ -50,10 +55,10 @@ class FakeTriggerer(trigger_gpu_test.GpuTestTriggerer):
   def write_json_to_file(self, merged_json, output_file):
     self._files[output_file] = merged_json
 
-  def parse_gpu_configs(self, args):
+  def parse_bot_configs(self, args):
     pass
 
-  def query_swarming_for_gpu_configs(self, verbose):
+  def query_swarming_for_bot_configs(self, verbose):
     # Sum up the total count of all bots.
     self._total_bots = sum(x['total'] for x in self._bot_statuses)
 
@@ -94,7 +99,7 @@ class UnitTest(unittest.TestCase):
     # that produced by "swarming.py trigger". The unit tests only
     # verify that shard 0's JSON is preserved.
     triggerer.set_files({
-      'trigger_gpu_test0.json': {
+      'trigger_multiple_dimensions0.json': {
         'base_task_name': 'webgl_conformance_tests',
         'request': {
           'expiration_secs': 3600,
@@ -108,7 +113,7 @@ class UnitTest(unittest.TestCase):
           },
         },
       },
-      'trigger_gpu_test1.json': {
+      'trigger_multiple_dimensions1.json': {
         'tasks': {
           'webgl_conformance_tests on NVIDIA GPU on Windows': {
             'task_id': 'f002',
@@ -119,7 +124,7 @@ class UnitTest(unittest.TestCase):
     args = Args()
     args.shards = 2
     args.dump_json = 'output.json'
-    args.gpu_trigger_script_verbose = False
+    args.multiple_dimension_script_verbose = False
     triggerer.trigger_tasks(
       args,
       [
@@ -146,35 +151,26 @@ class UnitTest(unittest.TestCase):
     return self.list_contains_sublist(triggerer._swarming_runs[shard_index],
                                       ['--dimension', 'os', os])
 
-  def test_swarming_py_filtering(self):
-    triggerer = trigger_gpu_test.GpuTestTriggerer()
-    full_args = ['--foo', '--swarming-py-path', 'bar', '--baz']
-    filtered_args = ['--foo', '--baz']
-    self.assertEqual(triggerer.filter_swarming_py_path_arg(full_args),
-                     filtered_args)
-    self.assertEqual(triggerer.filter_swarming_py_path_arg(filtered_args),
-                     filtered_args)
-
-  def test_parse_gpu_configs(self):
-    triggerer = trigger_gpu_test.GpuTestTriggerer()
+  def test_parse_bot_configs(self):
+    triggerer = trigger_multiple_dimensions.MultiDimensionTestTriggerer()
     args = Args()
-    args.gpu_trigger_configs = "{ foo }"
+    args.multiple_trigger_configs = "{ foo }"
     self.assertRaisesRegexp(ValueError, "Error while parsing JSON.*",
-                            triggerer.parse_gpu_configs, args)
-    args.gpu_trigger_configs = "{ \"foo\": \"bar\" }"
-    self.assertRaisesRegexp(ValueError, "GPU configurations must be a list.*",
-                            triggerer.parse_gpu_configs, args)
-    args.gpu_trigger_configs = "[]"
+                            triggerer.parse_bot_configs, args)
+    args.multiple_trigger_configs = "{ \"foo\": \"bar\" }"
+    self.assertRaisesRegexp(ValueError, "Bot configurations must be a list.*",
+                            triggerer.parse_bot_configs, args)
+    args.multiple_trigger_configs = "[]"
     self.assertRaisesRegexp(ValueError,
-                            "GPU configuration list must have at least.*",
-                            triggerer.parse_gpu_configs, args)
-    args.gpu_trigger_configs = "[{}, \"\"]"
+                            "Bot configuration list must have at least.*",
+                            triggerer.parse_bot_configs, args)
+    args.multiple_trigger_configs = "[{}, \"\"]"
     self.assertRaisesRegexp(ValueError,
-                            "GPU configurations must all be.*",
-                            triggerer.parse_gpu_configs, args)
-    args.gpu_trigger_configs = "[{}]"
-    triggerer.parse_gpu_configs(args)
-    self.assertEqual(triggerer._gpu_configs, [{}])
+                            "Bot configurations must all be.*",
+                            triggerer.parse_bot_configs, args)
+    args.multiple_trigger_configs = "[{}]"
+    triggerer.parse_bot_configs(args)
+    self.assertEqual(triggerer._bot_configs, [{}])
 
   def test_split_with_available_machines(self):
     triggerer = self.basic_win7_win10_setup(
@@ -309,7 +305,8 @@ class UnitTest(unittest.TestCase):
 
   def test_superclass_random_number_generator_works(self):
     # Probe randomly a certain number of times.
-    for i in xrange(100):
+    num_runs = 0
+    for _ in xrange(100):
       triggerer = self.basic_win7_win10_setup(
         [
           {
@@ -323,9 +320,11 @@ class UnitTest(unittest.TestCase):
         ],
         use_superclass_random_number_generator=True
       )
-      for s in xrange(2):
+      for _ in xrange(2):
         self.assertTrue(self.shard_runs_on_os(triggerer, 0, WIN7) or
                         self.shard_runs_on_os(triggerer, 0, WIN10))
+        num_runs += 1
+    self.assertEqual(num_runs, 200)
 
 if __name__ == '__main__':
   unittest.main()

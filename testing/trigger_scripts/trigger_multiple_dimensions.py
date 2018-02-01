@@ -4,22 +4,22 @@
 # found in the LICENSE file.
 """Custom swarming triggering script.
 
-This script does custom swarming triggering logic, to allow one GPU bot to
+This script does custom swarming triggering logic, to allow one bot to
 conceptually span multiple Swarming configurations, while lumping all trigger
 calls under one logical step.
 
 The reason this script is needed is to allow seamless upgrades of the GPU, OS
-version, or graphics driver. GPU tests are triggered with precise values for all
-of these Swarming dimensions. This ensures that if a machine is added to the
-Swarming pool with a slightly different configuration, tests don't fail for
-unexpected reasons.
+version, or graphics driver. Most Chromium tests, GPU tests in particular, are
+triggered with precise values for all of these Swarming dimensions. This ensures
+that if a machine is added to the Swarming pool with a slightly different
+configuration, tests don't fail for unexpected reasons.
 
 During an upgrade of the fleet, it's not feasible to take half of the machines
-offline. We had some experience with this during a recent upgrade of the GPUs in
-the main Windows and Linux NVIDIA bots. In the middle of the upgrade, only 50%
-of the capacity was available, and CQ jobs started to time out. Once the hurdle
-had been passed in the middle of the upgrade, capacity was sufficient, but it's
-crucial that this process remain seamless.
+offline. Some experience was gained with this during a recent upgrade of the
+GPUs in Chromium's main Windows and Linux NVIDIA bots. In the middle of the
+upgrade, only 50% of the capacity was available, and CQ jobs started to time
+out. Once the hurdle had been passed in the middle of the upgrade, capacity was
+sufficient, but it's crucial that this process remain seamless.
 
 This script receives multiple machine configurations on the command line in the
 form of quoted strings. These strings are JSON dictionaries that represent
@@ -44,10 +44,14 @@ This script must have roughly the same command line interface as swarming.py
 trigger. It modifies it in the following ways:
  * Intercepts the dump-json argument, and creates its own by combining the
    results from each trigger call.
- * Replaces the GPU-related Swarming dimensions with the ones chosen from the
-   gpu-trigger-configs list.
+ * Scans through the multiple-trigger-configs dictionaries. For any key found,
+   deletes that dimension from the originally triggered task's dimensions. This
+   is what allows the Swarming dimensions to be replaced.
+ * On a per-shard basis, adds the Swarming dimensions chosen from the
+   multiple-trigger-configs list to the dimensions for the shard.
 
 This script is normally called from the swarming recipe module in tools/build.
+
 """
 
 import argparse
@@ -61,8 +65,8 @@ import tempfile
 import urllib
 
 
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
-  os.path.abspath(__file__)))))
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
+  __file__))))
 
 SWARMING_PY = os.path.join(SRC_DIR, 'tools', 'swarming_client', 'swarming.py')
 
@@ -84,29 +88,20 @@ def strip_unicode(obj):
   return obj
 
 
-class GpuTestTriggerer(object):
+class MultiDimensionTestTriggerer(object):
   def __init__(self):
-    self._gpu_configs = None
+    self._bot_configs = None
     self._bot_statuses = []
     self._total_bots = 0
 
-  def filter_swarming_py_path_arg(self, args):
-    # TODO(kbr): remove this once the --swarming-py-path argument is
-    # no longer being passed by recipes. crbug.com/801346
-    try:
-      index = args.index('--swarming-py-path')
-      return args[:index] + args[index+2:]
-    except:
-      return args
-
-  def modify_args(self, all_args, gpu_index, shard_index, total_shards,
+  def modify_args(self, all_args, bot_index, shard_index, total_shards,
                   temp_file):
     """Modifies the given argument list.
 
     Specifically, it does the following:
       * Adds a --dump_json argument, to read in the results of the
         individual trigger command.
-      * Adds the dimensions associated with the GPU config at the given index.
+      * Adds the dimensions associated with the bot config at the given index.
       * If the number of shards is greater than one, adds --env
         arguments to set the GTEST_SHARD_INDEX and GTEST_TOTAL_SHARDS
         environment variables to _shard_index_ and _total_shards_,
@@ -121,38 +116,39 @@ class GpuTestTriggerer(object):
     assert '--' in all_args, (
         'Malformed trigger command; -- argument expected but not found')
     dash_ind = all_args.index('--')
-    gpu_args = ['--dump-json', temp_file]
+    bot_args = ['--dump-json', temp_file]
     if total_shards > 1:
-      gpu_args.append('--env')
-      gpu_args.append('GTEST_SHARD_INDEX')
-      gpu_args.append(str(shard_index))
-      gpu_args.append('--env')
-      gpu_args.append('GTEST_TOTAL_SHARDS')
-      gpu_args.append(str(total_shards))
-    for key, val in sorted(self._gpu_configs[gpu_index].iteritems()):
-      gpu_args.append('--dimension')
-      gpu_args.append(key)
-      gpu_args.append(val)
-    return all_args[:dash_ind] + gpu_args + all_args[dash_ind:]
+      bot_args.append('--env')
+      bot_args.append('GTEST_SHARD_INDEX')
+      bot_args.append(str(shard_index))
+      bot_args.append('--env')
+      bot_args.append('GTEST_TOTAL_SHARDS')
+      bot_args.append(str(total_shards))
+    for key, val in sorted(self._bot_configs[bot_index].iteritems()):
+      bot_args.append('--dimension')
+      bot_args.append(key)
+      bot_args.append(val)
+    return all_args[:dash_ind] + bot_args + all_args[dash_ind:]
 
-  def parse_gpu_configs(self, args):
+  def parse_bot_configs(self, args):
     try:
-      self._gpu_configs = strip_unicode(json.loads(args.gpu_trigger_configs))
+      self._bot_configs = strip_unicode(json.loads(
+        args.multiple_trigger_configs))
     except Exception as e:
-      raise ValueError('Error while parsing JSON from gpu config string %s: %s'
-                       % (args.gpu_trigger_configs, str(e)))
+      raise ValueError('Error while parsing JSON from bot config string %s: %s'
+                       % (args.multiple_trigger_configs, str(e)))
     # Validate the input.
-    if not isinstance(self._gpu_configs, list):
-      raise ValueError('GPU configurations must be a list, were: %s' %
-                       args.gpu_trigger_configs)
-    if len(self._gpu_configs) < 1:
-      raise ValueError('GPU configuration list must have at least one entry')
-    if not all(isinstance(entry, dict) for entry in self._gpu_configs):
-      raise ValueError('GPU configurations must all be dictionaries')
+    if not isinstance(self._bot_configs, list):
+      raise ValueError('Bot configurations must be a list, were: %s' %
+                       args.multiple_trigger_configs)
+    if len(self._bot_configs) < 1:
+      raise ValueError('Bot configuration list must have at least one entry')
+    if not all(isinstance(entry, dict) for entry in self._bot_configs):
+      raise ValueError('Bot configurations must all be dictionaries')
 
-  def query_swarming_for_gpu_configs(self, verbose):
+  def query_swarming_for_bot_configs(self, verbose):
     # Query Swarming to figure out which bots are available.
-    for config in self._gpu_configs:
+    for config in self._bot_configs:
       values = []
       for key, value in sorted(config.iteritems()):
         values.append(('dimensions', '%s:%s' % (key, value)))
@@ -161,9 +157,8 @@ class GpuTestTriggerer(object):
       values.append(('quarantined', 'FALSE'))
       query_arg = urllib.urlencode(values)
 
-      # This trick of closing the file handle is needed on Windows in
-      # order to make the file writeable.
-      temp_file = self.make_temp_file(prefix='trigger_gpu_test', suffix='.json')
+      temp_file = self.make_temp_file(prefix='trigger_multiple_dimensions',
+                                      suffix='.json')
       try:
         ret = self.run_swarming(['query',
                                  '-S',
@@ -185,7 +180,7 @@ class GpuTestTriggerer(object):
         self._bot_statuses.append({'total': count, 'available': available})
         if verbose:
           idx = len(self._bot_statuses) - 1
-          print 'GPU config %d: %s' % (idx, str(self._bot_statuses[idx]))
+          print 'Bot config %d: %s' % (idx, str(self._bot_statuses[idx]))
       finally:
         self.delete_temp_file(temp_file)
     # Sum up the total count of all bots.
@@ -202,7 +197,7 @@ class GpuTestTriggerer(object):
   def choose_random_int(self, max_num):
     return random.randint(1, max_num)
 
-  def pick_gpu_configuration(self, verbose):
+  def pick_bot_configuration(self, verbose):
     # These are the rules used:
     # 1. If any configuration has bots available, pick the configuration with
     #    the most bots available.
@@ -210,7 +205,7 @@ class GpuTestTriggerer(object):
     #    based on the total number of bots in each configuration.
     #
     # This method updates bot_statuses_ in case (1), and in both cases, returns
-    # the index into gpu_configs_ that should be used.
+    # the index into bot_configs_ that should be used.
     if any(status['available'] > 0 for status in self._bot_statuses):
       # Case 1.
       max_index = 0
@@ -223,18 +218,18 @@ class GpuTestTriggerer(object):
       self._bot_statuses[max_index]['available'] -= 1
       assert self._bot_statuses[max_index]['available'] >= 0
       if verbose:
-        print 'Chose GPU config %d because bots were available' % (max_index)
+        print 'Chose bot config %d because bots were available' % (max_index)
       return max_index
     # Case 2.
     # We want to choose a bot uniformly at random from all of the bots specified
-    # in the GPU configs. To do this, we conceptually group the bots into
+    # in the bot configs. To do this, we conceptually group the bots into
     # buckets, pick a random number between 1 and the total number of bots, and
     # figure out which bucket of bots it landed in.
     r = self.choose_random_int(self._total_bots)
     for i, status in enumerate(self._bot_statuses):
       if r <= status['total']:
         if verbose:
-          print 'Chose GPU config %d stochastically' % (i)
+          print 'Chose bot config %d stochastically' % (i)
         return i
       r -= status['total']
     raise Exception('Should not reach here')
@@ -274,17 +269,16 @@ class GpuTestTriggerer(object):
     Returns:
       Exit code for the script.
     """
-    remaining = self.filter_swarming_py_path_arg(remaining)
-    verbose = args.gpu_trigger_script_verbose
-    self.parse_gpu_configs(args)
-    self.query_swarming_for_gpu_configs(verbose)
+    verbose = args.multiple_dimension_script_verbose
+    self.parse_bot_configs(args)
+    self.query_swarming_for_bot_configs(verbose)
 
     # In the remaining arguments, find the Swarming dimensions that are
-    # specified by the GPU configs and remove them, because for each shard,
-    # we're going to select one of the GPU configs and put all of its Swarming
+    # specified by the bot configs and remove them, because for each shard,
+    # we're going to select one of the bot configs and put all of its Swarming
     # dimensions on the command line.
     filtered_remaining_args = copy.deepcopy(remaining)
-    for config in self._gpu_configs:
+    for config in self._bot_configs:
       for k in config.iterkeys():
         filtered_remaining_args = self.remove_swarming_dimension(
           filtered_remaining_args, k)
@@ -293,15 +287,15 @@ class GpuTestTriggerer(object):
 
     for i in xrange(args.shards):
       # For each shard that we're going to distribute, do the following:
-      # 1. Pick which GPU configuration to use.
-      # 2. Insert that GPU configuration's dimensions as command line
+      # 1. Pick which bot configuration to use.
+      # 2. Insert that bot configuration's dimensions as command line
       #    arguments, and invoke "swarming.py trigger".
-      gpu_index = self.pick_gpu_configuration(verbose)
+      bot_index = self.pick_bot_configuration(verbose)
       # Holds the results of the swarming.py trigger call.
       try:
-        json_temp = self.make_temp_file(prefix='trigger_gpu_test',
+        json_temp = self.make_temp_file(prefix='trigger_multiple_dimensions',
                                         suffix='.json')
-        args_to_pass = self.modify_args(filtered_remaining_args, gpu_index, i,
+        args_to_pass = self.modify_args(filtered_remaining_args, bot_index, i,
                                         args.shards, json_temp)
         ret = self.run_swarming(args_to_pass, verbose)
         if ret:
@@ -328,12 +322,13 @@ class GpuTestTriggerer(object):
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--gpu-trigger-configs', type=str, required=True,
-                      help='The GPU configurations to trigger tasks on, in the'
-                      ' form of a JSON array of dictionaries. At least one'
-                      ' entry in this dictionary is required.')
-  parser.add_argument('--gpu-trigger-script-verbose', type=bool, default=False,
-                      help='Turn on verbose logging')
+  parser.add_argument('--multiple-trigger-configs', type=str, required=True,
+                      help='The Swarming configurations to trigger tasks on, '
+                      'in the form of a JSON array of dictionaries (these are '
+                      'Swarming dimension_sets). At least one entry in this '
+                      'dictionary is required.')
+  parser.add_argument('--multiple-dimension-script-verbose', type=bool,
+                      default=False, help='Turn on verbose logging')
   parser.add_argument('--dump-json', required=True,
                       help='(Swarming Trigger Script API) Where to dump the'
                       ' resulting json which indicates which tasks were'
@@ -344,7 +339,7 @@ def main():
 
   args, remaining = parser.parse_known_args()
 
-  return GpuTestTriggerer().trigger_tasks(args, remaining)
+  return MultiDimensionTestTriggerer().trigger_tasks(args, remaining)
 
 
 if __name__ == '__main__':
