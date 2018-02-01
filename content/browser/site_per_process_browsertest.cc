@@ -10473,4 +10473,34 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(kCrossSiteSubframeUrl.spec(), actual_subframe_url);
 }
 
+// Create an out-of-process iframe that causes itself to be detached during
+// its layout/animate phase. See https://crbug.com/802932.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OOPIFDetachDuringAnimation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/frame-detached-in-animationstart-event.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site A -- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* nested_child = root->child_at(0)->child_at(0);
+  WaitForChildFrameSurfaceReady(nested_child->current_frame_host());
+
+  EXPECT_TRUE(
+      ExecuteScript(nested_child->current_frame_host(), "startTest();"));
+
+  // Test passes if the main renderer doesn't crash. Ping to verify.
+  bool success;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->current_frame_host(), "window.domAutomationController.send(true);",
+      &success));
+  EXPECT_TRUE(success);
+}
+
 }  // namespace content
