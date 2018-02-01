@@ -38,8 +38,6 @@ using ntp_snippets::ContentSuggestion;
 using ntp_snippets::prefs::kDismissedAssetDownloadSuggestions;
 using ntp_snippets::prefs::kDismissedOfflinePageDownloadSuggestions;
 using offline_pages::OfflinePageItem;
-using offline_pages::OfflinePageModelQuery;
-using offline_pages::OfflinePageModelQueryBuilder;
 
 namespace {
 

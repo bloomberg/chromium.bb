@@ -10,14 +10,14 @@
 #include <vector>
 
 #include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/offline_page_model_impl.h"
+#include "components/offline_pages/core/offline_page_model.h"
 
 namespace offline_pages {
 
 // Stub implementation of OfflinePageModel interface for testing. Besides using
 // as a stub for tests, it may also be subclassed to mock specific methods
 // needed for a set of tests.
-class StubOfflinePageModel : public OfflinePageModelImpl {
+class StubOfflinePageModel : public OfflinePageModel {
  public:
   StubOfflinePageModel();
   ~StubOfflinePageModel() override;

@@ -25,6 +25,7 @@
 
 class GURL;
 namespace base {
+class Clock;
 class FilePath;
 class SequencedTaskRunner;
 }  // namespace base

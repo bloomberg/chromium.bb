@@ -14,10 +14,9 @@
 
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
-#include "components/offline_pages/core/offline_page_model_query.h"
-#include "components/offline_pages/core/offline_page_storage_manager.h"
 #include "components/offline_pages/core/offline_page_types.h"
 
 class GURL;
