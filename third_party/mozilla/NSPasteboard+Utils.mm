@@ -181,9 +181,13 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
   NSURL* urlFromNSURL = nil;  // Used below in getting an URL from the NSURLPboardType.
   if ([types containsObject:kWebURLsWithTitlesPboardType]) {
     NSArray* urlAndTitleContainer = [self propertyListForType:kWebURLsWithTitlesPboardType];
-    *outUrls = [urlAndTitleContainer objectAtIndex:0];
-    *outTitles = [urlAndTitleContainer objectAtIndex:1];
-  } else if ([types containsObject:NSFilenamesPboardType]) {
+    if ([urlAndTitleContainer count] >= 2) {
+      *outUrls = [urlAndTitleContainer objectAtIndex:0];
+      *outTitles = [urlAndTitleContainer objectAtIndex:1];
+      return;
+    }
+  }
+  if ([types containsObject:NSFilenamesPboardType]) {
     NSArray *files = [self propertyListForType:NSFilenamesPboardType];
     *outUrls = [NSMutableArray arrayWithCapacity:[files count]];
     *outTitles = [NSMutableArray arrayWithCapacity:[files count]];
