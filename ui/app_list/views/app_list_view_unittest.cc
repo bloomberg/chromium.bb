@@ -44,6 +44,7 @@
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -80,10 +81,17 @@ void CheckView(views::View* subview) {
 
 class TestStartPageSearchResult : public TestSearchResult {
  public:
-  TestStartPageSearchResult() { set_display_type(DISPLAY_RECOMMENDATION); }
+  TestStartPageSearchResult() : menu_model_(nullptr) {
+    set_display_type(DISPLAY_RECOMMENDATION);
+  }
   ~TestStartPageSearchResult() override {}
 
+  ui::MenuModel* GetContextMenuModel() override { return &menu_model_; }
+
  private:
+  // A fake menu mode for context menu test.
+  ui::SimpleMenuModel menu_model_;
+
   DISALLOW_COPY_AND_ASSIGN(TestStartPageSearchResult);
 };
 
@@ -1109,6 +1117,33 @@ TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
   // Test search box.
   TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), false);
   TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), true);
+}
+
+TEST_F(AppListViewFocusTest, ItemFocusedWhenContextMenuOpened) {
+  Show();
+
+  // Initial focus is on the search box.
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+
+  // Right click on the first suggestion app to trigger context menu.
+  ASSERT_GE(suggestions_container_view()->tile_views().size(), 2u);
+  views::View* first_suggestion_app =
+      suggestions_container_view()->tile_views()[0];
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
+                             ui::EF_RIGHT_MOUSE_BUTTON);
+  first_suggestion_app->OnMouseEvent(&press_event);
+
+  // Focus is moved to the first suggestion app.
+  EXPECT_TRUE(first_suggestion_app->HasFocus());
+
+  // Right click on the second suggestion app to trigger context menu.
+  views::View* second_suggestion_app =
+      suggestions_container_view()->tile_views()[1];
+  second_suggestion_app->OnMouseEvent(&press_event);
+
+  // Focus is moved to the second suggestion app.
+  EXPECT_TRUE(second_suggestion_app->HasFocus());
 }
 
 // Tests that opening the app list opens in peeking mode by default.
