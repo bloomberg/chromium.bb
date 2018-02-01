@@ -30,7 +30,7 @@ void SetToTrue(bool* value) {
   *value = true;
 }
 
-enum CallbackType { NATIVE, JS };
+enum CallbackType { NATIVE, NATIVE_WITH_NO_FALLBACK, JS, JS_WITH_NO_FALLBACK };
 
 class GCCallbackTest : public testing::TestWithParam<CallbackType> {
  public:
@@ -65,17 +65,31 @@ class GCCallbackTest : public testing::TestWithParam<CallbackType> {
     v8::Isolate* isolate = script_context->isolate();
     v8::HandleScope handle_scope(isolate);
     v8::Local<v8::Object> object = v8::Object::New(isolate);
+    base::Closure fallback;
+    if (has_fallback())
+      fallback = base::Bind(SetToTrue, fallback_invoked);
     if (GetParam() == JS) {
       v8::Local<v8::FunctionTemplate> unreachable_function =
           gin::CreateFunctionTemplate(isolate,
                                       base::Bind(SetToTrue, callback_invoked));
       return new GCCallback(script_context, object,
-                            unreachable_function->GetFunction(),
-                            base::Bind(SetToTrue, fallback_invoked));
+                            unreachable_function->GetFunction(), fallback);
     }
     return new GCCallback(script_context, object,
-                          base::Bind(SetToTrue, callback_invoked),
-                          base::Bind(SetToTrue, fallback_invoked));
+                          base::Bind(SetToTrue, callback_invoked), fallback);
+  }
+
+  bool has_fallback() const {
+    switch (GetParam()) {
+      case JS:
+      case NATIVE:
+        return true;
+      case JS_WITH_NO_FALLBACK:
+      case NATIVE_WITH_NO_FALLBACK:
+        return false;
+    }
+    NOTREACHED();
+    return false;
   }
 
  private:
@@ -149,7 +163,8 @@ TEST_P(GCCallbackTest, ContextInvalidatedBeforeGC) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(callback_invoked);
-  EXPECT_TRUE(fallback_invoked);
+  // The fallback should have been invoked, if it wasn't null.
+  EXPECT_EQ(has_fallback(), fallback_invoked);
 
   // Trigger a GC. The callback should not be invoked because the fallback was
   // already invoked.
@@ -180,13 +195,20 @@ TEST_P(GCCallbackTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(callback_invoked);
-  EXPECT_TRUE(fallback_invoked);
+  // The fallback should have been invoked, if it wasn't null.
+  EXPECT_EQ(has_fallback(), fallback_invoked);
 }
 
 INSTANTIATE_TEST_CASE_P(NativeCallback,
                         GCCallbackTest,
                         ::testing::Values(NATIVE));
 INSTANTIATE_TEST_CASE_P(JSCallback, GCCallbackTest, ::testing::Values(JS));
+INSTANTIATE_TEST_CASE_P(NativeCallbackWithNoFallback,
+                        GCCallbackTest,
+                        ::testing::Values(NATIVE_WITH_NO_FALLBACK));
+INSTANTIATE_TEST_CASE_P(JSCallbackWithNoFallback,
+                        GCCallbackTest,
+                        ::testing::Values(JS_WITH_NO_FALLBACK));
 
 }  // namespace
 }  // namespace extensions

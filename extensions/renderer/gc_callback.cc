@@ -38,6 +38,7 @@ GCCallback::GCCallback(ScriptContext* context,
       closure_callback_(closure_callback),
       fallback_(fallback),
       weak_ptr_factory_(this) {
+  DCHECK(closure_callback_ || !v8_callback.IsEmpty());
   if (!v8_callback.IsEmpty())
     v8_callback_.Reset(context->isolate(), v8_callback);
   object_.SetWeak(this, OnObjectGC, v8::WeakCallbackType::kParameter);
@@ -75,10 +76,9 @@ void GCCallback::RunCallback() {
 }
 
 void GCCallback::OnContextInvalidated() {
-  if (!fallback_.is_null()) {
+  if (!fallback_.is_null())
     fallback_.Run();
-    delete this;
-  }
+  delete this;
 }
 
 }  // namespace extensions
