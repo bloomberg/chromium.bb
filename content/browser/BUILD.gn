@@ -1475,6 +1475,8 @@ jumbo_source_set("browser") {
     "service_worker/embedded_worker_registry.cc",
     "service_worker/embedded_worker_registry.h",
     "service_worker/embedded_worker_status.h",
+    "service_worker/payment_handler_support.cc",
+    "service_worker/payment_handler_support.h",
     "service_worker/service_worker_blob_reader.cc",
     "service_worker/service_worker_blob_reader.h",
     "service_worker/service_worker_cache_writer.cc",

@@ -359,10 +359,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const std::string& notification_id,
       const PlatformNotificationData& notification_data);
 
-  void OnOpenWindowResponse(
-      int request_id,
-      const blink::mojom::ServiceWorkerClientInfo& client);
-  void OnOpenWindowError(int request_id, const std::string& message);
   void OnFocusClientResponse(
       int request_id,
       const blink::mojom::ServiceWorkerClientInfo& client);
