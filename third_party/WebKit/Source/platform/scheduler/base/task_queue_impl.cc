@@ -458,8 +458,9 @@ void TaskQueueImpl::TraceQueueSize() const {
 void TaskQueueImpl::SetQueuePriority(TaskQueue::QueuePriority priority) {
   if (!main_thread_only().task_queue_manager || priority == GetQueuePriority())
     return;
-  main_thread_only().task_queue_manager->selector_.SetQueuePriority(this,
-                                                                    priority);
+  main_thread_only()
+      .task_queue_manager->main_thread_only()
+      .selector.SetQueuePriority(this, priority);
 }
 
 TaskQueue::QueuePriority TaskQueueImpl::GetQueuePriority() const {
@@ -826,11 +827,15 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
 
     // Note the selector calls TaskQueueManager::OnTaskQueueEnabled which posts
     // a DoWork if needed.
-    main_thread_only().task_queue_manager->selector_.EnableQueue(this);
+    main_thread_only()
+        .task_queue_manager->main_thread_only()
+        .selector.EnableQueue(this);
   } else {
     if (!main_thread_only().delayed_incoming_queue.empty())
       main_thread_only().time_domain->CancelDelayedWork(this);
-    main_thread_only().task_queue_manager->selector_.DisableQueue(this);
+    main_thread_only()
+        .task_queue_manager->main_thread_only()
+        .selector.DisableQueue(this);
   }
 }
 
