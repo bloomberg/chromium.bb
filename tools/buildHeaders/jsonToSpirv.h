@@ -166,7 +166,7 @@ private:
 class EnumValue {
 public:
     EnumValue() : value(0), desc(nullptr) {}
-    EnumValue(unsigned int the_value, const std::string& the_name, EnumCaps&& the_caps, std::string& the_version,
+    EnumValue(unsigned int the_value, const std::string& the_name, EnumCaps&& the_caps, const std::string& the_version,
               Extensions&& the_extensions, OperandParameters&& the_operands) :
       value(the_value), name(the_name), capabilities(std::move(the_caps)), version(std::move(the_version)),
       extensions(std::move(the_extensions)), operands(std::move(the_operands)), desc(nullptr) { }
