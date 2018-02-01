@@ -308,6 +308,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdatePaintOffset();
   ALWAYS_INLINE void UpdateForPaintOffsetTranslation(Optional<IntPoint>&);
   ALWAYS_INLINE void UpdatePaintOffsetTranslation(const Optional<IntPoint>&);
+  ALWAYS_INLINE void SetNeedsPaintPropertyUpdateIfNeeded();
   ALWAYS_INLINE void UpdateForObjectLocationAndSize(
       Optional<IntPoint>& paint_offset_translation);
   ALWAYS_INLINE void UpdateTransform();
@@ -943,11 +944,6 @@ static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
   return false;
 }
 
-static bool NeedsControlClipFragmentationAdjustment(const LayoutBox& box) {
-  return box.HasControlClip() && !box.Layer() &&
-         box.PaintingLayer()->EnclosingPaginationLayer();
-}
-
 static LayoutPoint VisualOffsetFromPaintOffsetRoot(
     const PaintPropertyTreeBuilderFragmentContext& context,
     const PaintLayer* child) {
@@ -1522,29 +1518,30 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
   }
 }
 
-static void SetNeedsPaintPropertyUpdateIfNeeded(const LayoutObject& object) {
-  if (!object.IsBoxModelObject())
+void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
+  if (!object_.IsBoxModelObject())
     return;
 
-  const LayoutBoxModelObject& box_model_object = ToLayoutBoxModelObject(object);
+  const auto& box_model_object = ToLayoutBoxModelObject(object_);
   if (box_model_object.Layer() &&
       box_model_object.Layer()->ShouldFragmentCompositedBounds()) {
     // Always force-update properties for fragmented content.
     // TODO(chrishtr): find ways to optimize this in the future.
     // It may suffice to compare previous and current visual overflow,
     // but we do not currenly cache that on the LayoutObject or PaintLayer.
-    object.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
+    object_.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
     return;
   }
 
-  if (!object.IsBox())
+  if (!object_.IsBox())
     return;
 
-  const LayoutBox& box = ToLayoutBox(object);
+  const LayoutBox& box = ToLayoutBox(object_);
 
   // Always force-update properties for fragmented content. Boxes with
   // control clip have a fragment-aware offset.
-  if (NeedsControlClipFragmentationAdjustment(box)) {
+  if (box.HasControlClip() && !box.Layer() &&
+      full_context_.painting_layer->EnclosingPaginationLayer()) {
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
     return;
   }
@@ -1605,7 +1602,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   if (paint_offset_translation)
     context_.current.paint_offset_root = &ToLayoutBoxModelObject(object_);
 
-  SetNeedsPaintPropertyUpdateIfNeeded(object_);
+  SetNeedsPaintPropertyUpdateIfNeeded();
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
@@ -2010,10 +2007,9 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
   UpdateRepeatingPaintOffsetAdjustment();
 }
 
-static inline bool ObjectTypeMightNeedPaintProperties(
-    const LayoutObject& object) {
-  return object.IsBoxModelObject() || object.IsSVG() ||
-         object.PaintingLayer()->EnclosingPaginationLayer();
+bool ObjectPaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties() {
+  return object_.IsBoxModelObject() || object_.IsSVG() ||
+         context_.painting_layer->EnclosingPaginationLayer();
 }
 
 void ObjectPaintPropertyTreeBuilder::UpdatePaintingLayer() {
@@ -2035,7 +2031,7 @@ void ObjectPaintPropertyTreeBuilder::UpdatePaintingLayer() {
 void ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
   UpdatePaintingLayer();
 
-  if (ObjectTypeMightNeedPaintProperties(object_))
+  if (ObjectTypeMightNeedPaintProperties())
     UpdateFragments();
   else
     object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
@@ -2057,7 +2053,7 @@ void ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
 }
 
 void ObjectPaintPropertyTreeBuilder::UpdateForChildren() {
-  if (!ObjectTypeMightNeedPaintProperties(object_))
+  if (!ObjectTypeMightNeedPaintProperties())
     return;
 
   bool property_added_or_removed = false;
