@@ -236,7 +236,7 @@ Arguments needed to be passed to the test application through `iossim`, such as
 `--gtest_filter=SomeTest.FooBar` should be passed through the `-c` flag:
 
 ```shell
-$ out/Debug-iphonesimulator/iossim -d "iPhone 6s" -s 10.0 \
+$ out/Debug-iphonesimulator/iossim \
     -c "--gtest_filter=SomeTest.FooBar --gtest_repeat=3" \
     out/Debug-iphonesimulator/base_unittests.app
 ```
@@ -252,6 +252,28 @@ $ out/Debug-iphonesimulator/iossim \
     out/Debug-iphonesimulator/ios_chrome_ui_egtests.app \
     out/Debug-iphonesimulator/ios_chrome_ui_egtests.app/PlugIns/ios_chrome_ui_egtests_module.xctest
 ```
+
+### Running on specific simulator
+
+By default, `iossim` will pick an arbitrary simulator to run the tests. If
+you want to run them on a specific simulator, you can use `-d` to pick the
+simulated device and `-s` to select the iOS version.
+
+For example, to run the tests on a simulated iPhone 6s running iOS 10.0,
+you would invoke `iossim` like this.
+
+```shell
+$ out/Debug-iphonesimulator/iossim -d 'iPhone 6s' -s '10.0' \
+    out/Debug-iphonesimulator/base_unittests.app
+```
+
+Please note that by default only a subset of simulator devices are installed
+with Xcode. You may have to install additional simulators in Xcode (or even
+an older version of Xcode) to be able to run on a specific configuration.
+
+Go to "Preferences > Components" tab in Xcode to install other simulator images
+(this is the location the setting is in Xcode 9.2; it may be different in other
+version of the tool).
 
 ## Update your checkout
 
