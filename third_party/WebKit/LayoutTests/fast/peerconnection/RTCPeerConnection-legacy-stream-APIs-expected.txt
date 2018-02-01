@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+PASS addStream() adds to local streams and senders.
+PASS addTrack() adds to local streams and senders.
+PASS addTrack() fails after addStream().
+PASS addStream() after addTrack() adds the remaining track.
+PASS Adding a track to an addStream()-stream adds it to the PC.
+PASS Removing a track from an addStream()-stream removes it from the PC.
+PASS The PC stops observing the stream after removeStream().
+PASS removeStream() after addStream() removes from local streams and senders.
+FAIL removeStream() after addTrack() removes from local streams and senders. assert_array_equals: lengths differ, expected 0 got 1
+PASS removeStream() after removeTrack() removes remaining tracks.
+PASS removeTrack() after addStream() removes from local streams and senders.
+PASS removeTrack() after addTrack() removes from local streams and senders.
+PASS createDTMFSender() with addStream()-track.
+FAIL createDTMFSender() with addTrack()-track. promise_test: Unhandled rejection with value: object "SyntaxError: Failed to execute 'createDTMFSender' on 'RTCPeerConnection': No local stream is available for the track provided."
+Harness: the test ran to completion.
+

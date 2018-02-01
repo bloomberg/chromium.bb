@@ -51,8 +51,12 @@ class ReplaceTrackRequest : public RTCVoidRequest {
 
 RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
                            std::unique_ptr<WebRTCRtpSender> sender,
-                           MediaStreamTrack* track)
-    : pc_(pc), sender_(std::move(sender)), track_(track) {
+                           MediaStreamTrack* track,
+                           MediaStreamVector streams)
+    : pc_(pc),
+      sender_(std::move(sender)),
+      track_(track),
+      streams_(std::move(streams)) {
   DCHECK(pc_);
   DCHECK(sender_);
   DCHECK(track_);
@@ -88,9 +92,14 @@ void RTCRtpSender::SetTrack(MediaStreamTrack* track) {
   track_ = track;
 }
 
+MediaStreamVector RTCRtpSender::streams() const {
+  return streams_;
+}
+
 void RTCRtpSender::Trace(blink::Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(track_);
+  visitor->Trace(streams_);
   ScriptWrappable::Trace(visitor);
 }
 

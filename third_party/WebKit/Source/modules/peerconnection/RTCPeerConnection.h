@@ -159,8 +159,8 @@ class MODULES_EXPORT RTCPeerConnection final
                          MediaStreamTrack* selector = nullptr);
   ScriptPromise getStats(ScriptState*);
 
-  HeapVector<Member<RTCRtpSender>> getSenders();
-  HeapVector<Member<RTCRtpReceiver>> getReceivers();
+  HeapVector<Member<RTCRtpSender>> getSenders() const;
+  HeapVector<Member<RTCRtpReceiver>> getReceivers() const;
   RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
   void removeTrack(RTCRtpSender*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(track);
@@ -261,6 +261,19 @@ class MODULES_EXPORT RTCPeerConnection final
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
+  // addStream() and removeStream() result in senders being added or removed.
+  // When a legacy stream API has been invoked, these methods must be invoked to
+  // make blink layer |rtp_senders_| up-to-date. The assumption of
+  // CreateMissingSendersForStream() is that any lower layer senders found that
+  // don't exist in blink was just created for the specified stream.
+  // RemoveUnusedSenders() removes all blink senders that don't exist in the
+  // lower layers.
+  // TODO(hbos): Stop using legacy stream APIs and remove these methods. When
+  // addStream() and removeStream() are implemented on top of track-based APIs
+  // we don't have to do these tricks to keep |rtp_senders_| up-to-date.
+  // https://crbug.com/738929
+  void CreateMissingSendersForStream(MediaStream*);
+  void RemoveUnusedSenders();
 
   // The "Change" methods set the state asynchronously and fire the
   // corresponding event immediately after changing the state (if it was really
@@ -302,10 +315,8 @@ class MODULES_EXPORT RTCPeerConnection final
   ICEGatheringState ice_gathering_state_;
   ICEConnectionState ice_connection_state_;
 
-  MediaStreamVector local_streams_;
   // A map containing any track that is in use by the peer connection. This
-  // includes tracks of |local_streams_|, |remote_streams_|, |rtp_senders_| and
-  // |rtp_receivers_|.
+  // includes tracks of |rtp_senders_| and |rtp_receivers_|.
   HeapHashMap<WeakMember<MediaStreamComponent>, WeakMember<MediaStreamTrack>>
       tracks_;
   HeapHashMap<uintptr_t, Member<RTCRtpSender>> rtp_senders_;

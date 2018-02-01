@@ -6,6 +6,7 @@
 #define RTCRtpSender_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "modules/mediastream/MediaStream.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Member.h"
@@ -27,7 +28,8 @@ class RTCRtpSender final : public ScriptWrappable {
   // https://github.com/w3c/webrtc-pc/issues/1712
   RTCRtpSender(RTCPeerConnection*,
                std::unique_ptr<WebRTCRtpSender>,
-               MediaStreamTrack*);
+               MediaStreamTrack*,
+               MediaStreamVector streams);
 
   MediaStreamTrack* track();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
@@ -36,6 +38,7 @@ class RTCRtpSender final : public ScriptWrappable {
   // Sets the track. This must be called when the |WebRTCRtpSender| has its
   // track updated, and the |track| must match the |WebRTCRtpSender::Track|.
   void SetTrack(MediaStreamTrack*);
+  MediaStreamVector streams() const;
 
   virtual void Trace(blink::Visitor*);
 
@@ -43,6 +46,7 @@ class RTCRtpSender final : public ScriptWrappable {
   Member<RTCPeerConnection> pc_;
   std::unique_ptr<WebRTCRtpSender> sender_;
   Member<MediaStreamTrack> track_;
+  MediaStreamVector streams_;
 };
 
 }  // namespace blink
