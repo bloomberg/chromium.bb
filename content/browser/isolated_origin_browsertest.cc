@@ -421,6 +421,77 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_EQ(bar_url2.spec(), popup_location);
 }
 
+// Check that when a non-isolated-origin page opens a popup, navigates it
+// to an isolated origin, and then the popup navigates to a third non-isolated
+// origin and finally back to its opener's origin, the popup and the opener
+// iframe end up in the same process and can script each other:
+//
+//   foo.com
+//      |
+//  window.open()
+//      |
+//      V
+//  about:blank -> isolated.foo.com -> bar.com -> foo.com
+//
+// This is a variant of PopupNavigatesToIsolatedOriginAndBack where the popup
+// navigates to a third site before coming back to the opener's site. See
+// https://crbug.com/807184.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       PopupNavigatesToIsolatedOriginThenToAnotherSiteAndBack) {
+  // Start on www.foo.com.
+  GURL foo_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Open a blank popup.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(root, "window.w = window.open();"));
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Have the opener navigate the popup to an isolated origin.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  {
+    TestNavigationManager manager(new_shell->web_contents(), isolated_url);
+    EXPECT_TRUE(ExecuteScript(
+        root, "window.w.location.href = '" + isolated_url.spec() + "';"));
+    manager.WaitForNavigationFinished();
+  }
+
+  // Simulate the isolated origin in the popup navigating to bar.com.
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
+  {
+    TestNavigationManager manager(new_shell->web_contents(), bar_url);
+    EXPECT_TRUE(
+        ExecuteScript(new_shell, "location.href = '" + bar_url.spec() + "';"));
+    manager.WaitForNavigationFinished();
+  }
+
+  // At this point, the popup and the opener should still be in separate
+  // SiteInstances.
+  EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetSiteInstance(),
+            root->current_frame_host()->GetSiteInstance());
+
+  // Simulate the isolated origin in the popup navigating to www.foo.com.
+  {
+    TestNavigationManager manager(new_shell->web_contents(), foo_url);
+    EXPECT_TRUE(
+        ExecuteScript(new_shell, "location.href = '" + foo_url.spec() + "';"));
+    manager.WaitForNavigationFinished();
+  }
+
+  // The popup should now be in the same SiteInstance as its same-site opener.
+  EXPECT_EQ(new_shell->web_contents()->GetMainFrame()->GetSiteInstance(),
+            root->current_frame_host()->GetSiteInstance());
+
+  // Check that the popup can script the opener.
+  std::string opener_location;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_shell, "domAutomationController.send(window.opener.location.href);",
+      &opener_location));
+  EXPECT_EQ(foo_url.spec(), opener_location);
+}
+
 // Check that with an ABA hierarchy, where B is an isolated origin, the root
 // and grandchild frames end up in the same process and can script each other.
 // See https://crbug.com/796912.
