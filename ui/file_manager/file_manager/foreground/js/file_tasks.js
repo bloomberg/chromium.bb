@@ -851,7 +851,7 @@ FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
   } else {
     combobutton.defaultItem = {
       type: FileTasks.TaskMenuButtonItemType.ShowMenu,
-      label: str('MORE_ACTIONS_BUTTON_LABEL')
+      label: str('OPEN_WITH_BUTTON_LABEL')
     };
   }
 
