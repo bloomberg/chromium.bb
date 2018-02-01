@@ -64,37 +64,17 @@ support_lib_alias("android_support_core_utils_java") {
 }
 support_lib_alias("android_support_design_java") {
 }
-support_lib_alias("android_support_fragment_java") {
-}
-support_lib_alias("android_support_media_compat_java") {
-}
-support_lib_alias("android_support_transition_java") {
-}
 support_lib_alias("android_support_v4_java") {
 }
 support_lib_alias("android_support_v7_appcompat_java") {
-}
-support_lib_alias("android_support_v7_appcompat_java_internal") {
 }
 support_lib_alias("android_support_v7_gridlayout_java") {
 }
 support_lib_alias("android_support_v7_mediarouter_java") {
 }
-support_lib_alias("android_support_v7_palette_java") {
-}
-support_lib_alias("android_support_v7_preference_java") {
-}
 support_lib_alias("android_support_v7_recyclerview_java") {
 }
 support_lib_alias("android_support_v13_java") {
-}
-support_lib_alias("android_support_v14_preference_java") {
-}
-support_lib_alias("android_support_v17_leanback_java") {
-}
-support_lib_alias("android_support_v17_preference_java") {
-}
-support_lib_alias("android_support_vector_drawable_java") {
 }
 
 # TODO(dgn): Use the POM files instead of hardcoding the dependencies.
