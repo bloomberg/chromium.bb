@@ -6,8 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_GROUP_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -17,7 +17,7 @@ class AssociatedGroupController;
 // AssociatedGroup refers to all the interface endpoints running at one end of a
 // message pipe.
 // It is thread safe and cheap to make copies.
-class MOJO_CPP_BINDINGS_EXPORT AssociatedGroup {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) AssociatedGroup {
  public:
   AssociatedGroup();
 

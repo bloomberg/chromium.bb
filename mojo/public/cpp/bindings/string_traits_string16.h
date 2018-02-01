@@ -5,15 +5,15 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRING_TRAITS_STRING16_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRING_TRAITS_STRING16_H_
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/string_data_view.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 
 namespace mojo {
 
 template <>
-struct MOJO_CPP_BINDINGS_EXPORT StringTraits<base::string16> {
+struct COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) StringTraits<base::string16> {
   static bool IsNull(const base::string16& input) {
     // base::string16 is always converted to non-null mojom string.
     return false;

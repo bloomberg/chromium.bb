@@ -500,8 +500,10 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
 {#--- Request validator definitions #}
 
 bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
-  if (mojo::internal::IsUnserializedOrControlMessage(message))
+  if (!message->is_serialized() ||
+      mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
     return true;
+  }
 
   mojo::internal::ValidationContext validation_context(
     message->payload(), message->payload_num_bytes(),
@@ -544,8 +546,10 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 {#--- Response validator definitions #}
 {% if interface|has_callbacks %}
 bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
-  if (mojo::internal::IsUnserializedOrControlMessage(message))
+  if (!message->is_serialized() ||
+      mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
     return true;
+  }
 
   mojo::internal::ValidationContext validation_context(
     message->payload(), message->payload_num_bytes(),

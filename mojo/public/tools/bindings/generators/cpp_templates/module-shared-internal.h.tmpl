@@ -14,14 +14,14 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
-#include "mojo/public/cpp/bindings/lib/native_enum_data.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
 {%- for import in imports %}
 #include "{{import.path}}-shared-internal.h"
 {%- endfor %}
 
-{%- if allow_native_structs %}
+{%- if not disallow_native_types %}
+#include "mojo/public/cpp/bindings/lib/native_enum_data.h"
 #include "mojo/public/interfaces/bindings/native_struct.mojom-shared-internal.h"
 {%- endif %}
 

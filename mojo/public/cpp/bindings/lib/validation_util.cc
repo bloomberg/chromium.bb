@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
 namespace internal {

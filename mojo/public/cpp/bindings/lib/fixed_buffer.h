@@ -7,8 +7,8 @@
 
 #include <cstddef>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
 namespace mojo {
@@ -16,7 +16,8 @@ namespace internal {
 
 // FixedBufferForTesting owns its buffer. The Leak method may be used to steal
 // the underlying memory.
-class MOJO_CPP_BINDINGS_EXPORT FixedBufferForTesting : public Buffer {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) FixedBufferForTesting
+    : public Buffer {
  public:
   explicit FixedBufferForTesting(size_t size);
   ~FixedBufferForTesting();

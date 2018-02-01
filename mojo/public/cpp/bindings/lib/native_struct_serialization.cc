@@ -7,7 +7,6 @@
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/native_handle_type_converters.h"
-#include "mojo/public/cpp/bindings/lib/handle_interface_serialization.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 

@@ -10,8 +10,8 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message.h"
 
@@ -24,7 +24,7 @@ namespace internal {
 //
 // A Buffer may be moved around. A moved-from Buffer is reset and may no longer
 // be used to Allocate memory unless re-Initialized.
-class MOJO_CPP_BINDINGS_EXPORT Buffer {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Buffer {
  public:
   // Constructs an invalid Buffer. May not call Allocate().
   Buffer();
