@@ -17,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/matchers.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -31,6 +32,7 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
+using testing::ElementToDismissAlert;
 
 namespace {
 
@@ -128,7 +130,8 @@ void TestFormResponseProvider::GetResponseHeadersAndBody(
     *response_body =
         base::StringPrintf(kFormHtmlTemplate, GetRedirectUrl().spec().c_str());
     return;
-  } else if (url == GetDestinationUrl()) {
+  }
+  if (url == GetDestinationUrl()) {
     *response_body = request.method + std::string(" ") + request.body;
     return;
   }
@@ -292,25 +295,8 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey goForward];
 
-  // Abort the reload.
-  // TODO (crbug.com/705020): Use something like ElementToDismissContextMenu
-  // to cancel form repost.
-  if (IsIPadIdiom()) {
-    // On tablet, dismiss the popover.
-    GREYElementMatcherBlock* matcher = [[GREYElementMatcherBlock alloc]
-        initWithMatchesBlock:^BOOL(UIView* view) {
-          return [NSStringFromClass([view class]) hasPrefix:@"UIDimmingView"];
-        }
-        descriptionBlock:^(id<GREYDescription> description) {
-          [description appendText:@"class prefixed with UIDimmingView"];
-        }];
-    [[EarlGrey selectElementWithMatcher:matcher]
-        performAction:grey_tapAtPoint(CGPointMake(50.0f, 50.0f))];
-  } else {
-    // On handset, dismiss via the cancel button.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
-        performAction:grey_tap()];
-  }
+  [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
+      performAction:grey_tap()];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   // Verify that navigation was cancelled, and forward navigation is possible.
