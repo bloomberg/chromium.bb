@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class HTMLVideoElement;
+
 class MODULES_EXPORT PictureInPictureController
     : public GarbageCollectedFinalized<PictureInPictureController>,
       public Supplement<Document> {
@@ -35,10 +37,20 @@ class MODULES_EXPORT PictureInPictureController
 
   Status GetStatus() const;
 
+  void SetPictureInPictureElement(HTMLVideoElement&);
+
+  void UnsetPictureInPictureElement();
+
+  HTMLVideoElement* PictureInPictureElement() const;
+
+  void Trace(blink::Visitor*) override;
+
  private:
   explicit PictureInPictureController(Document&);
 
   bool picture_in_picture_enabled_ = true;
+
+  Member<HTMLVideoElement> picture_in_picture_element_;
 };
 
 }  // namespace blink

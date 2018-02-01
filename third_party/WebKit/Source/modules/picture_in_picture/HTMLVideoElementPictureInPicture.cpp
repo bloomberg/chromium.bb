@@ -58,9 +58,10 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
 
   // TODO(crbug.com/806249): Call element.enterPictureInPicture().
 
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      DOMException::Create(kNotSupportedError, "Not implemented yet"));
+  PictureInPictureController::Ensure(document).SetPictureInPictureElement(
+      element);
+
+  return ScriptPromise::CastUndefined(script_state);
 }
 
 }  // namespace blink

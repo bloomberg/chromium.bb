@@ -4,9 +4,18 @@
 
 #include "modules/picture_in_picture/DocumentPictureInPicture.h"
 
+#include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "modules/picture_in_picture/PictureInPictureController.h"
 
 namespace blink {
+
+namespace {
+
+const char kNoPictureInPictureElement[] =
+    "There is no Picture-in-Picture element in this document.";
+
+}  // namespace
 
 // static
 bool DocumentPictureInPicture::pictureInPictureEnabled(Document& document) {
@@ -16,10 +25,24 @@ bool DocumentPictureInPicture::pictureInPictureEnabled(Document& document) {
 // static
 ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
     ScriptState* script_state,
-    const Document&) {
+    Document& document) {
+  if (!PictureInPictureController::Ensure(document).PictureInPictureElement()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError, kNoPictureInPictureElement));
+  }
+
   // TODO(crbug.com/806249): Call element.exitPictureInPicture().
 
+  PictureInPictureController::Ensure(document).UnsetPictureInPictureElement();
+
   return ScriptPromise::CastUndefined(script_state);
+}
+
+// static
+HTMLVideoElement* DocumentPictureInPicture::pictureInPictureElement(
+    Document& document) {
+  return PictureInPictureController::Ensure(document).PictureInPictureElement();
 }
 
 }  // namespace blink

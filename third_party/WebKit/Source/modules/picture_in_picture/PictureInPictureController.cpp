@@ -5,6 +5,7 @@
 #include "modules/picture_in_picture/PictureInPictureController.h"
 
 #include "core/dom/Document.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {
@@ -63,6 +64,24 @@ PictureInPictureController::Status PictureInPictureController::GetStatus()
 void PictureInPictureController::SetPictureInPictureEnabledForTesting(
     bool value) {
   picture_in_picture_enabled_ = value;
+}
+
+void PictureInPictureController::SetPictureInPictureElement(
+    HTMLVideoElement& element) {
+  picture_in_picture_element_ = &element;
+}
+
+void PictureInPictureController::UnsetPictureInPictureElement() {
+  picture_in_picture_element_ = nullptr;
+}
+
+HTMLVideoElement* PictureInPictureController::PictureInPictureElement() const {
+  return picture_in_picture_element_;
+}
+
+void PictureInPictureController::Trace(blink::Visitor* visitor) {
+  visitor->Trace(picture_in_picture_element_);
+  Supplement<Document>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -1576,6 +1576,7 @@ interface Document : Node
     getter onwebkitfullscreenerror
     getter onwheel
     getter origin
+    getter pictureInPictureElement
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement

@@ -10,6 +10,7 @@
 namespace blink {
 
 class Document;
+class HTMLVideoElement;
 class ScriptPromise;
 class ScriptState;
 
@@ -18,7 +19,10 @@ class DocumentPictureInPicture {
 
  public:
   static bool pictureInPictureEnabled(Document&);
-  static ScriptPromise exitPictureInPicture(ScriptState*, const Document&);
+
+  static ScriptPromise exitPictureInPicture(ScriptState*, Document&);
+
+  static HTMLVideoElement* pictureInPictureElement(Document&);
 };
 
 }  // namespace blink
