@@ -395,6 +395,14 @@ interesting attributes supported today.
     field, enum value, interface method, or method parameter was introduced.
     See [Versioning](#Versioning) for more details.
 
+**`[EnableIf=value]`**
+:   The `EnableIf` attribute is used to conditionally enable definitions when
+    the mojom is parsed. If the `mojom` target in the GN file does not include
+    the matching `value` in the list of `enabled_features`, the definition
+    will be disabled. This is useful for mojom definitions that only make
+    sense on one platform. Note that the `EnableIf` attribute can only be set
+    once per definition.
+
 ## Generated Code For Target Languages
 
 When the bindings generator successfully processes an input Mojom file, it emits
