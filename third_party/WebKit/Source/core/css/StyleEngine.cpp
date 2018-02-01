@@ -985,7 +985,7 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
 }
 
 void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
-  for (auto& node : slot.GetDistributedNodes()) {
+  for (auto& node : slot.FlattenedAssignedNodes()) {
     if (node->IsElementNode()) {
       node->SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(

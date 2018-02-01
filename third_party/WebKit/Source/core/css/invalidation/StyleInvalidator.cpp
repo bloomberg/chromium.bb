@@ -419,7 +419,7 @@ bool StyleInvalidator::Invalidate(Element& element,
 void StyleInvalidator::InvalidateSlotDistributedElements(
     HTMLSlotElement& slot,
     const RecursionData& recursion_data) const {
-  for (auto& distributed_node : slot.GetDistributedNodes()) {
+  for (auto& distributed_node : slot.FlattenedAssignedNodes()) {
     if (distributed_node->NeedsStyleRecalc())
       continue;
     if (!distributed_node->IsElementNode())
