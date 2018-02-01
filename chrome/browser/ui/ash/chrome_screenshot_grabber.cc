@@ -32,6 +32,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -49,6 +50,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace {
+
+using ui::ScreenshotResult;
 
 const char kNotificationId[] = "screenshot";
 const char kNotifierScreenshot[] = "ash.screenshot";
@@ -186,24 +189,22 @@ class ScreenshotGrabberNotificationDelegate
   DISALLOW_COPY_AND_ASSIGN(ScreenshotGrabberNotificationDelegate);
 };
 
-int GetScreenshotNotificationTitle(
-    ui::ScreenshotGrabberObserver::Result screenshot_result) {
+int GetScreenshotNotificationTitle(ScreenshotResult screenshot_result) {
   switch (screenshot_result) {
-    case ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED:
+    case ScreenshotResult::DISABLED:
       return IDS_SCREENSHOT_NOTIFICATION_TITLE_DISABLED;
-    case ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS:
+    case ScreenshotResult::SUCCESS:
       return IDS_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS;
     default:
       return IDS_SCREENSHOT_NOTIFICATION_TITLE_FAIL;
   }
 }
 
-int GetScreenshotNotificationText(
-    ui::ScreenshotGrabberObserver::Result screenshot_result) {
+int GetScreenshotNotificationText(ScreenshotResult screenshot_result) {
   switch (screenshot_result) {
-    case ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED:
+    case ScreenshotResult::DISABLED:
       return IDS_SCREENSHOT_NOTIFICATION_TEXT_DISABLED;
-    case ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS:
+    case ScreenshotResult::SUCCESS:
       return IDS_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS;
     default:
       return IDS_SCREENSHOT_NOTIFICATION_TEXT_FAIL;
@@ -215,8 +216,8 @@ void PrepareWritableFileCallback(
     drive::FileError error,
     const base::FilePath& local_path) {
   callback.Run(error == drive::FILE_ERROR_OK
-                   ? ui::ScreenshotGrabberDelegate::FILE_SUCCESS
-                   : ui::ScreenshotGrabberDelegate::FILE_CREATE_FAILED,
+                   ? ScreenshotFileResult::SUCCESS
+                   : ScreenshotFileResult::CREATE_FAILED,
                local_path);
 }
 
@@ -235,8 +236,7 @@ void EnsureDirectoryExistsCallback(
                << "in Google Drive: " << error;
     base::PostTaskWithTraits(
         FROM_HERE, kBlockingTaskTraits,
-        base::BindOnce(callback,
-                       ui::ScreenshotGrabberDelegate::FILE_CHECK_DIR_FAILED,
+        base::BindOnce(callback, ScreenshotFileResult::CHECK_DIR_FAILED,
                        base::FilePath()));
   }
 }
@@ -267,9 +267,9 @@ bool GetScreenshotDirectory(base::FilePath* directory) {
   return true;
 }
 
-std::string GetScreenshotBaseFilename() {
+std::string GetScreenshotBaseFilename(const base::Time& unexploded_now) {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  unexploded_now.LocalExplode(&now);
 
   // We don't use base/i18n/time_formatting.h here because it doesn't
   // support our format.  Don't use ICU either to avoid i18n file names
@@ -304,12 +304,67 @@ std::string ReadFileToString(const base::FilePath& path) {
   return data;
 }
 
+using ShowNotificationCallback =
+    base::Callback<void(ScreenshotResult screenshot_result,
+                        const base::FilePath& screenshot_path)>;
+
+void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
+                    const ShowNotificationCallback& callback,
+                    const base::FilePath& screenshot_path,
+                    scoped_refptr<base::RefCountedMemory> png_data,
+                    ScreenshotFileResult result,
+                    const base::FilePath& local_path) {
+  DCHECK(!base::MessageLoopForUI::IsCurrent());
+  DCHECK(!screenshot_path.empty());
+
+  ScreenshotResult screenshot_result = ScreenshotResult::SUCCESS;
+  switch (result) {
+    case ScreenshotFileResult::SUCCESS:
+      // Successfully got a local file to write to, write png data.
+      DCHECK_GT(static_cast<int>(png_data->size()), 0);
+      if (static_cast<size_t>(base::WriteFile(
+              local_path, reinterpret_cast<const char*>(png_data->front()),
+              static_cast<int>(png_data->size()))) != png_data->size()) {
+        LOG(ERROR) << "Failed to save to " << local_path.value();
+        screenshot_result = ScreenshotResult::WRITE_FILE_FAILED;
+      }
+      break;
+    case ScreenshotFileResult::CHECK_DIR_FAILED:
+      screenshot_result = ScreenshotResult::CHECK_DIR_FAILED;
+      break;
+    case ScreenshotFileResult::CREATE_DIR_FAILED:
+      screenshot_result = ScreenshotResult::CREATE_DIR_FAILED;
+      break;
+    case ScreenshotFileResult::CREATE_FAILED:
+      screenshot_result = ScreenshotResult::CREATE_FILE_FAILED;
+      break;
+  }
+
+  // Report the result on the UI thread.
+  ui_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(callback, screenshot_result, screenshot_path));
+}
+
+void EnsureLocalDirectoryExists(
+    const base::FilePath& path,
+    ChromeScreenshotGrabber::FileCallback callback) {
+  DCHECK(!base::MessageLoopForUI::IsCurrent());
+  DCHECK(!path.empty());
+
+  if (!base::CreateDirectory(path.DirName())) {
+    LOG(ERROR) << "Failed to ensure the existence of "
+               << path.DirName().value();
+    callback.Run(ScreenshotFileResult::CREATE_DIR_FAILED, path);
+    return;
+  }
+
+  callback.Run(ScreenshotFileResult::SUCCESS, path);
+}
+
 }  // namespace
 
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
-    : screenshot_grabber_(new ui::ScreenshotGrabber(this)),
-      weak_factory_(this) {
-  screenshot_grabber_->AddObserver(this);
+    : screenshot_grabber_(new ui::ScreenshotGrabber), weak_factory_(this) {
   DCHECK(!g_chrome_screenshot_grabber_instance);
   g_chrome_screenshot_grabber_instance = this;
 }
@@ -317,7 +372,6 @@ ChromeScreenshotGrabber::ChromeScreenshotGrabber()
 ChromeScreenshotGrabber::~ChromeScreenshotGrabber() {
   DCHECK_EQ(this, g_chrome_screenshot_grabber_instance);
   g_chrome_screenshot_grabber_instance = nullptr;
-  screenshot_grabber_->RemoveObserver(this);
 }
 
 // static
@@ -327,20 +381,10 @@ ChromeScreenshotGrabber* ChromeScreenshotGrabber::Get() {
 
 void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
   if (ScreenshotsDisabled()) {
-    screenshot_grabber_->NotifyScreenshotCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED, base::FilePath());
+    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
 
-  base::FilePath screenshot_directory;
-  if (!GetScreenshotDirectory(&screenshot_directory)) {
-    screenshot_grabber_->NotifyScreenshotCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOT_GET_DIR_FAILED,
-        base::FilePath());
-    return;
-  }
-
-  std::string screenshot_basename = GetScreenshotBaseFilename();
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
   // Reorder root_windows to take the primary root window's snapshot at first.
   aura::Window* primary_root = ash::Shell::GetPrimaryRootWindow();
@@ -349,16 +393,18 @@ void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
         std::find(root_windows.begin(), root_windows.end(), primary_root));
     root_windows.insert(root_windows.begin(), primary_root);
   }
-  std::vector<base::FilePath> filenames;
+  base::Time time = base::Time::Now();
   for (size_t i = 0; i < root_windows.size(); ++i) {
     aura::Window* root_window = root_windows[i];
-    std::string basename = screenshot_basename;
     gfx::Rect rect = root_window->bounds();
+
+    base::Optional<int> display_id;
     if (root_windows.size() > 1)
-      basename += base::StringPrintf(" - Display %d", static_cast<int>(i + 1));
-    base::FilePath screenshot_path =
-        screenshot_directory.AppendASCII(basename + ".png");
-    screenshot_grabber_->TakeScreenshot(root_window, rect, screenshot_path);
+      display_id = static_cast<int>(i + 1);
+    screenshot_grabber_->TakeScreenshot(
+        root_window, rect,
+        base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
+                       weak_factory_.GetWeakPtr(), time, display_id));
   }
   base::RecordAction(base::UserMetricsAction("Screenshot_TakeFull"));
 }
@@ -367,49 +413,73 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
     aura::Window* window,
     const gfx::Rect& rect) {
   if (ScreenshotsDisabled()) {
-    screenshot_grabber_->NotifyScreenshotCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED, base::FilePath());
+    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
 
-  base::FilePath screenshot_directory;
-  if (!GetScreenshotDirectory(&screenshot_directory)) {
-    screenshot_grabber_->NotifyScreenshotCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOT_GET_DIR_FAILED,
-        base::FilePath());
-    return;
-  }
-
-  base::FilePath screenshot_path =
-      screenshot_directory.AppendASCII(GetScreenshotBaseFilename() + ".png");
-  screenshot_grabber_->TakeScreenshot(window, rect, screenshot_path);
+  screenshot_grabber_->TakeScreenshot(
+      window, rect,
+      base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
+                     weak_factory_.GetWeakPtr(), base::Time::Now(),
+                     base::Optional<int>()));
   base::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
 void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
   if (ScreenshotsDisabled()) {
-    screenshot_grabber_->NotifyScreenshotCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED, base::FilePath());
+    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
 
-  base::FilePath screenshot_directory;
-  if (!GetScreenshotDirectory(&screenshot_directory)) {
-    screenshot_grabber_->NotifyScreenshotCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOT_GET_DIR_FAILED,
-        base::FilePath());
-    return;
-  }
-
-  base::FilePath screenshot_path =
-      screenshot_directory.AppendASCII(GetScreenshotBaseFilename() + ".png");
   screenshot_grabber_->TakeScreenshot(
-      window, gfx::Rect(window->bounds().size()), screenshot_path);
+      window, gfx::Rect(window->bounds().size()),
+      base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
+                     weak_factory_.GetWeakPtr(), base::Time::Now(),
+                     base::Optional<int>()));
   base::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
 }
 
 bool ChromeScreenshotGrabber::CanTakeScreenshot() {
   return screenshot_grabber_->CanTakeScreenshot();
+}
+
+void ChromeScreenshotGrabber::OnTookScreenshot(
+    const base::Time& screenshot_time,
+    const base::Optional<int>& display_num,
+    ScreenshotResult result,
+    scoped_refptr<base::RefCountedMemory> png_data) {
+  if (result != ScreenshotResult::SUCCESS) {
+    // We didn't complete taking the screenshot.
+    OnScreenshotCompleted(result, base::FilePath());
+    return;
+  }
+
+  if (ScreenshotsDisabled()) {
+    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
+    return;
+  }
+
+  base::FilePath screenshot_directory;
+  if (!GetScreenshotDirectory(&screenshot_directory)) {
+    OnScreenshotCompleted(ScreenshotResult::GET_DIR_FAILED, base::FilePath());
+    return;
+  }
+
+  // Calculate the path.
+  std::string screenshot_basename = GetScreenshotBaseFilename(screenshot_time);
+  if (display_num.has_value())
+    screenshot_basename += base::StringPrintf(" - Display %d", *display_num);
+  base::FilePath screenshot_path =
+      screenshot_directory.AppendASCII(screenshot_basename + ".png");
+
+  ShowNotificationCallback screenshot_complete_callback(
+      base::Bind(&ChromeScreenshotGrabber::OnScreenshotCompleted,
+                 weak_factory_.GetWeakPtr()));
+
+  PrepareFileAndRunOnBlockingPool(
+      screenshot_path,
+      base::Bind(&SaveScreenshot, base::ThreadTaskRunnerHandle::Get(),
+                 screenshot_complete_callback, screenshot_path, png_data));
 }
 
 void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
@@ -422,20 +492,27 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
         base::Bind(&EnsureDirectoryExistsCallback, callback, profile, path));
     return;
   }
-  ui::ScreenshotGrabberDelegate::PrepareFileAndRunOnBlockingPool(path,
-                                                                 callback);
+
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::Bind(EnsureLocalDirectoryExists, path, callback));
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(
-    ui::ScreenshotGrabberObserver::Result result,
+    ui::ScreenshotResult result,
     const base::FilePath& screenshot_path) {
+  // Delegate to our tests in test mode.
+  if (test_observer_)
+    test_observer_->OnScreenshotCompleted(result, screenshot_path);
+
   // Do not show a notification that a screenshot was taken while no user is
   // logged in, since it is confusing for the user to get a message about it
   // after they log in (crbug.com/235217).
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
 
-  if (result != ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS) {
+  if (result != ScreenshotResult::SUCCESS) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(
@@ -496,9 +573,8 @@ void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
-            weak_factory_.GetWeakPtr(),
-            ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_path,
-            gfx::Image()));
+            weak_factory_.GetWeakPtr(), ScreenshotResult::SUCCESS,
+            screenshot_path, gfx::Image()));
     return;
   }
   content::BrowserThread::PostTask(
@@ -516,9 +592,8 @@ void ChromeScreenshotGrabber::DecodeScreenshotFileForPreview(
   if (image_data.empty()) {
     LOG(ERROR) << "Failed to read the screenshot file: "
                << screenshot_path.value();
-    OnReadScreenshotFileForPreviewCompleted(
-        ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_path,
-        gfx::Image());
+    OnReadScreenshotFileForPreviewCompleted(ScreenshotResult::SUCCESS,
+                                            screenshot_path, gfx::Image());
     return;
   }
 
@@ -545,12 +620,12 @@ void ChromeScreenshotGrabber::OnScreenshotFileForPreviewDecoded(
     const base::FilePath& screenshot_path,
     const SkBitmap& decoded_image) {
   OnReadScreenshotFileForPreviewCompleted(
-      ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_path,
+      ScreenshotResult::SUCCESS, screenshot_path,
       gfx::Image::CreateFrom1xBitmap(decoded_image));
 }
 
 void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
-    ui::ScreenshotGrabberObserver::Result result,
+    ScreenshotResult result,
     const base::FilePath& screenshot_path,
     gfx::Image image) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -561,8 +636,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
   NotificationDisplayService::GetForProfile(GetProfile())
       ->Close(NotificationHandler::Type::TRANSIENT, notification_id);
 
-  const bool success =
-      (result == ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS);
+  const bool success = result == ScreenshotResult::SUCCESS;
 
   message_center::RichNotificationData optional_field;
   if (success) {
