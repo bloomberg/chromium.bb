@@ -320,17 +320,3 @@ TEST(LazyInstanceTest, PriorityInversionAtInitializationResolves) {
   EXPECT_LT(base::TimeTicks::Now() - test_begin,
             base::TimeDelta::FromSeconds(5));
 }
-
-TEST(LazyInstanceTest, ConstExprConstructible) {
-  // Mostly just verifying that this compiles, the runtime test itself won't do
-  // much... Declaring the variable constexpr forces the compiler to verify that
-  // this is possible but renders the LazyInstance unusable as none of its
-  // methods are const.
-  static constexpr base::LazyInstance<SlowConstructor>
-      kTestConstExprConstructible;
-  static constexpr base::LazyInstance<SlowConstructor>
-      kTestConstExprConstructibleWithExplicitInitializer =
-          LAZY_INSTANCE_INITIALIZER;
-  ALLOW_UNUSED_LOCAL(kTestConstExprConstructible);
-  ALLOW_UNUSED_LOCAL(kTestConstExprConstructibleWithExplicitInitializer);
-}
