@@ -52,9 +52,7 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this),
-      gpu_thread_("GpuThread"),
-      viz_main_wait_(base::WaitableEvent::ResetPolicy::MANUAL,
-                     base::WaitableEvent::InitialState::NOT_SIGNALED) {
+      gpu_thread_("GpuThread") {
   auto request = MakeRequest(&viz_main_);
   if (connector && HasSplitVizProcess()) {
     connector->BindInterface(viz::mojom::kVizServiceName, std::move(request));
@@ -79,12 +77,11 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
 
 DefaultGpuHost::~DefaultGpuHost() {
   // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
-  // Make sure |viz_main_impl_| has been successfully created (i.e. the task
-  // posted in the constructor to run InitializeVizMain() has actually run).
   if (gpu_thread_.IsRunning()) {
-    viz_main_wait_.Wait();
-    viz_main_impl_->TearDown();
-    gpu_thread_.task_runner()->DeleteSoon(FROM_HERE, std::move(viz_main_impl_));
+    // Stop() will return after |viz_main_impl_| has been destroyed.
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&DefaultGpuHost::DestroyVizMain,
+                                  base::Unretained(this)));
     gpu_thread_.Stop();
   }
 }
@@ -139,7 +136,11 @@ void DefaultGpuHost::InitializeVizMain(viz::mojom::VizMainRequest request) {
   deps.create_display_compositor = true;
   viz_main_impl_ = std::make_unique<viz::VizMainImpl>(nullptr, std::move(deps));
   viz_main_impl_->Bind(std::move(request));
-  viz_main_wait_.Signal();
+}
+
+void DefaultGpuHost::DestroyVizMain() {
+  DCHECK(viz_main_impl_);
+  viz_main_impl_.reset();
 }
 
 void DefaultGpuHost::DidInitialize(

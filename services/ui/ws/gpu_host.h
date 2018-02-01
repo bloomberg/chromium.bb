@@ -6,7 +6,6 @@
 #define SERVICES_UI_WS_GPU_HOST_H_
 
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/viz/service/main/viz_main_impl.h"
@@ -78,6 +77,7 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
 
   // TODO(crbug.com/611505): this goes away after the gpu proces split in mus.
   void InitializeVizMain(viz::mojom::VizMainRequest request);
+  void DestroyVizMain();
 
   // GpuHost:
   void Add(mojom::GpuRequest request) override;
@@ -123,9 +123,6 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
   base::Thread gpu_thread_;
   std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
-  // This is used to make sure that the |viz_main_impl_| has been set up
-  // correctly, before we start tearing it down.
-  base::WaitableEvent viz_main_wait_;
 
   mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 #if defined(OS_CHROMEOS)

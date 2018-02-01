@@ -15,7 +15,6 @@
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 
 namespace gpu {
-class GpuMemoryBufferFactory;
 class SyncPointManager;
 }  // namespace gpu
 
@@ -71,18 +70,13 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   VizMainImpl(Delegate* delegate,
               ExternalDependencies dependencies,
               std::unique_ptr<gpu::GpuInit> gpu_init = nullptr);
+  // Destruction must happen on the GPU thread.
   ~VizMainImpl() override;
 
   void SetLogMessagesForHost(LogMessages messages);
 
   void Bind(mojom::VizMainRequest request);
   void BindAssociated(mojom::VizMainAssociatedRequest request);
-
-  // Calling this from the gpu or compositor thread can lead to crash/deadlock.
-  // So this must be called from a different thread.
-  // TODO(crbug.com/609317): After the process split, we should revisit to make
-  // this cleaner.
-  void TearDown();
 
   // mojom::VizMain implementation:
   void CreateGpuService(mojom::GpuServiceRequest request,
@@ -101,9 +95,7 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   void CreateFrameSinkManagerOnCompositorThread(
       mojom::FrameSinkManagerParamsPtr params);
 
-  void CloseVizMainBindingOnGpuThread(base::WaitableEvent* wait);
-  void TearDownOnCompositorThread(base::WaitableEvent* wait);
-  void TearDownOnGpuThread(base::WaitableEvent* wait);
+  void TearDownOnCompositorThread();
 
   // gpu::GpuSandboxHelper:
   void PreSandboxStartup() override;
@@ -116,6 +108,8 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   const ExternalDependencies dependencies_;
 
   // The thread that handles IO events for Gpu (if one isn't already provided).
+  // |io_thread_| must be ordered above GPU service related variables so it's
+  // destroyed after they are.
   std::unique_ptr<base::Thread> io_thread_;
 
   LogMessages log_messages_;
@@ -135,8 +129,6 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<CompositingModeReporterImpl> compositing_mode_reporter_;
   std::unique_ptr<DisplayProvider> display_provider_;
-
-  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 
