@@ -6,10 +6,13 @@
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/loader/data_pipe_to_source_stream.h"
 #include "content/browser/loader/signed_exchange_handler.h"
+#include "content/browser/loader/source_stream_to_data_pipe.h"
 #include "content/public/common/content_features.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 
@@ -23,6 +26,8 @@ net::RedirectInfo CreateRedirectInfo(const GURL& new_url) {
   redirect_info.new_site_for_cookies = redirect_info.new_url;
   return redirect_info;
 }
+
+constexpr static int kDefaultBufferSize = 64 * 1024;
 
 }  // namespace
 
@@ -135,12 +140,9 @@ void WebPackageLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void WebPackageLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  signed_exchange_handler_ =
-      base::MakeUnique<SignedExchangeHandler>(std::move(body));
-  signed_exchange_handler_->GetHTTPExchange(
+  signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
+      base::MakeUnique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&WebPackageLoader::OnHTTPExchangeFinished,
                      weak_factory_.GetWeakPtr()));
 }
 
@@ -158,12 +160,11 @@ void WebPackageLoader::ProceedWithResponse() {
   // TODO(https://crbug.com/791049): Remove this when NetworkService is
   // enabled by default.
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(pending_body_.is_valid());
-  DCHECK(client_);
-  client_->OnStartLoadingResponseBody(std::move(pending_body_));
-  if (pending_completion_status_) {
-    client_->OnComplete(*pending_completion_status_);
-  }
+  DCHECK(body_data_pipe_adapter_);
+  DCHECK(pending_body_consumer_.is_valid());
+
+  body_data_pipe_adapter_->Start();
+  client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
 }
 
 void WebPackageLoader::SetPriority(net::RequestPriority priority,
@@ -190,8 +191,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
     const GURL& request_url,
     const std::string& request_method,
     const network::ResourceResponseHead& resource_response,
-    base::Optional<net::SSLInfo> ssl_info,
-    mojo::ScopedDataPipeConsumerHandle body) {
+    base::Optional<net::SSLInfo> ssl_info) {
   // TODO(https://crbug.com/803774): Handle no-GET request_method as a error.
   DCHECK(original_response_timing_info_);
   forwarding_client_->OnReceiveRedirect(
@@ -203,24 +203,31 @@ void WebPackageLoader::OnHTTPExchangeFound(
   client_->OnReceiveResponse(resource_response, std::move(ssl_info),
                              nullptr /* downloaded_file */);
 
+  // Currently we always assume that we have body.
+  // TODO(https://crbug.com/80374): Add error handling and bail out
+  // earlier if there's an error.
+
+  mojo::DataPipe data_pipe(kDefaultBufferSize);
+  pending_body_consumer_ = std::move(data_pipe.consumer_handle);
+
+  body_data_pipe_adapter_ = std::make_unique<SourceStreamToDataPipe>(
+      signed_exchange_handler_.get(), std::move(data_pipe.producer_handle),
+      base::BindOnce(&WebPackageLoader::FinishReadingBody,
+                     base::Unretained(this)));
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Need to wait until ProceedWithResponse() is called.
-    pending_body_ = std::move(body);
-  } else {
-    client_->OnStartLoadingResponseBody(std::move(body));
+    return;
   }
+
+  // Start reading.
+  body_data_pipe_adapter_->Start();
+  client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
 }
 
-void WebPackageLoader::OnHTTPExchangeFinished(
-    const network::URLLoaderCompletionStatus& status) {
-  if (pending_body_.is_valid()) {
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    // If ProceedWithResponse() was not called yet, need to call OnComplete()
-    // after ProceedWithResponse() is called.
-    pending_completion_status_ = status;
-  } else {
-    client_->OnComplete(status);
-  }
+void WebPackageLoader::FinishReadingBody(int result) {
+  // This will eventually delete |this|.
+  client_->OnComplete(network::URLLoaderCompletionStatus(result));
 }
 
 }  // namespace content
