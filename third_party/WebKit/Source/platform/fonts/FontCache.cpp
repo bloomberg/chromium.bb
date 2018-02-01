@@ -369,7 +369,11 @@ void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
   FontCache* font_cache = FontCache::GetFontCache();
   SkFontMgr* font_mgr = nullptr;
   int num_families = std::numeric_limits<int>::min();
+  bool is_test_font_mgr = false;
   if (font_cache) {
+#if defined(OS_WIN)
+    is_test_font_mgr = font_cache->is_test_font_mgr_;
+#endif
     font_mgr = font_cache->font_manager_.get();
     if (font_mgr)
       num_families = font_mgr->countFamilies();
@@ -377,6 +381,7 @@ void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
 
   FontDescription font_description_copy = *font_description;
   base::debug::Alias(&font_description_copy);
+  base::debug::Alias(&is_test_font_mgr);
   base::debug::Alias(&num_families);
 
   CHECK(false);
