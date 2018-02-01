@@ -738,6 +738,25 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_TextureUploadHeuristics) {
   }
 }
 
+TEST_F(CanvasRenderingContext2DTest,
+       NoResourceProviderInCanvas2DBufferInitialization) {
+  // This test enforces that there is no eager creation of
+  // CanvasResourceProvider for html canvas with 2d context when its
+  // Canvas2DLayerBridge is initially set up. This enforcement might be changed
+  // in the future refactoring; but change is seriously warned against because
+  // certain code paths in canvas 2d (that depend on the existence of
+  // CanvasResourceProvider) will be changed too, causing bad regressions.
+  CreateContext(kNonOpaque);
+  IntSize size(10, 10);
+  auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
+      size, CanvasColorParams(), kPreferAcceleration);
+  CanvasElement().CreateImageBufferUsingSurfaceForTesting(
+      std::move(fake_accelerate_surface), size);
+
+  EXPECT_TRUE(CanvasElement().Canvas2DBuffer());
+  EXPECT_FALSE(CanvasElement().ResourceProvider());
+}
+
 TEST_F(CanvasRenderingContext2DTest, DisableAcceleration_UpdateGPUMemoryUsage) {
   CreateContext(kNonOpaque);
 
@@ -1171,7 +1190,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge),
-                                                          size, false);
+                                                          size);
 
   EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
 
