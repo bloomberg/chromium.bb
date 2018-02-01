@@ -37,16 +37,18 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
-#include "services/network/network_context.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_data_pipe_getter.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/url_loader.h"
+#include "services/network/url_request_context_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -208,8 +210,13 @@ class URLLoaderTest : public testing::Test {
  public:
   URLLoaderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        context_(NetworkContext::CreateForTesting()) {
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+    net::URLRequestContextBuilder context_builder;
+    context_builder.set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateDirect());
+    context_ =
+        new network::NetworkURLRequestContextGetter(context_builder.Build());
+
     net::URLRequestFailedJob::AddUrlHandler();
   }
   ~URLLoaderTest() override {
@@ -247,8 +254,8 @@ class URLLoaderTest : public testing::Test {
     if (request_body_)
       request.request_body = request_body_;
 
-    URLLoader loader_impl(context(), mojo::MakeRequest(&loader), options,
-                          request, false, client_.CreateInterfacePtr(),
+    URLLoader loader_impl(context(), nullptr, mojo::MakeRequest(&loader),
+                          options, request, false, client_.CreateInterfacePtr(),
                           TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
     ran_ = true;
@@ -345,9 +352,9 @@ class URLLoaderTest : public testing::Test {
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
-  NetworkContext* context() { return context_.get(); }
+  net::URLRequestContextGetter* context() { return context_.get(); }
   TestURLLoaderClient* client() { return &client_; }
-  void DestroyContext() { context_.reset(); }
+  void DestroyContext() { context_->NotifyContextShuttingDown(); }
 
   // Returns the path of the requested file in the test data directory.
   base::FilePath GetTestFilePath(const std::string& file_name) {
@@ -473,7 +480,7 @@ class URLLoaderTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
-  std::unique_ptr<NetworkContext> context_;
+  scoped_refptr<NetworkURLRequestContextGetter> context_;
 
   // Options applied to the created request in Load().
   bool sniff_ = false;
@@ -595,8 +602,8 @@ TEST_F(URLLoaderTest, DestroyContextWithLiveRequest) {
   // The loader is implicitly owned by the client and the NetworkContext, so
   // don't hold on to a pointer to it.
   base::WeakPtr<URLLoader> loader_impl =
-      (new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
-                     client()->CreateInterfacePtr(),
+      (new URLLoader(context(), nullptr, mojo::MakeRequest(&loader), 0, request,
+                     false, client()->CreateInterfacePtr(),
                      TRAFFIC_ANNOTATION_FOR_TESTS, 0))
           ->GetWeakPtrForTests();
 
@@ -752,9 +759,9 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
-                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-                0);
+  new URLLoader(context(), nullptr, mojo::MakeRequest(&loader), 0, request,
+                false, client()->CreateInterfacePtr(),
+                TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
   client()->RunUntilResponseBodyArrived();
   EXPECT_TRUE(client()->has_received_response());
@@ -798,9 +805,9 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
-                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-                0);
+  new URLLoader(context(), nullptr, mojo::MakeRequest(&loader), 0, request,
+                false, client()->CreateInterfacePtr(),
+                TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
   // Pausing reading response body from network stops future reads from the
   // underlying URLRequest. So no data should be sent using the response body
@@ -866,9 +873,9 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
-                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-                0);
+  new URLLoader(context(), nullptr, mojo::MakeRequest(&loader), 0, request,
+                false, client()->CreateInterfacePtr(),
+                TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
   response_controller.WaitForRequest();
   response_controller.Send(
@@ -923,9 +930,9 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
-                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-                0);
+  new URLLoader(context(), nullptr, mojo::MakeRequest(&loader), 0, request,
+                false, client()->CreateInterfacePtr(),
+                TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
   loader->PauseReadingBodyFromNet();
   loader.FlushForTesting();
@@ -974,9 +981,9 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
-                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-                0);
+  new URLLoader(context(), nullptr, mojo::MakeRequest(&loader), 0, request,
+                false, client()->CreateInterfacePtr(),
+                TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
   // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
   // PauseReadingBodyFromNet().

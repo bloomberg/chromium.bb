@@ -92,9 +92,10 @@ NetworkContext::NetworkContext(NetworkService* network_service,
       params_(std::move(params)),
       binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
-  url_request_context_ = url_request_context_owner_.url_request_context.get();
+  url_request_context_getter_ =
+      url_request_context_owner_.url_request_context_getter;
   cookie_manager_ =
-      std::make_unique<CookieManager>(url_request_context_->cookie_store());
+      std::make_unique<CookieManager>(GetURLRequestContext()->cookie_store());
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -114,33 +115,29 @@ NetworkContext::NetworkContext(
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log());
-  url_request_context_ = url_request_context_owner_.url_request_context.get();
+  url_request_context_getter_ =
+      url_request_context_owner_.url_request_context_getter;
   network_service_->RegisterNetworkContext(this);
   cookie_manager_ =
-      std::make_unique<CookieManager>(url_request_context_->cookie_store());
+      std::make_unique<CookieManager>(GetURLRequestContext()->cookie_store());
 }
 
-NetworkContext::NetworkContext(NetworkService* network_service,
-                               mojom::NetworkContextRequest request,
-                               net::URLRequestContext* url_request_context)
+NetworkContext::NetworkContext(
+    NetworkService* network_service,
+    mojom::NetworkContextRequest request,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
     : network_service_(network_service),
-      url_request_context_(url_request_context),
+      url_request_context_getter_(std::move(url_request_context_getter)),
       binding_(this, std::move(request)),
       cookie_manager_(std::make_unique<CookieManager>(
-          url_request_context->cookie_store())) {
+          url_request_context_getter_->GetURLRequestContext()
+              ->cookie_store())) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
 }
 
 NetworkContext::~NetworkContext() {
-  // Call each URLLoader and ask it to release its net::URLRequest, as the
-  // corresponding net::URLRequestContext is going away with this
-  // NetworkContext. The loaders can be deregistering themselves in Cleanup(),
-  // so have to be careful.
-  while (!url_loaders_.empty())
-    (*url_loaders_.begin())->Cleanup();
-
   // May be nullptr in tests.
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
@@ -156,16 +153,6 @@ void NetworkContext::SetCertVerifierForTesting(
   g_cert_verifier_for_testing = cert_verifier;
 }
 
-void NetworkContext::RegisterURLLoader(URLLoader* url_loader) {
-  DCHECK(url_loaders_.count(url_loader) == 0);
-  url_loaders_.insert(url_loader);
-}
-
-void NetworkContext::DeregisterURLLoader(URLLoader* url_loader) {
-  size_t removed_count = url_loaders_.erase(url_loader);
-  DCHECK(removed_count);
-}
-
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     uint32_t process_id) {
@@ -176,7 +163,7 @@ void NetworkContext::CreateURLLoaderFactory(
 
 void NetworkContext::HandleViewCacheRequest(const GURL& url,
                                             mojom::URLLoaderClientPtr client) {
-  StartCacheURLLoader(url, url_request_context_, std::move(client));
+  StartCacheURLLoader(url, GetURLRequestContext(), std::move(client));
 }
 
 void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
@@ -191,13 +178,20 @@ void NetworkContext::GetRestrictedCookieManager(
   //     and NetworkContext should own the RestrictedCookieManager
   //     instances.
   mojo::MakeStrongBinding(std::make_unique<RestrictedCookieManager>(
-                              url_request_context_->cookie_store(),
+                              GetURLRequestContext()->cookie_store(),
                               render_process_id, render_frame_id),
                           std::move(request));
 }
 
 void NetworkContext::DisableQuic() {
-  url_request_context_->http_transaction_factory()->GetSession()->DisableQuic();
+  GetURLRequestContext()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->DisableQuic();
+}
+
+net::URLRequestContext* NetworkContext::GetURLRequestContext() {
+  return url_request_context_getter_->GetURLRequestContext();
 }
 
 void NetworkContext::Cleanup() {
@@ -209,7 +203,8 @@ void NetworkContext::Cleanup() {
 NetworkContext::NetworkContext(mojom::NetworkContextParamsPtr params)
     : network_service_(nullptr), params_(std::move(params)), binding_(this) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
-  url_request_context_ = url_request_context_owner_.url_request_context.get();
+  url_request_context_getter_ =
+      url_request_context_owner_.url_request_context_getter;
 }
 
 void NetworkContext::OnConnectionError() {
@@ -304,7 +299,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     mojom::NetworkContextParams* network_context_params,
     bool quic_disabled,
     net::NetLog* net_log) {
-  URLRequestContextOwner url_request_owner;
   if (net_log)
     builder->set_net_log(net_log);
 
@@ -345,6 +339,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
       std::move(network_context_params->initial_proxy_config),
       std::move(network_context_params->proxy_config_poller_client)));
 
+  std::unique_ptr<PrefService> pref_service;
   if (network_context_params->http_server_properties_path) {
     scoped_refptr<JsonPrefStore> json_pref_store(new JsonPrefStore(
         *network_context_params->http_server_properties_path,
@@ -356,13 +351,12 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     pref_service_factory.set_async(true);
     scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
     HttpServerPropertiesPrefDelegate::RegisterPrefs(pref_registry.get());
-    url_request_owner.pref_service =
-        pref_service_factory.Create(pref_registry.get());
+    pref_service = pref_service_factory.Create(pref_registry.get());
 
     builder->SetHttpServerProperties(
         std::make_unique<net::HttpServerPropertiesManager>(
             std::make_unique<HttpServerPropertiesPrefDelegate>(
-                url_request_owner.pref_service.get()),
+                pref_service.get()),
             net_log));
   }
 
@@ -407,8 +401,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
                          -> std::unique_ptr<net::HttpTransactionFactory> {
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
-  url_request_owner.url_request_context = builder->Build();
-  return url_request_owner;
+  return URLRequestContextOwner(std::move(pref_service), builder->Build());
 }
 
 void NetworkContext::ClearNetworkingHistorySince(
@@ -419,10 +412,10 @@ void NetworkContext::ClearNetworkingHistorySince(
   // exposes do.
 
   // Completes synchronously.
-  url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
+  GetURLRequestContext()->transport_security_state()->DeleteAllDynamicDataSince(
       time);
 
-  url_request_context_->http_server_properties()->Clear(
+  GetURLRequestContext()->http_server_properties()->Clear(
       std::move(completion_callback));
 }
 
@@ -451,7 +444,7 @@ void NetworkContext::AddHSTSForTesting(const std::string& host,
                                        bool include_subdomains,
                                        AddHSTSForTestingCallback callback) {
   net::TransportSecurityState* state =
-      url_request_context_->transport_security_state();
+      GetURLRequestContext()->transport_security_state();
   state->AddHSTS(host, expiry, include_subdomains);
   std::move(callback).Run();
 }

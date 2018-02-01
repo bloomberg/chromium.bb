@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -18,10 +17,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_manager.h"
-#include "services/network/public/cpp/url_request_context_owner.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/udp_socket.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/url_request_context_owner.h"
 
 namespace net {
 class CertVerifier;
@@ -31,7 +30,6 @@ class URLRequestContext;
 namespace network {
 class NetworkService;
 class UDPSocketFactory;
-class URLLoader;
 class URLRequestContextBuilderMojo;
 
 // A NetworkContext creates and manages access to a URLRequestContext.
@@ -64,9 +62,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Creates a NetworkContext that wraps a consumer-provided URLRequestContext
   // that the NetworkContext does not own.
   // TODO(mmenke):  Remove this constructor when the network service ships.
-  NetworkContext(NetworkService* network_service,
-                 mojom::NetworkContextRequest request,
-                 net::URLRequestContext* url_request_context);
+  NetworkContext(
+      NetworkService* network_service,
+      mojom::NetworkContextRequest request,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
   ~NetworkContext() override;
 
@@ -75,14 +74,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Sets a global CertVerifier to use when initializing all profiles.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
 
-  net::URLRequestContext* url_request_context() { return url_request_context_; }
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter() {
+    return url_request_context_getter_;
+  }
 
   NetworkService* network_service() { return network_service_; }
-
-  // These are called by individual url loaders as they are being created and
-  // destroyed.
-  void RegisterURLLoader(URLLoader* url_loader);
-  void DeregisterURLLoader(URLLoader* url_loader);
 
   // mojom::NetworkContext implementation:
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
@@ -104,6 +100,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          base::Time expiry,
                          bool include_subdomains,
                          AddHSTSForTestingCallback callback) override;
+
+  net::URLRequestContext* GetURLRequestContext();
 
   // Called when the associated NetworkService is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.
@@ -137,17 +135,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // URLRequestContext.
   URLRequestContextOwner url_request_context_owner_;
 
-  net::URLRequestContext* url_request_context_ = nullptr;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Put it below |url_request_context_| so that it outlives all the
   // NetworkServiceURLLoaderFactory instances.
   mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
-
-  // URLLoaders register themselves with the NetworkContext so that they can
-  // be cleaned up when the NetworkContext goes away. This is needed as
-  // net::URLRequests held by URLLoaders have to be gone when
-  // net::URLRequestContext (held by NetworkContext) is destroyed.
-  std::set<URLLoader*> url_loaders_;
 
   mojom::NetworkContextParamsPtr params_;
 

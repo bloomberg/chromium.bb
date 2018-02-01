@@ -36,8 +36,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "services/network/public/cpp/url_request_context_owner.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/url_request_context_owner.h"
 
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;

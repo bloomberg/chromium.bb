@@ -24,9 +24,11 @@
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/network_context.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
+#include "services/network/url_request_context_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
@@ -38,8 +40,14 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
  public:
   explicit TestURLLoaderRequestHandler(
       base::Optional<network::ResourceRequest>* most_recent_resource_request)
-      : most_recent_resource_request_(most_recent_resource_request),
-        context_(network::NetworkContext::CreateForTesting()) {}
+      : most_recent_resource_request_(most_recent_resource_request) {
+    net::URLRequestContextBuilder context_builder;
+    context_builder.set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateDirect());
+    context_ =
+        new network::NetworkURLRequestContextGetter(context_builder.Build());
+  }
+
   ~TestURLLoaderRequestHandler() override {}
 
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
@@ -55,10 +63,10 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
     // The URLLoader will delete itself upon completion.
-    new network::URLLoader(context_.get(), std::move(request), 0 /* options */,
-                           resource_request, false /* report_raw_headers */,
-                           std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS,
-                           0 /* process_id */);
+    new network::URLLoader(context_, nullptr, std::move(request),
+                           0 /* options */, resource_request,
+                           false /* report_raw_headers */, std::move(client),
+                           TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */);
   }
 
   bool MaybeCreateLoaderForResponse(
@@ -72,7 +80,7 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
  private:
   base::Optional<network::ResourceRequest>*
       most_recent_resource_request_;  // NOT OWNED.
-  std::unique_ptr<network::NetworkContext> context_;
+  scoped_refptr<network::NetworkURLRequestContextGetter> context_;
 };
 
 }  // namespace
