@@ -214,9 +214,9 @@
 
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
-      'Jumbo Linux x64': 'jumbo_large_chunks_release_bot',
-      'Jumbo Mac': 'jumbo_release_bot',
-      'Jumbo Win x64': 'jumbo_release_bot',
+      'Jumbo Linux x64': 'jumbo_large_chunks_release_bot_minimal_symbols',
+      'Jumbo Mac': 'jumbo_release_bot_minimal_symbols',
+      'Jumbo Win x64': 'jumbo_release_bot_minimal_symbols',
       'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
@@ -1391,12 +1391,12 @@
     # build files.
     'ios': [ 'error'],
 
-    'jumbo_release_bot': [
-      'jumbo', 'release_bot'
+    'jumbo_release_bot_minimal_symbols': [
+      'jumbo', 'release_bot', 'minimal_symbols'
     ],
 
-    'jumbo_large_chunks_release_bot': [
-      'jumbo_non_goma_chunks', 'release_bot'
+    'jumbo_large_chunks_release_bot_minimal_symbols': [
+      'jumbo_non_goma_chunks', 'release_bot', 'minimal_symbols'
     ],
 
     'linux_chromium_analysis': [
