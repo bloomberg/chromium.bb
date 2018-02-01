@@ -81,6 +81,8 @@ void FakeRendererScheduler::SetRendererHidden(bool hidden) {}
 
 void FakeRendererScheduler::SetRendererBackgrounded(bool backgrounded) {}
 
+void FakeRendererScheduler::SetSchedulerKeepActive(bool keep_active) {}
+
 std::unique_ptr<FakeRendererScheduler::RendererPauseHandle>
 FakeRendererScheduler::PauseRenderer() {
   return nullptr;
