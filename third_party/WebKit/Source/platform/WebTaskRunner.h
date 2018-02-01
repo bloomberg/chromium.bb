@@ -17,13 +17,8 @@
 
 namespace blink {
 
-// TODO(yutak): WebTaskRunner is soon to be deprecated. Use
-// base::SingleThreadTaskRunner instead. See: http://crbug.com/794845
-using WebTaskRunner = base::SingleThreadTaskRunner;
-
-// TaskHandle is associated to a task posted by
-// WebTaskRunner::postCancellableTask or
-// WebTaskRunner::postCancellableDelayedTask and cancels the associated task on
+// TaskHandle is associated to a task posted by PostCancellableTask() or
+// PostCancellableDelayedTask() and cancels the associated task on
 // TaskHandle::cancel() call or on TaskHandle destruction.
 class BLINK_PLATFORM_EXPORT TaskHandle {
  public:
@@ -49,9 +44,11 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 
  private:
   friend BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-  PostCancellableTask(WebTaskRunner&, const base::Location&, base::OnceClosure);
+  PostCancellableTask(base::SingleThreadTaskRunner&,
+                      const base::Location&,
+                      base::OnceClosure);
   friend BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-  PostDelayedCancellableTask(WebTaskRunner&,
+  PostDelayedCancellableTask(base::SingleThreadTaskRunner&,
                              const base::Location&,
                              base::OnceClosure,
                              TimeDelta delay);
@@ -61,20 +58,23 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 };
 
 // For cross-thread posting. Can be called from any thread.
-BLINK_PLATFORM_EXPORT void PostCrossThreadTask(WebTaskRunner&,
+BLINK_PLATFORM_EXPORT void PostCrossThreadTask(base::SingleThreadTaskRunner&,
                                                const base::Location&,
                                                CrossThreadClosure);
-BLINK_PLATFORM_EXPORT void PostDelayedCrossThreadTask(WebTaskRunner&,
-                                                      const base::Location&,
-                                                      CrossThreadClosure,
-                                                      TimeDelta delay);
+BLINK_PLATFORM_EXPORT void PostDelayedCrossThreadTask(
+    base::SingleThreadTaskRunner&,
+    const base::Location&,
+    CrossThreadClosure,
+    TimeDelta delay);
 
 // For same-thread cancellable task posting. Returns a TaskHandle object for
 // cancellation.
 BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-PostCancellableTask(WebTaskRunner&, const base::Location&, base::OnceClosure);
+PostCancellableTask(base::SingleThreadTaskRunner&,
+                    const base::Location&,
+                    base::OnceClosure);
 BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-PostDelayedCancellableTask(WebTaskRunner&,
+PostDelayedCancellableTask(base::SingleThreadTaskRunner&,
                            const base::Location&,
                            base::OnceClosure,
                            TimeDelta delay);
