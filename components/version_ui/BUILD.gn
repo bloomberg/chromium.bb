@@ -13,6 +13,5 @@ static_library("version_ui") {
   deps = [
     "//base",
     "//components/variations",
-    "//components/variations/net",
   ]
 }

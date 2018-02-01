@@ -23,7 +23,6 @@
 #include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_constants.h"
 #include "ppapi/features/features.h"
@@ -54,7 +53,9 @@ void GetFilePaths(const base::FilePath& profile_path,
 
 }  // namespace
 
-VersionHandler::VersionHandler() : weak_ptr_factory_(this) {}
+VersionHandler::VersionHandler()
+    : weak_ptr_factory_(this) {
+}
 
 VersionHandler::~VersionHandler() {
 }
@@ -67,7 +68,6 @@ void VersionHandler::RegisterMessages() {
 }
 
 void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
-  AllowJavascript();
 #if BUILDFLAG(ENABLE_PLUGINS)
   // The Flash version information is needed in the response, so make sure
   // the plugins are loaded.
@@ -90,14 +90,8 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
           base::Owned(exec_path_buffer), base::Owned(profile_path_buffer)));
 
   // Respond with the variations info immediately.
-  CallJavascriptFunction(version_ui::kReturnVariationInfo,
-                         *version_ui::GetVariationsList());
-  GURL current_url = web_ui()->GetWebContents()->GetVisibleURL();
-  if (current_url.query().find(version_ui::kVariationsShowCmdQuery) !=
-      std::string::npos) {
-    CallJavascriptFunction(version_ui::kReturnVariationCmd,
-                           version_ui::GetVariationsCommandLineAsValue());
-  }
+  web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnVariationInfo,
+                                         *version_ui::GetVariationsList());
 }
 
 void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
@@ -106,7 +100,8 @@ void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
 
   base::Value exec_path(*executable_path_data);
   base::Value profile_path(*profile_path_data);
-  CallJavascriptFunction(version_ui::kReturnFilePaths, exec_path, profile_path);
+  web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFilePaths,
+                                         exec_path, profile_path);
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -133,6 +128,6 @@ void VersionHandler::OnGotPlugins(
 
   base::Value arg(flash_version_and_path);
 
-  CallJavascriptFunction(version_ui::kReturnFlashVersion, arg);
+  web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFlashVersion, arg);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
