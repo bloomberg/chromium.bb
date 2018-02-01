@@ -681,10 +681,12 @@ void MediaStreamManager::CancelAllRequests(int render_process_id) {
 
 void MediaStreamManager::StopStreamDevice(int render_process_id,
                                           int render_frame_id,
-                                          const std::string& device_id) {
+                                          const std::string& device_id,
+                                          int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "StopStreamDevice({render_frame_id = " << render_frame_id <<  "} "
-           << ", {device_id = " << device_id << "})";
+  DVLOG(1) << "StopStreamDevice({render_frame_id = " << render_frame_id << "} "
+           << ", {device_id = " << device_id << "}, session_id = " << session_id
+           << "})";
   // Find the first request for this |render_process_id| and |render_frame_id|
   // of type MEDIA_GENERATE_STREAM that has requested to use |device_id| and
   // stop it.
@@ -697,7 +699,7 @@ void MediaStreamManager::StopStreamDevice(int render_process_id,
     }
 
     for (const MediaStreamDevice& device : request->devices) {
-      if (device.id == device_id) {
+      if (device.id == device_id && device.session_id == session_id) {
         StopDevice(device.type, device.session_id);
         return;
       }

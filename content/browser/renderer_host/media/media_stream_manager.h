@@ -181,7 +181,8 @@ class CONTENT_EXPORT MediaStreamManager
   // been opened by a call to GenerateStream.
   void StopStreamDevice(int render_process_id,
                         int render_frame_id,
-                        const std::string& device_id);
+                        const std::string& device_id,
+                        int session_id);
 
   // Open a device identified by |device_id|. |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.

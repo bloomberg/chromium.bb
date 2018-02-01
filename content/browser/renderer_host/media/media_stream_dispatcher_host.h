@@ -63,7 +63,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                       GenerateStreamCallback callback) override;
   void CancelRequest(int32_t render_frame_id, int32_t request_id) override;
   void StopStreamDevice(int32_t render_frame_id,
-                        const std::string& device_id) override;
+                        const std::string& device_id,
+                        int32_t session_id) override;
   void OpenDevice(int32_t render_frame_id,
                   int32_t request_id,
                   const std::string& device_id,

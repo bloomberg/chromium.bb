@@ -109,8 +109,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   void OnStopStreamDevice(int render_frame_id,
-                          const std::string& device_id) {
-    MediaStreamDispatcherHost::StopStreamDevice(render_frame_id, device_id);
+                          const std::string& device_id,
+                          int session_id) {
+    MediaStreamDispatcherHost::StopStreamDevice(render_frame_id, device_id,
+                                                session_id);
   }
 
   void OnOpenDevice(int render_frame_id,
@@ -710,7 +712,8 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStream) {
   std::string open_device_request_label = host_->label_;
 
   // Stop the device in the MediaStream.
-  host_->OnStopStreamDevice(kRenderId, video_device.id);
+  host_->OnStopStreamDevice(kRenderId, video_device.id,
+                            video_device.session_id);
 
   EXPECT_EQ(0u, media_stream_manager_->GetDevicesOpenedByRequest(
       stream_request_label).size());
@@ -730,7 +733,8 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
   EXPECT_EQ(2u, media_stream_manager_->GetDevicesOpenedByRequest(
       request_label1).size());
 
-  host_->OnStopStreamDevice(kRenderId, video_device.id);
+  host_->OnStopStreamDevice(kRenderId, video_device.id,
+                            video_device.session_id);
   EXPECT_EQ(1u, media_stream_manager_->GetDevicesOpenedByRequest(
       request_label1).size());
 
@@ -767,7 +771,8 @@ TEST_F(MediaStreamDispatcherHostTest,
 
   // Stop the video stream device from stream 1 while waiting for the
   // second stream to be generated.
-  host_->OnStopStreamDevice(kRenderId, host_->video_devices_[0].id);
+  host_->OnStopStreamDevice(kRenderId, host_->video_devices_[0].id,
+                            host_->video_devices_[0].session_id);
   run_loop1.Run();
 
   EXPECT_EQ(host_->video_devices_.size(), 1u);

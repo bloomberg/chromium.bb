@@ -168,13 +168,14 @@ void MediaStreamDispatcherHost::CancelRequest(int render_frame_id,
 }
 
 void MediaStreamDispatcherHost::StopStreamDevice(int32_t render_frame_id,
-                                                 const std::string& device_id) {
+                                                 const std::string& device_id,
+                                                 int32_t session_id) {
   DVLOG(1) << __func__ << " render_frame_id=" << render_frame_id
-           << " device_id=" << device_id;
+           << " device_id=" << device_id << " session_id=" << session_id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   media_stream_manager_->StopStreamDevice(render_process_id_, render_frame_id,
-                                          device_id);
+                                          device_id, session_id);
 }
 
 void MediaStreamDispatcherHost::OpenDevice(int32_t render_frame_id,
