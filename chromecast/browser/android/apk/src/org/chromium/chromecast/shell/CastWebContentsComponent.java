@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.PatternMatcher;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.chromium.base.ContextUtils;
@@ -213,7 +214,11 @@ public class CastWebContentsComponent {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_ACTIVITY_STOPPED);
         filter.addAction(ACTION_KEY_EVENT);
+        filter.addDataScheme(instanceUri.getScheme());
+        filter.addDataAuthority(instanceUri.getAuthority(), null);
+        filter.addDataPath(instanceUri.getPath(), PatternMatcher.PATTERN_LITERAL);
 
+        if (DEBUG) Log.d(TAG, "Registering mReceiver");
         getLocalBroadcastManager().registerReceiver(mReceiver, filter);
 
         mDelegate.start(context, webContents);
@@ -224,6 +229,7 @@ public class CastWebContentsComponent {
         if (DEBUG) Log.d(TAG, "stop");
         if (mStarted) {
             getLocalBroadcastManager().unregisterReceiver(mReceiver);
+            if (DEBUG) Log.d(TAG, "Call delegate to stop");
             mDelegate.stop(context);
             mStarted = false;
         }
