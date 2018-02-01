@@ -127,6 +127,12 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
         shell(), "domAutomationController.send(" + script + ")", &value));
     return value;
   }
+  double ExecuteScriptAndExtractDouble(const std::string& script) {
+    double value = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(
+        shell(), "domAutomationController.send(" + script + ")", &value));
+    return value;
+  }
   std::string ExecuteScriptAndExtractString(const std::string& script) {
     std::string value = "";
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -185,11 +191,11 @@ void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
 
-  float scrollable_div_top =
-      ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top");
-  float x = (ExecuteScriptAndExtractInt(
+  float scrollable_div_top = ExecuteScriptAndExtractDouble(
+      "scrollableDiv.getBoundingClientRect().top");
+  float x = (ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().left") +
-             ExecuteScriptAndExtractInt(
+             ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().right")) /
             2;
   float y = 0.5 * scrollable_div_top;
@@ -207,12 +213,12 @@ void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
             input_msg_watcher->WaitForAck());
 
-  while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
+  while (ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop") <
          -delta_y) {
     frame_observer.Wait();
   }
 
-  EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
+  EXPECT_EQ(0, ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop"));
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
@@ -227,16 +233,17 @@ void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
   }
 
   if (wheel_scroll_latching_enabled_) {
-    while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
-           -2 * delta_y) {
+    while (ExecuteScriptAndExtractDouble(
+               "document.scrollingElement.scrollTop") < -2 * delta_y) {
       frame_observer.Wait();
     }
 
-    EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
+    EXPECT_EQ(0, ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop"));
     EXPECT_EQ(2, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
     } else {  // !wheel_scroll_latching_enabled_
-      while (ExecuteScriptAndExtractInt("scrollableDiv.scrollTop") < -delta_y)
+      while (ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop") <
+             -delta_y)
         frame_observer.Wait();
 
       EXPECT_EQ(1, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
@@ -282,11 +289,11 @@ void WheelScrollLatchingBrowserTest::WheelEventRetargetWhenTargetRemovedTest() {
   auto update_msg_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
 
-  float scrollable_div_top =
-      ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top");
-  float x = (ExecuteScriptAndExtractInt(
+  float scrollable_div_top = ExecuteScriptAndExtractDouble(
+      "scrollableDiv.getBoundingClientRect().top");
+  float x = (ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().left") +
-             ExecuteScriptAndExtractInt(
+             ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().right")) /
             2;
   float y = 1.1 * scrollable_div_top;
@@ -302,8 +309,8 @@ void WheelScrollLatchingBrowserTest::WheelEventRetargetWhenTargetRemovedTest() {
   // Runs until we get the UpdateMsgAck callback.
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, update_msg_watcher->WaitForAck());
 
-  EXPECT_EQ(0,
-            ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop"));
+  EXPECT_EQ(
+      0, ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
@@ -349,19 +356,19 @@ void WheelScrollLatchingBrowserTest::
     return;
 
   LoadURL();
-  EXPECT_EQ(ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop"),
-            0);
-  EXPECT_EQ(ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"), 0);
-  float x = (ExecuteScriptAndExtractInt(
+  EXPECT_EQ(
+      ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"), 0);
+  EXPECT_EQ(ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop"), 0);
+  float x = (ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().left") +
-             ExecuteScriptAndExtractInt(
+             ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().right")) /
             2;
-  float y =
-      (ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top") +
-       ExecuteScriptAndExtractInt(
-           "scrollableDiv.getBoundingClientRect().bottom")) /
-      2;
+  float y = (ExecuteScriptAndExtractDouble(
+                 "scrollableDiv.getBoundingClientRect().top") +
+             ExecuteScriptAndExtractDouble(
+                 "scrollableDiv.getBoundingClientRect().bottom")) /
+            2;
 #if defined(OS_CHROMEOS)
   bool precise = true;
 #else
@@ -395,7 +402,7 @@ void WheelScrollLatchingBrowserTest::
   GetRootView()->ProcessGestureEvent(gesture_scroll_update, ui::LatencyInfo());
 
   // Wait for the scrollableDiv to scroll.
-  while (ExecuteScriptAndExtractInt("scrollableDiv.scrollTop") < 20)
+  while (ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop") < 20)
     GiveItSomeTime();
 
   // Remove the scrollableDiv which is the current scroller and send the second
@@ -404,7 +411,7 @@ void WheelScrollLatchingBrowserTest::
       shell(), "scrollableDiv.parentNode.removeChild(scrollableDiv)"));
   GiveItSomeTime();
   GetRootView()->ProcessGestureEvent(gesture_scroll_update, ui::LatencyInfo());
-  while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
+  while (ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop") <
          20) {
     GiveItSomeTime();
   }
