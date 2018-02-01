@@ -396,6 +396,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       "FeaturePolicyForPermissions",
       base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions));
 
+  if (base::FeatureList::IsEnabled(features::kKeyboardLockAPI))
+    WebRuntimeFeatures::EnableFeatureFromString("KeyboardLock", true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :

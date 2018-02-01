@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/content_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
@@ -98,7 +99,8 @@ GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
 
 // static
 bool ExclusiveAccessManager::IsExperimentalKeyboardLockUIEnabled() {
-  return base::FeatureList::IsEnabled(features::kExperimentalKeyboardLockUI);
+  return base::FeatureList::IsEnabled(features::kKeyboardLockAPI) ||
+         base::FeatureList::IsEnabled(features::kExperimentalKeyboardLockUI);
 }
 
 // static
