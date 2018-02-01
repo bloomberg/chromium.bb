@@ -74,7 +74,7 @@ class PeerPidReceiver : public IPC::mojom::Channel {
   }
 
   void Receive(base::span<const uint8_t> data,
-               base::Optional<std::vector<mojo::native::SerializedHandlePtr>>
+               base::Optional<std::vector<IPC::mojom::SerializedHandlePtr>>
                    handles) override {
     ASSERT_NE(MessageExpectation::kNotExpected, message_expectation_);
 
