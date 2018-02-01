@@ -2,10 +2,12 @@
 <script src="./resources/webgl-test-utils-full.js"></script>
 <script src="./resources/tex-image-and-sub-image-utils.js"></script>
 <script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
 <body>
 <script>
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
+}
 
 function setCanvasToRedGreen(ctx) {
     var width = ctx.canvas.width;
@@ -28,10 +30,16 @@ testCanvas.height = 2;
 var ctx = testCanvas.getContext("2d");
 setCanvasToRedGreen(ctx);
 
+var canvas = document.createElement('canvas');
+canvas.width = 400;
+canvas.height = 400;
+document.body.appendChild(canvas);
 var testOptions = {sourceName: "HTMLCanvasElement", imageSource: testCanvas,
-                   sourceIsPremul: true, resizeWidth: 4, resizeHeight: 4};
+                   sourceIsPremul: true, resizeWidth: 16, resizeHeight: 16,
+                   resultsCanvas: canvas};
 
-prepareWebGLContext();
+prepareWebGLContext(testOptions);
 prepareResizedImageBitmapsAndRuntTests(testOptions);
-
 </script>
+</body>
+</html>
