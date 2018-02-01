@@ -264,7 +264,7 @@ jumbo_source_set("common_sources") {
     "//mojo/public/cpp/base:mojom_traits",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/network/public/cpp",
+    "//services/network:network_service",
     "//services/network/public/interfaces",
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",

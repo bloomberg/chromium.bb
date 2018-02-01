@@ -30,7 +30,7 @@ if (enable_webrtc || !is_android) {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//net",
-      "//services/network/public/cpp",
+      "//services/network:network_service",
     ]
 
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -40,7 +40,7 @@ if (enable_webrtc || !is_android) {
         "glue/chrome_async_socket.cc",
         "glue/xmpp_client_socket_factory.cc",
       ]
-      deps -= [ "//services/network/public/cpp" ]
+      deps -= [ "//services/network:network_service" ]
     }
   }
 

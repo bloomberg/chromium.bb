@@ -5,6 +5,7 @@ include_rules = [
   "+components/viz/common",
   "+components/payments",
   "+device/base/synchronization",
+  "+services/network/loader_util.h",
   "+services/network/public/cpp",
   "+services/network/public/interfaces",
   "+services/resource_coordinator/public/interfaces",

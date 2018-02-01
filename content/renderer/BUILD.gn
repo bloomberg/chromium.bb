@@ -585,7 +585,7 @@ target(link_target_type, "renderer") {
     "//services/device/public/interfaces",
     "//services/device/public/interfaces:constants",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/network/public/cpp",
+    "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/ui/public/cpp/gpu",

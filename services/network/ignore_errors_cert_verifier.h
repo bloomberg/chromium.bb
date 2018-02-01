@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_IGNORE_ERRORS_CERT_VERIFIER_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_IGNORE_ERRORS_CERT_VERIFIER_H_
+#ifndef SERVICES_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_
+#define SERVICES_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_
 
 #include <memory>
 #include <string>
@@ -23,7 +23,7 @@ namespace network {
 // IgnoreErrorsCertVerifier wraps another CertVerifier in order to ignore
 // verification errors from certificate chains that match a whitelist of SPKI
 // fingerprints.
-class COMPONENT_EXPORT(NETWORK_CPP) IgnoreErrorsCertVerifier
+class COMPONENT_EXPORT(NETWORK_SERVICE) IgnoreErrorsCertVerifier
     : public net::CertVerifier {
  public:
   // SPKIHashSet is a set of SHA-256 SPKI fingerprints (RFC 7469, Section 2.4).
@@ -76,4 +76,4 @@ class COMPONENT_EXPORT(NETWORK_CPP) IgnoreErrorsCertVerifier
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_IGNORE_ERRORS_CERT_VERIFIER_H_
+#endif  // SERVICES_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_

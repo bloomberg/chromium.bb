@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/ignore_errors_cert_verifier.h"
+#include "services/network/ignore_errors_cert_verifier.h"
 
 #include <iterator>
 #include <utility>

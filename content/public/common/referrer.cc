@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
-#include "services/network/public/cpp/loader_util.h"
+#include "services/network/loader_util.h"
 
 namespace content {
 

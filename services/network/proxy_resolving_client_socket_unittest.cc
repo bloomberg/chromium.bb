@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/proxy_resolving_client_socket.h"
+#include "services/network/proxy_resolving_client_socket.h"
 
 #include <string>
 #include <utility>
@@ -26,7 +26,7 @@
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {

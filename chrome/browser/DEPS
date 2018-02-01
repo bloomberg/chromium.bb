@@ -55,6 +55,7 @@ include_rules = [
   "+services/identity/public",
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",
+  "+services/network/ignore_errors_cert_verifier.h",
   "+services/network/network_service.h",
   "+services/network/public",
   "+services/network/url_request_context_builder_mojo.h",
