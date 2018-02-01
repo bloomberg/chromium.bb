@@ -2033,7 +2033,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoNetwork) {
 }
 
 // Checks that scripts can retrieve the correct window size while prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
+// Disabled on ChromeOS. See https://crbug.com/807821.
+#if defined(OS_CHROMEOS)
+#define MAYBE_PrerenderWindowSize DISABLED_PrerenderWindowSize
+#else
+#define MAYBE_PrerenderWindowSize PrerenderWindowSize
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderWindowSize) {
   PrerenderTestURL("/prerender/prerender_size.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
