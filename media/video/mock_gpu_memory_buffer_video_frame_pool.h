@@ -12,15 +12,16 @@ namespace media {
 
 class MockGpuMemoryBufferVideoFramePool : public GpuMemoryBufferVideoFramePool {
  public:
-  MockGpuMemoryBufferVideoFramePool(std::vector<base::Closure>* frame_ready_cbs)
+  MockGpuMemoryBufferVideoFramePool(
+      std::vector<base::OnceClosure>* frame_ready_cbs)
       : frame_ready_cbs_(frame_ready_cbs) {}
-  ~MockGpuMemoryBufferVideoFramePool() override {}
+  ~MockGpuMemoryBufferVideoFramePool() override = default;
 
   void MaybeCreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
-                                const FrameReadyCB& frame_ready_cb) override;
+                                FrameReadyCB frame_ready_cb) override;
 
  private:
-  std::vector<base::Closure>* frame_ready_cbs_;
+  std::vector<base::OnceClosure>* frame_ready_cbs_;
 };
 
 }  // namespace media
