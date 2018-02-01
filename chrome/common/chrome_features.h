@@ -95,10 +95,6 @@ extern const base::Feature kClipboardContentSetting;
 extern const base::Feature kContentFullscreen;
 #endif
 
-#if defined(OS_ANDROID)
-extern const base::Feature kCopylessPaste;
-#endif
-
 #if defined(OS_CHROMEOS)
 extern const base::Feature kCrostini;
 #endif

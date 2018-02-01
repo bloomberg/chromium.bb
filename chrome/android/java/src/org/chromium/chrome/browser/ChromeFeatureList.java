@@ -199,7 +199,6 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SUGGESTIONS_ABOVE_ARTICLES =
             "ContextualSuggestionsAboveArticles";
     public static final String CONTEXTUAL_SUGGESTIONS_CAROUSEL = "ContextualSuggestionsCarousel";
-    public static final String COPYLESS_PASTE = "CopylessPaste";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";
     // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on
