@@ -54,6 +54,13 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
                 int64_t length,
                 StatusCallback callback) override;
 
+  void WriteFile(int32_t mount_id,
+                 int32_t file_id,
+                 int64_t offset,
+                 int32_t length,
+                 base::ScopedFD temp_fd,
+                 StatusCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
