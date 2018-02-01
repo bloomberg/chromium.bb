@@ -30,10 +30,6 @@
   *   Zack Rusin <zackr@vmware.com>
   */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "util_hash.h"
 
 #include <stdlib.h>

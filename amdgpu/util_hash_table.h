@@ -34,10 +34,6 @@
 #ifndef U_HASH_TABLE_H_
 #define U_HASH_TABLE_H_
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "libdrm_macros.h"
 
 /**

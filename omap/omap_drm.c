@@ -26,10 +26,6 @@
  *    Rob Clark <rob@ti.com>
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stdlib.h>
 #include <linux/stddef.h>
 #include <linux/types.h>

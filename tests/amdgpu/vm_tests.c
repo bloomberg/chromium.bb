@@ -21,10 +21,6 @@
  *
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "CUnit/Basic.h"
 
 #include "amdgpu_test.h"

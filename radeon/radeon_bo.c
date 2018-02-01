@@ -29,9 +29,6 @@
  *      Dave Airlie
  *      Jérôme Glisse <glisse@freedesktop.org>
  */
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 #include <libdrm_macros.h>
 #include <radeon_bo.h>
 #include <radeon_bo_int.h>

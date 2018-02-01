@@ -25,10 +25,6 @@
  *    Christian Gmeiner <christian.gmeiner@gmail.com>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "etnaviv_priv.h"
 
 static int etna_perfmon_query_signals(struct etna_perfmon *pm, struct etna_perfmon_domain *dom)

@@ -29,10 +29,6 @@
 #ifndef MM_H
 #define MM_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "libdrm_macros.h"
 
 struct mem_block {

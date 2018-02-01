@@ -34,10 +34,6 @@
 #ifndef LIBDRM_ATOMICS_H
 #define LIBDRM_ATOMICS_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #if HAVE_LIBDRM_ATOMIC_PRIMITIVES
 
 #define HAS_ATOMIC_OPS 1

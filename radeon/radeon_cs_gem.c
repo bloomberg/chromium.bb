@@ -29,9 +29,6 @@
  *      Nicolai Haehnle <prefect_@gmx.net>
  *      Jérôme Glisse <glisse@freedesktop.org>
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>

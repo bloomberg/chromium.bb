@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "msm_priv.h"
 
 static int query_param(struct fd_pipe *pipe, uint32_t param,

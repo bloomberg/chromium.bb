@@ -44,10 +44,6 @@
 #ifndef UTIL_HASH_H
 #define UTIL_HASH_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stdbool.h>
 
 #include "libdrm_macros.h"

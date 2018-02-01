@@ -38,10 +38,6 @@
  * platforms find which headers to include to get uint32_t
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>

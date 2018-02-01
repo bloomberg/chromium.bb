@@ -280,7 +280,7 @@ config_file = configure_file(
   configuration : config,
   output : 'config.h',
 )
-add_project_arguments('-DHAVE_CONFIG_H', language : 'c')
+add_project_arguments('-include', 'config.h', language : 'c')
 
 inc_root = include_directories('.')
 inc_drm = include_directories('include/drm')

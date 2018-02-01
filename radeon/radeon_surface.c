@@ -26,9 +26,6 @@
  * Authors:
  *      Jérôme Glisse <jglisse@redhat.com>
  */
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 #include <stdbool.h>
 #include <assert.h>
 #include <errno.h>

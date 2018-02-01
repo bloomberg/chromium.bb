@@ -25,10 +25,6 @@
 #ifndef _AMDGPU_INTERNAL_H_
 #define _AMDGPU_INTERNAL_H_
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <assert.h>
 #include <pthread.h>
 

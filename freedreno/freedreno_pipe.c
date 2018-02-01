@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 

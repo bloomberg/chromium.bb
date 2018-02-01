@@ -38,10 +38,6 @@
  */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "util_hash_table.h"
 #include "util_hash.h"
 
