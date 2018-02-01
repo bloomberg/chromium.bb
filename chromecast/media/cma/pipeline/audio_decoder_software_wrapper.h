@@ -59,6 +59,7 @@ class AudioDecoderSoftwareWrapper
   std::unique_ptr<CastAudioDecoder> software_decoder_;
   AudioConfig output_config_;
   scoped_refptr<DecoderBufferBase> pending_pushed_buffer_;
+  bool decoder_error_;
 
   base::WeakPtrFactory<AudioDecoderSoftwareWrapper> weak_factory_;
 
