@@ -252,12 +252,16 @@ def AflFuzzEnvList(host, options):
   arg_map = AflFuzzEnvMap(host, options)
   return sorted([key + '=' + arg_map[key] for key in arg_map])
 
+def GomaCmakeFlags(path):
+  return ['-DCMAKE_%s_COMPILER_LAUNCHER=%s' %
+          (lang, os.path.join(path, 'gomacc')) for lang in ['CC', 'CXX']]
+
 def GomaCompilers(host, options):
   cc, cxx, _, _ = CompilersForHost(host)
   if not options.goma or (cc, cxx) != (CHROME_CLANG, CHROME_CLANGXX):
     return (cc, cxx)
-  return (os.path.join(options.goma, 'clang'),
-          os.path.join(options.goma, 'clang++'))
+  return (' '.join([os.path.join(options.goma, 'gomacc'), cc]),
+          ' '.join([os.path.join(options.goma, 'gomacc'), cxx]))
 
 def GomaPathDirs(host, options):
   cc, cxx, _, _ = CompilersForHost(host)
@@ -409,9 +413,10 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
 def LibCxxHostArchFlags(host, options):
   cc, cxx, _, _ = CompilersForHost(host)
   hashables = [cc, cxx]
-  if options.goma:
-    cc, cxx = GomaCompilers(host, options)
   cmake_flags = []
+  if options.goma:
+    cmake_flags.extend(GomaCmakeFlags(options.goma))
+
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if TripleIsLinux(host):
     cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR]
@@ -441,7 +446,7 @@ def CmakeHostArchFlags(host, options):
     cc, cxx, _, _ = CompilersForHost(host)
   hashables = [cc, cxx]
   if options.goma:
-    cc, cxx = GomaCompilers(host, options)
+    cmake_flags.extend(GomaCmakeFlags(options.goma))
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if ProgramPath('ccache'):
