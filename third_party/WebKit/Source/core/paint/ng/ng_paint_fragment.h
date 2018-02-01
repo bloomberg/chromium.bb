@@ -5,6 +5,7 @@
 #ifndef ng_paint_fragment_h
 #define ng_paint_fragment_h
 
+#include "core/CoreExport.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
@@ -30,17 +31,29 @@ struct PaintInfo;
 //   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
 // - image (<img>, svg <image>) or video (<video>) elements that are
 //   placeholders for displaying them.
-class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
+class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
+                                    public ImageResourceObserver {
  public:
-  explicit NGPaintFragment(scoped_refptr<const NGPhysicalFragment>,
-                           bool stop_at_block_layout_root = false);
+  NGPaintFragment(scoped_refptr<const NGPhysicalFragment>, NGPaintFragment*);
+  static std::unique_ptr<NGPaintFragment> Create(
+      scoped_refptr<const NGPhysicalFragment>);
 
   const NGPhysicalFragment& PhysicalFragment() const {
     return *physical_fragment_;
   }
 
+  // The parent NGPaintFragment. This is nullptr for a root; i.e., when parent
+  // is not for NGPaint. In the first phase, this means that this is a root of
+  // an inline formatting context.
+  NGPaintFragment* Parent() const { return parent_; }
   const Vector<std::unique_ptr<NGPaintFragment>>& Children() const {
     return children_;
+  }
+
+  // Returns offset to its container box for inline fragments.
+  const NGPhysicalOffset& InlineOffsetToContainerBox() const {
+    DCHECK(PhysicalFragment().IsInline());
+    return inline_offset_to_container_box_;
   }
 
   // Update VisualRect() for this object and all its descendants from
@@ -81,17 +94,84 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   NGPhysicalOffset Offset() const { return PhysicalFragment().Offset(); }
   NGPhysicalSize Size() const { return PhysicalFragment().Size(); }
 
+  // A range of fragments for |FragmentsFor()|.
+  class FragmentRange {
+   public:
+    explicit FragmentRange(NGPaintFragment* first) : first_(first) {}
+
+    bool IsEmpty() const { return !first_; }
+
+    class iterator {
+     public:
+      explicit iterator(NGPaintFragment* first) : current_(first) {}
+
+      NGPaintFragment* operator*() const { return current_; }
+      NGPaintFragment* operator->() const { return current_; }
+      void operator++() {
+        CHECK(current_);
+        current_ = current_->next_fragment_;
+      }
+      bool operator==(const iterator& other) const {
+        return current_ == other.current_;
+      }
+      bool operator!=(const iterator& other) const {
+        return current_ != other.current_;
+      }
+
+     private:
+      NGPaintFragment* current_;
+    };
+
+    iterator begin() const { return iterator(first_); }
+    iterator end() const { return iterator(nullptr); }
+
+   private:
+    NGPaintFragment* first_;
+  };
+
+  // Returns a range of NGPaintFragment in an inline formatting context that are
+  // for a LayoutObject.
+  static FragmentRange InlineFragmentsFor(const LayoutObject*);
+
  private:
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
 
-  void PopulateDescendants(bool stop_at_block_layout_root);
+  void PopulateDescendants(
+      const NGPhysicalOffset inline_offset_to_container_box,
+      HashMap<const LayoutObject*, NGPaintFragment*>* first_fragment_map,
+      HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
 
   void UpdateVisualRectFromLayoutObject(const NGPhysicalOffset&);
 
-  scoped_refptr<const NGPhysicalFragment> physical_fragment_;
-  LayoutRect visual_rect_;
+  //
+  // Following fields are computed in the layout phase.
+  //
 
+  scoped_refptr<const NGPhysicalFragment> physical_fragment_;
+
+  NGPaintFragment* parent_;
   Vector<std::unique_ptr<NGPaintFragment>> children_;
+
+  NGPaintFragment* next_fragment_ = nullptr;
+  NGPhysicalOffset inline_offset_to_container_box_;
+
+  // Maps LayoutObject to NGPaintFragment for the root of an inline formatting
+  // context.
+  // TODO(kojii): This is to be stored in fields of LayoutObject where they are
+  // no longer used in NGPaint, specifically:
+  //   LayoutText::first_text_box_
+  //   LayoutInline::line_boxes_
+  //   LayotuBox::inline_box_wrapper_
+  // but doing so is likely to have some impacts on the performance.
+  // Alternatively we can keep in the root NGPaintFragment. Having this in all
+  // NGPaintFragment is tentative.
+  HashMap<const LayoutObject*, NGPaintFragment*> first_fragment_map_;
+
+  //
+  // Following fields are computed in the pre-paint phase.
+  //
+
+  LayoutRect visual_rect_;
 };
 
 }  // namespace blink

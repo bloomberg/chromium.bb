@@ -4,6 +4,7 @@
 
 #include "core/paint/ng/ng_paint_fragment.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -17,10 +18,22 @@ namespace blink {
 
 NGPaintFragment::NGPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment,
-    bool stop_at_block_layout_root)
-    : physical_fragment_(std::move(fragment)) {
+    NGPaintFragment* parent)
+    : physical_fragment_(std::move(fragment)), parent_(parent) {
   DCHECK(physical_fragment_);
-  PopulateDescendants(stop_at_block_layout_root);
+}
+
+std::unique_ptr<NGPaintFragment> NGPaintFragment::Create(
+    scoped_refptr<const NGPhysicalFragment> fragment) {
+  std::unique_ptr<NGPaintFragment> paint_fragment =
+      std::make_unique<NGPaintFragment>(std::move(fragment), nullptr);
+
+  HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
+  paint_fragment->PopulateDescendants(NGPhysicalOffset(),
+                                      &paint_fragment->first_fragment_map_,
+                                      &last_fragment_map);
+
+  return paint_fragment;
 }
 
 bool NGPaintFragment::HasSelfPaintingLayer() const {
@@ -43,24 +56,76 @@ LayoutRect NGPaintFragment::VisualOverflowRect() const {
 }
 
 // Populate descendants from NGPhysicalFragment tree.
-//
-// |stop_at_block_layout_root| is set to |false| on the root fragment because
-// most root fragments are block layout root but their children are needed.
-// For children, it is set to |true| to stop at the block layout root.
-void NGPaintFragment::PopulateDescendants(bool stop_at_block_layout_root) {
+void NGPaintFragment::PopulateDescendants(
+    const NGPhysicalOffset inline_offset_to_container_box,
+    HashMap<const LayoutObject*, NGPaintFragment*>* first_fragment_map,
+    HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
   DCHECK(children_.IsEmpty());
   const NGPhysicalFragment& fragment = PhysicalFragment();
-  // Recurse chlidren, except when this is a block layout root.
-  if (fragment.IsContainer() &&
-      !(fragment.IsBlockLayoutRoot() && stop_at_block_layout_root)) {
-    const NGPhysicalContainerFragment& container =
-        ToNGPhysicalContainerFragment(fragment);
-    children_.ReserveCapacity(container.Children().size());
-    for (const auto& child_fragment : container.Children()) {
-      children_.push_back(
-          std::make_unique<NGPaintFragment>(child_fragment, true));
+  if (!fragment.IsContainer())
+    return;
+  const NGPhysicalContainerFragment& container =
+      ToNGPhysicalContainerFragment(fragment);
+  children_.ReserveCapacity(container.Children().size());
+
+  for (const auto& child_fragment : container.Children()) {
+    std::unique_ptr<NGPaintFragment> child =
+        std::make_unique<NGPaintFragment>(child_fragment, this);
+
+    // Create a linked list for each LayoutObject.
+    //
+    // |first_fragment_map| and |last_fragment_map| each keeps the first and the
+    // last of the list of fragments for a LayoutObject. We use two maps because
+    // |last_fragment_map| is needed only while creating lists, while
+    // |first_fragment_map| is kept for later queries. This may change when we
+    // use fields in LayoutObject to keep the first fragments.
+    if (LayoutObject* layout_object = child_fragment->GetLayoutObject()) {
+      auto add_result = last_fragment_map->insert(layout_object, child.get());
+      if (add_result.is_new_entry) {
+        DCHECK(first_fragment_map->find(layout_object) ==
+               first_fragment_map->end());
+        first_fragment_map->insert(layout_object, child.get());
+      } else {
+        DCHECK(first_fragment_map->find(layout_object) !=
+               first_fragment_map->end());
+        DCHECK(add_result.stored_value->value);
+        add_result.stored_value->value->next_fragment_ = child.get();
+        add_result.stored_value->value = child.get();
+      }
+    }
+
+    child->inline_offset_to_container_box_ =
+        inline_offset_to_container_box + child_fragment->Offset();
+
+    // Recurse chlidren, except when this is a block layout root.
+    // TODO(kojii): At the block layout root, chlidren maybe for NGPaint,
+    // LayoutNG but not for NGPaint, or legacy. In order to get the maximum
+    // test coverage, split the NGPaintFragment tree at all possible engine
+    // boundaries.
+    if (!child_fragment->IsBlockLayoutRoot()) {
+      child->PopulateDescendants(child->inline_offset_to_container_box_,
+                                 first_fragment_map, last_fragment_map);
+    }
+
+    children_.push_back(std::move(child));
+  }
+}
+
+NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
+    const LayoutObject* layout_object) {
+  DCHECK(layout_object && layout_object->IsInline());
+  if (LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow()) {
+    if (const NGPaintFragment* root = block_flow->PaintFragment()) {
+      auto it = root->first_fragment_map_.find(layout_object);
+      if (it != root->first_fragment_map_.end())
+        return FragmentRange(it->value);
+
+      // TODO(kojii): This is a culled inline box. Should we handle the case
+      // here, or by the caller, or even stop the culled inline boxes?
+      DCHECK(layout_object->IsLayoutInline());
     }
   }
+  return FragmentRange(nullptr);
 }
 
 // TODO(kojii): This code copies VisualRects from the LayoutObject tree. We
