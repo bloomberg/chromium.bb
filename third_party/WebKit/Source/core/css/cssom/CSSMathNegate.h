@@ -29,6 +29,9 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
 
   void value(CSSNumberish& value) { value.SetCSSNumericValue(value_); }
 
+  // Blink-internal methods
+  const CSSNumericValue& Value() const { return *value_; }
+
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kNegateType; }
 
@@ -58,6 +61,8 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   // From CSSNumericValue
   CSSNumericValue* Negate() final { return value_.Get(); }
   WTF::Optional<CSSNumericSumValue> SumValue() const final;
+
+  void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   Member<CSSNumericValue> value_;
   DISALLOW_COPY_AND_ASSIGN(CSSMathNegate);

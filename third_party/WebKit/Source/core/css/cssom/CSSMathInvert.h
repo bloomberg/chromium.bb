@@ -30,6 +30,9 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
   void value(CSSNumberish& value) { value.SetCSSNumericValue(value_); }
 
+  // Blink-internal methods
+  const CSSNumericValue& Value() const { return *value_; }
+
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kInvertType; }
 
@@ -59,6 +62,8 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   // From CSSNumericValue
   CSSNumericValue* Invert() final { return value_.Get(); }
   WTF::Optional<CSSNumericSumValue> SumValue() const final;
+
+  void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   Member<CSSNumericValue> value_;
   DISALLOW_COPY_AND_ASSIGN(CSSMathInvert);

@@ -33,6 +33,8 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
   CSSMathSum(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
 
+  void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
+
   WTF::Optional<CSSNumericSumValue> SumValue() const final;
   DISALLOW_COPY_AND_ASSIGN(CSSMathSum);
 };

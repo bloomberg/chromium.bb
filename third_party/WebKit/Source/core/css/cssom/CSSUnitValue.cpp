@@ -160,4 +160,10 @@ CSSNumericValue* CSSUnitValue::Invert() {
   return CSSMathInvert::Create(this);
 }
 
+void CSSUnitValue::BuildCSSText(Nested,
+                                ParenLess,
+                                StringBuilder& result) const {
+  result.Append(ToCSSValue()->CssText());
+}
+
 }  // namespace blink

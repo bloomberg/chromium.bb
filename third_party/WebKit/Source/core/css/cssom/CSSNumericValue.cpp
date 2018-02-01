@@ -465,6 +465,12 @@ bool CSSNumericValue::equals(const HeapVector<CSSNumberish>& args) {
                      [this](const auto& v) { return this->Equals(*v); });
 }
 
+String CSSNumericValue::toString() const {
+  StringBuilder result;
+  BuildCSSText(Nested::kNo, ParenLess::kNo, result);
+  return result.ToString();
+}
+
 CSSNumericValue* CSSNumericValue::Negate() {
   return CSSMathNegate::Create(this);
 }

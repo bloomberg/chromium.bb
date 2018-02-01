@@ -70,7 +70,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   virtual const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const {
     return ToCSSValue();
   }
-  virtual String toString(ExceptionState&) const;
+  virtual String toString() const;
 
  protected:
   static String StyleValueTypeToString(StyleValueType);
