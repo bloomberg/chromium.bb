@@ -849,7 +849,6 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void FreePage(NormalPage*);
 
-  bool Coalesce();
   void PromptlyFreeObject(HeapObjectHeader*);
   void PromptlyFreeObjectInFreeList(HeapObjectHeader*, size_t);
   bool ExpandObject(HeapObjectHeader*, size_t);
