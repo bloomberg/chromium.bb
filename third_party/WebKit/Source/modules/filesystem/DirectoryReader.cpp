@@ -40,28 +40,31 @@ namespace blink {
 
 namespace {
 
-void RunEntriesCallback(V8EntriesCallback* callback,
-                        HeapVector<Member<Entry>>* entries) {
+void RunEntriesCallback(V8EntriesCallback* callback, EntryHeapVector* entries) {
   callback->handleEvent(*entries);
 }
 
 }  // namespace
 
 class DirectoryReader::EntriesCallbackHelper final
-    : public DirectoryReaderOnDidReadCallback {
+    : public EntriesCallbacks::OnDidGetEntriesCallback {
  public:
-  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
-  void OnDidReadDirectoryEntries(const EntryHeapVector& entries) override {
-    reader_->AddEntries(entries);
+  static EntriesCallbackHelper* Create(DirectoryReader* reader) {
+    return new EntriesCallbackHelper(reader);
   }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
-    DirectoryReaderOnDidReadCallback::Trace(visitor);
+    EntriesCallbacks::OnDidGetEntriesCallback::Trace(visitor);
+  }
+
+  void OnSuccess(EntryHeapVector* entries) override {
+    reader_->AddEntries(*entries);
   }
 
  private:
+  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
+
   // FIXME: This Member keeps the reader alive until all of the readDirectory
   // results are received. crbug.com/350285
   Member<DirectoryReader> reader_;
@@ -69,7 +72,9 @@ class DirectoryReader::EntriesCallbackHelper final
 
 class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
  public:
-  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
+  static ErrorCallbackHelper* Create(DirectoryReader* reader) {
+    return new ErrorCallbackHelper(reader);
+  }
 
   void Invoke(FileError::ErrorCode error) override { reader_->OnError(error); }
 
@@ -79,6 +84,8 @@ class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
   }
 
  private:
+  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
+
   Member<DirectoryReader> reader_;
 };
 
@@ -86,15 +93,13 @@ DirectoryReader::DirectoryReader(DOMFileSystemBase* file_system,
                                  const String& full_path)
     : DirectoryReaderBase(file_system, full_path), is_reading_(false) {}
 
-DirectoryReader::~DirectoryReader() = default;
-
 void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
                                   V8ErrorCallback* error_callback) {
   if (!is_reading_) {
     is_reading_ = true;
     Filesystem()->ReadDirectory(this, full_path_,
-                                new EntriesCallbackHelper(this),
-                                new ErrorCallbackHelper(this));
+                                EntriesCallbackHelper::Create(this),
+                                ErrorCallbackHelper::Create(this));
   }
 
   if (error_) {
@@ -104,7 +109,7 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
   }
 
   if (entries_callback_) {
-    // Non-null m_entriesCallback means multiple readEntries() calls are made
+    // Non-null entries_callback_ means multiple readEntries() calls are made
     // concurrently. We don't allow doing it.
     Filesystem()->ReportError(ScriptErrorCallback::Wrap(error_callback),
                               FileError::kInvalidStateErr);
@@ -112,14 +117,11 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
   }
 
   if (!has_more_entries_ || !entries_.IsEmpty()) {
-    if (entries_callback) {
-      auto* entries = new HeapVector<Member<Entry>>(std::move(entries_));
-      DOMFileSystem::ScheduleCallback(
-          Filesystem()->GetExecutionContext(),
-          WTF::Bind(&RunEntriesCallback, WrapPersistent(entries_callback),
-                    WrapPersistent(entries)));
-    }
-    entries_.clear();
+    EntryHeapVector* entries = new EntryHeapVector(std::move(entries_));
+    DOMFileSystem::ScheduleCallback(
+        Filesystem()->GetExecutionContext(),
+        WTF::Bind(&RunEntriesCallback, WrapPersistent(entries_callback),
+                  WrapPersistent(entries)));
     return;
   }
 
@@ -130,8 +132,7 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
 void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
   entries_.AppendVector(entries);
   error_callback_ = nullptr;
-  if (entries_callback_) {
-    V8EntriesCallback* entries_callback = entries_callback_.Release();
+  if (V8EntriesCallback* entries_callback = entries_callback_.Release()) {
     EntryHeapVector entries;
     entries.swap(entries_);
     entries_callback->handleEvent(entries);
@@ -141,8 +142,9 @@ void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
 void DirectoryReader::OnError(FileError::ErrorCode error) {
   error_ = error;
   entries_callback_ = nullptr;
-  if (error_callback_)
-    error_callback_->handleEvent(FileError::CreateDOMException(error));
+  if (V8ErrorCallback* error_callback = error_callback_.Release()) {
+    error_callback->handleEvent(FileError::CreateDOMException(error_));
+  }
 }
 
 void DirectoryReader::Trace(blink::Visitor* visitor) {

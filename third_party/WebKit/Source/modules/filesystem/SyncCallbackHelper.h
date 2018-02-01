@@ -115,6 +115,7 @@ class DOMFileSystemCallbacksSyncHelper final
 using EntryCallbacksSyncHelper =
     DOMFileSystemCallbacksSyncHelper<EntryCallbacks::OnDidGetEntryCallback,
                                      Entry>;
+
 using FileSystemCallbacksSyncHelper = DOMFileSystemCallbacksSyncHelper<
     FileSystemCallbacks::OnDidOpenFileSystemCallback,
     DOMFileSystem>;

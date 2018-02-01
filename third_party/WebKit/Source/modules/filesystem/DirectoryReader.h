@@ -50,7 +50,7 @@ class DirectoryReader : public DirectoryReaderBase {
     return new DirectoryReader(file_system, full_path);
   }
 
-  ~DirectoryReader() override;
+  ~DirectoryReader() override = default;
 
   void readEntries(V8EntriesCallback*, V8ErrorCallback* = nullptr);
 
