@@ -8633,5 +8633,43 @@ class DontUpdateLayersWithEmptyBounds : public LayerTreeTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(DontUpdateLayersWithEmptyBounds);
 
+// Verifies that if we have a new LocalSurfaceId we submit a CompositorFrame
+// even if there is no damage.
+class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestNewLocalSurfaceIdForcesDraw() {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_surface_synchronization = true;
+  }
+
+  void BeginTest() override {
+    layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
+    layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
+    local_surface_id_ = allocator_.GenerateId();
+    PostSetLocalSurfaceIdToMainThread(local_surface_id_);
+  }
+
+  void DidReceiveCompositorFrameAck() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        local_surface_id_ = allocator_.GenerateId();
+        PostSetLocalSurfaceIdToMainThread(local_surface_id_);
+        break;
+      case 2:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AfterTest() override {}
+  viz::LocalSurfaceId local_surface_id_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNewLocalSurfaceIdForcesDraw);
+
 }  // namespace
 }  // namespace cc
