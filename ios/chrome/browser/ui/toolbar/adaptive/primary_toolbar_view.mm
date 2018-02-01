@@ -104,10 +104,9 @@
   }
   DCHECK(self.buttonFactory);
 
-  self.backgroundColor =
-      self.buttonFactory.toolbarConfiguration.backgroundColor;
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
+  [self setUpBlurredBackground];
   [self setUpLocationBar];
   [self setUpLeadingStackView];
   [self setUpTrailingStackView];
@@ -124,11 +123,22 @@
 
 #pragma mark - Setup
 
+// Sets the blur effect on the toolbar background.
+- (void)setUpBlurredBackground {
+  UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
+  UIVisualEffectView* blur =
+      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  [self addSubview:blur];
+  blur.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(blur, self);
+}
+
 // Sets the location bar container and its view if present.
 - (void)setUpLocationBar {
   self.locationBarContainer = [[UIView alloc] init];
   self.locationBarContainer.backgroundColor =
-      self.buttonFactory.toolbarConfiguration.omniboxBackgroundColor;
+      [self.buttonFactory.toolbarConfiguration
+          locationBarBackgroundColorWithVisibility:1];
   self.locationBarContainer.layer.cornerRadius =
       kAdaptiveLocationBarCornerRadius;
   [self.locationBarContainer
