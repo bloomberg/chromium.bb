@@ -10238,7 +10238,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 
       if (sf->skip_intra_in_interframe) {
-        if (best_rd != INT64_MAX && this_rd > (best_rd + (best_rd >> 1)))
+        if (best_rd < (INT64_MAX / 2) && this_rd > (best_rd + (best_rd >> 1)))
           skip_intra_modes = 1;
       }
     }
