@@ -248,6 +248,8 @@ struct EnumTraits<metrics::mojom::Thread,
         return metrics::mojom::Thread::RENDER_THREAD;
       case metrics::CallStackProfileParams::Thread::UTILITY_THREAD:
         return metrics::mojom::Thread::UTILITY_THREAD;
+      case metrics::CallStackProfileParams::Thread::COMPOSITOR_THREAD:
+        return metrics::mojom::Thread::COMPOSITOR_THREAD;
     }
     NOTREACHED();
     return metrics::mojom::Thread::UNKNOWN_THREAD;
@@ -289,6 +291,9 @@ struct EnumTraits<metrics::mojom::Thread,
         return true;
       case metrics::mojom::Thread::UTILITY_THREAD:
         *out = metrics::CallStackProfileParams::Thread::UTILITY_THREAD;
+        return true;
+      case metrics::mojom::Thread::COMPOSITOR_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::COMPOSITOR_THREAD;
         return true;
     }
     return false;

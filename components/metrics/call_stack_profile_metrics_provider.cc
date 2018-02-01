@@ -495,6 +495,8 @@ Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
       return RENDER_THREAD;
     case CallStackProfileParams::UTILITY_THREAD:
       return UTILITY_THREAD;
+    case CallStackProfileParams::COMPOSITOR_THREAD:
+      return COMPOSITOR_THREAD;
   }
   NOTREACHED();
   return UNKNOWN_THREAD;

@@ -332,6 +332,9 @@ TEST_F(CallStackProfileStructTraitsTest, Thread) {
 
   EXPECT_TRUE(proxy_->BounceThread(Thread::UTILITY_THREAD, &out));
   EXPECT_EQ(Thread::UTILITY_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::COMPOSITOR_THREAD, &out));
+  EXPECT_EQ(Thread::COMPOSITOR_THREAD, out);
 }
 
 // Checks serialization/deserialization of the trigger, including validation.

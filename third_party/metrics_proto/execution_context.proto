@@ -47,6 +47,9 @@ enum Thread {
   // Renderer process threads.
   RENDER_THREAD = 9;
   UTILITY_THREAD = 10;
+
+  // Compositor thread (can be in both renderer and gpu processes).
+  COMPOSITOR_THREAD = 11;
 }
 
 // Process phases, or where in the lifetime of the process it is such as
