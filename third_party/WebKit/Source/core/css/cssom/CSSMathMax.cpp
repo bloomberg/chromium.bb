@@ -50,4 +50,20 @@ WTF::Optional<CSSNumericSumValue> CSSMathMax::SumValue() const {
   return cur_max;
 }
 
+void CSSMathMax::BuildCSSText(Nested, ParenLess, StringBuilder& result) const {
+  result.Append("max(");
+
+  bool first_iteration = true;
+  for (const auto& value : NumericValues()) {
+    if (!first_iteration)
+      result.Append(", ");
+    first_iteration = false;
+
+    DCHECK(value);
+    value->BuildCSSText(Nested::kYes, ParenLess::kYes, result);
+  }
+
+  result.Append(")");
+}
+
 }  // namespace blink

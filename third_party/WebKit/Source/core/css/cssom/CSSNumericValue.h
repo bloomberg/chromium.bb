@@ -52,6 +52,8 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
   void type(CSSNumericType&) const;
 
+  String toString() const final;
+
   // Internal methods.
   // Arithmetic
   virtual CSSNumericValue* Negate();
@@ -66,6 +68,10 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   const CSSNumericValueType& Type() const { return type_; }
 
   virtual CSSCalcExpressionNode* ToCalcExpressionNode() const = 0;
+
+  enum class Nested : bool { kYes, kNo };
+  enum class ParenLess : bool { kYes, kNo };
+  virtual void BuildCSSText(Nested, ParenLess, StringBuilder&) const = 0;
 
  protected:
   static bool IsValidUnit(CSSPrimitiveValue::UnitType);

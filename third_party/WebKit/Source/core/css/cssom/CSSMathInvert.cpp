@@ -20,4 +20,17 @@ WTF::Optional<CSSNumericSumValue> CSSMathInvert::SumValue() const {
   return sum;
 }
 
+void CSSMathInvert::BuildCSSText(Nested nested,
+                                 ParenLess paren_less,
+                                 StringBuilder& result) const {
+  if (paren_less == ParenLess::kNo)
+    result.Append(nested == Nested::kYes ? "(" : "calc(");
+
+  result.Append("1 / ");
+  value_->BuildCSSText(Nested::kYes, ParenLess::kNo, result);
+
+  if (paren_less == ParenLess::kNo)
+    result.Append(")");
+}
+
 }  // namespace blink

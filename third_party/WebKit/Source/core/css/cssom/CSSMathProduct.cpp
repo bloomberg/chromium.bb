@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSMathProduct.h"
 
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/cssom/CSSMathInvert.h"
 
 namespace blink {
 
@@ -92,6 +93,32 @@ CSSCalcExpressionNode* CSSMathProduct::ToCalcExpressionNode() const {
   }
 
   return node;
+}
+
+void CSSMathProduct::BuildCSSText(Nested nested,
+                                  ParenLess paren_less,
+                                  StringBuilder& result) const {
+  if (paren_less == ParenLess::kNo)
+    result.Append(nested == Nested::kYes ? "(" : "calc(");
+
+  const auto& values = NumericValues();
+  DCHECK(!values.IsEmpty());
+  values[0]->BuildCSSText(Nested::kYes, ParenLess::kNo, result);
+
+  for (size_t i = 1; i < values.size(); i++) {
+    const auto& arg = *values[i];
+    if (arg.GetType() == CSSStyleValue::kInvertType) {
+      result.Append(" / ");
+      static_cast<const CSSMathInvert&>(arg).Value().BuildCSSText(
+          Nested::kYes, ParenLess::kNo, result);
+    } else {
+      result.Append(" * ");
+      arg.BuildCSSText(Nested::kYes, ParenLess::kNo, result);
+    }
+  }
+
+  if (paren_less == ParenLess::kNo)
+    result.Append(")");
 }
 
 }  // namespace blink

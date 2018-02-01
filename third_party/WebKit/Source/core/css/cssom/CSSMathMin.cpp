@@ -50,4 +50,19 @@ WTF::Optional<CSSNumericSumValue> CSSMathMin::SumValue() const {
   return cur_min;
 }
 
+void CSSMathMin::BuildCSSText(Nested, ParenLess, StringBuilder& result) const {
+  result.Append("min(");
+
+  bool first_iteration = true;
+  for (const auto& value : NumericValues()) {
+    if (!first_iteration)
+      result.Append(", ");
+    first_iteration = false;
+
+    value->BuildCSSText(Nested::kYes, ParenLess::kYes, result);
+  }
+
+  result.Append(")");
+}
+
 }  // namespace blink

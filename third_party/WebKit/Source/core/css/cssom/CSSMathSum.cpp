@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSMathSum.h"
 
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/cssom/CSSMathNegate.h"
 
 namespace blink {
 
@@ -110,6 +111,32 @@ CSSCalcExpressionNode* CSSMathSum::ToCalcExpressionNode() const {
   }
 
   return node;
+}
+
+void CSSMathSum::BuildCSSText(Nested nested,
+                              ParenLess paren_less,
+                              StringBuilder& result) const {
+  if (paren_less == ParenLess::kNo)
+    result.Append(nested == Nested::kYes ? "(" : "calc(");
+
+  const auto& values = NumericValues();
+  DCHECK(!values.IsEmpty());
+  values[0]->BuildCSSText(Nested::kYes, ParenLess::kNo, result);
+
+  for (size_t i = 1; i < values.size(); i++) {
+    const auto& arg = *values[i];
+    if (arg.GetType() == CSSStyleValue::kNegateType) {
+      result.Append(" - ");
+      static_cast<const CSSMathNegate&>(arg).Value().BuildCSSText(
+          Nested::kYes, ParenLess::kNo, result);
+    } else {
+      result.Append(" + ");
+      arg.BuildCSSText(Nested::kYes, ParenLess::kNo, result);
+    }
+  }
+
+  if (paren_less == ParenLess::kNo)
+    result.Append(")");
 }
 
 }  // namespace blink
