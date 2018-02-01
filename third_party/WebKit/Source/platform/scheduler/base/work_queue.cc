@@ -86,6 +86,7 @@ void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
   DCHECK(task.nestable == base::Nestable::kNonNestable);
 
   bool was_empty = work_queue_.empty();
+  bool was_blocked = BlockedByFence();
 #ifndef NDEBUG
   DCHECK(task.enqueue_order_set());
 #endif
@@ -107,7 +108,8 @@ void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
   if (BlockedByFence())
     return;
 
-  if (was_empty) {
+  // Pushing task to front may unblock the fence.
+  if (was_empty || was_blocked) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
   } else {
     work_queue_sets_->OnFrontTaskChanged(this);
