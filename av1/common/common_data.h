@@ -973,7 +973,6 @@ static const int8_t txsize_log2_minus4[TX_SIZES_ALL] = {
 };
 
 /* clang-format off */
-#if CONFIG_SIMPLIFY_TX_MODE
 static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {
   TX_4X4,    // ONLY_4X4
 #if CONFIG_TX64X64
@@ -984,20 +983,6 @@ static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {
   TX_32X32,  // TX_MODE_SELECT
 #endif  // CONFIG_TX64X64
 };
-#else
-static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {
-  TX_4X4,    // ONLY_4X4
-  TX_8X8,    // ALLOW_8X8
-  TX_16X16,  // ALLOW_16X16
-  TX_32X32,  // ALLOW_32X32
-#if CONFIG_TX64X64
-  TX_64X64,  // ALLOW_64X64
-  TX_64X64,  // TX_MODE_LARGEST
-#else
-  TX_32X32,  // TX_MODE_SELECT
-#endif  // CONFIG_TX64X64
-};
-#endif  // CONFIG_SIMPLIFY_TX_MODE
 /* clang-format on */
 
 static const BLOCK_SIZE ss_size_lookup[BLOCK_SIZES_ALL][2][2] = {

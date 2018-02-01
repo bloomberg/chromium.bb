@@ -91,24 +91,10 @@ static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
   return len != 0 && len <= (size_t)(end - start);
 }
 
-#if CONFIG_SIMPLIFY_TX_MODE
 static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->all_lossless) return ONLY_4X4;
   return aom_rb_read_bit(rb) ? TX_MODE_SELECT : TX_MODE_LARGEST;
 }
-#else
-static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  if (cm->all_lossless) return ONLY_4X4;
-#if CONFIG_TX64X64
-  TX_MODE tx_mode =
-      aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
-  if (tx_mode == ALLOW_32X32) tx_mode += aom_rb_read_bit(rb);
-  return tx_mode;
-#else
-  return aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
-#endif  // CONFIG_TX64X64
-}
-#endif  // CONFIG_SIMPLIFY_TX_MODE
 
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
