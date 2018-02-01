@@ -17,7 +17,6 @@
 using ntp_snippets::test::FakeOfflinePageModel;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
-using offline_pages::OfflinePageModelQuery;
 using testing::_;
 using testing::Eq;
 using testing::SaveArg;
