@@ -159,11 +159,6 @@ WindowServer::~WindowServer() {
   for (auto& pair : tree_map_)
     pair.second->PrepareForWindowServerShutdown();
 
-  // Shutdown GPU before destroying PlatformWindows for displays so that
-  // GLSurfaces corresponding to a windows AcceleratedWidget gets destroyed
-  // first.
-  gpu_host_.reset();
-
   // Destroys the window trees results in querying for the display. Tear down
   // the displays first so that the trees are notified of the display going
   // away while the display is still valid.
