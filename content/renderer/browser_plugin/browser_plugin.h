@@ -194,8 +194,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   void OnSetMusEmbedToken(int instance_id,
                           const base::UnguessableToken& embed_token);
 #endif
-  void OnSetTooltipText(int browser_plugin_instance_id,
-                        const base::string16& tooltip_text);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
 
 #if defined(USE_AURA)
