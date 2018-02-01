@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -107,14 +106,6 @@ void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
         break;
     }
   }
-}
-
-// Clear notifications such as GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS
-// that are shown when signin in. Because the tests here manipulate the
-// message loop and don't always have have a browser window, the test runner
-// ends up clearing them at the wrong moment and crashes.
-void ClearNotifications() {
-  g_browser_process->notification_ui_manager()->CancelAll();
 }
 
 }  // namespace
@@ -261,10 +252,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
   existing_user_controller()->Login(user_context, SigninSpecifics());
 
   profile_prepared_observer.Wait();
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearNotifications));
-  content::RunAllPendingInMessageLoop();
 }
 
 // Verifies that when the cros settings are untrusted, no new session can be
@@ -620,8 +607,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // Timer should still be stopped after login completes.
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
-
-  ClearNotifications();
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
@@ -810,9 +795,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   existing_user_controller()->CompleteLogin(user_context);
 
   profile_prepared_observer.Wait();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearNotifications));
-  content::RunAllPendingInMessageLoop();
 }
 
 // Tests that Active Directory offline login succeeds on the Active Directory
@@ -830,9 +812,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   existing_user_controller()->Login(user_context, SigninSpecifics());
 
   profile_prepared_observer.Wait();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearNotifications));
-  content::RunAllPendingInMessageLoop();
 }
 
 // Tests that Gaia login fails on the Active Directory managed device.
@@ -869,9 +848,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
   existing_user_controller()->CompleteLogin(user_context);
 
   profile_prepared_observer.Wait();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearNotifications));
-  content::RunAllPendingInMessageLoop();
 
   // Verify password hash and salt are saved to prefs.
   Profile* profile =
@@ -895,9 +871,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
   existing_user_controller()->Login(user_context, SigninSpecifics());
 
   profile_prepared_observer.Wait();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearNotifications));
-  content::RunAllPendingInMessageLoop();
 
   // Verify password hash and salt are saved to prefs.
   Profile* profile =
