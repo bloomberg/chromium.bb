@@ -24,7 +24,7 @@ Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
     LayoutSVGResourceMasker* masker = resources ? resources->Masker() : nullptr;
     if (!masker)
       return WTF::nullopt;
-    return EnclosingIntRect(object.ObjectBoundingBox());
+    return EnclosingIntRect(masker->ResourceBoundingBox(&object));
   }
 
   const ComputedStyle& style = object.StyleRef();

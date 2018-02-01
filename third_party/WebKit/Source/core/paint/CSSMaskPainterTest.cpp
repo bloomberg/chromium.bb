@@ -28,7 +28,7 @@ TEST_F(CSSMaskPainterTest, MaskBoundingBoxSVG) {
   Optional<IntRect> mask_bounding_box =
       CSSMaskPainter::MaskBoundingBox(masked, LayoutPoint());
   ASSERT_TRUE(mask_bounding_box.has_value());
-  EXPECT_EQ(IntRect(50, 50, 150, 150), *mask_bounding_box);
+  EXPECT_EQ(IntRect(75, 75, 100, 100), *mask_bounding_box);
 }
 
 TEST_F(CSSMaskPainterTest, MaskBoundingBoxCSSBlock) {
