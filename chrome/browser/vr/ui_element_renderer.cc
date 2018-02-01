@@ -42,6 +42,7 @@ void UiElementRenderer::Init() {
   webvr_renderer_ = std::make_unique<WebVrRenderer>();
   reticle_renderer_ = std::make_unique<Reticle::Renderer>();
   laser_renderer_ = std::make_unique<Laser::Renderer>();
+  gltf_controller_renderer_ = std::make_unique<GltfController::Renderer>();
   controller_renderer_ = std::make_unique<Controller::Renderer>();
   gradient_grid_renderer_ = std::make_unique<Grid::Renderer>();
   shadow_renderer_ = std::make_unique<Shadow::Renderer>();
@@ -95,15 +96,22 @@ void UiElementRenderer::DrawGradientGridQuad(
                                 opacity);
 }
 
-void UiElementRenderer::DrawController(
+void UiElementRenderer::DrawGltfController(
     ControllerMesh::State state,
     float opacity,
     const gfx::Transform& model_view_proj_matrix) {
-  if (!controller_renderer_->IsSetUp()) {
+  if (!gltf_controller_renderer_->IsSetUp()) {
     return;
   }
+  FlushIfNecessary(gltf_controller_renderer_.get());
+  gltf_controller_renderer_->Draw(state, opacity, model_view_proj_matrix);
+}
+
+void UiElementRenderer::DrawController(
+    float opacity,
+    const gfx::Transform& model_view_proj_matrix) {
   FlushIfNecessary(controller_renderer_.get());
-  controller_renderer_->Draw(state, opacity, model_view_proj_matrix);
+  controller_renderer_->Draw(opacity, model_view_proj_matrix);
 }
 
 void UiElementRenderer::DrawLaser(
@@ -170,7 +178,7 @@ void UiElementRenderer::Flush() {
 }
 
 void UiElementRenderer::SetUpController(std::unique_ptr<ControllerMesh> mesh) {
-  controller_renderer_->SetUp(std::move(mesh));
+  gltf_controller_renderer_->SetUp(std::move(mesh));
 }
 
 void UiElementRenderer::FlushIfNecessary(BaseRenderer* renderer) {

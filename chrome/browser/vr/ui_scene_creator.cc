@@ -470,6 +470,97 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   return layout;
 }
 
+std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
+  auto controller = std::make_unique<Controller>();
+  controller->SetDrawPhase(kPhaseForeground);
+  controller->AddBinding(VR_BIND_FUNC(gfx::Transform, Model, model,
+                                      model->controller.transform, Controller,
+                                      controller.get(), set_local_transform));
+  controller->AddBinding(VR_BIND_FUNC(float, Model, model,
+                                      model->controller.opacity, Controller,
+                                      controller.get(), SetOpacity));
+
+  auto touchpad_button = Create<Rect>(kNone, kPhaseForeground);
+  touchpad_button->SetVisible(true);
+  touchpad_button->set_hit_testable(false);
+  touchpad_button->SetColor(model->color_scheme().controller_button);
+  touchpad_button->SetSize(kControllerWidth, kControllerWidth);
+  touchpad_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  touchpad_button->SetTranslate(0.0f, 0.0f,
+                                -(kControllerLength - kControllerWidth) / 2);
+  touchpad_button->SetCornerRadii({kControllerWidth / 2, kControllerWidth / 2,
+                                   kControllerWidth / 2, kControllerWidth / 2});
+  touchpad_button->AddBinding(VR_BIND_FUNC(
+      SkColor, Model, model,
+      model->controller.touchpad_button_state == UiInputManager::DOWN
+          ? model->color_scheme().controller_button_down
+          : model->color_scheme().controller_button,
+      Rect, touchpad_button.get(), SetColor));
+  controller->AddChild(std::move(touchpad_button));
+
+  auto app_button = Create<Rect>(kNone, kPhaseForeground);
+  app_button->SetVisible(true);
+  app_button->set_hit_testable(false);
+  app_button->SetColor(model->color_scheme().controller_button);
+  app_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
+  app_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  app_button->SetTranslate(0.0f, 0.0f, kControllerAppButtonZ);
+  app_button->SetCornerRadii(
+      {kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2,
+       kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2});
+  app_button->AddBinding(
+      VR_BIND_FUNC(SkColor, Model, model,
+                   model->controller.app_button_state == UiInputManager::DOWN
+                       ? model->color_scheme().controller_button_down
+                       : model->color_scheme().controller_button,
+                   Rect, app_button.get(), SetColor));
+  controller->AddChild(std::move(app_button));
+
+  auto home_button = Create<Rect>(kNone, kPhaseForeground);
+  home_button->SetVisible(true);
+  home_button->set_hit_testable(false);
+  home_button->SetColor(model->color_scheme().controller_button);
+  home_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
+  home_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  home_button->SetTranslate(0.0f, 0.0f, kControllerHomeButtonZ);
+  home_button->SetCornerRadii(
+      {kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2,
+       kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2});
+  home_button->AddBinding(
+      VR_BIND_FUNC(SkColor, Model, model,
+                   model->controller.home_button_state == UiInputManager::DOWN
+                       ? model->color_scheme().controller_button_down
+                       : model->color_scheme().controller_button,
+                   Rect, home_button.get(), SetColor));
+  controller->AddChild(std::move(home_button));
+
+  return controller;
+}
+
+std::unique_ptr<UiElement> CreateGltfControllerModel(Model* model) {
+  auto controller = std::make_unique<GltfController>();
+  controller->SetDrawPhase(kPhaseForeground);
+  controller->AddBinding(
+      VR_BIND_FUNC(gfx::Transform, Model, model, model->controller.transform,
+                   GltfController, controller.get(), set_local_transform));
+  controller->AddBinding(VR_BIND_FUNC(
+      bool, Model, model,
+      model->controller.touchpad_button_state == UiInputManager::DOWN,
+      GltfController, controller.get(), set_touchpad_button_pressed));
+  controller->AddBinding(
+      VR_BIND_FUNC(bool, Model, model,
+                   model->controller.app_button_state == UiInputManager::DOWN,
+                   GltfController, controller.get(), set_app_button_pressed));
+  controller->AddBinding(
+      VR_BIND_FUNC(bool, Model, model,
+                   model->controller.home_button_state == UiInputManager::DOWN,
+                   GltfController, controller.get(), set_home_button_pressed));
+  controller->AddBinding(VR_BIND_FUNC(float, Model, model,
+                                      model->controller.opacity, GltfController,
+                                      controller.get(), SetOpacity));
+  return controller;
+}
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -1384,26 +1475,9 @@ void UiSceneCreator::CreateController() {
           base::Unretained(group.get()))));
   scene_->AddUiElement(kControllerRoot, std::move(group));
 
-  auto controller = std::make_unique<Controller>();
-  controller->SetDrawPhase(kPhaseForeground);
-  controller->AddBinding(VR_BIND_FUNC(gfx::Transform, Model, model_,
-                                      model->controller.transform, Controller,
-                                      controller.get(), set_local_transform));
-  controller->AddBinding(VR_BIND_FUNC(
-      bool, Model, model_,
-      model->controller.touchpad_button_state == UiInputManager::DOWN,
-      Controller, controller.get(), set_touchpad_button_pressed));
-  controller->AddBinding(
-      VR_BIND_FUNC(bool, Model, model_,
-                   model->controller.app_button_state == UiInputManager::DOWN,
-                   Controller, controller.get(), set_app_button_pressed));
-  controller->AddBinding(
-      VR_BIND_FUNC(bool, Model, model_,
-                   model->controller.home_button_state == UiInputManager::DOWN,
-                   Controller, controller.get(), set_home_button_pressed));
-  controller->AddBinding(VR_BIND_FUNC(float, Model, model_,
-                                      model->controller.opacity, Controller,
-                                      controller.get(), SetOpacity));
+  auto controller = model_->procedural_controller_enabled
+                        ? CreateControllerModel(model_)
+                        : CreateGltfControllerModel(model_);
 
   auto callout_group = Create<UiElement>(kNone, kPhaseNone);
   callout_group->SetVisible(false);

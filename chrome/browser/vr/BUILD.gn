@@ -58,6 +58,8 @@ static_library("vr_common") {
     "elements/exit_prompt_texture.h",
     "elements/full_screen_rect.cc",
     "elements/full_screen_rect.h",
+    "elements/gltf_controller.cc",
+    "elements/gltf_controller.h",
     "elements/invisible_hit_target.cc",
     "elements/invisible_hit_target.h",
     "elements/keyboard.cc",
