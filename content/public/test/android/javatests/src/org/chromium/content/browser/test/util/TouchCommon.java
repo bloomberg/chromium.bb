@@ -6,7 +6,6 @@ package org.chromium.content.browser.test.util;
 
 import android.app.Activity;
 import android.os.SystemClock;
-import android.test.TouchUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -35,7 +34,6 @@ public class TouchCommon {
      * @param x X coordinate, in screen coordinates.
      * @param y Y coordinate, in screen coordinates.
      * @param downTime When the drag was started, in millis since the epoch.
-     * @see TouchUtils
      */
     public static void dragStart(Activity activity, float x, float y, long downTime) {
         View root = getRootViewForActivity(activity);
@@ -58,7 +56,6 @@ public class TouchCommon {
      * @param toY Y coordinate of the drag destination, in screen coordinates.
      * @param stepCount How many move steps to include in the drag.
      * @param downTime When the drag was started, in millis since the epoch.
-     * @see TouchUtils
      */
     public static void dragTo(Activity activity, float fromX, float toX, float fromY,
             float toY, int stepCount, long downTime) {
@@ -88,7 +85,6 @@ public class TouchCommon {
      * @param x X coordinate, in screen coordinates.
      * @param y Y coordinate, in screen coordinates.
      * @param downTime When the drag was started, in millis since the epoch.
-     * @see TouchUtils
      */
     public static void dragEnd(Activity activity, float x, float y, long downTime) {
         View root = getRootViewForActivity(activity);
