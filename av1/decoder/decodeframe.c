@@ -190,10 +190,11 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
   (void)mi_row;
   (void)mi_col;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const int tx_row = blk_row >> (1 - pd->subsampling_y);
+  const int tx_col = blk_col >> (1 - pd->subsampling_x);
   const TX_SIZE plane_tx_size =
       plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
-            : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
-                                                         blk_col)];
+            : mbmi->inter_tx_size[tx_row][tx_col];
   // Scale to match transform block unit.
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);

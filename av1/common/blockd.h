@@ -231,19 +231,16 @@ typedef struct {
   COMPOUND_TYPE interinter_compound_type;
 } INTERINTER_COMPOUND_DATA;
 
-#if CONFIG_TX64X64
-#define INTER_TX_SIZE_BUF_LEN 16
-#else
-#define INTER_TX_SIZE_BUF_LEN 256
-#endif
-// This structure now relates to 4x4 block regions.
+// This structure now relates to 8x8 block regions.
 typedef struct MB_MODE_INFO {
   // Common for both INTER and INTRA blocks
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
   TX_SIZE tx_size;
+  // TODO(jingning): This effectively assigned a separate entry for each
+  // 8x8 block. Apparently it takes much more space than needed.
+  TX_SIZE inter_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE];
   TX_SIZE min_tx_size;
-  uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   int8_t skip;
 #if CONFIG_EXT_SKIP
   int8_t skip_mode;
@@ -890,20 +887,6 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
 static INLINE BLOCK_SIZE
 get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
   return ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
-}
-
-static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
-                                         int blk_col) {
-  TX_SIZE txs = max_txsize_rect_lookup[1][bsize];
-  for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
-    txs = sub_tx_size_map[1][txs];
-  const int tx_w = tx_size_wide_unit[txs];
-  const int tx_h = tx_size_high_unit[txs];
-  const int bw_uint = mi_size_wide[bsize];
-  const int stride = bw_uint / tx_w;
-  const int index = (blk_row / tx_h) * stride + (blk_col / tx_w);
-  assert(index < INTER_TX_SIZE_BUF_LEN);
-  return index;
 }
 
 static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,

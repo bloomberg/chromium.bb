@@ -177,6 +177,8 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 aom_writer *w) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
+  const int tx_row = blk_row >> 1;
+  const int tx_col = blk_col >> 1;
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
   const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
 
@@ -188,13 +190,12 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
   }
 
-  const int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
-                                         xd->left_txfm_context + blk_row,
-                                         mbmi->sb_type, tx_size);
-  const int txb_size_index =
-      av1_get_txb_size_index(mbmi->sb_type, blk_row, blk_col);
+  int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
+                                   xd->left_txfm_context + blk_row,
+                                   mbmi->sb_type, tx_size);
+
   const int write_txfm_partition =
-      tx_size == mbmi->inter_tx_size[txb_size_index];
+      tx_size == mbmi->inter_tx_size[tx_row][tx_col];
   if (write_txfm_partition) {
     aom_write_symbol(w, 0, ec_ctx->txfm_partition_cdf[ctx], 2);
 
@@ -463,6 +464,8 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
                             int block, int blk_row, int blk_col,
                             TX_SIZE tx_size, TOKEN_STATS *token_stats) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const int tx_row = blk_row >> (1 - pd->subsampling_y);
+  const int tx_col = blk_col >> (1 - pd->subsampling_x);
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
 
@@ -470,8 +473,7 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
 
   const TX_SIZE plane_tx_size =
       plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
-            : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
-                                                         blk_col)];
+            : mbmi->inter_tx_size[tx_row][tx_col];
 
   if (tx_size == plane_tx_size || plane) {
     TOKEN_STATS tmp_token_stats;

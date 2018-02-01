@@ -390,7 +390,10 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     mbmi->tx_size = (TX_SIZE)TXSIZEMAX(mbmi->tx_size, min_tx_size);
   }
   if (is_inter_block(mbmi)) {
-    memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
+    for (int idy = 0; idy < xd->n8_h; ++idy) {
+      for (int idx = 0; idx < xd->n8_w; ++idx)
+        mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+    }
     mbmi->min_tx_size = mbmi->tx_size;
   }
 }
@@ -4713,14 +4716,14 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
                               int blk_row, int blk_col,
                               uint8_t allow_update_cdf) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int max_blocks_high = max_block_high(xd, bsize, 0);
-  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
+  const int tx_row = blk_row >> 1;
+  const int tx_col = blk_col >> 1;
+  const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
+  const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
   int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
                                    xd->left_txfm_context + blk_row,
                                    mbmi->sb_type, tx_size);
-  const int txb_size_index = av1_get_txb_size_index(bsize, blk_row, blk_col);
-  const TX_SIZE plane_tx_size = mbmi->inter_tx_size[txb_size_index];
+  const TX_SIZE plane_tx_size = mbmi->inter_tx_size[tx_row][tx_col];
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
   assert(tx_size > TX_4X4);
@@ -4751,7 +4754,7 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     ++x->txb_split_count;
 
     if (sub_txs == TX_4X4) {
-      mbmi->inter_tx_size[txb_size_index] = TX_4X4;
+      mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, TX_4X4, tx_size);
@@ -4796,11 +4799,11 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
 static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
                              int blk_col) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int max_blocks_high = max_block_high(xd, bsize, 0);
-  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
-  const int txb_size_index = av1_get_txb_size_index(bsize, blk_row, blk_col);
-  const TX_SIZE plane_tx_size = mbmi->inter_tx_size[txb_size_index];
+  const int tx_row = blk_row >> 1;
+  const int tx_col = blk_col >> 1;
+  const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
+  const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
+  const TX_SIZE plane_tx_size = mbmi->inter_tx_size[tx_row][tx_col];
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
@@ -4811,7 +4814,7 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
 
   } else {
     if (tx_size == TX_8X8) {
-      mbmi->inter_tx_size[txb_size_index] = TX_4X4;
+      mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, TX_4X4, tx_size);
