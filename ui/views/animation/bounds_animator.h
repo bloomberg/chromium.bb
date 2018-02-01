@@ -96,10 +96,6 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   void AddObserver(BoundsAnimatorObserver* observer);
   void RemoveObserver(BoundsAnimatorObserver* observer);
 
- protected:
-  // Creates the animation to use for animating views.
-  virtual gfx::SlideAnimation* CreateAnimation();
-
  private:
   // Tracks data about the view being animated.
   struct Data {
@@ -127,6 +123,9 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   typedef std::map<View*, Data> ViewToDataMap;
 
   typedef std::map<const gfx::Animation*, View*> AnimationToViewMap;
+
+  // Creates the animation to use for animating views.
+  gfx::SlideAnimation* CreateAnimation();
 
   // Removes references to |view| and its animation. This does NOT delete the
   // animation or delegate.
