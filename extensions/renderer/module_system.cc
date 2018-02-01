@@ -468,19 +468,22 @@ void ModuleSystem::LazyFieldGetterInner(
   v8::Local<v8::Value> val = info.This();
   if (val->IsObject()) {
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(val);
-    auto maybe = object->Delete(context, property);
-    if (!maybe.IsJust()) {
+    auto maybe_deleted = object->Delete(context, property);
+    if (!maybe_deleted.IsJust()) {
       // In theory, deletion should never result in throwing an error. But
       // crazier things have happened.
       NOTREACHED();
       return;
     }
-    if (!maybe.FromJust()) {
+    if (!maybe_deleted.FromJust()) {
       // Deletion can *fail* in certain cases, such as when the script does
       // Object.freeze(chrome).
       return;
     }
-    SetProperty(context, object, property, new_field);
+    auto maybe_set = object->CreateDataProperty(context, property, new_field);
+    // Setting a new value can fail in multiple scenarios. Bail out if it does.
+    if (!maybe_set.IsJust() || !maybe_set.FromJust())
+      return;
   } else {
     NOTREACHED();
   }
