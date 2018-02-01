@@ -162,15 +162,16 @@ class PLATFORM_EXPORT TaskQueueManager
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
-  RealTimeDomain* real_time_domain() const { return real_time_domain_.get(); }
+  RealTimeDomain* real_time_domain() const {
+    return main_thread_only().real_time_domain.get();
+  }
 
   LazyNow CreateLazyNow() const;
 
   // Returns the currently executing TaskQueue if any. Must be called on the
   // thread this class was created on.
   internal::TaskQueueImpl* currently_executing_task_queue() const {
-    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-    return currently_executing_task_queue_;
+    return main_thread_only().currently_executing_task_queue;
   }
 
   // Return number of pending tasks in task queues.
@@ -243,15 +244,16 @@ class PLATFORM_EXPORT TaskQueueManager
 
  protected:
   // Protected functions for testing.
-
-  size_t ActiveQueuesCount() { return active_queues_.size(); }
+  size_t ActiveQueuesCount() { return main_thread_only().active_queues.size(); }
 
   size_t QueuesToShutdownCount() {
     TakeQueuesToGracefullyShutdownFromHelper();
-    return queues_to_gracefully_shutdown_.size();
+    return main_thread_only().queues_to_gracefully_shutdown.size();
   }
 
-  size_t QueuesToDeleteCount() { return queues_to_delete_.size(); }
+  size_t QueuesToDeleteCount() {
+    return main_thread_only().queues_to_delete.size();
+  }
 
   void SetRandomSeed(uint64_t seed);
 
@@ -309,9 +311,8 @@ class PLATFORM_EXPORT TaskQueueManager
   };
   using NonNestableTaskDeque = WTF::Deque<NonNestableTask, 8>;
 
-  // TODO(alexclarke): Move more things into MainThreadOnly
   struct MainThreadOnly {
-    MainThreadOnly() = default;
+    MainThreadOnly();
 
     int nesting_depth = 0;
     NonNestableTaskDeque non_nestable_task_queue;
@@ -319,6 +320,43 @@ class PLATFORM_EXPORT TaskQueueManager
     // available.
     base::debug::CrashKeyString* file_name_crash_key = nullptr;
     base::debug::CrashKeyString* function_name_crash_key = nullptr;
+
+    std::mt19937_64 random_generator;
+    std::uniform_real_distribution<double> uniform_distribution;
+
+    internal::TaskQueueSelector selector;
+    base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
+    base::ObserverList<TaskTimeObserver> task_time_observers;
+    std::set<TimeDomain*> time_domains;
+    std::unique_ptr<RealTimeDomain> real_time_domain;
+
+    // List of task queues managed by this TaskQueueManager.
+    // - active_queues contains queues that are still running tasks.
+    //   Most often they are owned by relevant TaskQueues, but
+    //   queues_to_gracefully_shutdown_ are included here too.
+    // - queues_to_gracefully_shutdown contains queues which should be deleted
+    //   when they become empty.
+    // - queues_to_delete contains soon-to-be-deleted queues, because some
+    //   internal scheduling code does not expect queues to be pulled
+    //   from underneath.
+
+    std::set<internal::TaskQueueImpl*> active_queues;
+    std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
+        queues_to_gracefully_shutdown;
+    std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
+        queues_to_delete;
+
+    bool task_was_run_on_quiescence_monitored_queue = false;
+
+    NextDelayedDoWork next_delayed_do_work;
+
+    int work_batch_size = 1;
+    size_t task_count = 0;
+
+    // NOT OWNED
+    internal::TaskQueueImpl* currently_executing_task_queue = nullptr;
+
+    Observer* observer = nullptr;  // NOT OWNED
   };
 
   // TaskQueueSelector::Observer:
@@ -411,39 +449,13 @@ class PLATFORM_EXPORT TaskQueueManager
 
   bool ShouldRecordCPUTimeForTask();
 
-  std::set<TimeDomain*> time_domains_;
-  std::unique_ptr<RealTimeDomain> real_time_domain_;
-
-  // List of task queues managed by this TaskQueueManager.
-  // - active_queues contains queues that are still running tasks.
-  //   Most often they are owned by relevant TaskQueues, but
-  //   queues_to_gracefully_shutdown_ are included here too.
-  // - queues_to_gracefully_shutdown contains queues which should be deleted
-  //   when they become empty.
-  // - queues_to_delete contains soon-to-be-deleted queues, because some
-  //   internal scheduling code does not expect queues to be pulled
-  //   from underneath.
-
-  std::set<internal::TaskQueueImpl*> active_queues_;
-  std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
-      queues_to_gracefully_shutdown_;
-  std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
-      queues_to_delete_;
-
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_shutdown_helper_;
 
   internal::EnqueueOrderGenerator enqueue_order_generator_;
   base::debug::TaskAnnotator task_annotator_;
 
-  THREAD_CHECKER(main_thread_checker_);
   std::unique_ptr<internal::ThreadController> controller_;
-  internal::TaskQueueSelector selector_;
-
-  std::mt19937_64 random_generator_;
-  std::uniform_real_distribution<double> uniform_distribution_;
-
-  bool task_was_run_on_quiescence_monitored_queue_ = false;
 
   mutable base::Lock any_thread_lock_;
   AnyThread any_thread_;
@@ -463,6 +475,7 @@ class PLATFORM_EXPORT TaskQueueManager
 
   int32_t memory_corruption_sentinel_;
 
+  THREAD_CHECKER(main_thread_checker_);
   MainThreadOnly main_thread_only_;
   MainThreadOnly& main_thread_only() {
     DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -473,19 +486,6 @@ class PLATFORM_EXPORT TaskQueueManager
     return main_thread_only_;
   }
 
-  NextDelayedDoWork next_delayed_do_work_;
-
-  int work_batch_size_ = 1;
-  size_t task_count_ = 0;
-
-  base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
-
-  base::ObserverList<TaskTimeObserver> task_time_observers_;
-
-  // NOT OWNED
-  internal::TaskQueueImpl* currently_executing_task_queue_ = nullptr;
-
-  Observer* observer_ = nullptr;  // NOT OWNED
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);

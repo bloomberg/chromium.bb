@@ -157,7 +157,7 @@ class TaskQueueManagerTest : public ::testing::Test {
   }
 
   base::TimeTicks next_delayed_do_work_time() const {
-    return manager_->next_delayed_do_work_.run_time();
+    return manager_->main_thread_only().next_delayed_do_work.run_time();
   }
 
   EnqueueOrder GetNextSequenceNumber() const {
@@ -175,7 +175,7 @@ class TaskQueueManagerTest : public ::testing::Test {
   void RunUntilIdle(base::Closure per_run_time_callback) {
     for (;;) {
       // Advance time if we've run out of immediate work to do.
-      if (manager_->selector_.EnabledWorkQueuesEmpty()) {
+      if (manager_->main_thread_only().selector.EnabledWorkQueuesEmpty()) {
         base::TimeTicks run_time;
         if (manager_->real_time_domain()->NextScheduledRunTime(&run_time)) {
           now_src_.SetNowTicks(run_time);
