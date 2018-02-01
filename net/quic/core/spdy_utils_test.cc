@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_string_piece.h"
@@ -300,152 +301,282 @@ TEST_F(CopyAndValidateTrailers, DuplicateCookies) {
           Pair("key", "value")));
 }
 
-using GetPromisedUrlFromHeaderBlock = QuicTest;
+using GetPromisedUrlFromHeaders = QuicTest;
 
-TEST_F(GetPromisedUrlFromHeaderBlock, Basic) {
+TEST_F(GetPromisedUrlFromHeaders, Basic) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":scheme"] = "https";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":authority"] = "www.google.com";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":path"] = "/index.html";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers),
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers),
             "https://www.google.com/index.html");
   headers["key1"] = "value1";
   headers["key2"] = "value2";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers),
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers),
             "https://www.google.com/index.html");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, Connect) {
+TEST_F(GetPromisedUrlFromHeaders, Connect) {
   SpdyHeaderBlock headers;
   headers[":method"] = "CONNECT";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":authority"] = "www.google.com";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":scheme"] = "https";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":path"] = "https";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, UnsupportedFileScheme) {
+TEST_F(GetPromisedUrlFromHeaders, UnsupportedFileScheme) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "file";
   headers[":authority"] = "localhost";
   headers[":path"] = "/etc/password";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":authority"] = "";
   headers[":path"] = "/C:/Windows/System32/Config/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, EmptySchemeAndInvalidAuthority) {
+TEST_F(GetPromisedUrlFromHeaders, EmptySchemeAndInvalidAuthority) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "";
   headers[":authority"] = "https://www.google.com";
   headers[":path"] = "/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, SchemeWithAuthority) {
+TEST_F(GetPromisedUrlFromHeaders, SchemeWithAuthority) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https://www.google.com";
   headers[":authority"] = "www.google.com";
   headers[":path"] = "/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, InvalidScheme) {
+TEST_F(GetPromisedUrlFromHeaders, InvalidScheme) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https://";
   headers[":authority"] = "www.google.com";
   headers[":path"] = "/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, EmptyAuthority) {
+TEST_F(GetPromisedUrlFromHeaders, EmptyAuthority) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https";
   headers[":authority"] = "";
   headers[":path"] = "/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, EmptyAuthorityAndInvalidPath) {
+TEST_F(GetPromisedUrlFromHeaders, EmptyAuthorityAndInvalidPath) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https";
   headers[":authority"] = "";
   headers[":path"] = "www.google.com/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, AuthorityWithPath) {
+TEST_F(GetPromisedUrlFromHeaders, AuthorityWithPath) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https";
   headers[":authority"] = "www.google.com/";
   headers[":path"] = "/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, EmptyPath) {
+TEST_F(GetPromisedUrlFromHeaders, EmptyPath) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https";
   headers[":authority"] = "www.google.com";
   headers[":path"] = "";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, InvalidPath) {
+TEST_F(GetPromisedUrlFromHeaders, InvalidPath) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":scheme"] = "https";
   headers[":authority"] = "www.google";
   headers[":path"] = ".com/";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, Canonicalize) {
+TEST_F(GetPromisedUrlFromHeaders, Canonicalize) {
   SpdyHeaderBlock headers;
-  headers[":method"] = "GET";
+  headers[":method"] = "HEAD";
+
   headers[":scheme"] = "hTtPs";
   headers[":authority"] = "Www.gOo-Gle.Com:000003278";
   headers[":path"] = "/pAth/To/reSOurce";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers),
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers),
             "https://www.goo-gle.com:3278/pAth/To/reSOurce");
+
+  headers[":scheme"] = "http";
+  headers[":authority"] = "www.google.com";
+  headers[":path"] = "/";
+  EXPECT_EQ("http://www.google.com/",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "hTtPs";
+  headers[":authority"] = "wWw.gOo-gLE.cOm";
+  headers[":path"] = "/fOOo/baRR";
+  EXPECT_EQ("https://www.goo-gle.com/fOOo/baRR",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "https";
+  headers[":authority"] = "foo bar";
+  headers[":path"] = "/foo/bar/baz";
+  EXPECT_EQ("https://foo%20bar/foo/bar/baz",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "http";
+  headers[":authority"] = "foo.com:0000070";
+  headers[":path"] = "/e/";
+  EXPECT_EQ("http://foo.com:70/e/",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "http";
+  headers[":authority"] = "0300.0250.00.01:0070";
+  headers[":path"] = "/e/";
+  EXPECT_EQ("http://192.168.0.1:70/e/",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "http";
+  headers[":authority"] = "0300.0250.00.01:0070";
+  headers[":path"] = "/e/";
+  EXPECT_EQ("http://192.168.0.1:70/e/",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "http";
+  headers[":authority"] = "0xC0a80001";
+  headers[":path"] = "/";
+  EXPECT_EQ("http://192.168.0.1/",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
+
+  headers[":scheme"] = "https";
+  headers[":authority"] = "[::ffff:0xC0.0Xa8.0x0.0x1]";
+  headers[":path"] = "/";
+  EXPECT_EQ("https://[::ffff:c0a8:1]/",
+            SpdyUtils::GetPromisedUrlFromHeaders(headers));
 }
 
-using GetHostNameFromHeaderBlock = QuicTest;
+TEST_F(GetPromisedUrlFromHeaders, FuzzAcceptAndReject) {
+  // Test acception/rejection of headers with all possible combinations of three
+  // strings chosen from a set of strings as the ":scheme", ":authority", and
+  // ":path" header values.
+  // |input_headers| is an array of pairs. The first value of each pair is the
+  // string that will be used as a header value. The second value of each pair
+  // is a bitfield where the lowest 3 bits indicate for which headers that
+  // string is valid (in a PUSH_PROMISE). For example, the string "http" would
+  // be valid for both the ":scheme" and ":authority" headers, so the bitfield
+  // paired with it is set to SCHEME | AUTH.
+  const unsigned char SCHEME = (1u << 0);
+  const unsigned char AUTH = (1u << 1);
+  const unsigned char PATH = (1u << 2);
+  const std::pair<const char*, unsigned char> input_headers[] = {
+      {"http", SCHEME | AUTH},
+      {"https", SCHEME | AUTH},
+      {"hTtP", SCHEME | AUTH},
+      {"HTTPS", SCHEME | AUTH},
+      {"www.google.com", AUTH},
+      {"90af90e0", AUTH},
+      {"12foo%20-bar:00001233", AUTH},
+      {"GOO\u200b\u2060\ufeffgoo", AUTH},
+      {"192.168.0.5", AUTH},
+      {"[::ffff:192.168.0.1.]", AUTH},
+      {"http:", AUTH},
+      {"bife l", AUTH},
+      {"/", PATH},
+      {"/foo/bar/baz", PATH},
+      {"/%20-2DVdkj.cie/foe_.iif/", PATH},
+      {"http://", 0},
+      {":443", 0},
+      {":80/eddd", 0},
+      {"google.com:-0", 0},
+      {"google.com:65536", 0},
+      {"http://google.com", 0},
+      {"http://google.com:39", 0},
+      {"//google.com/foo", 0},
+      {".com/", 0},
+      {"http://www.google.com/", 0},
+      {"http://foo:439", 0},
+      {"[::ffff:192.168", 0},
+      {"]/", 0},
+      {"//", 0}};
 
-TEST_F(GetHostNameFromHeaderBlock, NormalUsage) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(input_headers); ++i) {
+    headers[":scheme"] = input_headers[i].first;
+    bool should_accept = (input_headers[i].second & SCHEME);
+    for (size_t j = 0; j < QUIC_ARRAYSIZE(input_headers); ++j) {
+      headers[":authority"] = input_headers[j].first;
+      bool should_accept_2 = should_accept && (input_headers[j].second & AUTH);
+      for (size_t k = 0; k < QUIC_ARRAYSIZE(input_headers); ++k) {
+        headers[":path"] = input_headers[k].first;
+        // |should_accept_3| indicates whether or not GetPushPromiseUrl() is
+        // expected to accept this input combination.
+        bool should_accept_3 =
+            should_accept_2 && (input_headers[k].second & PATH);
+
+        std::string url = SpdyUtils::GetPromisedUrlFromHeaders(headers);
+
+        ::testing::AssertionResult result = ::testing::AssertionSuccess();
+        if (url.empty() == should_accept_3) {
+          result = ::testing::AssertionFailure()
+                   << "GetPushPromiseUrl() accepted/rejected the inputs when "
+                      "it shouldn't have."
+                   << std::endl
+                   << "     scheme: " << input_headers[i].first << std::endl
+                   << "  authority: " << input_headers[j].first << std::endl
+                   << "       path: " << input_headers[k].first << std::endl
+                   << "Output: " << url << std::endl;
+        }
+        ASSERT_TRUE(result);
+      }
+    }
+  }
+}
+
+using GetPromisedHostNameFromHeaders = QuicTest;
+
+TEST_F(GetPromisedHostNameFromHeaders, NormalUsage) {
+  SpdyHeaderBlock headers;
+  headers[":method"] = "GET";
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "");
   headers[":scheme"] = "https";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "");
   headers[":authority"] = "www.google.com";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "");
   headers[":path"] = "/index.html";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers),
+            "www.google.com");
   headers["key1"] = "value1";
   headers["key2"] = "value2";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers),
+            "www.google.com");
   headers[":authority"] = "www.google.com:6666";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers),
+            "www.google.com");
   headers[":authority"] = "192.168.1.1";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "192.168.1.1");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "192.168.1.1");
   headers[":authority"] = "192.168.1.1:6666";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "192.168.1.1");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "192.168.1.1");
 }
 
 using PopulateHeaderBlockFromUrl = QuicTest;
