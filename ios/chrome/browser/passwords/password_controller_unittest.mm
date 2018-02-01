@@ -1557,7 +1557,7 @@ TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
 // Tests that a touchend event from a button which contains in a password form
 // works as a submission indicator for this password form.
 TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
-  // Use a mock LogManager to detect that OnInPageNavigation has been
+  // Use a mock LogManager to detect that OnSameDocumentNavigation has been
   // called. TODO(crbug.com/598672): this is a hack, we should modularize the
   // code better to allow proper unit-testing.
   MockLogManager log_manager;
@@ -1565,7 +1565,7 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
       .WillRepeatedly(Return(&log_manager));
   EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
   const char kExpectedMessage[] =
-      "Message: \"PasswordManager::OnInPageNavigation\"\n";
+      "Message: \"PasswordManager::OnSameDocumentNavigation\"\n";
 
   // The standard pattern is to use a __block variable WaitUntilCondition but
   // __block variable can't be captured in C++ lambda, so as workaround it's

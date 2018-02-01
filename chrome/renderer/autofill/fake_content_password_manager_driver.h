@@ -67,11 +67,13 @@ class FakeContentPasswordManagerDriver
     return password_form_submitted_;
   }
 
-  bool called_inpage_navigation() const { return called_inpage_navigation_; }
+  bool called_same_document_navigation() const {
+    return called_same_document_navigation_;
+  }
 
   const base::Optional<autofill::PasswordForm>&
-  password_form_inpage_navigation() const {
-    return password_form_inpage_navigation_;
+  password_form_same_document_navigation() const {
+    return password_form_same_document_navigation_;
   }
 
   bool called_password_forms_parsed() const {
@@ -164,7 +166,8 @@ class FakeContentPasswordManagerDriver
   void PasswordFormSubmitted(
       const autofill::PasswordForm& password_form) override;
 
-  void InPageNavigation(const autofill::PasswordForm& password_form) override;
+  void SameDocumentNavigation(
+      const autofill::PasswordForm& password_form) override;
 
   void PresaveGeneratedPassword(
       const autofill::PasswordForm& password_form) override;
@@ -213,10 +216,11 @@ class FakeContentPasswordManagerDriver
   bool called_password_form_submitted_ = false;
   // Records data received via PasswordFormSubmitted() call.
   base::Optional<autofill::PasswordForm> password_form_submitted_;
-  // Records whether InPageNavigation() gets called.
-  bool called_inpage_navigation_ = false;
-  // Records data received via InPageNavigation() call.
-  base::Optional<autofill::PasswordForm> password_form_inpage_navigation_;
+  // Records whether SameDocumentNavigation() gets called.
+  bool called_same_document_navigation_ = false;
+  // Records data received via SameDocumentNavigation() call.
+  base::Optional<autofill::PasswordForm>
+      password_form_same_document_navigation_;
   // Records whether PasswordFormsParsed() gets called.
   bool called_password_forms_parsed_ = false;
   // Records if the list received via PasswordFormsParsed() call was empty.

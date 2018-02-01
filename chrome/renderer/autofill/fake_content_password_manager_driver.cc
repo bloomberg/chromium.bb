@@ -35,10 +35,10 @@ void FakeContentPasswordManagerDriver::PasswordFormSubmitted(
   password_form_submitted_ = password_form;
 }
 
-void FakeContentPasswordManagerDriver::InPageNavigation(
+void FakeContentPasswordManagerDriver::SameDocumentNavigation(
     const autofill::PasswordForm& password_form) {
-  called_inpage_navigation_ = true;
-  password_form_inpage_navigation_ = password_form;
+  called_same_document_navigation_ = true;
+  password_form_same_document_navigation_ = password_form;
 }
 
 void FakeContentPasswordManagerDriver::PresaveGeneratedPassword(

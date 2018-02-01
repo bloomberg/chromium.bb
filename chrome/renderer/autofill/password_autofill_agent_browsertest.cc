@@ -244,7 +244,7 @@ void SetElementReadOnly(WebInputElement& element, bool read_only) {
 
 enum PasswordFormSourceType {
   PasswordFormSubmitted,
-  PasswordFormInPageNavigation,
+  PasswordFormSameDocumentNavigation,
 };
 
 enum class FieldChangeSource { USER, AUTOFILL, USER_AUTOFILL };
@@ -591,11 +591,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       ASSERT_TRUE(static_cast<bool>(fake_driver_.password_form_submitted()));
       form = *(fake_driver_.password_form_submitted());
     } else {
-      ASSERT_EQ(PasswordFormInPageNavigation, expected_type);
-      ASSERT_TRUE(fake_driver_.called_inpage_navigation());
-      ASSERT_TRUE(
-          static_cast<bool>(fake_driver_.password_form_inpage_navigation()));
-      form = *(fake_driver_.password_form_inpage_navigation());
+      ASSERT_EQ(PasswordFormSameDocumentNavigation, expected_type);
+      ASSERT_TRUE(fake_driver_.called_same_document_navigation());
+      ASSERT_TRUE(static_cast<bool>(
+          fake_driver_.password_form_same_document_navigation()));
+      form = *(fake_driver_.password_form_same_document_navigation());
     }
 
     size_t unchecked_masks = expected_properties_masks.size();
@@ -611,17 +611,17 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         << "Some expected masks are missed in FormData";
   }
 
-  void ExpectInPageNavigationWithUsernameAndPasswords(
+  void ExpectSameDocumentNavigationWithUsernameAndPasswords(
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value,
       PasswordForm::SubmissionIndicatorEvent event) {
     base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(fake_driver_.called_inpage_navigation());
-    ASSERT_TRUE(
-        static_cast<bool>(fake_driver_.password_form_inpage_navigation()));
+    ASSERT_TRUE(fake_driver_.called_same_document_navigation());
+    ASSERT_TRUE(static_cast<bool>(
+        fake_driver_.password_form_same_document_navigation()));
     const autofill::PasswordForm& form =
-        *(fake_driver_.password_form_inpage_navigation());
+        *(fake_driver_.password_form_same_document_navigation());
     EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
     EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
@@ -1892,7 +1892,8 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnSubmit) {
   ExpectFieldPropertiesMasks(PasswordFormSubmitted, expected_properties_masks);
 }
 
-TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation) {
+TEST_F(PasswordAutofillAgentTest,
+       RememberFieldPropertiesOnSameDocumentNavigation) {
   LoadHTML(kNoFormHTML);
   UpdateUsernameAndPasswordElements();
 
@@ -1914,11 +1915,12 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation) {
   expected_properties_masks[ASCIIToUTF16("password")] =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
-  ExpectFieldPropertiesMasks(PasswordFormInPageNavigation,
+  ExpectFieldPropertiesMasks(PasswordFormSameDocumentNavigation,
                              expected_properties_masks);
 }
 
-TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation_2) {
+TEST_F(PasswordAutofillAgentTest,
+       RememberFieldPropertiesOnSameDocumentNavigation_2) {
   LoadHTML(kNoFormHTML);
   UpdateUsernameAndPasswordElements();
 
@@ -1942,7 +1944,7 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation_2) {
   expected_properties_masks[ASCIIToUTF16("password")] =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
-  ExpectFieldPropertiesMasks(PasswordFormInPageNavigation,
+  ExpectFieldPropertiesMasks(PasswordFormSameDocumentNavigation,
                              expected_properties_masks);
 }
 
@@ -2505,7 +2507,7 @@ TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {
 
   FireAjaxSucceeded();
 
-  ExpectInPageNavigationWithUsernameAndPasswords(
+  ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Bob", "mypassword", "",
       PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
@@ -2529,7 +2531,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   base::RunLoop().RunUntilIdle();
 
-  ExpectInPageNavigationWithUsernameAndPasswords(
+  ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Bob", "mypassword", "",
       PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
@@ -2575,7 +2577,7 @@ TEST_F(PasswordAutofillAgentTest,
   FireAjaxSucceeded();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_same_document_navigation());
   EXPECT_FALSE(fake_driver_.called_password_form_submitted());
 }
 
@@ -2604,7 +2606,7 @@ TEST_F(PasswordAutofillAgentTest,
   ExecuteJavaScriptForTests(show_captcha.c_str());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_same_document_navigation());
   EXPECT_FALSE(fake_driver_.called_password_form_submitted());
 }
 
@@ -2637,7 +2639,7 @@ TEST_F(PasswordAutofillAgentTest,
   FireAjaxSucceeded();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_same_document_navigation());
   EXPECT_FALSE(fake_driver_.called_password_form_submitted());
 }
 
@@ -2668,7 +2670,7 @@ TEST_F(PasswordAutofillAgentTest,
   captcha_element.SetAttribute("style", "display:inline;");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_same_document_navigation());
   EXPECT_FALSE(fake_driver_.called_password_form_submitted());
 }
 
@@ -2905,7 +2907,7 @@ TEST_F(PasswordAutofillAgentTest,
 
     FireAjaxSucceeded();
 
-    ExpectInPageNavigationWithUsernameAndPasswords(
+    ExpectSameDocumentNavigationWithUsernameAndPasswords(
         "Alice", "mypassword", "",
         PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
   }
@@ -2931,7 +2933,7 @@ TEST_F(PasswordAutofillAgentTest,
   ExecuteJavaScriptForTests(hide_elements.c_str());
   base::RunLoop().RunUntilIdle();
 
-  ExpectInPageNavigationWithUsernameAndPasswords(
+  ExpectSameDocumentNavigationWithUsernameAndPasswords(
       "Alice", "mypassword", "",
       PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
@@ -3085,7 +3087,8 @@ TEST_F(PasswordAutofillAgentTest, SuggestWhenJavaScriptUpdatesFieldNames) {
 
 // Checks that a same-document navigation form submission could have an empty
 // username.
-TEST_F(PasswordAutofillAgentTest, InPageNavigationSubmissionUsernameIsEmpty) {
+TEST_F(PasswordAutofillAgentTest,
+       SameDocumentNavigationSubmissionUsernameIsEmpty) {
   username_element_.SetValue(WebString());
   SimulatePasswordTyping("random");
 
@@ -3098,7 +3101,7 @@ TEST_F(PasswordAutofillAgentTest, InPageNavigationSubmissionUsernameIsEmpty) {
 
   FireDidCommitProvisionalLoad();
 
-  ExpectInPageNavigationWithUsernameAndPasswords(
+  ExpectSameDocumentNavigationWithUsernameAndPasswords(
       std::string(), "random", std::string(),
       PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
 }
