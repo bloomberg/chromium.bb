@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,11 +112,11 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
     return;
   }
 
-  // When use this "sink" within browser, please note it will have a different
-  // ID when it is sent to the extension, because it derives a different sink ID
-  // using the given sink ID.
-  MediaSink sink(description_data.unique_id, description_data.friendly_name,
-                 SinkIconType::GENERIC, MediaRouteProviderId::EXTENSION);
+  std::string processed_uuid =
+      MediaSinkInternal::ProcessDeviceUUID(description_data.unique_id);
+  std::string sink_id = base::StringPrintf("dial:<%s>", processed_uuid.c_str());
+  MediaSink sink(sink_id, description_data.friendly_name, SinkIconType::GENERIC,
+                 MediaRouteProviderId::EXTENSION);
   DialSinkExtraData extra_data;
   extra_data.app_url = description_data.app_url;
   extra_data.model_name = description_data.model_name;
@@ -126,7 +127,6 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
   }
 
   MediaSinkInternal dial_sink(sink, extra_data);
-  std::string sink_id = dial_sink.sink().id();
   current_sinks_.insert_or_assign(sink_id, dial_sink);
   if (dial_sink_added_cb_)
     dial_sink_added_cb_.Run(dial_sink);
