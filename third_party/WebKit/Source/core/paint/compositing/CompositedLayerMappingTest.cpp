@@ -2475,47 +2475,4 @@ TEST_P(CompositedLayerMappingTest, ForegroundLayerSizing) {
   EXPECT_EQ(FloatSize(100, 100), mapping->ForegroundLayer()->Size());
 }
 
-TEST_P(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
-  // This test verifies that when subpixel accumulation causes snapping it
-  // applies to both the scrolling and scrolling contents layers. Verify that
-  // the mapping doesn't have any vertical scrolling introduced as a result of
-  // the snapping behavior. https://crbug.com/801381.
-  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-      true);
-
-  // The values below are chosen so that the subpixel accumulation causes the
-  // pixel snapped height to be increased relative to snapping without it.
-  SetBodyInnerHTML(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body {
-        margin: 0;
-      }
-      #scroller {
-        position: relative;
-        top: 0.5625px;
-        width: 200px;
-        height: 200.8125px;
-        overflow: auto;
-      }
-      #space {
-        width: 1000px;
-        height: 200.8125px;
-      }
-    </style>
-    <div id="scroller">
-      <div id="space"></div>
-    </div>
-  )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  auto* mapping = ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))
-                      ->Layer()
-                      ->GetCompositedLayerMapping();
-  ASSERT_TRUE(mapping);
-  ASSERT_TRUE(mapping->ScrollingLayer());
-  ASSERT_TRUE(mapping->ScrollingContentsLayer());
-  EXPECT_EQ(mapping->ScrollingLayer()->Size().Height(),
-            mapping->ScrollingContentsLayer()->Size().Height());
-}
-
 }  // namespace blink
