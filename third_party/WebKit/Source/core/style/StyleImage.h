@@ -53,9 +53,8 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
 
   // Returns a CSSValue representing the origin <image> value. May not be the
   // actual CSSValue from which this StyleImage was originally created if the
-  // CSSValue can be recreated easily (like for StyleFetchedImage and
-  // StyleInvalidImage) and does not contain per-client state (like for
-  // StyleGeneratedImage.)
+  // CSSValue can be recreated easily (like for StyleFetchedImage) and does not
+  // contain per-client state (like for StyleGeneratedImage.)
   virtual CSSValue* CssValue() const = 0;
 
   // Returns a CSSValue suitable for using as part of a computed style
@@ -136,7 +135,6 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   ALWAYS_INLINE bool IsImageResourceSet() const {
     return is_image_resource_set_;
   }
-  ALWAYS_INLINE bool IsInvalidImage() const { return is_invalid_image_; }
   ALWAYS_INLINE bool IsPaintImage() const { return is_paint_image_; }
 
   virtual void Trace(blink::Visitor* visitor) {}
@@ -147,13 +145,11 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
         is_pending_image_(false),
         is_generated_image_(false),
         is_image_resource_set_(false),
-        is_invalid_image_(false),
         is_paint_image_(false) {}
   bool is_image_resource_ : 1;
   bool is_pending_image_ : 1;
   bool is_generated_image_ : 1;
   bool is_image_resource_set_ : 1;
-  bool is_invalid_image_ : 1;
   bool is_paint_image_ : 1;
 
   FloatSize ApplyZoom(const FloatSize&, float multiplier) const;

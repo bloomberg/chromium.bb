@@ -25,7 +25,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleFetchedImage.h"
-#include "core/style/StyleInvalidImage.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -78,14 +77,7 @@ StyleImage* CSSImageValue::CacheImage(
         placeholder_image_request_type == FetchParameters::kAllowPlaceholder)
       document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
-    ImageResourceContent* cached_image =
-        ImageResourceContent::Fetch(params, document.Fetcher());
-    if (cached_image && !cached_image->ErrorOccurred()) {
-      cached_image_ =
-          StyleFetchedImage::Create(cached_image, document, params.Url());
-    } else {
-      cached_image_ = StyleInvalidImage::Create(Url());
-    }
+    cached_image_ = StyleFetchedImage::Create(document, params);
   }
 
   return cached_image_.Get();

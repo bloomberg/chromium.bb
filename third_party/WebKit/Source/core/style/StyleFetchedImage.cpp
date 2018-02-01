@@ -33,11 +33,11 @@
 
 namespace blink {
 
-StyleFetchedImage::StyleFetchedImage(ImageResourceContent* image,
-                                     const Document& document,
-                                     const KURL& url)
-    : image_(image), document_(&document), url_(url) {
+StyleFetchedImage::StyleFetchedImage(const Document& document,
+                                     FetchParameters& params)
+    : document_(&document), url_(params.Url()) {
   is_image_resource_ = true;
+  image_ = ImageResourceContent::Fetch(params, document_->Fetcher());
   image_->AddObserver(this);
   // ResourceFetcher is not determined from StyleFetchedImage and it is
   // impossible to send a request for refetching.

@@ -32,7 +32,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleFetchedImageSet.h"
-#include "core/style/StyleInvalidImage.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -131,14 +130,9 @@ StyleImage* CSSImageSetValue::CacheImage(
         placeholder_image_request_type == FetchParameters::kAllowPlaceholder)
       document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
-    ImageResourceContent* cached_image =
-        ImageResourceContent::Fetch(params, document.Fetcher());
-    if (cached_image && !cached_image->ErrorOccurred()) {
-      cached_image_ = StyleFetchedImageSet::Create(
-          cached_image, image.scale_factor, this, params.Url());
-    } else {
-      cached_image_ = StyleInvalidImage::Create(image.image_url);
-    }
+    cached_image_ = StyleFetchedImageSet::Create(
+        ImageResourceContent::Fetch(params, document.Fetcher()),
+        image.scale_factor, this, params.Url());
     cached_scale_factor_ = device_scale_factor;
   }
 
