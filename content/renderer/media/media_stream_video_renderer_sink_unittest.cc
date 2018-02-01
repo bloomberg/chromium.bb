@@ -178,7 +178,7 @@ class MediaStreamVideoRendererSinkAsyncAddFrameReadyTest
   }
 
  protected:
-  std::vector<base::Closure> frame_ready_cbs_;
+  std::vector<base::OnceClosure> frame_ready_cbs_;
 };
 
 TEST_F(MediaStreamVideoRendererSinkAsyncAddFrameReadyTest,
@@ -190,7 +190,7 @@ TEST_F(MediaStreamVideoRendererSinkAsyncAddFrameReadyTest,
   ASSERT_EQ(1u, frame_ready_cbs_.size());
 
   EXPECT_CALL(*this, RepaintCallback(video_frame)).Times(1);
-  frame_ready_cbs_[0].Run();
+  std::move(frame_ready_cbs_[0]).Run();
   base::RunLoop().RunUntilIdle();
 
   media_stream_video_renderer_sink_->Stop();

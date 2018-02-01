@@ -41,7 +41,8 @@ class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
 
   // Callback used by MaybeCreateHardwareFrame to deliver a new VideoFrame
   // after it has been copied to GpuMemoryBuffers.
-  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> FrameReadyCB;
+  using FrameReadyCB =
+      base::OnceCallback<void(const scoped_refptr<VideoFrame>&)>;
 
   // Calls |cb| on |media_worker_pool| with a new VideoFrame containing only
   // mailboxes to native resources. |cb| will be destroyed on
@@ -52,7 +53,7 @@ class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
   // itself will passed to |cb|.
   virtual void MaybeCreateHardwareFrame(
       const scoped_refptr<VideoFrame>& video_frame,
-      const FrameReadyCB& frame_ready_cb);
+      FrameReadyCB frame_ready_cb);
 
   // Allows injection of a base::SimpleTestClock for testing.
   void SetTickClockForTesting(base::TickClock* tick_clock);

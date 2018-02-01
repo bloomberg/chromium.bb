@@ -1479,7 +1479,7 @@ class VideoRendererImplAsyncAddFrameReadyTest : public VideoRendererImplTest {
   }
 
  protected:
-  std::vector<base::Closure> frame_ready_cbs_;
+  std::vector<base::OnceClosure> frame_ready_cbs_;
 };
 
 TEST_F(VideoRendererImplAsyncAddFrameReadyTest, InitializeAndStartPlayingFrom) {
@@ -1495,7 +1495,7 @@ TEST_F(VideoRendererImplAsyncAddFrameReadyTest, InitializeAndStartPlayingFrom) {
 
   uint32_t frame_ready_index = 0;
   while (frame_ready_index < frame_ready_cbs_.size()) {
-    frame_ready_cbs_[frame_ready_index++].Run();
+    std::move(frame_ready_cbs_[frame_ready_index++]).Run();
     base::RunLoop().RunUntilIdle();
   }
   Destroy();
@@ -1508,7 +1508,7 @@ TEST_F(VideoRendererImplAsyncAddFrameReadyTest, WeakFactoryDiscardsOneFrame) {
   Flush();
   ASSERT_EQ(1u, frame_ready_cbs_.size());
   // This frame will be discarded.
-  frame_ready_cbs_.front().Run();
+  std::move(frame_ready_cbs_.front()).Run();
   Destroy();
 }
 
