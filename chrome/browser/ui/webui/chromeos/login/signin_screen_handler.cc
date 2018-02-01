@@ -1485,7 +1485,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());
     lock_screen_utils::SetKeyboardSettings(account_id);
-    if (delegate_ && load_wallpaper)
+    if (LoginDisplayHost::default_host() && load_wallpaper)
       LoginDisplayHost::default_host()->LoadWallpaper(account_id);
 
     bool use_24hour_clock = false;

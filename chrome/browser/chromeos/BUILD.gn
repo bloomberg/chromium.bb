@@ -1098,6 +1098,8 @@ source_set("chromeos") {
     "login/ui/login_display.h",
     "login/ui/login_display_host.cc",
     "login/ui/login_display_host.h",
+    "login/ui/login_display_host_common.cc",
+    "login/ui/login_display_host_common.h",
     "login/ui/login_display_host_views.cc",
     "login/ui/login_display_host_views.h",
     "login/ui/login_display_host_webui.cc",
