@@ -344,9 +344,9 @@ void BrowserCompositorMac::UpdateDelegatedFrameHostSurface(
   delegated_frame_host_surface_id_ =
       parent_local_surface_id_allocator_.GenerateId();
   delegated_frame_host_size_dip_ = size_dip;
+  delegated_frame_host_scale_factor_ = scale_factor;
   delegated_frame_host_size_pixels_ = gfx::ConvertSizeToPixel(
       delegated_frame_host_scale_factor_, delegated_frame_host_size_dip_);
-  delegated_frame_host_scale_factor_ = scale_factor;
 
   GetDelegatedFrameHost()->WasResized(
       cc::DeadlinePolicy::UseExistingDeadline());
