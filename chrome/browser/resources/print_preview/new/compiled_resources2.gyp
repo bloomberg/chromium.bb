@@ -193,7 +193,16 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '../compiled_resources2.gyp:native_layer',
         '../data/compiled_resources2.gyp:destination',
+        'destination_list_item',
         'print_preview_search_box',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'destination_list_item',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:search_highlight_utils',
+        '../data/compiled_resources2.gyp:destination',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

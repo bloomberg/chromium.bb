@@ -57,6 +57,7 @@
       'target_name': 'search_settings',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:search_highlight_utils',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
