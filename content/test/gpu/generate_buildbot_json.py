@@ -2558,12 +2558,12 @@ def remove_tester_configs_from_result(result):
 def add_common_test_properties(test, tester_config):
   if tester_config.get('use_gpu_trigger_script'):
     test['trigger_script'] = {
-      'script': '//content/test/gpu/trigger_gpu_test.py',
+      'script': '//testing/trigger_scripts/trigger_multiple_dimensions.py',
       'args': [
-        '--gpu-trigger-configs',
+        '--multiple-trigger-configs',
         json.dumps(tester_config['swarming_dimensions'] +
                    tester_config.get('alternate_swarming_dimensions', [])),
-        '--gpu-trigger-script-verbose',
+        '--multiple-dimension-script-verbose',
         'True'
       ],
     }
