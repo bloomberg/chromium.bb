@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
@@ -22,8 +23,6 @@
 namespace offline_pages {
 
 namespace {
-
-const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
 
 // Mirror of the OfflinePrefetchPageImportResult histogram enum so existing
 // entries can never be removed and new ones must be appended with new values.
@@ -90,7 +89,8 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
   base::FilePath archives_dir = offline_page_model->GetInternalArchiveDirectory(
       archive.client_id.name_space);
   base::FilePath dest_path =
-      archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension);
+      archives_dir.Append(base::GenerateGUID())
+          .AddExtension(OfflinePageUtils::kMHTMLExtension);
 
   // For PrefetchArchiveInfo, |url| is the original URL while
   // |final_archived_url| is the last committed URL which is set to empty when

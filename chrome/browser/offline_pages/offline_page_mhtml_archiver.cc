@@ -26,8 +26,6 @@
 
 namespace offline_pages {
 namespace {
-const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
-
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
   base::PostTaskWithTraitsAndReply(
@@ -120,7 +118,8 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   GURL url(web_contents_->GetLastCommittedURL());
   base::string16 title(web_contents_->GetTitle());
   base::FilePath file_path(
-      archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension));
+      archives_dir.Append(base::GenerateGUID())
+          .AddExtension(OfflinePageUtils::kMHTMLExtension));
   content::MHTMLGenerationParams params(file_path);
   params.use_binary_encoding = true;
   params.remove_popup_overlay = create_archive_params.remove_popup_overlay;

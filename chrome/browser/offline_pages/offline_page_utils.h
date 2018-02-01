@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "url/gurl.h"
@@ -51,6 +52,8 @@ class OfflinePageUtils {
     // All actions.
     ALL = 0xFFFF
   };
+
+  static const base::FilePath::CharType kMHTMLExtension[];
 
   // Callback to inform the duplicate checking result.
   using DuplicateCheckCallback = base::Callback<void(DuplicateCheckResult)>;
