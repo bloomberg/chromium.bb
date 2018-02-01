@@ -351,24 +351,29 @@ public class SafeBrowsingTest {
                 () -> mAwContents.evaluateJavaScriptOnInterstitialForTesting(script, callback));
     }
 
-    private void waitForInterstitialToLoad() throws Exception {
-        final String script = "document.readyState;";
+    private String evaluateJavaScriptOnInterstitialOnUiThreadSync(final String script)
+            throws Exception {
         final JavaScriptHelper helper = new JavaScriptHelper();
-
         final Callback<String> callback = value -> {
             helper.setValue(value);
             helper.notifyCalled();
         };
+        final int count = helper.getCallCount();
+        evaluateJavaScriptOnInterstitialOnUiThread(script, callback);
+        helper.waitForCallback(count);
+        return helper.getValue();
+    }
 
+    private void waitForInterstitialDomToLoad() throws Exception {
+        final String script = "document.readyState;";
         final String expected = "\"complete\"";
+
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    final int count = helper.getCallCount();
-                    evaluateJavaScriptOnInterstitialOnUiThread(script, callback);
-                    helper.waitForCallback(count);
-                    return expected.equals(helper.getValue());
+                    String value = evaluateJavaScriptOnInterstitialOnUiThreadSync(script);
+                    return expected.equals(value);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -562,7 +567,7 @@ public class SafeBrowsingTest {
     public void testSafeBrowsingProceedThroughInterstitialForMainFrame() throws Throwable {
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickVisitUnsafePage();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
@@ -574,7 +579,7 @@ public class SafeBrowsingTest {
     public void testSafeBrowsingProceedThroughInterstitialForSubresource() throws Throwable {
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickVisitUnsafePage();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
         assertTargetPageHasLoaded(IFRAME_EMBEDDER_BACKGROUND_COLOR);
@@ -588,7 +593,7 @@ public class SafeBrowsingTest {
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickBackToSafety();
         errorHelper.waitForCallback(errorCount);
         Assert.assertEquals(
@@ -606,7 +611,7 @@ public class SafeBrowsingTest {
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickBackToSafety();
         errorHelper.waitForCallback(errorCount);
         Assert.assertEquals(
@@ -624,7 +629,7 @@ public class SafeBrowsingTest {
         final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         waitForInterstitialToChangeTitle();
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickBackToSafety();
 
         // Make sure we navigate back to previous page
@@ -644,7 +649,7 @@ public class SafeBrowsingTest {
         final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         waitForInterstitialToChangeTitle();
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickBackToSafety();
 
         // Make sure we navigate back to previous page
@@ -732,7 +737,7 @@ public class SafeBrowsingTest {
         mAwContents.setCanShowBigInterstitial(false);
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         clickVisitUnsafePageQuietInterstitial();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
         assertTargetPageHasLoaded(PHISHING_PAGE_BACKGROUND_COLOR);
@@ -870,6 +875,54 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testSafeBrowsingOnSafeBrowsingHitHideReportingCheckbox() throws Throwable {
+        mContentsClient.setReporting(false);
+        loadGreenPage();
+        loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
+        waitForInterstitialDomToLoad();
+
+        Assert.assertFalse(getVisibilityByIdOnInterstitial("extended-reporting-opt-in"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingReportingCheckboxVisibleByDefault() throws Throwable {
+        loadGreenPage();
+        loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
+        waitForInterstitialDomToLoad();
+
+        Assert.assertTrue(getVisibilityByIdOnInterstitial("extended-reporting-opt-in"));
+    }
+
+    /**
+     * @return whether {@code domNodeId} is visible on the interstitial page.
+     * @throws Exception if the node cannot be found in the interstitial DOM or unable to evaluate
+     * JS.
+     */
+    private boolean getVisibilityByIdOnInterstitial(String domNodeId) throws Exception {
+        // clang-format off
+        final String script =
+                  "(function isNodeVisible(node) {"
+                + "  if (!node) return 'node not found';"
+                + "  return !node.classList.contains('hidden');"
+                + "})(document.getElementById('" + domNodeId + "'))";
+        // clang-format on
+
+        String value = evaluateJavaScriptOnInterstitialOnUiThreadSync(script);
+
+        if (value.equals("true")) {
+            return true;
+        } else if (value.equals("false")) {
+            return false;
+        } else {
+            throw new Exception("Node not found");
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testSafeBrowsingUserOptOutOverridesManifest() throws Throwable {
         AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(false);
         loadGreenPage();
@@ -901,7 +954,7 @@ public class SafeBrowsingTest {
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_MALWARE_URL);
         mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
     }
 
     @Test
@@ -913,7 +966,7 @@ public class SafeBrowsingTest {
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_PHISHING_URL);
         mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
     }
 
     @Test
@@ -983,7 +1036,7 @@ public class SafeBrowsingTest {
     private void loadInterstitialAndClickLink(String path, String linkId, String linkUrl)
             throws Exception {
         loadPathAndWaitForInterstitial(path);
-        waitForInterstitialToLoad();
+        waitForInterstitialDomToLoad();
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         clickLinkById(linkId);
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
