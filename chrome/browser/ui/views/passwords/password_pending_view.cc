@@ -422,6 +422,8 @@ void PasswordPendingView::ReplaceWithPromo() {
   RemoveAllChildViews(true);
   initially_focused_view_ = nullptr;
   SetLayoutManager(std::make_unique<views::FillLayout>());
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
   if (model()->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
     sign_in_promo_ = new PasswordSignInPromoView(model());
     AddChildView(sign_in_promo_);
