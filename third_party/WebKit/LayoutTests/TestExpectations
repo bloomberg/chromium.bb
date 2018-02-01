@@ -919,6 +919,7 @@ crbug.com/505364 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failur
 crbug.com/505364 external/wpt/css/css-scoping/css-scoping-shadow-slot-display-override.html [ Failure ]
 crbug.com/505364 external/wpt/css/css-scoping/css-scoping-shadow-slot-style.html [ Failure ]
 crbug.com/505364 external/wpt/css/css-scoping/css-scoping-shadow-nested-slot-display-override.html [ Failure ]
+crbug.com/505364 external/wpt/css/css-scoping/slotted-invalidation.html [ Failure ]
 crbug.com/505364 external/wpt/css/css-scoping/slotted-slot.html [ Failure ]
 
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
