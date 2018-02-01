@@ -67,6 +67,15 @@ class CONTENT_EXPORT ResourceHandler {
     // cancellation.
     virtual void OutOfBandCancel(int error_code, bool tell_renderer) = 0;
 
+    // Pauses/resumes reading response body if the resource is fetched from
+    // network. They could be no-ops if the resource is not fetched from
+    // network.
+    //
+    // It is allowed to call these methods before response body is available, or
+    // while the request is deferred.
+    virtual void PauseReadingBodyFromNet();
+    virtual void ResumeReadingBodyFromNet();
+
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
@@ -162,6 +171,8 @@ class CONTENT_EXPORT ResourceHandler {
   // Cancels the request when the class does not currently have ownership of the
   // ResourceController.
   void OutOfBandCancel(int error_code, bool tell_renderer);
+  void PauseReadingBodyFromNet();
+  void ResumeReadingBodyFromNet();
 
   net::URLRequest* request() const { return request_; }
 

@@ -405,11 +405,11 @@ void MojoAsyncResourceHandler::SetPriority(net::RequestPriority priority,
 }
 
 void MojoAsyncResourceHandler::PauseReadingBodyFromNet() {
-  NOTREACHED();
+  ResourceHandler::PauseReadingBodyFromNet();
 }
 
 void MojoAsyncResourceHandler::ResumeReadingBodyFromNet() {
-  NOTREACHED();
+  ResourceHandler::ResumeReadingBodyFromNet();
 }
 
 void MojoAsyncResourceHandler::OnWritableForTesting() {

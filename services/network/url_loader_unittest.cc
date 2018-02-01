@@ -13,7 +13,9 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -51,6 +53,9 @@
 namespace network {
 
 namespace {
+
+constexpr char kBodyReadFromNetBeforePausedHistogram[] =
+    "Network.URLLoader.BodyReadFromNetBeforePaused";
 
 static ResourceRequest CreateResourceRequest(const char* method,
                                              const GURL& url) {
@@ -171,6 +176,31 @@ class RequestInterceptor : public net::URLRequestInterceptor {
 
   DISALLOW_COPY_AND_ASSIGN(RequestInterceptor);
 };
+
+// Returns whether monitoring was successfully set up. If yes,
+// StopMonitorBodyReadFromNetBeforePausedHistogram() needs to be called later to
+// stop monitoring.
+//
+// |*output_sample| needs to stay valid until monitoring is stopped.
+WARN_UNUSED_RESULT bool StartMonitorBodyReadFromNetBeforePausedHistogram(
+    const base::RepeatingClosure& quit_closure,
+    base::HistogramBase::Sample* output_sample) {
+  return base::StatisticsRecorder::SetCallback(
+      kBodyReadFromNetBeforePausedHistogram,
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             base::HistogramBase::Sample* output,
+             base::HistogramBase::Sample sample) {
+            *output = sample;
+            quit_closure.Run();
+          },
+          quit_closure, output_sample));
+}
+
+void StopMonitorBodyReadFromNetBeforePausedHistogram() {
+  base::StatisticsRecorder::ClearCallback(
+      kBodyReadFromNetBeforePausedHistogram);
+}
 
 }  // namespace
 
@@ -754,6 +784,11 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContents = "This is the data as you requested.";
 
+  base::HistogramBase::Sample output_sample = -1;
+  base::RunLoop histogram_run_loop;
+  EXPECT_TRUE(StartMonitorBodyReadFromNetBeforePausedHistogram(
+      histogram_run_loop.QuitClosure(), &output_sample));
+
   net::EmbeddedTestServer server;
   net::test_server::ControllableHttpResponse response_controller(&server,
                                                                  kPath);
@@ -804,12 +839,23 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
 
   available_data = ReadBody();
   EXPECT_EQ(kBodyContents, available_data);
+
+  loader.reset();
+  client()->Unbind();
+  histogram_run_loop.Run();
+  EXPECT_EQ(0, output_sample);
+  StopMonitorBodyReadFromNetBeforePausedHistogram();
 }
 
 TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContentsFirstHalf = "This is the first half.";
   const char* const kBodyContentsSecondHalf = "This is the second half.";
+
+  base::HistogramBase::Sample output_sample = -1;
+  base::RunLoop histogram_run_loop;
+  EXPECT_TRUE(StartMonitorBodyReadFromNetBeforePausedHistogram(
+      histogram_run_loop.QuitClosure(), &output_sample));
 
   net::EmbeddedTestServer server;
   net::test_server::ControllableHttpResponse response_controller(&server,
@@ -851,11 +897,22 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
                 std::string(kBodyContentsSecondHalf),
             ReadBody());
+
+  loader.reset();
+  client()->Unbind();
+  histogram_run_loop.Run();
+  EXPECT_LE(0, output_sample);
+  StopMonitorBodyReadFromNetBeforePausedHistogram();
 }
 
 TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContentsFirstHalf = "This is the first half.";
+
+  base::HistogramBase::Sample output_sample = -1;
+  base::RunLoop histogram_run_loop;
+  EXPECT_TRUE(StartMonitorBodyReadFromNetBeforePausedHistogram(
+      histogram_run_loop.QuitClosure(), &output_sample));
 
   net::EmbeddedTestServer server;
   net::test_server::ControllableHttpResponse response_controller(&server,
@@ -890,12 +947,23 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   // made after the response body data pipe is closed.
   loader->ResumeReadingBodyFromNet();
   loader.FlushForTesting();
+
+  loader.reset();
+  client()->Unbind();
+  histogram_run_loop.Run();
+  EXPECT_EQ(0, output_sample);
+  StopMonitorBodyReadFromNetBeforePausedHistogram();
 }
 
 TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContentsFirstHalf = "This is the first half.";
   const char* const kBodyContentsSecondHalf = "This is the second half.";
+
+  base::HistogramBase::Sample output_sample = -1;
+  base::RunLoop histogram_run_loop;
+  EXPECT_TRUE(StartMonitorBodyReadFromNetBeforePausedHistogram(
+      histogram_run_loop.QuitClosure(), &output_sample));
 
   net::EmbeddedTestServer server;
   net::test_server::ControllableHttpResponse response_controller(&server,
@@ -943,6 +1011,12 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
                 std::string(kBodyContentsSecondHalf),
             ReadBody());
+
+  loader.reset();
+  client()->Unbind();
+  histogram_run_loop.Run();
+  EXPECT_LE(0, output_sample);
+  StopMonitorBodyReadFromNetBeforePausedHistogram();
 }
 
 TEST_F(URLLoaderTest, UploadBytes) {
