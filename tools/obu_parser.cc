@@ -153,10 +153,8 @@ void PrintObuHeader(const ObuHeader *header) {
 }
 
 bool DumpObu(const uint8_t *data, int length) {
-  const int kObuLengthFieldSizeBytes = 4;
   const int kObuHeaderLengthSizeBytes = 1;
-  const int kMinimumBytesRequired =
-      kObuLengthFieldSizeBytes + kObuHeaderLengthSizeBytes;
+  const int kMinimumBytesRequired = 1 + kObuHeaderLengthSizeBytes;
   int consumed = 0;
   ObuHeader obu_header;
   while (consumed < length) {
@@ -173,10 +171,13 @@ bool DumpObu(const uint8_t *data, int length) {
 
 #if CONFIG_OBU_SIZING
     uint32_t obu_size = 0;
-    aom_uleb_decode(data + consumed, kObuLengthFieldSizeBytes, &obu_size);
+    aom_uleb_decode(data + consumed, sizeof(obu_size), &obu_size);
     const int current_obu_length = static_cast<int>(obu_size);
+    const size_t length_field_size = aom_uleb_size_in_bytes(obu_size);
 #else
     const int current_obu_length = mem_get_le32(data + consumed);
+    const int kObuLengthFieldSizeBytes = 4;
+    const size_t length_field_size = kObuLengthFieldSizeBytes;
 #endif  // CONFIG_OBU_SIZING
 
     if (current_obu_length > remaining) {
@@ -186,7 +187,7 @@ bool DumpObu(const uint8_t *data, int length) {
               consumed, current_obu_length, remaining);
       return false;
     }
-    consumed += kObuLengthFieldSizeBytes;
+    consumed += length_field_size;
 
     obu_header = kEmptyObu;
     const uint8_t obu_header_byte = *(data + consumed);

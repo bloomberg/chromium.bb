@@ -54,8 +54,13 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 
 #define AOM_FRAME_MARKER 0x2
 
-// Size of OBU length field.
+#if CONFIG_OBU_SIZING
+// Variable size LEB128 unsigned integer length field.
+#define PRE_OBU_SIZE_BYTES 0
+#else
+// Fixed size OBU length field.
 #define PRE_OBU_SIZE_BYTES 4
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"

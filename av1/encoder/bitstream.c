@@ -4509,13 +4509,8 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
 int write_uleb_obu_size(uint32_t obu_size, uint8_t *dest) {
   size_t coded_obu_size = 0;
 
-  // Encode an unsigned leb128 coded unsigned integer padded to
-  // PRE_OBU_SIZE_BYTES bytes.
-  if (aom_uleb_encode_fixed_size(obu_size, PRE_OBU_SIZE_BYTES,
-                                 PRE_OBU_SIZE_BYTES, dest, &coded_obu_size) ||
-      coded_obu_size != PRE_OBU_SIZE_BYTES) {
+  if (aom_uleb_encode(obu_size, sizeof(uint32_t), dest, &coded_obu_size) != 0)
     return AOM_CODEC_ERROR;
-  }
 
   return AOM_CODEC_OK;
 }
@@ -4610,12 +4605,9 @@ static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
 static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
                                        unsigned int *max_tile_size,
                                        unsigned int *max_tile_col_size,
-                                       uint8_t *const frame_header_obu_location,
-                                       uint32_t frame_header_obu_size,
 #if CONFIG_EXT_TILE
                                        struct aom_write_bit_buffer *saved_wb,
 #endif
-                                       int insert_frame_header_obu_flag,
                                        uint8_t obu_extension_header) {
   AV1_COMMON *const cm = &cpi->common;
   aom_writer mode_bc;
@@ -4771,14 +4763,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         int is_last_tile_in_tg = 0;
 
         if (new_tg) {
-          if (insert_frame_header_obu_flag && tile_idx) {
-            // insert a copy of frame header OBU (including
-            // PRE_OBU_SIZE_BYTES-byte size),
-            // except before the first tile group
-            data = dst + total_size;
-            memmove(data, frame_header_obu_location, frame_header_obu_size);
-            total_size += frame_header_obu_size;
-          }
           data = dst + total_size;
           // A new tile group begins at this tile.  Write the obu header and
           // tile group header
@@ -4844,8 +4828,13 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         } else {
 // write current tile group size
 #if CONFIG_OBU_SIZING
+          const size_t length_field_size =
+              aom_uleb_size_in_bytes(curr_tg_data_size);
+          memmove(data + length_field_size, data, curr_tg_data_size);
           if (write_uleb_obu_size(curr_tg_data_size, data) != AOM_CODEC_OK)
             assert(0);
+          curr_tg_data_size += length_field_size;
+          total_size += length_field_size;
 #else
         mem_put_le32(data, curr_tg_data_size);
 #endif  // CONFIG_OBU_SIZING
@@ -4870,8 +4859,6 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #if CONFIG_OBU
   AV1_COMMON *const cm = &cpi->common;
   uint32_t obu_size;
-  uint8_t *frame_header_location;
-  uint32_t frame_header_size;
 #if CONFIG_SCALABILITY
   const uint8_t enhancement_layers_cnt = cm->enhancement_layers_cnt;
   const uint8_t obu_extension_header =
@@ -4893,21 +4880,26 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     obu_size =
         write_obu_header(OBU_SEQUENCE_HEADER, 0, data + PRE_OBU_SIZE_BYTES);
 
-    obu_size += write_sequence_header_obu(
 #if CONFIG_SCALABILITY
+    obu_size += write_sequence_header_obu(
         cpi, data + PRE_OBU_SIZE_BYTES + obu_size, enhancement_layers_cnt);
 #else
-        cpi, data + PRE_OBU_SIZE_BYTES + obu_size);
+    obu_size +=
+        write_sequence_header_obu(cpi, data + PRE_OBU_SIZE_BYTES + obu_size);
 #endif  // CONFIG_SCALABILITY
 
 #if CONFIG_OBU_SIZING
+    const size_t length_field_size = aom_uleb_size_in_bytes(obu_size);
+    memmove(data + length_field_size, data, obu_size);
+
     if (write_uleb_obu_size(obu_size, data) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
 #else
+    const size_t length_field_size = PRE_OBU_SIZE_BYTES;
     mem_put_le32(data, obu_size);
 #endif  // CONFIG_OBU_SIZING
 
-    data += obu_size + PRE_OBU_SIZE_BYTES;
+    data += obu_size + length_field_size;
   }
 
 #if CONFIG_EXT_TILE
@@ -4915,39 +4907,37 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #endif
 
   // write frame header obu, preceded by 4-byte size
-  frame_header_location = data + PRE_OBU_SIZE_BYTES;
   obu_size = write_obu_header(OBU_FRAME_HEADER, obu_extension_header,
-                              frame_header_location);
-  frame_header_size =
-      write_frame_header_obu(cpi,
+                              data + PRE_OBU_SIZE_BYTES);
+  obu_size += write_frame_header_obu(cpi,
 #if CONFIG_EXT_TILE
-                             &saved_wb,
+                                     &saved_wb,
 #endif
-                             data + PRE_OBU_SIZE_BYTES + obu_size);
-  obu_size += frame_header_size;
+                                     data + PRE_OBU_SIZE_BYTES + obu_size);
 
 #if CONFIG_OBU_SIZING
+  const size_t length_field_size = aom_uleb_size_in_bytes(obu_size);
+  memmove(data + length_field_size, data, obu_size);
   if (write_uleb_obu_size(obu_size, data) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
 #else
+  const size_t length_field_size = PRE_OBU_SIZE_BYTES;
   mem_put_le32(data, obu_size);
 #endif  // CONFIG_OBU_SIZING
 
-  data += obu_size + PRE_OBU_SIZE_BYTES;
+  data += obu_size + length_field_size;
 
   if (cm->show_existing_frame) {
     data_size = 0;
   } else {
     //  Each tile group obu will be preceded by 4-byte size of the tile group
     //  obu
-    data_size = write_tiles_in_tg_obus(
-        cpi, data, &max_tile_size, &max_tile_col_size,
-        frame_header_location - PRE_OBU_SIZE_BYTES,
-        obu_size + PRE_OBU_SIZE_BYTES,
+    data_size =
+        write_tiles_in_tg_obus(cpi, data, &max_tile_size, &max_tile_col_size,
 #if CONFIG_EXT_TILE
-        &saved_wb,
+                               &saved_wb,
 #endif
-        1 /* cm->error_resilient_mode */, obu_extension_header);
+                               obu_extension_header);
   }
 
 #endif  // CONFIG_OBU
@@ -4969,7 +4959,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 
     if (cm->show_existing_frame) {
       *size = aom_wb_bytes_written(&wb);
-      return;
+      return AOM_CODEC_OK;
     }
 
     // We do not know these in advance. Output placeholder bit.

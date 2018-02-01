@@ -30,6 +30,10 @@ TEST(AomLeb128, DecodeTest) {
   uint32_t value = 0;
   aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value);
   ASSERT_EQ(expected_value, value);
+
+  // Make sure the decoder stops on the last marked LEB128 byte.
+  aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes + 1, &value);
+  ASSERT_EQ(expected_value, value);
 }
 
 TEST(AomLeb128, EncodeTest) {

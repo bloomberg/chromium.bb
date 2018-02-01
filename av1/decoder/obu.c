@@ -148,7 +148,6 @@ static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
 
   // TODO(shan):  For now, assume all tile groups received in order
   *is_last_tg = endTile == cm->tile_rows * cm->tile_cols - 1;
-
   return header_size + tg_payload_size;
 }
 
@@ -273,20 +272,28 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   while (!frame_decoding_finished && !cm->error.error_code) {
     struct aom_read_bit_buffer rb;
     size_t obu_header_size, obu_payload_size = 0;
-    av1_init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end);
+    const size_t bytes_available = data_end - data;
+
+    if (bytes_available < 1) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return;
+    }
 
 #if CONFIG_OBU_SIZING
-    // OBUs are preceded by an unsigned leb128 coded unsigned integer padded to
-    // PRE_OBU_SIZE_BYTES bytes.
+    // OBUs are preceded by an unsigned leb128 coded unsigned integer.
     uint32_t u_obu_size = 0;
-    aom_uleb_decode(data, PRE_OBU_SIZE_BYTES, &u_obu_size);
+    aom_uleb_decode(data, bytes_available, &u_obu_size);
     const size_t obu_size = (size_t)u_obu_size;
+    const size_t length_field_size = aom_uleb_size_in_bytes(u_obu_size);
 #else
     // every obu is preceded by PRE_OBU_SIZE_BYTES-byte size of obu (obu header
     // + payload size)
     // The obu size is only needed for tile group OBUs
     const size_t obu_size = mem_get_le32(data);
+    const size_t length_field_size = PRE_OBU_SIZE_BYTES;
 #endif  // CONFIG_OBU_SIZING
+
+    av1_init_read_bit_buffer(pbi, &rb, data + length_field_size, data_end);
 
 #if !CONFIG_SCALABILITY
     const OBU_TYPE obu_type = read_obu_header(&rb, &obu_header_size, NULL);
@@ -295,7 +302,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         read_obu_header(&rb, &obu_header_size, &obu_extension_header);
 #endif
 
-    data += (PRE_OBU_SIZE_BYTES + obu_header_size);
+    data += length_field_size + obu_header_size;
     if (data_end < data) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
@@ -339,6 +346,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         break;
       default: break;
     }
+
     data += obu_payload_size;
     if (data_end < data) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;

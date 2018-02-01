@@ -1267,10 +1267,6 @@ static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
   return flags;
 }
 
-#if CONFIG_OBU
-static uint32_t write_temporal_delimiter_obu() { return 0; }
-#endif
-
 static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                       const aom_image_t *img,
                                       aom_codec_pts_t pts,
@@ -1436,15 +1432,19 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         // move data PRE_OBU_SIZE_BYTES + 1 bytes and insert OBU_TD preceded by
         // optional 4 byte size
         uint32_t obu_size = 1;
+#if CONFIG_OBU_SIZING
+        const size_t length_field_size = aom_uleb_size_in_bytes(obu_size);
+#else
+        const size_t length_field_size = PRE_OBU_SIZE_BYTES;
+#endif
         if (ctx->pending_cx_data) {
-          const size_t index_sz = PRE_OBU_SIZE_BYTES + 1;
-          memmove(ctx->pending_cx_data + index_sz, ctx->pending_cx_data,
+          const size_t obu_header_size = length_field_size + 1;
+          memmove(ctx->pending_cx_data + obu_header_size, ctx->pending_cx_data,
                   ctx->pending_cx_data_sz);
         }
         obu_size = write_obu_header(
             OBU_TEMPORAL_DELIMITER, 0,
-            (uint8_t *)(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES));
-        obu_size += write_temporal_delimiter_obu();
+            (uint8_t *)(ctx->pending_cx_data + length_field_size));
 #if CONFIG_OBU_SIZING
         // OBUs are preceded by an unsigned leb128 coded unsigned integer padded
         // to PRE_OBU_SIZE_BYTES bytes.
@@ -1453,7 +1453,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 #else
         mem_put_le32(ctx->pending_cx_data, obu_size);
 #endif  // CONFIG_OBU_SIZING
-        pkt.data.frame.sz += (obu_size + PRE_OBU_SIZE_BYTES);
+        pkt.data.frame.sz += obu_size + length_field_size;
       }
 #endif  // CONFIG_OBU
 
