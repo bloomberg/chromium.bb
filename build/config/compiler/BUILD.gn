@@ -256,6 +256,8 @@ config("compiler") {
         }
         inputs += [ _sample_path ]
       }
+    } else {
+      not_needed([ "inputs" ])
     }
 
     # Stack protection.
