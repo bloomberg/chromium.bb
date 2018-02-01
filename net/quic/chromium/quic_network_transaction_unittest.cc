@@ -5993,6 +5993,64 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
   SendRequestAndExpectQuicResponse("and hello!");
 }
 
+// Regression test for https://crbug.com/797825: If pushed headers describe a
+// valid URL with empty hostname, then X509Certificate::VerifyHostname() must
+// not be called (otherwise a DCHECK fails).
+TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
+  SpdyHeaderBlock pushed_request_headers;
+  pushed_request_headers[":authority"] = "";
+  pushed_request_headers[":method"] = "GET";
+  pushed_request_headers[":path"] = "/";
+  pushed_request_headers[":scheme"] = "nosuchscheme";
+
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+
+  QuicStreamOffset server_header_offset = 0;
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      1, GetNthClientInitiatedStreamId(0), GetNthServerInitiatedStreamId(0),
+      false, std::move(pushed_request_headers), &server_header_offset,
+      &server_maker_));
+  mock_quic_data.AddWrite(ConstructClientRstPacket(
+      3, GetNthServerInitiatedStreamId(0), QUIC_INVALID_PROMISE_URL, 0));
+
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK"), &server_header_offset));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(4, 2, 1, 1));
+
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      3, GetNthServerInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK"), &server_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      4, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(5, 4, 3, 1));
+
+  mock_quic_data.AddRead(ASYNC, 0);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  // PUSH_PROMISE handling in the http layer gets exercised here.
+  SendRequestAndExpectQuicResponse("hello!");
+
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+}
+
 // Performs an HTTPS/1.1 request over QUIC proxy tunnel.
 TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
   session_params_.enable_quic = true;
