@@ -12,12 +12,14 @@ namespace blink {
 
 class VisibleUnitsWordTest : public EditingTestBase {
  protected:
-  std::string DoStartOfWord(const std::string& selection_text) {
+  std::string DoStartOfWord(
+      const std::string& selection_text,
+      EWordSide word_side = EWordSide::kNextWordIfOnBoundary) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
     return GetSelectionTextFromBody(
         SelectionInDOMTree::Builder()
-            .Collapse(
-                StartOfWord(CreateVisiblePosition(position)).DeepEquivalent())
+            .Collapse(StartOfWord(CreateVisiblePosition(position), word_side)
+                          .DeepEquivalent())
             .Build());
   }
 
@@ -48,6 +50,51 @@ TEST_F(VisibleUnitsWordTest, StartOfWordBasic) {
   EXPECT_EQ("<p> (1) abc |def</p>", DoStartOfWord("<p> (1) abc de|f</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>", DoStartOfWord("<p> (1) abc def|</p>"));
   EXPECT_EQ("<p> (1) abc def|</p>", DoStartOfWord("<p> (1) abc def</p>|"));
+}
+
+TEST_F(VisibleUnitsWordTest, StartOfWordPreviousWordIfOnBoundaryBasic) {
+  EXPECT_EQ("<p> |(1) abc def</p>",
+            DoStartOfWord("<p>| (1) abc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> |(1) abc def</p>",
+            DoStartOfWord("<p> |(1) abc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> |(1) abc def</p>",
+            DoStartOfWord("<p> (|1) abc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (|1) abc def</p>",
+            DoStartOfWord("<p> (1|) abc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1|) abc def</p>",
+            DoStartOfWord("<p> (1)| abc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1)| abc def</p>",
+            DoStartOfWord("<p> (1) |abc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) |abc def</p>",
+            DoStartOfWord("<p> (1) a|bc def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) |abc def</p>",
+            DoStartOfWord("<p> (1) ab|c def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) |abc def</p>",
+            DoStartOfWord("<p> (1) abc| def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) abc| def</p>",
+            DoStartOfWord("<p> (1) abc |def</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) abc |def</p>",
+            DoStartOfWord("<p> (1) abc d|ef</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) abc |def</p>",
+            DoStartOfWord("<p> (1) abc de|f</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) abc |def</p>",
+            DoStartOfWord("<p> (1) abc def|</p>",
+                          EWordSide::kPreviousWordIfOnBoundary));
+  EXPECT_EQ("<p> (1) abc |def</p>",
+            DoStartOfWord("<p> (1) abc def</p>|",
+                          EWordSide::kPreviousWordIfOnBoundary));
 }
 
 TEST_F(VisibleUnitsWordTest, StartOfWordCrossing) {
