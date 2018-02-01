@@ -22,6 +22,16 @@
 #include "third_party/webrtc/rtc_base/gunit.h"
 #include "third_party/webrtc/typedefs.h"
 
+// Macro to be used for switch-case fallthrough (required for enabling
+// -Wimplicit-fallthrough warning on Clang).
+#ifdef __clang__
+#define XLTT_FALLTHROUGH() [[clang::fallthrough]]
+#else
+#define XLTT_FALLTHROUGH() \
+  do {                     \
+  } while (0)
+#endif
+
 using buzz::Jid;
 using buzz::QName;
 using buzz::XmlElement;
@@ -92,7 +102,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->StanzaActivity());
       if (endstage == XLTT_STAGE_CONNECT)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_STREAMSTART: {
@@ -105,7 +115,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->OutputActivity());
       if (endstage == XLTT_STAGE_STREAMSTART)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_TLS_FEATURES: {
@@ -119,7 +129,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->SessionActivity());
       if (endstage == XLTT_STAGE_TLS_FEATURES)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_TLS_PROCEED: {
@@ -133,7 +143,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->SessionActivity());
       if (endstage == XLTT_STAGE_TLS_PROCEED)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_ENCRYPTED_START: {
@@ -146,7 +156,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->OutputActivity());
       if (endstage == XLTT_STAGE_ENCRYPTED_START)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_AUTH_FEATURES: {
@@ -168,7 +178,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->SessionActivity());
       if (endstage == XLTT_STAGE_AUTH_FEATURES)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_AUTH_SUCCESS: {
@@ -181,7 +191,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->SessionActivity());
       if (endstage == XLTT_STAGE_AUTH_SUCCESS)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_AUTHENTICATED_START: {
@@ -194,7 +204,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->OutputActivity());
       if (endstage == XLTT_STAGE_AUTHENTICATED_START)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_BIND_FEATURES: {
@@ -210,7 +220,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->SessionActivity());
       if (endstage == XLTT_STAGE_BIND_FEATURES)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_BIND_SUCCESS: {
@@ -225,7 +235,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->SessionActivity());
       if (endstage == XLTT_STAGE_BIND_SUCCESS)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
 
     case XLTT_STAGE_SESSION_SUCCESS: {
@@ -237,7 +247,7 @@ void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
       EXPECT_EQ("", handler_->StanzaActivity());
       if (endstage == XLTT_STAGE_SESSION_SUCCESS)
         return;
-      FALLTHROUGH();
+      XLTT_FALLTHROUGH();
     }
     default:
       break;
