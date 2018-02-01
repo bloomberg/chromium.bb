@@ -5,7 +5,7 @@
 module audio.mojom;
 
 import "media/mojo/interfaces/audio_parameters.mojom";
-import "services/audio/public/interfaces/audio_device_description.mojom";
+import "services/audio/public/mojom/audio_device_description.mojom";
 
 // Provides information about audio system.
 interface SystemInfo {

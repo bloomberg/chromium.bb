@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/audio/public/interfaces/audio_device_description.mojom"
+mojom = "//services/audio/public/mojom/audio_device_description.mojom"
 public_headers = [ "//media/audio/audio_device_description.h" ]
 traits_headers =
-    [ "//services/audio/public/cpp/audio_device_description_struct_traits.h" ]
+    [ "//services/audio/public/cpp/audio_device_description_mojom_traits.h" ]
 sources = [
-  "//services/audio/public/cpp/audio_device_description_struct_traits.cc",
+  "//services/audio/public/cpp/audio_device_description_mojom_traits.cc",
 ]
 deps = [
   "//media",

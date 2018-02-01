@@ -4,7 +4,7 @@
 
 #include "services/audio/public/cpp/fake_system_info.h"
 
-#include "services/audio/public/interfaces/constants.mojom.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_context.h"
 

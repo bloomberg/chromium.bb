@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "services/audio/public/interfaces/constants.mojom.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
