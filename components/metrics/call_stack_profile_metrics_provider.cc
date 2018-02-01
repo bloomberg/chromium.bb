@@ -306,7 +306,8 @@ ReceiveCompletedProfilesImpl(
   // over this, for example ending sampling after some amount of time.
   if (CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled() &&
       params->process == CallStackProfileParams::BROWSER_PROCESS &&
-      params->thread == CallStackProfileParams::UI_THREAD) {
+      (params->thread == CallStackProfileParams::UI_THREAD ||
+       params->thread == CallStackProfileParams::IO_THREAD)) {
     params->trigger = CallStackProfileParams::PERIODIC_COLLECTION;
     params->start_timestamp = base::TimeTicks::Now();
 
