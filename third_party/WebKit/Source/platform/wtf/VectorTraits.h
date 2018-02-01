@@ -42,9 +42,9 @@ struct VectorTraitsBase {
   // slot in the vector's backing storage; it does not have to be equal to
   // what its constructor(s) would create, only be valid for those two uses.
   static constexpr bool kCanClearUnusedSlotsWithMemset =
-      std::is_trivially_constructible<T>::value &&
       std::is_trivially_destructible<T>::value &&
-      std::is_trivially_copyable<T>::value;
+      (!IsTraceable<T>::value || (std::is_trivially_constructible<T>::value &&
+                                  std::is_trivially_copyable<T>::value));
 
   static constexpr bool kCanMoveWithMemcpy =
       std::is_trivially_move_assignable<T>::value;
