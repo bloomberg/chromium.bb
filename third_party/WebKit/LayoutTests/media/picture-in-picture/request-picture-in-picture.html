@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Test request picture in picture</title>
+<title>Test request Picture-in-Picture</title>
 <script src='../../resources/testharness.js'></script>
 <script src='../../resources/testharnessreport.js'></script>
 <script src="../../resources/testdriver.js"></script>
@@ -8,7 +8,6 @@
 <body></body>
 <script>
 promise_test(t => {
-  return promise_rejects(t, 'NotSupportedError',
-      requestPictureInPictureWithTrustedClick(document.createElement('video')));
+  return requestPictureInPictureWithTrustedClick(document.createElement('video'));
 });
 </script>
