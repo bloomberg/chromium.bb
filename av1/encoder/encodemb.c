@@ -574,8 +574,11 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
 #if CONFIG_TXK_SEL
+  uint8_t disable_txk_check =
+      args->enable_optimize_b || args->cpi->oxcf.aq_mode != NO_AQ;
+
   if (plane == 0 && p->eobs[block] == 0) {
-    if (args->enable_optimize_b) {
+    if (disable_txk_check) {
       xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
           DCT_DCT;
     } else {
