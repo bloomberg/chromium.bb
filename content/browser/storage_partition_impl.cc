@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -169,21 +170,21 @@ void OnLocalStorageUsageInfo(
     const std::vector<LocalStorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  base::RepeatingClosure barrier = base::BarrierClosure(infos.size(), callback);
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
         !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+      barrier.Run();
       continue;
     }
 
     if (infos[i].last_modified >= delete_begin &&
         infos[i].last_modified <= delete_end) {
-      // TODO(dullweber): |callback| should be passed to DeleteLocalStorage()
-      // but then ASAN complains about a few tests that need to be fixed.
-      dom_storage_context->DeleteLocalStorage(infos[i].origin,
-                                              base::BindOnce(&base::DoNothing));
+      dom_storage_context->DeleteLocalStorage(infos[i].origin, barrier);
+    } else {
+      barrier.Run();
     }
   }
-  callback.Run();
 }
 
 void OnSessionStorageUsageInfo(
@@ -220,13 +221,11 @@ void ClearLocalStorageOnUIThread(
                       origin_matcher.Run(storage_origin,
                                          special_storage_policy.get());
     if (can_delete) {
-      // TODO(dullweber): |callback| should be passed to
-      // DeleteLocalStorageForPhysicalOrigin() but then ASAN complains about a
-      // few tests that need to be fixed.
-      dom_storage_context->DeleteLocalStorageForPhysicalOrigin(
-          storage_origin, base::BindOnce(&base::DoNothing));
+      dom_storage_context->DeleteLocalStorageForPhysicalOrigin(storage_origin,
+                                                               callback);
+    } else {
+      callback.Run();
     }
-    callback.Run();
     return;
   }
 
@@ -399,6 +398,8 @@ struct StoragePartitionImpl::DataDeletionHelper {
         callback(std::move(callback)),
         task_count(0) {}
 
+  ~DataDeletionHelper() {}
+
   void IncrementTaskCountOnUI();
   void DecrementTaskCount();  // Callable on any thread.
 
@@ -459,6 +460,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     : partition_path_(partition_path),
       special_storage_policy_(special_storage_policy),
       browser_context_(browser_context),
+      deletion_helpers_running_(0),
       weak_factory_(this) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
@@ -799,13 +801,25 @@ void StoragePartitionImpl::ClearDataImpl(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DataDeletionHelper* helper = new DataDeletionHelper(
-      remove_mask, quota_storage_remove_mask, std::move(callback));
+      remove_mask, quota_storage_remove_mask,
+      base::BindOnce(&StoragePartitionImpl::DeletionHelperDone,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
   // |helper| deletes itself when done in
   // DataDeletionHelper::DecrementTaskCount().
+  deletion_helpers_running_++;
   helper->ClearDataOnUIThread(
       storage_origin, origin_matcher, cookie_matcher, GetPath(),
       GetURLRequestContext(), dom_storage_context_.get(), quota_manager_.get(),
       special_storage_policy_.get(), filesystem_context_.get(), begin, end);
+}
+
+void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
+  std::move(callback).Run();
+  deletion_helpers_running_--;
+  if (on_deletion_helpers_done_callback_ && deletion_helpers_running_ == 0) {
+    // Notify tests that storage partition is done with all deletion tasks.
+    std::move(on_deletion_helpers_done_callback_).Run();
+  }
 }
 
 void StoragePartitionImpl::
@@ -1092,6 +1106,14 @@ void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
   network_context_.FlushForTesting();
   if (url_loader_factory_for_browser_process_)
     url_loader_factory_for_browser_process_.FlushForTesting();
+}
+
+void StoragePartitionImpl::WaitForDeletionTasksForTesting() {
+  if (deletion_helpers_running_) {
+    base::RunLoop loop;
+    on_deletion_helpers_done_callback_ = loop.QuitClosure();
+    loop.Run();
+  }
 }
 
 BrowserContext* StoragePartitionImpl::browser_context() const {
