@@ -4,6 +4,8 @@
 
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 
+#include <utility>
+
 #include "base/json/json_file_value_serializer.h"
 #include "base/values.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -88,18 +90,26 @@ TestRule CreateGenericRule() {
 }
 
 std::unique_ptr<base::DictionaryValue> CreateManifest(
-    const std::string& json_rules_filename) {
+    const std::string& json_rules_filename,
+    const std::vector<std::string>& hosts) {
+  std::unique_ptr<base::DictionaryValue> dnr_dict =
+      DictionaryBuilder()
+          .Set(keys::kDeclarativeRuleResourcesKey,
+               ToListValue({json_rules_filename}))
+          .Set(keys::kDeclarativeHostsKey, ToListValue(hosts))
+          .Build();
   return DictionaryBuilder()
       .Set(keys::kName, "Test extension")
-      .Set(keys::kDeclarativeNetRequestKey,
-           DictionaryBuilder()
-               .Set(keys::kDeclarativeRuleResourcesKey,
-                    ListBuilder().Append(json_rules_filename).Build())
-               .Build())
-      .Set(keys::kPermissions, ListBuilder().Append(kAPIPermission).Build())
+      .Set(keys::kDeclarativeNetRequestKey, std::move(dnr_dict))
+      .Set(keys::kPermissions, ToListValue({kAPIPermission}))
       .Set(keys::kVersion, "1.0")
       .Set(keys::kManifestVersion, 2)
       .Build();
+}
+
+std::unique_ptr<base::DictionaryValue> CreateManifest(
+    const std::string& json_rules_filename) {
+  return CreateManifest(json_rules_filename, {"<all_urls>"});
 }
 
 std::unique_ptr<base::ListValue> ToListValue(
