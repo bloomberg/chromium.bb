@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
@@ -40,14 +41,17 @@
 @property(nonatomic, strong) PrimaryToolbarViewController* viewController;
 // The coordinator for the location bar in the toolbar.
 @property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
+// Orchestrator for the expansion animation.
+@property(nonatomic, strong) OmniboxFocusOrchestrator* orchestrator;
 
 @end
 
 @implementation PrimaryToolbarCoordinator
 
 @dynamic viewController;
-@synthesize locationBarCoordinator = _locationBarCoordinator;
 @synthesize delegate = _delegate;
+@synthesize locationBarCoordinator = _locationBarCoordinator;
+@synthesize orchestrator = _orchestrator;
 @synthesize URLLoader = _URLLoader;
 
 #pragma mark - ChromeCoordinator
@@ -56,6 +60,9 @@
   self.viewController = [[PrimaryToolbarViewController alloc] init];
   self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
   self.viewController.dispatcher = self.dispatcher;
+
+  self.orchestrator = [[OmniboxFocusOrchestrator alloc] init];
+  self.orchestrator.toolbarAnimatee = self.viewController;
 
   [self setUpLocationBar];
   self.viewController.locationBarView = self.locationBarCoordinator.view;
@@ -103,7 +110,7 @@
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
-  // TODO(crbug.com/801082): implement this.
+  [self.orchestrator transitionToStateFocused:focused animated:YES];
 }
 
 #pragma mark - FakeboxFocuser

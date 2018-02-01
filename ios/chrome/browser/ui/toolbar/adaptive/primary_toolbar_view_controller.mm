@@ -169,6 +169,32 @@
   }];
 }
 
+#pragma mark - ToolbarAnimatee
+
+- (void)expandLocationBar {
+  // TODO(crbug.com/804749): Implement this.
+}
+
+- (void)contractLocationBar {
+  // TODO(crbug.com/804749): Implement this.
+}
+
+- (void)showCancelButton {
+  // TODO(crbug.com/804750): Implement this.
+}
+
+- (void)hideCancelButton {
+  // TODO(crbug.com/804750): Implement this.
+}
+
+- (void)showControlButtons {
+  // TODO(crbug.com/804751): Implement this.
+}
+
+- (void)hideControlButtons {
+  // TODO(crbug.com/804751): Implement this.
+}
+
 #pragma mark - Private
 
 // Adds a LongPressGesture to the |view|, with target on -|handleLongPress:|.
