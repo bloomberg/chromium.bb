@@ -1943,14 +1943,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     } else {
       self.currentNavItem->SetTransitionType(
           ui::PageTransition::PAGE_TRANSITION_RELOAD);
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        // New navigation manager can delegate directly to WKWebView to reload.
-        // The necessary navigation states will be updated in
-        // WKNavigationDelegate callbacks.
-        [_webView reload];
-      } else {
-        [self loadCurrentURL];
-      }
+      [self loadCurrentURL];
     }
   }
 }
@@ -4198,32 +4191,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationAction:action];
 
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // If this is a placeholder navigation, pass through.
-    if (IsPlaceholderUrl(requestURL)) {
-      decisionHandler(WKNavigationActionPolicyAllow);
-      return;
-    }
-
-    // WKBasedNavigationManager doesn't use |loadCurrentURL| for reload or back/
-    // forward navigation. So this is the first point where a form repost would
-    // be detected. Display the confirmation dialog.
-    if ([action.request.HTTPMethod isEqual:@"POST"] &&
-        (action.navigationType == WKNavigationTypeFormResubmitted ||
-         action.navigationType == WKNavigationTypeBackForward)) {
-      _webStateImpl->ShowRepostFormWarningDialog(
-          base::BindBlockArc(^(bool shouldContinue) {
-            if (shouldContinue) {
-              decisionHandler(WKNavigationActionPolicyAllow);
-            } else {
-              decisionHandler(WKNavigationActionPolicyCancel);
-              if (action.targetFrame.mainFrame) {
-                [_pendingNavigationInfo setCancelled:YES];
-              }
-            }
-          }));
-      return;
-    }
+  // If this is a placeholder navigation, pass through.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      IsPlaceholderUrl(requestURL)) {
+    decisionHandler(WKNavigationActionPolicyAllow);
+    return;
   }
 
   // Invalid URLs should not be loaded.
@@ -5331,7 +5303,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // If the request is form submission or resubmission, then prompt the
   // user before proceeding.
   DCHECK(repostedForm);
-  DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
   _webStateImpl->ShowRepostFormWarningDialog(
       base::BindBlockArc(^(bool shouldContinue) {
         if (shouldContinue)
