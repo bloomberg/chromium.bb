@@ -993,6 +993,7 @@ test("content_browsertests") {
   }
 
   if (is_android) {
+    enable_multidex = true
     if (is_component_build) {
       sources += [ "../browser/android/render_widget_host_connector.cc" ]
     }
