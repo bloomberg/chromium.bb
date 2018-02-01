@@ -15,7 +15,7 @@ import android.view.ViewConfiguration;
  * Based on android.test.TouchUtils, but slightly more flexible (allows to
  * specify coordinates for longClick, splits drag operation in three stages, etc).
  */
-public class TestTouchUtils extends android.test.TouchUtils {
+public class TestTouchUtils {
     /**
      * Returns the absolute location in screen coordinates from location relative
      * to view.
