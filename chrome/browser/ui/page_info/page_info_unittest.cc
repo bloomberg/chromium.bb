@@ -915,9 +915,9 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
 
   const TestCase kTestCases[] = {
       {"https://example.test", security_state::SECURE,
-       "Security.PageInfo.Action.HttpsUrl.Valid"},
+       "Security.PageInfo.Action.HttpsUrl.ValidNonEV"},
       {"https://example.test", security_state::EV_SECURE,
-       "Security.PageInfo.Action.HttpsUrl.Valid"},
+       "Security.PageInfo.Action.HttpsUrl.ValidEV"},
       {"https://example2.test", security_state::NONE,
        "Security.PageInfo.Action.HttpsUrl.Downgraded"},
       {"https://example.test", security_state::DANGEROUS,
