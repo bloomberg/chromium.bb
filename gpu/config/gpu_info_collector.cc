@@ -334,4 +334,13 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
   gpu_info->machine_model_version = system_info->machineModelVersion;
 }
 
+void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+#if defined(OS_ANDROID)
+  CollectContextGraphicsInfo(gpu_info);
+#else
+  CollectBasicGraphicsInfo(gpu_info);
+#endif  // OS_ANDROID
+}
+
 }  // namespace gpu

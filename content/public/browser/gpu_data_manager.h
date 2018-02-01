@@ -72,10 +72,6 @@ class GpuDataManager {
   virtual void GetDisabledExtensions(
       std::string* disabled_extensions) const = 0;
 
-  // Sets the initial GPU information. This should happen before calculating
-  // the backlists decision and applying commandline switches.
-  virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) = 0;
-
  protected:
   virtual ~GpuDataManager() {}
 };

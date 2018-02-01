@@ -175,7 +175,6 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
-#include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
@@ -390,7 +389,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   ::android::RegisterPrefs(registry);
-  GpuDriverInfoManager::RegisterPrefs(registry);
   // Obsolete activity prefs. See MigrateObsoleteBrowserPrefs().
   registry->RegisterIntegerPref(kStabilityForegroundActivityType, 0);
   registry->RegisterIntegerPref(kStabilityLaunchedActivityFlags, 0);
