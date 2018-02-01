@@ -548,6 +548,34 @@ TEST_P(ScrollAnchorTest, SerializeAnchorUsesTagname) {
   ValidateSerializedAnchor("#ancestor>span", LayoutPoint(0, -50));
 }
 
+TEST_P(ScrollAnchorTest, SerializeAnchorSetsIsAnchorBit) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        body { height: 1000px; margin: 0; }
+        div { height: 100px; }
+        .scroller {
+          overflow: scroll;
+          width: 400px;
+          height: 400px;
+        }
+      </style>
+      <div id='s1' class='scroller'>
+        <div id='anchor'>abc</div>
+      </div>")HTML");
+
+  ScrollLayoutViewport(ScrollOffset(0, 50));
+  ValidateSerializedAnchor("#anchor", LayoutPoint(0, -50));
+
+  Element* s1 = GetDocument().getElementById("s1");
+  Element* anchor = GetDocument().getElementById("anchor");
+  // Remove the anchor. If the IsScrollAnchorOBject bit is set as it should be,
+  // the anchor object will get cleaned up correctly.
+  s1->RemoveChild(anchor);
+  // Trigger a re-layout, which will crash if it wasn't properly cleaned up when
+  // removing it from the DOM.
+  ScrollLayoutViewport(ScrollOffset(0, 25));
+}
+
 TEST_P(ScrollAnchorTest, SerializeAnchorUsesClassname) {
   SetBodyInnerHTML(R"HTML(
       <style>

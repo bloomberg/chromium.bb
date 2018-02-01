@@ -306,6 +306,8 @@ void ScrollAnchor::FindAnchor() {
   TRACE_EVENT0("blink", "ScrollAnchor::findAnchor");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToFindAnchor");
   FindAnchorRecursive(ScrollerLayoutBox(scroller_));
+  if (anchor_object_)
+    anchor_object_->SetIsScrollAnchorObject();
 }
 
 bool ScrollAnchor::FindAnchorRecursive(LayoutObject* candidate) {
@@ -390,7 +392,6 @@ void ScrollAnchor::NotifyBeforeLayout() {
     if (!anchor_object_)
       return;
 
-    anchor_object_->SetIsScrollAnchorObject();
     saved_relative_offset_ =
         ComputeRelativeOffset(anchor_object_, scroller_, corner_);
   }
@@ -527,7 +528,6 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
     saved_relative_offset_ =
         ComputeRelativeOffset(anchor_object_, scroller_, corner_);
     saved_selector_ = serialized_anchor.selector;
-    anchor_object_->SetIsScrollAnchorObject();
 
     restoration_status_histogram.Count(kSuccess);
     return true;
