@@ -172,8 +172,7 @@ void SVGTextLayoutEngine::BeginTextPathLayout(SVGInlineFlowBox* flow_box) {
   text_path_ = text_path.LayoutPath();
   if (!text_path_)
     return;
-  text_path_start_offset_ =
-      text_path.CalculateStartOffset(text_path_->length());
+  text_path_start_offset_ = text_path_->StartOffset();
 
   SVGTextPathChunkBuilder text_path_chunk_layout_builder;
   text_path_chunk_layout_builder.ProcessTextChunks(

@@ -138,20 +138,32 @@ float SVGGeometryElement::ComputePathLength() const {
   return AsPath().length();
 }
 
-float SVGGeometryElement::PathLengthScaleFactor() const {
+float SVGGeometryElement::AuthorPathLength() const {
   if (!pathLength()->IsSpecified())
-    return 1;
+    return std::numeric_limits<float>::quiet_NaN();
   float author_path_length = pathLength()->CurrentValue()->Value();
   // https://svgwg.org/svg2-draft/paths.html#PathLengthAttribute
   // "A negative value is an error"
   if (author_path_length < 0)
+    return std::numeric_limits<float>::quiet_NaN();
+  return author_path_length;
+}
+
+float SVGGeometryElement::PathLengthScaleFactor() const {
+  float author_path_length = AuthorPathLength();
+  if (std::isnan(author_path_length))
     return 1;
   DCHECK(GetLayoutObject());
+  return PathLengthScaleFactor(ComputePathLength(), author_path_length);
+}
+
+float SVGGeometryElement::PathLengthScaleFactor(float computed_path_length,
+                                                float author_path_length) {
+  DCHECK(!std::isnan(author_path_length));
   // If the computed path length is zero, then the scale factor will
   // always be zero except if the author path length is also zero - in
   // which case performing the division would yield a NaN. Avoid the
   // division in this case and always return zero.
-  float computed_path_length = ComputePathLength();
   if (!computed_path_length)
     return 0;
   // "A value of zero is valid and must be treated as a scaling factor

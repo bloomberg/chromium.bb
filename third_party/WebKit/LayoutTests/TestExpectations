@@ -1764,8 +1764,6 @@ crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-so
 crbug.com/626703 external/wpt/css/css-display/display-contents-fieldset-nested-legend.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-026.html [ Failure ]
 crbug.com/626703 external/wpt/svg/path/closepath/segment-completing.svg [ Failure ]
-crbug.com/626703 external/wpt/svg/path/distance/pathLength-positive.svg [ Failure ]
-crbug.com/626703 external/wpt/svg/path/distance/pathLength-zero.svg [ Failure ]
 crbug.com/626703 [ Android Mac10.10 ] virtual/mojo-localstorage/external/wpt/webstorage/storage_enumerate.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
