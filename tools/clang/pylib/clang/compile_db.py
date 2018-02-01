@@ -72,9 +72,10 @@ def _ProcessCompileDatabaseForWindows(compile_db):
 
 
 def GetNinjaPath():
+  ninja_executable = 'ninja.exe' if sys.platform == 'win32' else 'ninja'
   return os.path.join(
       os.path.dirname(os.path.realpath(__file__)),
-        '..', '..', '..', '..', 'third_party', 'depot_tools', 'ninja')
+        '..', '..', '..', '..', 'third_party', 'depot_tools', ninja_executable)
 
 
 # FIXME: This really should be a build target, rather than generated at runtime.
