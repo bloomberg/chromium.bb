@@ -12490,6 +12490,7 @@ Called by update_net_error_codes.py.-->
   <int value="412" label="PasswordProtectionRiskTrigger"/>
   <int value="413" label="EnableSymantecLegacyInfrastructure"/>
   <int value="414" label="WebDriverOverridesIncompatiblePolicies"/>
+  <int value="415" label="DeviceKerberosEncryptionTypes"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
