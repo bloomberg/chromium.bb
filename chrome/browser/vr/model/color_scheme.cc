@@ -142,6 +142,9 @@ void InitializeColorSchemes() {
   normal_scheme.snackbar_button_colors.background_down = 0xDD2D2D2D;
 
   normal_scheme.controller_label_callout = SK_ColorWHITE;
+  normal_scheme.controller_button = 0xFFEFEFEF;
+  normal_scheme.controller_button_down = 0xFF2979FF;
+
   normal_scheme.reposition_label = SK_ColorWHITE;
   normal_scheme.reposition_label_background = 0xAA333333;
 

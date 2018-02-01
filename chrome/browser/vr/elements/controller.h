@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,25 +8,16 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/renderers/base_renderer.h"
 
 namespace vr {
 
-// This represents the controller.
+// This represents a procedurally generated Daydream controller.
 class Controller : public UiElement {
  public:
   Controller();
   ~Controller() override;
-
-  void set_touchpad_button_pressed(bool pressed) {
-    touchpad_button_pressed_ = pressed;
-  }
-
-  void set_app_button_pressed(bool pressed) { app_button_pressed_ = pressed; }
-
-  void set_home_button_pressed(bool pressed) { home_button_pressed_ = pressed; }
 
   void set_local_transform(const gfx::Transform& transform) {
     local_transform_ = transform;
@@ -37,33 +28,18 @@ class Controller : public UiElement {
     Renderer();
     ~Renderer() override;
 
-    void SetUp(std::unique_ptr<ControllerMesh> model);
-    void Draw(ControllerMesh::State state,
-              float opacity,
-              const gfx::Transform& view_proj_matrix);
-    bool IsSetUp() const { return setup_; }
+    void Draw(float opacity, const gfx::Transform& view_proj_matrix);
 
    private:
-    GLuint model_view_proj_matrix_handle_;
-    GLuint tex_coord_handle_;
-    GLuint texture_handle_;
-    GLuint opacity_handle_;
-    GLuint indices_buffer_ = 0;
+    GLuint model_view_proj_matrix_handle_ = 0;
+    GLuint color_handle_ = 0;
+    GLuint opacity_handle_ = 0;
+    std::vector<float> vertices_;
+    std::vector<GLushort> indices_;
+    std::vector<float> colors_;
     GLuint vertex_buffer_ = 0;
-    GLint position_components_ = 0;
-    GLenum position_type_ = GL_FLOAT;
-    GLsizei position_stride_ = 0;
-    const GLvoid* position_offset_ = nullptr;
-    GLint tex_coord_components_ = 0;
-    GLenum tex_coord_type_ = GL_FLOAT;
-    GLsizei tex_coord_stride_ = 0;
-    const GLvoid* tex_coord_offset_ = nullptr;
-    GLenum draw_mode_ = GL_TRIANGLES;
-    GLsizei indices_count_ = 0;
-    GLenum indices_type_ = GL_INT;
-    const GLvoid* indices_offset_ = nullptr;
-    std::vector<GLuint> texture_handles_;
-    bool setup_ = false;
+    GLuint color_buffer_ = 0;
+    GLuint index_buffer_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Renderer);
   };
@@ -74,9 +50,6 @@ class Controller : public UiElement {
 
   gfx::Transform LocalTransform() const override;
 
-  bool touchpad_button_pressed_ = false;
-  bool app_button_pressed_ = false;
-  bool home_button_pressed_ = false;
   gfx::Transform local_transform_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
