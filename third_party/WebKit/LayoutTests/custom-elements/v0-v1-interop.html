@@ -32,9 +32,9 @@ test_with_window((w) => {
 
   assert_true(a instanceof A,
               'V0 createElement syntax works with V0 registerElement');
-  assert_throws_dom_exception(w, 'NotFoundError', () => {
-    w.document.createElement('div', {is: 'a-a'});
-  }, 'V1 createElement syntax does not work with V0 registerElement');
+  assert_equals(w.document.createElement('div', {is: 'a-a'}).constructor,
+                w.HTMLDivElement,
+                'V1 createElement syntax does not work with V0 registerElement');
 
   class B extends w.HTMLDivElement {
     constructor() {
