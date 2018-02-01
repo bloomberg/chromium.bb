@@ -366,7 +366,7 @@ int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
   read_buf_ = buf;
   io_buf_len_ = buf_len;
   int rv = TransitionToReadingState();
-  if (rv != OK)
+  if (rv != OK || next_state_ == STATE_NONE)
     return rv;
 
   rv = DoLoop(OK);
@@ -386,16 +386,20 @@ int HttpCache::Transaction::TransitionToReadingState() {
       // LOAD_DISABLE_CACHE) or there was an error during the headers phase
       // due to which the transaction cannot write to the cache or the consumer
       // is reading the auth response from the network.
-      // TODO(crbug.com/740947) to get rid of this state in future.
+      // TODO(http://crbug.com/740947) to get rid of this state in future.
       next_state_ = STATE_NETWORK_READ;
       return OK;
     }
 
     // If there is no network, and no cache entry, then there is nothing to read
-    // from. An error state should be set for the next read, else this
-    // transaction should have been terminated once it reached this state.
+    // from.
     next_state_ = STATE_NONE;
-    DCHECK_GT(OK, shared_writing_error_);
+
+    // An error state should be set for the next read, else this transaction
+    // should have been terminated once it reached this state. To assert we
+    // could dcheck that shared_writing_error_ is set to a valid error value but
+    // in some specific conditions (http://crbug.com/806344) it's possible that
+    // the consumer does an extra Read in which case the assert will fail.
     return shared_writing_error_;
   }
 

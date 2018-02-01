@@ -3074,6 +3074,36 @@ TEST(HttpCache, SimpleGET_ParallelWritingVerifyNetworkBytes) {
                            kSimpleGET_Transaction);
 }
 
+// Tests than extra Read from the consumer should not hang/crash the browser.
+TEST(HttpCache, SimpleGET_ExtraRead) {
+  MockHttpCache cache;
+  MockHttpRequest request(kSimpleGET_Transaction);
+  Context c;
+
+  c.result = cache.CreateTransaction(&c.trans);
+  ASSERT_THAT(c.result, IsOk());
+
+  c.result =
+      c.trans->Start(&request, c.callback.callback(), NetLogWithSource());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  EXPECT_EQ(1, cache.GetCountWriterTransactions(kSimpleGET_Transaction.url));
+  EXPECT_EQ(0, cache.GetCountDoneHeadersQueue(kSimpleGET_Transaction.url));
+
+  ReadAndVerifyTransaction(c.trans.get(), kSimpleGET_Transaction);
+
+  // Perform an extra Read.
+  const int kBufferSize = 10;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
+  c.result = c.trans->Read(buffer.get(), kBufferSize, c.callback.callback());
+  EXPECT_EQ(0, c.result);
+}
+
 // Tests when a writer is destroyed mid-read, all the other writer transactions
 // can continue writing to the entry.
 TEST(HttpCache, SimpleGET_ParallelValidationCancelWriter) {
