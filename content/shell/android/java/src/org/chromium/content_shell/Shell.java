@@ -4,7 +4,6 @@
 
 package org.chromium.content_shell;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ClipDrawable;
@@ -144,11 +143,11 @@ public class Shell extends LinearLayout {
     }
 
     @Override
-    @SuppressLint("WrongViewCast") // TODO(crbug.com/807732): Fix or justify.
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mProgressDrawable = (ClipDrawable) findViewById(R.id.toolbar).getBackground();
+        View toolbar = findViewById(R.id.toolbar);
+        mProgressDrawable = (ClipDrawable) toolbar.getBackground();
         initializeUrlField();
         initializeNavigationButtons();
     }
