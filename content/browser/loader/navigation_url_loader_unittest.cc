@@ -71,18 +71,6 @@ class StreamProtocolHandler
   DISALLOW_COPY_AND_ASSIGN(StreamProtocolHandler);
 };
 
-class RequestBlockingResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
- public:
-  // ResourceDispatcherHostDelegate implementation:
-  bool ShouldBeginRequest(const std::string& method,
-                          const GURL& url,
-                          ResourceType resource_type,
-                          ResourceContext* resource_context) override {
-    return false;
-  }
-};
-
 std::unique_ptr<ResourceHandler> CreateTestResourceHandler(
     net::URLRequest* request) {
   return std::make_unique<TestResourceHandler>();
@@ -349,26 +337,6 @@ TEST_F(NavigationURLLoaderTest, CancelByContext) {
   delegate.WaitForRequestFailed();
   EXPECT_EQ(net::ERR_ABORTED, delegate.net_error());
   EXPECT_EQ(1, delegate.on_request_handled_counter());
-}
-
-// Tests that, if the request is blocked by the ResourceDispatcherHostDelegate,
-// the caller is informed appropriately.
-TEST_F(NavigationURLLoaderTest, RequestBlocked) {
-  RequestBlockingResourceDispatcherHostDelegate rdh_delegate;
-  host_.SetDelegate(&rdh_delegate);
-
-  TestNavigationURLLoaderDelegate delegate;
-  std::unique_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_1(), &delegate);
-
-  // Wait for the request to fail as expected.
-  delegate.WaitForRequestFailed();
-  EXPECT_EQ(net::ERR_ABORTED, delegate.net_error());
-
-  // Failing before start means OnRequestStarted is never called.
-  EXPECT_EQ(0, delegate.on_request_handled_counter());
-
-  host_.SetDelegate(nullptr);
 }
 
 // Tests that ownership leaves the loader once the response is received.
