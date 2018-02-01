@@ -8590,18 +8590,12 @@
       'schema': {
         'type': 'string',
         'enum': [
-          'ssl3',
           'tls1',
           'tls1.1',
           'tls1.2',
         ],
       },
       'items': [
-        {
-          'name': 'SSLv3',
-          'value': 'ssl3',
-          'caption': 'SSL 3.0',
-        },
         {
           'name': 'TLSv1',
           'value': 'tls1',
@@ -8619,26 +8613,21 @@
         },
       ],
       'supported_on': [
-        'chrome.*:39-43',
-        'chrome_os:39-43',
-        'android:39-43',
+        'chrome.*:66-',
+        'chrome_os:66-',
+        'android:66-',
       ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'deprecated': True,
-      'example_value': 'ssl3',
+      'example_value': 'tls1',
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
       'tags': [],
-      'desc': '''Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 43 (around July 2015) and this policy will be removed at the same time.
+      'desc': '''If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is TLS 1.0.
 
-      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is SSLv3 in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 39 and TLS 1.0 in later versions.
-
-      Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions less than the specified version. An unrecognized value will be ignored.
-
-      Note that, despite the number, "sslv3" is an earlier version than "tls1".''',
+      Otherwise it may be set to one of the following values: "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions less than the specified version. An unrecognized value will be ignored.''',
     },
     {
       'name': 'SSLVersionFallbackMin',

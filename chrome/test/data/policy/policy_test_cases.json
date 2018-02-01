@@ -2171,7 +2171,13 @@
   },
 
   "SSLVersionMin": {
-    "note": "This policy is retired, see https://crbug.com/487730."
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SSLVersionMin": "tls1.1" },
+    "pref_mappings": [
+      { "pref": "ssl.version_min",
+        "local_state": true
+      }
+    ]
   },
 
   "SSLVersionFallbackMin": {
