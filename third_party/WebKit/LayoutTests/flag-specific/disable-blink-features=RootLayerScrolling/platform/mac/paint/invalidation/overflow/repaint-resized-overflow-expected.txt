@@ -1,0 +1,33 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 204, 784, 52],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='s'",
+          "rect": [8, 200, 108, 56],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='s'",
+      "reason": "incremental"
+    }
+  ]
+}
+

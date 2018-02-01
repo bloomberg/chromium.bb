@@ -1,0 +1,18 @@
+Item 1
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='composited-container'",
+      "position": [8, 8],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden"
+    }
+  ]
+}
+

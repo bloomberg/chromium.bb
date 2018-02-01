@@ -29,6 +29,10 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutView #document",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow HTML",
       "reason": "geometry"
     },

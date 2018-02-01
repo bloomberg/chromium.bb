@@ -1,0 +1,24 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutImage IMG id='box' class='smaller'",
+          "rect": [-10, 28, 276, 278],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutImage IMG id='box' class='smaller'",
+      "reason": "subtree"
+    }
+  ]
+}
+

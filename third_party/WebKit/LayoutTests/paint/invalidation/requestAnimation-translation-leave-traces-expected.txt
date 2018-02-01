@@ -5,6 +5,16 @@ Tested locations: 1200,1500
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 585],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [1600, 585],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -12,12 +22,12 @@ Tested locations: 1200,1500
         {
           "object": "LayoutView #document",
           "rect": [1300, 0, 300, 585],
-          "reason": "incremental"
+          "reason": "background on scrolling contents layer"
         },
         {
           "object": "LayoutView #document",
           "rect": [1000, 0, 300, 585],
-          "reason": "incremental"
+          "reason": "background on scrolling contents layer"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
@@ -44,16 +54,16 @@ Tested locations: 1200,1500
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
     },
     {
       "object": "LayoutBlockFlow DIV id='box'",
       "reason": "subtree"
     },
     {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
     },
     {
       "object": "LayoutBlockFlow DIV id='box'",

@@ -4,6 +4,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -13,30 +23,18 @@
       "bounds": [368, 218]
     },
     {
-      "name": "Frame Overflow Controls Host Layer",
+      "name": "LayoutView #document",
       "position": [23, 23],
-      "bounds": [300, 150],
-      "drawsContent": false
+      "bounds": [300, 150]
     },
     {
-      "name": "Frame Clipping Layer",
+      "name": "Scrolling Layer",
       "position": [23, 23],
       "bounds": [285, 150],
       "drawsContent": false
     },
     {
-      "name": "Frame Scrolling Layer",
-      "position": [23, 23],
-      "drawsContent": false
-    },
-    {
-      "name": "Content Root Layer",
-      "position": [23, 23],
-      "bounds": [285, 192],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutView #document",
+      "name": "Scrolling Contents Layer",
       "position": [23, 23],
       "bounds": [285, 192]
     },
@@ -46,33 +44,16 @@
       "bounds": [252, 172]
     },
     {
-      "name": "Frame Overflow Controls Host Layer",
-      "position": [32, 32],
-      "bounds": [250, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Clipping Layer",
-      "position": [32, 32],
-      "bounds": [250, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Scrolling Layer",
-      "position": [32, 32],
-      "drawsContent": false
-    },
-    {
-      "name": "Content Root Layer",
-      "position": [32, 32],
-      "bounds": [250, 230],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutView #document",
       "position": [32, 32],
-      "bounds": [250, 230],
+      "bounds": [250, 170],
       "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [32, 32],
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
@@ -82,7 +63,13 @@
       "transform": 1
     },
     {
-      "name": "Frame Vertical Scrollbar Layer",
+      "name": "Overflow Controls Host Layer",
+      "position": [23, 23],
+      "bounds": [300, 150],
+      "drawsContent": false
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
       "position": [308, 23],
       "bounds": [15, 150],
       "drawsContent": false

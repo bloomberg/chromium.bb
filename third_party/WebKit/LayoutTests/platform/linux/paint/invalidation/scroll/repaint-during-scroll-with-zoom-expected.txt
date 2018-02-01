@@ -3,16 +3,26 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [3, 65, 235, 235],
+          "object": "LayoutView #document",
+          "rect": [3, 65, 250, 250],
           "reason": "subtree"
         },
         {
-          "object": "LayoutView #document",
+          "object": "LayoutBlockFlow BODY",
           "rect": [3, 65, 235, 235],
           "reason": "subtree"
         },
@@ -41,16 +51,16 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
       "object": "HorizontalScrollbar",
       "reason": "scroll control"
     },
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow HTML",

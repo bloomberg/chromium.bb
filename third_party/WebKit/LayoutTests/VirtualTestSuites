@@ -182,31 +182,6 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "rootlayerscrolls",
-    "base": "scrollingcoordinator",
-    "args": ["--root-layer-scrolls"]
-  },
-  {
-    "prefix": "rootlayerscrolls",
-    "base": "fast/scrolling",
-    "args": ["--root-layer-scrolls"]
-  },
-  {
-    "prefix": "rootlayerscrolls",
-    "base": "rootscroller",
-    "args": ["--root-layer-scrolls"]
-  },
-  {
-    "prefix": "rootlayerscrolls",
-    "base": "fast/history/scroll-restoration",
-    "args": ["--root-layer-scrolls"]
-  },
-  {
-    "prefix": "rootlayerscrolls",
-    "base": "scrollbars",
-    "args": ["--root-layer-scrolls"]
-  },
-  {
     "prefix": "scroll_customization",
     "base": "fast/scroll-behavior",
     "args": ["--enable-blink-features=ScrollCustomization"]
@@ -280,43 +255,43 @@
   {
     "prefix": "spv175",
     "base": "compositing",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "paint",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "fast/borders",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "fast/multicol",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "fast/pagination",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "fragmentation",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "printing",
-    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "args": ["--enable-slimming-paint-v175"],
     "references_use_default_args": true
   },
   {

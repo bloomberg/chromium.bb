@@ -2,6 +2,16 @@
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 585],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [1250, 585],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -39,7 +49,7 @@
         {
           "object": "LayoutView #document",
           "rect": [1250, 0, 250, 585],
-          "reason": "incremental"
+          "reason": "background on scrolling contents layer"
         },
         {
           "object": "LayoutImage IMG",
@@ -76,8 +86,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",

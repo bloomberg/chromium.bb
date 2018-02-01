@@ -1,0 +1,43 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
+          "rect": [0, 280, 440, 60],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
+          "rect": [0, 80, 440, 60],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
+          "rect": [380, 200, 60, 140],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
+          "rect": [380, 0, 60, 140],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
+      "reason": "incremental"
+    }
+  ]
+}
+

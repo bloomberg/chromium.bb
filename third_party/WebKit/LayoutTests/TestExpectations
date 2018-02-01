@@ -735,8 +735,10 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-isolate-002.htm
 crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-plaintext-001.html [ Failure ]
 
-crbug.com/267206 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Timeout Failure ]
+crbug.com/267206 fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+
+crbug.com/417782 fast/scrolling/scrollbar-prevent-default.html [ Timeout Failure ]
 crbug.com/280342 [ Mac Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
@@ -899,7 +901,6 @@ crbug.com/505364 external/wpt/css/css-scoping/slotted-slot.html [ Failure ]
 
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
-crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-align.html [ Skip ]
@@ -1161,9 +1162,6 @@ crbug.com/658305 css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-zoom.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/filter-effect-removed.html [ Failure Pass ]
-
-crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
-crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
@@ -2896,7 +2894,7 @@ crbug.com/755405 [ Android ] tables/mozilla_expected_failures/bugs/bug1010.html 
 crbug.com/755405 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
 crbug.com/755405 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
 crbug.com/755405 [ Android ] virtual/layout_ng/fast/block/margin-collapse/019.html [ Failure Crash ]
-crbug.com/755405 [ Android ] virtual/rootlayerscrolls/fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html [ Failure ]
+crbug.com/755405 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html [ Failure ]
 crbug.com/755405 [ Android ] compositing/sibling-positioning.html [ Failure ]
 crbug.com/755405 [ Android ] css3/selectors3/html/css3-modsel-18.html [ Failure Crash ]
 crbug.com/755405 [ Android ] css3/selectors3/html/css3-modsel-61.html [ Failure Crash ]
@@ -3047,7 +3045,7 @@ crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause
 crbug.com/757955 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
-crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Pass Failure Timeout ]
+crbug.com/757955 http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Pass Failure Timeout ]
 
 # This test has a fixed number of time which can depend on performance.
 
@@ -3219,8 +3217,8 @@ crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js 
 crbug.com/785179 [ Mac10.11 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
 
 # Sheriff failures 2017-11-29
-crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
-crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Failure Pass ]
+crbug.com/789567 scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
+crbug.com/789567 scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789567 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789478 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
 crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure Timeout ]
@@ -3321,3 +3319,75 @@ crbug.com/805794 [ Linux Win ] virtual/threaded/animations/responsive/viewport-u
 crbug.com/806748 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
 # Flaky on Linux
 crbug.com/806017 [ Linux ] virtual/gpu/fast/canvas/canvas-strokePath-shadow.html [ Pass Timeout ]
+
+################################################################################
+# Root Layer Scrolling expectations
+#
+# These entries were copied from FlagExpectations/root-layer-scrolls
+################################################################################
+crbug.com/417782 compositing/iframes/become-composited-nested-iframes.html [ Failure ]
+crbug.com/417782 compositing/overflow/border-radius-composited-subframe.html [ Failure ]
+crbug.com/417782 compositing/overflow/tiled-mask.html [ Failure ]
+crbug.com/417782 compositing/squashing/squash-above-fixed-1.html [ Failure ]
+crbug.com/417782 compositing/squashing/squash-above-fixed-3.html [ Failure ]
+crbug.com/417782 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
+crbug.com/417782 css3/filters/effect-reference-subregion-nested.html [ Failure ]
+crbug.com/417782 fast/css/sticky/replaced-sticky.html [ Failure ]
+crbug.com/417782 fast/css/sticky/sticky-style-change.html [ Failure ]
+crbug.com/417782 fast/events/scale-and-scroll-iframe-window.html [ Failure ]
+crbug.com/417782 fast/frames/iframe-scaling-with-scroll.html [ Failure ]
+crbug.com/417782 fast/overflow/scrollRevealButton.html [ Failure ]
+crbug.com/417782 fast/scroll-behavior/scroll-into-view-sticky.html [ Crash ]
+crbug.com/417782 [ Win ] http/tests/devtools/editor/text-editor-formatter.js [ Timeout ]
+crbug.com/417782 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
+crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
+crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
+crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
+crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
+crbug.com/417782 http/tests/misc/acid3.html [ Failure ]
+crbug.com/417782 inspector-protocol/css/css-get-background-colors.js [ Failure ]
+crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ Failure ]
+crbug.com/417782 inspector-protocol/page/get-layout-metrics.js [ Failure ]
+crbug.com/417782 paint/invalidation/background/body-background-image.html [ Failure ]
+crbug.com/417782 paint/invalidation/background/viewport-gradient-background-html-move-overflow.html [ Failure ]
+crbug.com/417782 paint/invalidation/background/viewport-gradient-background-html-resize-overflow.html [ Failure ]
+crbug.com/417782 paint/invalidation/compositing/iframe-inside-squashed-layer.html [ Failure ]
+crbug.com/417782 paint/invalidation/filters/filter-on-html-element-with-fixed-position-child.html [ Failure ]
+crbug.com/417782 paint/invalidation/reflection/reflection-with-rotation.html [ Failure ]
+crbug.com/417782 paint/invalidation/scroll/overflow-scroll-body-appear.html [ Failure ]
+crbug.com/417782 paint/invalidation/scroll/repaint-during-scroll-with-zoom.html [ Failure ]
+crbug.com/417782 paint/invalidation/scroll/scrolled-iframe-scrollbar-change.html [ Failure ]
+crbug.com/417782 paint/invalidation/svg/absolute-sized-document-no-scrollbars.svg [ Failure ]
+crbug.com/417782 paint/invalidation/svg/relative-sized-document-scrollbars.svg [ Failure ]
+crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
+crbug.com/417782 [ Linux ] paint/overflow/fixed-background-scroll-window.html [ Failure ]
+crbug.com/417782 printing/thead-under-multicol.html [ Failure ]
+crbug.com/417782 transforms/selection-bounds-in-transformed-view.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
+crbug.com/417782 virtual/mouseevent_fractional/fast/events/scale-and-scroll-iframe-window.html [ Failure ]
+crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/border-radius-composited-subframe.html [ Failure ]
+crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
+crbug.com/417782 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Failure ]
+crbug.com/417782 virtual/scroll_customization/fast/scroll-behavior/scroll-into-view-sticky.html [ Crash ]
+crbug.com/417782 virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
+crbug.com/417782 virtual/threaded/fast/scroll-behavior/scroll-into-view-sticky.html [ Crash ]
+crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
+crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
+crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
+crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
+crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
+crbug.com/417782 [ Linux ] virtual/threaded/printing/absolute-position-headers-and-footers.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Failure ]
+crbug.com/417782 virtual/threaded/printing/thead-under-multicol.html [ Failure ]
+crbug.com/417782 compositing/masks/mask-layer-size.html [ Failure ]
+crbug.com/417782 paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
+################################################################################
+# End of Root Layer Scrolling expectations
+################################################################################

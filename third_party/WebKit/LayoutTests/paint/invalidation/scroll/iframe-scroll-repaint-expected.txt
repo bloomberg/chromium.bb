@@ -2,19 +2,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }

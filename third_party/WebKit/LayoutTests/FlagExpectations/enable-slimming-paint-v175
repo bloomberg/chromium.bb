@@ -104,3 +104,9 @@ crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nes
 
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
+
+crbug.com/711468 fast/frames/frame-set-scaling-rotate.html [ Failure ]
+crbug.com/711468 fast/frames/frame-set-scaling-skew.html [ Failure ]
+crbug.com/711468 fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Failure ]
+crbug.com/711468 plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
+crbug.com/711468 svg/hixie/perf/007.xml [ Failure ]

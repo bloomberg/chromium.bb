@@ -3,6 +3,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -13,7 +23,8 @@
       "backgroundColor": "#FF0000E6",
       "maskLayer": [
         {
-          "name": "Mask Layer",
+          "name": "Child Clipping Mask Layer",
+          "position": [8, 8],
           "bounds": [800, 300]
         }
       ],

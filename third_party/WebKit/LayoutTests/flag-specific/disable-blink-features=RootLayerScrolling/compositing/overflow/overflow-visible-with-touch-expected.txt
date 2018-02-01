@@ -1,0 +1,11 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1008, 1008],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    }
+  ]
+}
+
