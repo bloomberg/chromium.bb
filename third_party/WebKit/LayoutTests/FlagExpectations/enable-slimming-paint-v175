@@ -1,6 +1,5 @@
 # Skip tests that we are running under virtual/spv175
 Bug(none) compositing/ [ Skip ]
-Bug(none) virtual/prefer_compositing_to_lcd_text/compositing [ Skip ]
 Bug(none) paint/ [ Skip ]
 Bug(none) fast/borders/ [ Skip ]
 Bug(none) fast/multicol/ [ Skip ]
@@ -87,16 +86,21 @@ crbug.com/769942 virtual/exotic-color-space/images/color-profile-svg-foreign-obj
 crbug.com/769942 fast/clip/clip-path-inline-element-crash.html [ Skip ]
 crbug.com/769942 hittesting/image-with-clip-path.html [ Skip ]
 crbug.com/769942 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Skip ]
+crbug.com/769942 virtual/prefer_compositing_to_lcd_text/compositing/overflow/accelerated-scrolling-with-clip-path-text.html [ Skip ]
+crbug.com/769942 virtual/prefer_compositing_to_lcd_text/compositing/overflow/accelerated-scrolling-with-clip-path.html [ Skip ]
+crbug.com/769942 virtual/prefer_compositing_to_lcd_text/compositing/overflow/accelerated-scrolling-with-clip-reference.html [ Skip ]
+crbug.com/769942 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ancestor-with-clip-path.html [ Skip ]
+crbug.com/769942 virtual/prefer_compositing_to_lcd_text/compositing/overflow/descendant-with-clip-path.html [ Skip ]
 
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
 # This will pass with --root-layer-scrolls.
 crbug.com/771643 scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
-# Incorect LocalBorderBoxProperties for absolute-pos under transformed table section. 
-crbug.com/771643 tables/table-transform-absolute-position-child.html [ Failure ]
 # Others.
 crbug.com/771643 virtual/threaded/printing/fixed-positioned-scrolled.html [ Failure ]
+# Difficult ancestor clip mask issue.
+crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]

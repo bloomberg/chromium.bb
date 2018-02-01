@@ -84,9 +84,8 @@ crbug.com/769942 virtual/spv175/paint/clipath/clip-path-with-background-and-box-
 crbug.com/769942 virtual/spv175/paint/invalidation/clip/clip-path-constant-repaint.html [ Skip ]
 
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
-crbug.com/771643 virtual/spv175/fast/multicol/border-radius-clipped-layer.html [ Failure ]
-crbug.com/771643 virtual/spv175/fast/multicol/mixed-opacity-test.html [ Failure ]
-crbug.com/771643 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]
+crbug.com/807395 virtual/spv175/fast/multicol/mixed-opacity-test.html [ Failure ]
+crbug.com/807382 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]
 crbug.com/805049 [ Mac ] virtual/spv175/compositing/iframes/fixed-position-iframe.html [ Pass Crash ]
 
 # spv175+root-layer-scrolls failures. They also fail with root-layer-scrolls without enable-slimming-paint-v175.
