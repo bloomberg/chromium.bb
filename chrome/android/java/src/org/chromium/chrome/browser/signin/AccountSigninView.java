@@ -321,7 +321,7 @@ public class AccountSigninView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         if (mConfirmSyncDataStateMachine != null) {
-            mConfirmSyncDataStateMachine.cancel(false /* dismissDialogs */);
+            mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ true);
             mConfirmSyncDataStateMachine = null;
         }
         mProfileDataCache.removeObserver(mProfileDataCacheObserver);
@@ -434,7 +434,7 @@ public class AccountSigninView extends FrameLayout {
         if (selectedAccountChanged && mConfirmSyncDataStateMachine != null) {
             // Any dialogs that may have been showing are now invalid (they were created
             // for the previously selected account).
-            mConfirmSyncDataStateMachine.cancel(true /* dismissDialogs */);
+            mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ false);
             mConfirmSyncDataStateMachine = null;
         }
 
