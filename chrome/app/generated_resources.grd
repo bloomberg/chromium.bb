@@ -4681,6 +4681,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN" desc="In Title Case: The title of the Sign in button in the account chooser when there is one account.">
           Sign In
         </message>
+        <message name="IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON" desc="In Title Case: The label of the 'Manage Passwords' button in the manage-passwords bubble.">
+          Manage Passwords
+        </message>
         <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN" desc="In Title Case: The title of the Sign in button in the bubble promoting Chrome sign-in.">
           Sign In
         </message>
@@ -4709,6 +4712,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="not use_titlecase">
         <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN" desc="The title of the Sign in button in the account chooser when there is one account.">
           Sign in
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON" desc="The label of the 'Manage passwords' link in the manage-passwords bubble.">
+          Manage passwords
         </message>
         <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN" desc="The title of the Sign in button in the bubble promoting Chrome sign-in.">
           Sign in
@@ -5477,12 +5483,16 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save
         </message>
-        <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
-          Update password
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
-          Never for this site
-        </message>
+        <if expr="use_titlecase">
+          <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="In Title Case: Update button text for password manager">
+            Update Password
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
+            Update password
+          </message>
+        </if>
         <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
           Never
         </message>
@@ -9217,9 +9227,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Password saved. View and manage saved passwords at <ph name="SAVED_PASSWORDS_LINK">$1<ex>passwords.google.com</ex></ph>
         </message>
       </if>
-      <message name="IDS_MANAGE_PASSWORDS_BUBBLE_LINK" desc="The label of the 'Manage passwords' link in the Manage Passwords bubble view">
-        Manage passwords
-      </message>
       <message name="IDS_MANAGE_PASSWORDS_LINK" desc="The text for a link to the user's saved passwords. This is inserted into an infobar or a bubble that the browser shows to the user. The infobar and the bubble use a separate string in the translation console that has a placeholder for this link title.">
         Google saved passwords
       </message>
