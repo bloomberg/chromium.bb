@@ -4,6 +4,7 @@
 
 #include "modules/webaudio/AudioWorklet.h"
 
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
@@ -21,12 +22,15 @@ AudioWorklet* AudioWorklet::Create(BaseAudioContext* context) {
 AudioWorklet::AudioWorklet(BaseAudioContext* context)
     : Worklet(ToDocument(context->GetExecutionContext())), context_(context) {}
 
-void AudioWorklet::CreateProcessor(AudioWorkletHandler* handler,
-                                   MessagePortChannel message_port_channel) {
+void AudioWorklet::CreateProcessor(
+    AudioWorkletHandler* handler,
+    MessagePortChannel message_port_channel,
+    scoped_refptr<SerializedScriptValue> node_options) {
   DCHECK(IsMainThread());
   DCHECK(GetMessagingProxy());
   GetMessagingProxy()->CreateProcessor(handler,
-                                       std::move(message_port_channel));
+                                       std::move(message_port_channel),
+                                       std::move(node_options));
 }
 
 void AudioWorklet::NotifyGlobalScopeIsUpdated() {

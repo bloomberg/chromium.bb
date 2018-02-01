@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8ForCore.h"
@@ -125,7 +126,8 @@ void AudioWorkletGlobalScope::registerProcessor(
 AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
     const String& name,
     float sample_rate,
-    MessagePortChannel message_port_channel) {
+    MessagePortChannel message_port_channel,
+    scoped_refptr<SerializedScriptValue> node_options) {
   DCHECK(IsContextThread());
 
   // TODO(hongchan): do this only once when the association between
@@ -152,6 +154,12 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
   processor_creation_params_ = std::make_unique<ProcessorCreationParams>(
       name, std::move(message_port_channel));
 
+  v8::Local<v8::Value> argv[] = {
+    ToV8(node_options->Deserialize(isolate),
+         script_state->GetContext()->Global(),
+         isolate)
+  };
+
   // This invokes the static constructor of AudioWorkletProcessor. There is no
   // way to pass additional constructor arguments that are not described in
   // WebIDL, the static constructor will look up |processor_creation_params_| in
@@ -161,7 +169,8 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
       V8ScriptRunner::CallAsConstructor(isolate,
                                         definition->ConstructorLocal(isolate),
                                         ExecutionContext::From(script_state),
-                                        0, nullptr)
+                                        WTF_ARRAY_LENGTH(argv),
+                                        argv)
           .ToLocal(&result);
   processor_creation_params_.reset();
 

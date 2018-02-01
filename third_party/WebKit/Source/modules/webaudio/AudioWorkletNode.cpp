@@ -6,6 +6,7 @@
 
 #include "core/messaging/MessageChannel.h"
 #include "core/messaging/MessagePort.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
@@ -229,6 +230,7 @@ AudioWorkletNode::AudioWorkletNode(
 }
 
 AudioWorkletNode* AudioWorkletNode::Create(
+    ScriptState* script_state,
     BaseAudioContext* context,
     const String& name,
     const AudioWorkletNodeOptions& options,
@@ -314,10 +316,31 @@ AudioWorkletNode* AudioWorkletNode::Create(
   // context keeps reference as a source node.
   context->NotifySourceNodeStartedProcessing(node);
 
+  v8::Isolate* isolate = script_state->GetIsolate();
+  SerializedScriptValue::SerializeOptions serialize_options;
+  serialize_options.for_storage = SerializedScriptValue::kNotForStorage;
+
+  // The node options must be serialized since they are passed to and consumed
+  // by a worklet thread.
+  scoped_refptr<SerializedScriptValue> serialized_node_options =
+      SerializedScriptValue::Serialize(
+          isolate,
+          ToV8(options, script_state->GetContext()->Global(), isolate),
+          serialize_options,
+          exception_state);
+
+  // |serialized_node_options| can be nullptr if the option dictionary is not
+  // valid.
+  if (!serialized_node_options) {
+    serialized_node_options = SerializedScriptValue::NullValue();
+  }
+  DCHECK(serialized_node_options);
+
   // This is non-blocking async call. |node| still can be returned to user
   // before the scheduled async task is completed.
   context->audioWorklet()->CreateProcessor(&node->GetWorkletHandler(),
-                                           std::move(processor_port_channel));
+                                           std::move(processor_port_channel),
+                                           std::move(serialized_node_options));
 
   return node;
 }

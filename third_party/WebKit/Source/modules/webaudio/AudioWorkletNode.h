@@ -19,6 +19,7 @@ class BaseAudioContext;
 class CrossThreadAudioParamInfo;
 class ExceptionState;
 class MessagePort;
+class ScriptState;
 
 enum class AudioWorkletProcessorState {
   kPending,
@@ -95,7 +96,8 @@ class AudioWorkletNode final : public AudioNode,
   USING_GARBAGE_COLLECTED_MIXIN(AudioWorkletNode);
 
  public:
-  static AudioWorkletNode* Create(BaseAudioContext*,
+  static AudioWorkletNode* Create(ScriptState*,
+                                  BaseAudioContext*,
                                   const String& name,
                                   const AudioWorkletNodeOptions&,
                                   ExceptionState&);
