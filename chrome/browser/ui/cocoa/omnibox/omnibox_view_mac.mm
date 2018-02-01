@@ -595,7 +595,8 @@ void OmniboxViewMac::ApplyTextAttributes(
   DCHECK(attributing_display_string_ == nil);
   base::AutoReset<NSMutableAttributedString*> resetter(
       &attributing_display_string_, attributed_string);
-  UpdateTextStyle(display_text, ChromeAutocompleteSchemeClassifier(profile_));
+  UpdateTextStyle(display_text, model()->CurrentTextIsURL(),
+                  ChromeAutocompleteSchemeClassifier(profile_));
 }
 
 void OmniboxViewMac::OnTemporaryTextMaybeChanged(

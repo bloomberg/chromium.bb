@@ -208,6 +208,7 @@ void OmniboxView::TextChanged() {
 
 void OmniboxView::UpdateTextStyle(
     const base::string16& display_text,
+    const bool text_is_url,
     const AutocompleteSchemeClassifier& classifier) {
   enum DemphasizeComponents {
     EVERYTHING,
@@ -220,7 +221,7 @@ void OmniboxView::UpdateTextStyle(
   AutocompleteInput::ParseForEmphasizeComponents(display_text, classifier,
                                                  &scheme, &host);
 
-  if (model_->CurrentTextIsURL()) {
+  if (text_is_url) {
     const base::string16 url_scheme =
         display_text.substr(scheme.begin, scheme.len);
     // Extension IDs are not human-readable, so deemphasize everything to draw

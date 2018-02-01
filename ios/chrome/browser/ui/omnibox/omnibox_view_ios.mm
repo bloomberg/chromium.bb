@@ -701,7 +701,8 @@ NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
   DCHECK(attributing_display_string_ == nil);
   base::AutoReset<NSMutableAttributedString*> resetter(
       &attributing_display_string_, as);
-  UpdateTextStyle(text, AutocompleteSchemeClassifierImpl());
+  UpdateTextStyle(text, model()->CurrentTextIsURL(),
+                  AutocompleteSchemeClassifierImpl());
   return as;
 }
 

@@ -125,7 +125,8 @@ void TestingOmniboxView::CheckUpdatePopupCallInfo(
 }
 
 void TestingOmniboxView::EmphasizeURLComponents() {
-  UpdateTextStyle(text(), model()->client()->GetSchemeClassifier());
+  UpdateTextStyle(text(), model()->CurrentTextIsURL(),
+                  model()->client()->GetSchemeClassifier());
 }
 
 void TestingOmniboxView::OnFocus() {
