@@ -976,10 +976,7 @@ Element* Document::createElement(const AtomicString& local_name,
 
   // 5. Let element be the result of creating an element given ...
   Element* element =
-      CreateElement(q_name, is_v1, create_v1_builtin,
-                    should_create_builtin ? is : g_null_atom, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+      CreateElement(q_name, is_v1, should_create_builtin ? is : g_null_atom);
 
   // 8. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty()) {
@@ -1063,10 +1060,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   // 3. Let element be the result of creating an element
   Element* element =
-      CreateElement(q_name, is_v1, create_v1_builtin,
-                    should_create_builtin ? is : g_null_atom, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+      CreateElement(q_name, is_v1, should_create_builtin ? is : g_null_atom);
 
   // 4. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty()) {
@@ -1087,28 +1081,15 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 // TODO(tkent): Update or remove |is_v1| argument. At this moment, this
 // function is called only by createElement*() with string_or_options
 // argument. So we can determine v0 or v1 precisely.
-// TODO(tkent): Remove |create_v1_builtin| flag. This is for an obsolete
-// exception.
 Element* Document::CreateElement(const QualifiedName& q_name,
                                  bool is_v1,
-                                 bool create_v1_builtin,
-                                 const AtomicString& is,
-                                 ExceptionState& exception_state) {
+                                 const AtomicString& is) {
   CustomElementDefinition* definition = nullptr;
   if (is_v1 && q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
     const CustomElementDescriptor desc(is.IsEmpty() ? q_name.LocalName() : is,
                                        q_name.LocalName());
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
       definition = registry->DefinitionFor(desc);
-
-    // 4. If 'is' is non-null and definition is null, throw NotFoundError
-    // TODO(yurak): update when https://github.com/w3c/webcomponents/issues/608
-    //              is resolved. crbug.com/807205
-    if (!definition && create_v1_builtin) {
-      exception_state.ThrowDOMException(kNotFoundError,
-                                        "Custom element definition not found.");
-      return nullptr;
-    }
   }
 
   // 5. Let element be the result of creating an element
@@ -1121,6 +1102,12 @@ Element* Document::CreateElement(const QualifiedName& q_name,
     element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
   } else {
     element = CreateRawElement(q_name, kCreatedByCreateElement);
+    // 7.3. If namespace is the HTML namespace, and either localName is
+    // a valid custom element name or is is non-null, then set result’s
+    // custom element state to "undefined".
+    if (q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI &&
+        (CustomElement::IsValidName(q_name.LocalName()) || !is.IsEmpty()))
+      element->SetCustomElementState(CustomElementState::kUndefined);
   }
   return element;
 }
