@@ -47,7 +47,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Usage info.
   void OnGetUsageInfo(const storage::UsageInfoEntries& entries);
-  void OnUsageInfoCleared(blink::mojom::QuotaStatusCode code);
+  void OnStorageCleared(base::OnceClosure callback,
+                        blink::mojom::QuotaStatusCode code);
+  void OnUsageCleared();
 
 #if defined(OS_CHROMEOS)
   // Alert the Javascript that the |kEnableDRM| pref has changed.

@@ -177,7 +177,10 @@ void OnLocalStorageUsageInfo(
 
     if (infos[i].last_modified >= delete_begin &&
         infos[i].last_modified <= delete_end) {
-      dom_storage_context->DeleteLocalStorage(infos[i].origin);
+      // TODO(dullweber): |callback| should be passed to DeleteLocalStorage()
+      // but then ASAN complains about a few tests that need to be fixed.
+      dom_storage_context->DeleteLocalStorage(infos[i].origin,
+                                              base::BindOnce(&base::DoNothing));
     }
   }
   callback.Run();
@@ -216,9 +219,13 @@ void ClearLocalStorageOnUIThread(
     bool can_delete = origin_matcher.is_null() ||
                       origin_matcher.Run(storage_origin,
                                          special_storage_policy.get());
-    if (can_delete)
-      dom_storage_context->DeleteLocalStorageForPhysicalOrigin(storage_origin);
-
+    if (can_delete) {
+      // TODO(dullweber): |callback| should be passed to
+      // DeleteLocalStorageForPhysicalOrigin() but then ASAN complains about a
+      // few tests that need to be fixed.
+      dom_storage_context->DeleteLocalStorageForPhysicalOrigin(
+          storage_origin, base::BindOnce(&base::DoNothing));
+    }
     callback.Run();
     return;
   }

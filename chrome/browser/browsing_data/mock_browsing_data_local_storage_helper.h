@@ -22,7 +22,7 @@ class MockBrowsingDataLocalStorageHelper
 
   // BrowsingDataLocalStorageHelper implementation.
   void StartFetching(const FetchCallback& callback) override;
-  void DeleteOrigin(const GURL& origin) override;
+  void DeleteOrigin(const GURL& origin, base::OnceClosure callback) override;
 
   // Adds some LocalStorageInfo samples.
   void AddLocalStorageSamples();

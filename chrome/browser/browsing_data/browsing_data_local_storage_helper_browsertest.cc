@@ -126,8 +126,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
       new BrowsingDataLocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
-  local_storage_helper->DeleteOrigin(GURL(kOriginOfTestFile0));
-  content::RunAllTasksUntilIdle();
+  base::RunLoop run_loop;
+  local_storage_helper->DeleteOrigin(GURL(kOriginOfTestFile0),
+                                     run_loop.QuitClosure());
+  run_loop.Run();
 
   // Ensure the file has been deleted.
   base::ScopedAllowBlockingForTesting allow_blocking;

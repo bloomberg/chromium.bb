@@ -44,9 +44,9 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   helper->AddLocalStorage(origin2);
   helper->AddLocalStorage(origin3);
   EXPECT_EQ(3u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin2);
+  helper->DeleteOrigin(origin2, base::BindOnce(&base::DoNothing));
   EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin1);
+  helper->DeleteOrigin(origin1, base::BindOnce(&base::DoNothing));
   EXPECT_EQ(1u, helper->GetLocalStorageCount());
 
   // Local storage for a suborigin
@@ -55,11 +55,11 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   const GURL suborigin_on_origin_3("http-so://suborigin.foo.example.com");
   helper->AddLocalStorage(suborigin_on_origin_3);
   EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin3);
+  helper->DeleteOrigin(origin3, base::BindOnce(&base::DoNothing));
   EXPECT_EQ(0u, helper->GetLocalStorageCount());
   helper->AddLocalStorage(suborigin_on_origin_3);
   EXPECT_EQ(1u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin3);
+  helper->DeleteOrigin(origin3, base::BindOnce(&base::DoNothing));
   EXPECT_EQ(0u, helper->GetLocalStorageCount());
 
   // Similarly, the suborigin should be deleted when the corresponding
@@ -67,7 +67,7 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   helper->AddLocalStorage(origin3);
   helper->AddLocalStorage(suborigin_on_origin_3);
   EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(suborigin_on_origin_3);
+  helper->DeleteOrigin(suborigin_on_origin_3, base::BindOnce(&base::DoNothing));
   EXPECT_EQ(0u, helper->GetLocalStorageCount());
 }
 

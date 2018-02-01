@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 #include <cctype>  // for std::isalnum
+#include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -81,8 +82,13 @@ std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
   return key;
 }
 
-void NoOpSuccess(bool success) {}
-void NoOpDatabaseError(leveldb::mojom::DatabaseError error) {}
+void SuccessResponse(base::OnceClosure callback, bool success) {
+  std::move(callback).Run();
+}
+void DatabaseErrorResponse(base::OnceClosure callback,
+                           leveldb::mojom::DatabaseError error) {
+  std::move(callback).Run();
+}
 
 void MigrateStorageHelper(
     base::FilePath db_path,
@@ -397,10 +403,12 @@ void LocalStorageContextMojo::GetStorageUsage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin) {
+void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin,
+                                            base::OnceClosure callback) {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::DeleteStorage,
-                                    weak_ptr_factory_.GetWeakPtr(), origin));
+                                    weak_ptr_factory_.GetWeakPtr(), origin,
+                                    std::move(callback)));
     return;
   }
 
@@ -408,21 +416,26 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin) {
   if (found != level_db_wrappers_.end()) {
     // Renderer process expects |source| to always be two newline separated
     // strings.
-    found->second->level_db_wrapper()->DeleteAll("\n",
-                                                 base::BindOnce(&NoOpSuccess));
+    found->second->level_db_wrapper()->DeleteAll(
+        "\n", base::BindOnce(&SuccessResponse, std::move(callback)));
     found->second->level_db_wrapper()->ScheduleImmediateCommit();
   } else if (database_) {
     std::vector<leveldb::mojom::BatchedOperationPtr> operations;
     AddDeleteOriginOperations(&operations, origin);
-    database_->Write(std::move(operations), base::BindOnce(&NoOpDatabaseError));
+    database_->Write(
+        std::move(operations),
+        base::BindOnce(&DatabaseErrorResponse, std::move(callback)));
+  } else {
+    std::move(callback).Run();
   }
 }
 
 void LocalStorageContextMojo::DeleteStorageForPhysicalOrigin(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    base::OnceClosure callback) {
   GetStorageUsage(base::BindOnce(
       &LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin,
-      weak_ptr_factory_.GetWeakPtr(), origin));
+      weak_ptr_factory_.GetWeakPtr(), origin, std::move(callback)));
 }
 
 void LocalStorageContextMojo::Flush() {
@@ -963,14 +976,21 @@ void LocalStorageContextMojo::OnGotMetaData(
 
 void LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin(
     const url::Origin& origin,
+    base::OnceClosure callback,
     std::vector<LocalStorageUsageInfo> usage) {
+  // Wait for callbacks for each entry in |usage| and a callback for |origin|.
+  base::RepeatingClosure barrier =
+      base::BarrierClosure(usage.size() + 1, std::move(callback));
   for (const auto& info : usage) {
     url::Origin origin_candidate = url::Origin::Create(info.origin);
     if (!origin_candidate.IsSameOriginWith(origin) &&
-        origin_candidate.IsSamePhysicalOriginWith(origin))
-      DeleteStorage(origin_candidate);
+        origin_candidate.IsSamePhysicalOriginWith(origin)) {
+      DeleteStorage(origin_candidate, barrier);
+    } else {
+      barrier.Run();
+    }
   }
-  DeleteStorage(origin);
+  DeleteStorage(origin, barrier);
 }
 
 void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
