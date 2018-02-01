@@ -4296,7 +4296,7 @@ PASS OffscreenCanvas interface: existence and properties of interface prototype 
 PASS OffscreenCanvas interface: existence and properties of interface prototype object's "constructor" property
 PASS OffscreenCanvas interface: attribute width
 PASS OffscreenCanvas interface: attribute height
-PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextType, any)
+PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextId, any)
 PASS OffscreenCanvas interface: operation transferToImageBitmap()
 PASS OffscreenCanvas interface: operation convertToBlob(ImageEncodeOptions)
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface object
