@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "media/audio/audio_system_helper.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/audio/public/interfaces/system_info.mojom.h"
+#include "services/audio/public/mojom/system_info.mojom.h"
 
 namespace media {
 class AudioManager;

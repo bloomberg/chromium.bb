@@ -9,7 +9,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_system.h"
-#include "services/audio/public/interfaces/system_info.mojom.h"
+#include "services/audio/public/mojom/system_info.mojom.h"
 
 namespace service_manager {
 class Connector;

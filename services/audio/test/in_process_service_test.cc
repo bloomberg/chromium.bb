@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 #include "services/audio/public/cpp/fake_system_info.h"
-#include "services/audio/public/interfaces/constants.mojom.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/audio/public/interfaces/system_info.mojom.h"
+#include "services/audio/public/mojom/system_info.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_AUDIO_PUBLIC_INTERFACES_AUDIO_DEVICE_DESCRIPTION_STRUCT_TRAITS_H_
-#define SERVICES_AUDIO_PUBLIC_INTERFACES_AUDIO_DEVICE_DESCRIPTION_STRUCT_TRAITS_H_
+#ifndef SERVICES_AUDIO_PUBLIC_INTERFACES_AUDIO_DEVICE_DESCRIPTION_MOJOM_TRAITS_H_
+#define SERVICES_AUDIO_PUBLIC_INTERFACES_AUDIO_DEVICE_DESCRIPTION_MOJOM_TRAITS_H_
 
 #include <string>
 
 #include "media/audio/audio_device_description.h"
-#include "services/audio/public/interfaces/system_info.mojom.h"
+#include "services/audio/public/mojom/system_info.mojom.h"
 
 namespace mojo {
 
@@ -31,4 +31,4 @@ struct StructTraits<audio::mojom::AudioDeviceDescriptionDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_AUDIO_PUBLIC_INTERFACES_AUDIO_DEVICE_DESCRIPTION_STRUCT_TRAITS_H_
+#endif  // SERVICES_AUDIO_PUBLIC_INTERFACES_AUDIO_DEVICE_DESCRIPTION_MOJOM_TRAITS_H_
