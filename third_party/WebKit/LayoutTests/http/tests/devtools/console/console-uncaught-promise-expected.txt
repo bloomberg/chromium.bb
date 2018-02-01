@@ -3,7 +3,7 @@ Tests that uncaught promise rejections are logged into console.
 console-uncaught-promise.js:26 Uncaught (in promise) Error: err1
 promiseTest1 @ console-uncaught-promise.js:26
 timeout @ console-uncaught-promise.js:19
-Promise rejected (async)
+Promise.then (async)
 promiseTest1 @ console-uncaught-promise.js:29
 timeout @ console-uncaught-promise.js:19
 setTimeout (async)
@@ -12,13 +12,13 @@ runNextPromiseTest @ console-uncaught-promise.js:18
 console-uncaught-promise.js:47 Uncaught (in promise) Error: err2
 promiseTest2 @ console-uncaught-promise.js:47
 timeout @ console-uncaught-promise.js:19
-Promise rejected (async)
+Promise.then (async)
 (anonymous) @ console-uncaught-promise.js:43
-Promise rejected (async)
+Promise.catch (async)
 (anonymous) @ console-uncaught-promise.js:42
-Promise rejected (async)
+Promise.catch (async)
 (anonymous) @ console-uncaught-promise.js:41
-Promise rejected (async)
+Promise.catch (async)
 promiseTest2 @ console-uncaught-promise.js:40
 timeout @ console-uncaught-promise.js:19
 setTimeout (async)
@@ -27,7 +27,7 @@ runNextPromiseTest @ console-uncaught-promise.js:18
 console-uncaught-promise.js:65 Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 throwDOMException @ console-uncaught-promise.js:65
 catcher @ console-uncaught-promise.js:57
-Promise rejected (async)
+Promise.catch (async)
 promiseTest3 @ console-uncaught-promise.js:56
 timeout @ console-uncaught-promise.js:19
 setTimeout (async)
@@ -68,10 +68,4 @@ runNextPromiseTest @ console-uncaught-promise.js:18
 A bad HTTP response code (404) was received when fetching the script.
 :8000/devtools/console/404 Failed to load resource: net::ERR_INVALID_RESPONSE
 inspected-page.html:1 Uncaught (in promise) TypeError: Failed to register a ServiceWorker: A bad HTTP response code (404) was received when fetching the script.
-Promise (async)
-promiseTest9 @ console-uncaught-promise.js:96
-timeout @ console-uncaught-promise.js:19
-setTimeout (async)
-runNextPromiseTest @ console-uncaught-promise.js:18
-(anonymous) @ console-uncaught-promise.js:106
 
