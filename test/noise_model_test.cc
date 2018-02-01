@@ -301,21 +301,16 @@ class NoiseModelUpdateTest : public ::testing::Test {
 
     data_.resize(kWidth * kHeight * 3);
     denoised_.resize(kWidth * kHeight * 3);
-    noise_.resize(kWidth * kHeight);
+    noise_.resize(kWidth * kHeight * 3);
     renoise_.resize(kWidth * kHeight);
     flat_blocks_.resize(kNumBlocksX * kNumBlocksY);
 
-    data_ptr_[0] = &data_[0];
-    data_ptr_[1] = &data_[kWidth * kHeight];
-    data_ptr_[2] = &data_[kWidth * kHeight * 2];
-
-    denoised_ptr_[0] = &denoised_[0];
-    denoised_ptr_[1] = &denoised_[kWidth * kHeight];
-    denoised_ptr_[2] = &denoised_[kWidth * kHeight * 2];
-
-    strides_[0] = kWidth;
-    strides_[1] = kWidth;
-    strides_[2] = kWidth;
+    for (int c = 0, offset = 0; c < 3; ++c, offset += kWidth * kHeight) {
+      data_ptr_[c] = &data_[offset];
+      noise_ptr_[c] = &noise_[offset];
+      denoised_ptr_[c] = &denoised_[offset];
+      strides_[c] = kWidth;
+    }
     chroma_sub_[0] = 0;
     chroma_sub_[1] = 0;
   }
@@ -333,6 +328,7 @@ class NoiseModelUpdateTest : public ::testing::Test {
 
   uint8_t *data_ptr_[3];
   uint8_t *denoised_ptr_[3];
+  double *noise_ptr_[3];
   int strides_[3];
   int chroma_sub_[2];
 };
@@ -421,7 +417,7 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForWhiteRandomNoise) {
 }
 
 TEST_F(NoiseModelUpdateTest, UpdateSuccessForScaledWhiteNoise) {
-  const double kCoeffEps = 0.05;
+  const double kCoeffEps = 0.055;
   const double kLowStd = 1;
   const double kHighStd = 4;
   for (int y = 0; y < kHeight; ++y) {
@@ -493,26 +489,39 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
   const double kStd = 4;
   const double kStdEps = 0.3;
   const int kBlockSize = 16;
-  const double kCoeffEps = 0.05;
-  const double kCoeffs[24] = {
-    0.02884, -0.03356, 0.00633,  0.01757,  0.02849,  -0.04620,
-    0.02833, -0.07178, 0.07076,  -0.11603, -0.10413, -0.16571,
-    0.05158, -0.07969, 0.02640,  -0.07191, 0.02530,  0.41968,
-    0.21450, -0.00702, -0.01401, -0.03676, -0.08713, 0.44196,
+  const double kCoeffEps = 0.06;
+  // Use different coefficients for each channel
+  const double kCoeffs[3][24] = {
+    { 0.02884, -0.03356, 0.00633,  0.01757,  0.02849,  -0.04620,
+      0.02833, -0.07178, 0.07076,  -0.11603, -0.10413, -0.16571,
+      0.05158, -0.07969, 0.02640,  -0.07191, 0.02530,  0.41968,
+      0.21450, -0.00702, -0.01401, -0.03676, -0.08713, 0.44196 },
+    { 0.00269, -0.01291, -0.01513, 0.07234,  0.03208,   0.00477,
+      0.00226, -0.00254, 0.03533,  0.12841,  -0.25970,  -0.06336,
+      0.05238, -0.00845, -0.03118, 0.09043,  -0.36558,  0.48903,
+      0.00595, -0.11938, 0.02106,  0.095956, -0.350139, 0.59305 },
+    { -0.00643, -0.01080, -0.01466, 0.06951, 0.03707,  -0.00482,
+      0.00817,  -0.00909, 0.02949,  0.12181, -0.25210, -0.07886,
+      0.06083,  -0.01210, -0.03108, 0.08944, -0.35875, 0.49150,
+      0.00415,  -0.12905, 0.02870,  0.09740, -0.34610, 0.58824 },
   };
   ASSERT_EQ(model_.n, kNumCoeffs);
-  aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs,
-                  &noise_[0], kWidth, kHeight);
+  chroma_sub_[0] = chroma_sub_[1] = 1;
+
   flat_blocks_.assign(flat_blocks_.size(), 1);
 
-  // Add noise onto a planar image
-  for (int y = 0; y < kHeight; ++y) {
-    for (int x = 0; x < kWidth; ++x) {
-      for (int c = 0; c < 3; ++c) {
+  // Add different noise onto each plane
+  for (int c = 0; c < 3; ++c) {
+    aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs[c],
+                    noise_ptr_[c], kWidth, kHeight);
+    const int x_shift = c > 0 ? chroma_sub_[0] : 0;
+    const int y_shift = c > 0 ? chroma_sub_[1] : 0;
+    for (int y = 0; y < (kHeight >> y_shift); ++y) {
+      for (int x = 0; x < (kWidth >> x_shift); ++x) {
         const uint8_t value = 64 + x / 2 + y / 4;
-        denoised_ptr_[c][y * kWidth + x] = value;
         data_ptr_[c][y * kWidth + x] =
-            uint8_t(value + noise_[y * kWidth + x] * kStd);
+            uint8_t(value + noise_ptr_[c][y * strides_[c] + x] * kStd);
+        denoised_ptr_[c][y * strides_[c] + x] = value;
       }
     }
   }
@@ -523,36 +532,33 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
 
   // For the Y plane, the solved coefficients should be close to the original
   const int n = model_.n;
-  for (int i = 0; i < n; ++i) {
-    EXPECT_NEAR(kCoeffs[i], model_.latest_state[0].eqns.x[i], kCoeffEps);
-    EXPECT_NEAR(kCoeffs[i], model_.combined_state[0].eqns.x[i], kCoeffEps);
-  }
-
-  // Check chroma planes are completely correlated with the Y data
-  for (int c = 1; c < 3; ++c) {
-    // The AR coefficients should be close to zero
-    for (int i = 0; i < model_.n; ++i) {
-      EXPECT_NEAR(0, model_.latest_state[c].eqns.x[i], kCoeffEps);
-      EXPECT_NEAR(0, model_.combined_state[c].eqns.x[i], kCoeffEps);
+  for (int c = 0; c < 3; ++c) {
+    for (int i = 0; i < n; ++i) {
+      EXPECT_NEAR(kCoeffs[c][i], model_.latest_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(kCoeffs[c][i], model_.combined_state[c].eqns.x[i], kCoeffEps);
     }
-    // We should have high correlation between the Y plane
-    EXPECT_NEAR(1, model_.latest_state[c].eqns.x[n], kCoeffEps);
-    EXPECT_NEAR(1, model_.combined_state[c].eqns.x[n], kCoeffEps);
+    // The chroma planes should be uncorrelated with the luma plane
+    if (c > 0) {
+      EXPECT_NEAR(0, model_.latest_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(0, model_.combined_state[c].eqns.x[n], kCoeffEps);
+    }
+    // Correlation between the coefficient vector and the fitted coefficients
+    // should be close to 1.
+    EXPECT_LT(0.98, aom_normalized_cross_correlation(
+                        model_.latest_state[c].eqns.x, kCoeffs[c], kNumCoeffs));
+
+    aom_noise_synth(model_.params.lag, model_.n, model_.coords,
+                    model_.latest_state[c].eqns.x, &renoise_[0], kWidth,
+                    kHeight);
+
+    EXPECT_TRUE(aom_noise_data_validate(&renoise_[0], kWidth, kHeight));
   }
 
-  // Correlation between the coefficient vector and the fitted coefficients
-  // should be close to 1.
-  EXPECT_LT(0.99, aom_normalized_cross_correlation(
-                      model_.latest_state[0].eqns.x, kCoeffs, kNumCoeffs));
-
-  aom_noise_synth(model_.params.lag, model_.n, model_.coords,
-                  model_.latest_state[0].eqns.x, &renoise_[0], kWidth, kHeight);
-
-  EXPECT_TRUE(aom_noise_data_validate(&renoise_[0], kWidth, kHeight));
-
-  // Check noise variance
-  for (int i = 0; i < model_.latest_state[0].strength_solver.eqns.n; ++i) {
-    EXPECT_NEAR(kStd, model_.latest_state[0].strength_solver.eqns.x[i],
-                kStdEps);
+  // Check fitted noise strength
+  for (int c = 0; c < 3; ++c) {
+    for (int i = 0; i < model_.latest_state[c].strength_solver.eqns.n; ++i) {
+      EXPECT_NEAR(kStd, model_.latest_state[c].strength_solver.eqns.x[i],
+                  kStdEps);
+    }
   }
 }
