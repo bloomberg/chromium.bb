@@ -38,6 +38,7 @@ const CGFloat kIncognitoToolbarButtonTitleHighlightedColor = 0x888a8c;
 const CGFloat kBackButtonImageInset = -9;
 const CGFloat kForwardButtonImageInset = -7;
 const CGFloat kLeadingLocationBarButtonImageInset = 15;
+const CGFloat kCancelButtonHorizontalInset = 8;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
 

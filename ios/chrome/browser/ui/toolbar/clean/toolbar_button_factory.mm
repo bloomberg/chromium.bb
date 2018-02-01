@@ -348,6 +348,24 @@ const int styleCount = 2;
   return locationBarLeadingButton;
 }
 
+- (UIButton*)cancelButton {
+  UIButton* cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [cancelButton setTitle:l10n_util::GetNSString(IDS_CANCEL)
+                forState:UIControlStateNormal];
+  [cancelButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                  forAxis:UILayoutConstraintAxisHorizontal];
+  [cancelButton
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+  cancelButton.contentEdgeInsets = UIEdgeInsetsMake(
+      0, kCancelButtonHorizontalInset, 0, kCancelButtonHorizontalInset);
+  cancelButton.hidden = YES;
+  [cancelButton addTarget:self.dispatcher
+                   action:@selector(cancelOmniboxEdit)
+         forControlEvents:UIControlEventTouchUpInside];
+  return cancelButton;
+}
+
 #pragma mark - Helpers
 
 // Sets the |button| width to |width| with a priority of

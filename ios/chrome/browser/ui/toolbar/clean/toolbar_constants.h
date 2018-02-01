@@ -49,6 +49,7 @@ extern const CGFloat kIncognitoToolbarButtonTitleHighlightedColor;
 extern const CGFloat kBackButtonImageInset;
 extern const CGFloat kForwardButtonImageInset;
 extern const CGFloat kLeadingLocationBarButtonImageInset;
+extern const CGFloat kCancelButtonHorizontalInset;
 
 // Maximum number of tabs displayed by the button containing the tab count.
 extern const NSInteger kShowTabStripButtonMaxTabCount;
