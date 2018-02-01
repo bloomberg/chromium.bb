@@ -119,6 +119,7 @@
     "direction",
     "dirname",
     "disabled",
+    "disablepictureinpicture",
     "disableremoteplayback",
     "download",
     "draggable",

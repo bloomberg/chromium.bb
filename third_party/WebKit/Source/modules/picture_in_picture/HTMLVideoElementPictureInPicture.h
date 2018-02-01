@@ -5,6 +5,7 @@
 #ifndef HTMLVideoElementPictureInPicture_h
 #define HTMLVideoElementPictureInPicture_h
 
+#include "core/dom/QualifiedName.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
@@ -19,6 +20,12 @@ class MODULES_EXPORT HTMLVideoElementPictureInPicture {
 
  public:
   static ScriptPromise requestPictureInPicture(ScriptState*, HTMLVideoElement&);
+
+  static bool FastHasAttribute(const QualifiedName&, const HTMLVideoElement&);
+
+  static void SetBooleanAttribute(const QualifiedName&,
+                                  HTMLVideoElement&,
+                                  bool);
 };
 
 }  // namespace blink

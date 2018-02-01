@@ -1867,6 +1867,7 @@ enum WebFeature {
   kCSSGradient = 2355,
   kCSSPaintFunction = 2356,
   kWebkitCrossFade = 2357,
+  kDisablePictureInPictureAttribute = 2358,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
