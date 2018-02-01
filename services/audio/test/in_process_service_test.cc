@@ -7,6 +7,7 @@
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
+#include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/interfaces/constants.mojom.h"
 #include "services/audio/service_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -154,6 +155,36 @@ class InProcessServiceTest : public service_manager::test::ServiceTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceTest);
 };
+
+// Tests for FakeSystemInfo overriding the global binder.
+class FakeSystemInfoTest : public InProcessServiceTest<false>,
+                           public FakeSystemInfo {
+ public:
+  FakeSystemInfoTest() {}
+  ~FakeSystemInfoTest() override {}
+
+ protected:
+  MOCK_METHOD0(MethodCalled, void());
+
+ private:
+  void HasInputDevices(HasInputDevicesCallback callback) override {
+    std::move(callback).Run(true);
+    MethodCalled();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSystemInfoTest);
+};
+
+TEST_F(FakeSystemInfoTest, HasInputDevicesCalledOnGlobalBinderOverride) {
+  FakeSystemInfo::OverrideGlobalBinderForAudioService(this);
+  base::RunLoop wait_loop;
+  EXPECT_CALL(*this, MethodCalled())
+      .WillOnce(testing::Invoke(&wait_loop, &base::RunLoop::Quit));
+  audio_system()->HasInputDevices(base::BindOnce([](bool) {}));
+  wait_loop.Run();
+  service_manager::ServiceContext::ClearGlobalBindersForTesting(
+      mojom::kServiceName);
+}
 
 }  // namespace audio
 

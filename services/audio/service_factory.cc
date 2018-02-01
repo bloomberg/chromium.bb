@@ -6,6 +6,7 @@
 
 #include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace audio {
 

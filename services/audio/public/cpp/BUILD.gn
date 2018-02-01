@@ -15,3 +15,19 @@ source_set("cpp") {
     "//services/service_manager/public/cpp",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_system_info.cc",
+    "fake_system_info.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//media",
+    "//services/audio/public/interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}
