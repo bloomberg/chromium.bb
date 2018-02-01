@@ -34,8 +34,11 @@ class PathPositionMapper {
   USING_FAST_MALLOC(PathPositionMapper);
 
  public:
-  static std::unique_ptr<PathPositionMapper> Create(const Path& path) {
-    return WTF::WrapUnique(new PathPositionMapper(path));
+  static std::unique_ptr<PathPositionMapper> Create(const Path& path,
+                                                    float computed_path_length,
+                                                    float start_offset) {
+    return WTF::WrapUnique(
+        new PathPositionMapper(path, computed_path_length, start_offset));
   }
 
   enum PositionType {
@@ -45,12 +48,16 @@ class PathPositionMapper {
   };
   PositionType PointAndNormalAtLength(float length, FloatPoint&, float& angle);
   float length() const { return path_length_; }
+  float StartOffset() const { return path_start_offset_; }
 
  private:
-  explicit PathPositionMapper(const Path&);
+  PathPositionMapper(const Path&,
+                     float computed_path_length,
+                     float start_offset);
 
   Path::PositionCalculator position_calculator_;
   float path_length_;
+  float path_start_offset_;
 };
 
 class LayoutSVGTextPath final : public LayoutSVGInline {
@@ -58,7 +65,6 @@ class LayoutSVGTextPath final : public LayoutSVGInline {
   explicit LayoutSVGTextPath(Element*);
 
   std::unique_ptr<PathPositionMapper> LayoutPath() const;
-  float CalculateStartOffset(float) const;
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 

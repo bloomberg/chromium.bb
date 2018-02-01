@@ -30,10 +30,6 @@ class LineLayoutSVGTextPath : public LineLayoutSVGInline {
     return ToSVGTextPath()->LayoutPath();
   }
 
-  float CalculateStartOffset(float path_length) const {
-    return ToSVGTextPath()->CalculateStartOffset(path_length);
-  }
-
  private:
   LayoutSVGTextPath* ToSVGTextPath() {
     return ToLayoutSVGTextPath(GetLayoutObject());

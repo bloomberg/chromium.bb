@@ -23,12 +23,15 @@
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
 #include "platform/graphics/Path.h"
-#include <memory>
 
 namespace blink {
 
-PathPositionMapper::PathPositionMapper(const Path& path)
-    : position_calculator_(path), path_length_(path.length()) {}
+PathPositionMapper::PathPositionMapper(const Path& path,
+                                       float computed_path_length,
+                                       float start_offset)
+    : position_calculator_(path),
+      path_length_(computed_path_length),
+      path_start_offset_(start_offset) {}
 
 PathPositionMapper::PositionType PathPositionMapper::PointAndNormalAtLength(
     float length,
@@ -40,6 +43,7 @@ PathPositionMapper::PositionType PathPositionMapper::PointAndNormalAtLength(
     return kAfterPath;
   DCHECK_GE(length, 0);
   DCHECK_LE(length, path_length_);
+
   position_calculator_.PointAndNormalAtLength(length, point, angle);
   return kOnPath;
 }
@@ -65,31 +69,44 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
   if (!IsSVGPathElement(target_element))
     return nullptr;
 
-  SVGPathElement& path_element = ToSVGPathElement(*target_element);
+  const SVGPathElement& path_element = ToSVGPathElement(*target_element);
   Path path_data = path_element.AsPath();
   if (path_data.IsEmpty())
     return nullptr;
 
-  // Spec:  The transform attribute on the referenced 'path' element represents
-  // a supplemental transformation relative to the current user coordinate
-  // system for the current 'text' element, including any adjustments to the
-  // current user coordinate system due to a possible transform attribute on the
-  // current 'text' element. http://www.w3.org/TR/SVG/text.html#TextPathElement
+  // Spec: The 'transform' attribute on the referenced 'path' ...
+  // element represents a supplemental transformation relative to the current
+  // user coordinate system for the current 'text' element, including any
+  // adjustments to the current user coordinate system due to a possible
+  // 'transform' property on the current 'text' element.
+  // https://svgwg.org/svg2-draft/text.html#TextPathElement
   path_data.Transform(
       path_element.CalculateTransform(SVGElement::kIncludeMotionTransform));
 
-  return PathPositionMapper::Create(path_data);
-}
+  // Determine the length to resolve any percentage 'startOffset'
+  // against - either 'pathLength' (author path length) or the
+  // computed length of the path.
+  float computed_path_length = path_data.length();
+  float author_path_length = path_element.AuthorPathLength();
+  float offset_scale = 1;
+  if (!std::isnan(author_path_length)) {
+    offset_scale = SVGGeometryElement::PathLengthScaleFactor(
+        computed_path_length, author_path_length);
+  } else {
+    author_path_length = computed_path_length;
+  }
 
-float LayoutSVGTextPath::CalculateStartOffset(float path_length) const {
   const SVGLength& start_offset =
-      *ToSVGTextPathElement(GetNode())->startOffset()->CurrentValue();
-  float text_path_start_offset = start_offset.ValueAsPercentage();
+      *text_path_element.startOffset()->CurrentValue();
+  float path_start_offset = start_offset.ValueAsPercentage();
   if (start_offset.TypeWithCalcResolved() ==
       CSSPrimitiveValue::UnitType::kPercentage)
-    text_path_start_offset *= path_length;
+    path_start_offset *= author_path_length;
 
-  return text_path_start_offset;
+  path_start_offset *= offset_scale;
+
+  return PathPositionMapper::Create(path_data, computed_path_length,
+                                    path_start_offset);
 }
 
 }  // namespace blink
