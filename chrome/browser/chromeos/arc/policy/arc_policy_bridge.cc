@@ -193,6 +193,8 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
     data.SetString("X509", x509_data);
     ca_certs->Append(data.CreateDeepCopy());
   }
+  if (!ca_certs->GetList().empty())
+    filtered_policies->SetKey("credentialsConfigDisabled", base::Value(true));
   filtered_policies->Set(kArcCaCerts, std::move(ca_certs));
 }
 
