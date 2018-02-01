@@ -220,7 +220,7 @@ static_library("content_shell_lib") {
     "//content/public/renderer",
     "//content/public/utility",
     "//ipc",
-    "//services/network/public/cpp",
+    "//services/network:network_service",
   ]
   deps = [
     ":content_shell_packaged_services_manifest_overlay",

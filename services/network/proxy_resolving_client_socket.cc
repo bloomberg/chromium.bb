@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/proxy_resolving_client_socket.h"
+#include "services/network/proxy_resolving_client_socket.h"
 
 #include <stdint.h>
 #include <string>
@@ -106,8 +106,8 @@ int ProxyResolvingClientSocket::Connect(
 void ProxyResolvingClientSocket::Disconnect() {
   CloseTransportSocket();
   if (proxy_resolve_request_) {
-    network_session_->proxy_resolution_service()
-                    ->CancelRequest(proxy_resolve_request_);
+    network_session_->proxy_resolution_service()->CancelRequest(
+        proxy_resolve_request_);
     proxy_resolve_request_ = nullptr;
   }
   user_connect_callback_.Reset();

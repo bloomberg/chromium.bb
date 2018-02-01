@@ -43,7 +43,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
-#include "services/network/public/cpp/loader_util.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 
 using base::TimeDelta;

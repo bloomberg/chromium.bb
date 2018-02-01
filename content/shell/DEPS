@@ -12,6 +12,8 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public",
 
+  "+services/network/ignore_errors_cert_verifier.h",
+
   # Network service public library.
   "+services/network/public/cpp",
 

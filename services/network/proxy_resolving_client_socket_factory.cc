@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -10,7 +10,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
-#include "services/network/public/cpp/proxy_resolving_client_socket.h"
+#include "services/network/proxy_resolving_client_socket.h"
 
 namespace network {
 

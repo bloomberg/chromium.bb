@@ -33,8 +33,8 @@
 #include "remoting/signaling/signaling_address.h"
 #include "remoting/signaling/xmpp_login_handler.h"
 #include "remoting/signaling/xmpp_stream_parser.h"
-#include "services/network/public/cpp/proxy_resolving_client_socket.h"
-#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
+#include "services/network/proxy_resolving_client_socket.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 // Use 50 seconds keep-alive interval, in case routers terminate

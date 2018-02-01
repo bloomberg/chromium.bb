@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/loader_util.h"
+#include "services/network/loader_util.h"
 
 #include <string>
 

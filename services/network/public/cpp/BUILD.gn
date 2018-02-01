@@ -12,20 +12,12 @@ component("cpp") {
     "cors/cors.h",
     "features.cc",
     "features.h",
-    "ignore_errors_cert_verifier.cc",
-    "ignore_errors_cert_verifier.h",
-    "loader_util.cc",
-    "loader_util.h",
     "mutable_network_traffic_annotation_tag_struct_traits.h",
     "mutable_partial_network_traffic_annotation_tag_struct_traits.h",
     "net_adapters.cc",
     "net_adapters.h",
     "network_switches.cc",
     "network_switches.h",
-    "proxy_resolving_client_socket.cc",
-    "proxy_resolving_client_socket.h",
-    "proxy_resolving_client_socket_factory.cc",
-    "proxy_resolving_client_socket_factory.h",
     "url_request_context_owner.cc",
     "url_request_context_owner.h",
   ]
@@ -103,12 +95,10 @@ source_set("tests") {
 
   sources = [
     "cors/cors_unittest.cc",
-    "ignore_errors_cert_verifier_unittest.cc",
     "mutable_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "network_struct_traits_unittest.cc",
     "proxy_config_traits_unittest.cc",
-    "proxy_resolving_client_socket_unittest.cc",
   ]
   deps = [
     ":cpp",

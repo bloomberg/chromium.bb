@@ -28,7 +28,7 @@
 #include "net/socket/datagram_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

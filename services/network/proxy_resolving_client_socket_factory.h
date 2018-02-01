@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_FACTORY_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_FACTORY_H_
+#ifndef SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_FACTORY_H_
+#define SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_FACTORY_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@ namespace network {
 
 class ProxyResolvingClientSocket;
 
-class COMPONENT_EXPORT(NETWORK_CPP) ProxyResolvingClientSocketFactory {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocketFactory {
  public:
   // Constructs a new ProxyResolvingClientSocket. |socket_factory| is the
   // ClientSocketFactory that will be used by the underlying HttpNetworkSession.
@@ -53,4 +53,4 @@ class COMPONENT_EXPORT(NETWORK_CPP) ProxyResolvingClientSocketFactory {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_FACTORY_H_
+#endif  // SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_FACTORY_H_

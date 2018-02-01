@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#ifndef SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#define SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
 
 #include <stdint.h>
 
@@ -41,7 +41,7 @@ namespace network {
 // TODO(xunjieli): https://crbug.com/721401. This class should be private (i.e.
 // moved out of services/network/public/cpp). The functionalities will be
 // exposed only through a mojo interface.
-class COMPONENT_EXPORT(NETWORK_CPP) ProxyResolvingClientSocket
+class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
     : public net::StreamSocket {
  public:
   // Constructs a new ProxyResolvingClientSocket. |url|'s host and port specify
@@ -118,4 +118,4 @@ class COMPONENT_EXPORT(NETWORK_CPP) ProxyResolvingClientSocket
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#endif  // SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_

@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
-#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 
 namespace network {
 class ProxyResolvingClientSocketFactory;
