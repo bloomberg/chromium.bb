@@ -644,8 +644,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   std::vector<std::unique_ptr<EmulatedColorBuffer>> available_color_textures_;
   size_t create_color_buffer_count_for_test_;
 
-  // Maximum 2D texture size for limiting offscreen framebuffer sizes
-  GLint max_2d_texture_size_;
+  // Maximum 2D resource sizes for limiting offscreen framebuffer sizes
+  GLint max_2d_texture_size_ = 0;
+  GLint max_renderbuffer_size_ = 0;
+  GLint max_offscreen_framebuffer_size_ = 0;
 
   // State tracking of currently bound draw and read framebuffers (client IDs)
   GLuint bound_draw_framebuffer_;

@@ -50,4 +50,33 @@ TEST(OffscreenSurfaceTest, ResizeToZero) {
   gl.Destroy();
 }
 
+// Resize to a number between maximum int and uint
+TEST(OffscreenSurfaceTest, ResizeOverflow) {
+  GLManager::Options options;
+  options.size = gfx::Size(4, 4);
+  options.context_type = CONTEXT_TYPE_OPENGLES2;
+  options.context_lost_allowed = true;
+
+  GLManager gl;
+  gl.Initialize(options);
+  ASSERT_TRUE(gl.IsInitialized());
+  gl.MakeCurrent();
+
+  // If losing the context will cause the process to exit, do not perform this
+  // test as it will cause all subsequent tests to not run.
+  if (gl.workarounds().exit_on_context_lost) {
+    gl.Destroy();
+    return;
+  }
+
+  // Context loss is allowed trying to resize to such a huge value but make sure
+  // that no asserts or undefined behavior is triggered
+  static const GLuint kLargeSize =
+      static_cast<GLuint>(std::numeric_limits<int>::max()) + 10;
+  glResizeCHROMIUM(kLargeSize, 1, 1.0f, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM,
+                   GL_TRUE);
+
+  gl.Destroy();
+}
+
 }  // namespace gpu
