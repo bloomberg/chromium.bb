@@ -33,7 +33,6 @@
 #include <memory>
 #include "base/location.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/font_family_names.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"

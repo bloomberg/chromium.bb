@@ -231,7 +231,7 @@ class PLATFORM_EXPORT FetchContext
 
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
-      scoped_refptr<WebTaskRunner>) {
+      scoped_refptr<base::SingleThreadTaskRunner>) {
     NOTREACHED();
     return nullptr;
   }
@@ -251,10 +251,10 @@ class PLATFORM_EXPORT FetchContext
 
   // Returns a task runner intended for loading tasks. Should work even in a
   // worker context, where WebFrameScheduler doesn't exist, but the returned
-  // WebTaskRunner will not work after the context detaches (after Detach() is
-  // called, this will return a generic timer suitable for post-detach actions
-  // like keepalive requests.
-  virtual scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() {
+  // base::SingleThreadTaskRunner will not work after the context detaches
+  // (after Detach() is called, this will return a generic timer suitable for
+  // post-detach actions like keepalive requests.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
     return Platform::Current()->CurrentThread()->GetWebTaskRunner();
   }
 

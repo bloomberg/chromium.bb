@@ -8,11 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/TextureHolder.h"
-
 
 class GrContext;
 
@@ -117,7 +116,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   // For RetainOriginalSkImageForCopyOnWrite()
   sk_sp<SkImage> original_skia_image_;
-  scoped_refptr<WebTaskRunner> original_skia_image_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> original_skia_image_task_runner_;
   PlatformThreadId original_skia_image_thread_id_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;

@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 #include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/Functional.h"

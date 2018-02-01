@@ -5,6 +5,7 @@
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -71,7 +72,7 @@ namespace {
 
 void UpdatePlaceholderImage(
     base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-    scoped_refptr<WebTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int placeholder_canvas_id,
     scoped_refptr<blink::StaticBitmapImage> image,
     unsigned resource_id) {
@@ -118,7 +119,7 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholderIfNotBlocked(
 void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
     scoped_refptr<StaticBitmapImage> image,
     unsigned resource_id) {
-  scoped_refptr<WebTaskRunner> dispatcher_task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
       Platform::Current()->CurrentThread()->GetWebTaskRunner();
 
   PostCrossThreadTask(

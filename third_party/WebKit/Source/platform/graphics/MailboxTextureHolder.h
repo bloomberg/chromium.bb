@@ -6,8 +6,8 @@
 #define MailboxTextureHolder_h
 
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/TextureHolder.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   unsigned texture_id_;
   IntSize size_;
   bool is_converted_from_skia_texture_;
-  scoped_refptr<WebTaskRunner> texture_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> texture_thread_task_runner_;
   PlatformThreadId thread_id_;
   bool did_issue_ordering_barrier_ = false;
 };

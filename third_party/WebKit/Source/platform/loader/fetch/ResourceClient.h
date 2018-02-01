@@ -91,7 +91,8 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   // additional clients.
   friend class CSSFontFaceSrcValue;
 
-  void SetResource(Resource* new_resource, WebTaskRunner* task_runner) {
+  void SetResource(Resource* new_resource,
+                   base::SingleThreadTaskRunner* task_runner) {
     if (new_resource == resource_)
       return;
 

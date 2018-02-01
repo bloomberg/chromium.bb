@@ -29,9 +29,9 @@
 #include <memory>
 
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/CrossThreadCopier.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
@@ -90,14 +90,14 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     NetworkStateObserverHandle(NetworkStateNotifier*,
                                ObserverType,
                                NetworkStateObserver*,
-                               scoped_refptr<WebTaskRunner>);
+                               scoped_refptr<base::SingleThreadTaskRunner>);
     ~NetworkStateObserverHandle();
 
    private:
     NetworkStateNotifier* notifier_;
     ObserverType type_;
     NetworkStateObserver* observer_;
-    scoped_refptr<WebTaskRunner> task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkStateObserverHandle);
   };
@@ -232,10 +232,10 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // and then added during notification.
   std::unique_ptr<NetworkStateObserverHandle> AddConnectionObserver(
       NetworkStateObserver*,
-      scoped_refptr<WebTaskRunner>);
+      scoped_refptr<base::SingleThreadTaskRunner>);
   std::unique_ptr<NetworkStateObserverHandle> AddOnLineObserver(
       NetworkStateObserver*,
-      scoped_refptr<WebTaskRunner>);
+      scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Returns the randomization salt (weak and insecure) that should be used when
   // adding noise to the network quality metrics. This is known only to the
@@ -269,34 +269,35 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // The ObserverListMap is cross-thread accessed, adding/removing Observers
   // running on a task runner.
-  using ObserverListMap =
-      HashMap<scoped_refptr<WebTaskRunner>, std::unique_ptr<ObserverList>>;
+  using ObserverListMap = HashMap<scoped_refptr<base::SingleThreadTaskRunner>,
+                                  std::unique_ptr<ObserverList>>;
 
   void NotifyObservers(ObserverListMap&, ObserverType, const NetworkState&);
   void NotifyObserversOnTaskRunner(ObserverListMap*,
                                    ObserverType,
-                                   scoped_refptr<WebTaskRunner>,
+                                   scoped_refptr<base::SingleThreadTaskRunner>,
                                    const NetworkState&);
 
   void AddObserverToMap(ObserverListMap&,
                         NetworkStateObserver*,
-                        scoped_refptr<WebTaskRunner>);
+                        scoped_refptr<base::SingleThreadTaskRunner>);
   void RemoveObserver(ObserverType,
                       NetworkStateObserver*,
-                      scoped_refptr<WebTaskRunner>);
+                      scoped_refptr<base::SingleThreadTaskRunner>);
   void RemoveObserverFromMap(ObserverListMap&,
                              NetworkStateObserver*,
-                             scoped_refptr<WebTaskRunner>);
+                             scoped_refptr<base::SingleThreadTaskRunner>);
 
-  ObserverList* LockAndFindObserverList(ObserverListMap&,
-                                        scoped_refptr<WebTaskRunner>);
+  ObserverList* LockAndFindObserverList(
+      ObserverListMap&,
+      scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Removed observers are nulled out in the list in case the list is being
   // iterated over. Once done iterating, call this to clean up nulled
   // observers.
   void CollectZeroedObservers(ObserverListMap&,
                               ObserverList*,
-                              scoped_refptr<WebTaskRunner>);
+                              scoped_refptr<base::SingleThreadTaskRunner>);
 
   mutable Mutex mutex_;
   NetworkState state_;

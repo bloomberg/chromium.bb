@@ -31,7 +31,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "platform/SharedBuffer.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/FilePathConversion.h"

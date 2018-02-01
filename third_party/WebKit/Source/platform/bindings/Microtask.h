@@ -32,7 +32,6 @@
 #define Microtask_h
 
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Functional.h"
 #include "v8/include/v8.h"

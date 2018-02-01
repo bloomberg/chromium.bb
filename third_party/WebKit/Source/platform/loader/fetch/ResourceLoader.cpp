@@ -30,7 +30,6 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 
 #include "platform/SharedBuffer.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/cors/CORS.h"

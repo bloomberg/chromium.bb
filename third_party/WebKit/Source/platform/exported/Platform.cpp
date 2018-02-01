@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/Histogram.h"
@@ -39,6 +40,8 @@
 #include "platform/Language.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
+#include "platform/WebTaskRunner.h"
+#include "platform/exported/WebClipboardImpl.h"
 #include "platform/font_family_names.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
@@ -64,7 +67,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/Source/platform/exported/WebClipboardImpl.h"
 #include "third_party/WebKit/common/origin_trials/trial_policy.h"
 
 namespace blink {
@@ -184,7 +186,7 @@ WebThread* Platform::MainThread() const {
   return main_thread_;
 }
 
-WebTaskRunner* Platform::FileTaskRunner() const {
+base::SingleThreadTaskRunner* Platform::FileTaskRunner() const {
   return file_thread_ ? file_thread_->GetWebTaskRunner() : nullptr;
 }
 

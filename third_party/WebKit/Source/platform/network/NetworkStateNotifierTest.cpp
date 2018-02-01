@@ -121,13 +121,14 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
   SaveData ObservedSaveData() const { return observed_save_data_; }
   int CallbackCount() const { return callback_count_; }
 
-  void AddObserverOnNotification(NetworkStateNotifier* notifier,
-                                 StateObserver* observer_to_add,
-                                 scoped_refptr<WebTaskRunner> task_runner) {
+  void AddObserverOnNotification(
+      NetworkStateNotifier* notifier,
+      StateObserver* observer_to_add,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     closure_ = base::BindOnce(
         [](StateObserver* observer, NetworkStateNotifier* notifier,
            StateObserver* observer_to_add,
-           scoped_refptr<WebTaskRunner> task_runner) {
+           scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
           observer->added_handle_ =
               notifier->AddConnectionObserver(observer_to_add, task_runner);
         },
@@ -170,8 +171,8 @@ class NetworkStateNotifierTest : public ::testing::Test {
     notifier_.SetOnLine(false);
   }
 
-  WebTaskRunner* GetTaskRunner() { return task_runner_.get(); }
-  WebTaskRunner* GetTaskRunner2() { return task_runner2_.get(); }
+  base::SingleThreadTaskRunner* GetTaskRunner() { return task_runner_.get(); }
+  base::SingleThreadTaskRunner* GetTaskRunner2() { return task_runner2_.get(); }
 
   void TearDown() override {
     // NetworkStateNotifier class is a singleton, so clear the override to avoid

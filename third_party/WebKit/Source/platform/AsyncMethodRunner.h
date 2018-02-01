@@ -45,9 +45,10 @@ class AsyncMethodRunner final
  public:
   typedef void (TargetClass::*TargetMethod)();
 
-  static AsyncMethodRunner* Create(TargetClass* object,
-                                   TargetMethod method,
-                                   scoped_refptr<WebTaskRunner> task_runner) {
+  static AsyncMethodRunner* Create(
+      TargetClass* object,
+      TargetMethod method,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     return new AsyncMethodRunner(object, method, std::move(task_runner));
   }
 
@@ -116,7 +117,7 @@ class AsyncMethodRunner final
  private:
   AsyncMethodRunner(TargetClass* object,
                     TargetMethod method,
-                    scoped_refptr<WebTaskRunner> task_runner)
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : timer_(std::move(task_runner),
                this,
                &AsyncMethodRunner<TargetClass>::Fired),

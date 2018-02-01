@@ -34,7 +34,6 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"

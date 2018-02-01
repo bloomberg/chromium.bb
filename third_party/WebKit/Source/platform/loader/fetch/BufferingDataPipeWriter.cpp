@@ -16,7 +16,7 @@ const auto kNone = MOJO_WRITE_DATA_FLAG_NONE;
 
 BufferingDataPipeWriter::BufferingDataPipeWriter(
     mojo::ScopedDataPipeProducerHandle handle,
-    WebTaskRunner* runner)
+    base::SingleThreadTaskRunner* runner)
     : handle_(std::move(handle)),
       watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL, runner) {
   watcher_.Watch(

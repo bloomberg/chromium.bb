@@ -105,7 +105,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void SetDecoderForTesting(std::unique_ptr<DeferredImageDecoder> decoder) {
     decoder_ = std::move(decoder);
   }
-  void SetTaskRunnerForTesting(scoped_refptr<WebTaskRunner> task_runner) {
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     task_runner_ = task_runner;
   }
 
@@ -232,7 +233,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   PaintImage::AnimationSequenceId reset_animation_sequence_id_ = 0;
 
   base::TickClock* clock_;
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Value used in UMA tracking for the number of animation frames skipped
   // during catch-up.

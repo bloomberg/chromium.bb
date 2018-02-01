@@ -528,7 +528,7 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 
   ~TimerForTest() override = default;
 
-  TimerForTest(scoped_refptr<WebTaskRunner> web_task_runner,
+  TimerForTest(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
                TimerFiredClass* timer_fired_class,
                TimerFiredFunction timer_fired_function)
       : TaskRunnerTimer<TimerFiredClass>(std::move(web_task_runner),
@@ -609,8 +609,9 @@ namespace {
 
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
-  TaskObserver(scoped_refptr<WebTaskRunner> task_runner,
-               std::vector<scoped_refptr<WebTaskRunner>>* run_order)
+  TaskObserver(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      std::vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order)
       : task_runner_(std::move(task_runner)), run_order_(run_order) {}
 
   void WillProcessTask(const base::PendingTask&) {}
@@ -620,14 +621,14 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
   }
 
  private:
-  scoped_refptr<WebTaskRunner> task_runner_;
-  std::vector<scoped_refptr<WebTaskRunner>>* run_order_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order_;
 };
 
 }  // namespace
 
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
-  std::vector<scoped_refptr<WebTaskRunner>> run_order;
+  std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
   scoped_refptr<scheduler::TaskQueue> task_runner1(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
@@ -669,7 +670,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
-  std::vector<scoped_refptr<WebTaskRunner>> run_order;
+  std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
   scoped_refptr<scheduler::TaskQueue> task_runner1(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(

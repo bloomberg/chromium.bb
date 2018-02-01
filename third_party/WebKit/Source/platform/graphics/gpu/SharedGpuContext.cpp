@@ -4,6 +4,7 @@
 
 #include "platform/graphics/gpu/SharedGpuContext.h"
 
+#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -121,7 +122,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
     // SharedGpuContext encasulates the context provider: so we only have to do
     // this once per thread.
     WaitableEvent waitable_event;
-    scoped_refptr<WebTaskRunner> task_runner =
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         Platform::Current()->MainThread()->GetWebTaskRunner();
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
