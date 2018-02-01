@@ -152,29 +152,6 @@ class NavigationURLLoaderTest : public testing::Test {
   ResourceDispatcherHostImpl host_;
 };
 
-// Tests that a basic request works.
-TEST_F(NavigationURLLoaderTest, Basic) {
-  TestNavigationURLLoaderDelegate delegate;
-  std::unique_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_1(), &delegate);
-
-  // Wait for the response to come back.
-  delegate.WaitForResponseStarted();
-
-  // Proceed with the response.
-  loader->ProceedWithResponse();
-
-  // Check the response is correct.
-  EXPECT_EQ("text/html", delegate.response()->head.mime_type);
-  EXPECT_EQ(200, delegate.response()->head.headers->response_code());
-
-  // Check the body is correct.
-  EXPECT_EQ(net::URLRequestTestJob::test_data_1(),
-            FetchURL(delegate.body()->GetURL()));
-
-  EXPECT_EQ(1, delegate.on_request_handled_counter());
-}
-
 // Tests that request failures are propagated correctly.
 TEST_F(NavigationURLLoaderTest, RequestFailedNoCertError) {
   TestNavigationURLLoaderDelegate delegate;
@@ -241,43 +218,6 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));
   EXPECT_TRUE(ssl_info.is_fatal_cert_error);
-  EXPECT_EQ(1, delegate.on_request_handled_counter());
-}
-
-// Test that redirects are sent to the delegate.
-TEST_F(NavigationURLLoaderTest, RequestRedirected) {
-  // Fake a top-level request. Choose a URL which redirects so the request can
-  // be paused before the response comes in.
-  TestNavigationURLLoaderDelegate delegate;
-  std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
-      net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
-
-  // Wait for the request to redirect.
-  delegate.WaitForRequestRedirected();
-  EXPECT_EQ(net::URLRequestTestJob::test_url_2(),
-            delegate.redirect_info().new_url);
-  EXPECT_EQ("GET", delegate.redirect_info().new_method);
-  EXPECT_EQ(net::URLRequestTestJob::test_url_2(),
-            delegate.redirect_info().new_site_for_cookies);
-  EXPECT_EQ(302, delegate.redirect_response()->head.headers->response_code());
-  EXPECT_EQ(1, delegate.on_request_handled_counter());
-
-  // Wait for the response to complete.
-  loader->FollowRedirect();
-  delegate.WaitForResponseStarted();
-
-  // Proceed with the response.
-  loader->ProceedWithResponse();
-
-  // Check the response is correct.
-  EXPECT_EQ("text/html", delegate.response()->head.mime_type);
-  EXPECT_EQ(200, delegate.response()->head.headers->response_code());
-
-  // Release the body and check it is correct.
-  EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
-  EXPECT_EQ(net::URLRequestTestJob::test_data_2(),
-            FetchURL(delegate.body()->GetURL()));
-
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
