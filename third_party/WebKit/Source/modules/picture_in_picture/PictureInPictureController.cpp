@@ -34,12 +34,17 @@ const char* PictureInPictureController::SupplementName() {
 }
 
 bool PictureInPictureController::PictureInPictureEnabled() const {
-  return GetStatus() == Status::kEnabled;
+  return IsDocumentAllowed() == Status::kEnabled;
 }
 
-PictureInPictureController::Status PictureInPictureController::GetStatus()
-    const {
+PictureInPictureController::Status
+PictureInPictureController::IsDocumentAllowed() const {
   DCHECK(GetSupplementable());
+
+  // `picture_in_picture_enabled_` is set to false by the embedder when it
+  // or the system forbids the page from using Picture-in-Picture.
+  if (!picture_in_picture_enabled_)
+    return Status::kDisabledBySystem;
 
   // If document is not allowed to use the policy-controlled feature named
   // "picture-in-picture", return kDisabledByFeaturePolicy status.
@@ -51,12 +56,17 @@ PictureInPictureController::Status PictureInPictureController::GetStatus()
     return Status::kDisabledByFeaturePolicy;
   }
 
-  // TODO(crbug.com/806249): Handle status when disabled by attribute
+  return Status::kEnabled;
+}
 
-  // `picture_in_picture_enabled_` is set to false by the embedder when it
-  // or the system forbids the page from using Picture-in-Picture.
-  if (!picture_in_picture_enabled_)
-    return Status::kDisabledBySystem;
+PictureInPictureController::Status PictureInPictureController::IsElementAllowed(
+    HTMLVideoElement& element) const {
+  PictureInPictureController::Status status = IsDocumentAllowed();
+  if (status != Status::kEnabled)
+    return status;
+
+  if (element.FastHasAttribute(HTMLNames::disablepictureinpictureAttr))
+    return Status::kDisabledByAttribute;
 
   return Status::kEnabled;
 }

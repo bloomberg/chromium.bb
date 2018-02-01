@@ -31,11 +31,14 @@ class MODULES_EXPORT PictureInPictureController
 
   enum class Status {
     kEnabled,
-    kDisabledByFeaturePolicy,
     kDisabledBySystem,
+    kDisabledByFeaturePolicy,
+    kDisabledByAttribute,
   };
 
-  Status GetStatus() const;
+  Status IsDocumentAllowed() const;
+
+  Status IsElementAllowed(HTMLVideoElement&) const;
 
   void SetPictureInPictureElement(HTMLVideoElement&);
 

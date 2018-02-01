@@ -1071,6 +1071,7 @@ html element video
     property currentTime
     property defaultMuted
     property defaultPlaybackRate
+    property disablePictureInPicture
     property disableRemotePlayback
     property duration
     property ended
