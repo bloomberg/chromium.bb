@@ -993,7 +993,7 @@ crbug.com/644358 paint/invalidation/selection/selection-after-delete.html [ Fail
 crbug.com/644358 paint/invalidation/selection/selection-after-remove.html [ Failure ]
 crbug.com/644358 paint/invalidation/window-resize/window-resize-background-image-fixed-centered-composited.html [ Failure ]
 
-Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position-if-overflow-hidden.html [ Failure ]
+Bug(none) compositing/layer-creation/main-thread-scrolling-non-composited-fixed-overflow-hidden.html [ Failure ]
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position.html [ Failure ]
 Bug(none) fast/dom/vertical-scrollbar-in-rtl.html [ Failure ]
 Bug(none) fast/events/continuous-platform-wheelevent-in-scrolling-div.html [ Failure ]
