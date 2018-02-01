@@ -5,7 +5,7 @@
 #ifndef WebScreenOrientationEnumTraits_h
 #define WebScreenOrientationEnumTraits_h
 
-#include "device/screen_orientation/public/interfaces/screen_orientation_lock_types.mojom-shared.h"
+#include "services/device/public/interfaces/screen_orientation_lock_types.mojom-shared.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace mojo {

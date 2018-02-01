@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "device/media_transfer_protocol/public/interfaces/mtp_storage_info.mojom.h"
+#include "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom.h"
 
 namespace storage_monitor {
 

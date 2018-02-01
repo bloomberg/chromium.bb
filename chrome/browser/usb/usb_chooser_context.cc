@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "device/base/device_client.h"
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 
 using device::UsbDevice;

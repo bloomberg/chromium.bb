@@ -19,8 +19,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "device/media_transfer_protocol/public/interfaces/mtp_file_entry.mojom.h"
-#include "device/media_transfer_protocol/public/interfaces/mtp_storage_info.mojom.h"
+#include "device/media_transfer_protocol/public/mojom/mtp_file_entry.mojom.h"
+#include "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom.h"
 
 #if !defined(OS_CHROMEOS)
 #error "Only used on ChromeOS"

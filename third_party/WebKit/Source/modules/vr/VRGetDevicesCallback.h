@@ -5,7 +5,7 @@
 #ifndef VRGetDevicesCallback_h
 #define VRGetDevicesCallback_h
 
-#include "device/vr/vr_service.mojom-blink.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplay.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"

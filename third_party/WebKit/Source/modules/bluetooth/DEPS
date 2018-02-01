@@ -1,5 +1,5 @@
 include_rules = [
-    "+device/bluetooth/public/interfaces",
+    "+device/bluetooth/public/mojom",
     "-modules",
     "+modules/bluetooth",
     "+modules/EventTargetModules.h",

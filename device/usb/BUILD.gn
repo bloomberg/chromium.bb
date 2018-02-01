@@ -52,7 +52,7 @@ static_library("usb") {
     "//base/third_party/dynamic_annotations",
     "//components/device_event_log",
     "//device/base",
-    "//device/usb/public/interfaces",
+    "//device/usb/public/mojom",
   ]
 
   public_deps = [
@@ -188,7 +188,7 @@ fuzzer_test("usb_descriptors_fuzzer") {
   deps = [
     ":usb",
     "//device/usb/mojo",
-    "//device/usb/public/interfaces",
+    "//device/usb/public/mojom",
     "//mojo/public/cpp/bindings",
   ]
   seed_corpus = "fuzz_corpus"

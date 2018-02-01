@@ -16,7 +16,7 @@
 #include "base/memory/singleton.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_provider.h"
-#include "device/gamepad/public/interfaces/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 
 namespace {
 class SingleThreadTaskRunner;

@@ -3,7 +3,7 @@
 `device/usb` abstracts [Universal Serial Bus](https://en.wikipedia.org/wiki/USB)
 concepts across multiple platforms.
 
-Clients should use the [public Mojo interface](/device/usb/public/interfaces).
+Clients should use the [public Mojo interface](/device/usb/public/mojom).
 
 
 ## USB ID Repository

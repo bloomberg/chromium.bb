@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "device/usb/mojo/type_converters.h"
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_descriptors.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

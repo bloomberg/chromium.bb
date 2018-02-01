@@ -15,7 +15,7 @@
 #include "components/arc/common/usb_host.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "device/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 

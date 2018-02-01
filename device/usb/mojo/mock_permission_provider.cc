@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/mojom/device.mojom.h"
 
 using ::testing::Return;
 using ::testing::_;

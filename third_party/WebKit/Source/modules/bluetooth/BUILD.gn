@@ -33,6 +33,6 @@ blink_modules_sources("bluetooth") {
   ]
 
   deps = [
-    "//device/bluetooth/public/interfaces:interfaces_blink",
+    "//device/bluetooth/public/mojom:mojom_blink",
   ]
 }

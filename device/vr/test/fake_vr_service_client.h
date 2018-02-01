@@ -5,8 +5,8 @@
 #ifndef DEVICE_VR_TEST_FAKE_VR_SERVICE_CLIENT_H_
 #define DEVICE_VR_TEST_FAKE_VR_SERVICE_CLIENT_H_
 
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
-#include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 
 #include "content/public/browser/web_contents_observer.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
-#include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

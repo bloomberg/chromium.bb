@@ -5,7 +5,7 @@
 #ifndef XRFrameProvider_h
 #define XRFrameProvider_h
 
-#include "device/vr/vr_service.mojom-blink.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

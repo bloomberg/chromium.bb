@@ -30,6 +30,6 @@ mojom("mojo_bindings") {
   ]
 
   deps = [
-    "//device/bluetooth/public/interfaces:deprecated_experimental_interfaces",
+    "//device/bluetooth/public/mojom:deprecated_experimental_interfaces",
   ]
 }

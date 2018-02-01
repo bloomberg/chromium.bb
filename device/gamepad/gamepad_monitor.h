@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_export.h"
-#include "device/gamepad/public/interfaces/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 
 namespace device {
 

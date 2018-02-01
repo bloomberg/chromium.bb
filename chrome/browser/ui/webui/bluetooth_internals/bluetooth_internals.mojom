@@ -4,7 +4,7 @@
 
 module mojom;
 
-import "device/bluetooth/public/interfaces/adapter.mojom";
+import "device/bluetooth/public/mojom/adapter.mojom";
 
 interface BluetoothInternalsHandler {
   // Gets an Adapter interface. Returns null if Bluetooth is not supported.

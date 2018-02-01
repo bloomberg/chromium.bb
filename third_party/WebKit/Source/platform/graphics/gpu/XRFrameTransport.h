@@ -5,7 +5,7 @@
 #ifndef XRFrameTransport_h
 #define XRFrameTransport_h
 
-#include "device/vr/vr_service.mojom-blink.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"

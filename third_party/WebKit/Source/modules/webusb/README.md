@@ -4,7 +4,7 @@
 for the [WebUSB specification]. It communicates with the browser process through the [public Mojo interface] of `//device/usb` to the [UsbService].
 
 [WebUSB specification]: https://wicg.github.io/webusb/
-[public Mojo interface]: /device/usb/public/interfaces
+[public Mojo interface]: /device/usb/public/mojom
 [UsbService]: /device/usb/usb_service.h
 
 

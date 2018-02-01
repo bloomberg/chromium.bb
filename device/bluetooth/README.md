@@ -20,7 +20,7 @@ have interfaces for both, e.g. `BluetoothAdapter` & `BluetoothDevice`.
 Chrome OS and Linux are supported via BlueZ, see `*_bluez` files.
 
 [Mojo](https://www.chromium.org/developers/design-documents/mojo)
-interfaces in [public/interfaces](public/interfaces) have been started
+interfaces in [public/mojom](public/mojom) have been started
 but are *not* ready for production use.
 
 

@@ -21,11 +21,11 @@ config("bluetooth_config") {
 }
 
 # Experimental implementation not ready for production use yet. See
-# public/interfaces/README.md
+# public/mojom/README.md
 source_set("deprecated_experimental_mojo") {
   sources = [
-    "//device/bluetooth/public/interfaces/connect_result_type_converter.h",
-    "//device/bluetooth/public/interfaces/gatt_result_type_converter.h",
+    "//device/bluetooth/public/mojom/connect_result_type_converter.h",
+    "//device/bluetooth/public/mojom/gatt_result_type_converter.h",
     "adapter.cc",
     "adapter.h",
     "device.cc",
@@ -36,13 +36,13 @@ source_set("deprecated_experimental_mojo") {
 
   deps = [
     ":bluetooth",
-    "//device/bluetooth/public/interfaces:deprecated_experimental_interfaces",
+    "//device/bluetooth/public/mojom:deprecated_experimental_interfaces",
     "//mojo/public/cpp/bindings",
   ]
 
   visibility = [
     # Experimental implementation not ready for production use yet. See
-    # public/interfaces/README.md
+    # public/mojom/README.md
 
     # Single approved client:
     "//chrome/browser/ui/webui/bluetooth_internals:*",
@@ -75,7 +75,7 @@ source_set("fake_bluetooth") {
 
   deps = [
     ":bluetooth",
-    "//device/bluetooth/public/interfaces:fake_bluetooth_interfaces",
+    "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
     "//mojo/public/cpp/bindings",
   ]
 }

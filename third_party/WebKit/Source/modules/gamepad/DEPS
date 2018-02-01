@@ -4,7 +4,7 @@ include_rules = [
     "+device/gamepad/public/cpp/gamepad.h",
     "+device/gamepad/public/cpp/gamepads.h",
 
-    "+device/gamepad/public/interfaces/gamepad.mojom-blink.h",
+    "+device/gamepad/public/mojom/gamepad.mojom-blink.h",
 
     "-modules",
     "+modules/EventModules.h",

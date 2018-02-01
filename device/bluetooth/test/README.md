@@ -27,7 +27,7 @@ Web Platform Tests for Web Bluetooth are being refactored to use
 `third_party/WebKit/LayoutTests/resources/bluetooth/web-bluetooth-test.js`.
 
 That library is implemented over a mojo interface `fake_bluetooth.mojom` in
-[bluetooth/public/interfaces/test](/device/bluetooth/public/interfaces/test)
+[bluetooth/public/mojom/test](/device/bluetooth/public/mojom/test)
 and is implemented in the `bluetooth/test/fake_*` files.
 
 The `fake_bluetooth.mojom` interface is not intended to be used directly.

@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
-#include "device/vr/vr_service.mojom.h"
 
 namespace device {
 

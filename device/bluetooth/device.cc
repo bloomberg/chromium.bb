@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/device.h"
-#include "device/bluetooth/public/interfaces/gatt_result_type_converter.h"
+#include "device/bluetooth/public/mojom/gatt_result_type_converter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace bluetooth {

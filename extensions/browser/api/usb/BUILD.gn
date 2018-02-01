@@ -29,7 +29,7 @@ source_set("usb") {
     "//content/public/common",
     "//device/usb",
     "//device/usb/public/cpp",
-    "//device/usb/public/interfaces",
+    "//device/usb/public/mojom",
     "//extensions/common/api",
   ]
 

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("features/features.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
@@ -18,8 +17,8 @@ if (enable_vr) {
     ]
     defines = [ "DEVICE_VR_IMPLEMENTATION" ]
     deps = [
-      ":mojo_bindings",
       "features",
+      "//device/vr/public/mojom",
     ]
     sources += [
       "orientation/orientation_device.cc",
@@ -157,9 +156,9 @@ if (enable_vr) {
     ]
 
     public_deps = [
-      ":mojo_bindings",
       ":vr",
       "//base",
+      "//device/vr/public/mojom",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
       "//testing/gmock",
@@ -214,20 +213,4 @@ if (enable_gvr_services) {
       "//ui/android:ui_java",
     ]
   }
-}
-
-mojom_component("mojo_bindings") {
-  output_prefix = "device_vr_mojo_bindings"
-  macro_prefix = "DEVICE_VR_MOJO_BINDINGS"
-
-  sources = [
-    "vr_service.mojom",
-  ]
-
-  public_deps = [
-    "//gpu/ipc/common:interfaces",
-    "//mojo/common:common_custom_types",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo:mojo",
-  ]
 }

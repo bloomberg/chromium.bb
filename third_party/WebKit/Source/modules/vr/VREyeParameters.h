@@ -6,7 +6,7 @@
 #define VREyeParameters_h
 
 #include "core/typed_arrays/DOMTypedArray.h"
-#include "device/vr/vr_service.mojom-blink.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "modules/vr/VRFieldOfView.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

@@ -18,13 +18,13 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
-#include "device/bluetooth/public/interfaces/device.mojom.h"
+#include "device/bluetooth/public/mojom/device.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace bluetooth {
 
 // Implementation of Mojo Device located in
-// device/bluetooth/public/interfaces/device.mojom.
+// device/bluetooth/public/mojom/device.mojom.
 // It handles requests to interact with Bluetooth Device.
 // Uses the platform abstraction of device/bluetooth.
 // An instance of this class is constructed by Adapter and strongly bound

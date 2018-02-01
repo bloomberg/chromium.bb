@@ -29,7 +29,7 @@ blink_modules_sources("vr") {
   ]
 
   deps = [
-    "//device/vr:mojo_bindings_blink",
+    "//device/vr/public/mojom:mojom_blink",
     "//services/metrics/public/cpp:ukm_builders",
   ]
 }

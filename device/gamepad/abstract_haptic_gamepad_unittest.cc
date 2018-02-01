@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
-#include "device/gamepad/public/interfaces/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

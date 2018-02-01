@@ -18,7 +18,7 @@
 #include "device/usb/mojo/permission_provider.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/filter_utils.h"
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 

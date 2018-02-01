@@ -41,6 +41,6 @@ blink_modules_sources("xr") {
   ]
 
   deps = [
-    "//device/vr:mojo_bindings_blink",
+    "//device/vr/public/mojom:mojom_blink",
   ]
 }

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 
 namespace bluetooth {
 

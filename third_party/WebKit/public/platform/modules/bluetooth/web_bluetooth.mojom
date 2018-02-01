@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "device/bluetooth/public/interfaces/uuid.mojom";
+import "device/bluetooth/public/mojom/uuid.mojom";
 
 // Bluetooth Terminology:
 //

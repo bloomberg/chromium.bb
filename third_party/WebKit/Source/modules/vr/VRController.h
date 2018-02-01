@@ -7,7 +7,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
-#include "device/vr/vr_service.mojom-blink.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplay.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"

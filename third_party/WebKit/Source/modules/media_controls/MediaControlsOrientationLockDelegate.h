@@ -6,12 +6,12 @@
 #define MediaControlsOrientationLockDelegate_h
 
 #include "core/dom/events/EventListener.h"
-#include "device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "services/device/public/interfaces/screen_orientation.mojom-blink.h"
 
 namespace blink {
 

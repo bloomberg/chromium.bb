@@ -8,7 +8,7 @@
 #include <iterator>
 #include <vector>
 
-#include "device/vr/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
 namespace mojo {

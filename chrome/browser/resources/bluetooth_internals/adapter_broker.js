@@ -111,7 +111,7 @@ cr.define('adapter_broker', function() {
 
   /**
    * The implementation of AdapterClient in
-   * device/bluetooth/public/interfaces/adapter.mojom. Dispatches events
+   * device/bluetooth/public/mojom/adapter.mojom. Dispatches events
    * through AdapterBroker to notify client objects of changes to the Adapter
    * service.
    * @constructor
