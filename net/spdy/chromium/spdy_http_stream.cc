@@ -418,14 +418,12 @@ bool SpdyHttpStream::HasUploadData() const {
        request_info_->upload_data_stream->is_chunked());
 }
 
-void SpdyHttpStream::OnStreamCreated(
-    const CompletionCallback& callback,
-    int rv) {
+void SpdyHttpStream::OnStreamCreated(CompletionOnceCallback callback, int rv) {
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream().get();
     InitializeStreamHelper();
   }
-  callback.Run(rv);
+  std::move(callback).Run(rv);
 }
 
 void SpdyHttpStream::ReadAndSendRequestBodyData() {

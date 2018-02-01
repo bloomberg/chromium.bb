@@ -597,7 +597,7 @@ int SpdyStreamRequest::StartRequest(SpdyStreamType type,
                                     const GURL& url,
                                     RequestPriority priority,
                                     const NetLogWithSource& net_log,
-                                    const CompletionCallback& callback) {
+                                    CompletionOnceCallback callback) {
   DCHECK(session);
   DCHECK(!session_);
   DCHECK(!stream_);
@@ -608,7 +608,7 @@ int SpdyStreamRequest::StartRequest(SpdyStreamType type,
   url_ = url;
   priority_ = priority;
   net_log_ = net_log;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   base::WeakPtr<SpdyStream> stream;
   int rv = session->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
@@ -644,21 +644,21 @@ void SpdyStreamRequest::OnRequestCompleteSuccess(
   DCHECK(session_);
   DCHECK(!stream_);
   DCHECK(!callback_.is_null());
-  CompletionCallback callback = callback_;
+  CompletionOnceCallback callback = std::move(callback_);
   Reset();
   DCHECK(stream);
   stream_ = stream;
-  callback.Run(OK);
+  std::move(callback).Run(OK);
 }
 
 void SpdyStreamRequest::OnRequestCompleteFailure(int rv) {
   DCHECK(session_);
   DCHECK(!stream_);
   DCHECK(!callback_.is_null());
-  CompletionCallback callback = callback_;
+  CompletionOnceCallback callback = std::move(callback_);
   Reset();
   DCHECK_NE(rv, OK);
-  callback.Run(rv);
+  std::move(callback).Run(rv);
 }
 
 void SpdyStreamRequest::Reset() {

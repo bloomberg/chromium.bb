@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -120,7 +120,7 @@ class StreamReleaserCallback : public TestCompletionCallbackBase {
   ~StreamReleaserCallback() override;
 
   // Returns a callback that releases |request|'s stream.
-  CompletionCallback MakeCallback(SpdyStreamRequest* request);
+  CompletionOnceCallback MakeCallback(SpdyStreamRequest* request);
 
  private:
   void OnComplete(SpdyStreamRequest* request, int result);
