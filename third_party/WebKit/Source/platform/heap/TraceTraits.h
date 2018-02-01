@@ -251,6 +251,7 @@ template <typename T>
 void TraceTrait<T>::TraceMarkedWrapper(const ScriptWrappableVisitor* visitor,
                                        const void* t) {
   const T* traceable = ToWrapperTracingType(t);
+  DCHECK(GetHeapObjectHeader(traceable)->IsWrapperHeaderMarked());
   AdjustAndMarkTrait<T>::TraceMarkedWrapper(visitor, traceable);
 }
 

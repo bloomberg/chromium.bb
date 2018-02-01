@@ -40,7 +40,6 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ContextSnapshot.h"
 #include "bindings/core/v8/V8DOMException.h"
-#include "bindings/core/v8/V8EmbedderGraphBuilder.h"
 #include "bindings/core/v8/V8ErrorEvent.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -674,8 +673,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
     profiler->SetWrapperClassInfoProvider(
         WrapperTypeInfo::kNodeClassId, &RetainedDOMInfo::CreateRetainedDOMInfo);
     profiler->SetGetRetainerInfosCallback(&V8GCController::GetRetainerInfos);
-    profiler->SetBuildEmbedderGraphCallback(
-        &V8EmbedderGraphBuilder::BuildEmbedderGraphCallback);
   }
 
   DCHECK(ThreadState::MainThreadState());

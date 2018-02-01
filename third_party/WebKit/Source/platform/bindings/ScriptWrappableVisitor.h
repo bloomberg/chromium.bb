@@ -39,6 +39,7 @@ using NameCallback = const char* (*)(const void* self);
   inline void TraceTrait<ClassName>::TraceMarkedWrapper(             \
       const ScriptWrappableVisitor* visitor, const void* t) {        \
     const ClassName* traceable = ToWrapperTracingType(t);            \
+    DCHECK(GetHeapObjectHeader(traceable)->IsWrapperHeaderMarked()); \
     traceable->TraceWrappers(visitor);                               \
   }
 
