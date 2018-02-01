@@ -152,6 +152,7 @@ vs-chromium-project.txt
 /chrome/web_ui_mojo_bindings.xml
 /chrome_elf/chrome_elf_resources.xml
 /chromecast/internal
+/chromeos/assistant/internal
 /clank
 /cloud_print/cloud_print_version_resources.xml
 /components/chrome_settings_proto_generated_compile.xml
