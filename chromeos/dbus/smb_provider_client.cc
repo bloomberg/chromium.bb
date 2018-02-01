@@ -160,6 +160,27 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleTruncateCallback, &callback);
   }
 
+  void WriteFile(int32_t mount_id,
+                 int32_t file_id,
+                 int64_t offset,
+                 int32_t length,
+                 base::ScopedFD temp_fd,
+                 StatusCallback callback) override {
+    smbprovider::WriteFileOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_file_id(file_id);
+    options.set_offset(offset);
+    options.set_length(length);
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kWriteFileMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+    writer.AppendFileDescriptor(temp_fd.release());
+    CallMethod(&method_call, &SmbProviderClientImpl::HandleTruncateCallback,
+               &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -314,6 +335,17 @@ class SmbProviderClientImpl : public SmbProviderClient {
                               dbus::Response* response) {
     if (!response) {
       DLOG(ERROR) << "Truncate: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
+    }
+    dbus::MessageReader reader(response);
+    std::move(callback).Run(GetErrorFromReader(&reader));
+  }
+
+  // Handles D-Bus callback for WriteFile.
+  void HandleWriteFileCallback(StatusCallback callback,
+                               dbus::Response* response) {
+    if (!response) {
+      DLOG(ERROR) << "WriteFile: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
     }
     dbus::MessageReader reader(response);

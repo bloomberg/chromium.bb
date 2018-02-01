@@ -109,6 +109,16 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
                         int64_t length,
                         StatusCallback callback) = 0;
 
+  // Calls WriteFile. Using the corresponding mount |mount_id|, this writes to a
+  // file with handle |file_id| from |offset| and writes |length| bytes. The
+  // data to be written is contained in the file with handle |temp_fd|.
+  virtual void WriteFile(int32_t mount_id,
+                         int32_t file_id,
+                         int64_t offset,
+                         int32_t length,
+                         base::ScopedFD temp_fd,
+                         StatusCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();
