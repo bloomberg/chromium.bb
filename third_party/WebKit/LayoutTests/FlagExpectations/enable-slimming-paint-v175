@@ -93,11 +93,6 @@ crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/at
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
 # This will pass with --root-layer-scrolls.
 crbug.com/771643 scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
-# A few (sub?)-pixels clipped off.
-crbug.com/771643 svg/as-background-image/svg-as-background-6.html [ Failure ]
-# Mask clip issue.
-crbug.com/771643 svg/batik/masking/maskRegions.svg [ Failure ]
-crbug.com/771643 svg/zoom/page/zoom-mask-with-percentages.svg [ Failure ]
 # Incorect LocalBorderBoxProperties for absolute-pos under transformed table section. 
 crbug.com/771643 tables/table-transform-absolute-position-child.html [ Failure ]
 # Others.

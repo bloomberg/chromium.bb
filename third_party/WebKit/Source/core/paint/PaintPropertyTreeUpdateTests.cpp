@@ -985,13 +985,13 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGMaskTargetBoundsChange) {
   EXPECT_NE(nullptr, properties->Mask());
   const auto* mask_clip = properties->MaskClip();
   ASSERT_NE(nullptr, mask_clip);
-  EXPECT_EQ(FloatRoundedRect(0, 50, 50, 100), mask_clip->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(0, 50, 100, 150), mask_clip->ClipRect());
 
   GetDocument().getElementById("rect")->setAttribute("width", "200");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_NE(nullptr, properties->Effect());
   EXPECT_NE(nullptr, properties->Mask());
-  EXPECT_EQ(FloatRoundedRect(0, 50, 200, 100), mask_clip->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(0, 50, 100, 150), mask_clip->ClipRect());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, WillTransformChangeAboveFixed) {
