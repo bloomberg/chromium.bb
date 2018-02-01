@@ -50,10 +50,8 @@ buzz::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
 SignalingAddress::Channel GetChannelType(std::string address) {
   std::string bare_jid;
   std::string resource;
-  std::string decoded_resource;
   if (SplitJidResource(address, &bare_jid, &resource) &&
-      base::Base64Decode(resource, &decoded_resource) &&
-      decoded_resource.find("chromoting_lcs") != std::string::npos) {
+      resource.find("chromoting_lcs_") == 0) {
     return SignalingAddress::Channel::LCS;
   }
   return SignalingAddress::Channel::XMPP;

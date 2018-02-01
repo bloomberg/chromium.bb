@@ -22,8 +22,8 @@ std::unique_ptr<buzz::XmlElement> GetEmptyJingleMessage() {
 }
 
 constexpr char kLcsAddress[] =
-    "user@domain.com/EhprZWx2aW4udGVzdC5nYWlhQGdtYWlsLmN"
-    "vbRoOY2hyb21vdGluZ19sY3MiHgoKY2hyb21vdGluZxIQaEEwZF9LZ3dvR1IwMXRJdg==";
+    "user@domain.com/chromoting_lcs_KkMKIDB5NldsZndLalZZamZWVTZlYmhPT1RBa2p2TUl"
+    "GX0lvEKT-HRhwIhB1V3QxYVkwdUptWlc3bnIxKVYHxmgZQ7i7";
 
 }  // namespace
 
