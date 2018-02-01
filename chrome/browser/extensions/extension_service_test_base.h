@@ -77,6 +77,7 @@ class ExtensionServiceTestBase : public testing::Test {
 
   // testing::Test implementation.
   void SetUp() override;
+  void TearDown() override;
 
   // Create a set of InitParams to install an ExtensionService into |temp_dir_|.
   ExtensionServiceInitParams CreateDefaultInitParams();
