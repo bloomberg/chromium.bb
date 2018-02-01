@@ -15139,6 +15139,12 @@ Called by update_net_error_codes.py.-->
   <int value="35" label="CRX_EXPECTED_HASH_INVALID"/>
 </enum>
 
+<enum name="ExtensionUpdaterUpdateResult">
+  <int value="0" label="No update"/>
+  <int value="1" label="Update success"/>
+  <int value="2" label="Update error"/>
+</enum>
+
 <enum name="ExtensionViewType">
   <int value="0" label="INVALID"/>
   <int value="1" label="APP_WINDOW"/>
