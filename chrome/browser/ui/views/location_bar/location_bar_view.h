@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -249,6 +250,7 @@ class LocationBarView : public LocationBar,
   static bool IsVirtualKeyboardVisible();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
   // Helper for GetMinimumWidth().  Calculates the incremental minimum width

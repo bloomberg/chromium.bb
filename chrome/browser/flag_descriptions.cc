@@ -1355,6 +1355,10 @@ const char kSimplifiedFullscreenUiDescription[] =
     "A simplified new user experience when entering page-triggered full screen "
     "or mouse pointer lock states.";
 
+const char kSimplifyHttpsIndicatorName[] = "Simplify HTTPS indicator UI";
+const char kSimplifyHttpsIndicatorDescription[] =
+    "Change the UI treatment for HTTPS pages.";
+
 const char kSingleClickAutofillName[] = "Single-click autofill";
 const char kSingleClickAutofillDescription[] =
     "Make autofill suggestions on initial mouse click on a form element.";
