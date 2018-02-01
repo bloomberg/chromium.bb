@@ -52,6 +52,8 @@
 #include "core/input_type_names.h"
 #include "core/layout/LayoutBox.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
@@ -192,7 +194,13 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnorePopupOverlayElement(
   // viewport.
   LocalDOMWindow* window = element.GetDocument().domWindow();
   DCHECK(window);
-  LayoutPoint center_point(window->innerWidth() / 2, window->innerHeight() / 2);
+  int center_x = window->innerWidth() / 2;
+  int center_y = window->innerHeight() / 2;
+  if (Page* page = element.GetDocument().GetPage()) {
+    center_x = page->GetChromeClient().WindowToViewportScalar(center_x);
+    center_y = page->GetChromeClient().WindowToViewportScalar(center_y);
+  }
+  LayoutPoint center_point(center_x, center_y);
   if (!box->FrameRect().Contains(center_point))
     return false;
 
