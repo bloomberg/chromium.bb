@@ -295,8 +295,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   // current() may be null in tests.
   if (ChildThreadImpl::current()) {
     ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-        ChildThreadImpl::current()->thread_safe_sender(),
-        base::ThreadTaskRunnerHandle::Get().get());
+        ChildThreadImpl::current()->thread_safe_sender());
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),
@@ -318,8 +317,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     scoped_refptr<ThreadSafeSender> sender) {
   // Initialize the provider context with info for
   // ServiceWorkerGlobalScope#registration.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      sender, base::ThreadTaskRunnerHandle::Get());
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender);
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, std::move(info->client_request),
       std::move(info->host_ptr_info));

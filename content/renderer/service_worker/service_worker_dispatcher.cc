@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -43,10 +42,8 @@ void* const kDeletedServiceWorkerDispatcherMarker =
 }  // namespace
 
 ServiceWorkerDispatcher::ServiceWorkerDispatcher(
-    scoped_refptr<ThreadSafeSender> thread_safe_sender,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
-    : thread_safe_sender_(std::move(thread_safe_sender)),
-      main_thread_task_runner_(std::move(main_thread_task_runner)) {
+    scoped_refptr<ThreadSafeSender> thread_safe_sender)
+    : thread_safe_sender_(std::move(thread_safe_sender)) {
   g_dispatcher_tls.Pointer()->Set(static_cast<void*>(this));
 }
 
@@ -74,8 +71,7 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 ServiceWorkerDispatcher*
 ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-    scoped_refptr<ThreadSafeSender> thread_safe_sender,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+    scoped_refptr<ThreadSafeSender> thread_safe_sender) {
   if (g_dispatcher_tls.Pointer()->Get() ==
       kDeletedServiceWorkerDispatcherMarker) {
     NOTREACHED() << "Re-instantiating TLS ServiceWorkerDispatcher.";
@@ -85,8 +81,8 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
     return static_cast<ServiceWorkerDispatcher*>(
         g_dispatcher_tls.Pointer()->Get());
 
-  ServiceWorkerDispatcher* dispatcher = new ServiceWorkerDispatcher(
-      std::move(thread_safe_sender), std::move(main_thread_task_runner));
+  ServiceWorkerDispatcher* dispatcher =
+      new ServiceWorkerDispatcher(std::move(thread_safe_sender));
   if (WorkerThread::GetCurrentId())
     WorkerThread::AddObserver(dispatcher);
   return dispatcher;

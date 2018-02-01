@@ -218,8 +218,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
 
   void TearDown() override {
     ServiceWorkerContextClient::ResetThreadSpecificInstanceForTesting();
-    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-        sender_, main_task_runner())
+    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_)
         ->AllowReinstantiationForTesting();
     // Unregister this thread from worker threads.
     WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
@@ -277,11 +276,6 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() {
-    // Use this thread as the main thread.
-    return task_runner_;
-  }
-
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
     // Use this thread as the IO thread.
     return task_runner_;

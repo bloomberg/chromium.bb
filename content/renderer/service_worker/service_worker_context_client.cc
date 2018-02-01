@@ -902,8 +902,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // Set ServiceWorkerGlobalScope#registration.
   // TakeRegistrationForServiceWorkerGlobalScope() expects the dispatcher to be
   // already created, so create it first.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      sender_.get(), main_thread_task_runner_.get());
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get());
   proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
       provider_context_->TakeRegistrationForServiceWorkerGlobalScope(
           io_thread_task_runner_)));
@@ -1580,8 +1579,7 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
          event->source_info_for_service_worker->version_id !=
              blink::mojom::kInvalidServiceWorkerVersionId);
   ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-          sender_.get(), main_thread_task_runner_.get());
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get());
   scoped_refptr<WebServiceWorkerImpl> worker =
       dispatcher->GetOrCreateServiceWorker(
           std::move(event->source_info_for_service_worker));
