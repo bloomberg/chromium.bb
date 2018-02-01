@@ -58,21 +58,6 @@ cr.define('bookmarks', function() {
       });
       this.updateFromStore();
 
-      /** @private {function(!Event)} */
-      this.boundOnOpenCommandMenu_ = this.onOpenCommandMenu_.bind(this);
-      document.addEventListener(
-          'open-command-menu', this.boundOnOpenCommandMenu_);
-
-      /** @private {function()} */
-      this.boundOnCommandUndo_ = () => {
-        this.handle(Command.UNDO, new Set());
-      };
-      document.addEventListener('command-undo', this.boundOnCommandUndo_);
-
-      /** @private {function(!Event)} */
-      this.boundOnKeydown_ = this.onKeydown_.bind(this);
-      document.addEventListener('keydown', this.boundOnKeydown_);
-
       /** @private {!Map<Command, cr.ui.KeyboardShortcutList>} */
       this.shortcuts_ = new Map();
 
@@ -92,14 +77,40 @@ cr.define('bookmarks', function() {
       this.addShortcut_(Command.CUT, 'Ctrl|x', 'Meta|x');
       this.addShortcut_(Command.COPY, 'Ctrl|c', 'Meta|c');
       this.addShortcut_(Command.PASTE, 'Ctrl|v', 'Meta|v');
+
+      /** @private {!Map<string, Function>} */
+      this.boundListeners_ = new Map();
+
+      const addDocumentListener = (eventName, handler) => {
+        assert(!this.boundListeners_.has(eventName));
+        const boundListener = handler.bind(this);
+        this.boundListeners_.set(eventName, boundListener);
+        document.addEventListener(eventName, boundListener);
+      };
+      addDocumentListener('open-command-menu', this.onOpenCommandMenu_);
+      addDocumentListener('keydown', this.onKeydown_);
+
+      const addDocumentListenerForCommand = (eventName, command) => {
+        addDocumentListener(eventName, (e) => {
+          if (e.path[0].tagName == 'INPUT')
+            return;
+
+          const items = this.getState().selection.items;
+          if (this.canExecute(command, items))
+            this.handle(command, items);
+        });
+      };
+      addDocumentListenerForCommand('command-undo', Command.UNDO);
+      addDocumentListenerForCommand('cut', Command.CUT);
+      addDocumentListenerForCommand('copy', Command.COPY);
+      addDocumentListenerForCommand('paste', Command.PASTE);
     },
 
     detached: function() {
       CommandManager.instance_ = null;
-      document.removeEventListener(
-          'open-command-menu', this.boundOnOpenCommandMenu_);
-      document.removeEventListener('command-undo', this.boundOnCommandUndo_);
-      document.removeEventListener('keydown', this.boundOnKeydown_);
+      this.boundListeners_.forEach(
+          (handler, eventName) =>
+              document.removeEventListener(eventName, handler));
     },
 
     /**
