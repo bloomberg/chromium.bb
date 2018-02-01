@@ -2359,6 +2359,7 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationWhenPendingTreeExists) {
 
   // Since there is no main frame request, this should perform impl-side
   // invalidations.
+  state.set_should_defer_invalidation_for_fast_main_frame(false);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
