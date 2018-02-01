@@ -2,12 +2,8 @@ Tests that resources with JSON MIME types are previewed with the JSON viewer.
 
 
 Running: plainTextTest
-Is Searchable: true
-Type: ResourceSourceFrame
-Should have found and highlighted all: foo
-Normal search found 0 results in dom.
-CodeMirror search found 2 results in dom.
-
+Is Searchable: false
+Type: RequestHTMLView
 
 Running: jsonTest
 Is Searchable: true
