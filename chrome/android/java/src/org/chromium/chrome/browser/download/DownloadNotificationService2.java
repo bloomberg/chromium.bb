@@ -555,7 +555,7 @@ public class DownloadNotificationService2 {
      * Get the next notificationId based on stored value and update shared preferences.
      * @return notificationId that is next based on stored value.
      */
-    static int getNextNotificationId() {
+    private static int getNextNotificationId() {
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
         int nextNotificationId = sharedPreferences.getInt(
                 KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
@@ -566,6 +566,23 @@ public class DownloadNotificationService2 {
         editor.putInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, nextNextNotificationId);
         editor.apply();
         return nextNotificationId;
+    }
+
+    static int getNewNotificationIdFor(int oldNotificationId) {
+        int newNotificationId = getNextNotificationId();
+        DownloadSharedPreferenceHelper downloadSharedPreferenceHelper =
+                DownloadSharedPreferenceHelper.getInstance();
+        List<DownloadSharedPreferenceEntry> entries = downloadSharedPreferenceHelper.getEntries();
+        for (DownloadSharedPreferenceEntry entry : entries) {
+            if (entry.notificationId == oldNotificationId) {
+                DownloadSharedPreferenceEntry newEntry = new DownloadSharedPreferenceEntry(entry.id,
+                        newNotificationId, entry.isOffTheRecord, entry.canDownloadWhileMetered,
+                        entry.fileName, entry.isAutoResumable, entry.isTransient);
+                downloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(newEntry);
+                break;
+            }
+        }
+        return newNotificationId;
     }
 
     /**

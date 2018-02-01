@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ServiceCompat;
 
@@ -28,6 +30,28 @@ public class DownloadForegroundService extends Service {
     private static final String KEY_PINNED_NOTIFICATION_ID = "PinnedNotificationId";
     private final IBinder mBinder = new LocalBinder();
 
+    private NotificationManager mNotificationManager;
+
+    @IntDef({
+            StopForegroundNotification.KILL, // Kill notification regardless of ability to detach.
+            StopForegroundNotification.DETACH_OR_PERSIST, // Try to detach, otherwise persist info.
+            StopForegroundNotification.DETACH_OR_ADJUST // Try detach, otherwise kill and relaunch.
+    })
+    public @interface StopForegroundNotification {
+        int KILL = 0;
+        int DETACH_OR_PERSIST = 1;
+        int DETACH_OR_ADJUST = 2;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mNotificationManager =
+                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.NOTIFICATION_SERVICE);
+    }
+
     /**
      * Start the foreground service with this given context.
      * @param context The context used to start service.
@@ -38,15 +62,32 @@ public class DownloadForegroundService extends Service {
     }
 
     /**
-     * Update the foreground service to be pinned to a different notification.
-     * @param notificationId The id of the new notification to be pinned to.
-     * @param notification The new notification to be pinned to.
+     * Start the foreground service or update it to be pinned to a different notification.
+     *
+     * @param newNotificationId The ID of the new notification to pin the service to.
+     * @param newNotification   The new notification to be pinned to the service.
+     * @param oldNotificationId The ID of the original notification that was pinned to the service,
+     *                          can be INVALID_NOTIFICATION_ID if the service is just starting.
+     * @param oldNotification   The original notification the service was pinned to, in case an
+     *                          adjustment needs to be made (in the case it could not be detached).
      */
-    public void startOrUpdateForegroundService(int notificationId, Notification notification) {
-        // If possible, detach notification so it doesn't get cancelled by accident.
-        if (isSdkAtLeast24()) stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
-
-        startForegroundInternal(notificationId, notification);
+    public void startOrUpdateForegroundService(int newNotificationId, Notification newNotification,
+            int oldNotificationId, Notification oldNotification) {
+        // Handle notifications and start foreground.
+        if (oldNotificationId == INVALID_NOTIFICATION_ID && oldNotification == null) {
+            // If there is no old notification or old notification id, just start foreground.
+            startForegroundInternal(newNotificationId, newNotification);
+        } else {
+            if (getCurrentSdk() >= 24) {
+                // If possible, detach notification so it doesn't get cancelled by accident.
+                stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
+                startForegroundInternal(newNotificationId, newNotification);
+            } else {
+                // Otherwise start the foreground and relaunch the originally pinned notification.
+                startForegroundInternal(newNotificationId, newNotification);
+                relaunchOldNotification(oldNotificationId, oldNotification);
+            }
+        }
 
         // Record when starting foreground and when updating pinned notification.
         int pinnedNotificationId = getPinnedNotificationId();
@@ -54,48 +95,97 @@ public class DownloadForegroundService extends Service {
             DownloadNotificationUmaHelper.recordForegroundServiceLifecycleHistogram(
                     DownloadNotificationUmaHelper.ForegroundLifecycle.START);
         } else {
-            if (pinnedNotificationId != notificationId) {
+            if (pinnedNotificationId != newNotificationId) {
                 DownloadNotificationUmaHelper.recordForegroundServiceLifecycleHistogram(
                         DownloadNotificationUmaHelper.ForegroundLifecycle.UPDATE);
             }
         }
-        updatePinnedNotificationId(notificationId);
+        updatePinnedNotificationId(newNotificationId);
     }
 
     /**
      * Stop the foreground service that is running.
      *
-     * @param detachNotification Whether to try to detach the notification from the service (only
-     *                           works for API >= 24).
-     * @param killNotification   Whether to kill the notification with the service.
-     * @return                   Whether the notification was handled properly (ie. it was detached
-     *                           or killed as intended). If this returns false, the notification id
-     *                           will be persisted in shared preferences to be handled later.
+     * @param stopForegroundNotification    How to handle the notification upon the foreground
+     *                                      stopping (options are: kill, detach or adjust, or detach
+     *                                      or persist, see {@link StopForegroundNotification}.
+     * @param pinnedNotificationId          Id of the notification that is pinned to the foreground
+     *                                      and would need adjustment.
+     * @param pinnedNotification            The actual notification that is pinned to the foreground
+     *                                      and would need adjustment.
+     * @return                              Whether the notification was handled properly (ie. if it
+     *                                      was detached or killed as intended). If this is false,
+     *                                      the notification will be persisted and handled later.
      */
     public boolean stopDownloadForegroundService(
-            boolean detachNotification, boolean killNotification) {
+            @StopForegroundNotification int stopForegroundNotification, int pinnedNotificationId,
+            Notification pinnedNotification) {
         // Record when stopping foreground.
         DownloadNotificationUmaHelper.recordForegroundServiceLifecycleHistogram(
                 DownloadNotificationUmaHelper.ForegroundLifecycle.STOP);
         DownloadNotificationUmaHelper.recordServiceStoppedHistogram(
                 DownloadNotificationUmaHelper.ServiceStopped.STOPPED, true /* withForeground */);
 
-        boolean notificationDetached = detachNotification && isSdkAtLeast24();
-        boolean notificationDetachedOrKilled = notificationDetached || killNotification;
+        // Handle notifications and stop foreground.
+        boolean notificationHandledProperly = true;
+        if (stopForegroundNotification == StopForegroundNotification.KILL) {
+            // Regardless of the SDK level, stop foreground and kill if so indicated.
+            stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
 
-        // Reset pinned notification if notification is properly detached or killed.
-        if (notificationDetachedOrKilled) clearPinnedNotificationId();
+        } else {
+            if (getCurrentSdk() >= 24) {
+                // Android N+ has the option to detach notifications from the service, so detach or
+                // kill the notification as needed when stopping service.
+                stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
 
-        // Detach notification from foreground if possible.
-        if (notificationDetached) {
-            stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
-            return true;
+            } else if (getCurrentSdk() >= 23) {
+                // Android M+ can't detach the notification but doesn't have other caveats. Kill the
+                // notification and relaunch if detach was desired.
+                if (stopForegroundNotification == StopForegroundNotification.DETACH_OR_ADJUST) {
+                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
+                    relaunchOldNotification(pinnedNotificationId, pinnedNotification);
+                } else {
+                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
+                    notificationHandledProperly = false;
+                }
+
+            } else if (getCurrentSdk() >= 21) {
+                // In phones that are Lollipop and older (API < 23), the service gets killed with
+                // the task, which might result in the notification being unable to be relaunched
+                // where it needs to be. Relaunch the old notification before stopping the service.
+                if (stopForegroundNotification == StopForegroundNotification.DETACH_OR_ADJUST) {
+                    relaunchOldNotification(
+                            getNewNotificationIdFor(pinnedNotificationId), pinnedNotification);
+                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
+                } else {
+                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
+                    notificationHandledProperly = false;
+                }
+
+            } else {
+                // For pre-Lollipop phones (API < 21), we need to kill all notifications because
+                // otherwise the notification gets stuck in the ongoing state.
+                relaunchOldNotification(
+                        getNewNotificationIdFor(pinnedNotificationId), pinnedNotification);
+                stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
+            }
         }
 
-        // Otherwise, just stop the foreground, kill notification and/or correct it elsewhere.
-        stopForegroundInternal(killNotification);
+        // If the notification was handled properly (ie. killed or detached), clear observer and
+        // stored pinned ID. Otherwise, continue persisting this information in case it is needed.
+        if (notificationHandledProperly) {
+            removeObserver();
+            clearPinnedNotificationId();
+        }
 
-        return notificationDetachedOrKilled;
+        return notificationHandledProperly;
+    }
+
+    @VisibleForTesting
+    void relaunchOldNotification(int notificationId, Notification notification) {
+        if (notificationId != INVALID_NOTIFICATION_ID && notification != null) {
+            mNotificationManager.notify(notificationId, notification);
+        }
     }
 
     @Override
@@ -191,6 +281,17 @@ public class DownloadForegroundService extends Service {
     /** Methods for testing. */
 
     @VisibleForTesting
+    void removeObserver() {
+        DownloadForegroundServiceObservers.removeObserver(
+                DownloadNotificationServiceObserver.class);
+    }
+
+    @VisibleForTesting
+    int getNewNotificationIdFor(int oldNotificationId) {
+        return DownloadNotificationService2.getNewNotificationIdFor(oldNotificationId);
+    }
+
+    @VisibleForTesting
     void startForegroundInternal(int notificationId, Notification notification) {
         startForeground(notificationId, notification);
     }
@@ -201,12 +302,7 @@ public class DownloadForegroundService extends Service {
     }
 
     @VisibleForTesting
-    void stopForegroundInternal(boolean removeNotification) {
-        stopForeground(removeNotification);
-    }
-
-    @VisibleForTesting
-    boolean isSdkAtLeast24() {
-        return Build.VERSION.SDK_INT >= 24;
+    int getCurrentSdk() {
+        return Build.VERSION.SDK_INT;
     }
 }
