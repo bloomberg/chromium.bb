@@ -60,10 +60,12 @@ public class VrShellNavigationTest {
 
     private static final String TEST_PAGE_2D_URL =
             VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
+    private static final String TEST_PAGE_2D_2_URL =
+            VrTestFramework.getHtmlTestFile("test_navigation_2d_page2");
     private static final String TEST_PAGE_WEBVR_URL =
             VrTestFramework.getHtmlTestFile("test_navigation_webvr_page");
 
-    private enum Page { PAGE_2D, PAGE_WEBVR }
+    private enum Page { PAGE_2D, PAGE_2D_2, PAGE_WEBVR }
     private enum PresentationMode { NON_PRESENTING, PRESENTING }
     private enum FullscreenMode { NON_FULLSCREENED, FULLSCREENED }
 
@@ -77,9 +79,11 @@ public class VrShellNavigationTest {
     private String getUrl(Page page) {
         switch (page) {
             case PAGE_2D:
-                return TEST_PAGE_2D_URL + "?id=0";
+                return TEST_PAGE_2D_URL;
+            case PAGE_2D_2:
+                return TEST_PAGE_2D_2_URL;
             case PAGE_WEBVR:
-                return TEST_PAGE_WEBVR_URL + "?id=0";
+                return TEST_PAGE_WEBVR_URL;
             default:
                 throw new UnsupportedOperationException("Don't know page type " + page);
         }
@@ -131,9 +135,9 @@ public class VrShellNavigationTest {
     public void test2dTo2d() throws InterruptedException, TimeoutException {
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
-        navigateTo(Page.PAGE_2D);
+        navigateTo(Page.PAGE_2D_2);
 
-        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
+        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
 
         // Test that the navigations were added to history
@@ -146,16 +150,16 @@ public class VrShellNavigationTest {
         Assert.assertEquals("Two navigations showed up in history", 2, itemViews.size());
         // History is in reverse chronological order, so the first navigation should actually be
         // after the second in the list
-        Assert.assertEquals("First navigation is correct", TEST_PAGE_2D_URL,
+        Assert.assertEquals("First navigation is correct", getUrl(Page.PAGE_2D),
                 itemViews.get(1).getItem().getUrl());
-        Assert.assertEquals("Second navigation is correct", getUrl(Page.PAGE_2D),
+        Assert.assertEquals("Second navigation is correct", getUrl(Page.PAGE_2D_2),
                 itemViews.get(0).getItem().getUrl());
 
         // Test that clicking on history items in VR works
         itemViews.get(0).onClick();
         ChromeTabUtils.waitForTabPageLoaded(
-                mVrTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D));
-        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
+                mVrTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
+        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -366,5 +370,29 @@ public class VrShellNavigationTest {
                     mVrTestRule.getActivity().getWindow().getDecorView().getRootView());
         }
         mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+    }
+
+    /**
+     * Tests that renderer crashes while in (fullscreen) 2D browsing don't exit VR.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testRendererKilledInFullscreenStaysInVr()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        enterFullscreenOrFail(mVrTestFramework.getFirstTabCvc());
+
+        final Tab tab = mVrTestRule.getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
+
+        mVrTestFramework.simulateRendererKilled();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
+        ChromeTabUtils.waitForTabPageLoaded(tab, TEST_PAGE_2D_URL);
+        ChromeTabUtils.waitForInteractable(tab);
+
+        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 }

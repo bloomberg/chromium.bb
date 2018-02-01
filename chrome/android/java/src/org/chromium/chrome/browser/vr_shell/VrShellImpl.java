@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
@@ -165,23 +166,17 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 if (mContentViewCore != null) mContentViewCore.onWindowFocusChanged(false);
                 mContentViewCore = null;
                 if (mNativeVrShell == 0) return;
-                if (tab.isShowingSadTab()) {
-                    // For now we don't support the sad tab page. crbug.com/661609.
-                    forceExitVr();
-                    return;
-                }
                 if (mLastContentWidth != 0) {
                     setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
                 }
-                if (tab.getContentViewCore() != null) {
+                if (tab != null && tab.getContentViewCore() != null) {
                     mContentViewCore = tab.getContentViewCore();
                     mContentViewCore.getContainerView().requestFocus();
                     // We need the CVC to think it has Window Focus so it doesn't blur the page,
                     // even though we're drawing VR layouts over top of it.
                     mContentViewCore.onWindowFocusChanged(true);
                 }
-                nativeSwapContents(mNativeVrShell, tab,
-                        DisplayAndroid.getNonMultiDisplay(activity).getDipScale());
+                nativeSwapContents(mNativeVrShell, tab);
                 updateHistoryButtonsVisibility();
             }
 
@@ -279,7 +274,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @SuppressLint("NewApi")
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
-        assert currentTab != null;
+        // Make sure the bottom sheet (Chrome Home) is hidden.
+        if (mActivity.getBottomSheet() != null) {
+            mActivity.getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+        }
+
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
         DisplayMetrics dm = new DisplayMetrics();
@@ -332,15 +331,10 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private void swapToForegroundTab() {
         Tab tab = mActivity.getActivityTab();
         if (tab == mTab) return;
-        if (tab == null || !mDelegate.canEnterVr(tab, false)) {
-            forceExitVr();
-            return;
-        }
         swapToTab(tab);
     }
 
     private void swapToTab(Tab tab) {
-        assert tab != null;
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
@@ -348,13 +342,16 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         }
 
         mTab = tab;
-        initializeTabForVR();
-        mTab.addObserver(mTabObserver);
-        mTab.updateFullscreenEnabledState();
+        if (mTab != null) {
+            initializeTabForVR();
+            mTab.addObserver(mTabObserver);
+            mTab.updateFullscreenEnabledState();
+        }
         mTabObserver.onContentChanged(mTab);
     }
 
     private void initializeTabForVR() {
+        if (mTab == null) return;
         mNonVrInterceptNavigationDelegate = mTab.getInterceptNavigationDelegate();
         mTab.setInterceptNavigationDelegate(
                 new InterceptNavigationDelegateImpl(new VrExternalNavigationDelegate(mTab), mTab));
@@ -365,6 +362,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     }
 
     private void restoreTabFromVR() {
+        if (mTab == null) return;
         mTab.setInterceptNavigationDelegate(mNonVrInterceptNavigationDelegate);
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
@@ -482,7 +480,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         }
         Point size = new Point(contentWidth, contentHeight);
         mContentVirtualDisplay.update(size, dpr, dip / dpr, null, null, null, null, null);
-        mTab.getWebContents().setSize(contentWidth, contentHeight);
+        if (mTab != null && mTab.getWebContents() != null) {
+            mTab.getWebContents().setSize(contentWidth, contentHeight);
+        }
         if (mVrBrowsingEnabled) mNonVrViews.resize(overlayWidth, overlayHeight);
     }
 
@@ -511,7 +511,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (mTab.getContentViewCore() != null
+        if (mTab != null && mTab.getContentViewCore() != null
                 && mTab.getContentViewCore().dispatchKeyEvent(event)) {
             return true;
         }
@@ -520,7 +520,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        if (mTab.getContentViewCore() != null
+        if (mTab != null && mTab.getContentViewCore() != null
                 && mTab.getContentViewCore().onGenericMotionEvent(event)) {
             return true;
         }
@@ -567,15 +567,15 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         }
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mTabModelSelectorTabObserver.destroy();
-        assert mTab != null;
-        mTab.removeObserver(mTabObserver);
-        restoreTabFromVR();
-        if (mTab.getContentViewCore() != null) {
-            View parent = mTab.getContentViewCore().getContainerView();
-            mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
+        if (mTab != null) {
+            mTab.removeObserver(mTabObserver);
+            restoreTabFromVR();
+            if (mTab.getContentViewCore() != null) {
+                View parent = mTab.getContentViewCore().getContainerView();
+                mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
+            }
+            mTab.updateFullscreenEnabledState();
         }
-        mTab.updateFullscreenEnabledState();
-        mActivity.getToolbarManager().setProgressBarEnabled(true);
 
         mContentVirtualDisplay.destroy();
 
@@ -588,7 +588,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         // (ie. the controls hidden). The values will have propagated with the next frame received
         // from the compositor, so we can tell the controls to show at that point.
         mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
-            ChromeFullscreenManager manager = (ChromeFullscreenManager) mTab.getFullscreenManager();
+            ChromeFullscreenManager manager = mActivity.getFullscreenManager();
             manager.getBrowserVisibilityDelegate().showControlsTransient();
         });
 
@@ -731,8 +731,12 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @CalledByNative
     private void loadUrl(String url) {
-        assert mTab != null;
-        mTab.loadUrl(new LoadUrlParams(url));
+        if (mTab == null) {
+            mActivity.getCurrentTabCreator().createNewTab(
+                    new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, null);
+        } else {
+            mTab.loadUrl(new LoadUrlParams(url));
+        }
     }
 
     @VisibleForTesting
@@ -761,7 +765,12 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     private void updateHistoryButtonsVisibility() {
         if (mNativeVrShell == 0) return;
-        assert mTab != null;
+        if (mTab == null) {
+            mCanGoBack = false;
+            mCanGoForward = false;
+            nativeSetHistoryButtonsEnabled(mNativeVrShell, mCanGoBack, mCanGoForward);
+            return;
+        }
         boolean willCloseTab = false;
         if (mActivity instanceof ChromeTabbedActivity) {
             // If hitting back would minimize Chrome, disable the back button.
@@ -782,6 +791,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @CalledByNative
     public void reload() {
+        if (mTab == null) return;
         mTab.reload();
     }
 
@@ -833,7 +843,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
             int displayHeightPixels);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
-    private native void nativeSwapContents(long nativeVrShell, Tab tab, float androidViewDipScale);
+    private native void nativeSwapContents(long nativeVrShell, Tab tab);
     private native void nativeSetAndroidGestureTarget(
             long nativeVrShell, AndroidUiGestureTarget androidUiGestureTarget);
     private native void nativeDestroy(long nativeVrShell);

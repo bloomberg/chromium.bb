@@ -176,14 +176,15 @@ void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void VrShell::SwapContents(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
-                           const JavaParamRef<jobject>& tab,
-                           float android_view_dip_scale) {
+                           const JavaParamRef<jobject>& tab) {
   content_id_++;
   PostToGlThread(FROM_HERE,
                  base::Bind(&VrShellGl::OnSwapContents,
                             gl_thread_->GetVrShellGl(), content_id_));
   TabAndroid* active_tab =
-      TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, tab));
+      tab.is_null()
+          ? nullptr
+          : TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, tab));
 
   content::WebContents* contents =
       active_tab ? active_tab->web_contents() : nullptr;
@@ -596,8 +597,6 @@ void VrShell::DoUiAction(const UiAction action,
 
 void VrShell::ContentWebContentsDestroyed() {
   web_contents_ = nullptr;
-  // TODO(mthiesse): Handle web contents being destroyed.
-  ForceExitVr();
 }
 
 void VrShell::ForceExitVr() {
@@ -844,11 +843,6 @@ void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
     return;
   ui_->SetLocationAccessEnabled(high_accuracy_location);
   high_accuracy_location_ = high_accuracy_location;
-}
-
-void VrShell::SetContentCssSize(float width, float height, float dpr) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_setContentCssSize(env, j_vr_shell_, width, height, dpr);
 }
 
 void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,

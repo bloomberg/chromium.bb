@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.TestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr_shell.XrTestFramework.POLL_TIMEOUT_LONG_MS;
@@ -42,6 +43,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 
 /**
  * end-to-end tests for transitioning between WebXR's magic window (non-exclusive session) and
@@ -193,5 +195,22 @@ public class WebXrTransitionTest {
         XrTestFramework.executeStepAndWait(
                 "stepVerifyAfterPresent()", mXrTestFramework.getFirstTabWebContents());
         XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests renderer crashes while in WebXR presentation stay in VR.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.CTA})
+    public void testRendererKilledInWebXrStaysInVr()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
+        mXrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("generic_webxr_page"), PAGE_LOAD_TIMEOUT_S);
+        XrTransitionUtils.enterPresentationOrFail(mXrTestFramework.getFirstTabCvc());
+
+        mXrTestFramework.simulateRendererKilled();
+        Assert.assertTrue("Browser is in VR", VrShellDelegate.isInVr());
     }
 }
