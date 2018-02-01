@@ -41,6 +41,7 @@ class FakeRendererScheduler : public RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
+  void SetSchedulerKeepActive(bool keep_active) override;
   std::unique_ptr<RendererPauseHandle> PauseRenderer() override;
 #if defined(OS_ANDROID)
   void PauseTimersForAndroidWebView() override;

@@ -602,6 +602,7 @@ class CONTENT_EXPORT RenderThreadImpl
                              const std::string& highlight_color) override;
   void PurgePluginListCache(bool reload_pages) override;
   void SetProcessBackgrounded(bool backgrounded) override;
+  void SetSchedulerKeepActive(bool keep_active) override;
   void ProcessPurgeAndSuspend() override;
 
   void OnMemoryPressure(
