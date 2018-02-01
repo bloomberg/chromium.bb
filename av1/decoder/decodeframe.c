@@ -750,8 +750,13 @@ static void setup_segmentation(AV1_COMMON *const cm,
     return;
   }
 #if CONFIG_SEGMENT_PRED_LAST
-  if (cm->seg.enabled && !cm->frame_parallel_decode && cm->prev_frame)
+  if (cm->seg.enabled && !cm->frame_parallel_decode && cm->prev_frame &&
+      (cm->mi_rows == cm->prev_frame->mi_rows) &&
+      (cm->mi_cols == cm->prev_frame->mi_cols)) {
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
+  } else {
+    cm->last_frame_seg_map = NULL;
+  }
 #endif
   // Segmentation map update
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
@@ -2965,8 +2970,13 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->use_prev_frame_mvs =
           cm->use_ref_frame_mvs && frame_can_use_prev_frame_mvs(cm);
 #if CONFIG_SEGMENT_PRED_LAST
-      if (cm->seg.enabled && !cm->frame_parallel_decode)
+      if (cm->seg.enabled && !cm->frame_parallel_decode && cm->prev_frame &&
+          (cm->mi_rows == cm->prev_frame->mi_rows) &&
+          (cm->mi_cols == cm->prev_frame->mi_cols)) {
         cm->last_frame_seg_map = cm->prev_frame->seg_map;
+      } else {
+        cm->last_frame_seg_map = NULL;
+      }
 #endif
 #endif
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
