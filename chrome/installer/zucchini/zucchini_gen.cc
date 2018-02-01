@@ -8,14 +8,18 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/installer/zucchini/disassembler.h"
 #include "chrome/installer/zucchini/element_detection.h"
 #include "chrome/installer/zucchini/encoded_view.h"
+#include "chrome/installer/zucchini/ensemble_matcher.h"
 #include "chrome/installer/zucchini/equivalence_map.h"
+#include "chrome/installer/zucchini/heuristic_ensemble_matcher.h"
 #include "chrome/installer/zucchini/image_index.h"
 #include "chrome/installer/zucchini/label_manager.h"
 #include "chrome/installer/zucchini/patch_writer.h"
@@ -352,34 +356,117 @@ bool GenerateExecutableElement(ExecutableType exe_type,
 status::Code GenerateEnsemble(ConstBufferView old_image,
                               ConstBufferView new_image,
                               EnsemblePatchWriter* patch_writer) {
-  patch_writer->SetPatchType(PatchType::kEnsemblePatch);
-
-  base::Optional<Element> old_element =
-      DetectElementFromDisassembler(old_image);
-  base::Optional<Element> new_element =
-      DetectElementFromDisassembler(new_image);
-
-  // If images do not match known executable formats, or if detected formats
-  // don't match, fall back to generating a raw patch.
-  if (!old_element.has_value() || !new_element.has_value() ||
-      old_element->exe_type != new_element->exe_type) {
-    LOG(WARNING) << "Fall back to raw mode.";
+  std::unique_ptr<EnsembleMatcher> matcher =
+      std::make_unique<HeuristicEnsembleMatcher>(nullptr);
+  if (!matcher->RunMatch(old_image, new_image)) {
+    LOG(INFO) << "RunMatch() failed, generating raw patch.";
     return GenerateRaw(old_image, new_image, patch_writer);
   }
 
-  if (old_element->region() != old_image.local_region() ||
-      new_element->region() != new_image.local_region()) {
-    LOG(ERROR) << "Ensemble patching is currently unsupported.";
-    return status::kStatusFatal;
+  const std::vector<ElementMatch>& matches = matcher->matches();
+  LOG(INFO) << "Matching: Found " << matches.size()
+            << " nontrivial matches and " << matcher->num_identical()
+            << " identical matches.";
+  size_t num_elements = matches.size();
+  if (num_elements == 0) {
+    LOG(INFO) << "No nontrival matches, generating raw patch.";
+    return GenerateRaw(old_image, new_image, patch_writer);
   }
 
-  PatchElementWriter patch_element(ElementMatch{*old_element, *new_element});
+  PatchType patch_type = PatchType::kRawPatch;
+  if (num_elements == 1 && matches[0].old_element.size == old_image.size() &&
+      matches[0].new_element.size == new_image.size()) {
+    // If |old_image| matches |new_image| entirely then we have single patch.
+    LOG(INFO) << "Old and new files are executables, "
+              << "generating single-file patch.";
+    patch_type = PatchType::kSinglePatch;
+  } else {
+    LOG(INFO) << "Generating ensemble patch.";
+    patch_type = PatchType::kEnsemblePatch;
+  }
 
-  // TODO(etiennep): Fallback to raw mode with proper logging.
-  if (!GenerateExecutableElement(old_element->exe_type, old_image, new_image,
-                                 &patch_element))
-    return status::kStatusFatal;
-  patch_writer->AddElement(std::move(patch_element));
+  // "Gaps" are |new_image| bytes not covered by new_elements in |matches|.
+  // These are treated as raw data, and patched against the entire |old_image|.
+
+  // |patch_element_map| (keyed by "new" offsets) stores PatchElementWriter
+  // results so elements and "gap" results can be computed separately (to reduce
+  // peak memory usage), and later, properly serialized to |patch_writer|
+  // ordered by "new" offset.
+  std::map<offset_t, PatchElementWriter> patch_element_map;
+
+  // Variables to track element patching successes.
+  std::vector<BufferRegion> covered_new_regions;
+  size_t covered_new_bytes = 0;
+
+  // Process elements first, since non-fatal failures may turn some into gaps.
+  for (const ElementMatch& match : matches) {
+    BufferRegion new_region = match.new_element.region();
+    LOG(INFO) << "--- Match [" << new_region.lo() << "," << new_region.hi()
+              << ")";
+
+    auto it_and_success = patch_element_map.emplace(
+        base::checked_cast<offset_t>(new_region.lo()), match);
+    DCHECK(it_and_success.second);
+    PatchElementWriter& patch_element = it_and_success.first->second;
+
+    ConstBufferView old_sub_image = old_image[match.old_element.region()];
+    ConstBufferView new_sub_image = new_image[new_region];
+    if (GenerateExecutableElement(match.exe_type(), old_sub_image,
+                                  new_sub_image, &patch_element)) {
+      covered_new_regions.push_back(new_region);
+      covered_new_bytes += new_region.size;
+    } else {
+      LOG(INFO) << "Fall back to raw patching.";
+      patch_element_map.erase(it_and_success.first);
+    }
+  }
+
+  if (covered_new_bytes == 0)
+    patch_type = PatchType::kRawPatch;
+
+  if (covered_new_bytes < new_image.size()) {
+    // Process all "gaps", which are patched against the entire "old" image. To
+    // compute equivalence maps, "gaps" share a common suffix array
+    // |old_sa_raw|, whose lifetime is kept separated from elements' suffix
+    // arrays to reduce peak memory.
+    Element entire_old_element(old_image.local_region(), kExeTypeNoOp);
+    ImageIndex old_image_index(old_image);
+    EncodedView old_view_raw(old_image_index);
+    std::vector<offset_t> old_sa_raw =
+        MakeSuffixArray<InducedSuffixSort>(old_view_raw, size_t(256));
+
+    offset_t gap_lo = 0;
+    // Add sentinel that points to end of "new" file, to simplify gap iteration.
+    covered_new_regions.emplace_back(BufferRegion{new_image.size(), 0});
+
+    for (const BufferRegion& covered : covered_new_regions) {
+      offset_t gap_hi = base::checked_cast<offset_t>(covered.lo());
+      DCHECK_GE(gap_hi, gap_lo);
+      offset_t gap_size = gap_hi - gap_lo;
+      if (gap_size > 0) {
+        LOG(INFO) << "--- Gap   [" << gap_lo << "," << gap_hi << ")";
+
+        ElementMatch gap_match{{entire_old_element, kExeTypeNoOp},
+                               {{gap_lo, gap_size}, kExeTypeNoOp}};
+        auto it_and_success = patch_element_map.emplace(gap_lo, gap_match);
+        DCHECK(it_and_success.second);
+        PatchElementWriter& patch_element = it_and_success.first->second;
+
+        ConstBufferView new_sub_image = new_image[{gap_lo, gap_size}];
+        if (!GenerateRawElement(old_sa_raw, old_image, new_sub_image,
+                                &patch_element)) {
+          return status::kStatusFatal;
+        }
+      }
+      gap_lo = base::checked_cast<offset_t>(covered.hi());
+    }
+  }
+
+  patch_writer->SetPatchType(patch_type);
+  // Write all PatchElementWriter sorted by "new" offset.
+  for (auto& new_lo_and_patch_element : patch_element_map)
+    patch_writer->AddElement(std::move(new_lo_and_patch_element.second));
+
   return status::kStatusSuccess;
 }
 
