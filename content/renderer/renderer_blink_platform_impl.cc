@@ -888,9 +888,11 @@ void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
 //------------------------------------------------------------------------------
 
 std::unique_ptr<WebMediaRecorderHandler>
-RendererBlinkPlatformImpl::CreateMediaRecorderHandler() {
+RendererBlinkPlatformImpl::CreateMediaRecorderHandler(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return std::make_unique<content::MediaRecorderHandler>();
+  return std::make_unique<content::MediaRecorderHandler>(
+      std::move(task_runner));
 #else
   return nullptr;
 #endif

@@ -36,7 +36,8 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
   VpxEncoder(
       bool use_vp9,
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-      int32_t bits_per_second);
+      int32_t bits_per_second,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
  private:
   // VideoTrackRecorder::Encoder implementation.

@@ -119,13 +119,15 @@ void OnEncodingInfoError(
 
 }  // anonymous namespace
 
-MediaRecorderHandler::MediaRecorderHandler()
+MediaRecorderHandler::MediaRecorderHandler(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : video_bits_per_second_(0),
       audio_bits_per_second_(0),
       video_codec_id_(VideoTrackRecorder::CodecId::VP8),
       audio_codec_id_(AudioTrackRecorder::CodecId::OPUS),
       recording_(false),
       client_(nullptr),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
 MediaRecorderHandler::~MediaRecorderHandler() {
@@ -279,9 +281,9 @@ bool MediaRecorderHandler::Start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
-    video_recorders_.emplace_back(
-        new VideoTrackRecorder(video_codec_id_, video_track,
-                               on_encoded_video_cb, video_bits_per_second_));
+    video_recorders_.emplace_back(new VideoTrackRecorder(
+        video_codec_id_, video_track, on_encoded_video_cb,
+        video_bits_per_second_, task_runner_));
   }
 
   if (use_audio_tracks) {
