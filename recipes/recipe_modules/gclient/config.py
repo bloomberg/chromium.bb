@@ -23,7 +23,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
                            hidden=False),
         managed = Single(bool, empty_val=True, required=False, hidden=False),
         custom_deps = Dict(value_type=(basestring, types.NoneType)),
-        custom_vars = Dict(value_type=basestring),
+        custom_vars = Dict(value_type=(basestring, types.BooleanType)),
         safesync_url = Single(basestring, required=False),
 
         revision = Single(

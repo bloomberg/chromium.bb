@@ -6,7 +6,7 @@
       "RECIPE_PACKAGE_REPO[depot_tools]/gclient.py",
       "config",
       "--spec",
-      "cache_dir = '[ROOT]/git_cache'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]"
+      "cache_dir = '[ROOT]/git_cache'\nsolutions = [{'custom_vars': {'string_var': 'string_val', 'true_var': True}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
