@@ -168,6 +168,7 @@ class TestResourceHandler : public ResourceHandler {
   // method, behavior is undefined.
   void WaitUntilDeferred();
 
+  void WaitUntilResponseStarted();
   void WaitUntilResponseComplete();
 
   // Returns a weak pointer to |this|.  Allows testing object lifetime.
@@ -225,6 +226,8 @@ class TestResourceHandler : public ResourceHandler {
   int call_depth_ = 0;
 
   std::unique_ptr<base::RunLoop> deferred_run_loop_;
+
+  base::RunLoop response_started_run_loop_;
 
   base::RunLoop response_complete_run_loop_;
 

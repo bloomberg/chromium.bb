@@ -91,6 +91,8 @@ void TestResourceHandler::OnResponseStarted(
   EXPECT_FALSE(resource_response_);
   resource_response_ = response;
 
+  response_started_run_loop_.Quit();
+
   if (!on_response_started_result_) {
     canceled_ = true;
     controller->Cancel();
@@ -289,6 +291,10 @@ void TestResourceHandler::SetBufferSize(int buffer_size) {
 void TestResourceHandler::WaitUntilDeferred() {
   deferred_run_loop_->Run();
   deferred_run_loop_.reset(new base::RunLoop());
+}
+
+void TestResourceHandler::WaitUntilResponseStarted() {
+  response_started_run_loop_.Run();
 }
 
 void TestResourceHandler::WaitUntilResponseComplete() {

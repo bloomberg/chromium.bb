@@ -14,6 +14,10 @@ ResourceHandler::Delegate::Delegate() {}
 
 ResourceHandler::Delegate::~Delegate() {}
 
+void ResourceHandler::Delegate::PauseReadingBodyFromNet() {}
+
+void ResourceHandler::Delegate::ResumeReadingBodyFromNet() {}
+
 void ResourceHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
@@ -50,6 +54,14 @@ void ResourceHandler::CancelWithError(int error_code) {
 
 void ResourceHandler::OutOfBandCancel(int error_code, bool tell_renderer) {
   delegate_->OutOfBandCancel(error_code, tell_renderer);
+}
+
+void ResourceHandler::PauseReadingBodyFromNet() {
+  delegate_->PauseReadingBodyFromNet();
+}
+
+void ResourceHandler::ResumeReadingBodyFromNet() {
+  delegate_->ResumeReadingBodyFromNet();
 }
 
 void ResourceHandler::GetNumericArg(const std::string& name, int* result) {
