@@ -76,12 +76,12 @@ void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
 #define apply_range(stage, input, buf, size, bit) \
   clamp_buf((int32_t *)buf, size, bit)
 
-void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
+static INLINE void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
   if (bit <= 16) {
-    const int32_t maxValue = (1 << 15) - 1;
-    const int32_t minValue = -(1 << 15);
+    const int32_t max_value = (1 << 15) - 1;
+    const int32_t min_value = -(1 << 15);
 
-    for (int i = 0; i < size; ++i) buf[i] = clamp(buf[i], minValue, maxValue);
+    for (int i = 0; i < size; ++i) buf[i] = clamp(buf[i], min_value, max_value);
   }
 }
 #endif
