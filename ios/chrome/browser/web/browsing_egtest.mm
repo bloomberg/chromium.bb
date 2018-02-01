@@ -26,6 +26,7 @@
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/web_client.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -333,8 +334,18 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey goBack];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
-      assertWithMatcher:grey_notNil()];
+
+  [ChromeEarlGrey waitForWebViewContainingText:"Link"];
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Due to the link click, URL of the first page now has an extra '#'. This
+    // is consistent with all other browsers.
+    const GURL newURL = web::test::HttpServer::MakeUrl("http://origin#");
+    [[EarlGrey selectElementWithMatcher:OmniboxText(newURL.GetContent())]
+        assertWithMatcher:grey_notNil()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
+        assertWithMatcher:grey_notNil()];
+  }
 }
 
 // Tests that a link with WebUI URL does not trigger a load. WebUI pages may
