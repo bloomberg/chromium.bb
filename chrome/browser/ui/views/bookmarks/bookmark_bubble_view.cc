@@ -397,14 +397,20 @@ void BookmarkBubbleView::ShowIOSPromotion(
     desktop_ios_promotion::PromotionEntryPoint entry_point) {
   DCHECK(!is_showing_ios_promotion_);
   edit_button_->SetVisible(false);
-  // Hide the contents, but don't delete. Its child views are accessed in the
-  // destructor if there are edits to apply.
-  bookmark_contents_view_->SetVisible(false);
+
+  // If edits are to be applied we must do so before removing the content.
+  if (apply_edits_)
+    ApplyEdits();
+
+  delete bookmark_contents_view_;
+  bookmark_contents_view_ = nullptr;
   delete footnote_view_;
   footnote_view_ = nullptr;
   is_showing_ios_promotion_ = true;
   ios_promo_view_ = new DesktopIOSPromotionBubbleView(profile_, entry_point);
   AddChildView(ios_promo_view_);
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
   GetWidget()->UpdateWindowIcon();
   GetWidget()->UpdateWindowTitle();
   DialogModelChanged();

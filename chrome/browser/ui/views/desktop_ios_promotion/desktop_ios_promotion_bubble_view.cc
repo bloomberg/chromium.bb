@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,30 +19,19 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-// Returns the appropriate size for the promotion text label on the bubble.
-int GetPromoBubbleTextLabelWidth(
-    desktop_ios_promotion::PromotionEntryPoint entry_point) {
-  if (entry_point ==
-      desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE) {
-    return views::Widget::GetLocalizedContentsWidth(
-        IDS_DESKTOP_IOS_PROMOTION_SAVE_PASSWORDS_BUBBLE_TEXT_WIDTH_CHARS);
-  }
-  return views::Widget::GetLocalizedContentsWidth(
-      IDS_DESKTOP_IOS_PROMOTION_TEXT_WIDTH_CHARS);
-}
-}  // namespace
-
 DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
     Profile* profile,
     desktop_ios_promotion::PromotionEntryPoint entry_point)
     : promotion_text_label_(
-          new views::Label(desktop_ios_promotion::GetPromoText(entry_point))),
+          new views::Label(desktop_ios_promotion::GetPromoText(entry_point),
+                           CONTEXT_BODY_TEXT_LARGE,
+                           STYLE_SECONDARY)),
       promotion_controller_(
           std::make_unique<DesktopIOSPromotionBubbleController>(profile,
                                                                 this,
                                                                 entry_point)) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
   SetBorder(
       views::CreateEmptyBorder(0,
                                ChromeLayoutProvider::Get()
@@ -50,9 +40,7 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
                                    GetWindowIcon().width(),
                                0, 0));
 
-  promotion_text_label_->SetEnabledColor(SK_ColorGRAY);
   promotion_text_label_->SetMultiLine(true);
-  promotion_text_label_->SizeToFit(GetPromoBubbleTextLabelWidth(entry_point));
   promotion_text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(promotion_text_label_);
 
