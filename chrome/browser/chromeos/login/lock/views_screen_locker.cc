@@ -7,9 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
@@ -101,7 +104,6 @@ void ViewsScreenLocker::OnLockScreenReady() {
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
-  SessionControllerClient::Get()->NotifyChromeLockAnimationsComplete();
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
   OnAllowedInputMethodsChanged();
@@ -141,7 +143,29 @@ void ViewsScreenLocker::OnHeaderBarVisible() {
 }
 
 void ViewsScreenLocker::OnAshLockAnimationFinished() {
-  NOTIMPLEMENTED();
+  // Notify session controller that the lock animations are done.
+  // This is used to notify chromeos::PowerEventObserver that lock screen UI
+  // has finished showing. PowerEventObserver uses this notification during
+  // device suspend - device suspend is delayed until lock UI reports it's done
+  // animating. Additionally, PowerEventObserver will not stop root windows
+  // compositors until it receives this notification.
+  // Historically, this was called when Web UI lock implementation reported
+  // that all animations for showing the UI have finished, which gave enough
+  // time to update display's frame buffers with new UI before compositing was
+  // stopped.
+  // This is not the case with views lock implementation.
+  // OnAshLockAnimationFinished() is called too soon, thus the display's frame
+  // buffers might still contain the UI from before the lock window was shown
+  // at this time - see https://crbug.com/807511.
+  // To work around this, add additional delay before notifying
+  // PowerEventObserver lock screen UI is ready.
+  // TODO(tbarzic): Find a more deterministic way to determine when the display
+  //     can be turned off during device suspend.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ViewsScreenLocker::NotifyChromeLockAnimationsComplete,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(1500));
 }
 
 void ViewsScreenLocker::SetFingerprintState(
@@ -280,6 +304,10 @@ void ViewsScreenLocker::OnEnterpriseInfoUpdated(const std::string& message_text,
 void ViewsScreenLocker::OnDeviceInfoUpdated(const std::string& bluetooth_name) {
   bluetooth_name_ = bluetooth_name;
   OnDevChannelInfoUpdated();
+}
+
+void ViewsScreenLocker::NotifyChromeLockAnimationsComplete() {
+  SessionControllerClient::Get()->NotifyChromeLockAnimationsComplete();
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
