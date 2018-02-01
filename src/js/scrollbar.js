@@ -228,6 +228,13 @@ camera.ScrollBar.prototype.onDomChanged_ = function() {
 };
 
 /**
+ * Resize handler to update the thumb size/position by redrawing the scroll bar.
+ */
+camera.ScrollBar.prototype.onResize = function() {
+  this.redraw_();
+};
+
+/**
  * Redraws the scroll bar.
  * @private
  */

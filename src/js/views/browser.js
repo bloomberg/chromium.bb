@@ -145,6 +145,7 @@ camera.views.Browser.prototype.onResize = function() {
     this.updateImageSize_(picture.element.firstChild);
   }.bind(this));
 
+  this.scrollBar_.onResize();
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
     camera.util.scrollToCenter(selectedPicture.element,
