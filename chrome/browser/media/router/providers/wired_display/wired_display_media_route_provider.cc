@@ -331,6 +331,11 @@ std::vector<MediaSinkInternal> WiredDisplayMediaRouteProvider::GetSinks()
 std::vector<Display> WiredDisplayMediaRouteProvider::GetAvailableDisplays()
     const {
   std::vector<Display> displays = GetAllDisplays();
+  // If there is only one display, the user should not be able to present to it.
+  // If there are no displays, GetPrimaryDisplay() below fails.
+  if (displays.size() <= 1)
+    return std::vector<Display>();
+
   const Display primary_display = GetPrimaryDisplay();
   std::sort(
       displays.begin(), displays.end(),
@@ -345,7 +350,8 @@ std::vector<Display> WiredDisplayMediaRouteProvider::GetAvailableDisplays()
     return display.id() != primary_display.id() &&
            display.bounds() == primary_display.bounds();
   });
-  // If there is only one display, the user should not be able to present to it.
+  // If all the displays are mirrored, the user should not be able to present to
+  // them.
   return displays.size() == 1 ? std::vector<Display>() : displays;
 }
 
