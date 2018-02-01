@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -531,9 +532,7 @@ void HttpAuthController::OnGenerateAuthTokenDone(int result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   result = HandleGenerateTokenResult(result);
   if (!callback_.is_null()) {
-    CompletionCallback c = callback_;
-    callback_.Reset();
-    c.Run(result);
+    base::ResetAndReturn(&callback_).Run(result);
   }
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -216,10 +217,8 @@ class Job : public base::RefCountedThreadSafe<Job> {
 
   void RunUserCallback(int result) {
     DCHECK(has_user_callback());
-    CompletionCallback callback = callback_;
     // Reset the callback so has_user_callback() will now return false.
-    callback_.Reset();
-    callback.Run(result);
+    base::ResetAndReturn(&callback_).Run(result);
   }
 
   friend class base::RefCountedThreadSafe<Job>;

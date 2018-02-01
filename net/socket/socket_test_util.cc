@@ -1661,9 +1661,7 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
   handle_ = NULL;
 
   if (!user_callback_.is_null()) {
-    CompletionCallback callback = user_callback_;
-    user_callback_.Reset();
-    callback.Run(rv);
+    base::ResetAndReturn(&user_callback_).Run(rv);
   }
 }
 

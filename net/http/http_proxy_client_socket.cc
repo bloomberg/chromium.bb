@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/auth.h"
@@ -309,9 +310,7 @@ void HttpProxyClientSocket::DoCallback(int result) {
 
   // Since Run() may result in Read being called,
   // clear user_callback_ up front.
-  CompletionCallback c = user_callback_;
-  user_callback_.Reset();
-  c.Run(result);
+  base::ResetAndReturn(&user_callback_).Run(result);
 }
 
 void HttpProxyClientSocket::OnIOComplete(int result) {
