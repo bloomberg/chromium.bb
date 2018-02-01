@@ -63,6 +63,18 @@
 // Button to display the tools menu, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
 
+// Button to cancel the edit of the location bar, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIButton* cancelButton;
+
+// Constraints to be activated when the location bar is focused, redefined as
+// readwrite.
+@property(nonatomic, strong, readwrite)
+    NSMutableArray<NSLayoutConstraint*>* focusedConstraints;
+// Constraints to be activated when the location bar is unfocused, redefined as
+// readwrite.
+@property(nonatomic, strong, readwrite)
+    NSMutableArray<NSLayoutConstraint*>* unfocusedConstraints;
+
 @end
 
 @implementation PrimaryToolbarView
@@ -86,6 +98,9 @@
 @synthesize shareButton = _shareButton;
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
+@synthesize cancelButton = _cancelButton;
+@synthesize focusedConstraints = _focusedConstraints;
+@synthesize unfocusedConstraints = _unfocusedConstraints;
 
 #pragma mark - Public
 
@@ -107,6 +122,7 @@
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self setUpBlurredBackground];
+  [self setUpCancelButton];
   [self setUpLocationBar];
   [self setUpLeadingStackView];
   [self setUpTrailingStackView];
@@ -131,6 +147,13 @@
   [self addSubview:blur];
   blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(blur, self);
+}
+
+// Sets the cancel button to stop editing the location bar.
+- (void)setUpCancelButton {
+  self.cancelButton = [self.buttonFactory cancelButton];
+  self.cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:self.cancelButton];
 }
 
 // Sets the location bar container and its view if present.
@@ -199,6 +222,8 @@
 // Sets the constraints up.
 - (void)setUpConstraints {
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
+  self.focusedConstraints = [NSMutableArray array];
+  self.unfocusedConstraints = [NSMutableArray array];
 
   // Leading StackView constraints
   [NSLayoutConstraint activateConstraints:@[
@@ -217,8 +242,6 @@
   [NSLayoutConstraint activateConstraints:@[
     [self.locationBarContainer.leadingAnchor
         constraintEqualToAnchor:self.leadingStackView.trailingAnchor],
-    [self.locationBarContainer.trailingAnchor
-        constraintEqualToAnchor:self.trailingStackView.leadingAnchor],
     [self.locationBarContainer.bottomAnchor
         constraintEqualToAnchor:self.bottomAnchor
                        constant:-kLocationBarVerticalMargin],
@@ -234,11 +257,33 @@
     [self.trailingStackView.heightAnchor
         constraintEqualToConstant:kToolbarHeight],
   ]];
+  [self.unfocusedConstraints
+      addObject:[self.trailingStackView.leadingAnchor
+                    constraintEqualToAnchor:self.locationBarContainer
+                                                .trailingAnchor]];
+  [self.focusedConstraints
+      addObject:[self.trailingStackView.leadingAnchor
+                    constraintEqualToAnchor:self.cancelButton.trailingAnchor]];
 
   // locationBarView constraints, if present.
   if (self.locationBarView) {
     AddSameConstraints(self.locationBarContainer, self.locationBarView);
   }
+
+  // Cancel button constraints.
+  [NSLayoutConstraint activateConstraints:@[
+    [self.cancelButton.topAnchor
+        constraintEqualToAnchor:self.trailingStackView.topAnchor],
+    [self.cancelButton.bottomAnchor
+        constraintEqualToAnchor:self.trailingStackView.bottomAnchor],
+  ]];
+  [self.focusedConstraints
+      addObject:[self.cancelButton.leadingAnchor
+                    constraintEqualToAnchor:self.locationBarContainer
+                                                .trailingAnchor]];
+  [self.unfocusedConstraints
+      addObject:[self.cancelButton.leadingAnchor
+                    constraintEqualToAnchor:self.trailingAnchor]];
 
   // ProgressBar constraints.
   [NSLayoutConstraint activateConstraints:@[
@@ -249,6 +294,8 @@
     [self.progressBar.heightAnchor
         constraintEqualToConstant:kProgressBarHeight],
   ]];
+
+  [NSLayoutConstraint activateConstraints:self.unfocusedConstraints];
 }
 
 #pragma mark - Property accessors

@@ -172,19 +172,25 @@
 #pragma mark - ToolbarAnimatee
 
 - (void)expandLocationBar {
-  // TODO(crbug.com/804749): Implement this.
+  [NSLayoutConstraint deactivateConstraints:self.view.unfocusedConstraints];
+  [NSLayoutConstraint activateConstraints:self.view.focusedConstraints];
+  [self.view layoutIfNeeded];
+  // TODO(crbug.com/804749): Change location bar constraints.
 }
 
 - (void)contractLocationBar {
-  // TODO(crbug.com/804749): Implement this.
+  [NSLayoutConstraint deactivateConstraints:self.view.focusedConstraints];
+  [NSLayoutConstraint activateConstraints:self.view.unfocusedConstraints];
+  [self.view layoutIfNeeded];
+  // TODO(crbug.com/804749): Change location bar constraints.
 }
 
 - (void)showCancelButton {
-  // TODO(crbug.com/804750): Implement this.
+  self.view.cancelButton.hidden = NO;
 }
 
 - (void)hideCancelButton {
-  // TODO(crbug.com/804750): Implement this.
+  self.view.cancelButton.hidden = YES;
 }
 
 - (void)showControlButtons {

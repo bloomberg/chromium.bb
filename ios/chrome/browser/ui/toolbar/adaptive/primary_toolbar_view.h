@@ -39,6 +39,16 @@
 // It should only contain ToolbarButtons.
 @property(nonatomic, strong, readonly) UIStackView* trailingStackView;
 
+// Button to cancel the edit of the location bar.
+@property(nonatomic, strong, readonly) UIButton* cancelButton;
+
+// Constraints to be activated when the location bar is focused.
+@property(nonatomic, strong, readonly)
+    NSMutableArray<NSLayoutConstraint*>* focusedConstraints;
+// Constraints to be activated when the location bar is unfocused.
+@property(nonatomic, strong, readonly)
+    NSMutableArray<NSLayoutConstraint*>* unfocusedConstraints;
+
 // Sets all the subviews and constraints of the view. The |topSafeAnchor| needs
 // to be set before calling this.
 - (void)setUp;
