@@ -958,8 +958,6 @@ Element* Document::createElement(const AtomicString& local_name,
                            ? HTMLNames::xhtmlNamespaceURI
                            : g_null_atom);
 
-  // TODO(tkent): Share the code with createElementNS(namespace_uri,
-  // qualified_name, string_or_options, exception_state).
   bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
   bool create_v1_builtin =
       string_or_options.IsDictionary() &&
@@ -970,41 +968,13 @@ Element* Document::createElement(const AtomicString& local_name,
   // 3.
   const AtomicString& is =
       AtomicString(GetTypeExtension(this, string_or_options, exception_state));
-  const AtomicString& name = should_create_builtin ? is : converted_local_name;
 
-  // 4. Let definition be result of lookup up custom element definition
-  CustomElementDefinition* definition = nullptr;
-  if (is_v1 && q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
-    // Is the runtime flag enabled for customized builtin elements?
-    const CustomElementDescriptor desc =
-        RuntimeEnabledFeatures::CustomElementsBuiltinEnabled()
-            ? CustomElementDescriptor(name, converted_local_name)
-            : CustomElementDescriptor(converted_local_name,
-                                      converted_local_name);
-    if (CustomElementRegistry* registry = CustomElement::Registry(*this))
-      definition = registry->DefinitionFor(desc);
-
-    // 5. If 'is' is non-null and definition is null, throw NotFoundError
-    // TODO(yurak): update when https://github.com/w3c/webcomponents/issues/608
-    //              is resolved
-    if (!definition && create_v1_builtin) {
-      exception_state.ThrowDOMException(kNotFoundError,
-                                        "Custom element definition not found.");
-      return nullptr;
-    }
-  }
-
-  // 7. Let element be the result of creating an element
-  Element* element;
-
-  if (definition) {
-    element = CustomElement::CreateCustomElementSync(*this, q_name, definition);
-  } else if (V0CustomElement::IsValidName(local_name) &&
-             RegistrationContext()) {
-    element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
-  } else {
-    element = CreateRawElement(q_name, kCreatedByCreateElement);
-  }
+  // 5. Let element be the result of creating an element given ...
+  Element* element =
+      CreateElement(q_name, is_v1, create_v1_builtin,
+                    should_create_builtin ? is : g_null_atom, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
   // 8. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty()) {
@@ -1078,7 +1048,6 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   // 2.
   const AtomicString& is =
       AtomicString(GetTypeExtension(this, string_or_options, exception_state));
-  const AtomicString& name = should_create_builtin ? is : q_name.LocalName();
 
   if (!IsValidElementName(this, qualified_name)) {
     exception_state.ThrowDOMException(
@@ -1087,15 +1056,49 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
     return nullptr;
   }
 
-  // 3. Let definition be result of lookup up custom element definition
+  // 3. Let element be the result of creating an element
+  Element* element =
+      CreateElement(q_name, is_v1, create_v1_builtin,
+                    should_create_builtin ? is : g_null_atom, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
+  // 4. If 'is' is non-null, set 'is' attribute
+  if (!is.IsEmpty()) {
+    if (element->GetCustomElementState() != CustomElementState::kCustom) {
+      V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
+          element, is);
+    } else if (string_or_options.IsDictionary()) {
+      element->setAttribute(HTMLNames::isAttr, is);
+    }
+  }
+
+  return element;
+}
+
+// Entry point of "create an element".
+// https://dom.spec.whatwg.org/#concept-create-element
+// TODO(tkent): Add synchronous custom element flag.
+// TODO(tkent): Update or remove |is_v1| argument. At this moment, this
+// function is called only by createElement*() with string_or_options
+// argument. So we can determine v0 or v1 precisely.
+// TODO(tkent): Remove |create_v1_builtin| flag. This is for an obsolete
+// exception.
+Element* Document::CreateElement(const QualifiedName& q_name,
+                                 bool is_v1,
+                                 bool create_v1_builtin,
+                                 const AtomicString& is,
+                                 ExceptionState& exception_state) {
   CustomElementDefinition* definition = nullptr;
-  if (is_v1 && namespace_uri == HTMLNames::xhtmlNamespaceURI) {
-    const CustomElementDescriptor desc =
-        CustomElementDescriptor(name, q_name.LocalName());
+  if (is_v1 && q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
+    const CustomElementDescriptor desc(is.IsEmpty() ? q_name.LocalName() : is,
+                                       q_name.LocalName());
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
       definition = registry->DefinitionFor(desc);
 
     // 4. If 'is' is non-null and definition is null, throw NotFoundError
+    // TODO(yurak): update when https://github.com/w3c/webcomponents/issues/608
+    //              is resolved. crbug.com/807205
     if (!definition && create_v1_builtin) {
       exception_state.ThrowDOMException(kNotFoundError,
                                         "Custom element definition not found.");
@@ -1114,17 +1117,6 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   } else {
     element = CreateRawElement(q_name, kCreatedByCreateElement);
   }
-
-  // 6. If 'is' is non-null, set 'is' attribute
-  if (!is.IsEmpty()) {
-    if (element->GetCustomElementState() != CustomElementState::kCustom) {
-      V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
-          element, is);
-    } else if (string_or_options.IsDictionary()) {
-      element->setAttribute(HTMLNames::isAttr, is);
-    }
-  }
-
   return element;
 }
 
