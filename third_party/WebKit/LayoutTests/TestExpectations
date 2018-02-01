@@ -2736,8 +2736,6 @@ crbug.com/736177 [ Mac10.12 Retina ] fast/parser/bad-xml-slash.html [ Failure Pa
 crbug.com/736177 [ Mac10.12 Retina ] fast/replaced/replaced-breaking.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] fast/text/textIteratorNilRenderer.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] fast/text/whitespace/normal-after-nowrap-breaking.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] paint/invalidation/forms/checkbox-focus-by-mouse-then-keydown.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla/bugs/bug1318.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla/bugs/bug4527.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions1.html [ Failure Pass ]
@@ -3379,6 +3377,12 @@ crbug.com/417782 [ Linux ] virtual/threaded/printing/fixed-positioned-headers-an
 crbug.com/417782 virtual/threaded/printing/thead-under-multicol.html [ Failure ]
 crbug.com/417782 compositing/masks/mask-layer-size.html [ Failure ]
 crbug.com/417782 paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
+
+crbug.com/808112 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
+crbug.com/808112 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
+crbug.com/808112 [ Mac ] paint/invalidation/forms/checkbox-focus-by-mouse-then-keydown.html [ Failure Pass ]
+crbug.com/808112 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
+
 ################################################################################
 # End of Root Layer Scrolling expectations
 ################################################################################
