@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -77,8 +76,11 @@ public class AppBannerManagerTest {
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
-    private static final String NATIVE_APP_PATH =
-            "/chrome/test/data/banners/play_app_test_page.html";
+    private static final String NATIVE_APP_MANIFEST_WITH_ID =
+            "/chrome/test/data/banners/play_app_manifest.json";
+
+    private static final String NATIVE_APP_MANIFEST_WITH_URL =
+            "/chrome/test/data/banners/play_app_url_manifest.json";
 
     private static final String NATIVE_ICON_PATH = "/chrome/test/data/banners/launcher-icon-4x.png";
 
@@ -91,14 +93,6 @@ public class AppBannerManagerTest {
     private static final String NATIVE_APP_REFERRER = "chrome_inline&playinline=chrome_inline";
 
     private static final String NATIVE_APP_BLANK_REFERRER = "playinline=chrome_inline";
-
-    private static final String NATIVE_APP_URL_WITH_MANIFEST_PATH =
-            "/chrome/test/data/banners/play_app_url_test_page.html";
-
-    private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
-
-    private static final String WEB_APP_BEFORE_INSTALL_PROMPT_PATH =
-            "/chrome/test/data/banners/prompt_test_page.html";
 
     private static final String WEB_APP_SHORT_TITLE_MANIFEST =
             "/chrome/test/data/banners/manifest_short_name_only.json";
@@ -193,7 +187,6 @@ public class AppBannerManagerTest {
     private TestPackageManager mPackageManager;
     private EmbeddedTestServer mTestServer;
     private String mWebAppUrl;
-    private String mWebAppApiUrl;
 
     @Before
     public void setUp() throws Exception {
@@ -215,9 +208,9 @@ public class AppBannerManagerTest {
 
         AppBannerManager.setTotalEngagementForTesting(10);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mNativeAppUrl = mTestServer.getURL(NATIVE_APP_PATH);
-        mWebAppUrl = mTestServer.getURL(WEB_APP_PATH);
-        mWebAppApiUrl = mTestServer.getURL(WEB_APP_BEFORE_INSTALL_PROMPT_PATH);
+        mNativeAppUrl = WebappTestPage.getNativeBannerUrlWithManifest(
+                mTestServer, NATIVE_APP_MANIFEST_WITH_ID);
+        mWebAppUrl = WebappTestPage.getBannerUrl(mTestServer);
     }
 
     @After
@@ -386,8 +379,9 @@ public class AppBannerManagerTest {
     @SmallTest
     @Feature({"AppBanners"})
     public void testFullNativeInstallPathwayFromUrl() throws Exception {
-        runFullNativeInstallPathway(
-                mTestServer.getURL(NATIVE_APP_URL_WITH_MANIFEST_PATH), NATIVE_APP_REFERRER);
+        runFullNativeInstallPathway(WebappTestPage.getNativeBannerUrlWithManifest(
+                                            mTestServer, NATIVE_APP_MANIFEST_WITH_URL),
+                NATIVE_APP_REFERRER);
     }
 
     @Test
@@ -604,8 +598,7 @@ public class AppBannerManagerTest {
     @Feature({"AppBanners"})
     public void testBannerFallsBackToShortNameWhenNameNotPresent() throws Exception {
         triggerWebAppBanner(mTabbedActivityTestRule,
-                WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
-                        mTestServer, WEB_APP_SHORT_TITLE_MANIFEST),
+                WebappTestPage.getBannerUrlWithManifest(mTestServer, WEB_APP_SHORT_TITLE_MANIFEST),
                 WEB_APP_SHORT_TITLE, false);
     }
 
@@ -614,9 +607,36 @@ public class AppBannerManagerTest {
     @Feature({"AppBanners"})
     public void testBannerFallsBackToShortNameWhenNameIsEmpty() throws Exception {
         triggerWebAppBanner(mTabbedActivityTestRule,
-                WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
-                        mTestServer, WEB_APP_EMPTY_NAME_MANIFEST),
+                WebappTestPage.getBannerUrlWithManifest(mTestServer, WEB_APP_EMPTY_NAME_MANIFEST),
                 WEB_APP_SHORT_TITLE, false);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AppBanners"})
+    public void testAppInstalledEventAutomaticPrompt() throws Exception {
+        triggerWebAppBanner(mTabbedActivityTestRule,
+                WebappTestPage.getBannerUrlWithAction(mTestServer, "verify_appinstalled"),
+                WEB_APP_TITLE, true);
+
+        // The appinstalled event should fire (and cause the title to change).
+        new TabTitleObserver(mTabbedActivityTestRule.getActivity().getActivityTab(),
+                "Got appinstalled: listener, attr")
+                .waitForTitleUpdate(3);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AppBanners"})
+    public void testAppInstalledEventApi() throws Exception {
+        triggerWebAppBanner(mTabbedActivityTestRule,
+                WebappTestPage.getBannerUrlWithAction(mTestServer, "verify_prompt_appinstalled"),
+                WEB_APP_TITLE, true);
+
+        // The appinstalled event should fire (and cause the title to change).
+        new TabTitleObserver(mTabbedActivityTestRule.getActivity().getActivityTab(),
+                "Got appinstalled: listener, attr")
+                .waitForTitleUpdate(3);
     }
 
     private void runWebAppBannerAndCheckInstallEvent(
@@ -624,11 +644,6 @@ public class AppBannerManagerTest {
             int expectedBucket) throws Exception {
         triggerWebAppBanner(rule, webAppUrl, WEB_APP_TITLE, true);
 
-        // The appinstalled event should fire (and cause the title to change).
-        Tab tab = rule.getActivity().getActivityTab();
-        new TabTitleObserver(tab, "Got appinstalled").waitForTitleUpdate(3);
-
-        // We should have recorded the AUTOMATIC_BROWSER_TAB install source.
         ThreadUtils.runOnUiThread(() -> {
             Assert.assertEquals(1,
                     RecordHistogram.getHistogramValueCountForTesting(
@@ -657,7 +672,8 @@ public class AppBannerManagerTest {
     @SmallTest
     @Feature({"AppBanners"})
     public void testPostInstallationApiBrowserTab() throws Exception {
-        runWebAppBannerAndCheckInstallEvent(mTabbedActivityTestRule, mWebAppApiUrl, 4);
+        runWebAppBannerAndCheckInstallEvent(mTabbedActivityTestRule,
+                WebappTestPage.getBannerUrlWithAction(mTestServer, "call_prompt_delayed"), 4);
     }
 
     @Test
@@ -667,7 +683,8 @@ public class AppBannerManagerTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(), "about:blank"));
-        runWebAppBannerAndCheckInstallEvent(mCustomTabActivityTestRule, mWebAppApiUrl, 5);
+        runWebAppBannerAndCheckInstallEvent(mCustomTabActivityTestRule,
+                WebappTestPage.getBannerUrlWithAction(mTestServer, "call_prompt_delayed"), 5);
     }
 
     @Test
