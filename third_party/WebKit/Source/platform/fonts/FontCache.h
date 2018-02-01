@@ -321,6 +321,12 @@ class PLATFORM_EXPORT FontCache {
   FallbackListShaperCache fallback_list_shaper_cache_;
   FontDataCache font_data_cache_;
 
+#if defined(OS_WIN)
+  // Windows creates an SkFontMgr for unit testing automatically. This flag is
+  // to ensure it's not happening in the production from the crash log.
+  bool is_test_font_mgr_ = false;
+#endif
+
   void PurgePlatformFontDataCache();
   void PurgeFallbackListShaperCache();
 
