@@ -433,7 +433,7 @@ void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
 
   // If we're a top level window, bring the window to the front.
   if (GetFrame()->IsMainFrame() && allow_focus)
-    page->GetChromeClient().Focus();
+    page->GetChromeClient().Focus(incumbent_window->GetFrame());
 
   page->GetFocusController().FocusDocumentView(GetFrame(),
                                                true /* notifyEmbedder */);

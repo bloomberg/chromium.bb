@@ -3372,7 +3372,7 @@ class ViewCreatingWebViewClient : public FrameTestHelpers::TestWebViewClient {
   }
 
   // WebWidgetClient methods
-  void DidFocus() override { did_focus_called_ = true; }
+  void DidFocus(WebLocalFrame*) override { did_focus_called_ = true; }
 
   bool DidFocusCalled() const { return did_focus_called_; }
   WebView* CreatedWebView() const { return web_view_helper_.GetWebView(); }

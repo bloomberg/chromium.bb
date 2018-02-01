@@ -200,9 +200,11 @@ IntRect ChromeClientImpl::PageRect() {
   return RootWindowRect();
 }
 
-void ChromeClientImpl::Focus() {
-  if (web_view_->Client())
-    web_view_->Client()->DidFocus();
+void ChromeClientImpl::Focus(LocalFrame* calling_frame) {
+  if (web_view_->Client()) {
+    web_view_->Client()->DidFocus(
+        calling_frame ? WebLocalFrameImpl::FromFrame(calling_frame) : nullptr);
+  }
 }
 
 bool ChromeClientImpl::CanTakeFocus(WebFocusType) {

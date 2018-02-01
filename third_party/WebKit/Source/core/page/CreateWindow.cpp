@@ -281,7 +281,7 @@ static Frame* ReuseExistingWindow(LocalFrame& active_frame,
           if (page == active_frame.GetPage())
             page->GetFocusController().SetFocusedFrame(frame);
           else
-            page->GetChromeClient().Focus();
+            page->GetChromeClient().Focus(&active_frame);
         }
       }
       return frame;

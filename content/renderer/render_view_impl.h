@@ -320,7 +320,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void PageImportanceSignalsChanged() override;
   void DidAutoResize(const blink::WebSize& newSize) override;
   blink::WebRect RootWindowRect() override;
-  void DidFocus() override;
+  void DidFocus(blink::WebLocalFrame* calling_frame) override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement

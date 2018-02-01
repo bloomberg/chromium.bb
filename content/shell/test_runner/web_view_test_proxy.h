@@ -161,9 +161,9 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
   bool IsPointerLocked() override {
     return widget_test_client()->IsPointerLocked();
   }
-  void DidFocus() override {
-    view_test_client()->DidFocus();
-    Base::DidFocus();
+  void DidFocus(blink::WebLocalFrame* calling_frame) override {
+    view_test_client()->DidFocus(calling_frame);
+    Base::DidFocus(calling_frame);
   }
   void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override {

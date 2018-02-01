@@ -103,7 +103,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual IntRect PageRect() = 0;
 
-  virtual void Focus() = 0;
+  virtual void Focus(LocalFrame*) = 0;
 
   virtual bool CanTakeFocus(WebFocusType) = 0;
   virtual void TakeFocus(WebFocusType) = 0;

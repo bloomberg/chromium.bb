@@ -88,7 +88,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   IntRect PageRect() override { return IntRect(); }
 
-  void Focus() override {}
+  void Focus(LocalFrame*) override {}
 
   bool CanTakeFocus(WebFocusType) override { return false; }
   void TakeFocus(WebFocusType) override {}

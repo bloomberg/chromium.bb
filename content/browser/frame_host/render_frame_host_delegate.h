@@ -247,6 +247,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // possibly changing focus in distinct but related inner/outer WebContents.
   virtual void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {}
 
+  // The frame called |window.focus()|.
+  virtual void DidCallFocus() {}
+
   // Searches the WebContents for a focused frame, potentially in an inner
   // WebContents. If this WebContents has no focused frame, returns |nullptr|.
   // If there is no inner WebContents at the focused tree node, returns its

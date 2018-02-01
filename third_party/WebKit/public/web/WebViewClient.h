@@ -171,7 +171,7 @@ class WebViewClient : protected WebWidgetClient {
   virtual void DidAutoResize(const WebSize& new_size) {}
 
   // Called when the View acquires focus.
-  virtual void DidFocus() {}
+  virtual void DidFocus(WebLocalFrame* calling_frame) {}
 
   // Session history -----------------------------------------------------
 
