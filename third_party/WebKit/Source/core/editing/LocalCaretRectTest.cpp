@@ -8,6 +8,8 @@
 #include "core/editing/TextAffinity.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
 
@@ -22,7 +24,26 @@ std::ostream& operator<<(std::ostream& out, const LocalCaretRect& caret_rect) {
 
 class LocalCaretRectTest : public EditingTestBase {};
 
-TEST_F(LocalCaretRectTest, DOMAndFlatTrees) {
+// Helper class to run the same test code with and without LayoutNG
+class ParameterizedLocalCaretRectTest
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      private ScopedLayoutNGPaintFragmentsForTest,
+      public LocalCaretRectTest {
+ public:
+  ParameterizedLocalCaretRectTest()
+      : ScopedLayoutNGForTest(GetParam()),
+        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+
+ protected:
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        ParameterizedLocalCaretRectTest,
+                        ::testing::Bool());
+
+TEST_P(ParameterizedLocalCaretRectTest, DOMAndFlatTrees) {
   const char* body_content =
       "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
   const char* shadow_content =
@@ -42,7 +63,7 @@ TEST_F(LocalCaretRectTest, DOMAndFlatTrees) {
   EXPECT_EQ(caret_rect_from_dom_tree, caret_rect_from_flat_tree);
 }
 
-TEST_F(LocalCaretRectTest, SimpleText) {
+TEST_P(ParameterizedLocalCaretRectTest, SimpleText) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -64,7 +85,7 @@ TEST_F(LocalCaretRectTest, SimpleText) {
       LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, MixedHeightText) {
+TEST_P(ParameterizedLocalCaretRectTest, MixedHeightText) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -86,7 +107,7 @@ TEST_F(LocalCaretRectTest, MixedHeightText) {
       LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, RtlText) {
+TEST_P(ParameterizedLocalCaretRectTest, RtlText) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -109,7 +130,7 @@ TEST_F(LocalCaretRectTest, RtlText) {
       LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, OverflowTextLtr) {
+TEST_P(ParameterizedLocalCaretRectTest, OverflowTextLtr) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -127,7 +148,7 @@ TEST_F(LocalCaretRectTest, OverflowTextLtr) {
       LocalCaretRectOfPosition({Position(text, 4), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, UnderflowTextLtr) {
+TEST_P(ParameterizedLocalCaretRectTest, UnderflowTextLtr) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -145,7 +166,7 @@ TEST_F(LocalCaretRectTest, UnderflowTextLtr) {
       LocalCaretRectOfPosition({Position(text, 2), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, OverflowTextRtl) {
+TEST_P(ParameterizedLocalCaretRectTest, OverflowTextRtl) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -164,7 +185,7 @@ TEST_F(LocalCaretRectTest, OverflowTextRtl) {
       LocalCaretRectOfPosition({Position(text, 4), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, UnderflowTextRtl) {
+TEST_P(ParameterizedLocalCaretRectTest, UnderflowTextRtl) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -183,6 +204,7 @@ TEST_F(LocalCaretRectTest, UnderflowTextRtl) {
       LocalCaretRectOfPosition({Position(text, 2), TextAffinity::kDownstream}));
 }
 
+// TODO(xiaochengh): Fix NG LocalCaretText computation for vertical text.
 TEST_F(LocalCaretRectTest, VerticalRLText) {
   // This test only records the current behavior. Future changes are allowed.
 
@@ -237,7 +259,7 @@ TEST_F(LocalCaretRectTest, VerticalRLText) {
       LocalCaretRectOfPosition({Position(foo, 9), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, VerticalLRText) {
+TEST_P(ParameterizedLocalCaretRectTest, VerticalLRText) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -286,7 +308,7 @@ TEST_F(LocalCaretRectTest, VerticalLRText) {
       LocalCaretRectOfPosition({Position(foo, 9), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, OverflowTextVerticalLtr) {
+TEST_P(ParameterizedLocalCaretRectTest, OverflowTextVerticalLtr) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -305,7 +327,7 @@ TEST_F(LocalCaretRectTest, OverflowTextVerticalLtr) {
       LocalCaretRectOfPosition({Position(text, 4), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, UnderflowTextVerticalLtr) {
+TEST_P(ParameterizedLocalCaretRectTest, UnderflowTextVerticalLtr) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -324,7 +346,7 @@ TEST_F(LocalCaretRectTest, UnderflowTextVerticalLtr) {
       LocalCaretRectOfPosition({Position(text, 2), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, OverflowTextVerticalRtl) {
+TEST_P(ParameterizedLocalCaretRectTest, OverflowTextVerticalRtl) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -343,7 +365,7 @@ TEST_F(LocalCaretRectTest, OverflowTextVerticalRtl) {
       LocalCaretRectOfPosition({Position(text, 4), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, UnderflowTextVerticalRtl) {
+TEST_P(ParameterizedLocalCaretRectTest, UnderflowTextVerticalRtl) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -362,7 +384,7 @@ TEST_F(LocalCaretRectTest, UnderflowTextVerticalRtl) {
       LocalCaretRectOfPosition({Position(text, 2), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
+TEST_P(ParameterizedLocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -400,7 +422,7 @@ TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
       LocalCaretRectOfPosition({Position(foo, 6), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodes) {
+TEST_P(ParameterizedLocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodes) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -423,13 +445,18 @@ TEST_F(LocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodes) {
             LocalCaretRectOfPosition({after_c, TextAffinity::kDownstream}));
 
   const Position before_d(text_d, 0);
-  EXPECT_EQ(LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
-            LocalCaretRectOfPosition({before_d, TextAffinity::kUpstream}));
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(text_c->GetLayoutObject(), LayoutRect(29, 0, 1, 10))
+          : LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+      LocalCaretRectOfPosition({before_d, TextAffinity::kUpstream}));
   EXPECT_EQ(LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
             LocalCaretRectOfPosition({before_d, TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodesRtl) {
+TEST_P(ParameterizedLocalCaretRectTest,
+       SoftLineWrapBetweenMultipleTextNodesRtl) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -454,15 +481,18 @@ TEST_F(LocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodesRtl) {
       LocalCaretRectOfPosition({after_c, TextAffinity::kDownstream}));
 
   const Position before_d(text_d, 0);
-  EXPECT_EQ(
-      LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(29, 10, 1, 10)),
-      LocalCaretRectOfPosition({before_d, TextAffinity::kUpstream}));
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(text_c->GetLayoutObject(),
+                                               LayoutRect(0, 0, 1, 10))
+                              : LocalCaretRect(text_d->GetLayoutObject(),
+                                               LayoutRect(29, 10, 1, 10)),
+            LocalCaretRectOfPosition({before_d, TextAffinity::kUpstream}));
   EXPECT_EQ(
       LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(29, 10, 1, 10)),
       LocalCaretRectOfPosition({before_d, TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, CaretRectAtBR) {
+TEST_P(ParameterizedLocalCaretRectTest, CaretRectAtBR) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -475,7 +505,7 @@ TEST_F(LocalCaretRectTest, CaretRectAtBR) {
                 {Position::BeforeNode(br), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, CaretRectAtRtlBR) {
+TEST_P(ParameterizedLocalCaretRectTest, CaretRectAtRtlBR) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -489,7 +519,7 @@ TEST_F(LocalCaretRectTest, CaretRectAtRtlBR) {
                 {Position::BeforeNode(br), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, Images) {
+TEST_P(ParameterizedLocalCaretRectTest, Images) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -512,15 +542,19 @@ TEST_F(LocalCaretRectTest, Images) {
 
   // Box-anchored LocalCaretRect is local to the box itself, instead of its
   // containing block.
-  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
-            LocalCaretRectOfPosition(
-                {Position::BeforeNode(img2), TextAffinity::kDownstream}));
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(img1.GetLayoutObject(), LayoutRect(9, 0, 1, 12))
+          : LocalCaretRect(img2.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
+      LocalCaretRectOfPosition(
+          {Position::BeforeNode(img2), TextAffinity::kDownstream}));
   EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::AfterNode(img2), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, RtlImages) {
+TEST_P(ParameterizedLocalCaretRectTest, RtlImages) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -531,17 +565,19 @@ TEST_F(LocalCaretRectTest, RtlImages) {
       "</bdo>");
 
   const Element& img1 = *GetElementById("img1");
+  const Element& img2 = *GetElementById("img2");
 
   // Box-anchored LocalCaretRect is local to the box itself, instead of its
   // containing block.
   EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::BeforeNode(img1), TextAffinity::kDownstream}));
-  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
-            LocalCaretRectOfPosition(
-                {Position::AfterNode(img1), TextAffinity::kDownstream}));
-
-  const Element& img2 = *GetElementById("img2");
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 12))
+          : LocalCaretRect(img1.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
+      LocalCaretRectOfPosition(
+          {Position::AfterNode(img1), TextAffinity::kDownstream}));
 
   EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
             LocalCaretRectOfPosition(
@@ -551,7 +587,7 @@ TEST_F(LocalCaretRectTest, RtlImages) {
                 {Position::AfterNode(img2), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, VerticalImage) {
+TEST_P(ParameterizedLocalCaretRectTest, VerticalImage) {
   // This test only records the current behavior. Future changes are allowed.
 
   SetBodyContent(
@@ -567,14 +603,16 @@ TEST_F(LocalCaretRectTest, VerticalImage) {
             LocalCaretRectOfPosition(
                 {Position::BeforeNode(img), TextAffinity::kDownstream}));
 
-  // TODO(crbug.com/805064): The current behavior is wrong.
-  // Should be LayoutRect(0, 19, 10, 1).
-  EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, 9, 10, 1)),
-            LocalCaretRectOfPosition(
-                {Position::AfterNode(img), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, 19, 10, 1))
+          // TODO(crbug.com/805064): The legacy behavior is wrong. Fix it.
+          : LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, 9, 10, 1)),
+      LocalCaretRectOfPosition(
+          {Position::AfterNode(img), TextAffinity::kDownstream}));
 }
 
-TEST_F(LocalCaretRectTest, TextAndImageMixedHeight) {
+TEST_P(ParameterizedLocalCaretRectTest, TextAndImageMixedHeight) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -595,16 +633,24 @@ TEST_F(LocalCaretRectTest, TextAndImageMixedHeight) {
             LocalCaretRectOfPosition(
                 {Position(text1, 1), TextAffinity::kDownstream}));
 
-  EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, -5, 1, 10)),
-            LocalCaretRectOfPosition(
-                {Position::BeforeNode(img), TextAffinity::kDownstream}));
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(text1->GetLayoutObject(), LayoutRect(10, 0, 1, 10))
+          : LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, -5, 1, 10)),
+      LocalCaretRectOfPosition(
+          {Position::BeforeNode(img), TextAffinity::kDownstream}));
   EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(9, -5, 1, 10)),
             LocalCaretRectOfPosition(
                 {Position::AfterNode(img), TextAffinity::kDownstream}));
 
-  EXPECT_EQ(LocalCaretRect(text2->GetLayoutObject(), LayoutRect(20, 5, 1, 10)),
-            LocalCaretRectOfPosition(
-                {Position(text2, 0), TextAffinity::kDownstream}));
+  // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(img.GetLayoutObject(), LayoutRect(9, -5, 1, 10))
+          : LocalCaretRect(text2->GetLayoutObject(), LayoutRect(20, 5, 1, 10)),
+      LocalCaretRectOfPosition(
+          {Position(text2, 0), TextAffinity::kDownstream}));
   EXPECT_EQ(LocalCaretRect(text2->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
             LocalCaretRectOfPosition(
                 {Position(text2, 1), TextAffinity::kDownstream}));

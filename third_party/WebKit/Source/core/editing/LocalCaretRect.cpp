@@ -32,9 +32,12 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/InlineBoxPosition.h"
+#include "core/editing/NGFlatTreeShorthands.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/layout/ng/inline/ng_caret_rect.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 
@@ -55,7 +58,11 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
       ComputeInlineAdjustedPosition(position);
 
   if (adjusted.IsNotNull()) {
-    // TODO(xiaochengh): Plug in NG implementation here.
+    if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
+      if (const LayoutBlockFlow* context =
+              NGInlineFormattingContextOf(adjusted.GetPosition()))
+        return ComputeNGLocalCaretRect(*context, adjusted);
+    }
 
     // TODO(editing-dev): This DCHECK is for ensuring the correctness of
     // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|

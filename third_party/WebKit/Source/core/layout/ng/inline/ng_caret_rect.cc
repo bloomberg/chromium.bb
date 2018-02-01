@@ -15,6 +15,7 @@
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "platform/fonts/CharacterRange.h"
 
 namespace blink {
 
@@ -203,6 +204,193 @@ CaretPositionResolution TryResolveCaretPositionWithFragment(
   return CaretPositionResolution();
 }
 
+// -------------------------------------
+
+// Helpers for converting NGCaretPositions to caret rects.
+
+std::pair<const NGPhysicalLineBoxFragment&, NGPhysicalOffset>
+GetLineBoxAndOffset(const LayoutBlockFlow& context,
+                    const NGPhysicalBoxFragment& fragment) {
+  DCHECK(context.CurrentFragment());
+
+  NGPhysicalOffset self_offset_to_container_box;
+  NGPhysicalOffset line_box_offset_to_container_box;
+  const NGPhysicalLineBoxFragment* line_box = nullptr;
+  for (const auto& ancestor : NGInlineFragmentTraversal::InclusiveAncestorsOf(
+           *context.CurrentFragment(), fragment)) {
+    if (ancestor.fragment == &fragment) {
+      self_offset_to_container_box = ancestor.offset_to_container_box;
+      continue;
+    }
+
+    if (ancestor.fragment->IsLineBox()) {
+      line_box = ToNGPhysicalLineBoxFragment(ancestor.fragment.get());
+      line_box_offset_to_container_box = ancestor.offset_to_container_box;
+      break;
+    }
+  }
+
+  DCHECK(line_box);
+  return {*line_box,
+          self_offset_to_container_box - line_box_offset_to_container_box};
+}
+
+NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
+    const LayoutBlockFlow& context,
+    const NGPhysicalBoxFragment& fragment,
+    NGCaretPositionType position_type) {
+  const bool is_horizontal = fragment.Style().IsHorizontalWritingMode();
+  std::pair<const NGPhysicalLineBoxFragment&, NGPhysicalOffset>
+      line_box_and_offset = GetLineBoxAndOffset(context, fragment);
+  const NGPhysicalLineBoxFragment& line_box = line_box_and_offset.first;
+  const NGPhysicalOffset offset_to_line_box = line_box_and_offset.second;
+  LayoutUnit caret_height =
+      is_horizontal ? line_box.Size().height : line_box.Size().width;
+  LayoutUnit caret_top =
+      is_horizontal ? -offset_to_line_box.top : -offset_to_line_box.left;
+
+  const LocalFrameView* frame_view =
+      fragment.GetLayoutObject()->GetDocument().View();
+  LayoutUnit caret_width = frame_view->CaretWidth();
+
+  const bool is_ltr = fragment.Style().Direction() == TextDirection::kLtr;
+  LayoutUnit caret_left;
+  if (is_ltr != (position_type == NGCaretPositionType::kBeforeBox)) {
+    if (is_horizontal)
+      caret_left = fragment.Size().width - caret_width;
+    else
+      caret_left = fragment.Size().height - caret_width;
+  }
+
+  if (!is_horizontal) {
+    std::swap(caret_top, caret_left);
+    std::swap(caret_width, caret_height);
+  }
+
+  const NGPhysicalOffset caret_location(caret_left, caret_top);
+  const NGPhysicalSize caret_size(caret_width, caret_height);
+  return NGPhysicalOffsetRect(caret_location, caret_size);
+}
+
+NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
+    const LayoutBlockFlow& context,
+    const NGPhysicalTextFragment& fragment,
+    unsigned offset) {
+  DCHECK_GE(offset, fragment.StartOffset());
+  DCHECK_LE(offset, fragment.EndOffset());
+
+  const LocalFrameView* frame_view =
+      fragment.GetLayoutObject()->GetDocument().View();
+  LayoutUnit caret_width = frame_view->CaretWidth();
+
+  const bool is_horizontal = fragment.Style().IsHorizontalWritingMode();
+
+  LayoutUnit caret_height =
+      is_horizontal ? fragment.Size().height : fragment.Size().width;
+  LayoutUnit caret_top;
+
+  LayoutUnit caret_left;
+  if (!fragment.IsLineBreak()) {
+    unsigned offset_in_fragment = offset - fragment.StartOffset();
+    const ShapeResult* shape_result = fragment.TextShapeResult();
+    DCHECK(shape_result);
+    CharacterRange character_range =
+        shape_result->GetCharacterRange(offset_in_fragment, offset_in_fragment);
+
+    LayoutUnit caret_center = LayoutUnit(character_range.start);
+    caret_left = caret_center - caret_width / 2;
+  }
+
+  if (!is_horizontal) {
+    std::swap(caret_top, caret_left);
+    std::swap(caret_width, caret_height);
+  }
+
+  NGPhysicalOffset caret_location(caret_left, caret_top);
+  NGPhysicalSize caret_size(caret_width, caret_height);
+
+  // Adjust the location to be relative to the inline formatting context.
+  const NGPhysicalBoxFragment& context_fragment = *context.CurrentFragment();
+  NGPhysicalFragmentWithOffset line_box;
+  for (const auto& runner : NGInlineFragmentTraversal::InclusiveAncestorsOf(
+           context_fragment, fragment)) {
+    if (runner.fragment == &fragment) {
+      caret_location += runner.offset_to_container_box;
+    } else if (runner.fragment->IsLineBox()) {
+      line_box = runner;
+      break;
+    }
+  }
+
+  // For horizontal text, adjust the location in the x direction to ensure that
+  // it completely falls in the union of line box and containing block, and
+  // then round it to the nearest pixel.
+  if (is_horizontal) {
+    const LayoutUnit min_x =
+        std::min(LayoutUnit(), line_box.offset_to_container_box.left);
+    caret_location.left = std::max(caret_location.left, min_x);
+    const LayoutUnit max_x = std::max(context_fragment.Size().width,
+                                      line_box.RectInContainerBox().Right());
+    caret_location.left = std::min(caret_location.left, max_x - caret_width);
+    caret_location.left = LayoutUnit(caret_location.left.Round());
+    return NGPhysicalOffsetRect(caret_location, caret_size);
+  }
+
+  // Similar adjustment and rounding for vertical text.
+  const LayoutUnit min_y =
+      std::min(LayoutUnit(), line_box.offset_to_container_box.top);
+  caret_location.top = std::max(caret_location.top, min_y);
+  const LayoutUnit max_y = std::max(context_fragment.Size().height,
+                                    line_box.RectInContainerBox().Bottom());
+  caret_location.top = std::min(caret_location.top, max_y - caret_height);
+  caret_location.top = LayoutUnit(caret_location.top.Round());
+  return NGPhysicalOffsetRect(caret_location, caret_size);
+}
+
+LocalCaretRect ComputeLocalCaretRect(const LayoutBlockFlow& context,
+                                     const NGCaretPosition& caret_position) {
+  if (caret_position.IsNull())
+    return LocalCaretRect();
+
+  switch (caret_position.position_type) {
+    case NGCaretPositionType::kBeforeBox:
+    case NGCaretPositionType::kAfterBox: {
+      DCHECK(caret_position.fragment->IsBox());
+      const NGPhysicalOffsetRect fragment_local_rect =
+          ComputeLocalCaretRectByBoxSide(
+              context, ToNGPhysicalBoxFragment(*caret_position.fragment),
+              caret_position.position_type);
+      return {caret_position.fragment->GetLayoutObject(),
+              fragment_local_rect.ToLayoutRect()};
+    }
+    case NGCaretPositionType::kAtTextOffset: {
+      DCHECK(caret_position.fragment->IsText());
+      DCHECK(caret_position.text_offset.has_value());
+      const NGPhysicalOffsetRect caret_rect = ComputeLocalCaretRectAtTextOffset(
+          context, ToNGPhysicalTextFragment(*caret_position.fragment),
+          *caret_position.text_offset);
+
+      return {caret_position.fragment->GetLayoutObject(),
+              caret_rect.ToLayoutRect()};
+    }
+  }
+
+  NOTREACHED();
+  return {caret_position.fragment->GetLayoutObject(), LayoutRect()};
+}
+
+// -------------------------------------
+
+void AssertValidPositionForCaretRectComputation(
+    const PositionWithAffinity& position) {
+#if DCHECK_IS_ON()
+  DCHECK(NGOffsetMapping::AcceptsPosition(position.GetPosition()));
+  const LayoutObject* layout_object = position.AnchorNode()->GetLayoutObject();
+  DCHECK(layout_object);
+  DCHECK(layout_object->IsText() || layout_object->IsAtomicInlineLevel());
+#endif
+}
+
 }  // namespace
 
 // The main function for compute an NGCaretPosition. See the comments at the top
@@ -251,6 +439,26 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
   }
 
   return candidate;
+}
+
+LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow& context,
+                                       const PositionWithAffinity& position) {
+  AssertValidPositionForCaretRectComputation(position);
+  DCHECK_EQ(&context, NGInlineFormattingContextOf(position.GetPosition()));
+  const NGOffsetMapping* mapping = NGOffsetMapping::GetFor(&context);
+  DCHECK(mapping);
+  const Optional<unsigned> maybe_offset =
+      mapping->GetTextContentOffset(position.GetPosition());
+  if (!maybe_offset.has_value()) {
+    // TODO(xiaochengh): Investigate if we reach here.
+    NOTREACHED();
+    return LocalCaretRect();
+  }
+
+  const unsigned offset = maybe_offset.value();
+  const TextAffinity affinity = position.Affinity();
+  return ComputeLocalCaretRect(
+      context, ComputeNGCaretPosition(context, offset, affinity));
 }
 
 }  // namespace blink
