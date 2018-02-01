@@ -12,6 +12,6 @@ PASS removeTrack() makes stream.onremovetrack fire and the track to be removed f
 PASS stream.onremovetrack fires before setRemoteDescription resolves.
 PASS removeTrack() makes track.onmute fire and the track to be muted.
 PASS track.onmute fires before setRemoteDescription resolves.
-PASS removeTrack() twice is safe.
+FAIL removeTrack() twice is safe. Failed to execute 'removeTrack' on 'RTCPeerConnection': The sender was not created by this peer connection.
 Harness: the test ran to completion.
 

@@ -27,10 +27,7 @@ promise_test(function() {
       let track = stream.getAudioTracks()[0];
       let sender = pc.addTrack(track, stream);
       assert_equals(sender.track, track);
-      // TODO(hbos): |addTrack| does not add to the set of local streams. When
-      // |getLocalStreams| is updated to return the streams of all senders this
-      // would have an observable effect here. https://crbug.com/738918
-      assert_array_equals(pc.getLocalStreams(), []);
+      assert_array_equals(pc.getLocalStreams(), [ stream ]);
     });
 }, 'addTrack() for a single track and its stream.');
 
@@ -43,10 +40,7 @@ promise_test(function() {
       let streamB = streams[1];
       let sender = pc.addTrack(trackA, streamB);
       assert_equals(sender.track, trackA);
-      // TODO(hbos): |addTrack| does not add to the set of local streams. When
-      // |getLocalStreams| is updated to return the streams of all senders this
-      // would have an observable effect here. https://crbug.com/738918
-      assert_array_equals(pc.getLocalStreams(), []);
+      assert_array_equals(pc.getLocalStreams(), [ streamB ]);
     });
 }, 'addTrack() for a single track and a different stream.');
 
@@ -120,11 +114,12 @@ promise_test(function() {
       assert_equals(sender.track, track);
       assert_array_equals(pc.getSenders(), [ sender ]);
       assert_array_equals(pc.getLocalStreams(), []);
+      // This is a NO-OP because there already is a sender for this track.
       pc.addStream(stream);
-      assert_array_equals(pc.getLocalStreams(), [ stream ]);
-      // The interaction between |addStream| and |addTrack| is not standardized
-      // (|addStream| is non-standard). In our implementation, the existing
-      // sender is reused by |addStream|.
+      // The sender is not associated with the stream, so |addStream| has no
+      // effect in this case. Otherwise it would already have been part of
+      // getLocalStreams().
+      assert_array_equals(pc.getLocalStreams(), []);
       assert_array_equals(pc.getSenders(), [ sender ]);
     });
 }, 'addTrack() before addStream() works.');

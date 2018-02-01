@@ -1798,7 +1798,12 @@ void RTCPeerConnectionHandler::RemoveStream(
       break;
     }
   }
-  DCHECK(webrtc_stream.get());
+  // If the stream was added using addTrack() we might not find it here. When
+  // addStream() and removeStream() is implemented on top of addTrack() and
+  // removeTrack() this won't be a problem and this code will go away.
+  // https://crbug.com/738929
+  if (!webrtc_stream)
+    return;
   // TODO(tommi): Make this async (PostTaskAndReply).
   native_peer_connection_->RemoveStream(webrtc_stream.get());
 
