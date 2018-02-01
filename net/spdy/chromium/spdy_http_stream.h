@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_source.h"
 #include "net/spdy/chromium/multiplexed_http_stream.h"
@@ -104,7 +105,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // Must be called only when |request_info_| is non-NULL.
   bool HasUploadData() const;
 
-  void OnStreamCreated(const CompletionCallback& callback, int rv);
+  void OnStreamCreated(CompletionOnceCallback callback, int rv);
 
   // Reads the remaining data (whether chunked or not) from the
   // request body stream and sends it if there's any. The read and

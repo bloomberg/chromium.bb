@@ -20,6 +20,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
@@ -181,7 +182,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
                    const GURL& url,
                    RequestPriority priority,
                    const NetLogWithSource& net_log,
-                   const CompletionCallback& callback);
+                   CompletionOnceCallback callback);
 
   // Cancels any pending stream creation request. May be called
   // repeatedly.
@@ -222,7 +223,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   GURL url_;
   RequestPriority priority_;
   NetLogWithSource net_log_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
 

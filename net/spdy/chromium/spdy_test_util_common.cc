@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
@@ -235,7 +236,7 @@ base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     const NetLogWithSource& net_log) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(type, session, url, priority, net_log,
-                                       CompletionCallback());
+                                       CompletionOnceCallback());
   return
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
 }
@@ -244,11 +245,10 @@ StreamReleaserCallback::StreamReleaserCallback() = default;
 
 StreamReleaserCallback::~StreamReleaserCallback() = default;
 
-CompletionCallback StreamReleaserCallback::MakeCallback(
+CompletionOnceCallback StreamReleaserCallback::MakeCallback(
     SpdyStreamRequest* request) {
-  return base::Bind(&StreamReleaserCallback::OnComplete,
-                    base::Unretained(this),
-                    request);
+  return base::BindOnce(&StreamReleaserCallback::OnComplete,
+                        base::Unretained(this), request);
 }
 
 void StreamReleaserCallback::OnComplete(

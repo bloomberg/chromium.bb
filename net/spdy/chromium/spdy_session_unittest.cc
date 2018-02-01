@@ -14,6 +14,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -384,9 +385,9 @@ class StreamRequestDestroyingCallback : public TestCompletionCallbackBase {
     request_ = std::move(request);
   }
 
-  CompletionCallback MakeCallback() {
-    return base::Bind(&StreamRequestDestroyingCallback::OnComplete,
-                      base::Unretained(this));
+  CompletionOnceCallback MakeCallback() {
+    return base::BindOnce(&StreamRequestDestroyingCallback::OnComplete,
+                          base::Unretained(this));
   }
 
  private:
@@ -874,7 +875,7 @@ TEST_F(SpdySessionTest, CreateStreamAfterGoAway) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
                                        test_url_, MEDIUM, NetLogWithSource(),
-                                       CompletionCallback());
+                                       CompletionOnceCallback());
   EXPECT_THAT(rv, IsError(ERR_FAILED));
 
   EXPECT_TRUE(session_);
