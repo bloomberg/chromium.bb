@@ -1,118 +1,85 @@
 # Heap Profiling with MemoryInfra
 
-As of Chrome 48, MemoryInfra supports heap profiling. The core principle is
-a solution that JustWorks™ on all platforms without patching or rebuilding,
-integrated with the chrome://tracing ecosystem.
+As of Chrome 48, MemoryInfra supports heap profiling. Chrome will track all live
+allocations (calls to new or malloc without a subsequent call to delete or free)
+along with sufficient metadata to identify the code that made the allocation.
 
 [TOC]
 
-## How to Use
+## How to obtain a heap dump (M66+, Linux, macOS, Windows)
 
- 1. Start Chrome with the `--enable-heap-profiling` switch. This will make
-    Chrome keep track of all allocations.
+ 1. Navigate to chrome://flags and search for `memlog`.
 
- 2. Grab a [MemoryInfra][memory-infra] trace. For best results, start tracing
-    first, and _then_ open a new tab that you want to trace. Furthermore,
-    enabling more categories (besides memory-infra) will yield more detailed
-    information in the heap profiler backtraces.
+ 2. Choose the process types you want to profile with the `memlog` flag. The
+    most common setting is `Only Browser`.
 
- 3. When the trace has been collected, select a heavy memory dump indicated by
-    a purple ![M][m-purple] dot. Heap dumps are only included in heavy memory
-    dumps.
+ 3. By default, small, infrequent allocations are omitted. If you want to see a
+    full heap dump, enable `memlog-keep-small-allocations`.
 
- 4. In the analysis view, cells marked with a triple bar icon (☰) contain heap
+ 4. By default, stack traces use native stack traces, which does not contain any
+    thread information. To include the thread at time of allocation, set
+    `memlog-stack-mode` to `native with thread names`.
+
+ 5. Restart Chrome.
+
+ 6. Grab a [MemoryInfra][memory-infra] trace.
+
+ 7. Save the trace.
+
+ 8. Run the command `./third_party/catapult/tracing/bin/symbolize_trace
+    <path_to_trace>` to symbolize the trace. If you haven't yet done so, this
+    will require you to authenticate with google cloud storage to obtain access
+    to symbol files.
+
+ 9. Turn off heap profiling in chrome://flags. Restart Chrome.
+
+ 10. Load the (now symbolized) trace in chrome://tracing.
+
+## How to obtain a heap dump (M66+, Android)
+
+To obtain native heap dumps, you will need a custom build of Chrome with the GN
+arguments `enable_profiling = true`, `arm_use_thumb = false` and
+`symbol_level=1`. All other steps are the same.
+
+Alternatively, if you want to use an Official build of Chrome, navigate to
+chrome://flags and set `memlog-stack-mode` to `pseudo`. This will provide
+less-detailed stacks. The stacks also don't require symbolization.
+
+## How to obtain a heap dump (M65 and older)
+
+For the most part, the setting `enable-heap-profiling` in `chrome://flags` has a
+similar effect to the various `memlog` flags.
+
+
+## How to manually browse a heap dump
+
+ 1. Select a heavy memory dump indicated by a purple ![M][m-purple] dot.
+
+ 2. In the analysis view, cells marked with a triple bar icon (☰) contain heap
     dumps. Select such a cell.
 
       ![Cells containing a heap dump][cells-heap-dump]
 
- 5. Scroll down all the way to _Heap Details_.
+ 3. Scroll down all the way to _Heap Details_.
 
- 6. Pinpoint the memory bug and live happily ever after.
+ 4. Pinpoint the memory bug and live happily ever after.
 
 [memory-infra]:    README.md
 [m-purple]:        https://storage.googleapis.com/chromium-docs.appspot.com/d7bdf4d16204c293688be2e5a0bcb2bf463dbbc3
 [cells-heap-dump]: https://storage.googleapis.com/chromium-docs.appspot.com/a24d80d6a08da088e2e9c8b2b64daa215be4dacb
 
-### Native stack traces
+## How to automatically extract large allocations from a heap dump
 
-By default heap profiling collects pseudo allocation traces, which are based
-on trace events. I.e. frames in allocation traces correspond to trace events
-that were active at the time of allocations, and are not real function names.
-It's also possible to use heap profiling with native, symbolized stack traces.
+ 1. Run `python ./third_party/catapult/experimental/tracing/bin/diff_heap_profiler.py
+    <path_to_trace>`
 
-#### Native stack traces (Chrome - macOS/Windows)
+ 2. This produces a directory `output`, which contains a JSON file.
 
-1. Using any officially distributed build of Chrome, navigate to chrome://flags,
-   and set "enable-heap-profiling" to Enabled (native mode).
+ 3. Load the contents of the JSON file in any JSON viewer, e.g.
+    [jsonviewer](http://jsonviewer.stack.hu/).
 
-2. Use the [TraceOnTap][extension-link] extension to grab a trace.
-
-3. Run the following script to symbolize the trace.
-
-        third_party/catapult/tracing/bin/symbolize_trace <trace file>
-
-4. Load the trace file in `chrome://tracing`. Locate a purple ![M][m-purple]
-   dot, and continue from step *3* from the instructions above. Native stack
-   traces will be shown in the _Heap Details_ pane.
-
-[extension-link]: https://cs.chromium.org/chromium/src/third_party/catapult/experimental/trace_on_tap/?q=traceontap+package:%5Echromium$&dr=CSs
-
-#### Native stack traces (Chromium - all OSes)
-
-On Linux / Android, you need to build Chromium with special flags to use native
-heap profiling. On macOS / Windows, it's also possible to use native heap
-profiling with Chromium.
-
- 1. Build with the following GN flags:
-
-	macOS / Windows
-
-        symbol_level = 1
-
-  Linux
-
-        enable_profiling = true
-        symbol_level = 1
-
-	Android
-
-        arm_use_thumb = false
-        enable_profiling = true
-        symbol_level = 1
-
- 2. Start Chrome with `--enable-heap-profiling=native` switch (notice
- 	`=native` part).
-
- 	On Android use the command line tool before starting the app:
-
-        build/android/adb_chrome_public_command_line --enable-heap-profiling=native
-
- 	(run the tool with an empty argument `''` to clear the command line)
-
- 3. Grab a [MemoryInfra][memory-infra] trace. You don't need any other
- 	categories besides `memory-infra`.
-
- 4. Save the grabbed trace file. This step is needed because freshly
- 	taken trace file contains raw addresses (which look like `pc:dcf5dbf8`)
- 	instead of function names, and needs to be symbolized.
-
- 4. Symbolize the trace file. During symbolization addresses are resolved to
- 	the corresponding function names and trace file is rewritten (but a backup
- 	is saved with `.BACKUP` extension).
-
-	Linux
-
-        third_party/catapult/tracing/bin/symbolize_trace <trace file>
-
-	Android
-
-        third_party/catapult/tracing/bin/symbolize_trace --output-directory out/Release <trace file>
-
-	(note `--output-directory` and make sure it's right for your setup)
-
- 5. Load the trace file in `chrome://tracing`. Locate a purple ![M][m-purple]
- 	dot, and continue from step *3* from the instructions above. Native stack
- 	traces will be shown in the _Heap Details_ pane.
+ 4. The JSON files shows allocations segmented by stacktrace, sorted by largest
+    first.
 
 ## Heap Details
 
