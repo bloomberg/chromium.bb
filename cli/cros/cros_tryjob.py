@@ -294,7 +294,9 @@ List Examples:
         help='Space-separated list of project branches with '
              'patches to apply.  Projects are specified by name. '
              'If no branch is specified the current branch of the '
-             'project will be used.')
+             'project will be used.  NOTE: -p is known to be buggy; '
+             'prefer using -g instead (see https://crbug.com/806963 '
+             'and https://crbug.com/807834).')
 
     # Identifing the request.
     who_group = parser.add_argument_group(
