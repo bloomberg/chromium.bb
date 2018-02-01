@@ -480,7 +480,10 @@ ProfilingProcessHost* ProfilingProcessHost::GetInstance() {
 }
 
 void ProfilingProcessHost::ConfigureBackgroundProfilingTriggers() {
-  background_triggers_.StartTimer();
+  // Only enable automatic uploads when the Finch experiment is enabled.
+  // Developers can still manually upload via chrome://memory-internals.
+  if (base::FeatureList::IsEnabled(kOOPHeapProfilingFeature))
+    background_triggers_.StartTimer();
 }
 
 void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
