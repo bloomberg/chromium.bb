@@ -5737,7 +5737,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
     return;
   }
 
-#if CONFIG_FRAME_MARKER
   static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
                                                        AOM_LAST_FLAG,
                                                        AOM_LAST2_FLAG,
@@ -5765,7 +5764,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
         (buf_idx >= 0) ? rate_factor_deltas[cpi->frame_rf_level[buf_idx]] : -1);
   }
   printf(" ]\n");
-#endif  // CONFIG_FRAME_MARKER
 
   if (!cm->show_frame) {
     printf("Frame %d is a no show frame, so no image dump.\n",
@@ -5788,7 +5786,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
       return;
     }
   }
-#if CONFIG_FRAME_MARKER
   printf(
       "\nFrame=%5d, encode_update_type[%5d]=%1d, frame_offset=%d, "
       "show_frame=%d, show_existing_frame=%d, source_alt_ref_active=%d, "
@@ -5800,19 +5797,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
       cpi->rc.source_alt_ref_active, cpi->refresh_alt_ref_frame,
       cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index],
       recon_buf->y_stride, recon_buf->uv_stride, cm->width, cm->height);
-#else
-  printf(
-      "\nFrame=%5d, encode_update_type[%5d]=%1d, "
-      "show_frame=%d, show_existing_frame=%d, source_alt_ref_active=%d, "
-      "refresh_alt_ref_frame=%d, rf_level=%d, "
-      "y_stride=%4d, uv_stride=%4d, cm->width=%4d, cm->height=%4d\n\n",
-      cm->current_video_frame, cpi->twopass.gf_group.index,
-      cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index],
-      cm->show_frame, cm->show_existing_frame, cpi->rc.source_alt_ref_active,
-      cpi->refresh_alt_ref_frame,
-      cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index],
-      recon_buf->y_stride, recon_buf->uv_stride, cm->width, cm->height);
-#endif  // CONFIG_FRAME_MARKER
 #if 0
   int ref_frame;
   printf("get_ref_frame_map_idx: [");
@@ -5927,11 +5911,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     // Set up frame to show to get ready for stats collection.
     cm->frame_to_show = get_frame_new_buffer(cm);
 
-#if CONFIG_FRAME_MARKER
     // Update current frame offset.
     cm->frame_offset =
         cm->buffer_pool->frame_bufs[cm->new_fb_idx].cur_frame_offset;
-#endif  // CONFIG_FRAME_MARKER
 
 #if DUMP_RECON_FRAMES == 1
     // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -7010,11 +6992,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   if (cm->new_fb_idx == INVALID_IDX) return -1;
 
-#if CONFIG_FRAME_MARKER
   // Retain the RF_LEVEL for the current newly coded frame.
   cpi->frame_rf_level[cm->new_fb_idx] =
       cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
-#endif  // CONFIG_FRAME_MARKER
 
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
   cm->cur_frame->buf.buf_8bit_valid = 0;

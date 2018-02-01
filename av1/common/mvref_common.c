@@ -1287,7 +1287,6 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
   *near_mv = mvlist[1];
 }
 
-#if CONFIG_FRAME_MARKER
 void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
   cm->cur_frame->cur_frame_offset = cm->frame_offset;
   int alt_buf_idx = cm->frame_refs[ALTREF_FRAME - LAST_FRAME].idx;
@@ -1344,7 +1343,6 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
   }
 }
 #endif  // CONFIG_FRAME_SIGN_BIAS
-#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_MFMV
 #define MAX_OFFSET_WIDTH 64

@@ -487,9 +487,7 @@ typedef struct AV1_COMP {
   int static_mb_pct;     // % forced skip mbs by segmentation
   int ref_frame_flags;
   int ext_ref_frame_flags;
-#if CONFIG_FRAME_MARKER
   RATE_FACTOR_LEVEL frame_rf_level[FRAME_BUFFERS];
-#endif  // CONFIG_FRAME_MARKER
 
   SPEED_FEATURES sf;
 
@@ -497,9 +495,7 @@ typedef struct AV1_COMP {
   int mv_step_param;
 
   int allow_comp_inter_inter;
-#if CONFIG_FRAME_MARKER
   int all_one_sided_refs;
-#endif  // CONFIG_FARME_MARKER
 
   uint8_t *segmentation_map;
 

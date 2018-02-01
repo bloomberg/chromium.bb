@@ -137,7 +137,6 @@ typedef struct {
 typedef struct {
   int ref_count;
 
-#if CONFIG_FRAME_MARKER
   unsigned int cur_frame_offset;
   unsigned int lst_frame_offset;
   unsigned int alt_frame_offset;
@@ -146,7 +145,6 @@ typedef struct {
   unsigned int lst3_frame_offset;
   unsigned int bwd_frame_offset;
   unsigned int alt2_frame_offset;
-#endif  // CONFIG_FRAME_MARKER
 
   MV_REF *mvs;
 #if CONFIG_SEGMENT_PRED_LAST
@@ -470,9 +468,7 @@ typedef struct AV1Common {
 #endif
   FRAME_COUNTS counts;
 
-#if CONFIG_FRAME_MARKER
   unsigned int frame_offset;
-#endif
 
   unsigned int current_video_frame;
   BITSTREAM_PROFILE profile;

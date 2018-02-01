@@ -9717,7 +9717,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
 
-#if CONFIG_FRAME_MARKER
     if (sf->selective_ref_frame) {
       if (sf->selective_ref_frame == 2 || x->cb_partition_scan) {
         if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
@@ -9751,7 +9750,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
            ref_offsets[1] > cm->frame_offset))
         continue;
     }
-#endif  // CONFIG_FRAME_MARKER
 
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;

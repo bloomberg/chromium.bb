@@ -113,7 +113,6 @@ static const int idx_n_column_to_subblock[4][2] = {
 #define MV_BORDER (8 << 3)  // Allow 8 pels in 1/8th pel units
 #endif                      // CONFIG_EXT_PARTITION
 
-#if CONFIG_FRAME_MARKER
 // Get the number of frames between the current frame and a reference frame
 static INLINE int get_ref_frame_dist(const AV1_COMMON *cm,
                                      MV_REFERENCE_FRAME ref) {
@@ -126,7 +125,6 @@ static INLINE int get_ref_frame_dist(const AV1_COMMON *cm,
       cm->buffer_pool->frame_bufs[ref_buf_idx].cur_frame_offset;
   return cur_frame_offset - ref_frame_offset;
 }
-#endif  // CONFIG_FRAME_MARKER
 
 static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
   clamp_mv(mv, xd->mb_to_left_edge - bw * 8 - MV_BORDER,
@@ -378,7 +376,6 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
 
 static INLINE int av1_is_compound_reference_allowed(const AV1_COMMON *cm) {
   if (frame_is_intra_only(cm)) return 0;
-#if CONFIG_FRAME_MARKER
   // Check whether two different reference frames exist.
   int ref, ref_offset0;
   int is_comp_allowed = 0;
@@ -403,12 +400,8 @@ static INLINE int av1_is_compound_reference_allowed(const AV1_COMMON *cm) {
   }
 
   return is_comp_allowed;
-#else
-  return 1;
-#endif  // CONFIG_FRAME_MARKER
 }
 
-#if CONFIG_FRAME_MARKER
 static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
   assert(!frame_is_intra_only(cm));
 
@@ -437,7 +430,6 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm);
 #if CONFIG_MFMV
 void av1_setup_motion_field(AV1_COMMON *cm);
 #endif  // CONFIG_MFMV
-#endif  // CONFIG_FRAME_MARKER
 
 static INLINE void av1_collect_neighbors_ref_counts(MACROBLOCKD *const xd) {
   av1_zero(xd->neighbors_ref_counts);

@@ -4031,7 +4031,6 @@ static int is_screen_content(const uint8_t *src, int use_hbd, int bd,
   return counts * blk_h * blk_w * 10 > width * height;
 }
 
-#if CONFIG_FRAME_MARKER
 // Enforce the number of references for each arbitrary frame limited to
 // (INTER_REFS_PER_FRAME - 1)
 static void enforce_max_ref_frames(AV1_COMP *cpi) {
@@ -4140,7 +4139,6 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
     }
   }
 }
-#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_EXT_SKIP
 static INLINE void get_skip_mode_ref_offsets(const AV1_COMMON *cm,
@@ -4518,10 +4516,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_setup_motion_field(cm);
 #endif  // CONFIG_MFMV
 
-#if CONFIG_FRAME_MARKER
   cpi->all_one_sided_refs =
       frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
-#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_EXT_SKIP
   cm->skip_mode_flag = check_skip_mode_enabled(cpi);
@@ -4583,7 +4579,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 #endif  // CONFIG_NEW_QUANT
 
-#if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {
     int arf_offset = AOMMIN(
         (MAX_GF_INTERVAL - 1),
@@ -4600,7 +4595,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #if CONFIG_FRAME_SIGN_BIAS
   av1_setup_frame_sign_bias(cm);
 #endif  // CONFIG_FRAME_SIGN_BIAS
-#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_MISMATCH_DEBUG
   mismatch_reset_frame(num_planes);
