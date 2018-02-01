@@ -18,6 +18,7 @@ namespace tracing {
 namespace {
 
 const char kPathTracefs[] = "/sys/kernel/tracing";
+const char kPathDebugfsTracing[] = "/sys/kernel/debug/tracing";
 const char kTraceFileTracingOn[] = "tracing_on";
 const char kTraceFileTraceMarker[] = "trace_marker";
 const char kTraceFileSetEvent[] = "set_event";
@@ -99,8 +100,10 @@ void AddCategoryEvents(const std::string& category,
   LOG(WARNING) << "Unrecognized category: " << category;
 }
 
-bool WriteTracingFile(const char* trace_file, base::StringPiece contents) {
-  base::FilePath path = base::FilePath(kPathTracefs).Append(trace_file);
+bool WriteTracingFile(const char* tracing_dir,
+                      const char* trace_file,
+                      base::StringPiece contents) {
+  base::FilePath path = base::FilePath(tracing_dir).Append(trace_file);
 
   if (!base::WriteFile(path, contents.data(), contents.size())) {
     PLOG(ERROR) << "write: " << path;
@@ -110,8 +113,8 @@ bool WriteTracingFile(const char* trace_file, base::StringPiece contents) {
   return true;
 }
 
-bool EnableTraceEvent(base::StringPiece event) {
-  base::FilePath path = base::FilePath(kPathTracefs).Append(kTraceFileSetEvent);
+bool EnableTraceEvent(const char* tracing_dir, base::StringPiece event) {
+  base::FilePath path = base::FilePath(tracing_dir).Append(kTraceFileSetEvent);
 
   // Enabling events returns EINVAL if the event does not exist. It is normal
   // for driver specific events to be missing when the driver is not built in.
@@ -122,6 +125,13 @@ bool EnableTraceEvent(base::StringPiece event) {
   }
 
   return true;
+}
+
+const char* FindTracingDir() {
+  base::FilePath path = base::FilePath(kPathTracefs).Append(kTraceFileSetEvent);
+  if (!access(path.value().c_str(), W_OK))
+    return kPathTracefs;
+  return kPathDebugfsTracing;
 }
 
 }  // namespace
@@ -151,41 +161,45 @@ bool StartFtrace(const std::vector<std::string>& categories) {
     return false;
   }
 
+  const char* tracing_dir = FindTracingDir();
+
   // Disable tracing and clear events.
-  if (!WriteTracingFile(kTraceFileTracingOn, "0"))
+  if (!WriteTracingFile(tracing_dir, kTraceFileTracingOn, "0"))
     return false;
-  if (!WriteTracingFile(kTraceFileSetEvent, "\n"))
+  if (!WriteTracingFile(tracing_dir, kTraceFileSetEvent, "\n"))
     return false;
 
   // Use CLOCK_MONOTONIC so that kernel timestamps align with std::steady_clock
   // and base::TimeTicks.
-  if (!WriteTracingFile(kTraceFileTraceClock, "mono"))
+  if (!WriteTracingFile(tracing_dir, kTraceFileTraceClock, "mono"))
     return false;
 
   for (const auto& event : events)
-    EnableTraceEvent(event);
+    EnableTraceEvent(tracing_dir, event);
 
-  if (!WriteTracingFile(kTraceFileBufferSizeKb, kBufferSizeKbRunning))
+  if (!WriteTracingFile(tracing_dir, kTraceFileBufferSizeKb,
+                        kBufferSizeKbRunning))
     return false;
-  if (!WriteTracingFile(kTraceFileTracingOn, "1"))
+  if (!WriteTracingFile(tracing_dir, kTraceFileTracingOn, "1"))
     return false;
 
   return true;
 }
 
 bool WriteFtraceTimeSyncMarker() {
-  return WriteTracingFile(kTraceFileTraceMarker,
+  return WriteTracingFile(FindTracingDir(), kTraceFileTraceMarker,
                           "trace_event_clock_sync: parent_ts=0");
 }
 
 bool StopFtrace() {
-  if (!WriteTracingFile(kTraceFileTracingOn, "0"))
+  if (!WriteTracingFile(FindTracingDir(), kTraceFileTracingOn, "0"))
     return false;
   return true;
 }
 
 base::ScopedFD GetFtraceData() {
-  base::FilePath path = base::FilePath(kPathTracefs).Append(kTraceFileTrace);
+  base::FilePath path =
+      base::FilePath(FindTracingDir()).Append(kTraceFileTrace);
   base::ScopedFD trace_data(HANDLE_EINTR(
       open(path.value().c_str(), O_RDONLY | O_CLOEXEC | O_NONBLOCK)));
   if (!trace_data.is_valid())
@@ -194,9 +208,10 @@ base::ScopedFD GetFtraceData() {
 }
 
 bool ClearFtrace() {
-  if (!WriteTracingFile(kTraceFileBufferSizeKb, kBufferSizeKbIdle))
+  const char* tracing_dir = FindTracingDir();
+  if (!WriteTracingFile(tracing_dir, kTraceFileBufferSizeKb, kBufferSizeKbIdle))
     return false;
-  if (!WriteTracingFile(kTraceFileTrace, "0"))
+  if (!WriteTracingFile(tracing_dir, kTraceFileTrace, "0"))
     return false;
   return true;
 }
