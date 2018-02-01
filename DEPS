@@ -1193,7 +1193,7 @@ hooks = [
   {
     'name': 'tools_traffic_annotation_windows',
     'pattern': '.',
-    'condition': 'host_os == "windows" and checkout_traffic_annotation_tools',
+    'condition': 'host_os == "win" and checkout_traffic_annotation_tools',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
