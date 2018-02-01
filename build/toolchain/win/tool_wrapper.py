@@ -23,8 +23,10 @@ import sys
 # if it finds versions with a different bitness first then win32file.pyd will
 # fail to load with a cryptic error:
 #     ImportError: DLL load failed: %1 is not a valid Win32 application.
-os.environ['path'] = os.path.dirname(sys.executable) + ';' + os.environ['path']
-import win32file    # pylint: disable=import-error
+if sys.platform == 'win32':
+  os.environ['PATH'] = os.path.dirname(sys.executable) + \
+                       os.pathsep + os.environ['PATH']
+  import win32file    # pylint: disable=import-error
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -181,7 +183,7 @@ class WinTool(object):
       result = link.wait()
       if not retry:
         break
-    if result == 0:
+    if result == 0 and sys.platform == 'win32':
       # Flush the file buffers to try to work around a Windows 10 kernel bug,
       # https://crbug.com/644525
       output_handle = win32file.CreateFile(pe_name, win32file.GENERIC_WRITE,
