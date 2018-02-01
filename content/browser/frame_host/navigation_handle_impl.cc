@@ -151,6 +151,7 @@ NavigationHandleImpl::NavigationHandleImpl(
                            frame_tree_node_->frame_tree_node_id(), "url",
                            url_.possibly_invalid_spec());
   DCHECK(!navigation_start.is_null());
+  DCHECK(!IsRendererDebugURL(url));
 
   site_url_ = SiteInstance::GetSiteForURL(frame_tree_node_->current_frame_host()
                                               ->GetSiteInstance()
@@ -203,8 +204,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     }
   }
 
-  if (!IsRendererDebugURL(url_))
-    GetDelegate()->DidStartNavigation(this);
+  GetDelegate()->DidStartNavigation(this);
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -230,8 +230,7 @@ NavigationHandleImpl::~NavigationHandleImpl() {
     }
   }
 
-  if (!IsRendererDebugURL(url_))
-    GetDelegate()->DidFinishNavigation(this);
+  GetDelegate()->DidFinishNavigation(this);
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
@@ -565,8 +564,7 @@ void NavigationHandleImpl::WillStartRequest(
     return;
   }
 
-  if (!IsRendererDebugURL(url_))
-    RegisterNavigationThrottles();
+  RegisterNavigationThrottles();
 
   navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
 
@@ -770,7 +768,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 
   SetExpectedProcess(render_frame_host->GetProcess());
 
-  if (!IsRendererDebugURL(url_) && !IsSameDocument())
+  if (!IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
 }
 
