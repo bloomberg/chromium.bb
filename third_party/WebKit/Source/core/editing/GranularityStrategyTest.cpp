@@ -708,7 +708,6 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
           .Collapse(Position(sample->firstChild(), 2))
-          .SetIsDirectional(true)
           .Build();
   Selection().SetSelection(selection_in_dom_tree,
                            SetSelectionOptions::Builder()
@@ -745,7 +744,6 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
           .Collapse(Position(sample->firstChild(), 2))
-          .SetIsDirectional(true)
           .Build();
   Selection().SetSelection(selection_in_dom_tree,
                            SetSelectionOptions::Builder()

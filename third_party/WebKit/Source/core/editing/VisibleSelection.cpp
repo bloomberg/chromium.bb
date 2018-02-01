@@ -45,9 +45,7 @@ namespace blink {
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
-    : affinity_(TextAffinity::kDownstream),
-      base_is_first_(true),
-      is_directional_(false) {}
+    : affinity_(TextAffinity::kDownstream), base_is_first_(true) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
@@ -55,8 +53,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     : base_(selection.Base()),
       extent_(selection.Extent()),
       affinity_(selection.Affinity()),
-      base_is_first_(selection.IsBaseFirst()),
-      is_directional_(selection.IsDirectional()) {}
+      base_is_first_(selection.IsBaseFirst()) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::Create(
@@ -124,8 +121,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     : base_(other.base_),
       extent_(other.extent_),
       affinity_(other.affinity_),
-      base_is_first_(other.base_is_first_),
-      is_directional_(other.is_directional_) {}
+      base_is_first_(other.base_is_first_) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::
@@ -134,7 +130,6 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
   extent_ = other.extent_;
   affinity_ = other.affinity_;
   base_is_first_ = other.base_is_first_;
-  is_directional_ = other.is_directional_;
   return *this;
 }
 
@@ -143,13 +138,11 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::AsSelection()
     const {
   if (base_.IsNull()) {
     return typename SelectionTemplate<Strategy>::Builder()
-        .SetIsDirectional(is_directional_)
         .Build();
   }
   return typename SelectionTemplate<Strategy>::Builder()
       .SetBaseAndExtent(base_, extent_)
       .SetAffinity(affinity_)
-      .SetIsDirectional(is_directional_)
       .Build();
 }
 
@@ -291,7 +284,6 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
         .Collapse(PositionWithAffinityTemplate<Strategy>(
             editing_adjusted_range.StartPosition(),
             passed_selection.Affinity()))
-        .SetIsDirectional(passed_selection.IsDirectional())
         .Build();
   }
 
@@ -310,12 +302,10 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
       MostBackwardCaretPosition(editing_adjusted_range.EndPosition()));
   if (canonicalized_selection.IsBaseFirst()) {
     return typename SelectionTemplate<Strategy>::Builder()
-        .SetIsDirectional(passed_selection.IsDirectional())
         .SetAsForwardSelection(range)
         .Build();
   }
   return typename SelectionTemplate<Strategy>::Builder()
-      .SetIsDirectional(passed_selection.IsDirectional())
       .SetAsBackwardSelection(range)
       .Build();
 }
@@ -373,8 +363,7 @@ template <typename Strategy>
 static bool EqualSelectionsAlgorithm(
     const VisibleSelectionTemplate<Strategy>& selection1,
     const VisibleSelectionTemplate<Strategy>& selection2) {
-  if (selection1.Affinity() != selection2.Affinity() ||
-      selection1.IsDirectional() != selection2.IsDirectional())
+  if (selection1.Affinity() != selection2.Affinity())
     return false;
 
   if (selection1.IsNone())
@@ -463,7 +452,6 @@ void VisibleSelectionTemplate<Strategy>::PrintTo(
            << " extent:" << selection.Extent()
            << " start: " << selection.Start() << " end: " << selection.End()
            << ' ' << selection.Affinity() << ' '
-           << (selection.IsDirectional() ? "Directional" : "NonDirectional")
            << ')';
 }
 

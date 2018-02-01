@@ -17,7 +17,6 @@ SelectionForUndoStep SelectionForUndoStep::From(
   result.base_ = selection.Base();
   result.extent_ = selection.Extent();
   result.affinity_ = selection.Affinity();
-  result.is_directional_ = selection.IsDirectional();
   result.is_base_first_ = selection.IsBaseFirst();
   return result;
 }
@@ -36,9 +35,7 @@ bool SelectionForUndoStep::operator==(const SelectionForUndoStep& other) const {
   if (other.IsNone())
     return false;
   return base_ == other.base_ && extent_ == other.extent_ &&
-         affinity_ == other.affinity_ &&
-         is_base_first_ == other.is_base_first_ &&
-         is_directional_ == other.is_directional_;
+         affinity_ == other.affinity_ && is_base_first_ == other.is_base_first_;
 }
 
 bool SelectionForUndoStep::operator!=(const SelectionForUndoStep& other) const {
@@ -47,14 +44,11 @@ bool SelectionForUndoStep::operator!=(const SelectionForUndoStep& other) const {
 
 SelectionInDOMTree SelectionForUndoStep::AsSelection() const {
   if (IsNone()) {
-    return SelectionInDOMTree::Builder()
-        .SetIsDirectional(is_directional_)
-        .Build();
+    return SelectionInDOMTree();
   }
   return SelectionInDOMTree::Builder()
       .SetBaseAndExtent(base_, extent_)
       .SetAffinity(affinity_)
-      .SetIsDirectional(is_directional_)
       .Build();
 }
 

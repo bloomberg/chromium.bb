@@ -170,7 +170,6 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
   const VisiblePosition position =
       VisiblePositionForContentsPoint(point, GetFrame());
   SelectionInDOMTree::Builder builder;
-  builder.SetIsDirectional(GetSelectionInDOMTree().IsDirectional());
   if (position.IsNotNull())
     builder.Collapse(position.ToPositionWithAffinity());
   SetSelection(builder.Build(), SetSelectionOptions::Builder()
@@ -197,19 +196,14 @@ void FrameSelection::SetSelectionAndEndTyping(
 }
 
 bool FrameSelection::SetSelectionDeprecated(
-    const SelectionInDOMTree& passed_selection,
+    const SelectionInDOMTree& new_selection,
     const SetSelectionOptions& passed_options) {
-  DCHECK(IsAvailable());
-  passed_selection.AssertValidFor(GetDocument());
-
   SetSelectionOptions::Builder options_builder(passed_options);
-  SelectionInDOMTree::Builder builder(passed_selection);
   if (ShouldAlwaysUseDirectionalSelection(frame_)) {
-    builder.SetIsDirectional(true);
     options_builder.SetIsDirectional(true);
   }
-  SelectionInDOMTree new_selection = builder.Build();
   SetSelectionOptions options = options_builder.Build();
+
   if (granularity_strategy_ && !options.DoNotClearStrategy())
     granularity_strategy_->Clear();
   granularity_ = options.Granularity();

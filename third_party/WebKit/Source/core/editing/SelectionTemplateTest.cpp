@@ -17,7 +17,6 @@ TEST_F(SelectionTest, defaultConstructor) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_TRUE(selection.IsBaseFirst());
-  EXPECT_FALSE(selection.IsDirectional());
   EXPECT_TRUE(selection.IsNone());
   EXPECT_EQ(Position(), selection.Base());
   EXPECT_EQ(Position(), selection.Extent());
@@ -37,7 +36,6 @@ TEST_F(SelectionTest, IsBaseFirst) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_FALSE(selection.IsBaseFirst());
-  EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsNone());
   EXPECT_EQ(base, selection.Base());
   EXPECT_EQ(extent, selection.Extent());
@@ -54,7 +52,6 @@ TEST_F(SelectionTest, caret) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_TRUE(selection.IsBaseFirst());
-  EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsNone());
   EXPECT_EQ(position, selection.Base());
   EXPECT_EQ(position, selection.Extent());
@@ -73,7 +70,6 @@ TEST_F(SelectionTest, range) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_TRUE(selection.IsBaseFirst());
-  EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsNone());
   EXPECT_EQ(base, selection.Base());
   EXPECT_EQ(extent, selection.Extent());
@@ -97,7 +93,6 @@ TEST_F(SelectionTest, SetAsBacwardAndForward) {
 
   EXPECT_EQ(TextAffinity::kDownstream, backward_selection.Affinity());
   EXPECT_FALSE(backward_selection.IsBaseFirst());
-  EXPECT_FALSE(backward_selection.IsDirectional());
   EXPECT_FALSE(backward_selection.IsNone());
   EXPECT_EQ(end, backward_selection.Base());
   EXPECT_EQ(start, backward_selection.Extent());
@@ -107,7 +102,6 @@ TEST_F(SelectionTest, SetAsBacwardAndForward) {
 
   EXPECT_EQ(TextAffinity::kDownstream, forward_selection.Affinity());
   EXPECT_TRUE(forward_selection.IsBaseFirst());
-  EXPECT_FALSE(forward_selection.IsDirectional());
   EXPECT_FALSE(forward_selection.IsNone());
   EXPECT_EQ(start, forward_selection.Base());
   EXPECT_EQ(end, forward_selection.Extent());
@@ -117,7 +111,6 @@ TEST_F(SelectionTest, SetAsBacwardAndForward) {
 
   EXPECT_EQ(TextAffinity::kDownstream, collapsed_selection.Affinity());
   EXPECT_TRUE(collapsed_selection.IsBaseFirst());
-  EXPECT_FALSE(collapsed_selection.IsDirectional());
   EXPECT_FALSE(collapsed_selection.IsNone());
   EXPECT_EQ(start, collapsed_selection.Base());
   EXPECT_EQ(start, collapsed_selection.Extent());

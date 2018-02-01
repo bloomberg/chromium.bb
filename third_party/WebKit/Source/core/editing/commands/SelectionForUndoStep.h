@@ -37,7 +37,6 @@ class SelectionForUndoStep final {
   Position Base() const { return base_; }
   Position Extent() const { return extent_; }
   bool IsBaseFirst() const { return is_base_first_; }
-  bool IsDirectional() const { return is_directional_; }
 
   SelectionInDOMTree AsSelection() const;
 
@@ -65,7 +64,6 @@ class SelectionForUndoStep final {
   // Note: We should compute |is_base_first_| as construction otherwise we
   // fail "backward and forward delete" case in "undo-delete-boundary.html".
   bool is_base_first_ = true;
-  bool is_directional_ = false;
 };
 
 // Builds |SelectionForUndoStep| object with disconnected position. You should

@@ -1808,7 +1808,6 @@ void ReplaceSelectionCommand::CompleteHTMLReplacement(
     SetEndingSelection(SelectionForUndoStep::From(
         SelectionInDOMTree::Builder()
             .SetBaseAndExtentDeprecated(start, end)
-            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build()));
     return;
   }
@@ -1817,7 +1816,6 @@ void ReplaceSelectionCommand::CompleteHTMLReplacement(
     SetEndingSelection(SelectionForUndoStep::From(
         SelectionInDOMTree::Builder()
             .Collapse(end)
-            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build()));
     return;
   }
