@@ -5,6 +5,9 @@ PASS createImageBitmap with a an HTMLCanvasElement source and oversized (unalloc
 PASS createImageBitmap with a an HTMLVideoElement source and sw set to 0
 PASS createImageBitmap with a an HTMLVideoElement source and sh set to 0
 PASS createImageBitmap with a an HTMLVideoElement source and oversized (unallocatable) crop region
+PASS createImageBitmap with a an HTMLVideoElement from a data URL source and sw set to 0
+PASS createImageBitmap with a an HTMLVideoElement from a data URL source and sh set to 0
+PASS createImageBitmap with a an HTMLVideoElement from a data URL source and oversized (unallocatable) crop region
 PASS createImageBitmap with a a bitmap HTMLImageElement source and sw set to 0
 PASS createImageBitmap with a a bitmap HTMLImageElement source and sh set to 0
 PASS createImageBitmap with a a bitmap HTMLImageElement source and oversized (unallocatable) crop region
