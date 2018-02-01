@@ -37,27 +37,16 @@
 #error "This file requires ARC support."
 #endif
 
-// TODO(crbug.com/785484): Implements workarounds for bugs between iOS and MDC.
-// To be removed or refactored when iOS 9 is dropped.
+// TODO(crbug.com/785484): Implements workaround for iPhone X safe area bug in
+// MDC.
 @interface SettingsAppBarContainerViewController
     : MDCAppBarContainerViewController
 @end
 
 @implementation SettingsAppBarContainerViewController
 
-#pragma mark - Status bar
-
-- (UIViewController*)childViewControllerForStatusBarHidden {
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // TODO(crbug.com/785484): Remove the entire method override when iOS 9 is
-    // dropped.
-    return self.contentViewController;
-  } else {
-    return [super childViewControllerForStatusBarHidden];
-  }
-}
-
-// TODO(crbug.com/785484): Investigate if this can be fixed in MDC.
+// TODO(crbug.com/785484): Remove once fixed in MDC:
+// https://github.com/material-components/material-components-ios/pull/2890
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
@@ -75,16 +64,6 @@
     [contentView.bottomAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor],
   ]];
-}
-
-- (UIViewController*)childViewControllerForStatusBarStyle {
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
-    // dropped.
-    return self.contentViewController;
-  } else {
-    return [super childViewControllerForStatusBarStyle];
-  }
 }
 
 @end
@@ -573,7 +552,6 @@ initWithRootViewController:(UIViewController*)rootViewController
         [[SettingsAppBarContainerViewController alloc]
             initWithContentViewController:controller];
 
-    // TODO(crbug.com/785484): Investigate if this and below can be removed.
     // Configure the style.
     appBarContainer.view.backgroundColor = [UIColor whiteColor];
     ConfigureAppBarWithCardStyle(appBarContainer.appBar);
