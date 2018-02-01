@@ -12,15 +12,7 @@
 # Flaky timeout while waiting for scoll update http://crbug.com/786132
 -WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
 
-# Crash during shutdown on wrong thread http://crbug.com/785023
--ContentBrowserTestSanityTest.SingleProcess
--DomSerializerTests.*
--IndexedDBBrowserTestSingleProcess.RenderThreadShutdownTest
--InProcessGpuTest.*
--RenderThreadImplDiscardableMemoryBrowserTest.*
--RenderViewBrowserTest.ConfirmCacheInformationPlumbed
--ResourceFetcherTests.*
--SavableResourcesTest.*
+# Need to handle lost context. https://crbug.com/776050
 -WebRtcCaptureFromElementBrowserTest.CaptureFromCanvas2DHandlesContextLoss
 -WebRtcCaptureFromElementBrowserTest.CaptureFromOpaqueCanvas2DHandlesContextLoss
 
