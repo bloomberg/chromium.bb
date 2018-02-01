@@ -69,10 +69,10 @@ Testing with MimeType: text/plain, and StatusCode: 200
 Content: This
 <b>is a </b><br /><br />test.
 
-ResourceType(xhr): _SearchableContainer > SearchableView > widget vbox
-ResourceType(fetch): _SearchableContainer > SearchableView > widget vbox
-ResourceType(document): _SearchableContainer > SearchableView > widget vbox
-ResourceType(other): _SearchableContainer > SearchableView > widget vbox
+ResourceType(xhr): widget vbox html request-view
+ResourceType(fetch): widget vbox html request-view
+ResourceType(document): widget vbox html request-view
+ResourceType(other): widget vbox html request-view
 
 XML With Unknown MIME
 Testing with MimeType: text/foobar, and StatusCode: 200
