@@ -1364,9 +1364,14 @@ static void prune_tx_2D(BLOCK_SIZE bsize, MACROBLOCK *x,
 static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
                      const MACROBLOCKD *const xd, int tx_set_type,
                      int use_tx_split_prune) {
+  av1_zero(x->tx_search_prune);
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  if (!is_inter_block(mbmi) || cpi->sf.tx_type_search.prune_mode == NO_PRUNE ||
+      x->use_default_inter_tx_type || xd->lossless[mbmi->segment_id] ||
+      x->cb_partition_scan)
+    return;
   int tx_set = ext_tx_set_index[1][tx_set_type];
   assert(tx_set >= 0);
-  av1_zero(x->tx_search_prune);
   const int *tx_set_1D = ext_tx_used_inter_1D[tx_set];
   switch (cpi->sf.tx_type_search.prune_mode) {
     case NO_PRUNE: return;
@@ -2404,11 +2409,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->min_tx_size = mbmi->tx_size;
   const TxSetType tx_set_type =
       get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
-
-  if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
-      !x->use_default_inter_tx_type) {
-    prune_tx(cpi, bs, x, xd, tx_set_type, 0);
-  }
+  prune_tx(cpi, bs, x, xd, tx_set_type, 0);
 #if CONFIG_FILTER_INTRA
   if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
     return;
@@ -2539,10 +2540,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     depth = MAX_TX_DEPTH;
   }
 
-  if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
-      !x->use_default_inter_tx_type) {
-    prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16, 0);
-  }
+  prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16, 0);
 
   last_rd = INT64_MAX;
   for (n = start_tx; depth <= MAX_TX_DEPTH;
@@ -4879,11 +4877,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
         find_tx_size_rd_records(x, bsize, mi_row, mi_col, matched_rd_info);
   }
 
-  if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
-      !x->use_default_inter_tx_type && !xd->lossless[mbmi->segment_id]) {
-    prune_tx(cpi, bsize, x, xd, tx_set_type,
-             cpi->sf.tx_type_search.use_tx_size_pruning);
-  }
+  prune_tx(cpi, bsize, x, xd, tx_set_type,
+           cpi->sf.tx_type_search.use_tx_size_pruning);
 
   int found = 0;
 
