@@ -14,7 +14,7 @@
 
 namespace {
 
-constexpr int kDefaultPromoShowTimeInHours = 5;
+constexpr int kDefaultBookmarkPromoShowTimeInHours = 5;
 constexpr char kBookmarkObservedSessionTimeKey[] =
     "bookmark_in_product_help_observed_session_time_key";
 
@@ -23,11 +23,11 @@ constexpr char kBookmarkObservedSessionTimeKey[] =
 namespace feature_engagement {
 
 BookmarkTracker::BookmarkTracker(Profile* profile)
-    : FeatureTracker(profile,
-                     &kIPHBookmarkFeature,
-                     kBookmarkObservedSessionTimeKey,
-                     base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
-}
+    : FeatureTracker(
+          profile,
+          &kIPHBookmarkFeature,
+          kBookmarkObservedSessionTimeKey,
+          base::TimeDelta::FromHours(kDefaultBookmarkPromoShowTimeInHours)) {}
 
 BookmarkTracker::~BookmarkTracker() = default;
 

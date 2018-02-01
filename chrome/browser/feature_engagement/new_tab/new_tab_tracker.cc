@@ -13,7 +13,7 @@
 
 namespace {
 
-const int kDefaultPromoShowTimeInHours = 2;
+const int kDefaultNewTabPromoShowTimeInHours = 2;
 constexpr char kNewTabObservedSessionTimeKey[] =
     "new_tab_in_product_help_observed_session_time_key";
 
@@ -22,11 +22,11 @@ constexpr char kNewTabObservedSessionTimeKey[] =
 namespace feature_engagement {
 
 NewTabTracker::NewTabTracker(Profile* profile)
-    : FeatureTracker(profile,
-                     &kIPHNewTabFeature,
-                     kNewTabObservedSessionTimeKey,
-                     base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
-}
+    : FeatureTracker(
+          profile,
+          &kIPHNewTabFeature,
+          kNewTabObservedSessionTimeKey,
+          base::TimeDelta::FromHours(kDefaultNewTabPromoShowTimeInHours)) {}
 
 NewTabTracker::~NewTabTracker() = default;
 

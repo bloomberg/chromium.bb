@@ -26,9 +26,9 @@ class Tracker;
 // each session ending, updates all of the FeatureTrackers with the new total
 // observed session time. Once the observed session time exceeds the time
 // requirement provided by GetSessionTimeRequiredToShow(), the
-// FeatureTracker unregisters itself as an obsever of SessionDurationUpdater.
+// FeatureTracker unregisters itself as an observer of SessionDurationUpdater.
 // SessionDurationUpdater stops updating the observed session time if no
-// features are observing it, and will start tracking the observed sesion time
+// features are observing it, and will start tracking the observed session time
 // again if another feature is added as an observer later.
 //
 // Desktop In Product Help only shows promos to new users which means that
