@@ -92,7 +92,7 @@ void MediaDrmCredentialManager::ResetCredentialsInternal(
   // Create provision fetcher for the default browser http request context.
   media::CreateFetcherCB create_fetcher_cb =
       base::Bind(&content::CreateProvisionFetcher,
-                 g_browser_process->system_request_context());
+                 base::Unretained(g_browser_process->system_request_context()));
 
   ResetCredentialsCB reset_credentials_cb =
       base::Bind(&MediaDrmCredentialManager::OnResetCredentialsCompleted,
