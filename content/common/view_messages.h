@@ -718,11 +718,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_FrameSwapMessages,
                     uint32_t /* frame_token */,
                     std::vector<IPC::Message> /* messages */)
 
-// Sent if the BeginFrame did not cause a SwapCompositorFrame (e.g. because no
-// updates were required or because it was aborted in the renderer).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidNotProduceFrame,
-                    viz::BeginFrameAck /* ack */)
-
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)

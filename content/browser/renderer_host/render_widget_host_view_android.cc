@@ -1291,6 +1291,7 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
 
 void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
     const viz::BeginFrameAck& ack) {
+  // AcknowledgeBeginFrame is not called for the synchronous compositor path.
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
 }
