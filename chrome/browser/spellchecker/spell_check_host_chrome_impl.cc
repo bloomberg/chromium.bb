@@ -18,7 +18,7 @@
 
 SpellCheckHostChromeImpl::SpellCheckHostChromeImpl(
     const service_manager::Identity& renderer_identity)
-    : renderer_identity_(renderer_identity) {}
+    : renderer_identity_(renderer_identity), weak_factory_(this) {}
 
 SpellCheckHostChromeImpl::~SpellCheckHostChromeImpl() = default;
 
@@ -83,7 +83,7 @@ void SpellCheckHostChromeImpl::CallSpellingService(
   client_.RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text,
       base::BindOnce(&SpellCheckHostChromeImpl::CallSpellingServiceDone,
-                     base::Unretained(this), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 #else
   std::move(callback).Run(false, std::vector<SpellCheckResult>());
 #endif

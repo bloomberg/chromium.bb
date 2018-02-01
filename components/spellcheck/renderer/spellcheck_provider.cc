@@ -46,7 +46,8 @@ SpellCheckProvider::SpellCheckProvider(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
       spellcheck_(spellcheck),
-      embedder_provider_(embedder_provider) {
+      embedder_provider_(embedder_provider),
+      weak_factory_(this) {
   DCHECK(spellcheck_);
   if (render_frame)  // NULL in unit tests.
     render_frame->GetWebFrame()->SetTextCheckClient(this);
@@ -96,7 +97,7 @@ void SpellCheckProvider::RequestTextChecking(
     return;  // NULL in tests that do not provide a spell_check_host_.
   GetSpellCheckHost().CallSpellingService(
       text, base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
-                           base::Unretained(this), last_identifier_, text));
+                           weak_factory_.GetWeakPtr(), last_identifier_, text));
 #endif  // !USE_BROWSER_SPELLCHECKER
 }
 
