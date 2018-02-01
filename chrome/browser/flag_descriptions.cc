@@ -1885,14 +1885,6 @@ const char kEnableContentSuggestionsThumbnailDominantColorDescription[] =
     "Use content suggestions thumbnail dominant color as a placeholder before "
     "the real thumbnail is fetched (requires Chrome Home).";
 
-const char kEnableCopylessPasteName[] = "App Indexing (Copyless Paste)";
-const char kEnableCopylessPasteDescription[] =
-    "Provide suggestions for text input, based on your recent context. For "
-    "example, if you looked at a restaurant website and switched to the Maps "
-    "app, the keyboard would offer the name of that restaurant as a suggestion "
-    "to enter into the search bar. The data is indexed locally, and never sent "
-    "to the server. It's disabled in incognito mode.";
-
 const char kEnableCustomContextMenuName[] = "Enable custom context menu";
 const char kEnableCustomContextMenuDescription[] =
     "Enables a new context menu when a link, image, or video is pressed within "

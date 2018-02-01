@@ -43,7 +43,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
     &features::kClearOldBrowsingData,
     &features::kClipboardContentSetting,
-    &features::kCopylessPaste,
     &features::kDownloadsForeground,
     &features::kDownloadsLocationChange,
     &features::kImportantSitesInCbd,

@@ -184,12 +184,6 @@ const base::Feature kContentFullscreen{"ContentFullscreen",
 const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
-// Experiment to extract structured metadata for app indexing.
-const base::Feature kCopylessPaste{"CopylessPaste",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_CHROMEOS)
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};

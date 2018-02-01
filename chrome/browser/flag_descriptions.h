@@ -1153,9 +1153,6 @@ extern const char kEnableContentSuggestionsSettingsDescription[];
 extern const char kEnableContentSuggestionsThumbnailDominantColorName[];
 extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 
-extern const char kEnableCopylessPasteName[];
-extern const char kEnableCopylessPasteDescription[];
-
 extern const char kEnableCustomContextMenuName[];
 extern const char kEnableCustomContextMenuDescription[];
 
