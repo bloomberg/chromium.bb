@@ -99,6 +99,7 @@ Polymer({
       }
     } else {
       type = 'automatic';
+      nameservers = this.clearEmptyNameServers_(nameservers);
     }
     this.setNameservers_(type, nameservers, false /* send */);
   },
@@ -213,18 +214,28 @@ Polymer({
         field: 'NameServers',
         value: this.GOOGLE_NAMESERVERS,
       });
-    } else {
-      // automatic
+    } else {  // type == automatic
       // If not connected, properties will clear. Otherwise they may or may not
       // change so leave them as-is.
       if (this.networkProperties.ConnectionState !=
           CrOnc.ConnectionState.CONNECTED) {
         this.nameservers_ = [];
+      } else {
+        this.nameservers_ = this.clearEmptyNameServers_(this.nameservers_);
       }
       this.fire('nameservers-change', {
         field: 'NameServersConfigType',
         value: CrOnc.IPConfigType.DHCP,
       });
     }
+  },
+
+  /**
+   * @param {!Array<string>} nameservers
+   * @return {!Array<string>}
+   * @private
+   */
+  clearEmptyNameServers_: function(nameservers) {
+    return nameservers.filter((nameserver) => !!nameserver);
   },
 });
