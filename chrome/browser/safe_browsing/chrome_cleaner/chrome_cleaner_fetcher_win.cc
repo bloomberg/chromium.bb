@@ -82,7 +82,7 @@ enum CleanerDownloadStatusHistogramValue {
   CLEANER_DOWNLOAD_STATUS_MAX,
 };
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+net::NetworkTrafficAnnotationTag kChromeCleanerTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("chrome_cleaner", R"(
       semantics {
         sender: "Chrome Cleaner"
@@ -165,7 +165,7 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
                                            GetSRTDownloadURL(),
                                            net::URLFetcher::GET,
                                            this,
-                                           kTrafficAnnotation)),
+                                           kChromeCleanerTrafficAnnotation)),
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),

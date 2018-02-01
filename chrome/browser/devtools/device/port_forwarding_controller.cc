@@ -45,7 +45,7 @@ enum {
   kStatusOK = 0,
 };
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+net::NetworkTrafficAnnotationTag kPortForwardingControllerTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("port_forwarding_controller_socket",
                                         R"(
         semantics {
@@ -162,7 +162,7 @@ class SocketTunnel {
     result = to->Write(drainable.get(), total,
                        base::Bind(&SocketTunnel::OnWritten,
                                   base::Unretained(this), drainable, from, to),
-                       kTrafficAnnotation);
+                       kPortForwardingControllerTrafficAnnotation);
     if (result != net::ERR_IO_PENDING)
       OnWritten(drainable, from, to, result);
   }
@@ -184,7 +184,7 @@ class SocketTunnel {
           to->Write(drainable.get(), drainable->BytesRemaining(),
                     base::Bind(&SocketTunnel::OnWritten, base::Unretained(this),
                                drainable, from, to),
-                    kTrafficAnnotation);
+                    kPortForwardingControllerTrafficAnnotation);
       if (result != net::ERR_IO_PENDING)
         OnWritten(drainable, from, to, result);
       return;

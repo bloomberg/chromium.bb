@@ -115,8 +115,9 @@ void AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
   list->Append(std::move(list_item));
 }
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("chrome_expect_ct_reporter", R"(
+constexpr net::NetworkTrafficAnnotationTag
+    kChromeExpectCtReporterTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("chrome_expect_ct_reporter", R"(
         semantics {
           sender: "Expect-CT reporting for Certificate Transparency reporting"
           description:
@@ -147,7 +148,8 @@ ChromeExpectCTReporter::ChromeExpectCTReporter(
     const base::Closure& success_callback,
     const base::Closure& failure_callback)
     : report_sender_(
-          new net::ReportSender(request_context, kTrafficAnnotation)),
+          new net::ReportSender(request_context,
+                                kChromeExpectCtReporterTrafficAnnotation)),
       request_context_(request_context),
       success_callback_(success_callback),
       failure_callback_(failure_callback) {}
@@ -262,7 +264,7 @@ void ChromeExpectCTReporter::SendPreflight(
     const std::string& serialized_report) {
   std::unique_ptr<net::URLRequest> url_request =
       request_context_->CreateRequest(report_uri, net::DEFAULT_PRIORITY, this,
-                                      kTrafficAnnotation);
+                                      kChromeExpectCtReporterTrafficAnnotation);
   url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                             net::LOAD_DO_NOT_SEND_AUTH_DATA |
                             net::LOAD_DO_NOT_SEND_COOKIES |

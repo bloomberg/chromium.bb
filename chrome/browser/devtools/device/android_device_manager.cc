@@ -35,7 +35,7 @@ static const char kModelOffline[] = "Offline";
 
 static const char kRequestLineFormat[] = "GET %s HTTP/1.1";
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+net::NetworkTrafficAnnotationTag kAndroidDeviceManagerTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("android_device_manager_socket", R"(
         semantics {
           sender: "Android Device Manager"
@@ -167,7 +167,7 @@ class HttpRequest {
       result = socket_->Write(
           request_.get(), request_->BytesRemaining(),
           base::Bind(&HttpRequest::DoSendRequest, base::Unretained(this)),
-          kTrafficAnnotation);
+          kAndroidDeviceManagerTrafficAnnotation);
     }
   }
 

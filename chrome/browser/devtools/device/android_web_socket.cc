@@ -26,7 +26,7 @@ namespace {
 const int kBufferSize = 16 * 1024;
 const char kCloseResponse[] = "\x88\x80\x2D\x0E\x1E\xFA";
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+net::NetworkTrafficAnnotationTag kAndroidWebSocketTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("android_web_socket", R"(
         semantics {
           sender: "Android Web Socket"
@@ -160,7 +160,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     result = socket_->Write(buffer.get(), buffer->size(),
                             base::Bind(&WebSocketImpl::SendPendingRequests,
                                        weak_factory_.GetWeakPtr()),
-                            kTrafficAnnotation);
+                            kAndroidWebSocketTrafficAnnotation);
     if (result != net::ERR_IO_PENDING)
       SendPendingRequests(result);
   }
