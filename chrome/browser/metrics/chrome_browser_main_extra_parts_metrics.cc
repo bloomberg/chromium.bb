@@ -218,6 +218,9 @@ void RecordStartupMetrics() {
                             base::win::VERSION_WIN_LAST);
   UMA_HISTOGRAM_BOOLEAN("Windows.InCompatibilityMode",
                         os_info.version() != os_info.Kernel32Version());
+
+  UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
+                        base::TimeTicks::IsHighResolution());
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
