@@ -1169,8 +1169,7 @@ bool Node::CanParticipateInFlatTree() const {
 }
 
 bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {
-  return (IsHTMLSlotElement(*this) &&
-          ToHTMLSlotElement(*this).SupportsAssignment()) ||
+  return ToHTMLSlotElementIfSupportsAssignmentOrNull(*this) ||
          IsActiveV0InsertionPoint(*this);
 }
 
@@ -2686,15 +2685,13 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
       slot->DidSlotChange(slot_change_type);
   } else if (IsInV1ShadowTree()) {
     // Checking for fallback content if the node is in a v1 shadow tree.
-    Element* parent = parentElement();
-    if (parent && IsHTMLSlotElement(parent)) {
-      HTMLSlotElement& parent_slot = ToHTMLSlotElement(*parent);
-      DCHECK(parent_slot.SupportsAssignment());
+    if (auto* parent_slot = ToHTMLSlotElementOrNull(parentElement())) {
+      DCHECK(parent_slot->SupportsAssignment());
       // The parent_slot's assigned nodes might not be calculated because they
       // are lazy evaluated later at UpdateDistribution() so we have to check it
       // here.
-      if (!parent_slot.HasAssignedNodesSlow())
-        parent_slot.DidSlotChange(slot_change_type);
+      if (!parent_slot->HasAssignedNodesSlow())
+        parent_slot->DidSlotChange(slot_change_type);
     }
   }
 }
