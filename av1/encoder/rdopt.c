@@ -1822,7 +1822,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                const ENTROPY_CONTEXT *a,
                                const ENTROPY_CONTEXT *l,
-                               int use_fast_coef_costing, RD_STATS *rd_stats) {
+                               int use_fast_coef_costing,
+                               RD_STATS *best_rd_stats) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1836,8 +1837,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int64_t best_rd = INT64_MAX;
   uint8_t best_txb_ctx = 0;
   uint16_t best_eob = 0;
-  RD_STATS best_rd_stats;
-  av1_invalid_rd_stats(&best_rd_stats);
+  av1_invalid_rd_stats(best_rd_stats);
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (is_inter && plane == 0 &&
         cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
@@ -1896,7 +1896,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     if (rd < best_rd) {
       best_rd = rd;
-      best_rd_stats = this_rd_stats;
+      *best_rd_stats = this_rd_stats;
       best_tx_type = tx_type;
       best_txb_ctx = x->plane[plane].txb_entropy_ctx[block];
       best_eob = x->plane[plane].eobs[block];
@@ -1906,8 +1906,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     // all zero and at the same time, it has better rdcost than doing transform.
     if (cpi->sf.tx_type_search.skip_tx_search && !best_eob) break;
   }
-
-  av1_merge_rd_stats(rd_stats, &best_rd_stats);
 
   if (best_eob == 0) best_tx_type = DCT_DCT;
 
@@ -3634,8 +3632,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #if CONFIG_TXK_SEL
   (void)fast;
   (void)rd_info_array;
+
+  RD_STATS this_rd_stats;
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  a, l, 0, rd_stats);
+                  a, l, 0, &this_rd_stats);
+  av1_merge_rd_stats(rd_stats, &this_rd_stats);
   return;
 #else
   const AV1_COMMON *const cm = &cpi->common;
