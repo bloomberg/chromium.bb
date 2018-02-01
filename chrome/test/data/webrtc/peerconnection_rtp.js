@@ -16,7 +16,7 @@
  */
 function createAndAddStreams(count) {
   if (count > 0) {
-    getUserMedia({ audio: true, video: true },
+    navigator.getUserMedia({ audio: true, video: true },
         function(stream) {
           peerConnection_().addStream(stream);
           createAndAddStreams(count - 1);
@@ -117,7 +117,7 @@ function createAndAddAudioAndVideoTrack(streamArgumentType) {
       streamArgumentType !== 'shared-stream' &&
       streamArgumentType !== 'individual-streams')
     throw failTest('Unsupported streamArgumentType.');
-  getUserMedia({ audio: true, video: true },
+  navigator.getUserMedia({ audio: true, video: true },
       function(stream) {
         let audioStream = undefined;
         if (streamArgumentType !== 'no-stream')
