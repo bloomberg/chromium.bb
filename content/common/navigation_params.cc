@@ -7,9 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/service_worker_modes.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -17,27 +15,16 @@
 
 namespace content {
 
-SourceLocation::SourceLocation() : line_number(0), column_number(0) {}
+SourceLocation::SourceLocation() = default;
 
 SourceLocation::SourceLocation(const std::string& url,
                                unsigned int line_number,
                                unsigned int column_number)
     : url(url), line_number(line_number), column_number(column_number) {}
 
-SourceLocation::~SourceLocation() {}
+SourceLocation::~SourceLocation() = default;
 
-CommonNavigationParams::CommonNavigationParams()
-    : transition(ui::PAGE_TRANSITION_LINK),
-      navigation_type(FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT),
-      allow_download(true),
-      should_replace_current_entry(false),
-      report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
-      previews_state(PREVIEWS_UNSPECIFIED),
-      navigation_start(base::TimeTicks::Now()),
-      method("GET"),
-      should_check_main_world_csp(CSPDisposition::CHECK),
-      started_from_context_menu(false),
-      has_user_gesture(false) {}
+CommonNavigationParams::CommonNavigationParams() = default;
 
 CommonNavigationParams::CommonNavigationParams(
     const GURL& url,
@@ -88,24 +75,9 @@ CommonNavigationParams::CommonNavigationParams(
 CommonNavigationParams::CommonNavigationParams(
     const CommonNavigationParams& other) = default;
 
-CommonNavigationParams::~CommonNavigationParams() {
-}
+CommonNavigationParams::~CommonNavigationParams() = default;
 
-RequestNavigationParams::RequestNavigationParams()
-    : is_overriding_user_agent(false),
-      can_load_local_resources(false),
-      nav_entry_id(0),
-      is_history_navigation_in_new_child(false),
-      intended_as_new_entry(false),
-      pending_history_list_offset(-1),
-      current_history_list_offset(-1),
-      current_history_list_length(0),
-      is_view_source(false),
-      should_clear_history_list(false),
-      should_create_service_worker(false),
-      service_worker_provider_id(kInvalidServiceWorkerProviderId),
-      appcache_host_id(kAppCacheNoHostId),
-      was_activated(false) {}
+RequestNavigationParams::RequestNavigationParams() = default;
 
 RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
@@ -137,17 +109,12 @@ RequestNavigationParams::RequestNavigationParams(
       current_history_list_offset(current_history_list_offset),
       current_history_list_length(current_history_list_length),
       is_view_source(is_view_source),
-      should_clear_history_list(should_clear_history_list),
-      should_create_service_worker(false),
-      service_worker_provider_id(kInvalidServiceWorkerProviderId),
-      appcache_host_id(kAppCacheNoHostId),
-      was_activated(false) {}
+      should_clear_history_list(should_clear_history_list) {}
 
 RequestNavigationParams::RequestNavigationParams(
     const RequestNavigationParams& other) = default;
 
-RequestNavigationParams::~RequestNavigationParams() {
-}
+RequestNavigationParams::~RequestNavigationParams() = default;
 
 NavigationParams::NavigationParams(
     const CommonNavigationParams& common_params,
@@ -156,7 +123,6 @@ NavigationParams::NavigationParams(
       request_params(request_params) {
 }
 
-NavigationParams::~NavigationParams() {
-}
+NavigationParams::~NavigationParams() = default;
 
 }  // namespace content

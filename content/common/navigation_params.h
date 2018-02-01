@@ -17,10 +17,12 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/service_worker_modes.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response_info.h"
@@ -42,8 +44,8 @@ struct CONTENT_EXPORT SourceLocation {
                  unsigned int column_number);
   ~SourceLocation();
   std::string url;
-  unsigned int line_number;
-  unsigned int column_number;
+  unsigned int line_number = 0;
+  unsigned int column_number = 0;
 };
 
 // The following structures hold parameters used during a navigation. In
@@ -87,21 +89,22 @@ struct CONTENT_EXPORT CommonNavigationParams {
   Referrer referrer;
 
   // The type of transition.
-  ui::PageTransition transition;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
 
   // Type of navigation.
-  FrameMsg_Navigate_Type::Value navigation_type;
+  FrameMsg_Navigate_Type::Value navigation_type =
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
 
   // Allows the URL to be downloaded (true by default).
   // Avoid downloading when in view-source mode.
-  bool allow_download;
+  bool allow_download = true;
 
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
   // the transferred navigation can recover the navigation state.
   // PlzNavigate: this is used by client-side redirects to indicate that when
   // the navigation commits, it should commit in the existing page.
-  bool should_replace_current_entry;
+  bool should_replace_current_entry = false;
 
   // Timestamp of the user input event that triggered this navigation. Empty if
   // the navigation was not triggered by clicking on a link or by receiving an
@@ -109,7 +112,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
   base::TimeTicks ui_timestamp;
 
   // The report type to be used when recording the metric using |ui_timestamp|.
-  FrameMsg_UILoadMetricsReportType::Value report_type;
+  FrameMsg_UILoadMetricsReportType::Value report_type =
+      FrameMsg_UILoadMetricsReportType::NO_REPORT;
 
   // Base URL for use in Blink's SubstituteData.
   // Is only used with data: URLs.
@@ -121,17 +125,17 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // Bitmask that has whether or not to request a Preview version of the
   // document for various preview types or let the browser decide.
-  PreviewsState previews_state;
+  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
 
   // The navigationStart time exposed through the Navigation Timing API to JS.
   // If this is for a browser-initiated navigation, this can override the
   // navigation_start value in Blink.
   // PlzNavigate: For renderer initiated navigations, this will be set on the
   // renderer side and sent with FrameHostMsg_BeginNavigation.
-  base::TimeTicks navigation_start;
+  base::TimeTicks navigation_start = base::TimeTicks::Now();
 
   // The request method: GET, POST, etc.
-  std::string method;
+  std::string method = "GET";
 
   // Body of HTTP POST request.
   scoped_refptr<network::ResourceRequestBody> post_data;
@@ -149,13 +153,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // TODO(arthursonzogni): Instead of this boolean, the origin of the isolated
   // world which has initiated the navigation should be passed.
   // See https://crbug.com/702540
-  CSPDisposition should_check_main_world_csp;
+  CSPDisposition should_check_main_world_csp = CSPDisposition::CHECK;
 
   // Whether or not this navigation was started from a context menu.
-  bool started_from_context_menu;
+  bool started_from_context_menu = false;
 
   // True if the request was user initiated.
-  bool has_user_gesture;
+  bool has_user_gesture = false;
 
   // If the navigation started in response to a HTML anchor element with a
   // download attribute, this is the (possible empty) value of the download
@@ -200,7 +204,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
   ~RequestNavigationParams();
 
   // Whether or not the user agent override string should be used.
-  bool is_overriding_user_agent;
+  bool is_overriding_user_agent = false;
 
   // Any redirect URLs that occurred before |url|. Useful for cross-process
   // navigations; defaults to empty.
@@ -224,7 +228,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
 
   // Whether or not this url should be allowed to access local file://
   // resources.
-  bool can_load_local_resources;
+  bool can_load_local_resources = false;
 
   // Opaque history state (received by ViewHostMsg_UpdateState).
   PageState page_state;
@@ -233,12 +237,12 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // NavigationEntry being navigated to. (For renderer-initiated navigations it
   // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
   // the resulting FrameHostMsg_DidCommitProvisionalLoad_Params.
-  int nav_entry_id;
+  int nav_entry_id = 0;
 
   // Whether this is a history navigation in a newly created child frame, in
   // which case the browser process is instructing the renderer process to load
   // a URL from a session history item.  Defaults to false.
-  bool is_history_navigation_in_new_child;
+  bool is_history_navigation_in_new_child = false;
 
   // If this is a history navigation, this contains a map of frame unique names
   // to |is_about_blank| for immediate children of the frame being navigated for
@@ -253,31 +257,31 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // being navigated to. This is false otherwise. TODO(avi): Remove this when
   // the pending entry situation is made sane and the browser keeps them around
   // long enough to match them via nav_entry_id, above.
-  bool intended_as_new_entry;
+  bool intended_as_new_entry = false;
 
   // For history navigations, this is the offset in the history list of the
   // pending load. For non-history navigations, this will be ignored.
-  int pending_history_list_offset;
+  int pending_history_list_offset = -1;
 
   // Where its current page contents reside in session history and the total
   // size of the session history list.
-  int current_history_list_offset;
-  int current_history_list_length;
+  int current_history_list_offset = -1;
+  int current_history_list_length = 0;
 
   // Indicates whether the navigation is to a view-source:// scheme or not.
   // It is a separate boolean as the view-source scheme is stripped from the
   // URL before it is sent to the renderer process and the RenderFrame needs
   // to be put in special view source mode.
-  bool is_view_source;
+  bool is_view_source = false;
 
   // Whether session history should be cleared. In that case, the RenderView
   // needs to notify the browser that the clearing was succesful when the
   // navigation commits.
-  bool should_clear_history_list;
+  bool should_clear_history_list = false;
 
   // PlzNavigate
   // Whether a ServiceWorkerProviderHost should be created for the window.
-  bool should_create_service_worker;
+  bool should_create_service_worker = false;
 
   // PlzNavigate
   // Timing of navigation events.
@@ -288,11 +292,11 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // created by the browser. Set to kInvalidServiceWorkerProviderId otherwise.
   // This parameter is not used in the current navigation architecture, where
   // it will always be equal to kInvalidServiceWorkerProviderId.
-  int service_worker_provider_id;
+  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
 
   // PlzNavigate
   // The AppCache host id to be used to identify this navigation.
-  int appcache_host_id;
+  int appcache_host_id = kAppCacheNoHostId;
 
   // True if a navigation is following the rules of user activation propagation.
   // This is different from |has_user_gesture| (in CommonNavigationParams) as
@@ -302,7 +306,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // gesture but whether there was an activation prior to the navigation or to
   // start it. `was_activated` will answer the former question while
   // `user_gesture` will answer the latter.
-  bool was_activated;
+  bool was_activated = false;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for
