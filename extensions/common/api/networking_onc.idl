@@ -599,6 +599,10 @@ namespace networking.onc {
     DOMString? HexSSID;
     // Whether the network SSID will be broadcast.
     boolean? HiddenSSID;
+    // The passphrase for WEP/WPA/WPA2 connections. This property can only be
+    // set - properties returned by $(ref:getProperties) will not contain this
+    // value.
+    DOMString? Passphrase;
     // Signal-to-noise value (in dB) below which roaming to a new network
     // should be attempted.
     long? RoamThreshold;
