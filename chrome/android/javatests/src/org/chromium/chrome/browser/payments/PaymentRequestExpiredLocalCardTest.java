@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -138,10 +137,9 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
     /**
      * Tests the different card unmask error messages for an expired card.
      */
-    // @MediumTest
-    // @Feature({"Payments"})
-    @DisabledTest(message = "https://crbug.com/687438/")
     @Test
+    @MediumTest
+    @Feature({"Payments"})
     public void testPromptErrorMessages()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Click pay to get to the card unmask prompt.
@@ -174,11 +172,14 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
         if (now.get(Calendar.MONTH) != 0) {
             String twoDigitsYear = Integer.toString(now.get(Calendar.YEAR)).substring(2);
 
-            // Set an invalid expiration year.
+            // Set an invalid expiration date. The year is current, but the month is previous.
+            // now.get(Calendar.MONTH) returns 0-indexed values (January is 0), but the unmask
+            // dialog expects 1-indexed values (January is 1). Therefore, using
+            // now.get(Calendar.MONTH) directly will result in using the previous month and no
+            // subtraction is needed here.
             mRule.setTextInExpiredCardUnmaskDialogAndWait(
                     new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
-                    new String[] {
-                            Integer.toString(now.get(Calendar.MONTH) - 1), twoDigitsYear, "123"},
+                    new String[] {Integer.toString(now.get(Calendar.MONTH)), twoDigitsYear, "123"},
                     mRule.getUnmaskValidationDone());
             Assert.assertTrue(mRule.getUnmaskPromptErrorMessage().equals(
                     "Check your expiration date and try again"));
