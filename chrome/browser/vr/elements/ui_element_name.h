@@ -31,6 +31,7 @@ enum UiElementName {
   kLaser,
   kController,
   kReticle,
+  kReticleLaserGroup,
   kKeyboardVisibilityControlForVoice,
   kKeyboardDmmRoot,
   kKeyboard,
@@ -117,8 +118,10 @@ enum UiElementName {
   kSpeechRecognitionListeningCloseButton,
   kDownloadedSnackbar,
   kControllerTrackpadLabel,
+  kControllerTrackpadRepositionLabel,
   kControllerExitButtonLabel,
   kControllerBackButtonLabel,
+  kContentRepositionHitPlane,
 
   // This must be last.
   kNumUiElementNames,
