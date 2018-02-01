@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
@@ -2046,6 +2047,85 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   content::RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(rfh, javascript, &result));
   EXPECT_EQ(kBodyTextContent, result);
+}
+
+// The set of tests...
+// * NavigationHandleImplDownloadBrowserTest.AllowedResourceDownloaded
+// * NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
+// * NavigationHandleImplDownloadBrowserTest.Disallowed
+//
+// ...covers every combinaison of possible states for:
+// * CommonNavigationParams::allow_download
+// * NavigationHandle::IsDownload()
+//
+// |allow_download| is false only when the URL is a view-source URL. In this
+// case, downloads are prohibited (i.e. |is_download| is false in
+// NavigationURLLoaderDelegate::OnResponseStarted()).
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       AllowedResourceDownloaded) {
+  GURL simple_url(embedded_test_server()->GetURL("/simple_page.html"));
+
+  TestNavigationManager manager(shell()->web_contents(), simple_url);
+  NavigationHandleObserver handle_observer(shell()->web_contents(), simple_url);
+
+  // Download is allowed.
+  shell()->LoadURL(simple_url);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetMainFrame()
+                            ->frame_tree_node();
+  EXPECT_TRUE(root->navigation_request()->common_params().allow_download);
+
+  // The response is not handled as a download.
+  manager.WaitForNavigationFinished();
+  EXPECT_FALSE(handle_observer.is_download());
+}
+
+// See NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       AllowedResourceNotDownloaded) {
+  GURL download_url(embedded_test_server()->GetURL("/download-test1.lib"));
+
+  TestNavigationManager manager(shell()->web_contents(), download_url);
+  NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                           download_url);
+
+  // Download is allowed.
+  shell()->LoadURL(download_url);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetMainFrame()
+                            ->frame_tree_node();
+  EXPECT_TRUE(root->navigation_request()->common_params().allow_download);
+
+  // The response is handled as a download.
+  manager.WaitForNavigationFinished();
+  EXPECT_TRUE(handle_observer.is_download());
+}
+
+// See NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, Disallowed) {
+  GURL download_url(embedded_test_server()->GetURL("/download-test1.lib"));
+
+  // An URL is allowed to be a download iff it is not a view-source URL.
+  GURL view_source_url =
+      GURL(content::kViewSourceScheme + std::string(":") + download_url.spec());
+
+  NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                           download_url);
+  TestNavigationManager manager(shell()->web_contents(), download_url);
+
+  // Download is not allowed.
+  shell()->LoadURL(view_source_url);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetMainFrame()
+                            ->frame_tree_node();
+  EXPECT_FALSE(root->navigation_request()->common_params().allow_download);
+
+  // The response is not handled as a download.
+  manager.WaitForNavigationFinished();
+  EXPECT_FALSE(handle_observer.is_download());
 }
 
 }  // namespace content
