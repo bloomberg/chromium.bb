@@ -20274,7 +20274,6 @@
             "recovery",
             "test"
         ],
-        "paygen_skip_delta_payloads": true,
         "signer_tests": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -20431,7 +20430,6 @@
             "test"
         ],
         "paygen": false,
-        "paygen_skip_delta_payloads": true,
         "push_image": false,
         "signer_tests": false,
         "vm_tests": [],
@@ -25587,7 +25585,6 @@
             "recovery",
             "test"
         ],
-        "paygen_skip_delta_payloads": true,
         "signer_tests": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -25744,7 +25741,6 @@
             "test"
         ],
         "paygen": false,
-        "paygen_skip_delta_payloads": true,
         "push_image": false,
         "signer_tests": false,
         "vm_tests": [],

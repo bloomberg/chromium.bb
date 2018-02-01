@@ -1601,7 +1601,6 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.release,
       description='Moblab release builders',
       images=['base', 'recovery', 'test'],
-      paygen_skip_delta_payloads=True,
       important=False,
       afdo_use=False,
       signer_tests=False,
