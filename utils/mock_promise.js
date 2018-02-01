@@ -50,7 +50,7 @@ mr.MockPromise = class {
     this.result_ = undefined;
 
     /**
-     * The linked list of {@code onFulfilled} and {@code onRejected} callbacks
+     * The linked list of `onFulfilled` and `onRejected` callbacks
      * added to this Promise by calls to {@code then()}.
      * @private {!Array<!mr.MockPromise.CallbackEntry_>}
      */
@@ -64,7 +64,7 @@ mr.MockPromise = class {
 
     /**
      * A boolean that is set if the Promise is rejected, and reset to false if
-     * an {@code onRejected} callback is invoked for the Promise (or one of its
+     * an `onRejected` callback is invoked for the Promise (or one of its
      * descendants). If the rejection is not handled before the next timestep,
      * the rejection reason is passed to the unhandled rejection handler.
      * @private {boolean}
@@ -235,13 +235,13 @@ mr.MockPromise = class {
    * Adds callbacks that will operate on the result of the Promise, returning a
    * new child Promise.
    *
-   * If the Promise is fulfilled, the {@code onFulfilled} callback will be
+   * If the Promise is fulfilled, the `onFulfilled` callback will be
    * invoked with the fulfillment value as argument, and the child Promise will
    * be fulfilled with the return value of the callback. If the callback throws
    * an exception, the child Promise will be rejected with the thrown value
    * instead.
    *
-   * If the Promise is rejected, the {@code onRejected} callback will be invoked
+   * If the Promise is rejected, the `onRejected` callback will be invoked
    * with the rejection reason as argument, and the child Promise will be
    * resolved with the return value or rejected with the thrown value of the
    * callback.
@@ -298,8 +298,8 @@ mr.MockPromise = class {
 
   /**
    * Creates a child Promise and adds it to the callback entry list. The result
-   * of the child Promise is determined by the result of the {@code onFulfilled}
-   * or {@code onRejected} callbacks as specified in the Promise resolution
+   * of the child Promise is determined by the result of the `onFulfilled`
+   * or `onRejected` callbacks as specified in the Promise resolution
    * procedure.
    *
    * @param {?function(TYPE):
@@ -467,7 +467,7 @@ mr.MockPromise = class {
 
   /**
    * Executes a pending callback for this Promise. Invokes an
-   * {@code onFulfilled} or {@code onRejected} callback based on the settled
+   * `onFulfilled` or `onRejected` callback based on the settled
    * state of the Promise.
    *
    * @param {!mr.MockPromise.CallbackEntry_} callbackEntry An entry containing
@@ -511,8 +511,8 @@ mr.MockPromise = class {
   }
 
   /**
-   * Marks this rejected Promise as unhandled. If no {@code onRejected} callback
-   * is called for this Promise before the {@code UNHANDLED_REJECTION_DELAY}
+   * Marks this rejected Promise as unhandled. If no `onRejected` callback
+   * is called for this Promise before the `UNHANDLED_REJECTION_DELAY`
    * expires, the reason will be passed to the unhandled rejection handler. The
    * handler typically rethrows the rejection reason so that it becomes visible
    * in
@@ -584,8 +584,8 @@ mr.MockPromise.pendingHandlers_ = [];
 
 
 /**
- * Entries in the callback chain. Each call to {@code then} or
- * {@code catch} creates an entry containing the
+ * Entries in the callback chain. Each call to `then` or
+ * `catch` creates an entry containing the
  * functions that may be invoked once the Promise is settled.
  *
  * @private @final

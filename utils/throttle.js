@@ -33,7 +33,7 @@ class Throttle {
     this.callback_ = this.onTimer_.bind(this);
 
     /**
-     * The last arguments passed into {@code fire}.
+     * The last arguments passed into `fire`.
      * @private {!Array<?>}
      */
     this.args_ = [];

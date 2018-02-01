@@ -62,7 +62,7 @@ mr.Retry = class {
     this.backoffFactor_ = 1;
 
     /**
-     * The number of times {@code onAttempt_} has been called.
+     * The number of times `onAttempt_` has been called.
      * @private {number}
      */
     this.numAttemptsStarted_ = 0;
@@ -86,12 +86,12 @@ mr.Retry = class {
    * Starts running this object.
    *
    * This method starts an asynchronous process that repeatedly calls
-   * {@code onAttempt}.
+   * `onAttempt`.
    *
-   * For each attempt, {@code onAttempt} is called. When {@code onAttempt}
+   * For each attempt, `onAttempt` is called. When `onAttempt`
    * resolves, the returned promise is resolved with the same result.
-   * The returned promise rejects if if {@code abort} is called on this object,
-   * or the number of attempts specified by {@code setMaxAttempts} is reached.
+   * The returned promise rejects if `abort` is called on this object,
+   * or the number of attempts specified by `setMaxAttempts` is reached.
    *
    * @return {!Promise<R>}
    * @template R
@@ -106,7 +106,7 @@ mr.Retry = class {
   }
 
   /**
-   * Makes the next call to {@code onAttempt_}.
+   * Makes the next call to `onAttempt_`.
    * @private
    */
   retryOnce_() {
@@ -176,7 +176,7 @@ mr.Retry = class {
 
   /**
    * Causes this object to stop making attempts and puts it in a
-   * finished state.  May be called any time after {@code start}.
+   * finished state.  May be called any time after `start`.
    */
   abort() {
     this.cleanup_();
