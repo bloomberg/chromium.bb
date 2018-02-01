@@ -11279,10 +11279,10 @@ TEST_P(ParameterizedWebFrameTest, LoadJavascriptURLInNewFrame) {
   helper.Initialize();
 
   std::string redirect_url = base_url_ + "foo.html";
+  KURL javascript_url = ToKURL("javascript:location='" + redirect_url + "'");
   URLTestHelpers::RegisterMockedURLLoad(ToKURL(redirect_url),
                                         testing::CoreTestDataPath("foo.html"));
-  WebURLRequest request(ToKURL("javascript:location='" + redirect_url + "'"));
-  helper.LocalMainFrame()->LoadRequest(request);
+  helper.LocalMainFrame()->LoadJavaScriptURL(javascript_url);
 
   // Normally, the result of the JS url replaces the existing contents on the
   // Document. However, if the JS triggers a navigation, the contents should

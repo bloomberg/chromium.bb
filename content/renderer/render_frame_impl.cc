@@ -839,11 +839,8 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
 // Returns true if the URL is a debug URL, false otherwise. These URLs do not
 // commit, though they are intentionally left in the address bar above the
 // effect they cause (e.g., a sad tab).
-bool MaybeHandleDebugURL(const GURL& url) {
-  if (!url.SchemeIs(kChromeUIScheme))
-    return false;
-  bool is_debug_url =
-      IsRendererDebugURL(url) && !url.SchemeIs(url::kJavaScriptScheme);
+void HandleChromeDebugURL(const GURL& url) {
+  DCHECK(IsRendererDebugURL(url) && !url.SchemeIs(url::kJavaScriptScheme));
   if (url == kChromeUIBadCastCrashURL) {
     LOG(ERROR) << "Intentionally crashing (with bad cast)"
                << " because user navigated to " << url.spec();
@@ -886,7 +883,6 @@ bool MaybeHandleDebugURL(const GURL& url) {
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
   MaybeTriggerAsanError(url);
 #endif  // ADDRESS_SANITIZER || SYZYASAN
-  return is_debug_url;
 }
 
 struct RenderFrameImpl::PendingFileChooser {
@@ -3029,6 +3025,7 @@ void RenderFrameImpl::CommitNavigation(
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     const base::UnguessableToken& devtools_navigation_token) {
+  DCHECK(!IsRendererDebugURL(common_params.url));
   // If this was a renderer-initiated navigation (nav_entry_id == 0) from this
   // frame, but it was aborted, then ignore it.
   if (!browser_side_navigation_pending_ &&
@@ -3036,18 +3033,6 @@ void RenderFrameImpl::CommitNavigation(
       browser_side_navigation_pending_url_ == request_params.original_url &&
       request_params.nav_entry_id == 0) {
     browser_side_navigation_pending_url_ = GURL();
-    return;
-  }
-
-  // First, check if this is a Debug URL. If so, handle it and stop the
-  // navigation right away.
-  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-  if (MaybeHandleDebugURL(common_params.url)) {
-    // The browser expects the frame to be loading the requested URL. Inform it
-    // that the load stopped if needed, while leaving the debug URL visible in
-    // the address bar.
-    if (weak_this && frame_ && !frame_->IsLoading())
-      Send(new FrameHostMsg_DidStopLoading(routing_id_));
     return;
   }
 
@@ -3211,6 +3196,7 @@ void RenderFrameImpl::CommitNavigation(
   }
 
   if (should_load_request) {
+    base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
     // Check if the navigation being committed originated as a client redirect.
     bool is_client_redirect =
         !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
@@ -3374,6 +3360,24 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
+}
+
+void RenderFrameImpl::HandleRendererDebugURL(const GURL& url) {
+  DCHECK(IsRendererDebugURL(url));
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+  if (url.SchemeIs(url::kJavaScriptScheme)) {
+    // Javascript URLs should be sent to Blink for handling.
+    frame_->LoadJavaScriptURL(url);
+  } else {
+    // This is a Chrome Debug URL. Handle it.
+    HandleChromeDebugURL(url);
+  }
+
+  // The browser sets its status as loading before calling this IPC. Inform it
+  // that the load stopped if needed, while leaving the debug URL visible in the
+  // address bar.
+  if (weak_this && frame_ && !frame_->IsLoading())
+    Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
 
 void RenderFrameImpl::UpdateSubresourceLoaderFactories(

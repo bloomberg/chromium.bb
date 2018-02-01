@@ -1009,6 +1009,19 @@ void NavigatorImpl::RequestNavigation(
     base::TimeTicks navigation_start) {
   DCHECK(frame_tree_node);
 
+  // This is not a real navigation. Send the URL to the renderer process
+  // immediately for handling.
+  // Note: this includes navigations to JavaScript URLs, which are considered
+  // renderer-debug URLs.
+  if (IsRendererDebugURL(dest_url)) {
+    RenderFrameHostImpl* render_frame_host =
+        frame_tree_node->current_frame_host();
+    frame_tree_node->render_manager()->InitializeRenderFrameIfNecessary(
+        render_frame_host);
+    render_frame_host->HandleRendererDebugURL(dest_url);
+    return;
+  }
+
   // This value must be set here because creating a NavigationRequest might
   // change the renderer live/non-live status and change this result.
   // We don't want to dispatch a beforeunload handler if
@@ -1033,28 +1046,6 @@ void NavigatorImpl::RequestNavigation(
           is_history_navigation_in_new_child, post_body, navigation_start,
           controller_);
 
-  // Navigation to a javascript URL is not a "real" navigation so there is no
-  // need to create a NavigationHandle. The navigation commits immediately and
-  // the NavigationRequest is not assigned to the FrameTreeNode as navigating to
-  // a Javascript URL should not interrupt a previous navigation.
-  // Note: The scoped_request will be destroyed at the end of this function.
-  if (dest_url.SchemeIs(url::kJavaScriptScheme)) {
-    // Don't call frame_tree_node->render_manager()->GetFrameHostForNavigation
-    // as that might clear the speculative RFH of an ongoing navigation.
-    RenderFrameHostImpl* render_frame_host =
-        frame_tree_node->current_frame_host();
-    frame_tree_node->render_manager()->InitializeRenderFrameIfNecessary(
-        render_frame_host);
-    render_frame_host->CommitNavigation(
-        nullptr,  // response
-        network::mojom::URLLoaderClientEndpointsPtr(),
-        nullptr,  // body
-        scoped_request->common_params(), scoped_request->request_params(),
-        scoped_request->is_view_source(), base::nullopt,
-        scoped_request->devtools_navigation_token());
-    return;
-  }
-
   frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
@@ -1064,7 +1055,7 @@ void NavigatorImpl::RequestNavigation(
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed then NavigationRequest::BeginNavigation should be directly
   // called instead.
-  if (should_dispatch_beforeunload && !IsRendererDebugURL(dest_url)) {
+  if (should_dispatch_beforeunload) {
     navigation_request->SetWaitingForRendererResponse();
     frame_tree_node->current_frame_host()->DispatchBeforeUnload(
         true, reload_type != ReloadType::NONE);

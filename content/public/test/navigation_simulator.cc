@@ -791,16 +791,12 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
   request =
       web_contents_->GetMainFrame()->frame_tree_node()->navigation_request();
   if (!request) {
-    if (web_contents_->GetMainFrame()->GetNavigationHandle() == handle_) {
-      DCHECK(handle_->IsSameDocument() ||
-             !IsURLHandledByNetworkStack(handle_->GetURL()));
-      same_document_ = handle_->IsSameDocument();
-      return true;
-    } else if (IsRendererDebugURL(navigation_url_)) {
-      // There is no DidStartNavigation for renderer-debug URLs and the
-      // NavigationHandle has already been passed to the main frame for commit.
-      // Register it now.
-      handle_ = web_contents_->GetMainFrame()->GetNavigationHandle();
+    if (IsRendererDebugURL(navigation_url_)) {
+      // We don't create NavigationRequests nor NavigationHandles for a
+      // navigation to a renderer-debug URL. Instead, the URL is passed to the
+      // current RenderFrameHost so that the renderer process can handle it.
+      DCHECK(!handle_);
+      DCHECK(web_contents_->GetMainFrame()->is_loading());
 
       // A navigation to a renderer-debug URL cannot commit. Simulate the
       // renderer process aborting it.
@@ -809,6 +805,12 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
               web_contents_->GetMainFrame()->GetRoutingID()));
       state_ = FAILED;
       return false;
+    } else if (web_contents_->GetMainFrame()->GetNavigationHandle() ==
+               handle_) {
+      DCHECK(handle_->IsSameDocument() ||
+             !IsURLHandledByNetworkStack(handle_->GetURL()));
+      same_document_ = handle_->IsSameDocument();
+      return true;
     }
     return false;
   }

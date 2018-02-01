@@ -103,6 +103,9 @@ interface FrameNavigationControl {
       string? error_page_content,
       URLLoaderFactoryBundle? subresource_loader_factories);
 
+  // Asks the renderer to handle a renderer-debug URL.
+  HandleRendererDebugURL(url.mojom.Url url);
+
   // Provides the renderer an updated |subresource_loader_factories|.
   //
   // This method is intended to fix broken loaders after a Network Service

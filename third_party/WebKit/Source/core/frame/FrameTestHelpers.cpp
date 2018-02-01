@@ -102,7 +102,11 @@ std::unique_ptr<T> CreateDefaultClientIfNeeded(T*& client) {
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
   WebURLRequest url_request(URLTestHelpers::ToKURL(url));
-  frame->LoadRequest(url_request);
+  if (url_request.Url().ProtocolIs("javascript")) {
+    frame->LoadJavaScriptURL(url_request.Url());
+  } else {
+    frame->LoadRequest(url_request);
+  }
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

@@ -88,6 +88,8 @@ class TestRenderFrameHost::NavigationInterceptor
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders)
       override{};
 
+  void HandleRendererDebugURL(const GURL& url) override {}
+
  private:
   TestRenderFrameHost* const frame_host_;
 

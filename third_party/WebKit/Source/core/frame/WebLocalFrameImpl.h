@@ -52,7 +52,6 @@ namespace blink {
 
 class ChromePrintContext;
 class IntSize;
-class KURL;
 class LocalFrameClient;
 class ScrollableArea;
 class SharedWorkerRepositoryClientImpl;
@@ -260,6 +259,7 @@ class CORE_EXPORT WebLocalFrameImpl final
             WebHistoryLoadType,
             bool is_client_redirect,
             const base::UnguessableToken& devtools_navigation_token) override;
+  void LoadJavaScriptURL(const WebURL&) override;
   void LoadData(const WebData&,
                 const WebString& mime_type,
                 const WebString& text_encoding,
@@ -442,8 +442,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebLocalFrame* ToWebLocalFrame() override;
   bool IsWebRemoteFrame() const override;
   WebRemoteFrame* ToWebRemoteFrame() override;
-
-  void LoadJavaScriptURL(const KURL&);
 
   HitTestResult HitTestResultForVisualViewportPos(const IntPoint&);
 

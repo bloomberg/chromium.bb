@@ -1917,44 +1917,6 @@ void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
   }
 }
 
-void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
-  DCHECK(GetFrame());
-  // This is copied from ScriptController::executeScriptIfJavaScriptURL.
-  // Unfortunately, we cannot just use that method since it is private, and
-  // it also doesn't quite behave as we require it to for bookmarklets. The
-  // key difference is that we need to suppress loading the string result
-  // from evaluating the JS URL if executing the JS URL resulted in a
-  // location change. We also allow a JS URL to be loaded even if scripts on
-  // the page are otherwise disabled.
-
-  Document* owner_document = GetFrame()->GetDocument();
-
-  if (!owner_document || !GetFrame()->GetPage())
-    return;
-
-  // Protect privileged pages against bookmarklets and other javascript
-  // manipulations.
-  if (SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
-          owner_document->Url().Protocol()))
-    return;
-
-  String script = DecodeURLEscapeSequences(
-      url.GetString().Substring(strlen("javascript:")));
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
-  v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  v8::Local<v8::Value> result =
-      GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl));
-  if (result.IsEmpty() || !result->IsString())
-    return;
-  String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-  if (!GetFrame()->GetNavigationScheduler().LocationChangePending()) {
-    GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
-        script_result, owner_document);
-  }
-}
-
 HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(
@@ -2030,13 +1992,8 @@ void WebLocalFrameImpl::Load(
     const base::UnguessableToken& devtools_navigation_token) {
   DCHECK(GetFrame());
   DCHECK(!request.IsNull());
+  DCHECK(!request.Url().ProtocolIs("javascript"));
   const ResourceRequest& resource_request = request.ToResourceRequest();
-
-  if (resource_request.Url().ProtocolIs("javascript") &&
-      web_frame_load_type == WebFrameLoadType::kStandard) {
-    LoadJavaScriptURL(resource_request.Url());
-    return;
-  }
 
   if (text_finder_)
     text_finder_->ClearActiveFindMatch();
@@ -2050,6 +2007,45 @@ void WebLocalFrameImpl::Load(
   GetFrame()->Loader().Load(
       frame_request, static_cast<FrameLoadType>(web_frame_load_type),
       history_item, static_cast<HistoryLoadType>(web_history_load_type));
+}
+
+void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
+  DCHECK(GetFrame());
+  // This is copied from ScriptController::executeScriptIfJavaScriptURL.
+  // Unfortunately, we cannot just use that method since it is private, and
+  // it also doesn't quite behave as we require it to for bookmarklets. The
+  // key difference is that we need to suppress loading the string result
+  // from evaluating the JS URL if executing the JS URL resulted in a
+  // location change. We also allow a JS URL to be loaded even if scripts on
+  // the page are otherwise disabled.
+
+  Document* owner_document = GetFrame()->GetDocument();
+
+  if (!owner_document || !GetFrame()->GetPage())
+    return;
+
+  // Protect privileged pages against bookmarklets and other javascript
+  // manipulations.
+  if (SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
+          owner_document->Url().Protocol()))
+    return;
+
+  String script = DecodeURLEscapeSequences(
+      static_cast<const KURL&>(url).GetString().Substring(
+          strlen("javascript:")));
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+  v8::HandleScope handle_scope(ToIsolate(GetFrame()));
+  v8::Local<v8::Value> result =
+      GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
+          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl));
+  if (result.IsEmpty() || !result->IsString())
+    return;
+  String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
+  if (!GetFrame()->GetNavigationScheduler().LocationChangePending()) {
+    GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
+        script_result, owner_document);
+  }
 }
 
 void WebLocalFrameImpl::LoadData(const WebData& data,
