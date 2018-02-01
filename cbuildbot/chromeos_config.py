@@ -2550,7 +2550,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # configuration in the board_config.py code.
       sanity_check_slaves=['wolf-tot-paladin'],
       trybot_list=False,
-      auto_reboot=False,
+      auto_reboot=True,  # TODO(dgarrett): Disable chroot.img stable.
   )
 
   ### Other paladins (CQ builders).

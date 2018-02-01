@@ -35297,7 +35297,6 @@
     "master-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
-        "auto_reboot": false,
         "binhost_test": true,
         "boards": [],
         "buildslave_type": "gce_wimpy",
@@ -35412,7 +35411,6 @@
     "master-paladin-tryjob": {
         "_template": "paladin",
         "active_waterfall": "chromiumos.tryserver",
-        "auto_reboot": false,
         "binhost_test": true,
         "boards": [],
         "buildslave_type": "gce_wimpy",
