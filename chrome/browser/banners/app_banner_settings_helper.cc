@@ -71,7 +71,7 @@ double gTotalEngagementToTrigger = kDefaultTotalEngagementToTrigger;
 unsigned int gDaysAfterDismissedToShow = kMinimumBannerBlockedToBannerShown;
 unsigned int gDaysAfterIgnoredToShow = kMinimumDaysBetweenBannerShows;
 
-std::unique_ptr<base::DictionaryValue> GetOriginDict(
+std::unique_ptr<base::DictionaryValue> GetOriginAppBannerData(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
@@ -223,7 +223,7 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginDict(settings, origin_url);
+      GetOriginAppBannerData(settings, origin_url);
   if (!origin_dict)
     return;
 
@@ -306,7 +306,7 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginDict(settings, origin_url);
+      GetOriginAppBannerData(settings, origin_url);
 
   if (!origin_dict)
     return base::Time();
@@ -352,7 +352,7 @@ bool AppBannerSettingsHelper::WasLaunchedRecently(Profile* profile,
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginDict(settings, origin_url);
+      GetOriginAppBannerData(settings, origin_url);
 
   if (!origin_dict)
     return false;
