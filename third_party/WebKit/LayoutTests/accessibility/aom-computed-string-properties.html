@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<script src="../resources/gc.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<!--
+
+Accessibility Object Model
+Explainer: https://github.com/WICG/aom/blob/master/explainer.md
+Spec: https://wicg.github.io/aom/spec/
+
+-->
+
+<div id="button1" role="button">Click</div>
+
+<script>
+
+test(function(t) {
+    assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
+}, "Make sure that Accessibility Object Model is enabled");
+
+async_test(async function(test) {
+    var element = document.getElementById("button1");
+    var computedAXNode = await window.getComputedAccessibleNode(element);
+    assert_equals(computedAXNode.role, "button");
+    test.done();
+}, "ComputedAccessibleNode.role");
+
+async_test(async function(test) {
+    var element = document.getElementById("button1");
+    var computedAXNode = await window.getComputedAccessibleNode(element);
+    assert_equals(computedAXNode.name, "Click");
+    test.done();
+}, "ComputedAccessibleNode.name");
+
+</script>
+
+<div id="button2" role="button" aria-label="axButton">Click</div>
+
+<script>
+
+async_test(async function(test) {
+    var element = document.getElementById("button2");
+    var computedAXNode = await window.getComputedAccessibleNode(element);
+    assert_equals(computedAXNode.name, "axButton");
+    test.done();
+}, "ComputedAccessibleNode.name set through ARIA.");
+
+</script>
+
+<div id="shortcut" aria-keyshortcuts="Alt+Shift+P">Use my shortcut!</div>
+
+<script>
+
+async_test(async function(test) {
+    var element = document.getElementById("shortcut");
+    var computedAXNode = await window.getComputedAccessibleNode(element);
+    assert_equals(computedAXNode.keyShortcuts, "Alt+Shift+P");
+    test.done();
+}, "ComputedAccessibleNode.keyShortcuts.");
+
+</script>
+
+<p><label>Name:<input id="fullname" type="text" name="fullname" placeholder="Jordan Doe"></label></p>
+
+<script>
+
+async_test(async function(test) {
+    var element = document.getElementById("fullname");
+    computedAXNode = await window.getComputedAccessibleNode(element);
+    assert_equals(computedAXNode.placeholder, "Jordan Doe");
+    test.done();
+}, "ComputedAccessibleNode.placeHolder.");
+
+</script>
+
+<div id="button3" role="button" aria-roledescription="submit button">Click</div>
+
+<script>
+
+async_test(async function(test) {
+    var element = document.getElementById("button3");
+    computedAXNode = await window.getComputedAccessibleNode(element);
+    assert_equals(computedAXNode.role, "button");
+    assert_equals(computedAXNode.roleDescription, "submit button");
+    test.done();
+}, "ComputedAccessibleNode.roleDescription.");
+
+</script>

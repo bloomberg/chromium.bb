@@ -11,7 +11,7 @@ Spec: https://wicg.github.io/aom/spec/
 
 -->
 
-<p id="button1" role="button">Click</p>
+<div id="button1" role="button">Click</div>
 
 <script>
 
@@ -19,70 +19,52 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-promise_test(() => {
+async_test(async function(test) {
     var element = document.getElementById("button1");
-    return window.getComputedAccessibleNode(element).then(computedAXNode => {
-      assert_true(computedAXNode != null);
-    });
+    var computedAXNode = await window.getComputedAccessibleNode(element)
+    assert_true(computedAXNode != null);
+    test.done();
 }, 'Ensure that a non null value is returned from getComputedAccessibleNode');
 
-promise_test(() => {
-    var element = document.getElementById("button1");
-    return window.getComputedAccessibleNode(element).then(computedAXNode => {
-      assert_equals(computedAXNode.role, "button");
-    });
-}, "ComputedAccessibleNode.role");
 
-promise_test(() => {
+async_test(async function(test) {
     var element = document.getElementById("button1");
-    return window.getComputedAccessibleNode(element).then(computedAXNode => {
-      assert_equals(computedAXNode.name, "Click");
-    });
-}, "ComputedAccessibleNode.name");
+
+    var computedAXNode1 = await window.getComputedAccessibleNode(element);
+    var computedAXNode2 = await window.getComputedAccessibleNode(element);
+    assert_true(computedAXNode1 === computedAXNode2);
+    test.done();
+}, "Multiple calls to getComputedAccessibleNode will return the same node.");
 
 </script>
 
-<p id="button2" role="button" aria-label="axButton">Click</p>
+<div id="button2" role="button" aria-label="axButton">Click</div>
 
 <script>
 
-promise_test(() => {
-    var element = document.getElementById("button2");
-    return window.getComputedAccessibleNode(element).then(computedAXNode => {
-      assert_equals(computedAXNode.name, "axButton");
-    });
-}, "ComputedAccessibleNode.name set through ARIA.");
-
-promise_test(() => {
-    var element = document.getElementById("button2");
-    return window.getComputedAccessibleNode(element).then(computedAXNode1 => {
-      window.getComputedAccessibleNode(element).then(computedAXNode2 => {
-        assert_true(computedAXNode1 === computedAXNode2);
-      });
-    });
-}, "Multiple calls to getComputedAccessibleNode will return the same node.");
-
-
-promise_test(() => {
+async_test(async function(test) {
     var button1 = document.getElementById("button1");
+    var button1CAXNode = await window.getComputedAccessibleNode(button1);
+
+    assert_equals(button1CAXNode.name, "Click");
+    assert_equals(button1CAXNode.role, "button");
+
+    button1.style.display = "none";
+
     var button2 = document.getElementById("button2");
-    return window.getComputedAccessibleNode(button2).then(button2AXNode => {
-      assert_equals(button2AXNode.name, "axButton");
-      assert_equals(button2AXNode.role, "button");
+    var button2CAXNode = await window.getComputedAccessibleNode(button2);
 
-      // Set to display:none to remove from accessibility tree.
-      button2.style.display = 'none';
-      window.getComputedAccessibleNode(button1).then(button1AXNode => {
-        // button1's computedAXNode should still be valid.
-        assert_equals(button1AXNode.name, "Click");
-        assert_equals(button1AXNode.role, "button");
+    assert_equals(button2CAXNode.name, "axButton");
+    assert_equals(button2CAXNode.role, "button");
 
-        // button2s computedAXNode should only contain empty attributes.
-        assert_equals(button2AXNode.name, "");
-        assert_equals(button2AXNode.role, "");
-      })
-    });
+    // As button1 has no node in the accessibility tree anymore, assert that the
+    // its previously retrieved computed accessible node has had its attributes
+    // nullified.
+    assert_equals(button1CAXNode.name, null);
+    assert_equals(button1CAXNode.role, null);
+    test.done();
 
-}, "Deleting nodes from the accessibility tree will not cause a crash, and set computed properties on any references to a deleted computed accessible node to empty.");
+}, "Deleting nodes from the accessibility tree will not cause a crash, and properties on any references to a deleted computed accessible node have been nullified.");
 
 </script>
+

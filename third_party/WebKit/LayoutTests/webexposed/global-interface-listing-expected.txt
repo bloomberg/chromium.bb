@@ -1050,14 +1050,18 @@ interface ComputedAccessibleNode
     getter colCount
     getter colIndex
     getter colSpan
+    getter keyShortcuts
     getter level
     getter name
+    getter placeholder
     getter posInSet
     getter role
+    getter roleDescription
     getter rowCount
     getter rowIndex
     getter rowSpan
     getter setSize
+    getter valueText
     method constructor
 interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
