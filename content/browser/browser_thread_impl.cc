@@ -33,11 +33,7 @@ namespace {
 // Friendly names for the well-known threads.
 static const char* const g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
-  "Chrome_DBThread",  // DB
-  "Chrome_FileThread",  // FILE
-  "Chrome_FileUserBlockingThread",  // FILE_USER_BLOCKING
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
-  "Chrome_CacheThread",  // CACHE
   "Chrome_IOThread",  // IO
 };
 
@@ -182,11 +178,7 @@ void BrowserThreadImpl::Init() {
   }
 #endif  // DCHECK_IS_ON()
 
-  if (identifier_ == BrowserThread::DB ||
-      identifier_ == BrowserThread::FILE ||
-      identifier_ == BrowserThread::FILE_USER_BLOCKING ||
-      identifier_ == BrowserThread::PROCESS_LAUNCHER ||
-      identifier_ == BrowserThread::CACHE) {
+  if (identifier_ == BrowserThread::PROCESS_LAUNCHER) {
     // Nesting and task observers are not allowed on redirected threads.
     base::RunLoop::DisallowNestingOnCurrentThread();
     message_loop()->DisallowTaskObservers();
@@ -211,33 +203,8 @@ NOINLINE void BrowserThreadImpl::UIThreadRun(base::RunLoop* run_loop) {
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::DBThreadRun(base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
-NOINLINE void BrowserThreadImpl::FileThreadRun(base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
-NOINLINE void BrowserThreadImpl::FileUserBlockingThreadRun(
-    base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
 NOINLINE void BrowserThreadImpl::ProcessLauncherThreadRun(
     base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
-NOINLINE void BrowserThreadImpl::CacheThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
@@ -269,16 +236,8 @@ void BrowserThreadImpl::Run(base::RunLoop* run_loop) {
   switch (identifier_) {
     case BrowserThread::UI:
       return UIThreadRun(run_loop);
-    case BrowserThread::DB:
-      return DBThreadRun(run_loop);
-    case BrowserThread::FILE:
-      return FileThreadRun(run_loop);
-    case BrowserThread::FILE_USER_BLOCKING:
-      return FileUserBlockingThreadRun(run_loop);
     case BrowserThread::PROCESS_LAUNCHER:
       return ProcessLauncherThreadRun(run_loop);
-    case BrowserThread::CACHE:
-      return CacheThreadRun(run_loop);
     case BrowserThread::IO:
       return IOThreadRun(run_loop);
     case BrowserThread::ID_COUNT:

@@ -72,11 +72,6 @@ NOINLINE void CrashBecauseThreadWasUnresponsive(
     case content::BrowserThread::IO:
       return ThreadUnresponsive_IO();
     case content::BrowserThread::ID_COUNT:
-    // TODO(gab): Get rid of deprecated BrowserThread IDs.
-    case content::BrowserThread::DB:
-    case content::BrowserThread::FILE:
-    case content::BrowserThread::FILE_USER_BLOCKING:
-    case content::BrowserThread::CACHE:
       NOTREACHED();
       break;
   }

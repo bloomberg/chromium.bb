@@ -130,11 +130,7 @@ class TestBrowserThreadBundle {
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
-  std::unique_ptr<TestBrowserThread> db_thread_;
-  std::unique_ptr<TestBrowserThread> file_thread_;
-  std::unique_ptr<TestBrowserThread> file_user_blocking_thread_;
   std::unique_ptr<TestBrowserThread> process_launcher_thread_;
-  std::unique_ptr<TestBrowserThread> cache_thread_;
   std::unique_ptr<TestBrowserThread> io_thread_;
 
   int options_;
