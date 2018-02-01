@@ -91,6 +91,7 @@ class DictionaryTest : public ScriptWrappable {
   bool required_boolean_member_;
   Optional<HashMap<String, String>> dictionary_member_properties_;
   InternalEnumOrInternalEnumSequence internal_enum_or_internal_enum_sequence_;
+  ScriptValue any_member_;
 };
 
 }  // namespace blink

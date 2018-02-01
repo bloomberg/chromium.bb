@@ -77,6 +77,7 @@ void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
     internal_enum_or_internal_enum_sequence_ =
         testing_dictionary.internalEnumOrInternalEnumSequenceMember();
   }
+  any_member_ = testing_dictionary.anyMember();
 }
 
 void DictionaryTest::get(InternalDictionary& result) {
@@ -131,6 +132,7 @@ void DictionaryTest::get(InternalDictionary& result) {
   result.setEventTargetOrNullMember(event_target_or_null_member_);
   result.setInternalEnumOrInternalEnumSequenceMember(
       internal_enum_or_internal_enum_sequence_);
+  result.setAnyMember(any_member_);
 }
 
 ScriptValue DictionaryTest::getDictionaryMemberProperties(
@@ -233,6 +235,7 @@ void DictionaryTest::Reset() {
   dictionary_member_properties_ = WTF::nullopt;
   internal_enum_or_internal_enum_sequence_ =
       InternalEnumOrInternalEnumSequence();
+  any_member_ = ScriptValue();
 }
 
 void DictionaryTest::Trace(blink::Visitor* visitor) {

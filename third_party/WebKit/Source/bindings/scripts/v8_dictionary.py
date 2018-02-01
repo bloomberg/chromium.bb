@@ -219,7 +219,9 @@ def member_impl_context(member, interfaces_info, header_includes,
             return nullable_indicator_name
         if idl_type.is_union_type or idl_type.is_enum or idl_type.is_string_type:
             return '!%s_.IsNull()' % cpp_name
-        if idl_type.name in ['Any', 'Object']:
+        if idl_type.name == 'Any':
+            return '!({0}_.IsEmpty() || {0}_.IsUndefined())'.format(cpp_name)
+        if idl_type.name == 'Object':
             return '!({0}_.IsEmpty() || {0}_.IsNull() || {0}_.IsUndefined())'.format(cpp_name)
         if idl_type.name == 'Dictionary':
             return '!%s_.IsUndefinedOrNull()' % cpp_name
