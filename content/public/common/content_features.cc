@@ -137,6 +137,11 @@ const base::Feature kGuestViewCrossProcessFrames{
 const base::Feature kHeapCompaction{"HeapCompaction",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables an API which allows websites to capture reserved keys in fullscreen.
+// Defined by w3c here: https://w3c.github.io/keyboard-lock/
+const base::Feature kKeyboardLockAPI{"KeyboardLockAPI",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable lazy initialization of the media controls.
 const base::Feature kLazyInitializeMediaControls{
     "LazyInitializeMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};

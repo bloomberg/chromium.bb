@@ -518,6 +518,9 @@ extern const char kJavascriptHarmonyShippingDescription[];
 extern const char kKeepAliveRendererForKeepaliveRequestsName[];
 extern const char kKeepAliveRendererForKeepaliveRequestsDescription[];
 
+extern const char kKeyboardLockApiName[];
+extern const char kKeyboardLockApiDescription[];
+
 extern const char kLcdTextName[];
 extern const char kLcdTextDescription[];
 
