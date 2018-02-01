@@ -27,10 +27,6 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace IPC {
 class Message;
 }
@@ -45,9 +41,8 @@ class WebServiceWorkerImpl;
 // scripts through methods like navigator.registerServiceWorker().
 class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
  public:
-  ServiceWorkerDispatcher(
-      scoped_refptr<ThreadSafeSender> thread_safe_sender,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+  explicit ServiceWorkerDispatcher(
+      scoped_refptr<ThreadSafeSender> thread_safe_sender);
   ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
@@ -58,16 +53,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       blink::mojom::ServiceWorkerObjectInfoPtr info);
 
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
-      scoped_refptr<ThreadSafeSender> thread_safe_sender,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+      scoped_refptr<ThreadSafeSender> thread_safe_sender);
 
   // Unlike GetOrCreateThreadSpecificInstance() this doesn't create a new
   // instance if thread-local instance doesn't exist.
   static ServiceWorkerDispatcher* GetThreadSpecificInstance();
-
-  base::SingleThreadTaskRunner* main_thread_task_runner() {
-    return main_thread_task_runner_.get();
-  }
 
  private:
   using WorkerObjectMap = std::map<int, WebServiceWorkerImpl*>;
@@ -96,7 +86,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   WorkerObjectMap service_workers_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcher);
 };

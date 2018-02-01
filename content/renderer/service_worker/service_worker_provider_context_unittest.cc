@@ -274,7 +274,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
   void SetUp() override {
     sender_ = new ServiceWorkerTestSender(&ipc_sink_);
-    dispatcher_.reset(new ServiceWorkerDispatcher(sender_.get(), nullptr));
+    dispatcher_ = std::make_unique<ServiceWorkerDispatcher>(sender_.get());
   }
 
   void EnableS13nServiceWorker() {

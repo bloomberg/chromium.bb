@@ -49,9 +49,8 @@ class ServiceWorkerDispatcherTest : public testing::Test {
   ServiceWorkerDispatcherTest() {}
 
   void SetUp() override {
-    dispatcher_.reset(
-        new ServiceWorkerDispatcher(nullptr /* thread_safe_sender */,
-                                    nullptr /* main_thread_task_runner */));
+    dispatcher_ = std::make_unique<ServiceWorkerDispatcher>(
+        nullptr /* thread_safe_sender */);
   }
 
   bool ContainsServiceWorker(int handle_id) {
