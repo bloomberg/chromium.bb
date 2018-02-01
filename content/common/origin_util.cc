@@ -59,13 +59,6 @@ bool OriginCanAccessServiceWorkers(const GURL& url) {
   return false;
 }
 
-bool IsOriginWhiteListedTrustworthy(const url::Origin& origin) {
-  if (IsOriginUnique(origin))
-    return false;
-
-  return base::ContainsValue(GetSecureOrigins(), origin);
-}
-
 bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
   // Note: Considering this mirrors SecurityOrigin::isPotentiallyTrustworthy, it
   // assumes m_isUniqueOriginPotentiallyTrustworthy is set to false. This
@@ -81,7 +74,7 @@ bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
     return true;
   }
 
-  if (IsOriginWhiteListedTrustworthy(origin))
+  if (base::ContainsValue(GetSecureOrigins(), origin))
     return true;
 
   return false;

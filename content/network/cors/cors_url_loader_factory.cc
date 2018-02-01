@@ -4,7 +4,7 @@
 
 #include "content/network/cors/cors_url_loader_factory.h"
 
-#include "content/network/cors/cors_url_loader.h"
+#include "services/network/public/cpp/cors/cors_url_loader.h"
 #include "services/network/public/cpp/features.h"
 
 namespace content {
@@ -25,10 +25,10 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS)) {
     loader_bindings_.AddBinding(
-        std::make_unique<CORSURLLoader>(routing_id, request_id, options,
-                                        resource_request, std::move(client),
-                                        traffic_annotation,
-                                        network_loader_factory_.get()),
+        std::make_unique<network::CORSURLLoader>(
+            routing_id, request_id, options, resource_request,
+            std::move(client), traffic_annotation,
+            network_loader_factory_.get()),
         std::move(request));
   } else {
     network_loader_factory_->CreateLoaderAndStart(

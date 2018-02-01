@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/cors/cors_url_loader.h"
+#include "services/network/public/cpp/cors/cors_url_loader.h"
 
 #include "base/logging.h"
 #include "base/macros.h"

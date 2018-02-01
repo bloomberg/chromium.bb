@@ -10,6 +10,10 @@ component("cpp") {
   sources = [
     "cors/cors.cc",
     "cors/cors.h",
+    "cors/cors_legacy.cc",
+    "cors/cors_legacy.h",
+    "cors/cors_url_loader.cc",
+    "cors/cors_url_loader.h",
     "features.cc",
     "features.h",
     "mutable_network_traffic_annotation_tag_struct_traits.h",

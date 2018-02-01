@@ -23,11 +23,6 @@ bool CONTENT_EXPORT IsOriginSecure(const GURL& url);
 // http (localhost only), https, or a custom-set secure scheme.
 bool CONTENT_EXPORT OriginCanAccessServiceWorkers(const GURL& url);
 
-// Returns true if the origin is unique or was considered secure by the client.
-// This behaves as close as possible to
-// SecurityPolicy::isOriginWhiteListedTrustworthy.
-bool CONTENT_EXPORT IsOriginWhiteListedTrustworthy(const url::Origin& origin);
-
 // This is based on SecurityOrigin::isPotentiallyTrustworthy and tries to mimic
 // its behavior.
 bool CONTENT_EXPORT IsPotentiallyTrustworthyOrigin(const url::Origin& origin);
