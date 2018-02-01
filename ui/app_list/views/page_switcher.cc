@@ -219,6 +219,8 @@ gfx::Size PageSwitcher::CalculatePreferredSize() const {
 
 void PageSwitcher::Layout() {
   gfx::Rect rect(GetContentsBounds());
+  if (rect.IsEmpty())
+    return;
   gfx::Size buttons_size(buttons_->GetPreferredSize());
   rect.ClampToCenteredSize(buttons_size);
   buttons_->SetBoundsRect(rect);

@@ -25,10 +25,6 @@ AppListFolderItem::~AppListFolderItem() {
   folder_image_.RemoveObserver(this);
 }
 
-const gfx::ImageSkia& AppListFolderItem::GetTopIcon(size_t item_index) {
-  return folder_image_.GetTopIcon(item_index);
-}
-
 gfx::Rect AppListFolderItem::GetTargetIconRectInFolderForItem(
     AppListItem* item,
     const gfx::Rect& folder_icon_bounds) {

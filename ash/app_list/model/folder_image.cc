@@ -137,11 +137,6 @@ void FolderImage::UpdateIcon() {
   RedrawIconAndNotify();
 }
 
-const gfx::ImageSkia& FolderImage::GetTopIcon(size_t item_index) const {
-  CHECK_LT(item_index, top_items_.size());
-  return top_items_[item_index]->icon();
-}
-
 // static
 std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
     const gfx::Rect& folder_icon_bounds) {

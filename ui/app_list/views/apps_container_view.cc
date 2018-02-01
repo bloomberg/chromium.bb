@@ -70,13 +70,12 @@ AppsContainerView::~AppsContainerView() {
 void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
   // Prevent new animations from starting if there are currently animations
   // pending. This fixes crbug.com/357099.
-  if (top_icon_animation_pending_count_)
+  if (app_list_folder_view_->IsAnimationRunning())
     return;
 
   app_list_folder_view_->SetAppListFolderItem(folder_item);
-  SetShowState(SHOW_ACTIVE_FOLDER, false);
 
-  CreateViewsForFolderTopItemsAnimation(folder_item, true);
+  SetShowState(SHOW_ACTIVE_FOLDER, false);
 
   // Disable all the items behind the folder so that they will not be reached
   // during focus traversal.
@@ -85,11 +84,10 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
 }
 
 void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
-  if (top_icon_animation_pending_count_)
+  if (app_list_folder_view_->IsAnimationRunning())
     return;
 
-  PrepareToShowApps(folder_item);
-  SetShowState(SHOW_APPS, true);
+  SetShowState(SHOW_APPS, folder_item ? true : false);
   apps_grid_view_->DisableFocusForShowingActiveFolder(false);
 }
 
@@ -107,10 +105,8 @@ void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
 
 void AppsContainerView::ReparentFolderItemTransit(
     AppListFolderItem* folder_item) {
-  if (top_icon_animation_pending_count_)
+  if (app_list_folder_view_->IsAnimationRunning())
     return;
-
-  PrepareToShowApps(folder_item);
   SetShowState(SHOW_ITEM_REPARENT, false);
   apps_grid_view_->DisableFocusForShowingActiveFolder(false);
 }
@@ -182,18 +178,8 @@ void AppsContainerView::Layout() {
     }
     case SHOW_ACTIVE_FOLDER: {
       folder_background_view_->SetBoundsRect(rect);
-
-      // The opened folder view's center should try to overlap with the folder
-      // item's center while it must fit within the bounds of this view.
-      DCHECK(apps_grid_view_->activated_folder_item_view());
-      gfx::Rect item_bounds_in_container = apps_grid_view_->ConvertRectToParent(
-          apps_grid_view_->activated_folder_item_view()->bounds());
-      gfx::Rect folder_bounds_in_container =
-          gfx::Rect(app_list_folder_view_->GetPreferredSize());
-      folder_bounds_in_container += (item_bounds_in_container.CenterPoint() -
-                                     folder_bounds_in_container.CenterPoint());
-      folder_bounds_in_container.AdjustToFit(rect);
-      app_list_folder_view_->SetBoundsRect(folder_bounds_in_container);
+      app_list_folder_view_->SetBoundsRect(
+          app_list_folder_view_->preferred_bounds());
       break;
     }
     case SHOW_ITEM_REPARENT:
@@ -315,27 +301,16 @@ views::View* AppsContainerView::GetSelectedView() const {
              : apps_grid_view_->GetSelectedView();
 }
 
-void AppsContainerView::OnTopIconAnimationsComplete() {
-  --top_icon_animation_pending_count_;
-
-  if (!top_icon_animation_pending_count_) {
-    // Clean up the transitional views used for top item icon animation.
-    top_icon_views_.clear();
-
-    // Show the folder icon when closing the folder.
-    if ((show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT) &&
-        apps_grid_view_->activated_folder_item_view()) {
-      apps_grid_view_->activated_folder_item_view()->SetVisible(true);
-    }
-  }
-}
-
 void AppsContainerView::SetShowState(ShowState show_state,
                                      bool show_apps_with_animation) {
   if (show_state_ == show_state)
     return;
 
   show_state_ = show_state;
+
+  // Layout before showing animation because the animation's target bounds are
+  // calculated based on the layout.
+  Layout();
 
   switch (show_state_) {
     case SHOW_APPS:
@@ -357,59 +332,6 @@ void AppsContainerView::SetShowState(ShowState show_state,
     default:
       NOTREACHED();
   }
-
-  Layout();
-}
-
-std::vector<gfx::Rect> AppsContainerView::GetTopItemIconBoundsInActiveFolder() {
-  // Get the active folder's icon bounds relative to AppsContainerView.
-  AppListItemView* folder_item_view =
-      apps_grid_view_->activated_folder_item_view();
-  gfx::Rect to_grid_view =
-      folder_item_view->ConvertRectToParent(folder_item_view->GetIconBounds());
-  gfx::Rect to_container = apps_grid_view_->ConvertRectToParent(to_grid_view);
-
-  return FolderImage::GetTopIconsBounds(to_container);
-}
-
-void AppsContainerView::CreateViewsForFolderTopItemsAnimation(
-    AppListFolderItem* active_folder,
-    bool open_folder) {
-  if (!is_folder_top_items_animation_enabled_)
-    return;
-
-  top_icon_views_.clear();
-  std::vector<gfx::Rect> top_items_bounds =
-      GetTopItemIconBoundsInActiveFolder();
-  top_icon_animation_pending_count_ =
-      std::min(FolderImage::kNumFolderTopItems,
-               active_folder->item_list()->item_count());
-  for (size_t i = 0; i < top_icon_animation_pending_count_; ++i) {
-    if (active_folder->GetTopIcon(i).isNull())
-      continue;
-
-    TopIconAnimationView* icon_view = new TopIconAnimationView(
-        active_folder->GetTopIcon(i), top_items_bounds[i], open_folder);
-    icon_view->AddObserver(this);
-    top_icon_views_.push_back(icon_view);
-
-    // Add the transitional views into child views, and set its bounds to the
-    // same location of the item in the folder list view.
-    AddChildView(top_icon_views_[i]);
-    top_icon_views_[i]->SetBoundsRect(
-        app_list_folder_view_->ConvertRectToParent(
-            app_list_folder_view_->GetItemIconBoundsAt(i)));
-    static_cast<TopIconAnimationView*>(top_icon_views_[i])->TransformView();
-  }
-}
-
-void AppsContainerView::PrepareToShowApps(AppListFolderItem* folder_item) {
-  if (folder_item)
-    CreateViewsForFolderTopItemsAnimation(folder_item, false);
-
-  // Hide the active folder item until the animation completes.
-  if (apps_grid_view_->activated_folder_item_view())
-    apps_grid_view_->activated_folder_item_view()->SetVisible(false);
 }
 
 int AppsContainerView::GetSearchBoxFinalTopPadding() const {

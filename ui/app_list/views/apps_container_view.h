@@ -12,7 +12,6 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "base/macros.h"
 #include "ui/app_list/views/app_list_page.h"
-#include "ui/app_list/views/top_icon_animation_view.h"
 
 namespace gfx {
 class Rect;
@@ -32,8 +31,7 @@ class PageSwitcher;
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder. Only one if them is visible to user at any time.
-class APP_LIST_EXPORT AppsContainerView : public AppListPage,
-                                          public TopIconAnimationObserver {
+class APP_LIST_EXPORT AppsContainerView : public AppListPage {
  public:
   AppsContainerView(AppListMainView* app_list_main_view, AppListModel* model);
   ~AppsContainerView() override;
@@ -89,18 +87,11 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const override;
   views::View* GetSelectedView() const override;
 
-  // TopIconAnimationObserver overrides:
-  void OnTopIconAnimationsComplete() override;
-
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
     return folder_background_view_;
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
-
-  void set_folder_top_items_animation_enabled_for_test(bool enabled) {
-    is_folder_top_items_animation_enabled_ = enabled;
-  }
 
  private:
   enum ShowState {
@@ -111,19 +102,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   };
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
-
-  // Calculates the top item icon bounds in the active folder icon. The bounds
-  // is relative to AppsContainerView.
-  // Returns the bounds of top items' icon in sequence of top left, top right,
-  // bottom left, bottom right.
-  std::vector<gfx::Rect> GetTopItemIconBoundsInActiveFolder();
-
-  // Creates the transitional views for animating the top items in the folder
-  // when opening or closing a folder.
-  void CreateViewsForFolderTopItemsAnimation(AppListFolderItem* active_folder,
-                                             bool open_folder);
-
-  void PrepareToShowApps(AppListFolderItem* folder_item);
 
   // Gets the final top padding of search box.
   int GetSearchBoxFinalTopPadding() const;
@@ -138,15 +116,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   FolderBackgroundView* folder_background_view_ = nullptr;
 
   ShowState show_state_ = SHOW_NONE;
-
-  // The transitional views for animating the top items in folder
-  // when opening or closing a folder.
-  std::vector<views::View*> top_icon_views_;
-
-  size_t top_icon_animation_pending_count_ = 0u;
-
-  // True if the animation for the folder top items is enabled.
-  bool is_folder_top_items_animation_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };

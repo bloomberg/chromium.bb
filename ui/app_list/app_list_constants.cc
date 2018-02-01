@@ -72,7 +72,7 @@ const int kOverscrollPageTransitionDurationMs = 50;
 // Duration in milliseconds for fading in the target page when opening
 // or closing a folder, and the duration for the top folder icon animation
 // for flying in or out the folder.
-const int kFolderTransitionInDurationMs = 400;
+const int kFolderTransitionInDurationMs = 250;
 
 // Duration in milliseconds for fading out the old page when opening or closing
 // a folder.

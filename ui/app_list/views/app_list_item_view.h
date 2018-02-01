@@ -64,9 +64,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   AppListItem* item() const { return item_weak_; }
 
-  views::ImageView* icon() const { return icon_; }
+  views::ImageView* icon() { return icon_; }
 
-  const views::Label* title() const { return title_; }
+  views::Label* title() { return title_; }
 
   // In a synchronous drag the item view isn't informed directly of the drag
   // ending, so the runner of the drag should call this.

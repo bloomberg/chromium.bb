@@ -54,9 +54,6 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
 
   const gfx::ImageSkia& icon() const { return icon_; }
 
-  // Returns the icon of one of the top items with |item_index|.
-  const gfx::ImageSkia& GetTopIcon(size_t item_index) const;
-
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
   // bottom left, bottom right.

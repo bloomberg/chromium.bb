@@ -140,6 +140,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   bool has_dragged_view() const { return drag_view_ != nullptr; }
   bool dragging() const { return drag_pointer_ != NONE; }
+  const AppListItemView* drag_view() const { return drag_view_; }
 
   // Gets the PaginationModel used for the grid view.
   PaginationModel* pagination_model() { return &pagination_model_; }
@@ -170,9 +171,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Returns the item view of the item at |index|.
   AppListItemView* GetItemViewAt(int index) const;
-
-  // Show or hide the top item views.
-  void SetTopItemViewsVisible(bool visible);
 
   // Schedules an animation to show or hide the view.
   void ScheduleShowHideAnimation(bool show);
