@@ -343,11 +343,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 blink::WebEncryptedMediaClient* MediaFactory::EncryptedMediaClient() {
   if (!web_encrypted_media_client_) {
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        GetCdmFactory(), render_frame_->GetMediaPermission(),
-        new RenderMediaLog(
-            url::Origin(render_frame_->GetWebFrame()->GetSecurityOrigin())
-                .GetURL(),
-            render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia))));
+        GetCdmFactory(), render_frame_->GetMediaPermission()));
   }
   return web_encrypted_media_client_.get();
 }

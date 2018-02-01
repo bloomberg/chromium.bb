@@ -28,15 +28,13 @@ namespace media {
 
 struct CdmConfig;
 class CdmFactory;
-class MediaLog;
 class MediaPermission;
 
 class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
     : public blink::WebEncryptedMediaClient {
  public:
   WebEncryptedMediaClientImpl(CdmFactory* cdm_factory,
-                              MediaPermission* media_permission,
-                              MediaLog* media_log);
+                              MediaPermission* media_permission);
   ~WebEncryptedMediaClientImpl() override;
 
   // WebEncryptedMediaClient implementation.
@@ -77,7 +75,6 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
 
   CdmFactory* cdm_factory_;
   KeySystemConfigSelector key_system_config_selector_;
-  MediaLog* media_log_;
   base::WeakPtrFactory<WebEncryptedMediaClientImpl> weak_factory_;
 };
 

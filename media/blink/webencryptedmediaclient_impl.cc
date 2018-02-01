@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
-#include "media/base/media_log.h"
 #include "media/base/media_permission.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
@@ -83,11 +82,9 @@ class WebEncryptedMediaClientImpl::Reporter {
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     CdmFactory* cdm_factory,
-    MediaPermission* media_permission,
-    MediaLog* media_log)
+    MediaPermission* media_permission)
     : cdm_factory_(cdm_factory),
       key_system_config_selector_(KeySystems::GetInstance(), media_permission),
-      media_log_(media_log),
       weak_factory_(this) {
   DCHECK(cdm_factory_);
 }
@@ -97,11 +94,6 @@ WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() = default;
 void WebEncryptedMediaClientImpl::RequestMediaKeySystemAccess(
     blink::WebEncryptedMediaRequest request) {
   GetReporter(request.KeySystem())->ReportRequested();
-
-  media_log_->RecordRapporWithSecurityOrigin("Media.OriginUrl.EME");
-  if (!request.GetSecurityOrigin().IsPotentiallyTrustworthy()) {
-    media_log_->RecordRapporWithSecurityOrigin("Media.OriginUrl.EME.Insecure");
-  }
 
   key_system_config_selector_.SelectConfig(
       request.KeySystem(), request.SupportedConfigurations(),
