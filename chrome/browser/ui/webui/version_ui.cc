@@ -90,7 +90,8 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddString(version_ui::kProfilePath, std::string());
   html_source->AddLocalizedString(version_ui::kVariationsName,
                                   IDS_VERSION_UI_VARIATIONS);
-
+  html_source->AddLocalizedString(version_ui::kVariationsCmdName,
+                                  IDS_VERSION_UI_VARIATIONS_CMD);
 #if defined(OS_CHROMEOS)
   html_source->AddLocalizedString(version_ui::kARC, IDS_ARC_LABEL);
   html_source->AddLocalizedString(version_ui::kPlatform, IDS_PLATFORM_LABEL);

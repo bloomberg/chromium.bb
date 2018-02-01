@@ -4,6 +4,8 @@
 
 static_library("net") {
   sources = [
+    "variations_command_line.cc",
+    "variations_command_line.h",
     "variations_http_headers.cc",
     "variations_http_headers.h",
   ]
@@ -17,6 +19,7 @@ static_library("net") {
     "//base",
     "//components/google/core/browser",
     "//components/metrics",
+    "//components/variations/field_trial_config",
     "//components/variations/proto",
   ]
 }
