@@ -74,8 +74,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContext : public mojom::Service {
   // NOTE: It is acceptable for |closure| to delete this ServiceContext.
   void SetQuitClosure(const base::Closure& closure);
 
-  // Informs the Service Manager that this instance is ready to terminate. If
-  // the Service Manager has any outstanding connection requests for this
+  // Returns a closure that, when run, informs the Service Manager that this
+  // instance is ready to terminate.  If it has already terminated, then the
+  // closure does nothing.
+  //
+  // If the Service Manager has any outstanding connection requests for this
   // instance, the request is ignored; the instance will eventually receive
   // the pending request(s) and can then appropriately decide whether or not
   // it still wants to quit.
@@ -83,7 +86,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContext : public mojom::Service {
   // If the request is granted, the Service Manager will soon sever the
   // connection to this ServiceContext, and
   // Service::OnServiceManagerConnectionLost() will be invoked at that time.
-  void RequestQuit();
+  base::RepeatingClosure CreateQuitClosure();
 
   // Immediately severs the connection to the Service Manager.
   //
@@ -122,6 +125,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContext : public mojom::Service {
 
  private:
   friend class service_manager::Service;
+
+  void RequestQuit();
 
   // mojom::Service:
   void OnStart(const Identity& info, OnStartCallback callback) override;

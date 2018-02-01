@@ -52,8 +52,9 @@ std::unique_ptr<service_manager::Service> DataDecoderService::Create() {
 }
 
 void DataDecoderService::OnStart() {
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(base::Bind(
-      &DataDecoderService::MaybeRequestQuitDelayed, base::Unretained(this))));
+  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
+      base::BindRepeating(&DataDecoderService::MaybeRequestQuitDelayed,
+                          weak_factory_.GetWeakPtr())));
   registry_.AddInterface(
       base::Bind(&OnImageDecoderRequest, ref_factory_.get()));
   registry_.AddInterface(base::Bind(&OnJsonParserRequest, ref_factory_.get()));
@@ -78,7 +79,7 @@ void DataDecoderService::MaybeRequestQuitDelayed() {
 void DataDecoderService::MaybeRequestQuit() {
   DCHECK(ref_factory_);
   if (ref_factory_->HasNoRefs())
-    context()->RequestQuit();
+    context()->CreateQuitClosure().Run();
 }
 
 }  // namespace data_decoder

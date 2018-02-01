@@ -229,7 +229,7 @@ class ConnectTestService : public Service,
 
   void OnConnectionError() {
     if (bindings_.empty() && service_factory_bindings_.empty())
-      context()->RequestQuit();
+      context()->CreateQuitClosure().Run();
   }
 
   std::vector<std::unique_ptr<Service>> delegates_;

@@ -388,7 +388,7 @@ void Service::OnNoMoreDisplays() {
     return;
 
   DCHECK(context());
-  context()->RequestQuit();
+  context()->CreateQuitClosure().Run();
 }
 
 bool Service::IsTestConfig() const {

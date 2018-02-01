@@ -31,8 +31,7 @@ MediaGalleryUtilService::CreateService() {
 
 void MediaGalleryUtilService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context())));
+      context()->CreateQuitClosure());
   registry_.AddInterface(base::Bind(&OnMediaParserRequest, ref_factory_.get()));
 }
 

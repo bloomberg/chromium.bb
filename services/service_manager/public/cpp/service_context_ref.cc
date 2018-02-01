@@ -59,8 +59,8 @@ class ServiceContextRefImpl : public ServiceContextRef {
 };
 
 ServiceContextRefFactory::ServiceContextRefFactory(
-    const base::Closure& quit_closure)
-    : quit_closure_(quit_closure), weak_factory_(this) {
+    base::RepeatingClosure quit_closure)
+    : quit_closure_(std::move(quit_closure)), weak_factory_(this) {
   DCHECK(!quit_closure_.is_null());
 }
 

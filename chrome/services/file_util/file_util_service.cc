@@ -51,8 +51,7 @@ std::unique_ptr<service_manager::Service> FileUtilService::CreateService() {
 
 void FileUtilService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context())));
+      context()->CreateQuitClosure());
 #if defined(OS_CHROMEOS)
   registry_.AddInterface(
       base::Bind(&OnZipFileCreatorRequest, ref_factory_.get()));

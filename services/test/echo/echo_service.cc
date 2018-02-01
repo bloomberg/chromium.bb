@@ -38,7 +38,7 @@ void EchoService::EchoString(const std::string& input,
 }
 
 void EchoService::Quit() {
-  context()->RequestQuit();
+  context()->CreateQuitClosure().Run();
 }
 
 }  // namespace echo

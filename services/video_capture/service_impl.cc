@@ -32,9 +32,9 @@ void ServiceImpl::OnStart() {
   video_capture::uma::LogVideoCaptureServiceEvent(
       video_capture::uma::SERVICE_STARTED);
 
-  ref_factory_ =
-      std::make_unique<service_manager::ServiceContextRefFactory>(base::Bind(
-          &ServiceImpl::MaybeRequestQuitDelayed, base::Unretained(this)));
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      base::BindRepeating(&ServiceImpl::MaybeRequestQuitDelayed,
+                          weak_factory_.GetWeakPtr()));
   registry_.AddInterface<mojom::DeviceFactoryProvider>(
       // Unretained |this| is safe because |registry_| is owned by |this|.
       base::Bind(&ServiceImpl::OnDeviceFactoryProviderRequest,
@@ -102,7 +102,7 @@ void ServiceImpl::MaybeRequestQuit() {
   if (ref_factory_->HasNoRefs()) {
     video_capture::uma::LogVideoCaptureServiceEvent(
         video_capture::uma::SERVICE_SHUTTING_DOWN_BECAUSE_NO_CLIENT);
-    context()->RequestQuit();
+    context()->CreateQuitClosure().Run();
   } else {
     video_capture::uma::LogVideoCaptureServiceEvent(
         video_capture::uma::SERVICE_SHUTDOWN_TIMEOUT_CANCELED);
