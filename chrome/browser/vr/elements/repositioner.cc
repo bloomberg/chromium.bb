@@ -11,8 +11,13 @@
 
 namespace vr {
 
-Repositioner::Repositioner(float content_depth)
-    : content_depth_(content_depth) {
+namespace {
+
+constexpr float kSnapThresholdDegrees = 10.0f;
+
+}  // namespace
+
+Repositioner::Repositioner() {
   set_hit_testable(false);
 }
 
@@ -26,40 +31,36 @@ gfx::Transform Repositioner::GetTargetLocalTransform() const {
   return transform_;
 }
 
-void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
-  DCHECK(kOrigin.SquaredDistanceTo(laser_origin_) <
-         content_depth_ * content_depth_);
-
-  gfx::Vector3dF laser_origin_vector = laser_origin_ - kOrigin;
-  float laser_origin_vector_length = laser_origin_vector.Length();
-  gfx::Vector3dF normalized_laser_direction;
-  bool success = laser_direction_.GetNormalized(&normalized_laser_direction);
-  DCHECK(success);
-  float d1 = -gfx::DotProduct(laser_origin_vector, normalized_laser_direction);
-  float d2 = std::sqrt(
-      content_depth_ * content_depth_ -
-      (laser_origin_vector_length * laser_origin_vector_length - d1 * d1));
-  float new_ray_distance = d1 + d2;
-  gfx::Vector3dF new_ray =
-      gfx::ScaleVector3d(normalized_laser_direction, new_ray_distance);
-  gfx::Vector3dF new_reticle_vector = laser_origin_vector;
-  new_reticle_vector.Add(new_ray);
-
-  gfx::Vector3dF head_up_vector = vr::GetUpVector(head_pose);
-  if (gfx::AngleBetweenVectorsInDegrees(head_up_vector, new_reticle_vector) ==
-      0.f)
+void Repositioner::SetEnabled(bool enabled) {
+  bool check_for_snap = !enabled && enabled_;
+  enabled_ = enabled;
+  if (!check_for_snap)
     return;
 
-  transform_.MakeIdentity();
+  gfx::Vector3dF world_up = {0, 1, 0};
+  gfx::Vector3dF up = world_up;
+  transform_.TransformVector(&up);
+  if (gfx::AngleBetweenVectorsInDegrees(up, world_up) < kSnapThresholdDegrees) {
+    snap_to_world_up_ = true;
+  }
+}
 
-  gfx::Quaternion rotate_to_new_position({0, 0, -1}, new_reticle_vector);
-  transform_.ConcatTransform(gfx::Transform(rotate_to_new_position));
+void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
+  gfx::Vector3dF head_up_vector =
+      snap_to_world_up_ ? gfx::Vector3dF(0, 1, 0) : vr::GetUpVector(head_pose);
+  snap_to_world_up_ = false;
+
+  transform_.ConcatTransform(
+      gfx::Transform(gfx::Quaternion(last_laser_direction_, laser_direction_)));
 
   gfx::Vector3dF new_right_vector = {1, 0, 0};
   transform_.TransformVector(&new_right_vector);
-  gfx::Vector3dF expected_right_vector =
-      gfx::CrossProduct(new_reticle_vector, head_up_vector);
 
+  gfx::Vector3dF new_forward_vector = {0, 0, -1};
+  transform_.TransformVector(&new_forward_vector);
+
+  gfx::Vector3dF expected_right_vector =
+      gfx::CrossProduct(new_forward_vector, head_up_vector);
   gfx::Quaternion rotate_to_expected_right(new_right_vector,
                                            expected_right_vector);
   transform_.ConcatTransform(gfx::Transform(rotate_to_expected_right));
@@ -67,7 +68,7 @@ void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
 
 bool Repositioner::OnBeginFrame(const base::TimeTicks& time,
                                 const gfx::Transform& head_pose) {
-  if (enabled_) {
+  if (enabled_ || snap_to_world_up_) {
     UpdateTransform(head_pose);
     return true;
   }

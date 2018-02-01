@@ -203,7 +203,8 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       }
       case ui::DomCode::US_E:
-        model_->exiting_vr = !model_->exiting_vr;
+        model_->experimental_features_enabled =
+            !model_->experimental_features_enabled;
         break;
       case ui::DomCode::US_O:
         CycleOrigin();
@@ -216,8 +217,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
         model_->toggle_mode(kModeRepositionWindow);
         break;
       case ui::DomCode::US_X:
-        model_->experimental_features_enabled =
-            !model_->experimental_features_enabled;
+        ui_->OnAppButtonClicked();
         break;
       default:
         break;

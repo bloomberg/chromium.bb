@@ -32,6 +32,7 @@ static const char* g_ui_element_name_strings[] = {
     "kLaser",
     "kController",
     "kReticle",
+    "kReticleLaserGroup",
     "kKeyboardVisibilityControlForVoice",
     "kKeyboardDmmRoot",
     "kKeyboard",
@@ -118,8 +119,10 @@ static const char* g_ui_element_name_strings[] = {
     "kSpeechRecognitionListeningCloseButton",
     "kDownloadedSnackbar",
     "kControllerTrackpadLabel",
+    "kControllerTrackpadRepositionLabel",
     "kControllerExitButtonLabel",
     "kControllerBackButtonLabel",
+    "kContentRepositionHitPlane",
 };
 
 static_assert(

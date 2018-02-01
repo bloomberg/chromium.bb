@@ -15,21 +15,24 @@
 namespace vr {
 
 // A repositioner adjusts the position of its children by rotation. The
-// reposition is driven by controller.
+// reposition is driven by controller. It maintains a transform and updates it
+// when enabled as either the head or the controller move. In a nutshell, it
+// rotates the elements per the angular change in the controller orientation,
+// adjusting the up vector of the content so that it aligns with the head's up
+// vector. If, after adjusting the transform, the computed up vector is within a
+// 10 degree threshold of true, world up, then we snap the up vector (to avoid
+// having the window slightly skewed with respect to the horizon).
 class Repositioner : public UiElement {
  public:
-  explicit Repositioner(float content_depth);
+  Repositioner();
   ~Repositioner() override;
 
-  void set_laser_origin(const gfx::Point3F& laser_origin) {
-    laser_origin_ = laser_origin;
-  }
-
   void set_laser_direction(const gfx::Vector3dF& laser_direction) {
+    last_laser_direction_ = laser_direction_;
     laser_direction_ = laser_direction;
   }
 
-  void set_enable(bool enable) { enabled_ = enable; }
+  void SetEnabled(bool enabled);
 
  private:
   gfx::Transform LocalTransform() const override;
@@ -43,9 +46,9 @@ class Repositioner : public UiElement {
 
   gfx::Transform transform_;
   bool enabled_ = false;
-  float content_depth_;
-  gfx::Point3F laser_origin_;
   gfx::Vector3dF laser_direction_;
+  gfx::Vector3dF last_laser_direction_;
+  bool snap_to_world_up_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Repositioner);
 };
