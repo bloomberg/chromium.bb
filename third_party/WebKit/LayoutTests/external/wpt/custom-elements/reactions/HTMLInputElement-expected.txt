@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL capture on HTMLInputElement must enqueue an attributeChanged reaction when adding new attribute assert_array_equals: lengths differ, expected 1 got 0
-FAIL capture on HTMLInputElement must enqueue an attributeChanged reaction when replacing an existing attribute assert_array_equals: lengths differ, expected 2 got 1
-FAIL capture on HTMLInputElement must enqueue an attributeChanged reaction when adding invalid value default assert_array_equals: lengths differ, expected 1 got 0
-FAIL capture on HTMLInputElement must enqueue an attributeChanged reaction when removing the attribute assert_array_equals: lengths differ, expected 2 got 1
-Harness: the test ran to completion.
-
