@@ -36,7 +36,7 @@ Polymer({
   onSearchChanged_: function(e) {
     const safeQuery = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
     this.searchQuery =
-        safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'ig') : null;
+        safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'i') : null;
   },
 });
 })();

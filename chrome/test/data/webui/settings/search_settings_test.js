@@ -10,7 +10,9 @@ cr.define('settings_test', function() {
     // Don't import script if already imported (happens in Vulcanized mode).
     suiteSetup(function() {
       if (!window.settings || !settings.getSearchManager) {
-        return PolymerTest.loadScript('chrome://settings/search_settings.js');
+        return PolymerTest.loadScript(
+                   'chrome://resources/js/search_highlight_utils.js') &&
+            PolymerTest.loadScript('chrome://settings/search_settings.js');
       }
     });
 

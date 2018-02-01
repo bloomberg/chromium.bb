@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
+<link rel="import" href="destination_list_item.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
 
@@ -63,12 +64,6 @@
         padding-top: 6px;
       }
 
-      :host ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-      }
-
       :host .list-item {
         -webkit-padding-end: 2px;
         -webkit-padding-start: 18px;
@@ -90,95 +85,6 @@
       .list-item:focus {
         outline: none;
       }
-
-      .list-item.stale :-webkit-any(.destination-list-item-icon,
-                                    .destination-list-item-name,
-                                    .connection-status) {
-        opacity: 0.4;
-      }
-
-      .destination-list-item-icon {
-        -webkit-margin-end: 8px;
-        display: inline-block;
-        flex: 0 0 auto;
-        height: 24px;
-        transition: opacity 150ms;
-        vertical-align: middle;
-        width: 24px;
-      }
-
-      .destination-list-item-name,
-      .search-hint {
-        flex: 0 1 auto;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: middle;
-        white-space: nowrap;
-      }
-
-      .list-item .search-hint {
-        -webkit-margin-start: 1em;
-        color: #999;
-        font-size: 75%;
-      }
-
-      .list-item .connection-status,
-      .list-item .learn-more-link {
-        -webkit-margin-start: 1em;
-        flex: 0 0 auto;
-        font-size: 75%;
-        line-height: 24px;
-        vertical-align: middle;
-      }
-
-      .list-item .learn-more-link {
-        color: rgb(51, 103, 214);
-      }
-
-      .register-promo {
-        -webkit-margin-start: 1em;
-        flex: 0 0 auto;
-      }
-
-      .extension-controlled-indicator {
-        display: flex;
-        flex: 1;
-        justify-content: flex-end;
-        min-width: 150px;
-      }
-
-      .extension-name {
-        -webkit-margin-start: 1em;
-        color: #777;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .extension-icon {
-        background-position: center;
-        background-repeat: no-repeat;
-        cursor: pointer;
-        flex: 0 0 auto;
-        height: 24px;
-        margin: 0 3px;
-        width: 24px;
-      }
-
-      .configuring-in-progress-text,
-      .configuring-failed-text {
-        -webkit-margin-start: 1em;
-        flex: 0 1 auto;
-        line-height: 24px;
-        vertical-align: middle;
-      }
-
-      .configuring-failed-text {
-        color: red;
-        font-style: italic;
-      }
     </style>
     <header>
       <h4 class="title">[[title]]</h4>
@@ -190,48 +96,12 @@
         <div class="throbber"></div>
       </div>
     </header>
-    <ul>
-      <template is="dom-repeat" items="[[displayedDestinations_]]">
-        <li class$="list-item [[getStaleCssClass_(item.isOfflineOrInvalid)]]"
-             title="[[item.displayName]]"
-             hidden$="[[isDestinationHidden_(index, showAll_)]]"
-             on-tap="onDestinationSelected_">
-          <img class="destination-list-item-icon"
-              src="[[item.iconUrl]]" srcset="[[item.srcSet]]">
-          <span class="destination-list-item-name">[[item.displayName]]</span>
-          <span class="search-hint">[[getSearchHint_(item, searchQuery)]]</span>
-          <span class="connection-status"
-              hidden$="[[!item.isOfflineOrInvalid]]">
-            [[item.connectionStatusText]]
-          </span>
-          <a is="action-link" class="learn-more-link"
-              hidden$="[[!item.shouldShowInvalidCertificateError]]">
-            $i18n{learnMore}
-          </a>
-          <span class="register-promo" hidden$="[[!item.isUnregistered]]">
-            <button class="register-promo-button">
-              $i18n{registerPromoButtonText}
-            </button>
-          </span>
-          <span class="extension-controlled-indicator"
-              hidden$="[[!item.isExtension]]">
-            <span class="extension-name">[[item.extensionName]]</span>
-            <span class="extension-icon" role="button" tabindex="0"></span>
-          </span>
-<if expr="chromeos">
-          <span class="configuring-in-progress-text" hidden>
-            $i18n{configuringInProgressText}
-            <span class="configuring-text-jumping-dots">
-              <span>.</span><span>.</span><span>.</span>
-            </span>
-          </span>
-          <span class="configuring-failed-text" hidden>
-            $i18n{configuringFailedText}
-          </span>
-</if>
-        </li>
-      </template>
-    </ul>
+    <template is="dom-repeat" items="[[destinations]]" notify-dom-change
+        filter="[[computeFilter_(searchQuery, showAll_, destinations)]]">
+      <print-preview-destination-list-item class="list-item"
+          on-tap="onDestinationSelected_" destination="[[item]]">
+      </print-preview-destination-list-item>
+    </template>
     <div class="no-destinations-message" hidden$="[[hasDestinations_]]">
       $i18n{noDestinationsMessage}
     </div>
@@ -240,7 +110,7 @@
         $i18n{showAllButtonText}
       </button>
       <span class="total">
-        [[i18n('destinationCount', displayedDestinations_.length)]]
+        [[i18n('destinationCount', matchingDestinationsCount_)]]
       </span>
     </footer>
   </template>

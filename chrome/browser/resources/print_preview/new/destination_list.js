@@ -5,6 +5,8 @@
 (function() {
 'use strict';
 
+// TODO (rbpotter): Adjust the short list size based on the dialog height
+// instead of always using this constant.
 /** @type {number} */
 const SHORT_DESTINATION_LIST_SIZE = 4;
 
@@ -41,52 +43,65 @@ Polymer({
       value: false,
     },
 
-    /** @private {!Array<!print_preview.Destination>} */
-    displayedDestinations_: {
-      type: Array,
-      computed: 'computeDisplayedDestinations_(destinations, searchQuery)',
+    /** @private {number} */
+    matchingDestinationsCount_: {
+      type: Number,
+      computed: 'computeMatchingDestinationsCount_(destinations, searchQuery)',
     },
 
     /** @type {boolean} */
     footerHidden_: {
       type: Boolean,
-      computed: 'computeFooterHidden_(displayedDestinations_, showAll_)',
+      computed: 'computeFooterHidden_(matchingDestinationsCount_, showAll_)',
     },
 
     /** @private {boolean} */
     hasDestinations_: {
       type: Boolean,
-      computed: 'computeHasDestinations_(displayedDestinations_)',
+      computed: 'computeHasDestinations_(matchingDestinationsCount_)',
     },
   },
 
-  /**
-   * @return {!Array<!print_preview.Destination>}
-   * @private
-   */
-  computeDisplayedDestinations_: function() {
-    if (!this.searchQuery)
-      return assert(this.destinations);
-    return this.destinations.filter(destination => {
-      return destination.matches(assert(this.searchQuery));
-    });
+  listeners: {
+    'dom-change': 'updateListItems_',
+  },
+
+  /** @private {number} */
+  shownCount_: 0,
+
+  /** @private */
+  updateListItems_: function() {
+    this.shadowRoot
+        .querySelectorAll('print-preview-destination-list-item:not([hidden])')
+        .forEach(item => item.update(this.searchQuery));
   },
 
   /**
-   * @param {!print_preview.Destination} destination The destination to get the
-   *     search hint for.
-   * @return {string} The property or properties matching the search query.
+   * @return {Function}
    * @private
    */
-  getSearchHint_: function(destination) {
-    if (!this.searchQuery)
-      return '';
-    let hint = '';
-    destination.extraPropertiesToMatch.some(property => {
-      if (property.match(this.searchQuery))
-        hint += property;
-    });
-    return hint;
+  computeFilter_: function() {
+    this.shownCount_ = 0;
+    return destination => {
+      const isShown =
+          (!this.searchQuery || destination.matches(this.searchQuery)) &&
+          (this.shownCount_ < SHORT_DESTINATION_LIST_SIZE || this.showAll_);
+      if (isShown)
+        this.shownCount_++;
+      return isShown;
+    };
+  },
+
+  /**
+   * @return {number}
+   * @private
+   */
+  computeMatchingDestinationsCount_: function() {
+    return this.destinations
+        .filter(destination => {
+          return !this.searchQuery || destination.matches(this.searchQuery);
+        })
+        .length;
   },
 
   /**
@@ -94,7 +109,7 @@ Polymer({
    * @private
    */
   computeFooterHidden_: function() {
-    return this.displayedDestinations_.length < SHORT_DESTINATION_LIST_SIZE ||
+    return this.matchingDestinationsCount_ < SHORT_DESTINATION_LIST_SIZE ||
         this.showAll_;
   },
 
@@ -103,26 +118,7 @@ Polymer({
    * @private
    */
   computeHasDestinations_: function() {
-    return this.displayedDestinations_.length > 0;
-  },
-
-  /**
-   * @param {number} index The index of the destination in the list.
-   * @return {boolean}
-   * @private
-   */
-  isDestinationHidden_: function(index) {
-    return index >= SHORT_DESTINATION_LIST_SIZE && !this.showAll_;
-  },
-
-  /**
-   * @param {boolean} offlineOrInvalid Whether the destination is offline or
-   *     invalid
-   * @return {string} An empty string or 'stale'.
-   * @private
-   */
-  getStaleCssClass_: function(offlineOrInvalid) {
-    return offlineOrInvalid ? 'stale' : '';
+    return this.matchingDestinationsCount_ > 0;
   },
 
   /** @private */
