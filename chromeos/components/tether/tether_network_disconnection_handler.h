@@ -46,7 +46,8 @@ class TetherNetworkDisconnectionHandler : public NetworkStateHandlerObserver {
  private:
   friend class TetherNetworkDisconnectionHandlerTest;
 
-  void HandleActiveWifiNetworkDisconnection(const std::string& network_guid);
+  void HandleActiveWifiNetworkDisconnection(const std::string& network_guid,
+                                            const std::string& network_path);
 
   void SetTaskRunnerForTesting(
       scoped_refptr<base::TaskRunner> test_task_runner);

@@ -20,16 +20,16 @@ class FakeNetworkConfigurationRemover : public NetworkConfigurationRemover {
   FakeNetworkConfigurationRemover();
   ~FakeNetworkConfigurationRemover() override;
 
-  std::string last_removed_wifi_network_guid() {
-    return last_removed_wifi_network_guid_;
+  std::string last_removed_wifi_network_path() {
+    return last_removed_wifi_network_path_;
   }
 
   // NetworkConfigurationRemover:
-  void RemoveNetworkConfiguration(
-      const std::string& wifi_network_guid) override;
+  void RemoveNetworkConfigurationByPath(
+      const std::string& wifi_network_path) override;
 
  private:
-  std::string last_removed_wifi_network_guid_;
+  std::string last_removed_wifi_network_path_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkConfigurationRemover);
 };

@@ -7,15 +7,10 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
-#include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 using testing::_;
 using testing::NiceMock;
@@ -26,51 +21,23 @@ namespace tether {
 
 namespace {
 
-const char kWifiNetworkGuid[] = "wifiNetworkGuid";
-
-std::string CreateConnectedWifiConfigurationJsonString() {
-  std::stringstream ss;
-  ss << "{"
-     << "  \"GUID\": \"" << kWifiNetworkGuid << "\","
-     << "  \"Type\": \"" << shill::kTypeWifi << "\","
-     << "  \"State\": \"" << shill::kStateReady << "\""
-     << "}";
-  return ss.str();
-}
+const char kWifiNetworkPath[] = "wifiNetworkPath";
 
 }  // namespace
 
-class NetworkConfigurationRemoverTest : public NetworkStateTest {
+class NetworkConfigurationRemoverTest : public testing::Test {
  protected:
-  NetworkConfigurationRemoverTest() : NetworkStateTest() {}
+  NetworkConfigurationRemoverTest() = default;
   ~NetworkConfigurationRemoverTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-
-    wifi_service_path_ =
-        ConfigureService(CreateConnectedWifiConfigurationJsonString());
-
     mock_managed_network_configuration_manager_ =
         base::WrapUnique(new NiceMock<MockManagedNetworkConfigurationHandler>);
 
     network_configuration_remover_ =
         base::WrapUnique(new NetworkConfigurationRemover(
-            network_state_handler(),
             mock_managed_network_configuration_manager_.get()));
   }
-
-  void TearDown() override {
-    // Delete manager before the NetworkStateHandler.
-    network_configuration_remover_.reset();
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
-  }
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::string wifi_service_path_;
 
   std::unique_ptr<MockManagedNetworkConfigurationHandler>
       mock_managed_network_configuration_manager_;
@@ -83,10 +50,11 @@ class NetworkConfigurationRemoverTest : public NetworkStateTest {
 
 TEST_F(NetworkConfigurationRemoverTest, TestRemoveNetworkConfiguration) {
   EXPECT_CALL(*mock_managed_network_configuration_manager_,
-              RemoveConfiguration(wifi_service_path_, _, _))
+              RemoveConfiguration(kWifiNetworkPath, _, _))
       .Times(1);
 
-  network_configuration_remover_->RemoveNetworkConfiguration(kWifiNetworkGuid);
+  network_configuration_remover_->RemoveNetworkConfigurationByPath(
+      kWifiNetworkPath);
 }
 
 }  // namespace tether
