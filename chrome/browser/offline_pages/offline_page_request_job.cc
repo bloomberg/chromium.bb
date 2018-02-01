@@ -98,9 +98,10 @@ class OfflinePageRequestInfo : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestInfo);
 };
 
-class DefaultDelegate : public OfflinePageRequestJob::Delegate {
+class DefaultOfflinePageRequestJobDelegate
+    : public OfflinePageRequestJob::Delegate {
  public:
-  DefaultDelegate() {}
+  DefaultOfflinePageRequestJobDelegate() {}
 
   content::ResourceRequestInfo::WebContentsGetter
   GetWebContentsGetter(net::URLRequest* request) const override {
@@ -111,7 +112,7 @@ class DefaultDelegate : public OfflinePageRequestJob::Delegate {
   }
 
   OfflinePageRequestJob::Delegate::TabIdGetter GetTabIdGetter() const override {
-    return base::Bind(&DefaultDelegate::GetTabId);
+    return base::Bind(&DefaultOfflinePageRequestJobDelegate::GetTabId);
   }
 
  private:
@@ -119,7 +120,7 @@ class DefaultDelegate : public OfflinePageRequestJob::Delegate {
     return OfflinePageUtils::GetTabId(web_contents, tab_id);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DefaultOfflinePageRequestJobDelegate);
 };
 
 void GetFileSize(const base::FilePath& file_path, int64_t* file_size) {
@@ -586,7 +587,7 @@ OfflinePageRequestJob::OfflinePageRequestJob(
     net::NetworkDelegate* network_delegate,
     previews::PreviewsDecider* previews_decider)
     : net::URLRequestJob(request, network_delegate),
-      delegate_(new DefaultDelegate()),
+      delegate_(new DefaultOfflinePageRequestJobDelegate()),
       previews_decider_(previews_decider),
       candidate_index_(0),
       remaining_bytes_(0),

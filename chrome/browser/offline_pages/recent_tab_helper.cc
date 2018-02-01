@@ -33,9 +33,11 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::RecentTabHelper);
 
 namespace {
-class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
+class DefaultRecentTabHelperDelegate
+    : public offline_pages::RecentTabHelper::Delegate {
  public:
-  DefaultDelegate() : is_low_end_device_(base::SysInfo::IsLowEndDevice()) {}
+  DefaultRecentTabHelperDelegate()
+      : is_low_end_device_(base::SysInfo::IsLowEndDevice()) {}
 
   // offline_pages::RecentTabHelper::Delegate
   std::unique_ptr<offline_pages::OfflinePageArchiver> CreatePageArchiver(
@@ -99,7 +101,7 @@ struct RecentTabHelper::SnapshotProgressInfo {
 
 RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      delegate_(new DefaultDelegate()),
+      delegate_(new DefaultRecentTabHelperDelegate()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
