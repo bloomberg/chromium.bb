@@ -125,14 +125,8 @@ inline bool GetPrivateProperty(v8::Local<v8::Context> context,
          GetPrivateProperty(context, object, v8_key, out);
 }
 
-// GetPropertyUnsafe() family wraps v8::Object::Get(). They crash when an
-// exception is thrown.
-inline v8::Local<v8::Value> GetPropertyUnsafe(v8::Local<v8::Context> context,
-                                              v8::Local<v8::Object> object,
-                                              v8::Local<v8::Value> key) {
-  return object->Get(context, key).ToLocalChecked();
-}
-
+// GetPropertyUnsafe() wraps v8::Object::Get(), and crashes when an exception
+// is thrown.
 inline v8::Local<v8::Value> GetPropertyUnsafe(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> object,
