@@ -47,6 +47,8 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
+
     // To permit using webauthentication features.
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);

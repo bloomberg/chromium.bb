@@ -76,6 +76,8 @@ class PasswordManagerBrowserTestWarning
   PasswordManagerBrowserTestWarning() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
+
     // We need to set the feature state before the render process is created,
     // in order for it to inherit the feature state from the browser process.
     // SetUp() runs too early, and SetUpOnMainThread() runs too late.
@@ -3622,6 +3624,7 @@ class SitePerProcessPasswordManagerBrowserTest
   SitePerProcessPasswordManagerBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
   }
 
