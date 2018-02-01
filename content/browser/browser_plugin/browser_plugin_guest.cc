@@ -251,15 +251,6 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh,
   SendTextInputTypeChangedToView(rwhv);
 }
 
-void BrowserPluginGuest::SetTooltipText(const base::string16& tooltip_text) {
-  if (tooltip_text == current_tooltip_text_)
-    return;
-  current_tooltip_text_ = tooltip_text;
-
-  SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_SetTooltipText>(
-      browser_plugin_instance_id_, tooltip_text));
-}
-
 bool BrowserPluginGuest::LockMouse(bool allowed) {
   if (!attached() || (mouse_locked_ == allowed))
     return false;

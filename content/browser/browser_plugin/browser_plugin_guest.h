@@ -125,9 +125,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                 bool focused,
                 blink::WebFocusType focus_type);
 
-  // Sets the tooltip text.
-  void SetTooltipText(const base::string16& tooltip_text);
-
   // Sets the lock state of the pointer. Returns true if |allowed| is true and
   // the mouse has been successfully locked.
   bool LockMouse(bool allowed);

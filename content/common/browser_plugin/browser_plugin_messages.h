@@ -206,11 +206,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
                      int /* browser_plugin_instance_id */,
                      bool /* enable */)
 
-// Sends text to be displayed in tooltip.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetTooltipText,
-                     int /* browser_plugin_instance_id */,
-                     base::string16 /* tooltip_text */)
-
 #if defined(USE_AURA)
 // Sets the token that is used to embed the guest. |embed_token| is a token
 // that was generated from the window server and is expected to be supplied to
