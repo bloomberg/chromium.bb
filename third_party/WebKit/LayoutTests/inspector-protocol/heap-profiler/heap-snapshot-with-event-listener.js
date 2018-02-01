@@ -1,6 +1,6 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank(
-      `Test retaining path for an event listener.`);
+      `Test that all nodes from the detached DOM tree will get into one group in the heap snapshot. Bug 107819.`);
 
   await session.evaluate(`
     function addEventListenerAndRunTest() {
@@ -26,13 +26,24 @@
   if (node)
     testRunner.log('SUCCESS: found ' + node.name());
   else
-    return testRunner.fail('cannot find myEventListener node');
+    return testRunner.fail('cannot find detached DOM trees root');
 
-  var retainers = helper.firstRetainingPath(node).map(node => node.name());
-  // Limit to the retainers until the Window object to keep the test robust
-  // against root node name changes.
-  retainers = retainers.slice(0, retainers.indexOf('Window'));
-  var actual = retainers.join(', ');
-  testRunner.log(`SUCCESS: retaining path = [${actual}]`);
+  var nativeRetainers = 0;
+  for (var iter = node.retainers(); iter.hasNext(); iter.next()) {
+    var retainingEdge = iter.retainer;
+    if (retainingEdge.isInternal() && retainingEdge.name() === 'native') {
+      if (++nativeRetainers === 1) {
+        var retainerName = retainingEdge.node().name();
+        if (retainerName === 'HTMLBodyElement')
+          testRunner.log('SUCCESS: found link from HTMLBodyElement to ' + node.name());
+        else
+          return testRunner.fail('unexpected retainer of ' + node.name() + ': ' + retainerName);
+      } else
+        return testRunner.fail('too many retainers of ' + node.name());
+    } else if (!retainingEdge.isWeak())
+      return testRunner.fail('unexpected retaining edge of ' + node.name() + ' type: ' + retainingEdge.type() + ', name: ' + retainingEdge.name());
+  }
+  if (!nativeRetainers)
+    return testRunner.fail('cannot find HTMLBodyElement among retainers of ' + node.name());
   testRunner.completeTest();
 })
