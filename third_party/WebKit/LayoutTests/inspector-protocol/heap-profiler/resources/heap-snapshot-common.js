@@ -28,7 +28,22 @@
     return snapshot;
   }
 
+  function firstRetainingPath(node) {
+    for (var iter = node.retainers(); iter.hasNext(); iter.next()) {
+      var retainingEdge = iter.retainer;
+      var retainer = retainingEdge.node();
+      if (retainingEdge.isWeak() ||
+          retainer.distance() >= node.distance()) continue;
+      var path = firstRetainingPath(retainer);
+      path.unshift(retainer);
+      return path;
+    }
+    return [];
+  }
+
   return {
+    firstRetainingPath: firstRetainingPath,
+
     takeHeapSnapshot: function() {
       return takeHeapSnapshotInternal(() => session.protocol.HeapProfiler.takeHeapSnapshot());
     },

@@ -112,6 +112,8 @@ bindings_core_v8_files =
                     "core/v8/V8CrossOriginSetterInfo.h",
                     "core/v8/V8DOMConfiguration.cpp",
                     "core/v8/V8DOMConfiguration.h",
+                    "core/v8/V8EmbedderGraphBuilder.cpp",
+                    "core/v8/V8EmbedderGraphBuilder.h",
                     "core/v8/V8ErrorHandler.cpp",
                     "core/v8/V8ErrorHandler.h",
                     "core/v8/V8EventListener.cpp",

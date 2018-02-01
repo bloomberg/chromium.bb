@@ -32,7 +32,7 @@
   var snapshot = await helper.takeHeapSnapshot();
   var node;
   for (var it = snapshot._allNodes(); it.hasNext(); it.next()) {
-    if (it.node.name() === '(Pending activities group)') {
+    if (it.node.name() === 'Pending activities') {
       node = it.node;
       break;
     }
@@ -40,23 +40,9 @@
   if (node)
     testRunner.log('SUCCESS: found ' + node.name());
   else
-    return testRunner.fail(`cannot find '(Pending activities group)'`);
+    return testRunner.fail(`cannot find 'Pending activities'`);
 
-  var pendingActivitiesRE = /^Pending activities/;
-  var pendingActivitiesFound = false;
-  for (var iter = node.edges(); iter.hasNext(); iter.next()) {
-    var node = iter.edge.node();
-    if (pendingActivitiesRE.test(node.className())) {
-      if ('Pending activities / 3 entries' === node.name()) {
-        if (pendingActivitiesFound)
-          return testRunner.fail('second ' + node.name());
-        pendingActivitiesFound = true;
-        testRunner.log('SUCCESS: found ' + node.name());
-        checkPendingActivities(node);
-      } else {
-        return testRunner.fail(`unexpected 'Pending activities': ${node.name()}`);
-      }
-    }
-  }
+  checkPendingActivities(node);
+
   testRunner.completeTest();
 })

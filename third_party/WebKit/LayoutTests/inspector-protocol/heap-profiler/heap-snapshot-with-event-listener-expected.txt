@@ -1,6 +1,6 @@
-Test that all nodes from the detached DOM tree will get into one group in the heap snapshot. Bug 107819.
+Test retaining path for an event listener.
 Took heap snapshot
 Parsed snapshot
 SUCCESS: found myEventListener
-SUCCESS: found link from HTMLBodyElement to myEventListener
+SUCCESS: retaining path = [EventListener, InternalNode, HTMLBodyElement, HTMLHtmlElement, HTMLDocument]
 

@@ -1,0 +1,6 @@
+Test retaining path that spans two DOM trees.
+Took heap snapshot
+Parsed snapshot
+SUCCESS: found Leak
+SUCCESS: retainingListener is in retaining path
+
