@@ -254,7 +254,7 @@ def AflFuzzEnvList(host, options):
 
 def GomaCmakeFlags(path):
   return ['-DCMAKE_%s_COMPILER_LAUNCHER=%s' %
-          (lang, os.path.join(path, 'gomacc')) for lang in ['CC', 'CXX']]
+          (lang, os.path.join(path, 'gomacc')) for lang in ['C', 'CXX']]
 
 def GomaCompilers(host, options):
   cc, cxx, _, _ = CompilersForHost(host)
