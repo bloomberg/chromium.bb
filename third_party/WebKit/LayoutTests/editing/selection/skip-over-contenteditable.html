@@ -1,44 +1,96 @@
 <!DOCTYPE HTML>
-<html>
-<body>
-<script src="../../resources/js-test.js"></script>
-
-<p id="before">Before the contenteditable</p>
-<div contentEditable></div>
-<p id="after">After the contenteditable</p>
-
-<div id="console"></div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-description("Ensure that extending a selection skips past a contentEditable.");
+// Ensure that extending a selection skips past a contentEditable.
+const isMac = navigator.platform.indexOf('Mac') === 0;
 
-var before = document.getElementById("before");
-var after = document.getElementById("after");
+// Extend before contenteditable
+selection_test(
+  [
+    '<p>^Before the contenteditable|</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable</p>',
+  ],
+  selection => selection.modify('extend', 'forward', 'character'),
+  [
+    '<p>^Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>|After the contenteditable</p>',
+  ],
+  'Extend by character before editable');
 
-var sel = window.getSelection();
-sel.setBaseAndExtent(before, 0, before, 1);
-sel.modify("extend", "forward", "character");
-shouldBe("sel.focusNode", "after");
+selection_test(
+  [
+    '<p>^Before the contenteditable|</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable</p>',
+  ],
+  selection => selection.modify('extend', 'forward', 'word'),
+  [
+    '<p>^Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    isMac
+      ? '<p>After| the contenteditable</p>'
+      : '<p>After |the contenteditable</p>',
+  ],
+  'Extend by word before editable');
 
-sel.setBaseAndExtent(after, 1, after, 0);
-sel.modify("extend", "backward", "character");
-shouldBe("sel.focusNode.parentElement", "before");
+selection_test(
+  [
+    '<p>^Before the contenteditable|</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable</p>',
+  ],
+  selection => selection.modify('extend', 'forward', 'line'),
+  [
+    '<p>^Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable|</p>',
+  ],
+  'Extend by line before editable');
 
-sel.setBaseAndExtent(before, 0, before, 1);
-sel.modify("extend", "forward", "word");
-shouldBe("sel.focusNode.parentElement", "after");
+// Extend after contenteditable
+selection_test(
+  [
+    '<p>Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>|After the contenteditable^</p>',
+  ],
+  selection => selection.modify('extend', 'backward', 'character'),
+  [
+    '<p>Before the contenteditable|</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable^</p>',
+  ],
+  'Extend by character after editable');
 
-sel.setBaseAndExtent(after, 1, after, 0);
-sel.modify("extend", "backward", "word");
-shouldBe("sel.focusNode.parentElement", "before");
+selection_test(
+  [
+    '<p>Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>|After the contenteditable^</p>',
+  ],
+  selection => selection.modify('extend', 'backward', 'word'),
+  [
+    '<p>Before the |contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable^</p>',
+  ],
+  'Extend by word after editable');
 
-sel.setBaseAndExtent(before, 0, before, 1);
-sel.modify("extend", "forward", "line");
-shouldBe("sel.focusNode.parentElement", "after");
-
-sel.setBaseAndExtent(after, 1, after, 0);
-sel.modify("extend", "backward", "line");
-shouldBe("sel.focusNode.parentElement", "before");
+selection_test(
+  [
+    '<p>Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>|After the contenteditable^</p>',
+  ],
+  selection => selection.modify('extend', 'backward', 'line'),
+  [
+    '<p>|Before the contenteditable</p>',
+    '<div contenteditable></div>',
+    '<p>After the contenteditable^</p>',
+  ],
+  'Extend by line after editable');
 </script>
-
-</body>
-</html>
