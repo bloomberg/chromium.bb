@@ -781,6 +781,19 @@ hooks = [
                '--running-as-hook'],
   },
   {
+    # Case-insensitivity for the Win SDK. Must run before win_toolchain below.
+    'name': 'ciopfs_linux',
+    'pattern': '.',
+    'condition': 'checkout_win and host_os == "linux"',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-browser-clang/ciopfs',
+                '-s', 'src/build/ciopfs.sha1',
+    ]
+  },
+  {
     # Update the Windows toolchain if necessary.  Must run before 'clang' below.
     'name': 'win_toolchain',
     'pattern': '.',
@@ -957,7 +970,7 @@ hooks = [
                 '-s', 'src/build/toolchain/win/rc/linux64/rc.sha1',
     ]
   },
-  {
+ {
     'name': 'content_shell_fonts',
     'pattern': '.',
     'condition': 'checkout_linux',

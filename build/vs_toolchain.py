@@ -382,18 +382,14 @@ def Update(force=False):
     # exist, set up a ciopfs fuse mount to put the SDK in a case-insensitive
     # part of the file system.
     toolchain_dir = os.path.join(depot_tools_path, 'win_toolchain', 'vs_files')
+    # For testing this block, unmount existing mounts with
+    # fusermount -u third_party/depot_tools/win_toolchain/vs_files
     if sys.platform.startswith('linux') and not os.path.ismount(toolchain_dir):
       import distutils.spawn
       ciopfs = distutils.spawn.find_executable('ciopfs')
       if not ciopfs:
-        # TODO(thakis): Offer to auto-install this?  Or have a
-        # build/install-build-deps-win.sh script and point to that? (Or run
-        # that?)
-        print >>sys.stderr, \
-            "\n\tCouldn't set up case-insensitive mount for Windows SDK."
-        print >>sys.stderr, \
-            "\tPlease run `sudo apt-get install ciopfs` and try again.\n"
-        return 1
+        # ciopfs not found in PATH; try the one downloaded from the DEPS hook.
+        ciopfs = os.path.join(script_dir, 'ciopfs')
       if not os.path.isdir(toolchain_dir):
         os.mkdir(toolchain_dir)
       if not os.path.isdir(toolchain_dir + '.ciopfs'):
