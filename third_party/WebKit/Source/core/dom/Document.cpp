@@ -906,8 +906,13 @@ Element* Document::createElement(const AtomicString& name,
           *this,
           QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI));
     }
-    return HTMLElementFactory::createHTMLElement(local_name, *this,
-                                                 kCreatedByCreateElement);
+    if (Element* element = HTMLElementFactory::CreateRawHTMLElement(
+            local_name, *this, kCreatedByCreateElement))
+      return element;
+    QualifiedName q_name(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI);
+    if (RegistrationContext() && V0CustomElement::IsValidName(local_name))
+      return RegistrationContext()->CreateCustomTagElement(*this, q_name);
+    return HTMLUnknownElement::Create(q_name, *this);
   }
   return Element::Create(QualifiedName(g_null_atom, name, g_null_atom), this);
 }
@@ -1447,10 +1452,36 @@ Element* Document::createElement(const QualifiedName& q_name,
 
   // FIXME: Use registered namespaces and look up in a hash to find the right
   // factory.
-  if (q_name.NamespaceURI() == xhtmlNamespaceURI)
-    e = HTMLElementFactory::createHTMLElement(q_name.LocalName(), *this, flags);
-  else if (q_name.NamespaceURI() == SVGNames::svgNamespaceURI)
-    e = SVGElementFactory::createSVGElement(q_name.LocalName(), *this, flags);
+  const AtomicString& local_name = q_name.LocalName();
+  if (q_name.NamespaceURI() == xhtmlNamespaceURI) {
+    e = HTMLElementFactory::CreateRawHTMLElement(local_name, *this, flags);
+    if (!e) {
+      // TODO(dominicc): When the HTML parser can pass an error
+      // reporting ExceptionState, and "v0" custom elements have been
+      // removed, consolidate custom element creation into one place.
+      if (flags != kCreatedByCreateElement &&
+          CustomElement::ShouldCreateCustomElement(local_name)) {
+        if (flags & kAsynchronousCustomElements)
+          e = CustomElement::CreateCustomElementAsync(*this, q_name, flags);
+        else
+          e = CustomElement::CreateCustomElementSync(*this, q_name);
+      } else if (RegistrationContext() &&
+                 V0CustomElement::IsValidName(local_name)) {
+        e = RegistrationContext()->CreateCustomTagElement(*this, q_name);
+      } else {
+        e = HTMLUnknownElement::Create(q_name, *this);
+      }
+    }
+  } else if (q_name.NamespaceURI() == SVGNames::svgNamespaceURI) {
+    e = SVGElementFactory::CreateRawSVGElement(local_name, *this, flags);
+    if (!e) {
+      if (RegistrationContext() && V0CustomElement::IsValidName(local_name)) {
+        e = RegistrationContext()->CreateCustomTagElement(*this, q_name);
+      } else {
+        e = SVGUnknownElement::Create(q_name, *this);
+      }
+    }
+  }
 
   if (e)
     saw_elements_in_known_namespaces_ = true;
