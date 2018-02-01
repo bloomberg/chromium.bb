@@ -425,6 +425,8 @@ void SearchResultView::ShowContextMenuForView(views::View* source,
   context_menu_runner_->RunMenuAt(GetWidget(), NULL,
                                   gfx::Rect(point, gfx::Size()),
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
+
+  source->RequestFocus();
 }
 
 }  // namespace app_list

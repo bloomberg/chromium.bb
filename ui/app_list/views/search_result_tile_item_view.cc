@@ -412,6 +412,8 @@ void SearchResultTileItemView::ShowContextMenuForView(
   context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
+
+  source->RequestFocus();
 }
 
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
