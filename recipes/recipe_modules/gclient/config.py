@@ -245,6 +245,8 @@ def pdfium(c):
   soln = c.solutions.add()
   soln.name = 'pdfium'
   soln.url = 'https://pdfium.googlesource.com/pdfium.git'
+  m = c.got_revision_mapping
+  m['pdfium'] = 'got_revision'
 
 @config_ctx()
 def mojo(c):
