@@ -95,9 +95,9 @@ PolicyConverter::ConvertJavaStringArrayToListValue(
 
   std::unique_ptr<base::ListValue> list_value(new base::ListValue());
   for (int i = 0; i < length; ++i) {
-    jstring str =
-        static_cast<jstring>(env->GetObjectArrayElement(array.obj(), i));
-    list_value->AppendString(ConvertJavaStringToUTF8(env, str));
+    base::android::ScopedJavaLocalRef<jstring> j_str(
+        env, static_cast<jstring>(env->GetObjectArrayElement(array.obj(), i)));
+    list_value->AppendString(ConvertJavaStringToUTF8(env, j_str));
   }
 
   return list_value;
