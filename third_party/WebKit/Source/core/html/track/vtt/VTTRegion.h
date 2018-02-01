@@ -59,8 +59,8 @@ class VTTRegion final : public ScriptWrappable {
   double width() const { return width_; }
   void setWidth(double, ExceptionState&);
 
-  int lines() const { return lines_; }
-  void setLines(int, ExceptionState&);
+  unsigned lines() const { return lines_; }
+  void setLines(unsigned);
 
   double regionAnchorX() const { return region_anchor_.X(); }
   void setRegionAnchorX(double, ExceptionState&);

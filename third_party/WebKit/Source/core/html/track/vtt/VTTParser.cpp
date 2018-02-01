@@ -450,7 +450,7 @@ bool VTTParser::CollectTimeStamp(VTTScanner& input, double& time_stamp) {
 
   // Steps 5 - 7 - Collect a sequence of characters that are 0-9.
   // If not 2 characters or value is greater than 59, interpret as hours.
-  int value1;
+  unsigned value1;
   unsigned value1_digits = input.ScanDigits(value1);
   if (!value1_digits)
     return false;
@@ -459,12 +459,12 @@ bool VTTParser::CollectTimeStamp(VTTScanner& input, double& time_stamp) {
 
   // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2
   // chars).
-  int value2;
+  unsigned value2;
   if (!input.Scan(':') || input.ScanDigits(value2) != 2)
     return false;
 
   // Step 12 - Detect whether this timestamp includes hours.
-  int value3;
+  unsigned value3;
   if (mode == kHours || input.Match(':')) {
     if (!input.Scan(':') || input.ScanDigits(value3) != 2)
       return false;
@@ -475,7 +475,7 @@ bool VTTParser::CollectTimeStamp(VTTScanner& input, double& time_stamp) {
   }
 
   // Steps 13 - 17 - Collect next sequence of 0-9 after '.' (must be 3 chars).
-  int value4;
+  unsigned value4;
   if (!input.Scan('.') || input.ScanDigits(value4) != 3)
     return false;
   if (value2 > 59 || value3 > 59)
