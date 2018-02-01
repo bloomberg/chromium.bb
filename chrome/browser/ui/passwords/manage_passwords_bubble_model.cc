@@ -312,7 +312,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::MANAGE_STATE) {
     local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
     UpdateManageStateTitle();
-    manage_link_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BUBBLE_LINK);
+    // TODO(pbos): Remove manage_link_ + accessors when the cocoa dialog goes
+    // away. This temporarily uses the button label which is equivalent with
+    // the previous link.
+    manage_link_ =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON);
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
