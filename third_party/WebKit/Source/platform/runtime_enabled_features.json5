@@ -291,10 +291,6 @@
       status: "experimental",
     },
     {
-      name: "CSSStickyPosition",
-      status: "stable",
-    },
-    {
       name: "CSSTransformBox",
       status: "stable",
     },
