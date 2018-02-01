@@ -42,7 +42,10 @@ struct CallStackProfileParams {
 
     // Renderer process threads.
     RENDER_THREAD,
-    UTILITY_THREAD
+    UTILITY_THREAD,
+
+    // Compositor thread (can be in both renderer and gpu processes).
+    COMPOSITOR_THREAD,
   };
 
   // The event that triggered the profile collection.

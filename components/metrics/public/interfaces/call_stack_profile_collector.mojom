@@ -59,6 +59,8 @@ enum Thread {
 
   RENDER_THREAD,
   UTILITY_THREAD,
+
+  COMPOSITOR_THREAD,
 };
 
 enum Trigger {
