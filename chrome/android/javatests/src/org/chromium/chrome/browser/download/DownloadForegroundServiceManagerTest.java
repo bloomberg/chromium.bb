@@ -51,8 +51,7 @@ public final class DownloadForegroundServiceManagerTest {
             extends DownloadForegroundServiceManager {
         private boolean mIsServiceBound;
         private int mUpdatedNotificationId = DEFAULT_NOTIFICATION_ID;
-        private boolean mIsNotificationKilled;
-        private boolean mIsNotificationDetached;
+        private int mStopForegroundNotificationFlag = -1;
 
         public MockDownloadForegroundServiceManager() {}
 
@@ -72,9 +71,10 @@ public final class DownloadForegroundServiceManagerTest {
         }
 
         @Override
-        boolean stopAndUnbindServiceInternal(boolean detachNotification, boolean killNotification) {
-            mIsNotificationKilled = killNotification;
-            mIsNotificationDetached = detachNotification;
+        boolean stopAndUnbindServiceInternal(@DownloadForegroundService.StopForegroundNotification
+                                             int stopForegroundNotification,
+                int pinnedNotificationId, Notification pinnedNotification) {
+            mStopForegroundNotificationFlag = stopForegroundNotification;
             return true;
         }
 
@@ -100,7 +100,9 @@ public final class DownloadForegroundServiceManagerTest {
      */
     public static class MockDownloadForegroundService extends DownloadForegroundService {
         @Override
-        public void startOrUpdateForegroundService(int notificationId, Notification notification) {}
+        public void startOrUpdateForegroundService(int newNotificationId,
+                Notification newNotification, int oldNotificationId, Notification oldNotification) {
+        }
     }
 
     @Before
@@ -211,12 +213,8 @@ public final class DownloadForegroundServiceManagerTest {
         mDownloadServiceManager.updateDownloadStatus(
                 mContext, DownloadStatus.PAUSE, FAKE_DOWNLOAD_1, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
-
-        // In the case that the phone is pre-Lollipop, make sure the paused notification gets killed
-        // so that it will no longer be an "on-going" notification.
-        assertEquals(mDownloadServiceManager.isPreLollipop(),
-                mDownloadServiceManager.mIsNotificationKilled);
-        assertTrue(mDownloadServiceManager.mIsNotificationDetached);
+        assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH_OR_PERSIST,
+                mDownloadServiceManager.mStopForegroundNotificationFlag);
 
         // Service restarts and then is cancelled, so notification is killed.
         mDownloadServiceManager.updateDownloadStatus(
@@ -227,8 +225,8 @@ public final class DownloadForegroundServiceManagerTest {
         mDownloadServiceManager.updateDownloadStatus(
                 mContext, DownloadStatus.CANCEL, FAKE_DOWNLOAD_1, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
-        assertTrue(mDownloadServiceManager.mIsNotificationKilled);
-        assertFalse(mDownloadServiceManager.mIsNotificationDetached);
+        assertEquals(DownloadForegroundService.StopForegroundNotification.KILL,
+                mDownloadServiceManager.mStopForegroundNotificationFlag);
 
         // Download starts and completes, notification is either detached or killed.
         mDownloadServiceManager.updateDownloadStatus(
@@ -239,11 +237,8 @@ public final class DownloadForegroundServiceManagerTest {
         mDownloadServiceManager.updateDownloadStatus(
                 mContext, DownloadStatus.COMPLETE, FAKE_DOWNLOAD_2, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
-        assertTrue(mDownloadServiceManager.mIsNotificationKilled);
-        // In the case that the phone is pre-Marshmallow, make sure the notification no longer needs
-        // to be detached, rather, is just killed.
-        assertEquals(!mDownloadServiceManager.isPreMarshmallow(),
-                mDownloadServiceManager.mIsNotificationDetached);
+        assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH_OR_ADJUST,
+                mDownloadServiceManager.mStopForegroundNotificationFlag);
     }
 
     @Test
