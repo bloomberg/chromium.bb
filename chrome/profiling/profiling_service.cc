@@ -23,7 +23,7 @@ std::unique_ptr<service_manager::Service> ProfilingService::CreateService() {
 
 void ProfilingService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(base::Bind(
-      &ProfilingService::MaybeRequestQuitDelayed, base::Unretained(this))));
+      &ProfilingService::MaybeRequestQuitDelayed, weak_factory_.GetWeakPtr())));
   registry_.AddInterface(
       base::Bind(&ProfilingService::OnProfilingServiceRequest,
                  base::Unretained(this), ref_factory_.get()));
@@ -52,7 +52,7 @@ void ProfilingService::MaybeRequestQuitDelayed() {
 void ProfilingService::MaybeRequestQuit() {
   DCHECK(ref_factory_);
   if (ref_factory_->HasNoRefs())
-    context()->RequestQuit();
+    context()->CreateQuitClosure().Run();
 }
 
 void ProfilingService::OnProfilingServiceRequest(

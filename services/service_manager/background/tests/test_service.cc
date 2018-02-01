@@ -38,7 +38,7 @@ class TestClient : public Service,
     bindings_.AddBinding(this, std::move(request));
   }
 
-  void Quit() override { context()->RequestQuit(); }
+  void Quit() override { context()->CreateQuitClosure().Run(); }
 
   BinderRegistry registry_;
   mojo::BindingSet<mojom::TestService> bindings_;

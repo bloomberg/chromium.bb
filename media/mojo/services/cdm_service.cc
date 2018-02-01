@@ -121,8 +121,7 @@ void CdmService::OnStart() {
   DVLOG(1) << __func__;
 
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      base::BindRepeating(&service_manager::ServiceContext::RequestQuit,
-                          base::Unretained(context()))));
+      context()->CreateQuitClosure()));
 }
 
 void CdmService::OnBindInterface(

@@ -38,7 +38,7 @@ void AppClient::Ping(PingCallback callback) {
 }
 
 void AppClient::GracefulQuit() {
-  context()->RequestQuit();
+  context()->CreateQuitClosure().Run();
 }
 
 void AppClient::Crash() {

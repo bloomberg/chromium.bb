@@ -34,7 +34,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContextRef {
 class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContextRefFactory {
  public:
   // |quit_closure| is called whenever the last ref is destroyed.
-  explicit ServiceContextRefFactory(const base::Closure& quit_closure);
+  explicit ServiceContextRefFactory(base::RepeatingClosure quit_closure);
   ~ServiceContextRefFactory();
 
   std::unique_ptr<ServiceContextRef> CreateRef();
@@ -48,7 +48,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContextRefFactory {
   void AddRef();
   void Release();
 
-  const base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
   int ref_count_ = 0;
   base::WeakPtrFactory<ServiceContextRefFactory> weak_factory_;
 

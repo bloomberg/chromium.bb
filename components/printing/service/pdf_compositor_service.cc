@@ -73,8 +73,7 @@ void PdfCompositorService::OnStart() {
   PrepareToStart();
 
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context())));
+      context()->CreateQuitClosure());
   registry_.AddInterface(
       base::Bind(&OnPdfCompositorRequest, creator_, ref_factory_.get()));
 }

@@ -34,8 +34,7 @@ ResourceCoordinatorService::~ResourceCoordinatorService() {
 
 void ResourceCoordinatorService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context()))));
+      context()->CreateQuitClosure()));
 
   ukm_recorder_ = ukm::MojoUkmRecorder::Create(context()->connector());
 

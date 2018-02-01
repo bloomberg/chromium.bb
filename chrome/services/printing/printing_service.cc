@@ -47,8 +47,7 @@ std::unique_ptr<service_manager::Service> PrintingService::CreateService() {
 
 void PrintingService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context())));
+      context()->CreateQuitClosure());
 #if defined(OS_WIN)
   registry_.AddInterface(
       base::Bind(&OnPdfToEmfConverterFactoryRequest, ref_factory_.get()));

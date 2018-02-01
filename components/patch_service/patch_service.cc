@@ -32,8 +32,7 @@ std::unique_ptr<service_manager::Service> PatchService::CreateService() {
 
 void PatchService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context()))));
+      context()->CreateQuitClosure()));
   registry_.AddInterface(base::Bind(&OnFilePatcherRequest, ref_factory_.get()));
 }
 

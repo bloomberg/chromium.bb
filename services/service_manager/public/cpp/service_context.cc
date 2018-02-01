@@ -99,6 +99,11 @@ void ServiceContext::RequestQuit() {
   service_control_->RequestQuit();
 }
 
+base::RepeatingClosure ServiceContext::CreateQuitClosure() {
+  return base::BindRepeating(&ServiceContext::RequestQuit,
+                             weak_factory_.GetWeakPtr());
+}
+
 void ServiceContext::DisconnectFromServiceManager() {
   if (binding_.is_bound())
     binding_.Close();
