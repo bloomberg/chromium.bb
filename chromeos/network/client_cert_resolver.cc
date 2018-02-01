@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -32,28 +33,29 @@
 
 namespace chromeos {
 
-// Describes a network |network_path| for which a matching certificate |cert_id|
-// was found or for which no certificate was found (|cert_id| will be empty).
-struct ClientCertResolver::NetworkAndMatchingCert {
-  NetworkAndMatchingCert(const std::string& network_path,
-                         client_cert::ConfigType config_type,
-                         const std::string& cert_id,
-                         int slot_id,
-                         const std::string& configured_identity)
-      : service_path(network_path),
-        cert_config_type(config_type),
-        pkcs11_id(cert_id),
-        key_slot_id(slot_id),
+namespace {
+
+// Describes a resolved client certificate along with the EAP identity field.
+struct MatchingCert {
+  MatchingCert() {}
+
+  MatchingCert(const std::string& pkcs11_id,
+               int key_slot_id,
+               const std::string& configured_identity)
+      : pkcs11_id(pkcs11_id),
+        key_slot_id(key_slot_id),
         identity(configured_identity) {}
 
-  std::string service_path;
-  client_cert::ConfigType cert_config_type;
+  bool operator==(const MatchingCert& other) const {
+    return pkcs11_id == other.pkcs11_id && key_slot_id == other.key_slot_id &&
+           identity == other.identity;
+  }
 
-  // The id of the matching certificate or empty if no certificate was found.
+  // The id of the matching certificate.
   std::string pkcs11_id;
 
   // The id of the slot containing the certificate and the private key.
-  int key_slot_id;
+  int key_slot_id = -1;
 
   // The ONC WiFi.EAP.Identity field can contain variables like
   // ${CERT_SAN_EMAIL} which are expanded by ClientCertResolver.
@@ -62,16 +64,61 @@ struct ClientCertResolver::NetworkAndMatchingCert {
   std::string identity;
 };
 
-typedef std::vector<ClientCertResolver::NetworkAndMatchingCert>
-    NetworkCertMatches;
+// Describes a network that is configured with |client_cert_config|, which
+// includes the certificate pattern.
+struct NetworkAndCertPattern {
+  NetworkAndCertPattern(const std::string& network_path,
+                        const client_cert::ClientCertConfig& client_cert_config)
+      : service_path(network_path), cert_config(client_cert_config) {}
+
+  std::string service_path;
+  client_cert::ClientCertConfig cert_config;
+};
+
+// The certificate resolving status of a known network that needs certificate
+// pattern resolution.
+enum class ResolveStatus { kResolving, kResolved };
+
+}  // namespace
+
+namespace internal {
+
+// Describes the resolve status for a network, and if resolving already
+// completed, also holds the matched certificate.
+struct MatchingCertAndResolveStatus {
+  // kResolving if client cert resolution is pending, kResolved if client cert
+  // resolution has been completed for the network.
+  ResolveStatus resolve_status = ResolveStatus::kResolving;
+
+  // This is set to the last resolved client certificate or nullopt if no
+  // matching certificate has been found when |resolve_status| is kResolved.
+  // This is also used to determine if re-resolving a network actually changed
+  // any properties.
+  base::Optional<MatchingCert> matching_cert;
+};
+
+// Describes a network |network_path| and the client cert resolution result.
+struct NetworkAndMatchingCert {
+  NetworkAndMatchingCert(const NetworkAndCertPattern& network_and_pattern,
+                         base::Optional<MatchingCert> matching_cert)
+      : service_path(network_and_pattern.service_path),
+        cert_config_type(network_and_pattern.cert_config.location),
+        matching_cert(matching_cert) {}
+
+  std::string service_path;
+  client_cert::ConfigType cert_config_type;
+
+  // The resolved certificate, or |nullopt| if no matching certificate has been
+  // found.
+  base::Optional<MatchingCert> matching_cert;
+};
+
+}  // namespace internal
+
+using internal::MatchingCertAndResolveStatus;
+using internal::NetworkAndMatchingCert;
 
 namespace {
-
-// Returns true if |vector| contains |value|.
-template <class T>
-bool ContainsValue(const std::vector<T>& vector, const T& value) {
-  return find(vector.begin(), vector.end(), value) != vector.end();
-}
 
 // Returns true if a private key for certificate |cert| is installed.
 // Note that HasPrivateKey is not a cheap operation: it iterates all tokens and
@@ -104,18 +151,6 @@ bool CompareCertExpiration(const CertAndIssuer& a, const CertAndIssuer& b) {
   return a_not_after > b_not_after;
 }
 
-// Describes a network that is configured with the certificate pattern
-// |client_cert_pattern|.
-struct NetworkAndCertPattern {
-  NetworkAndCertPattern(const std::string& network_path,
-                        const client_cert::ClientCertConfig& client_cert_config)
-      : service_path(network_path),
-        cert_config(client_cert_config) {}
-
-  std::string service_path;
-  client_cert::ClientCertConfig cert_config;
-};
-
 // A unary predicate that returns true if the given CertAndIssuer matches the
 // given certificate pattern.
 struct MatchCertWithPattern {
@@ -147,7 +182,8 @@ struct MatchCertWithPattern {
 
     const std::vector<std::string>& issuer_ca_pems = pattern.issuer_ca_pems();
     if (!issuer_ca_pems.empty() &&
-        !ContainsValue(issuer_ca_pems, cert_and_issuer.pem_encoded_issuer)) {
+        !base::ContainsValue(issuer_ca_pems,
+                             cert_and_issuer.pem_encoded_issuer)) {
       return false;
     }
     return true;
@@ -193,9 +229,8 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
   // consumers of CertLoader could also use a pre-filtered list (e.g.
   // NetworkCertMigrator). See crbug.com/781693.
   std::vector<CertAndIssuer> client_certs;
-  for (net::ScopedCERTCertificateList::iterator it = certs.begin();
-       it != certs.end(); ++it) {
-    CERTCertificate* cert = it->get();
+  for (net::ScopedCERTCertificate& scoped_cert : certs) {
+    CERTCertificate* cert = scoped_cert.get();
     base::Time not_after;
     // HasPrivateKey should be invoked after IsCertificateHardwareBacked for
     // performance reasons.
@@ -205,88 +240,90 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
       continue;
     }
     std::string pem_encoded_issuer = GetPEMEncodedIssuer(cert);
-    client_certs.push_back(CertAndIssuer(std::move(*it), pem_encoded_issuer));
+    client_certs.push_back(
+        CertAndIssuer(std::move(scoped_cert), pem_encoded_issuer));
   }
 
   std::sort(client_certs.begin(), client_certs.end(), &CompareCertExpiration);
   return client_certs;
 }
 
-// Searches for matches between |networks| and |certs| and writes matches to
-// |matches|. Because this calls NSS functions and is potentially slow, it must
-// be run on a worker thread.
-std::unique_ptr<NetworkCertMatches> FindCertificateMatches(
+// Searches for matches between |networks| and |all_certs| (for networks
+// configured in user policy) / |system_certs| (for networks configured in
+// device policy). Returns the matches that were found. Because this calls NSS
+// functions and is potentially slow, it must be run on a worker thread.
+std::vector<NetworkAndMatchingCert> FindCertificateMatches(
     net::ScopedCERTCertificateList all_certs,
     net::ScopedCERTCertificateList system_certs,
-    std::vector<NetworkAndCertPattern>* networks,
+    const std::vector<NetworkAndCertPattern>& networks,
     base::Time now) {
-  std::unique_ptr<NetworkCertMatches> matches =
-      std::make_unique<NetworkCertMatches>();
+  std::vector<NetworkAndMatchingCert> matches;
 
   std::vector<CertAndIssuer> all_client_certs(
       CreateSortedCertAndIssuerList(std::move(all_certs), now));
   std::vector<CertAndIssuer> system_client_certs(
       CreateSortedCertAndIssuerList(std::move(system_certs), now));
 
-  for (std::vector<NetworkAndCertPattern>::const_iterator it =
-           networks->begin();
-       it != networks->end(); ++it) {
+  for (const NetworkAndCertPattern& network_and_pattern : networks) {
     // Use only certs from the system token if the source of the client cert
     // pattern is device policy.
     std::vector<CertAndIssuer>* client_certs =
-        it->cert_config.onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY
+        network_and_pattern.cert_config.onc_source ==
+                ::onc::ONC_SOURCE_DEVICE_POLICY
             ? &system_client_certs
             : &all_client_certs;
-    auto cert_it = std::find_if(client_certs->begin(), client_certs->end(),
-                                MatchCertWithPattern(it->cert_config.pattern));
+    auto cert_it = std::find_if(
+        client_certs->begin(), client_certs->end(),
+        MatchCertWithPattern(network_and_pattern.cert_config.pattern));
+    if (cert_it == client_certs->end()) {
+      VLOG(1) << "Couldn't find a matching client cert for network "
+              << network_and_pattern.service_path;
+      matches.push_back(
+          NetworkAndMatchingCert(network_and_pattern, base::nullopt));
+      continue;
+    }
+
     std::string pkcs11_id;
     int slot_id = -1;
     std::string identity;
 
-    if (cert_it == client_certs->end()) {
-      VLOG(1) << "Couldn't find a matching client cert for network "
-              << it->service_path;
-      // Leave |pkcs11_id| empty to indicate that no cert was found for this
-      // network.
-    } else {
-      pkcs11_id =
-          CertLoader::GetPkcs11IdAndSlotForCert(cert_it->cert.get(), &slot_id);
-      if (pkcs11_id.empty()) {
-        LOG(ERROR) << "Couldn't determine PKCS#11 ID.";
-        // So far this error is not expected to happen. We can just continue, in
-        // the worst case the user can remove the problematic cert.
-        continue;
-      }
+    pkcs11_id =
+        CertLoader::GetPkcs11IdAndSlotForCert(cert_it->cert.get(), &slot_id);
+    if (pkcs11_id.empty()) {
+      LOG(ERROR) << "Couldn't determine PKCS#11 ID.";
+      // So far this error is not expected to happen. We can just continue, in
+      // the worst case the user can remove the problematic cert.
+      continue;
+    }
 
-      // If the policy specifies an identity containing ${CERT_SAN_xxx},
-      // see if the cert contains a suitable subjectAltName that can be
-      // stuffed into the shill properties.
-      identity = it->cert_config.policy_identity;
+    // If the policy specifies an identity containing ${CERT_SAN_xxx},
+    // see if the cert contains a suitable subjectAltName that can be
+    // stuffed into the shill properties.
+    identity = network_and_pattern.cert_config.policy_identity;
+    std::vector<std::string> names;
+
+    size_t offset = identity.find(onc::substitutes::kCertSANEmail, 0);
+    if (offset != std::string::npos) {
       std::vector<std::string> names;
-
-      size_t offset = identity.find(onc::substitutes::kCertSANEmail, 0);
-      if (offset != std::string::npos) {
-        std::vector<std::string> names;
-        net::x509_util::GetRFC822SubjectAltNames(cert_it->cert.get(), &names);
-        if (!names.empty()) {
-          base::ReplaceSubstringsAfterOffset(
-              &identity, offset, onc::substitutes::kCertSANEmail, names[0]);
-        }
-      }
-
-      offset = identity.find(onc::substitutes::kCertSANUPN, 0);
-      if (offset != std::string::npos) {
-        std::vector<std::string> names;
-        net::x509_util::GetUPNSubjectAltNames(cert_it->cert.get(), &names);
-        if (!names.empty()) {
-          base::ReplaceSubstringsAfterOffset(
-              &identity, offset, onc::substitutes::kCertSANUPN, names[0]);
-        }
+      net::x509_util::GetRFC822SubjectAltNames(cert_it->cert.get(), &names);
+      if (!names.empty()) {
+        base::ReplaceSubstringsAfterOffset(
+            &identity, offset, onc::substitutes::kCertSANEmail, names[0]);
       }
     }
-    matches->push_back(ClientCertResolver::NetworkAndMatchingCert(
-        it->service_path, it->cert_config.location, pkcs11_id, slot_id,
-        identity));
+
+    offset = identity.find(onc::substitutes::kCertSANUPN, 0);
+    if (offset != std::string::npos) {
+      std::vector<std::string> names;
+      net::x509_util::GetUPNSubjectAltNames(cert_it->cert.get(), &names);
+      if (!names.empty()) {
+        base::ReplaceSubstringsAfterOffset(
+            &identity, offset, onc::substitutes::kCertSANUPN, names[0]);
+      }
+    }
+
+    matches.push_back(NetworkAndMatchingCert(
+        network_and_pattern, MatchingCert(pkcs11_id, slot_id, identity)));
   }
   return matches;
 }
@@ -417,9 +454,9 @@ void ClientCertResolver::NetworkListChanged() {
     return;
   // Configure only networks that were not configured before.
 
-  // We'll drop networks from |resolved_networks_|, which are not known anymore.
-  std::set<std::string> old_resolved_networks;
-  old_resolved_networks.swap(resolved_networks_);
+  // We'll drop networks from |networks_status_|, which are not known anymore.
+  base::flat_map<std::string, MatchingCertAndResolveStatus> old_networks_status;
+  old_networks_status.swap(networks_status_);
 
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(
@@ -430,14 +467,14 @@ void ClientCertResolver::NetworkListChanged() {
       &networks);
 
   NetworkStateHandler::NetworkStateList networks_to_check;
-  for (NetworkStateHandler::NetworkStateList::const_iterator it =
-           networks.begin(); it != networks.end(); ++it) {
-    const std::string& service_path = (*it)->path();
-    if (base::ContainsKey(old_resolved_networks, service_path)) {
-      resolved_networks_.insert(service_path);
+  for (const NetworkState* network : networks) {
+    const std::string& service_path = network->path();
+    auto old_networks_status_iter = old_networks_status.find(service_path);
+    if (old_networks_status_iter != old_networks_status.end()) {
+      networks_status_[service_path] = old_networks_status_iter->second;
       continue;
     }
-    networks_to_check.push_back(*it);
+    networks_to_check.push_back(network);
   }
 
   if (!networks_to_check.empty()) {
@@ -501,17 +538,16 @@ void ClientCertResolver::PolicyAppliedToNetwork(
 void ClientCertResolver::ResolveNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<std::vector<NetworkAndCertPattern>> networks_to_resolve(
-      new std::vector<NetworkAndCertPattern>);
+  std::vector<NetworkAndCertPattern> networks_to_resolve;
 
   // Filter networks with ClientCertPattern. As ClientCertPatterns can only be
   // set by policy, we check there.
-  for (NetworkStateHandler::NetworkStateList::const_iterator it =
-           networks.begin(); it != networks.end(); ++it) {
-    const NetworkState* network = *it;
-
-    // In any case, don't check this network again in NetworkListChanged.
-    resolved_networks_.insert(network->path());
+  for (const NetworkState* network : networks) {
+    // If the network was not known before, mark it as known but with resolving
+    // pending.
+    if (networks_status_.find(network->path()) == networks_status_.end())
+      networks_status_.insert_or_assign(network->path(),
+                                        MatchingCertAndResolveStatus());
 
     // If this network is not configured, it cannot have a ClientCertPattern.
     if (network->profile_path().empty())
@@ -538,11 +574,11 @@ void ClientCertResolver::ResolveNetworks(
     if (cert_config.client_cert_type != ::onc::client_cert::kPattern)
       continue;
 
-    networks_to_resolve->push_back(
+    networks_to_resolve.push_back(
         NetworkAndCertPattern(network->path(), cert_config));
   }
 
-  if (networks_to_resolve->empty()) {
+  if (networks_to_resolve.empty()) {
     VLOG(1) << "No networks to resolve.";
     // If a resolve task is running, it will notify observers when it's
     // finished.
@@ -554,7 +590,7 @@ void ClientCertResolver::ResolveNetworks(
   if (resolve_task_running_) {
     VLOG(1) << "A resolve task is already running. Queue this request.";
     for (const NetworkAndCertPattern& network_and_pattern :
-         *networks_to_resolve) {
+         networks_to_resolve) {
       queued_networks_to_resolve_.insert(network_and_pattern.service_path);
     }
     return;
@@ -570,7 +606,7 @@ void ClientCertResolver::ResolveNetworks(
                          CertLoader::Get()->all_certs()),
                      net::x509_util::DupCERTCertificateList(
                          CertLoader::Get()->system_certs()),
-                     base::Owned(networks_to_resolve.release()), Now()),
+                     networks_to_resolve, Now()),
       base::BindOnce(&ClientCertResolver::ConfigureCertificates,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -595,33 +631,43 @@ void ClientCertResolver::ResolvePendingNetworks() {
 }
 
 void ClientCertResolver::ConfigureCertificates(
-    std::unique_ptr<NetworkCertMatches> matches) {
+    std::vector<NetworkAndMatchingCert> matches) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (NetworkCertMatches::const_iterator it = matches->begin();
-       it != matches->end(); ++it) {
-    NET_LOG(EVENT) << "Configuring certificate for network: "
-                   << it->service_path;
-    base::DictionaryValue shill_properties;
-    if (it->pkcs11_id.empty()) {
-      client_cert::SetEmptyShillProperties(it->cert_config_type,
-                                           &shill_properties);
-    } else {
-      client_cert::SetShillProperties(it->cert_config_type,
-                                      it->key_slot_id,
-                                      it->pkcs11_id,
-                                      &shill_properties);
-      if (!it->identity.empty()) {
-        shill_properties.SetKey(shill::kEapIdentityProperty,
-                                base::Value(it->identity));
-      }
+  for (const NetworkAndMatchingCert& match : matches) {
+    MatchingCertAndResolveStatus& network_status =
+        networks_status_[match.service_path];
+    if (network_status.resolve_status == ResolveStatus::kResolved &&
+        network_status.matching_cert == match.matching_cert) {
+      // The same certificate was configured in the last ConfigureCertificates
+      // call, so don't do anything for this network.
+      continue;
     }
+    network_status.resolve_status = ResolveStatus::kResolved;
+    network_status.matching_cert = match.matching_cert;
     network_properties_changed_ = true;
-    DBusThreadManager::Get()->GetShillServiceClient()->
-        SetProperties(dbus::ObjectPath(it->service_path),
-                        shill_properties,
-                        base::Bind(&base::DoNothing),
-                        base::Bind(&LogError, it->service_path));
-    network_state_handler_->RequestUpdateForNetwork(it->service_path);
+
+    NET_LOG(EVENT) << "Configuring certificate for network: "
+                   << match.service_path;
+
+    base::DictionaryValue shill_properties;
+    if (match.matching_cert.has_value()) {
+      const MatchingCert& matching_cert = match.matching_cert.value();
+      client_cert::SetShillProperties(
+          match.cert_config_type, matching_cert.key_slot_id,
+          matching_cert.pkcs11_id, &shill_properties);
+      if (!matching_cert.identity.empty()) {
+        shill_properties.SetKey(shill::kEapIdentityProperty,
+                                base::Value(matching_cert.identity));
+      }
+    } else {
+      client_cert::SetEmptyShillProperties(match.cert_config_type,
+                                           &shill_properties);
+    }
+    DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
+        dbus::ObjectPath(match.service_path), shill_properties,
+        base::BindRepeating(&base::DoNothing),
+        base::BindRepeating(&LogError, match.service_path));
+    network_state_handler_->RequestUpdateForNetwork(match.service_path);
   }
   resolve_task_running_ = false;
   if (queued_networks_to_resolve_.empty())
