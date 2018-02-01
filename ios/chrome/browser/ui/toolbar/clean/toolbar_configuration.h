@@ -19,17 +19,23 @@
 // Style of this configuration.
 @property(nonatomic, assign) ToolbarStyle style;
 
+// Blur effect for the toolbar background.
+@property(nonatomic, readonly) UIBlurEffect* blurEffect;
+
 // Background color of the NTP. Used to do as if the toolbar was transparent and
 // the NTP is visible behind it.
 @property(nonatomic, readonly) UIColor* NTPBackgroundColor;
 
 // Background color of the toolbar.
+// TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* backgroundColor;
 
 // Background color of the omnibox.
+// TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* omniboxBackgroundColor;
 
 // Border color of the omnibox.
+// TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* omniboxBorderColor;
 
 // Color of the title of the buttons for the normal state.
@@ -37,6 +43,12 @@
 
 // Color of the title of the buttons for the highlighted state.
 @property(nonatomic, readonly) UIColor* buttonTitleHighlightedColor;
+
+// Returns the background color of the location bar, with a |visibilityFactor|.
+// The |visibilityFactor| is here to alter the alpha value of the background
+// color. Even with a |visibilityFactor| of 1, the final color could is
+// translucent.
+- (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor;
 
 @end
 

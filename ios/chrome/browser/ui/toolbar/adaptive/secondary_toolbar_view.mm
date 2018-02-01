@@ -71,9 +71,14 @@
   }
   DCHECK(self.buttonFactory);
 
-  self.backgroundColor =
-      self.buttonFactory.toolbarConfiguration.backgroundColor;
   self.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
+  UIVisualEffectView* blur =
+      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  [self addSubview:blur];
+  blur.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(blur, self);
 
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.shareButton = [self.buttonFactory shareButton];

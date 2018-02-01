@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 
+#import "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -25,6 +26,15 @@
   return self;
 }
 
+- (UIBlurEffect*)blurEffect {
+  switch (self.style) {
+    case NORMAL:
+      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleProminent];
+    case INCOGNITO:
+      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+  }
+}
+
 - (UIColor*)NTPBackgroundColor {
   switch (self.style) {
     case NORMAL:
@@ -37,12 +47,8 @@
 
 - (UIColor*)backgroundColor {
   if (IsUIRefreshPhase1Enabled()) {
-    switch (self.style) {
-      case NORMAL:
-        return UIColorFromRGB(kAdaptiveToolbarBackgroundColor);
-      case INCOGNITO:
-        return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
-    }
+    NOTREACHED();
+    return nil;
   } else {
     switch (self.style) {
       case NORMAL:
@@ -55,12 +61,8 @@
 
 - (UIColor*)omniboxBackgroundColor {
   if (IsUIRefreshPhase1Enabled()) {
-    switch (self.style) {
-      case NORMAL:
-        return UIColorFromRGB(kAdaptiveLocationBackgroundColor);
-      case INCOGNITO:
-        return UIColorFromRGB(kIcongnitoAdaptiveLocationBackgroundColor);
-    }
+    NOTREACHED();
+    return nil;
   } else {
     switch (self.style) {
       case NORMAL:
@@ -72,11 +74,16 @@
 }
 
 - (UIColor*)omniboxBorderColor {
-  switch (self.style) {
-    case NORMAL:
-      return UIColorFromRGB(kLocationBarBorderColor);
-    case INCOGNITO:
-      return UIColorFromRGB(kIncognitoLocationBarBorderColor);
+  if (IsUIRefreshPhase1Enabled()) {
+    NOTREACHED();
+    return nil;
+  } else {
+    switch (self.style) {
+      case NORMAL:
+        return UIColorFromRGB(kLocationBarBorderColor);
+      case INCOGNITO:
+        return UIColorFromRGB(kIncognitoLocationBarBorderColor);
+    }
   }
 }
 
@@ -95,6 +102,19 @@
       return UIColorFromRGB(kToolbarButtonTitleHighlightedColor);
     case INCOGNITO:
       return UIColorFromRGB(kIncognitoToolbarButtonTitleHighlightedColor);
+  }
+}
+
+- (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor {
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor colorWithWhite:0
+                               alpha:kAdaptiveLocationBarBackgroundAlpha *
+                                     visibilityFactor];
+    case INCOGNITO:
+      return [UIColor colorWithWhite:1
+                               alpha:kAdaptiveLocationBarBackgroundAlpha *
+                                     visibilityFactor];
   }
 }
 
