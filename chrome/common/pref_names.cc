@@ -2546,6 +2546,11 @@ const char kIsolateOrigins[] = "site_isolation.isolate_origins";
 // Boolean that specifies opting into --site-per-process (full Site Isolation).
 const char kSitePerProcess[] = "site_isolation.site_per_process";
 
+// Boolean that specifies if the web driver flag is allowed to override policies
+// which prevent it from operating normally. (e.g. SitePerProcess.)
+const char kWebDriverOverridesIncompatiblePolicies[] =
+    "webdriver.override_incompatible_policy";
+
 #if defined(OS_WIN)
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.

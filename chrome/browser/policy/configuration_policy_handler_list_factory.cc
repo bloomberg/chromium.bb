@@ -738,6 +738,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSitePerProcess,
     prefs::kSitePerProcess,
     base::Value::Type::BOOLEAN },
+  { key::kWebDriverOverridesIncompatiblePolicies,
+    prefs::kWebDriverOverridesIncompatiblePolicies,
+    base::Value::Type::BOOLEAN },
 
   { key::kAbusiveExperienceInterventionEnforce,
     prefs::kAbusiveExperienceInterventionEnforce,

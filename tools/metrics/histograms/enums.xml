@@ -12489,6 +12489,7 @@ Called by update_net_error_codes.py.-->
   <int value="411" label="PasswordProtectionWarningTrigger"/>
   <int value="412" label="PasswordProtectionRiskTrigger"/>
   <int value="413" label="EnableSymantecLegacyInfrastructure"/>
+  <int value="414" label="WebDriverOverridesIncompatiblePolicies"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
