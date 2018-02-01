@@ -20,34 +20,24 @@ class AccountId;
 
 namespace chromeos {
 
+class ArcKioskController;
 class AppLaunchController;
+class DemoAppLauncher;
 class LoginScreenContext;
 class OobeUI;
 class WebUILoginView;
 class WizardController;
 
-// An interface that defines an out-of-box-experience (OOBE) or login screen
-// host. It contains code specific to the login UI implementation.
-//
-// The inheritance graph is as folllows:
-//
-//                               LoginDisplayHost
-//                                   /       |
-//                LoginDisplayHostCommon   MockLoginDisplayHost
-//                      /      |
-//   LoginDisplayHostViews   LoginDisplayHostWebUI
-//
-//
-// - LoginDisplayHost defines the generic interface.
-// - LoginDisplayHostCommon is UI-agnostic code shared between the views and
-//   webui hosts.
-// - MockLoginDisplayHost is for tests.
-// - LoginDisplayHostViews is for the login screen, which is written in views.
-// - LoginDisplayHostWebUI is for OOBE, which is written in HTML/JS/CSS.
+// An interface that defines OOBE/login screen host.
+// Host encapsulates WebUI window OOBE/login controllers,
+// UI implementation (such as LoginDisplay).
 class LoginDisplayHost {
  public:
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
+
+  LoginDisplayHost();
+  virtual ~LoginDisplayHost();
 
   // Creates UI implementation specific login display instance (views/WebUI).
   // The caller takes ownership of the returned value.
@@ -85,7 +75,7 @@ class LoginDisplayHost {
 
   // Returns current AppLaunchController, if it exists.
   // Result should not be stored.
-  virtual AppLaunchController* GetAppLaunchController() = 0;
+  AppLaunchController* GetAppLaunchController();
 
   // Starts screen for adding user into session.
   // |completion_callback| is invoked after login display host shutdown.
@@ -96,25 +86,25 @@ class LoginDisplayHost {
   virtual void CancelUserAdding() = 0;
 
   // Starts sign in screen.
-  virtual void StartSignInScreen(const LoginScreenContext& context) = 0;
+  void StartSignInScreen(const LoginScreenContext& context);
 
   // Invoked when system preferences that affect the signin screen have changed.
   virtual void OnPreferencesChanged() = 0;
 
   // Initiates authentication network prewarming.
-  virtual void PrewarmAuthentication() = 0;
+  void PrewarmAuthentication();
 
   // Starts app launch splash screen. If |is_auto_launch| is true, the app is
   // being auto-launched with no delay.
-  virtual void StartAppLaunch(const std::string& app_id,
-                              bool diagnostic_mode,
-                              bool is_auto_launch) = 0;
+  void StartAppLaunch(const std::string& app_id,
+                      bool diagnostic_mode,
+                      bool is_auto_launch);
 
   // Starts the demo app launch.
-  virtual void StartDemoAppLaunch() = 0;
+  void StartDemoAppLaunch();
 
   // Starts ARC kiosk splash screen.
-  virtual void StartArcKiosk(const AccountId& account_id) = 0;
+  void StartArcKiosk(const AccountId& account_id);
 
   // Start voice interaction OOBE.
   virtual void StartVoiceInteractionOobe() = 0;
@@ -124,37 +114,55 @@ class LoginDisplayHost {
 
   // Confirms sign in by provided credentials in |user_context|.
   // Used for new user login via GAIA extension.
-  virtual void CompleteLogin(const UserContext& user_context) = 0;
+  void CompleteLogin(const UserContext& user_context);
 
   // Notify the backend controller when the GAIA UI is finished loading.
-  virtual void OnGaiaScreenReady() = 0;
+  void OnGaiaScreenReady();
 
   // Sets the displayed email for the next login attempt. If it succeeds,
   // user's displayed email value will be updated to |email|.
-  virtual void SetDisplayEmail(const std::string& email) = 0;
+  void SetDisplayEmail(const std::string& email);
 
   // Sets the displayed name and given name for the next login attempt. If it
   // succeeds, user's displayed name and give name values will be updated to
   // |display_name| and |given_name|.
-  virtual void SetDisplayAndGivenName(const std::string& display_name,
-                                      const std::string& given_name) = 0;
+  void SetDisplayAndGivenName(const std::string& display_name,
+                              const std::string& given_name);
 
   // Load wallpaper for given |account_id|.
-  virtual void LoadWallpaper(const AccountId& account_id) = 0;
+  void LoadWallpaper(const AccountId& account_id);
 
   // Loads the default sign-in wallpaper.
-  virtual void LoadSigninWallpaper() = 0;
+  void LoadSigninWallpaper();
 
   // Returns true if user is allowed to log in by domain policy.
-  virtual bool IsUserWhitelisted(const AccountId& account_id) = 0;
+  bool IsUserWhitelisted(const AccountId& account_id);
 
  protected:
-  LoginDisplayHost();
-  virtual ~LoginDisplayHost();
+  virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
+  virtual void OnStartAppLaunch() = 0;
+  virtual void OnStartArcKiosk() = 0;
+
+  // Deletes |auth_prewarmer_|.
+  void OnAuthPrewarmDone();
+
+  // Active instance of authentication prewarmer.
+  std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
+
+  // App launch controller.
+  std::unique_ptr<AppLaunchController> app_launch_controller_;
+
+  // Demo app launcher.
+  std::unique_ptr<DemoAppLauncher> demo_app_launcher_;
+
+  // ARC kiosk controller.
+  std::unique_ptr<ArcKioskController> arc_kiosk_controller_;
 
  private:
   // Global LoginDisplayHost instance.
   static LoginDisplayHost* default_host_;
+
+  base::WeakPtrFactory<LoginDisplayHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHost);
 };
