@@ -16,6 +16,13 @@ namespace blink {
 // This file provides utility functions for computing caret rect in LayoutNG.
 
 class LayoutBlockFlow;
+struct LocalCaretRect;
+
+// Given an inline formatting context and a position in the context, returns the
+// caret rect if a caret should be placed at the position, with the given
+// affinity. The caret rect location is local to the given formatting context.
+CORE_EXPORT LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow&,
+                                                   const PositionWithAffinity&);
 
 // An NGCaretPosition indicates a caret position relative to an inline
 // NGPhysicalFragment:

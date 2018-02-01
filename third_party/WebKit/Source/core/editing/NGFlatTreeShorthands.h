@@ -10,12 +10,16 @@
 namespace blink {
 
 class LayoutBlockFlow;
+struct LocalCaretRect;
 
 // This file contains shorthands that converts FlatTree-variants of editing
 // objects into DOM tree variants, and then pass them to LayoutNG utility
 // functions that accept DOM tree variants only.
 
 const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
+
+LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow&,
+                                       const PositionInFlatTreeWithAffinity&);
 
 }  // namespace blink
 

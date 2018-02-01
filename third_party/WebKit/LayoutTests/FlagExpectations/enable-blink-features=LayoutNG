@@ -4,6 +4,8 @@
 
 # Need support for getBoundingClientRect() with LayoutNG.
 crbug.com/755750 accessibility/selection-affinity.html [ Failure ]
+crbug.com/755750 fast/events/menu-key-context-menu-document-pinch-zoom.html [ Failure ]
+crbug.com/755750 virtual/mouseevent_fractional/fast/events/menu-key-context-menu-document-pinch-zoom.html [ Failure ]
 
 ## Reverse hosting of editable block
 crbug.com/707656 editing/execCommand/format-block-crash.html [ Crash ]
