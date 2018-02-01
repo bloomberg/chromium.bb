@@ -166,6 +166,8 @@ bool InitializeICUWithFileDescriptorInternal(
         icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
   }
 #endif
+  // Never try to load ICU data from files.
+  udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
   return err == U_ZERO_ERROR;
 }
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
@@ -207,6 +209,8 @@ bool InitializeICUFromRawMemory(const uint8_t* raw_memory) {
 
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(const_cast<uint8_t*>(raw_memory), &err);
+  // Never try to load ICU data from files.
+  udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
   return err == U_ZERO_ERROR;
 #else
   return true;
@@ -243,6 +247,8 @@ bool InitializeICU() {
 
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(reinterpret_cast<void*>(addr), &err);
+  // Never try to load ICU data from files.
+  udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
   result = (err == U_ZERO_ERROR);
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)
   // The ICU data is statically linked.
