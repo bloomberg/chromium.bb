@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -38,6 +39,7 @@ void VrTestSuite::Initialize() {
 #endif
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
       pak_path.AppendASCII("vr_test.pak"));
+  ui::MaterialDesignController::Initialize();
 }
 
 void VrTestSuite::Shutdown() {

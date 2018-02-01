@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include <string>
+
 #include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -51,6 +53,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -92,14 +95,44 @@ void ExitFullscreenModeAndWait(BrowserView* browser_view) {
   waiter.Wait();
 }
 
+// Generates the test names suffixes based on the value of the test param.
+std::string TouchOptimizedUiStatusToString(
+    const ::testing::TestParamInfo<bool>& info) {
+  return info.param ? "TouchOptimizedUiEnabled" : "TouchOptimizedUiDisabled";
+}
+
+// Template to be used as a base class for touch-optimized UI parameterized test
+// fixtures.
+template <class BaseTest>
+class TouchOptimizedUiParamTest : public BaseTest,
+                                  public ::testing::WithParamInterface<bool> {
+ public:
+  TouchOptimizedUiParamTest() = default;
+  ~TouchOptimizedUiParamTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (GetParam()) {
+      command_line->AppendSwitchASCII(
+          switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
+    }
+
+    BaseTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TouchOptimizedUiParamTest);
+};
+
 }  // namespace
 
 using views::Widget;
 
-using BrowserNonClientFrameViewAshTest = InProcessBrowserTest;
-using HostedAppNonClientFrameViewAshTest = ExtensionBrowserTest;
+using BrowserNonClientFrameViewAshTest =
+    TouchOptimizedUiParamTest<InProcessBrowserTest>;
+using HostedAppNonClientFrameViewAshTest =
+    TouchOptimizedUiParamTest<ExtensionBrowserTest>;
 
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
   // We know we're using Ash, so static cast.
@@ -120,13 +153,19 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
 
   // Click in the top edge of a maximized window now hits the client area,
   // because we want it to fall through to the tab strip and select a tab.
+  // However, when Touch optimized UI is enabled, the height of the caption
+  // buttons is increased, so the click hits the caption.
+  // TODO(malaykeshav): Once the height of the tab is increased to match the
+  // touch-optimized UI, change this hit test to hit the client area.
+  // https://crbug.com/805762.
   widget->Maximize();
-  EXPECT_EQ(HTCLIENT, frame_view->NonClientHitTest(top_edge));
+  int expected_value = GetParam() ? HTCAPTION : HTCLIENT;
+  EXPECT_EQ(expected_value, frame_view->NonClientHitTest(top_edge));
 }
 
 // Test that the frame view does not do any painting in non-immersive
 // fullscreen.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        NonImmersiveFullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
@@ -164,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
@@ -241,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
 // Tests that Avatar icon should show on the top left corner of the teleported
 // browser window on ChromeOS.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        AvatarDisplayOnTeleportedWindow) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
@@ -270,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 }
 
 // Hit Test for Avatar Menu Button on ChromeOS.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        AvatarMenuButtonHitTestOnChromeOS) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
@@ -281,7 +320,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 
   gfx::Point avatar_center(profiles::kAvatarIconWidth / 2,
                            profiles::kAvatarIconHeight / 2);
-  EXPECT_EQ(HTCLIENT, frame_view->NonClientHitTest(avatar_center));
+  // The increased header height in the touch-optimized UI affects the expected
+  // result.
+  // TODO(malaykeshav): Once the height of the tab is increased to match the
+  // touch-optimized UI, change this hit test to hit the client area.
+  // https://crbug.com/805762.
+  int expected_value = GetParam() ? HTCAPTION : HTCLIENT;
+  EXPECT_EQ(expected_value, frame_view->NonClientHitTest(avatar_center));
 
   const AccountId current_user =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
@@ -299,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 
 // Tests that FrameCaptionButtonContainer has been relaid out in response to
 // tablet mode being toggled.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ToggleTabletModeRelayout) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
@@ -329,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 
 // Tests that browser frame minimum size constraint is updated in response to
 // browser view layout.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        FrameMinSizeIsUpdated) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
@@ -359,8 +404,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 
 namespace {
 
-class ImmersiveModeBrowserViewTest : public InProcessBrowserTest,
-                                     public ImmersiveModeController::Observer {
+class ImmersiveModeBrowserViewTest
+    : public TouchOptimizedUiParamTest<InProcessBrowserTest>,
+      public ImmersiveModeController::Observer {
  public:
   ImmersiveModeBrowserViewTest() = default;
   ~ImmersiveModeBrowserViewTest() override = default;
@@ -426,7 +472,7 @@ class ImmersiveModeBrowserViewTest : public InProcessBrowserTest,
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB when the browser is in immersive fullscreen mode.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeBrowserViewTest,
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
                        TabNavigationAcceleratorsFullscreenBrowser) {
   // Make sure that the focus is on the webcontents rather than on the omnibox,
   // because if the focus is on the omnibox, the tab strip will remain revealed
@@ -466,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeBrowserViewTest,
 
 // Creates a browser for a bookmark app and verifies the window frame is
 // correct.
-IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
   const GURL kAppStartURL("http://example.org/");
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -553,7 +599,8 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
 
 namespace {
 
-class BrowserNonClientFrameViewAshBackButtonTest : public InProcessBrowserTest {
+class BrowserNonClientFrameViewAshBackButtonTest
+    : public TouchOptimizedUiParamTest<InProcessBrowserTest> {
  public:
   BrowserNonClientFrameViewAshBackButtonTest() = default;
   ~BrowserNonClientFrameViewAshBackButtonTest() override = default;
@@ -569,7 +616,7 @@ class BrowserNonClientFrameViewAshBackButtonTest : public InProcessBrowserTest {
 }  // namespace
 
 // Test if the V1 apps' frame has a back button.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
                        V1BackButton) {
   browser()->window()->Close();
 
@@ -603,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
 }
 
 // Test the normal type browser's kTopViewInset is always 0.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, TopViewInset) {
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, TopViewInset) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
@@ -632,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, TopViewInset) {
 }
 
 // Test the V1 apps' kTopViewInset.
-IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, V1AppTopViewInset) {
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, V1AppTopViewInset) {
   browser()->window()->Close();
 
   // Open a new app window.
@@ -677,3 +724,12 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, V1AppTopViewInset) {
       window->GetProperty(aura::client::kTopViewInset);
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
 }
+
+#define INSTANTIATE_TEST_CASE(name)                               \
+  INSTANTIATE_TEST_CASE_P(, name, ::testing::Values(true, false), \
+                          &TouchOptimizedUiStatusToString)
+
+INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);
+INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
+INSTANTIATE_TEST_CASE(HostedAppNonClientFrameViewAshTest);
+INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshBackButtonTest);

@@ -26,7 +26,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "ui/base/ui_base_features.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -190,7 +190,8 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
                                                            bool is_bookmark) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   const bool is_touch_ui =
-      base::FeatureList::IsEnabled(features::kTouchableChrome);
+      ui::MaterialDesignController::GetMode() ==
+      ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
 
   if (is_bookmark)
     return is_touch_ui ? omnibox::kTouchableBookmarkIcon : omnibox::kStarIcon;

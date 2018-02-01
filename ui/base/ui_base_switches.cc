@@ -78,6 +78,10 @@ const char kTopChromeMDMaterialAuto[] = "material-auto";
 // mouse/touch hybrid devices.
 const char kTopChromeMDMaterialHybrid[] = "material-hybrid";
 
+// Material design mode that is more optimized for touch devices for the
+// |kTopChromeMD| switch.
+const char kTopChromeMDMaterialTouchOptimized[] = "material-touch-optimized";
+
 // Classic, non-material, mode for the |kTopChromeMD| switch.
 const char kTopChromeMDNonMaterial[] = "non-material";
 
