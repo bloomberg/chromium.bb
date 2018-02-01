@@ -118,6 +118,7 @@ camera.views.Album.prototype.onActivate = function() {
  * @override
  */
 camera.views.Album.prototype.onResize = function() {
+  this.scrollBar_.onResize();
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
     camera.util.ensureVisible(selectedPicture.element,
