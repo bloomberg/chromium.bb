@@ -93,6 +93,7 @@ group("gn_all") {
     deps += [
       ":webui_closure_compile",
       "//chrome",
+      "//chrome/browser/resources/media_router/extension:all",
       "//chrome/installer/zucchini:zucchini",
       "//chrome/installer/zucchini:zucchini_unittests",
       "//chrome/test:browser_tests",
