@@ -275,9 +275,13 @@ void OnIntentPickerClosed(int render_process_host_id,
   if (!instance) {
     close_reason = ArcNavigationThrottle::CloseReason::ERROR;
   } else if (close_reason == ArcNavigationThrottle::CloseReason::
-                                 OBSOLETE_JUST_ONCE_PRESSED ||
+                                 ARC_APP_PREFERRED_PRESSED ||
              close_reason ==
-                 ArcNavigationThrottle::CloseReason::OBSOLETE_ALWAYS_PRESSED) {
+                 ArcNavigationThrottle::CloseReason::ARC_APP_PRESSED ||
+             close_reason ==
+                 ArcNavigationThrottle::CloseReason::CHROME_PREFERRED_PRESSED ||
+             close_reason ==
+                 ArcNavigationThrottle::CloseReason::CHROME_PRESSED) {
     if (selected_app_index == handlers.size()) {
       close_reason = ArcNavigationThrottle::CloseReason::ERROR;
     } else {
