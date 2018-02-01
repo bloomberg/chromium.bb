@@ -43449,6 +43449,7 @@ Full version information for the fingerprint enum values:
 Called by update_traffic_annotation_histograms.py.-->
 
   <int value="485305" label="data_reduction_proxy_config"/>
+  <int value="516551" label="socket_bio_adapter"/>
   <int value="727478" label="metrics_report_ukm"/>
   <int value="727528" label="metrics_report_uma"/>
   <int value="1112842" label="oauth2_mint_token_flow"/>
