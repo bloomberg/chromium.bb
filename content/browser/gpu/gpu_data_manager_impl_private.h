@@ -55,15 +55,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void DisableHardwareAcceleration();
   bool HardwareAccelerationEnabled() const;
   void DisableSwiftShader();
-  void SetGpuInfo(const gpu::GPUInfo& gpu_info);
 
   void Initialize();
 
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
-
-  void AppendRendererCommandLine(base::CommandLine* command_line) const;
 
   void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
@@ -211,10 +208,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // If one tries to call a member before initialization then it is defered
   // until Initialize() is completed.
   std::vector<base::Closure> post_init_tasks_;
-
-#if defined(OS_ANDROID)
-  bool blacklist_accelerated_video_decode_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

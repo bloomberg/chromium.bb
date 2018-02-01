@@ -76,9 +76,6 @@ class TestingBrowserProcess : public BrowserProcess {
   policy::ChromeBrowserPolicyConnector* browser_policy_connector() override;
   policy::PolicyService* policy_service() override;
   IconManager* icon_manager() override;
-#if defined(OS_ANDROID)
-  GpuDriverInfoManager* gpu_driver_info_manager() override;
-#endif
   GpuModeManager* gpu_mode_manager() override;
   BackgroundModeManager* background_mode_manager() override;
   void set_background_mode_manager_for_test(

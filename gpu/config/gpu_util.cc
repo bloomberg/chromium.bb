@@ -245,7 +245,8 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
   GpuFeatureInfo gpu_feature_info;
   std::set<int> blacklisted_features;
-  if (!ignore_gpu_blacklist) {
+  if (!ignore_gpu_blacklist &&
+      !command_line->HasSwitch(switches::kUseGpuInTests)) {
     std::unique_ptr<GpuBlacklist> list(GpuBlacklist::Create());
     if (log_gpu_control_list_decisions)
       list->EnableControlListLogging("gpu_blacklist");

@@ -522,8 +522,6 @@ split_static_library("browser") {
     "google/google_update_win.h",
     "google/google_url_tracker_factory.cc",
     "google/google_url_tracker_factory.h",
-    "gpu/gpu_driver_info_manager_android.cc",
-    "gpu/gpu_driver_info_manager_android.h",
     "gpu/gpu_mode_manager.cc",
     "gpu/gpu_mode_manager.h",
     "gpu/three_d_api_observer.cc",
