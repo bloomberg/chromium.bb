@@ -539,13 +539,13 @@
 
     'tryserver.chromium.android': {
       'android_archive_rel_ng': 'android_release_trybot',
-      'android_arm64_dbg_recipe': 'android_debug_trybot_arm64',
+      'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android_blink_rel': 'android_release_trybot',
-      'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot',
-      'android_compile_dbg': 'android_debug_trybot',
-      'android_compile_mips_dbg': 'android_debug_trybot_mipsel',
-      'android_compile_x64_dbg': 'android_debug_trybot_x64',
-      'android_compile_x86_dbg': 'android_debug_trybot_x86',
+      'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only',
+      'android_compile_dbg': 'android_debug_trybot_compile_only',
+      'android_compile_mips_dbg': 'android_debug_trybot_compile_only_mipsel',
+      'android_compile_x64_dbg': 'android_debug_trybot_compile_only_x64',
+      'android_compile_x86_dbg': 'android_debug_trybot_compile_only_x86',
       'android_coverage': 'android_debug_trybot_java_coverage',
       'android_cronet': 'android_cronet_release_trybot_arm_no_neon',
 
@@ -559,7 +559,7 @@
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_n5_rel': 'android_release_trybot',
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
-      'cast_shell_android': 'android_cast_debug_static_bot',
+      'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
       'linux_android_dbg_ng': 'android_debug_trybot',
       'linux_android_rel_ng': 'android_release_trybot',
     },
@@ -785,13 +785,17 @@
       'android', 'cast', 'clang', 'debug_static_bot',
     ],
 
+    'android_cast_debug_static_bot_compile_only': [
+      'android', 'cast', 'clang', 'debug_static_bot', 'compile_only',
+    ],
+
     'android_clang_asan_debug_bot_minimal_symbols': [
       'android', 'clang', 'asan', 'debug_bot', 'minimal_symbols',
       'strip_debug_info',
     ],
 
-    'android_clang_asan_debug_trybot': [
-      'android', 'clang', 'asan', 'debug_trybot',
+    'android_clang_asan_debug_trybot_compile_only': [
+      'android', 'clang', 'asan', 'debug_trybot', 'compile_only',
     ],
 
     'android_clang_tot_asan': [
@@ -895,14 +899,6 @@
       'android', 'debug_static_bot', 'arm64',
     ],
 
-    'android_debug_trybot': [
-      'android', 'debug_trybot',
-    ],
-
-    'android_debug_trybot_arm64': [
-      'android', 'debug_trybot', 'arm64',
-    ],
-
     'android_debug_static_bot_x64': [
       'android', 'debug_static_bot', 'x64',
     ],
@@ -915,20 +911,36 @@
       'android', 'debug_static_bot', 'minimal_symbols', 'mipsel', 'strip_debug_info',
     ],
 
+    'android_debug_trybot': [
+      'android', 'debug_trybot',
+    ],
+
+    'android_debug_trybot_arm64': [
+      'android', 'debug_trybot', 'arm64',
+    ],
+
+    'android_debug_trybot_compile_only': [
+      'android', 'debug_trybot', 'compile_only',
+    ],
+
+    'android_debug_trybot_compile_only_arm64': [
+      'android', 'debug_trybot', 'compile_only', 'arm64',
+    ],
+
+    'android_debug_trybot_compile_only_mipsel': [
+      'android', 'debug_trybot', 'compile_only', 'mipsel',
+    ],
+
+    'android_debug_trybot_compile_only_x64': [
+      'android', 'debug_trybot', 'compile_only', 'x64',
+    ],
+
+    'android_debug_trybot_compile_only_x86': [
+      'android', 'debug_trybot', 'compile_only', 'x86',
+    ],
+
     'android_debug_trybot_java_coverage': [
       'android', 'debug_trybot', 'java_coverage', 'strip_debug_info',
-    ],
-
-    'android_debug_trybot_mipsel': [
-      'android', 'debug_trybot', 'mipsel', 'strip_debug_info',
-    ],
-
-    'android_debug_trybot_x64': [
-      'android', 'debug_trybot', 'x64', 'strip_debug_info',
-    ],
-
-    'android_debug_trybot_x86': [
-      'android', 'debug_trybot', 'x86', 'strip_debug_info',
     ],
 
     'android_ndk_next_release_bot_minimal_symbols': [
@@ -1818,6 +1830,10 @@
 
     'no_clang': {
       'gn_args': 'is_clang=false',
+    },
+
+    'compile_only': {
+      'mixins': ['no_symbols'],
     },
 
     'cronet': {
