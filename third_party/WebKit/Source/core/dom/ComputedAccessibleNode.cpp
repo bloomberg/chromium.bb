@@ -60,12 +60,39 @@ int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
   return out;
 }
 
-const String ComputedAccessibleNode::name() const {
-  return tree_->GetNameForAXNode(cache_->GetAXID(element_));
+const String ComputedAccessibleNode::GetStringAttribute(
+    WebAOMStringAttribute attr) const {
+  WebString out;
+  if (tree_->GetStringAttributeForAXNode(cache_->GetAXID(element_), attr,
+                                         &out)) {
+    return out;
+  }
+  return String();
 }
 
+const String ComputedAccessibleNode::keyShortcuts() const {
+  return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_KEY_SHORTCUTS);
+}
+const String ComputedAccessibleNode::name() const {
+  return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_NAME);
+}
+const String ComputedAccessibleNode::placeholder() const {
+  return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_PLACEHOLDER);
+}
 const String ComputedAccessibleNode::role() const {
-  return tree_->GetRoleForAXNode(cache_->GetAXID(element_));
+  WebString out;
+  if (tree_->GetRoleForAXNode(cache_->GetAXID(element_), &out)) {
+    return out;
+  }
+  return String();
+}
+
+const String ComputedAccessibleNode::roleDescription() const {
+  return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_ROLE_DESCRIPTION);
+}
+
+const String ComputedAccessibleNode::valueText() const {
+  return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_VALUE_TEXT);
 }
 
 int32_t ComputedAccessibleNode::colCount(bool& is_null) const {
