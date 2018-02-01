@@ -7,8 +7,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "services/service_manager/public/cpp/service.h"
+namespace service_manager {
+class Service;
+}
 
 namespace media {
 class AudioManager;

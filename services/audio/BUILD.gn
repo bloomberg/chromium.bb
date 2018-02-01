@@ -46,6 +46,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//media:test_support",
     "//services/audio/public/cpp",
+    "//services/audio/public/cpp:test_support",
     "//services/audio/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
