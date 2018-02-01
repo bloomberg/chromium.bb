@@ -142,8 +142,9 @@ std::vector<base::string16> ConvertJStringArrayToString16Array(
   if (array) {
     jsize len = env->GetArrayLength(array);
     for (int i = 0; i < len; i++) {
-      results.push_back(ConvertJavaStringToUTF16(env,
-          static_cast<jstring>(env->GetObjectArrayElement(array, i))));
+      ScopedJavaLocalRef<jstring> j_str(
+          env, static_cast<jstring>(env->GetObjectArrayElement(array, i)));
+      results.push_back(ConvertJavaStringToUTF16(env, j_str));
     }
   }
   return results;
@@ -939,8 +940,9 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
   if (projection) {
     jsize len = env->GetArrayLength(projection);
     for (int i = 0; i < len; i++) {
-      std::string name = ConvertJavaStringToUTF8(env, static_cast<jstring>(
-          env->GetObjectArrayElement(projection, i)));
+      ScopedJavaLocalRef<jstring> j_name(
+          env, static_cast<jstring>(env->GetObjectArrayElement(projection, i)));
+      std::string name = ConvertJavaStringToUTF8(env, j_name);
       history::HistoryAndBookmarkRow::ColumnID id =
           history::HistoryAndBookmarkRow::GetColumnID(name);
       if (id == history::HistoryAndBookmarkRow::COLUMN_END) {
@@ -1080,8 +1082,9 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
   if (projection) {
     jsize len = env->GetArrayLength(projection);
     for (int i = 0; i < len; i++) {
-      std::string name = ConvertJavaStringToUTF8(env, static_cast<jstring>(
-          env->GetObjectArrayElement(projection, i)));
+      ScopedJavaLocalRef<jstring> j_name(
+          env, static_cast<jstring>(env->GetObjectArrayElement(projection, i)));
+      std::string name = ConvertJavaStringToUTF8(env, j_name);
       history::SearchRow::ColumnID id =
           history::SearchRow::GetColumnID(name);
       if (id == history::SearchRow::COLUMN_END) {

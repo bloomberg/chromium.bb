@@ -35,17 +35,20 @@ MidiDeviceAndroid::MidiDeviceAndroid(JNIEnv* env,
   jsize num_input_ports = env->GetArrayLength(raw_input_ports.obj());
 
   for (jsize i = 0; i < num_input_ports; ++i) {
-    jobject port = env->GetObjectArrayElement(raw_input_ports.obj(), i);
+    ScopedJavaLocalRef<jobject> j_port(
+        env, env->GetObjectArrayElement(raw_input_ports.obj(), i));
     input_ports_.push_back(
-        std::make_unique<MidiInputPortAndroid>(env, port, delegate));
+        std::make_unique<MidiInputPortAndroid>(env, j_port.obj(), delegate));
   }
 
   ScopedJavaLocalRef<jobjectArray> raw_output_ports =
       Java_MidiDeviceAndroid_getOutputPorts(env, raw_device);
   jsize num_output_ports = env->GetArrayLength(raw_output_ports.obj());
   for (jsize i = 0; i < num_output_ports; ++i) {
-    jobject port = env->GetObjectArrayElement(raw_output_ports.obj(), i);
-    output_ports_.push_back(std::make_unique<MidiOutputPortAndroid>(env, port));
+    ScopedJavaLocalRef<jobject> j_port(
+        env, env->GetObjectArrayElement(raw_output_ports.obj(), i));
+    output_ports_.push_back(
+        std::make_unique<MidiOutputPortAndroid>(env, j_port.obj()));
   }
 }
 
