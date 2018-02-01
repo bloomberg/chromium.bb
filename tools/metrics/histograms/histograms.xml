@@ -8636,6 +8636,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BrowserRenderProcessHost.OnChannelError" enum="BooleanHit">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Number of times BrowserRenderProcessHost::OnChannelError was called.
+  </summary>
+</histogram>
+
 <histogram name="Bubbles.Close.Accepted" enum="BubbleType">
   <owner>hcarmona@chromium.org</owner>
   <summary>An open bubble was closed because the user accepted it.</summary>
