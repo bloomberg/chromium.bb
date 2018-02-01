@@ -34,11 +34,8 @@ ChromeDownloadManagerDelegate*
 DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   DownloadManager* manager = BrowserContext::GetDownloadManager(profile_);
   // If we've already created the delegate, just return it.
-  if (download_manager_created_) {
-    DCHECK(static_cast<DownloadManagerDelegate*>(manager_delegate_.get()) ==
-           manager->GetDelegate());
+  if (download_manager_created_)
     return manager_delegate_.get();
-  }
   download_manager_created_ = true;
 
   // In case the delegate has already been set by
@@ -70,6 +67,7 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
 
   // Include this download manager in the set monitored by the
   // global status updater.
+  DCHECK(g_browser_process->download_status_updater());
   g_browser_process->download_status_updater()->AddManager(manager);
 
   return manager_delegate_.get();
@@ -121,7 +119,9 @@ void DownloadCoreServiceImpl::SetDownloadManagerDelegateForTesting(
   manager_delegate_.swap(new_delegate);
   DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
   dm->SetDelegate(manager_delegate_.get());
-  manager_delegate_->SetDownloadManager(dm);
+  if (manager_delegate_)
+    manager_delegate_->SetDownloadManager(dm);
+  download_manager_created_ = !!manager_delegate_;
   if (new_delegate)
     new_delegate->Shutdown();
 }

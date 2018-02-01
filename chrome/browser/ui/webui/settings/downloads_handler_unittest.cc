@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,15 +24,17 @@ class DownloadsHandlerTest : public testing::Test {
  public:
   DownloadsHandlerTest()
       : download_manager_(new content::MockDownloadManager()),
-        chrome_download_manager_delegate_(&profile_),
         handler_(&profile_) {
     content::BrowserContext::SetDownloadManagerForTesting(
         &profile_, base::WrapUnique(download_manager_));
-    EXPECT_EQ(download_manager_,
-              content::BrowserContext::GetDownloadManager(&profile_));
+    std::unique_ptr<ChromeDownloadManagerDelegate> delegate =
+        std::make_unique<ChromeDownloadManagerDelegate>(&profile_);
+    chrome_download_manager_delegate_ = delegate.get();
+    service_ = DownloadCoreServiceFactory::GetForBrowserContext(&profile_);
+    service_->SetDownloadManagerDelegateForTesting(std::move(delegate));
 
-    EXPECT_CALL(*download_manager_, GetDelegate())
-        .WillRepeatedly(testing::Return(&chrome_download_manager_delegate_));
+    EXPECT_CALL(*download_manager_, GetBrowserContext())
+        .WillRepeatedly(testing::Return(&profile_));
     EXPECT_CALL(*download_manager_, Shutdown());
 
     handler_.set_web_ui(&test_web_ui_);
@@ -49,7 +53,7 @@ class DownloadsHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
-    chrome_download_manager_delegate_.Shutdown();
+    service_->SetDownloadManagerDelegateForTesting(nullptr);
     testing::Test::TearDown();
   }
 
@@ -74,8 +78,9 @@ class DownloadsHandlerTest : public testing::Test {
   content::TestWebUI test_web_ui_;
   TestingProfile profile_;
 
+  DownloadCoreService* service_;
   content::MockDownloadManager* download_manager_;  // Owned by |profile_|.
-  ChromeDownloadManagerDelegate chrome_download_manager_delegate_;
+  ChromeDownloadManagerDelegate* chrome_download_manager_delegate_;
 
   DownloadsHandler handler_;
 };

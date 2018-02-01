@@ -29,6 +29,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
@@ -842,25 +844,31 @@ base::Time AnHourAgo() {
 class RemoveDownloadsTester {
  public:
   explicit RemoveDownloadsTester(TestingProfile* testing_profile)
-      : download_manager_(new content::MockDownloadManager()),
-        chrome_download_manager_delegate_(testing_profile) {
+      : download_manager_(new content::MockDownloadManager()) {
     content::BrowserContext::SetDownloadManagerForTesting(
         testing_profile, base::WrapUnique(download_manager_));
-    EXPECT_EQ(download_manager_,
-              content::BrowserContext::GetDownloadManager(testing_profile));
+    std::unique_ptr<ChromeDownloadManagerDelegate> delegate =
+        std::make_unique<ChromeDownloadManagerDelegate>(testing_profile);
+    chrome_download_manager_delegate_ = delegate.get();
+    service_ =
+        DownloadCoreServiceFactory::GetForBrowserContext(testing_profile);
+    service_->SetDownloadManagerDelegateForTesting(std::move(delegate));
 
-    EXPECT_CALL(*download_manager_, GetDelegate())
-        .WillOnce(Return(&chrome_download_manager_delegate_));
+    EXPECT_CALL(*download_manager_, GetBrowserContext())
+        .WillRepeatedly(Return(testing_profile));
     EXPECT_CALL(*download_manager_, Shutdown());
   }
 
-  ~RemoveDownloadsTester() { chrome_download_manager_delegate_.Shutdown(); }
+  ~RemoveDownloadsTester() {
+    service_->SetDownloadManagerDelegateForTesting(nullptr);
+  }
 
   content::MockDownloadManager* download_manager() { return download_manager_; }
 
  private:
+  DownloadCoreService* service_;
   content::MockDownloadManager* download_manager_;  // Owned by testing profile.
-  ChromeDownloadManagerDelegate chrome_download_manager_delegate_;
+  ChromeDownloadManagerDelegate* chrome_download_manager_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveDownloadsTester);
 };
@@ -1792,7 +1800,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 // ChromeDownloadManagerDelegate is correctly created and shut down.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDownloads) {
   RemoveDownloadsTester tester(GetProfile());
-
   EXPECT_CALL(
       *tester.download_manager(), RemoveDownloadsByURLAndTime(_, _, _));
 
