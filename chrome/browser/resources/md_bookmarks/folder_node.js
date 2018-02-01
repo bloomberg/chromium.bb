@@ -141,7 +141,7 @@ Polymer({
   changeKeyboardSelection_: function(xDirection, yDirection, currentFocus) {
     let newFocusFolderNode = null;
     const isChildFolderNodeFocused =
-        currentFocus.tagName == 'BOOKMARKS-FOLDER-NODE';
+        currentFocus && currentFocus.tagName == 'BOOKMARKS-FOLDER-NODE';
 
     if (xDirection == 1) {
       // The right arrow opens a folder if closed and goes to the first child

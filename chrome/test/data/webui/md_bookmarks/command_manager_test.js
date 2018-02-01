@@ -15,6 +15,7 @@ suite('<bookmarks-command-manager>', function() {
     // fake data.
     bmpCopyFunction = chrome.bookmarkManagerPrivate.copy;
     bmpPasteFunction = chrome.bookmarkManagerPrivate.paste;
+    bmpCutFunction = chrome.bookmarkManagerPrivate.cut;
     chrome.bookmarkManagerPrivate.copy = function() {};
     chrome.bookmarkManagerPrivate.removeTrees = function() {};
   });
@@ -22,6 +23,7 @@ suite('<bookmarks-command-manager>', function() {
   suiteTeardown(function() {
     chrome.bookmarkManagerPrivate.copy = bmpCopyFunction;
     chrome.bookmarkManagerPrivate.paste = bmpPasteFunction;
+    chrome.bookmarkManagerPrivate.cut = bmpCutFunction;
   });
 
   setup(function() {
@@ -136,12 +138,10 @@ suite('<bookmarks-command-manager>', function() {
   });
 
   test('copy command triggers', function() {
-    const modifier = cr.isMac ? 'meta' : 'ctrl';
-
     store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'c');
+    document.dispatchEvent(new Event('copy'));
     commandManager.assertLastCommand(Command.COPY, ['11', '13']);
   });
 
@@ -157,20 +157,19 @@ suite('<bookmarks-command-manager>', function() {
   test('cut/paste commands trigger', function() {
     let lastCut;
     let lastPaste;
-    chrome.bookmarkManagerPrivate.cut = function(idList) {
+    chrome.bookmarkManagerPrivate.cut = (idList) => {
       lastCut = idList.sort();
     };
-    chrome.bookmarkManagerPrivate.paste = function(selectedFolder) {
+    chrome.bookmarkManagerPrivate.paste = (selectedFolder) => {
       lastPaste = selectedFolder;
     };
 
     store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
-    const modifier = cr.isMac ? 'meta' : 'ctrl';
-    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'x');
+    document.dispatchEvent(new Event('cut'));
     assertDeepEquals(['11', '13'], lastCut);
-    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'v');
+    document.dispatchEvent(new Event('paste'));
     assertEquals('1', lastPaste);
   });
 
@@ -449,6 +448,7 @@ suite('<bookmarks-item> CommandManager integration', function() {
   let items;
   let commandManager;
   let openedTabs;
+  let rootNode;
 
   setup(function() {
     store = new bookmarks.TestStore({
@@ -473,9 +473,15 @@ suite('<bookmarks-item> CommandManager integration', function() {
     list = document.createElement('bookmarks-list');
     replaceBody(list);
     document.body.appendChild(commandManager);
+
+    rootNode = document.createElement('bookmarks-folder-node');
+    rootNode.itemId = '1';
+    rootNode.depth = 0;
+    document.body.appendChild(rootNode);
     Polymer.dom.flush();
 
     items = list.root.querySelectorAll('bookmarks-item');
+
 
     openedTabs = [];
     chrome.tabs.create = function(createConfig) {
@@ -549,10 +555,37 @@ suite('<bookmarks-item> CommandManager integration', function() {
     assertOpenedTabs(['http://12/']);
     assertTrue(openedTabs[0].active);
   });
+
+  test('copy/cut/paste for folder nodes independent of selection', function() {
+    bmpCopyFunction = chrome.bookmarkManagerPrivate.copy;
+    bmpCutFunction = chrome.bookmarkManagerPrivate.cut;
+
+    let lastCut;
+    let lastCopy;
+    chrome.bookmarkManagerPrivate.copy = function(idList) {
+      lastCopy = idList.sort();
+    };
+    chrome.bookmarkManagerPrivate.cut = function(idList) {
+      lastCut = idList.sort();
+    };
+
+    const modifier = cr.isMac ? 'meta' : 'ctrl';
+
+    store.data.selection.items = new Set(['12', '13']);
+    store.notifyObservers();
+    const targetNode = findFolderNode(rootNode, '11');
+    MockInteractions.pressAndReleaseKeyOn(targetNode, '', modifier, 'c');
+    assertDeepEquals(['11'], lastCopy);
+
+    MockInteractions.pressAndReleaseKeyOn(targetNode, '', modifier, 'x');
+    assertDeepEquals(['11'], lastCut);
+
+    chrome.bookmarkManagerPrivate.copy = bmpCopyFunction;
+    chrome.bookmarkManagerPrivate.cut = bmpCutFunction;
+  });
 });
 
 suite('<bookmarks-command-manager> whole page integration', function() {
-  let app;
   let store;
   let commandManager;
 
