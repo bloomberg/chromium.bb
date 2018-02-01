@@ -2,10 +2,17 @@
 <script src="./resources/webgl-test-utils-full.js"></script>
 <script src="./resources/tex-image-and-sub-image-utils.js"></script>
 <script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
 <body>
 <script>
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
+}
+
+var canvas = document.createElement('canvas');
+canvas.width = 400;
+canvas.height = 400;
+document.body.appendChild(canvas);
 
 var imageData = new ImageData(new Uint8ClampedArray(
                               [255, 0, 0, 255,
@@ -15,10 +22,9 @@ var imageData = new ImageData(new Uint8ClampedArray(
                                2, 2);
 
 var testOptions = {sourceName: "ImageData",
-                   imageSource: imageData, sourceIsPremul: false,
-                   resizeWidth: 4, resizeHeight: 4};
-
-prepareWebGLContext();
+				   imageSource: imageData, sourceIsPremul: false,
+				   resizeWidth: 16, resizeHeight: 16,
+				   resultsCanvas: canvas};
+prepareWebGLContext(testOptions);
 prepareResizedImageBitmapsAndRuntTests(testOptions);
-
 </script>

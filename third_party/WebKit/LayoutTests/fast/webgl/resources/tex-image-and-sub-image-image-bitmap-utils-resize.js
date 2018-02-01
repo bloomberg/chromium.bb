@@ -1,120 +1,11 @@
-//------------- Reference Buffers for Pixelated Filter Quality -------------//
-var refBufPixelatedPremul = [
-    255,0,0,255,    255,0,0,255,    26,0,0,26,      26,0,0,26,
-    255,0,0,255,    255,0,0,255,    26,0,0,26,      26,0,0,26,
-    0,255,0,255,    0,255,0,255,    0,26,0,26,      0,26,0,26,
-    0,255,0,255,    0,255,0,255,    0,26,0,26,      0,26,0,26];
-
-var refBufPixelatedUnpremul = [
-    255,0,0,255,    255,0,0,255,    255,0,0,26,     255,0,0,26,
-    255,0,0,255,    255,0,0,255,    255,0,0,26,     255,0,0,26,
-    0,255,0,255,    0,255,0,255,    0,255,0,26,     0,255,0,26,
-    0,255,0,255,    0,255,0,255,    0,255,0,26,     0,255,0,26];
-
-var refBufPixelatedPremulFlipY = [
-    0,255,0,255,    0,255,0,255,    0,26,0,26,      0,26,0,26,
-    0,255,0,255,    0,255,0,255,    0,26,0,26,      0,26,0,26,
-    255,0,0,255,    255,0,0,255,    26,0,0,26,      26,0,0,26,
-    255,0,0,255,    255,0,0,255,    26,0,0,26,      26,0,0,26];
-
-var refBufPixelatedUnpremulFlipY = [
-    0,255,0,255,    0,255,0,255,    0,255,0,26,     0,255,0,26,
-    0,255,0,255,    0,255,0,255,    0,255,0,26,     0,255,0,26,
-    255,0,0,255,    255,0,0,255,    255,0,0,26,     255,0,0,26,
-    255,0,0,255,    255,0,0,255,    255,0,0,26,     255,0,0,26];
-
-//---------------- Reference Buffers for Low Filter Quality ----------------//
-var refBufLowPremul= [
-    255,0,0,255,    197,0,0,197,    83,0,0,83,      26,0,0,26,
-    191,63,0,255,   148,49,0,197,   62,20,0,83,     19,6,0,26,
-    63,191,0,255,   49,148,0,197,   20,62,0,83,     6,19,0,26,
-    0,255,0,255,    0,197,0,197,    0,83,0,83,      0,26,0,26];
-
-var refBufLowUnpremul = [
-    255,0,0,255,    255,0,0,197,    255,0,0,83,     255,0,0,26,
-    191,63,0,255,   191,63,0,197,   191,63,0,83,    191,63,0,26,
-    63,191,0,255,   63,191,0,197,   63,191,0,83,    63,191,0,26,
-    0,255,0,255,    0,255,0,197,    0,255,0,83,     0,255,0,26];
-
-var refBufLowPremulFlipY = [
-    0,255,0,255,    0,197,0,197,    0,83,0,83,      0,26,0,26,
-    63,191,0,255,   49,148,0,197,   20,62,0,83,     6,19,0,26,
-    191,63,0,255,   148,49,0,197,   62,20,0,83,     19,6,0,26,
-    255,0,0,255,    197,0,0,197,    83,0,0,83,      26,0,0,26];
-
-var refBufLowUnpremulFlipY = [
-    0,255,0,255,    0,255,0,197,    0,255,0,83,     0,255,0,26,
-    63,191,0,255,   63,191,0,197,   63,191,0,83,    63,191,0,26,
-    191,63,0,255,   191,63,0,197,   191,63,0,83,    191,63,0,26,
-    255,0,0,255,    255,0,0,197,    255,0,0,83,     255,0,0,26];
-
-//-------------- Reference Buffers for Medium Filter Quality ---------------//
-var refBufMediumPremul = refBufLowPremul;
-var refBufMediumUnpremul = refBufLowUnpremul;
-var refBufMediumPremulFlipY = refBufLowPremulFlipY;
-var refBufMediumUnpremulFlipY = refBufLowUnpremulFlipY;
-
-//---------------- Reference Buffers for High Filter Quality ---------------//
-var refBufHighPremul = [
-    255,0,0,255,    204,0,0,200,    83,0,0,81,      21,0,0,21,
-    198,63,0,255,   152,48,0,200,   62,20,0,81,     16,5,0,21,
-    63,198,0,255,   48,152,0,200,   20,62,0,81,     5,16,0,21,
-    0,255,0,255,    0,204,0,200,    0,83,0,81,      0,21,0,21];
-
-var refBufHighUnpremul = [
-    255,0,0,255,    255,0,0,200,    255,0,0,81,     255,0,0,21,
-    193,62,0,255,   193,62,0,200,   193,62,0,81,    193,62,0,21,
-    62,193,0,255,   62,193,0,200,   62,193,0,81,    62,193,0,21,
-    0,255,0,255,    0,255,0,200,    0,255,0,81,     0,255,0,21];
-
-var refBufHighPremulFlipY = [
-    0,255,0,255,    0,204,0,200,    0,83,0,81,      0,21,0,21,
-    63,198,0,255,   48,152,0,200,   20,62,0,81,     5,16,0,21,
-    198,63,0,255,   152,48,0,200,   62,20,0,81,     16,5,0,21,
-    255,0,0,255,    204,0,0,200,    83,0,0,81,      21,0,0,21];
-
-var refBufHighUnpremulFlipY = [
-    0,255,0,255,    0,255,0,200,    0,255,0,81,     0,255,0,21,
-    62,193,0,255,   62,193,0,200,   62,193,0,81,    62,193,0,21,
-    193,62,0,255,   193,62,0,200,   193,62,0,81,    193,62,0,21,
-    255,0,0,255,    255,0,0,200,    255,0,0,81,     255,0,0,21];
-
 var wtu = WebGLTestUtils;
 var tiu = TexImageUtils;
 var gl = null;
 var internalFormat = "RGBA";
 var pixelFormat = "RGBA";
 var pixelType = "UNSIGNED_BYTE";
-var opaqueTolerance = 1;
-var transparentTolerance = 1;
-var transparentToleranceForBlob = 5;
-
-function getRefBuffer(testOptions, flipY, premultiplyAlpha) {
-    var refBufName = "refBuf" +
-                     testOptions.resizeQuality.charAt(0).toUpperCase() +
-                     testOptions.resizeQuality.slice(1);
-    if (premultiplyAlpha)
-        refBufName += "Premul";
-    else
-        refBufName += "Unpremul";
-    if (flipY)
-        refBufName += "FlipY";
-    return eval(refBufName);
-}
-
-function checkPixels(buf, refBuf, tolerance, retVal)
-{
-    if (buf.length != refBuf.length) {
-        retVal.testPassed = false;
-        return;
-    }
-    for (var p = 0; p < buf.length; p++) {
-        if (Math.abs(buf[p] - refBuf[p]) > tolerance) {
-            retVal.testPassed = false;
-            return;
-        }
-    }
-}
+var pixelsBuffer = [];
+var resizeQualities = ["pixelated", "low", "medium", "high"];
 
 function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap,
                          flipY, premultiplyAlpha, retVal, colorSpace,
@@ -161,12 +52,6 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap,
         loc = gl.getUniformLocation(program, "face");
     }
 
-    var tolerance = opaqueTolerance;
-    if (retVal.alpha != 0) {
-        tolerance = transparentTolerance;
-        if (testOptions.sourceName == "Blob")
-            tolerance = transparentToleranceForBlob;
-    }
     for (var tt = 0; tt < targets.length; ++tt) {
         if (bindingTarget == gl.TEXTURE_CUBE_MAP) {
             gl.uniform1i(loc, targets[tt]);
@@ -175,11 +60,9 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap,
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        // Check the buf
-        var refBuf = getRefBuffer(testOptions, flipY, premultiplyAlpha);
         var buf = new Uint8Array(width * height * 4);
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
-        checkPixels(buf, refBuf, tolerance, retVal);
+        pixelsBuffer.push({quality: testOptions.resizeQuality, buffer: buf});
     }
 }
 
@@ -234,7 +117,7 @@ function runTestOnBindingTarget(bindingTarget, program, bitmaps, retVal,
             colorSpace: retVal.colorSpaceEffect ? 'default' : 'empty' },
     ];
 
-    for (var i in cases) {
+    for (var i = 0; i < cases.length; i++) {
         runOneIteration(cases[i].sub, bindingTarget, program, cases[i].bitmap,
             cases[i].flipY, cases[i].premultiply, retVal, cases[i].colorSpace,
             testOptions);
@@ -308,31 +191,64 @@ function prepareResizedImageBitmapsAndRuntTest(testOptions) {
     return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(
         function() {
             var alphaVal = 0.5;
-            var testPassed = runTest(bitmaps, alphaVal, false, testOptions);
-            if (!testPassed)
-                assert_true(false, 'Test failed');
-        }, function() {
-            assert_true(false, 'Promise rejected');
+            runTest(bitmaps, alphaVal, false, testOptions);
         });
 }
 
 function prepareResizedImageBitmapsAndRuntTests(testOptions) {
-    var resizeQualities = ["pixelated", "low", "medium", "high"];
-    for (i = 0; i < resizeQualities.length; i++) {
-        testOptions.resizeQuality = resizeQualities[i];
-        promise_test(function() {
-            return prepareResizedImageBitmapsAndRuntTest(testOptions);
-        }, 'createImageBitmap(' + testOptions.sourceName + ') resize with ' +
-           testOptions.resizeQuality + ' resize quality.');
-    }
+    testOptions.resizeQuality = resizeQualities[0];
+    var p1 = prepareResizedImageBitmapsAndRuntTest(testOptions);
+    testOptions.resizeQuality = resizeQualities[1];
+    var p2 = prepareResizedImageBitmapsAndRuntTest(testOptions);
+    testOptions.resizeQuality = resizeQualities[2];
+    var p3 = prepareResizedImageBitmapsAndRuntTest(testOptions);
+    testOptions.resizeQuality = resizeQualities[3];
+    var p4 = prepareResizedImageBitmapsAndRuntTest(testOptions);
+
+    return Promise.all([p1, p2, p3, p4]).then(function() {
+            DrawResultsOnCanvas(testOptions);
+    });
 }
 
-function prepareWebGLContext() {
-    var canvas = document.createElement('canvas');
-    canvas.width = 4;
-    canvas.height = 4;
-    document.body.appendChild(canvas);
-    gl = canvas.getContext("webgl");
+function prepareWebGLContext(testOptions) {
+    var glcanvas = document.createElement('canvas');
+    glcanvas.width = testOptions.resizeWidth;
+    glcanvas.height = testOptions.resizeHeight;
+    glcanvas.style.display="none";
+    document.body.appendChild(glcanvas);
+    gl = glcanvas.getContext("webgl");
     gl.clearColor(0,0,0,1);
     gl.clearDepth(1);
+}
+
+function DrawResultsOnCanvas(testOptions) {
+    var resultsCanvas = testOptions.resultsCanvas;
+    var numTiles = Math.ceil(Math.sqrt(pixelsBuffer.length));
+    var width = numTiles * testOptions.resizeWidth;
+    var hieght = numTiles * testOptions.resizeWidth;
+    var resultsCtx = resultsCanvas.getContext("2d");
+
+    // Sweep for resize qualities one by one.
+    var tileCounter = 0;
+    for (var i = 0; i < resizeQualities.length; i++) {
+        // Loop in reverse order and use splice to remove the buffer after
+        // drawing to the canvas
+        for (var j = pixelsBuffer.length - 1; j >= 0; j--) {
+            if (pixelsBuffer[j].quality == resizeQualities[i]) {
+                var buffer = pixelsBuffer[j].buffer;
+                // Find the proper location for buffer
+                var x = (tileCounter * testOptions.resizeWidth) % width;
+                var y = Math.floor(tileCounter / numTiles) *
+                    testOptions.resizeHeight;
+                tileCounter++;
+                var imageData = new ImageData(Uint8ClampedArray.from(buffer),
+                    testOptions.resizeWidth, testOptions.resizeHeight);
+                resultsCtx.putImageData(imageData, x, y);
+                if (i != resizeQualities.length - 1)
+                    pixelsBuffer.splice(j, 1);
+            }
+        }
+    }
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
