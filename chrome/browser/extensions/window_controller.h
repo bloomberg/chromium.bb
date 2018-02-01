@@ -98,9 +98,14 @@ class WindowController {
   // TODO(stevenjb): Temporary workaround. Eliminate this.
   virtual Browser* GetBrowser() const;
 
-  // Extension/window visibility and ownership is window-specific, subclasses
-  // need to define this behavior.
-  virtual bool IsVisibleToExtension(const Extension* extension) const = 0;
+  // Returns true if the window is visible to the tabs API, when used by the
+  // given |extension|.
+  // |allow_dev_tools_windows| indicates whether dev tools windows should be
+  // treated as visible.
+  // TODO(devlin): Remove include_dev_tools_windows.
+  virtual bool IsVisibleToTabsAPIForExtension(
+      const Extension* extension,
+      bool include_dev_tools_windows) const = 0;
 
   // Returns true if the window type of the controller matches the |filter|.
   bool MatchesFilter(TypeFilter filter) const;

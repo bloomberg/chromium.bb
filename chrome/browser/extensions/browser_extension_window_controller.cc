@@ -82,9 +82,13 @@ Browser* BrowserExtensionWindowController::GetBrowser() const {
   return browser_;
 }
 
-bool BrowserExtensionWindowController::IsVisibleToExtension(
-    const extensions::Extension* extension) const {
+bool BrowserExtensionWindowController::IsVisibleToTabsAPIForExtension(
+    const extensions::Extension* extension,
+    bool allow_dev_tools_windows) const {
   DCHECK(extension);
   // Platform apps can only see their own windows.
-  return !browser_->is_devtools() && !extension->is_platform_app();
+  if (extension->is_platform_app())
+    return false;
+
+  return !browser_->is_devtools() || allow_dev_tools_windows;
 }

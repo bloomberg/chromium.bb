@@ -121,8 +121,9 @@ Browser* AppWindowController::GetBrowser() const {
   return nullptr;
 }
 
-bool AppWindowController::IsVisibleToExtension(
-    const Extension* extension) const {
+bool AppWindowController::IsVisibleToTabsAPIForExtension(
+    const Extension* extension,
+    bool allow_dev_tools_windows) const {
   DCHECK(extension);
   return extension->id() == app_window_->extension_id();
 }
