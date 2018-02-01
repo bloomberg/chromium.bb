@@ -114,6 +114,9 @@ class MemlogConnectionManager {
   // to ensure barrier IDs are unique.
   uint32_t next_barrier_id_ = 1;
 
+  // The next ID to use when exporting a heap dump.
+  size_t next_id_ = 1;
+
   // Maps process ID to the connection information for it.
   base::flat_map<base::ProcessId, std::unique_ptr<Connection>> connections_;
   base::Lock connections_lock_;
