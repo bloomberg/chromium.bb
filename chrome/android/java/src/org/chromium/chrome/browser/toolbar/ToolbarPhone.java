@@ -827,6 +827,13 @@ public class ToolbarPhone extends ToolbarLayout
                 return getToolbarDataProvider().getPrimaryColor();
             case TAB_SWITCHER_NORMAL:
             case TAB_SWITCHER_INCOGNITO:
+                if (mLocationBar.useModernDesign()) {
+                    if (!DeviceClassManager.enableAccessibilityLayout()) return Color.TRANSPARENT;
+                    int colorId = visualState == VisualState.TAB_SWITCHER_NORMAL
+                            ? R.color.modern_primary_color
+                            : R.color.incognito_primary_color;
+                    return ApiCompatibilityUtils.getColor(res, colorId);
+                }
                 return ApiCompatibilityUtils.getColor(res, R.color.tab_switcher_background);
             default:
                 assert false;
@@ -2414,8 +2421,10 @@ public class ToolbarPhone extends ToolbarLayout
         if (inOrEnteringTabSwitcher) {
             assert mVisualState == VisualState.TAB_SWITCHER_NORMAL
                     || mVisualState == VisualState.TAB_SWITCHER_INCOGNITO;
-            mUseLightToolbarDrawables = ColorUtils.shouldUseLightForegroundOnBackground(
-                    getToolbarColorForVisualState(mVisualState));
+            int colorForVisualState = getToolbarColorForVisualState(mVisualState);
+            mUseLightToolbarDrawables =
+                    ColorUtils.shouldUseLightForegroundOnBackground(colorForVisualState)
+                    && colorForVisualState != Color.TRANSPARENT;
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
             getProgressBar().setBackgroundColor(mProgressBackBackgroundColorWhite);
             getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),

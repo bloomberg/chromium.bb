@@ -149,7 +149,7 @@ public class TabListSceneLayer extends SceneLayer {
      */
     protected int getTabListBackgroundColor(Context context) {
         int colorId = R.color.tab_switcher_background;
-        if (FeatureUtilities.isChromeModernDesignEnabled()) colorId = R.color.modern_grey_300;
+        if (FeatureUtilities.isChromeModernDesignEnabled()) colorId = R.color.modern_primary_color;
         return ApiCompatibilityUtils.getColor(context.getResources(), colorId);
     }
 
