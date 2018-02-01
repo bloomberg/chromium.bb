@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_WIN_DIRECT_MANIPULATION_H_
-#define UI_GFX_WIN_DIRECT_MANIPULATION_H_
+#ifndef UI_WIN_DIRECT_MANIPULATION_H_
+#define UI_WIN_DIRECT_MANIPULATION_H_
 
 #include <directmanipulation.h>
 #include <wrl/client.h>
@@ -11,10 +11,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/gfx_export.h"
 
-namespace gfx {
+namespace ui {
 namespace win {
 
 // Windows 10 provides a new API called Direct Manipulation which generates
@@ -39,7 +39,7 @@ namespace win {
 // Direct Manipulation consumer. We don't rely on Direct manipulation
 // to do the smooth scrolling in the background thread as documented on
 // msdn.
-class GFX_EXPORT DirectManipulationHelper {
+class UI_BASE_EXPORT DirectManipulationHelper {
  public:
   // Creates an instance of this class if Direct Manipulation is enabled on
   // the platform. If not returns NULL.
@@ -63,8 +63,10 @@ class GFX_EXPORT DirectManipulationHelper {
 
   // Passes the WM_MOUSEWHEEL messages to Direct Manipulation. This is for
   // logistics purposes.
-  void HandleMouseWheel(HWND window, UINT message, WPARAM w_param,
-      LPARAM l_param);
+  void HandleMouseWheel(HWND window,
+                        UINT message,
+                        WPARAM w_param,
+                        LPARAM l_param);
 
   ~DirectManipulationHelper();
 
@@ -81,6 +83,6 @@ class GFX_EXPORT DirectManipulationHelper {
 };
 
 }  // namespace win
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_WIN_DIRECT_MANIPULATION_H_
+#endif  // UI_WIN_DIRECT_MANIPULATION_H_
