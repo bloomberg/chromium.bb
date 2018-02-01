@@ -3391,7 +3391,12 @@ error::Error GLES2DecoderPassthroughImpl::DoResizeCHROMIUM(GLuint width,
                                                            GLfloat scale_factor,
                                                            GLenum color_space,
                                                            GLboolean alpha) {
-  gfx::Size safe_size(std::max(1U, width), std::max(1U, height));
+  // gfx::Size uses integers, make sure width and height do not overflow
+  static_assert(sizeof(GLuint) >= sizeof(int), "Unexpected GLuint size.");
+  static const GLuint kMaxDimension =
+      static_cast<GLuint>(std::numeric_limits<int>::max());
+  gfx::Size safe_size(std::min(std::max(1U, width), kMaxDimension),
+                      std::min(std::max(1U, height), kMaxDimension));
   if (offscreen_) {
     if (!ResizeOffscreenFramebuffer(safe_size)) {
       LOG(ERROR) << "GLES2DecoderPassthroughImpl: Context lost because "

@@ -2377,6 +2377,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLsizei offscreen_target_samples_;
   GLboolean offscreen_target_buffer_preserved_;
 
+  GLint max_offscreen_framebuffer_size_;
+
   // Whether or not offscreen color buffers exist in front/back pairs that
   // can be swapped.
   GLboolean offscreen_single_buffer_;
@@ -3197,6 +3199,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
       offscreen_target_buffer_preserved_(true),
+      max_offscreen_framebuffer_size_(0),
       offscreen_single_buffer_(false),
       offscreen_saved_color_format_(0),
       offscreen_buffer_should_have_alpha_(false),
@@ -3550,6 +3553,10 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
                                             workarounds().disable_gl_rgb_format
                                         ? GL_RGBA
                                         : GL_RGB;
+
+    max_offscreen_framebuffer_size_ =
+        std::min(renderbuffer_manager()->max_renderbuffer_size(),
+                 texture_manager()->MaxSizeForTarget(GL_TEXTURE_2D));
 
     gfx::Size initial_size = attrib_helper.offscreen_framebuffer_size;
     if (initial_size.IsEmpty()) {
@@ -5314,7 +5321,8 @@ bool GLES2DecoderImpl::ResizeOffscreenFramebuffer(const gfx::Size& size) {
   offscreen_size_ = size;
   int w = offscreen_size_.width();
   int h = offscreen_size_.height();
-  if (w < 0 || h < 0 || h >= (INT_MAX / 4) / (w ? w : 1)) {
+  if (w < 0 || h < 0 || w > max_offscreen_framebuffer_size_ ||
+      h > max_offscreen_framebuffer_size_) {
     LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFramebuffer failed "
                << "to allocate storage due to excessive dimensions.";
     return false;
@@ -5431,8 +5439,12 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   GLboolean has_alpha = c.alpha;
   TRACE_EVENT2("gpu", "glResizeChromium", "width", width, "height", height);
 
-  width = std::max(1U, width);
-  height = std::max(1U, height);
+  // gfx::Size uses integers, make sure width and height do not overflow
+  static_assert(sizeof(GLuint) >= sizeof(int), "Unexpected GLuint size.");
+  static const GLuint kMaxDimension =
+      static_cast<GLuint>(std::numeric_limits<int>::max());
+  width = std::min(std::max(1U, width), kMaxDimension);
+  height = std::min(std::max(1U, height), kMaxDimension);
 
   gl::GLSurface::ColorSpace surface_color_space =
       gl::GLSurface::ColorSpace::UNSPECIFIED;
