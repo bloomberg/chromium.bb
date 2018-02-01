@@ -217,6 +217,7 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -699,10 +700,11 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
-  class QuitMessageLoopAfterScreenshot : public ui::ScreenshotGrabberObserver {
+  class QuitMessageLoopAfterScreenshot
+      : public ChromeScreenshotGrabberTestObserver {
    public:
     void OnScreenshotCompleted(
-        ScreenshotGrabberObserver::Result screenshot_result,
+        ui::ScreenshotResult screenshot_result,
         const base::FilePath& screenshot_path) override {
       BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
                                       base::Bind(base::DoNothing),
@@ -716,11 +718,11 @@ class PolicyTest : public InProcessBrowserTest {
     // ScreenshotGrabber doesn't own this observer, so the observer's lifetime
     // is tied to the test instead.
     ChromeScreenshotGrabber* grabber = ChromeScreenshotGrabber::Get();
-    grabber->screenshot_grabber()->AddObserver(&observer_);
+    grabber->test_observer_ = &observer_;
     SetScreenshotPolicy(enabled);
     grabber->HandleTakeScreenshotForAllRootWindows();
     content::RunMessageLoop();
-    grabber->screenshot_grabber()->RemoveObserver(&observer_);
+    grabber->test_observer_ = nullptr;
   }
 #endif  // defined(OS_CHROMEOS)
 

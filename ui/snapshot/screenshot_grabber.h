@@ -14,61 +14,44 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/snapshot/screenshot_grabber_observer.h"
 #include "ui/snapshot/snapshot_export.h"
 
 namespace ui {
 
-// TODO(flackr): Componentize google drive so that we don't need the
-// ScreenshotGrabberDelegate.
-class SNAPSHOT_EXPORT ScreenshotGrabberDelegate {
- public:
-  enum FileResult {
-    FILE_SUCCESS,
-    FILE_CHECK_DIR_FAILED,
-    FILE_CREATE_DIR_FAILED,
-    FILE_CREATE_FAILED
-  };
-
-  // Callback called with the |result| of trying to create a local writable
-  // |path| for the possibly remote path.
-  using FileCallback =
-      base::Callback<void(FileResult result, const base::FilePath& path)>;
-
-  ScreenshotGrabberDelegate() {}
-  virtual ~ScreenshotGrabberDelegate() {}
-
-  // Prepares a writable file for |path|. If |path| is a non-local path (i.e.
-  // Google drive) and it is supported this will create a local cached copy of
-  // the remote file and call the callback with the local path.
-  virtual void PrepareFileAndRunOnBlockingPool(
-      const base::FilePath& path,
-      const FileCallback& callback_on_blocking_pool);
+// Result of the entire screenshotting attempt. This enum is fat for various
+// file operations which could happen in the chrome layer.
+enum class ScreenshotResult {
+  SUCCESS,
+  GRABWINDOW_PARTIAL_FAILED,
+  GRABWINDOW_FULL_FAILED,
+  CREATE_DIR_FAILED,
+  GET_DIR_FAILED,
+  CHECK_DIR_FAILED,
+  CREATE_FILE_FAILED,
+  WRITE_FILE_FAILED,
+  DISABLED
 };
 
 class SNAPSHOT_EXPORT ScreenshotGrabber {
  public:
-  explicit ScreenshotGrabber(ScreenshotGrabberDelegate* client);
+  ScreenshotGrabber();
   ~ScreenshotGrabber();
 
+  // Callback for the new system, which ignores the observer crud.
+  using ScreenshotCallback =
+      base::OnceCallback<void(ui::ScreenshotResult screenshot_result,
+                              scoped_refptr<base::RefCountedMemory> png_data)>;
+
   // Takes a screenshot of |rect| in |window| in that window's coordinate space
-  // saving the result to |screenshot_path|.
+  // and return it to |callback|.
   void TakeScreenshot(gfx::NativeWindow window,
                       const gfx::Rect& rect,
-                      const base::FilePath& screenshot_path);
+                      ScreenshotCallback callback);
+
   bool CanTakeScreenshot();
-
-  void NotifyScreenshotCompleted(
-      ScreenshotGrabberObserver::Result screenshot_result,
-      const base::FilePath& screenshot_path);
-
-  void AddObserver(ScreenshotGrabberObserver* observer);
-  void RemoveObserver(ScreenshotGrabberObserver* observer);
-  bool HasObserver(const ScreenshotGrabberObserver* observer) const;
 
  private:
 #if defined(USE_AURA)
@@ -77,12 +60,9 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
 
   void GrabWindowSnapshotAsyncCallback(
       const std::string& window_identifier,
-      base::FilePath screenshot_path,
       bool is_partial,
+      ScreenshotCallback callback,
       scoped_refptr<base::RefCountedMemory> png_data);
-
-  // A weak pointer to the screenshot taker client.
-  ScreenshotGrabberDelegate* client_;
 
   // The timestamp when the screenshot task was issued last time.
   base::TimeTicks last_screenshot_timestamp_;
@@ -92,7 +72,6 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
   std::unique_ptr<ScopedCursorHider> cursor_hider_;
 #endif
 
-  base::ObserverList<ScreenshotGrabberObserver> observers_;
   base::WeakPtrFactory<ScreenshotGrabber> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotGrabber);
