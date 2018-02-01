@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 
@@ -25,7 +25,7 @@ class AssociatedGroupController;
 // implementation side or the client side.
 // Threading: At any given time, a ScopedInterfaceEndpointHandle should only
 // be accessed from a single sequence.
-class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ScopedInterfaceEndpointHandle {
  public:
   // Creates a pair of handles representing the two endpoints of an interface,
   // which are not yet associated with a message pipe.

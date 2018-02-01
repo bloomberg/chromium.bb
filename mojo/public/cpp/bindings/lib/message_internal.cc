@@ -5,7 +5,6 @@
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -40,11 +39,6 @@ size_t ComputeSerializedMessageSize(uint32_t flags,
                      static_cast<uint32_t>(payload_interface_id_count)));
   }
   return internal::Align(header_size + payload_size);
-}
-
-bool IsUnserializedOrControlMessage(Message* message) {
-  return !message->is_serialized() ||
-         ControlMessageHandler::IsControlMessage(message);
 }
 
 }  // namespace internal

@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
@@ -18,7 +18,7 @@
 namespace mojo {
 namespace internal {
 
-class MOJO_CPP_BINDINGS_EXPORT UnserializedMessageContext {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) UnserializedMessageContext {
  public:
   struct Tag {};
 

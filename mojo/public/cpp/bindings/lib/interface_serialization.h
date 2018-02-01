@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_SERIALIZATION_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_SERIALIZATION_H_
 
 #include <type_traits>
 
@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace internal {
@@ -132,23 +133,7 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   }
 };
 
-template <typename T>
-struct Serializer<ScopedHandleBase<T>, ScopedHandleBase<T>> {
-  static void Serialize(ScopedHandleBase<T>& input,
-                        Handle_Data* output,
-                        SerializationContext* context) {
-    context->AddHandle(ScopedHandle::From(std::move(input)), output);
-  }
-
-  static bool Deserialize(Handle_Data* input,
-                          ScopedHandleBase<T>* output,
-                          SerializationContext* context) {
-    *output = context->TakeHandleAs<T>(*input);
-    return true;
-  }
-};
-
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_SERIALIZATION_H_

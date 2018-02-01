@@ -7,11 +7,11 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -23,7 +23,7 @@ class InterfaceEndpointController;
 
 // An internal interface used to manage endpoints within an associated group,
 // which corresponds to one end of a message pipe.
-class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) AssociatedGroupController
     : public base::RefCountedThreadSafe<AssociatedGroupController> {
  public:
   // Associates an interface with this AssociatedGroupController's message pipe.

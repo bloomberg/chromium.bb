@@ -10,9 +10,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -24,7 +24,7 @@ class Message;
 namespace internal {
 
 // Context information for serialization/deserialization routines.
-class MOJO_CPP_BINDINGS_EXPORT SerializationContext {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SerializationContext {
  public:
   SerializationContext();
   ~SerializationContext();

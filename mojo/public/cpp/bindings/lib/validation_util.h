@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "mojo/public/cpp/bindings/bindings_export.h"
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
@@ -19,10 +19,10 @@ namespace mojo {
 namespace internal {
 
 // Calls ReportValidationError() with a constructed error string.
-MOJO_CPP_BINDINGS_EXPORT void ReportNonNullableValidationError(
-    ValidationContext* validation_context,
-    ValidationError error,
-    int field_index);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+void ReportNonNullableValidationError(ValidationContext* validation_context,
+                                      ValidationError error,
+                                      int field_index);
 
 // Checks whether decoding the pointer will overflow and produce a pointer
 // smaller than |offset|.
@@ -53,32 +53,35 @@ bool ValidatePointer(const Pointer<T>& input,
 // |validation_context|. On success, the memory range is marked as occupied.
 // Note: Does not verify |version| or that |num_bytes| is correct for the
 // claimed version.
-MOJO_CPP_BINDINGS_EXPORT bool ValidateStructHeaderAndClaimMemory(
-    const void* data,
-    ValidationContext* validation_context);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateStructHeaderAndClaimMemory(const void* data,
+                                        ValidationContext* validation_context);
 
 // Validates that |data| contains a valid union header, in terms of alignment
 // and size. It checks that the memory range [data, data + kUnionDataSize) is
 // not marked as occupied by other objects in |validation_context|. On success,
 // the memory range is marked as occupied.
-MOJO_CPP_BINDINGS_EXPORT bool ValidateNonInlinedUnionHeaderAndClaimMemory(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateNonInlinedUnionHeaderAndClaimMemory(
     const void* data,
     ValidationContext* validation_context);
 
 // Validates that the message is a request which doesn't expect a response.
-MOJO_CPP_BINDINGS_EXPORT bool ValidateMessageIsRequestWithoutResponse(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateMessageIsRequestWithoutResponse(
     const Message* message,
     ValidationContext* validation_context);
 
 // Validates that the message is a request expecting a response.
-MOJO_CPP_BINDINGS_EXPORT bool ValidateMessageIsRequestExpectingResponse(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateMessageIsRequestExpectingResponse(
     const Message* message,
     ValidationContext* validation_context);
 
 // Validates that the message is a response.
-MOJO_CPP_BINDINGS_EXPORT bool ValidateMessageIsResponse(
-    const Message* message,
-    ValidationContext* validation_context);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateMessageIsResponse(const Message* message,
+                               ValidationContext* validation_context);
 
 // Validates that the message payload is a valid struct of type ParamsType.
 template <typename ParamsType>
@@ -113,28 +116,32 @@ bool ValidateInlinedUnionNonNullable(const T& input,
   return false;
 }
 
-MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
-    const AssociatedInterface_Data& input);
-MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
-    const AssociatedEndpointHandle_Data& input);
-MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
-    const Interface_Data& input);
-MOJO_CPP_BINDINGS_EXPORT bool IsHandleOrInterfaceValid(
-    const Handle_Data& input);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool IsHandleOrInterfaceValid(const AssociatedInterface_Data& input);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool IsHandleOrInterfaceValid(const AssociatedEndpointHandle_Data& input);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool IsHandleOrInterfaceValid(const Interface_Data& input);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool IsHandleOrInterfaceValid(const Handle_Data& input);
 
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterfaceNonNullable(
     const AssociatedInterface_Data& input,
     int field_index,
     ValidationContext* validation_context);
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterfaceNonNullable(
     const AssociatedEndpointHandle_Data& input,
     int field_index,
     ValidationContext* validation_context);
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterfaceNonNullable(
     const Interface_Data& input,
     int field_index,
     ValidationContext* validation_context);
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterfaceNonNullable(
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterfaceNonNullable(
     const Handle_Data& input,
     int field_index,
     ValidationContext* validation_context);
@@ -191,18 +198,18 @@ bool ValidateNonInlinedUnion(const Pointer<T>& input,
          T::Validate(input.Get(), validation_context, false);
 }
 
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
-    const AssociatedInterface_Data& input,
-    ValidationContext* validation_context);
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
-    const AssociatedEndpointHandle_Data& input,
-    ValidationContext* validation_context);
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
-    const Interface_Data& input,
-    ValidationContext* validation_context);
-MOJO_CPP_BINDINGS_EXPORT bool ValidateHandleOrInterface(
-    const Handle_Data& input,
-    ValidationContext* validation_context);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterface(const AssociatedInterface_Data& input,
+                               ValidationContext* validation_context);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterface(const AssociatedEndpointHandle_Data& input,
+                               ValidationContext* validation_context);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterface(const Interface_Data& input,
+                               ValidationContext* validation_context);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
+bool ValidateHandleOrInterface(const Handle_Data& input,
+                               ValidationContext* validation_context);
 
 }  // namespace internal
 }  // namespace mojo
