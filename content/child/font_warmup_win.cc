@@ -22,11 +22,16 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
-#include "ppapi/shared_impl/proxy_lock.h"
+#include "build/build_config.h"
+#include "ppapi/features/features.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "ppapi/shared_impl/proxy_lock.h"
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 namespace content {
 
@@ -205,7 +210,9 @@ sk_sp<SkTypeface> GetTypefaceFromLOGFONT(const LOGFONTW* log_font) {
                                        : SkFontStyle::kUpright_Slant);
 
   std::string family_name = base::WideToUTF8(log_font->lfFaceName);
+#if BUILDFLAG(ENABLE_PLUGINS)
   ppapi::ProxyAutoLock lock;  // Needed for DirectWrite font proxy.
+#endif                        // BUILDFLAG(ENABLE_PLUGINS)
   return sk_sp<SkTypeface>(
       g_warmup_fontmgr->matchFamilyStyle(family_name.c_str(), style));
 }
