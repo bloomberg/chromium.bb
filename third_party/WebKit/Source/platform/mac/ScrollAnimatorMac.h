@@ -27,6 +27,7 @@
 #define ScrollAnimatorMac_h
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/geometry/FloatPoint.h"
@@ -135,7 +136,7 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   void SendContentAreaScrolledTask();
   TaskHandle send_content_area_scrolled_task_handle_;
-  scoped_refptr<WebTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ScrollOffset content_area_scrolled_timer_scroll_delta_;
 
   ScrollResult UserScroll(ScrollGranularity,

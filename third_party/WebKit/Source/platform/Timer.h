@@ -28,9 +28,9 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Allocator.h"
@@ -46,7 +46,7 @@ class PLATFORM_EXPORT TimerBase {
   WTF_MAKE_NONCOPYABLE(TimerBase);
 
  public:
-  explicit TimerBase(scoped_refptr<WebTaskRunner>);
+  explicit TimerBase(scoped_refptr<base::SingleThreadTaskRunner>);
   virtual ~TimerBase();
 
   void Start(TimeDelta next_fire_interval,
@@ -93,19 +93,19 @@ class PLATFORM_EXPORT TimerBase {
     AugmentRepeatInterval(TimeDelta::FromSecondsD(delta));
   }
 
-  void MoveToNewTaskRunner(scoped_refptr<WebTaskRunner>);
+  void MoveToNewTaskRunner(scoped_refptr<base::SingleThreadTaskRunner>);
 
   struct PLATFORM_EXPORT Comparator {
     bool operator()(const TimerBase* a, const TimerBase* b) const;
   };
 
  protected:
-  static scoped_refptr<WebTaskRunner> GetTimerTaskRunner();
+  static scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner();
 
  private:
   virtual void Fired() = 0;
 
-  virtual scoped_refptr<WebTaskRunner> TimerTaskRunner() const;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const;
 
   NO_SANITIZE_ADDRESS
   virtual bool CanFire() const { return true; }
@@ -119,7 +119,7 @@ class PLATFORM_EXPORT TimerBase {
   TimeTicks next_fire_time_;   // 0 if inactive
   TimeDelta repeat_interval_;  // 0 if not repeating
   base::Location location_;
-  scoped_refptr<WebTaskRunner> web_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> web_task_runner_;
 
 #if DCHECK_IS_ON()
   ThreadIdentifier thread_;
@@ -150,7 +150,7 @@ class TaskRunnerTimer : public TimerBase {
  public:
   using TimerFiredFunction = void (TimerFiredClass::*)(TimerBase*);
 
-  TaskRunnerTimer(scoped_refptr<WebTaskRunner> web_task_runner,
+  TaskRunnerTimer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
                   TimerFiredClass* o,
                   TimerFiredFunction f)
       : TimerBase(std::move(web_task_runner)), object_(o), function_(f) {}

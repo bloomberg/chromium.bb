@@ -31,7 +31,6 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 #include <memory>
-#include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"

@@ -5,10 +5,10 @@
 #ifndef BufferingDataPipeWriter_h
 #define BufferingDataPipeWriter_h
 
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Vector.h"
 
@@ -18,7 +18,8 @@ namespace blink {
 // result, it is possible for a caller to miss write failures.
 class PLATFORM_EXPORT BufferingDataPipeWriter {
  public:
-  BufferingDataPipeWriter(mojo::ScopedDataPipeProducerHandle, WebTaskRunner*);
+  BufferingDataPipeWriter(mojo::ScopedDataPipeProducerHandle,
+                          base::SingleThreadTaskRunner*);
 
   // Writes buffer[0:num_bytes] to the data pipe. Returns true if there is no
   // error.

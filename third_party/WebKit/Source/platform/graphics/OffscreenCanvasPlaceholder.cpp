@@ -4,6 +4,7 @@
 
 #include "platform/graphics/OffscreenCanvasPlaceholder.h"
 
+#include "base/single_thread_task_runner.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
@@ -72,7 +73,7 @@ void OffscreenCanvasPlaceholder::UnregisterPlaceholder() {
 void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
     scoped_refptr<StaticBitmapImage> new_frame,
     base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-    scoped_refptr<WebTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     unsigned resource_id) {
   DCHECK(IsPlaceholderRegistered());
   DCHECK(new_frame);

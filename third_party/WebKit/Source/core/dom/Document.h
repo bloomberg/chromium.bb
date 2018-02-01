@@ -67,6 +67,7 @@
 #include "core/page/PageVisibilityState.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/scroll/ScrollTypes.h"

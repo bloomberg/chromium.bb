@@ -30,11 +30,11 @@
 #include <cassert>
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
 #include "platform/SharedBuffer.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/CachedMetadata.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -415,7 +415,7 @@ void Resource::ClearData() {
 }
 
 void Resource::TriggerNotificationForFinishObservers(
-    WebTaskRunner* task_runner) {
+    base::SingleThreadTaskRunner* task_runner) {
   if (finish_observers_.IsEmpty())
     return;
 
@@ -437,7 +437,7 @@ void Resource::SetDataBufferingPolicy(
 }
 
 void Resource::FinishAsError(const ResourceError& error,
-                             WebTaskRunner* task_runner) {
+                             base::SingleThreadTaskRunner* task_runner) {
   error_ = error;
   is_revalidating_ = false;
 
@@ -454,7 +454,8 @@ void Resource::FinishAsError(const ResourceError& error,
   NotifyFinished();
 }
 
-void Resource::Finish(double load_finish_time, WebTaskRunner* task_runner) {
+void Resource::Finish(double load_finish_time,
+                      base::SingleThreadTaskRunner* task_runner) {
   DCHECK(!is_revalidating_);
   load_finish_time_ = load_finish_time;
   if (!ErrorOccurred())
@@ -701,7 +702,8 @@ void Resource::WillAddClientOrObserver() {
   }
 }
 
-void Resource::AddClient(ResourceClient* client, WebTaskRunner* task_runner) {
+void Resource::AddClient(ResourceClient* client,
+                         base::SingleThreadTaskRunner* task_runner) {
   CHECK(!is_add_remove_client_prohibited_);
 
   WillAddClientOrObserver();
@@ -751,7 +753,7 @@ void Resource::RemoveClient(ResourceClient* client) {
 }
 
 void Resource::AddFinishObserver(ResourceFinishObserver* client,
-                                 WebTaskRunner* task_runner) {
+                                 base::SingleThreadTaskRunner* task_runner) {
   CHECK(!is_add_remove_client_prohibited_);
   DCHECK(!finish_observers_.Contains(client));
 
@@ -1093,7 +1095,8 @@ void Resource::MarkAsPreload() {
   is_unused_preload_ = true;
 }
 
-bool Resource::MatchPreload(const FetchParameters& params, WebTaskRunner*) {
+bool Resource::MatchPreload(const FetchParameters& params,
+                            base::SingleThreadTaskRunner*) {
   DCHECK(is_unused_preload_);
   is_unused_preload_ = false;
 

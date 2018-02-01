@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
@@ -291,7 +292,7 @@ void BlobData::AppendDataInternal(base::span<const char> data,
     auto provider = std::make_unique<BlobBytesProvider>();
     last_bytes_provider_ = provider.get();
 
-    scoped_refptr<WebTaskRunner> file_runner =
+    scoped_refptr<base::SingleThreadTaskRunner> file_runner =
         Platform::Current()->FileTaskRunner();
     if (file_runner) {
       // TODO(mek): Considering binding BytesProvider on the IO thread

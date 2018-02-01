@@ -246,7 +246,7 @@ void RawResource::ReportResourceTimingToClients(
 }
 
 bool RawResource::MatchPreload(const FetchParameters& params,
-                               WebTaskRunner* task_runner) {
+                               base::SingleThreadTaskRunner* task_runner) {
   if (!Resource::MatchPreload(params, task_runner))
     return false;
 

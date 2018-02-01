@@ -56,7 +56,7 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
     return FlooredIntSize(scroll_offset_);
   }
 
-  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
     if (!timer_task_runner_) {
       timer_task_runner_ = blink::scheduler::CreateWebTaskRunnerForTesting();
     }
@@ -73,7 +73,7 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
 
  private:
   ScrollOffset scroll_offset_;
-  mutable scoped_refptr<WebTaskRunner> timer_task_runner_;
+  mutable scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 };
 
 }  // namespace blink

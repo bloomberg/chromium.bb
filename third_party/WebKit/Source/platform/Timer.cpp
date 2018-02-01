@@ -40,7 +40,8 @@
 
 namespace blink {
 
-TimerBase::TimerBase(scoped_refptr<WebTaskRunner> web_task_runner)
+TimerBase::TimerBase(
+    scoped_refptr<base::SingleThreadTaskRunner> web_task_runner)
     : web_task_runner_(std::move(web_task_runner)),
 #if DCHECK_IS_ON()
       thread_(CurrentThread()),
@@ -82,7 +83,8 @@ TimeDelta TimerBase::NextFireIntervalDelta() const {
   return next_fire_time_ - current;
 }
 
-void TimerBase::MoveToNewTaskRunner(scoped_refptr<WebTaskRunner> task_runner) {
+void TimerBase::MoveToNewTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(thread_, CurrentThread());
   DCHECK(task_runner->RunsTasksInCurrentSequence());
@@ -107,11 +109,11 @@ void TimerBase::MoveToNewTaskRunner(scoped_refptr<WebTaskRunner> task_runner) {
 }
 
 // static
-scoped_refptr<WebTaskRunner> TimerBase::GetTimerTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> TimerBase::GetTimerTaskRunner() {
   return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
 }
 
-scoped_refptr<WebTaskRunner> TimerBase::TimerTaskRunner() const {
+scoped_refptr<base::SingleThreadTaskRunner> TimerBase::TimerTaskRunner() const {
   return web_task_runner_;
 }
 

@@ -25,6 +25,7 @@
 #define Resource_h
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
@@ -108,7 +109,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual WTF::TextEncoding Encoding() const { return WTF::TextEncoding(); }
   virtual void AppendData(const char*, size_t);
-  virtual void FinishAsError(const ResourceError&, WebTaskRunner*);
+  virtual void FinishAsError(const ResourceError&,
+                             base::SingleThreadTaskRunner*);
 
   void SetLinkPreload(bool is_link_preload) { link_preload_ = is_link_preload; }
   bool IsLinkPreload() const { return link_preload_; }
@@ -152,8 +154,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   // If this Resource is already finished when AddClient is called, the
   // ResourceClient will be notified asynchronously by a task scheduled
-  // on the given WebTaskRunner. Otherwise, the given WebTaskRunner is unused.
-  void AddClient(ResourceClient*, WebTaskRunner*);
+  // on the given base::SingleThreadTaskRunner. Otherwise, the given
+  // base::SingleThreadTaskRunner is unused.
+  void AddClient(ResourceClient*, base::SingleThreadTaskRunner*);
   void RemoveClient(ResourceClient*);
   // Once called, this resource will not be canceled until load finishes
   // even if associated with no client.
@@ -161,8 +164,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   // If this Resource is already finished when AddFinishObserver is called, the
   // ResourceFinishObserver will be notified asynchronously by a task scheduled
-  // on the given WebTaskRunner. Otherwise, the given WebTaskRunner is unused.
-  void AddFinishObserver(ResourceFinishObserver*, WebTaskRunner*);
+  // on the given base::SingleThreadTaskRunner. Otherwise, the given
+  // base::SingleThreadTaskRunner is unused.
+  void AddFinishObserver(ResourceFinishObserver*,
+                         base::SingleThreadTaskRunner*);
   void RemoveFinishObserver(ResourceFinishObserver*);
 
   bool IsUnusedPreload() const { return is_unused_preload_; }
@@ -205,7 +210,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   // Computes the status of an object after loading. Updates the expire date on
   // the cache entry file
-  virtual void Finish(double finish_time, WebTaskRunner*);
+  virtual void Finish(double finish_time, base::SingleThreadTaskRunner*);
   void FinishForTest() { Finish(0.0, nullptr); }
 
   virtual scoped_refptr<const SharedBuffer> ResourceBuffer() const {
@@ -249,7 +254,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void MarkAsPreload();
   // Returns true if |this| resource is matched with the given parameters.
-  virtual bool MatchPreload(const FetchParameters&, WebTaskRunner*);
+  virtual bool MatchPreload(const FetchParameters&,
+                            base::SingleThreadTaskRunner*);
 
   bool CanReuseRedirectChain() const;
   bool MustRevalidateDueToCacheHeaders() const;
@@ -436,7 +442,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void OnPurgeMemory() override;
 
   void CheckResourceIntegrity();
-  void TriggerNotificationForFinishObservers(WebTaskRunner*);
+  void TriggerNotificationForFinishObservers(base::SingleThreadTaskRunner*);
 
   Type type_;
   ResourceStatus status_;

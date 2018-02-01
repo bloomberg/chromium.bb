@@ -119,7 +119,7 @@ class MockScrollableAreaForAnimatorTest
     ScrollableArea::SetScrollOffset(offset, type, behavior);
   }
 
-  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
     if (!timer_task_runner_) {
       timer_task_runner_ = blink::scheduler::CreateWebTaskRunnerForTesting();
     }
@@ -147,7 +147,7 @@ class MockScrollableAreaForAnimatorTest
   ScrollOffset min_offset_;
   ScrollOffset max_offset_;
   Member<ScrollAnimator> animator;
-  mutable scoped_refptr<WebTaskRunner> timer_task_runner_;
+  mutable scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 };
 
 class TestScrollAnimator : public ScrollAnimator {

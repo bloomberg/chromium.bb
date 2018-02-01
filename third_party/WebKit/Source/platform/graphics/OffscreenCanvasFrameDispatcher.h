@@ -8,7 +8,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
 #include "platform/geometry/IntRect.h"
 
 namespace blink {

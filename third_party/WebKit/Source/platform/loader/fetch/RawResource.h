@@ -108,7 +108,8 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                    unsigned long long total_bytes_to_be_sent) override;
   void DidDownloadData(int) override;
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
-  bool MatchPreload(const FetchParameters&, WebTaskRunner*) override;
+  bool MatchPreload(const FetchParameters&,
+                    base::SingleThreadTaskRunner*) override;
   void NotifyFinished() override;
 
   // Used for preload matching.

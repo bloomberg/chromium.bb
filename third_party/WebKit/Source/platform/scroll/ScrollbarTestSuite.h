@@ -95,7 +95,7 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
     ScrollableArea::SetScrollOrigin(origin);
   }
 
-  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
     return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
   }
 
