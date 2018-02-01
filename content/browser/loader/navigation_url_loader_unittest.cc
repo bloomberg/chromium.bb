@@ -339,33 +339,6 @@ TEST_F(NavigationURLLoaderTest, CancelByContext) {
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
-// Tests that ownership leaves the loader once the response is received.
-TEST_F(NavigationURLLoaderTest, LoaderDetached) {
-  // Fake a top-level request to a URL whose body does not load immediately.
-  TestNavigationURLLoaderDelegate delegate;
-  std::unique_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_2(), &delegate);
-
-  // Wait for the response to come back.
-  delegate.WaitForResponseStarted();
-
-  // Proceed with the response.
-  loader->ProceedWithResponse();
-
-  // Check the response is correct.
-  EXPECT_EQ("text/html", delegate.response()->head.mime_type);
-  EXPECT_EQ(200, delegate.response()->head.headers->response_code());
-
-  // Destroy the loader.
-  loader.reset();
-  base::RunLoop().RunUntilIdle();
-
-  // Check the body can still be fetched through the StreamHandle.
-  EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
-  EXPECT_EQ(net::URLRequestTestJob::test_data_2(),
-            FetchURL(delegate.body()->GetURL()));
-}
-
 // Tests that the request is owned by the body StreamHandle.
 TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
   // Fake a top-level request to a URL whose body does not load immediately.
