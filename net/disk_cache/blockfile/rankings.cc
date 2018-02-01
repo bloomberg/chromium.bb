@@ -83,10 +83,15 @@ enum CrashLocation {
 };
 
 #ifndef NDEBUG
-void TerminateSelf() {
+[[noreturn]] void TerminateSelf() {
 #if defined(OS_WIN)
   // Windows does more work on _exit() than we would like, so we force exit.
   TerminateProcess(GetCurrentProcess(), 0);
+#if defined(__clang__)
+  // Let clang know that TerminateProcess(GetCurrentProcess()) can't return,
+  // so that it doesn't warn about TerminateSelf() returning.
+  __builtin_unreachable();
+#endif
 #elif defined(OS_POSIX)
   // On POSIX, _exit() will terminate the process with minimal cleanup,
   // and it is cleaner than killing.
