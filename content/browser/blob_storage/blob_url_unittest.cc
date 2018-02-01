@@ -42,10 +42,12 @@
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
+#include "storage/browser/blob/blob_url_store_impl.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/test/async_file_test_helper.h"
+#include "storage/browser/test/mock_blob_registry_delegate.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -278,16 +280,16 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
   void TestRequest(const std::string& method,
                    const net::HttpRequestHeaders& extra_headers) {
     GURL url("blob:blah");
+    network::ResourceRequest request;
+    request.url = url;
+    request.method = method;
+    request.headers = extra_headers;
 
     switch (GetParam()) {
       case RequestTestType::kNetworkServiceRequest: {
         GetHandleFromBuilder();  // To add to StorageContext.
         const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
             .CreateUrlMapping(url, blob_uuid_);
-        network::ResourceRequest request;
-        request.url = url;
-        request.method = method;
-        request.headers = extra_headers;
 
         network::mojom::URLLoaderPtr url_loader;
         network::TestURLLoaderClient url_loader_client;
@@ -334,15 +336,29 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
         response_error_code_ = url_request_delegate_.request_status();
       } break;
       case RequestTestType::kRequestFromBlobImpl: {
+        storage::MockBlobRegistryDelegate delegate;
+        storage::BlobURLStoreImpl url_store(GetStorageContext(), &delegate);
+
         blink::mojom::BlobPtr blob_ptr;
         storage::BlobImpl::Create(
             std::make_unique<storage::BlobDataHandle>(*GetHandleFromBuilder()),
             MakeRequest(&blob_ptr));
 
+        base::RunLoop loop;
+        url_store.Register(std::move(blob_ptr), url, loop.QuitClosure());
+        loop.Run();
+
+        network::mojom::URLLoaderFactoryPtr url_loader_factory;
+        url_store.ResolveAsURLLoaderFactory(url,
+                                            MakeRequest(&url_loader_factory));
+
         network::mojom::URLLoaderPtr url_loader;
         network::TestURLLoaderClient url_loader_client;
-        blob_ptr->CreateLoader(MakeRequest(&url_loader), extra_headers,
-                               url_loader_client.CreateInterfacePtr());
+        url_loader_factory->CreateLoaderAndStart(
+            MakeRequest(&url_loader), 0, 0, network::mojom::kURLLoadOptionNone,
+            request, url_loader_client.CreateInterfacePtr(),
+            net::MutableNetworkTrafficAnnotationTag(
+                TRAFFIC_ANNOTATION_FOR_TESTS));
         url_loader_client.RunUntilComplete();
 
         if (url_loader_client.response_body().is_valid()) {

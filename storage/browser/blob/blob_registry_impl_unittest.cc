@@ -57,12 +57,6 @@ class MockBlob : public blink::mojom::Blob {
     NOTREACHED();
   }
 
-  void CreateLoader(network::mojom::URLLoaderRequest loader,
-                    const base::Optional<net::HttpRequestHeaders>& headers,
-                    network::mojom::URLLoaderClientPtr client) override {
-    NOTREACHED();
-  }
-
   void GetInternalUUID(GetInternalUUIDCallback callback) override {
     std::move(callback).Run(uuid_);
   }

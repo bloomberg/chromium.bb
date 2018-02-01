@@ -32,6 +32,8 @@ component("browser") {
     "blob/blob_transport_strategy.h",
     "blob/blob_url_loader.cc",
     "blob/blob_url_loader.h",
+    "blob/blob_url_loader_factory.cc",
+    "blob/blob_url_loader_factory.h",
     "blob/blob_url_request_job.cc",
     "blob/blob_url_request_job.h",
     "blob/blob_url_request_job_factory.cc",

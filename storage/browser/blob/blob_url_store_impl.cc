@@ -6,6 +6,7 @@
 
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_loader_factory.h"
 #include "storage/browser/blob/blob_url_utils.h"
 
 namespace storage {
@@ -61,6 +62,14 @@ void BlobURLStoreImpl::Resolve(const GURL& url, ResolveCallback callback) {
   if (blob_handle)
     BlobImpl::Create(std::move(blob_handle), MakeRequest(&blob));
   std::move(callback).Run(std::move(blob));
+}
+
+void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
+    const GURL& url,
+    network::mojom::URLLoaderFactoryRequest request) {
+  BlobURLLoaderFactory::Create(
+      context_ ? context_->GetBlobDataFromPublicURL(url) : nullptr, url,
+      std::move(request));
 }
 
 void BlobURLStoreImpl::RegisterWithUUID(blink::mojom::BlobPtr blob,

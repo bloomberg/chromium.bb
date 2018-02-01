@@ -27,12 +27,6 @@ void FakeBlob::ReadAll(mojo::ScopedDataPipeProducerHandle,
   NOTREACHED();
 }
 
-void FakeBlob::CreateLoader(network::mojom::blink::URLLoaderRequest,
-                            network::mojom::blink::HttpRequestHeadersPtr,
-                            network::mojom::blink::URLLoaderClientPtr) {
-  NOTREACHED();
-}
-
 void FakeBlob::GetInternalUUID(GetInternalUUIDCallback callback) {
   std::move(callback).Run(uuid_);
 }

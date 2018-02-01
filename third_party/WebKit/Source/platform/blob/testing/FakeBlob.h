@@ -22,9 +22,6 @@ class FakeBlob : public mojom::blink::Blob {
                  mojom::blink::BlobReaderClientPtr) override;
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
                mojom::blink::BlobReaderClientPtr) override;
-  void CreateLoader(network::mojom::blink::URLLoaderRequest,
-                    network::mojom::blink::HttpRequestHeadersPtr,
-                    network::mojom::blink::URLLoaderClientPtr) override;
   void GetInternalUUID(GetInternalUUIDCallback) override;
 
  private:
