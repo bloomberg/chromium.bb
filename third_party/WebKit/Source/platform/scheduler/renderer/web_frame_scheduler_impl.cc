@@ -269,7 +269,6 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
     case TaskType::kMediaElementEvent:
     case TaskType::kInternalIndexedDB:
     case TaskType::kInternalMedia:
-    case TaskType::kInternalMediaRealTime:
       return WebTaskRunnerImpl::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:

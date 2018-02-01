@@ -260,8 +260,8 @@ Platform::CreateRTCPeerConnectionHandler(
   return nullptr;
 }
 
-std::unique_ptr<WebMediaRecorderHandler> Platform::CreateMediaRecorderHandler(
-    scoped_refptr<base::SingleThreadTaskRunner>) {
+std::unique_ptr<WebMediaRecorderHandler>
+Platform::CreateMediaRecorderHandler() {
   return nullptr;
 }
 

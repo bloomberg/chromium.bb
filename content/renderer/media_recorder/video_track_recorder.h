@@ -87,7 +87,6 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
    public:
     Encoder(const OnEncodedVideoCB& on_encoded_video_callback,
             int32_t bits_per_second,
-            scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
             scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
                 nullptr);
 
@@ -166,12 +165,10 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
                                        size_t width,
                                        size_t height);
 
-  VideoTrackRecorder(
-      CodecId codec,
-      const blink::WebMediaStreamTrack& track,
-      const OnEncodedVideoCB& on_encoded_video_cb,
-      int32_t bits_per_second,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+  VideoTrackRecorder(CodecId codec,
+                     const blink::WebMediaStreamTrack& track,
+                     const OnEncodedVideoCB& on_encoded_video_cb,
+                     int32_t bits_per_second);
   ~VideoTrackRecorder() override;
 
   void Pause();
@@ -181,6 +178,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
                               base::TimeTicks capture_time);
  private:
   friend class VideoTrackRecorderTest;
+
   void InitializeEncoder(CodecId codec,
                          const OnEncodedVideoCB& on_encoded_video_callback,
                          int32_t bits_per_second,
@@ -190,7 +188,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
   void OnError();
 
   // Used to check that we are destroyed on the same thread we were created.
-  THREAD_CHECKER(main_thread_checker_);
+  base::ThreadChecker main_render_thread_checker_;
 
   // We need to hold on to the Blink track to remove ourselves on dtor.
   blink::WebMediaStreamTrack track_;
@@ -205,8 +203,6 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
 
   // Used to track the paused state during the initialization process.
   bool paused_before_init_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   base::WeakPtrFactory<VideoTrackRecorder> weak_ptr_factory_;
 

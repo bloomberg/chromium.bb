@@ -167,9 +167,8 @@ media::VideoCodecProfile CodecEnumerator::CodecIdToVEAProfile(CodecId codec) {
 VideoTrackRecorder::Encoder::Encoder(
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner)
-    : main_task_runner_(std::move(main_task_runner)),
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encoding_task_runner_(encoding_task_runner),
       paused_(false),
       on_encoded_video_callback_(on_encoded_video_callback),
@@ -375,13 +374,11 @@ VideoTrackRecorder::VideoTrackRecorder(
     CodecId codec,
     const blink::WebMediaStreamTrack& track,
     const OnEncodedVideoCB& on_encoded_video_callback,
-    int32_t bits_per_second,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+    int32_t bits_per_second)
     : track_(track),
       paused_before_init_(false),
-      main_task_runner_(std::move(main_task_runner)),
       weak_ptr_factory_(this) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.IsNull());
   DCHECK(track_.GetTrackData());
 
@@ -398,13 +395,13 @@ VideoTrackRecorder::VideoTrackRecorder(
 }
 
 VideoTrackRecorder::~VideoTrackRecorder() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   MediaStreamVideoSink::DisconnectFromTrack();
   track_.Reset();
 }
 
 void VideoTrackRecorder::Pause() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (encoder_)
     encoder_->SetPaused(true);
   else
@@ -412,7 +409,7 @@ void VideoTrackRecorder::Pause() {
 }
 
 void VideoTrackRecorder::Resume() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (encoder_)
     encoder_->SetPaused(false);
   else
@@ -441,7 +438,7 @@ void VideoTrackRecorder::InitializeEncoder(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks capture_time) {
   DVLOG(3) << __func__ << frame->visible_rect().size().ToString();
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   // Avoid reinitializing |encoder_| when there are multiple frames sent to the
   // sink to initialize, https://crbug.com/698441.
@@ -459,7 +456,7 @@ void VideoTrackRecorder::InitializeEncoder(
         on_encoded_video_callback,
         media::BindToCurrentLoop(base::Bind(&VideoTrackRecorder::OnError,
                                             weak_ptr_factory_.GetWeakPtr())),
-        bits_per_second, vea_profile, input_size, main_task_runner_);
+        bits_per_second, vea_profile, input_size);
   } else {
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", false);
     switch (codec) {
@@ -471,9 +468,8 @@ void VideoTrackRecorder::InitializeEncoder(
 #endif
       case CodecId::VP8:
       case CodecId::VP9:
-        encoder_ =
-            new VpxEncoder(codec == CodecId::VP9, on_encoded_video_callback,
-                           bits_per_second, main_task_runner_);
+        encoder_ = new VpxEncoder(codec == CodecId::VP9,
+                                  on_encoded_video_callback, bits_per_second);
         break;
       default:
         NOTREACHED() << "Unsupported codec " << static_cast<int>(codec);
@@ -492,7 +488,7 @@ void VideoTrackRecorder::InitializeEncoder(
 
 void VideoTrackRecorder::OnError() {
   DVLOG(3) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   // InitializeEncoder() will be called to reinitialize encoder on Render Main
   // thread.
