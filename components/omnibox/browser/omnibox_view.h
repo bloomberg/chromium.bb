@@ -277,6 +277,7 @@ class OmniboxView {
   // draw attention to whatever best represents the "identity" of the current
   // URL.
   void UpdateTextStyle(const base::string16& display_text,
+                       const bool text_is_url,
                        const AutocompleteSchemeClassifier& classifier);
 
   void OnShiftKeyChanged(bool down) { shift_key_down_ = down; }
