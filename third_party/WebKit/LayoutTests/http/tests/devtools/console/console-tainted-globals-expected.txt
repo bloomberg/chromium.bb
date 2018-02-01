@@ -7,13 +7,13 @@ Running: testRuntimeAgentCallFunctionOn
 
 Running: dumpConsoleMessages
 testOverriddenArrayPushAndMathMax()
-(3) [1, 2, 3]
+(3) [1, 2, 3]
 testOverriddenConstructorName()
 {constructor: {…}}
 testThrowConstructorName()
 {}
 testOverriddenIsFinite()
-Arguments(2) ["arg1", "arg2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
+Arguments(2) ["arg1", "arg2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
 testOverriddenError()
 {result: "PASS"}
 restoreError()
@@ -39,7 +39,7 @@ testOverriddenToString({}, true)
 testOverriddenToString({}, false)
 {toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), true)
-Number {1, toString: ƒ, valueOf: ƒ}
+Number {1, toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), false)
-Number {1, toString: ƒ, valueOf: ƒ}
+Number {1, toString: ƒ, valueOf: ƒ}
 
