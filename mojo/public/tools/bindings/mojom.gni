@@ -232,6 +232,12 @@ if (enable_mojom_typemapping) {
 #       EXPORT macro depends on whether the corresponding IMPL macro is defined,
 #       per standard practice with Chromium component exports.
 #
+#   enabled_features (optional)
+#       Definitions in a mojom file can be guarded by an EnableIf attribute. If
+#       the value specified by the attribute does not match any items in the
+#       list of enabled_features, the definition will be disabled, with no code
+#       emitted for it.
+#
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
 # export settings for classes. The first three are for the chromium variant, and
@@ -328,6 +334,48 @@ template("mojom") {
       name = get_label_info(d, "label_no_toolchain")
       toolchain = get_label_info(d, "toolchain")
       deps += [ "${name}__is_mojom(${toolchain})" ]
+    }
+  }
+
+  if (defined(invoker.sources)) {
+    parser_target_name = "${target_name}__parser"
+    action_foreach(parser_target_name) {
+      script = mojom_generator_script
+      sources = invoker.sources
+      outputs = [
+        "{{source_gen_dir}}/{{source_name_part}}.p",
+      ]
+      args = [
+        "parse",
+        "{{source}}",
+        "-o",
+        rebase_path(root_gen_dir, root_build_dir),
+        "-d",
+        rebase_path("//", root_build_dir),
+      ]
+      if (defined(invoker.enabled_features)) {
+        foreach(enabled_feature, invoker.enabled_features) {
+          args += [
+            "--enable_feature",
+            enabled_feature,
+          ]
+        }
+      }
+    }
+  }
+
+  parsed_target_name = "${target_name}__parsed"
+  group(parsed_target_name) {
+    public_deps = []
+    if (defined(invoker.sources)) {
+      public_deps += [ ":$parser_target_name" ]
+    }
+    foreach(d, all_deps) {
+      # Resolve the name, so that a target //mojo/something becomes
+      # //mojo/something:something and we can append the parsed
+      # suffix to get the mojom dependency name.
+      full_name = get_label_info("$d", "label_no_toolchain")
+      public_deps += [ "${full_name}__parsed" ]
     }
   }
 
@@ -436,6 +484,7 @@ template("mojom") {
       inputs = mojom_generator_sources
       sources = invoker.sources
       deps = [
+        ":$parsed_target_name",
         "//mojo/public/tools/bindings:precompile_templates",
       ]
       outputs = generator_shared_cpp_outputs
@@ -444,13 +493,6 @@ template("mojom") {
         "--generate_non_variant_code",
         "-g",
         "c++",
-      ]
-      depfile = "{{source_gen_dir}}/${generator_shared_target_name}_{{source_name_part}}.d"
-      args += [
-        "--depfile",
-        depfile,
-        "--depfile_target",
-        "{{source_gen_dir}}/{{source_name_part}}.mojom-shared-internal.h",
       ]
 
       if (defined(shared_component_export_macro)) {
@@ -667,6 +709,7 @@ template("mojom") {
         inputs = mojom_generator_sources
         sources = invoker.sources
         deps = [
+          ":$parsed_target_name",
           ":$type_mappings_target_name",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
@@ -691,14 +734,6 @@ template("mojom") {
             bindings_configuration.variant,
           ]
         }
-        depfile =
-            "{{source_gen_dir}}/${generator_target_name}_{{source_name_part}}.d"
-        args += [
-          "--depfile",
-          depfile,
-          "--depfile_target",
-          "{{source_gen_dir}}/{{source_name_part}}.mojom${variant_dash_suffix}.cc",
-        ]
 
         args += [
           "--typemap",
@@ -989,6 +1024,7 @@ template("mojom") {
           sources += invoker.sources
         }
         deps = [
+          ":$parsed_target_name",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
         outputs = generator_js_outputs
