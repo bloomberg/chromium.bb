@@ -24,39 +24,47 @@ namespace cbor {
 //  * Indefinite-length encodings.
 class CBOR_EXPORT CBORValue {
  public:
-  struct CTAPLess {
+  struct Less {
     // Comparison predicate to order keys in a dictionary as required by the
-    // Client-to-Authenticator Protocol (CTAP) spec 2.0.
-    //
-    // The sort order defined in CTAP is:
-    //   • If the major types are different, the one with the lower value in
-    //     numerical order sorts earlier.
-    //   • If two keys have different lengths, the shorter one sorts earlier.
-    //   • If two keys have the same length, the one with the lower value in
-    //     (byte-wise) lexical order sorts earlier.
-    //
-    // See section 6 of https://fidoalliance.org/specs/fido-v2.0-rd-20170927/
-    // fido-client-to-authenticator-protocol-v2.0-rd-20170927.html.
-    //
-    // THE CTAP SORT ORDER IMPLEMENTED HERE DIFFERS FROM THE CANONICAL CBOR
-    // ORDER defined in https://tools.ietf.org/html/rfc7049#section-3.9, in that
-    // the latter sorts purely by serialised key and doesn't specify that major
-    // types are compared first. Thus the shortest key sorts first by the RFC
-    // rules (irrespective of the major type), but may not by CTAP rules.
+    // canonical CBOR order defined in
+    // https://tools.ietf.org/html/rfc7049#section-3.9
+    // TODO(808022): Clarify where this stands.
     bool operator()(const CBORValue& a, const CBORValue& b) const {
-      DCHECK((a.is_integer() || a.is_string()) &&
-             (b.is_integer() || b.is_string()));
+      // The current implementation only supports integer, text string,
+      // and byte string keys.
+      DCHECK((a.is_integer() || a.is_string() || a.is_bytestring()) &&
+             (b.is_integer() || b.is_string() || b.is_bytestring()));
+
+      // Below text from https://tools.ietf.org/html/rfc7049 errata 4409:
+      // *  If the major types are different, the one with the lower value
+      //    in numerical order sorts earlier.
       if (a.type() != b.type())
         return a.type() < b.type();
+
+      // *  If two keys have different lengths, the shorter one sorts
+      //    earlier;
+      // *  If two keys have the same length, the one with the lower value
+      //    in (byte-wise) lexical order sorts earlier.
       switch (a.type()) {
         case Type::UNSIGNED:
+          // For unsigned integers, the smaller value has shorter length,
+          // and (byte-wise) lexical representation.
           return a.GetInteger() < b.GetInteger();
         case Type::NEGATIVE:
+          // For negative integers, the value closer to zero has shorter length,
+          // and (byte-wise) lexical representation.
           return a.GetInteger() > b.GetInteger();
         case Type::STRING: {
           const auto& a_str = a.GetString();
           const size_t a_length = a_str.size();
           const auto& b_str = b.GetString();
+          const size_t b_length = b_str.size();
+          return std::tie(a_length, a_str) < std::tie(b_length, b_str);
+        }
+        case Type::BYTE_STRING: {
+          const auto& a_str = a.GetBytestring();
+          const size_t a_length = a_str.size();
+          const auto& b_str = b.GetBytestring();
           const size_t b_length = b_str.size();
           return std::tie(a_length, a_str) < std::tie(b_length, b_str);
         }
@@ -73,7 +81,7 @@ class CBOR_EXPORT CBORValue {
 
   using BinaryValue = std::vector<uint8_t>;
   using ArrayValue = std::vector<CBORValue>;
-  using MapValue = base::flat_map<CBORValue, CBORValue, CTAPLess>;
+  using MapValue = base::flat_map<CBORValue, CBORValue, Less>;
 
   enum class Type {
     UNSIGNED = 0,

@@ -137,10 +137,10 @@ TEST(CBORWriterTest, TestWriteArray) {
                                         arraysize(kArrayTestCaseCbor)));
 }
 
-TEST(CBORWriterTest, TestWriteMapWithMapValue) {
+TEST(CBORWriterTest, TestWriteMap) {
   static const uint8_t kMapTestCaseCbor[] = {
       // clang-format off
-      0xb6,  // map of 8 pairs:
+      0xb8, 0x19, // map of 25 pairs:
         0x00,          // key 0
         0x61, 0x61,    // value "a"
 
@@ -202,6 +202,15 @@ TEST(CBORWriterTest, TestWriteMapWithMapValue) {
         0x3b, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0x61, 0x73,  //  value "s"
 
+        0x41, 'a', // byte string "a"
+        0x02,
+
+        0x43, 'b', 'a', 'r', // byte string "bar"
+        0x03,
+
+        0x43, 'f', 'o', 'o', // byte string "foo"
+        0x04,
+
         0x60,        // key ""
         0x61, 0x2e,  // value "."
 
@@ -233,6 +242,9 @@ TEST(CBORWriterTest, TestWriteMapWithMapValue) {
   map[CBORValue(int64_t(-4294967296))] = CBORValue("q");
   map[CBORValue(int64_t(-4294967297))] = CBORValue("r");
   map[CBORValue(std::numeric_limits<int64_t>::min())] = CBORValue("s");
+  map[CBORValue(CBORValue::BinaryValue{'a'})] = CBORValue(2);
+  map[CBORValue(CBORValue::BinaryValue{'b', 'a', 'r'})] = CBORValue(3);
+  map[CBORValue(CBORValue::BinaryValue{'f', 'o', 'o'})] = CBORValue(4);
   map[CBORValue(0)] = CBORValue("a");
   map[CBORValue(23)] = CBORValue("b");
   map[CBORValue(24)] = CBORValue("c");
@@ -303,6 +315,53 @@ TEST(CBORWriterTest, TestWriteNestedMap) {
   EXPECT_THAT(cbor.value(),
               testing::ElementsAreArray(kNestedMapTestCase,
                                         arraysize(kNestedMapTestCase)));
+}
+
+TEST(CBORWriterTest, TestSignedExchangeExample) {
+  // Example adopted from:
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
+  static const uint8_t kSignedExchangeExample[] = {
+      // clang-format off
+      0xa5, // map of 5 pairs
+        0x0a, // 10
+        0x01,
+
+        0x18, 0x64, // 100
+        0x02,
+
+        0x20, // -1
+        0x03,
+
+        0x61, 'z', // text string "z"
+        0x04,
+
+        0x62, 'a', 'a', // text string "aa"
+        0x05,
+
+      /*
+        0x81, 0x18, 0x64, // [100] (array as map key is not yet supported)
+        0x06,
+
+        0x81, 0x20,  // [-1] (array as map key is not yet supported)
+        0x07,
+
+        0xf4, // false (boolean  as map key is not yet supported)
+        0x08,
+      */
+      // clang-format on
+  };
+  CBORValue::MapValue map;
+  map[CBORValue(10)] = CBORValue(1);
+  map[CBORValue(100)] = CBORValue(2);
+  map[CBORValue(-1)] = CBORValue(3);
+  map[CBORValue("z")] = CBORValue(4);
+  map[CBORValue("aa")] = CBORValue(5);
+
+  auto cbor = CBORWriter::Write(CBORValue(map));
+  ASSERT_TRUE(cbor.has_value());
+  EXPECT_THAT(cbor.value(),
+              testing::ElementsAreArray(kSignedExchangeExample,
+                                        arraysize(kSignedExchangeExample)));
 }
 
 TEST(CBORWriterTest, TestWriteSimpleValue) {
