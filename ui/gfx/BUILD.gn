@@ -172,8 +172,6 @@ jumbo_component("gfx") {
     "utf16_indexing.h",
     "vsync_provider.cc",
     "vsync_provider.h",
-    "win/direct_manipulation.cc",
-    "win/direct_manipulation.h",
     "win/direct_write.cc",
     "win/direct_write.h",
     "win/hwnd_util.cc",

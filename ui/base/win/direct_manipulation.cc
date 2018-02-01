@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/win/direct_manipulation.h"
+#include "ui/base/win/direct_manipulation.h"
 
 #include <objbase.h>
 
 #include "base/win/windows_version.h"
 
-namespace gfx {
+namespace ui {
 namespace win {
 
 // static
@@ -17,7 +17,7 @@ DirectManipulationHelper::CreateInstance() {
   // TODO(dtapuska): Do not create a DirectManipulationHelper on any windows
   // versions as it only causes issues. High Precision Touchpad events seem to
   // always be sent to apps with recent Windows 10 versions. This class should
-  // eventually be removed. See crbug.com/647038.
+  // eventually be removed. See https://crbug.com/647038.
   return nullptr;
 }
 
@@ -60,14 +60,14 @@ void DirectManipulationHelper::Initialize(HWND window) {
   // Enable the desired configuration for each viewport.
   //
   DIRECTMANIPULATION_CONFIGURATION configuration =
-      DIRECTMANIPULATION_CONFIGURATION_INTERACTION
-      | DIRECTMANIPULATION_CONFIGURATION_TRANSLATION_X
-      | DIRECTMANIPULATION_CONFIGURATION_TRANSLATION_Y
-      | DIRECTMANIPULATION_CONFIGURATION_TRANSLATION_INERTIA
-      | DIRECTMANIPULATION_CONFIGURATION_RAILS_X
-      | DIRECTMANIPULATION_CONFIGURATION_RAILS_Y
-      | DIRECTMANIPULATION_CONFIGURATION_SCALING
-      | DIRECTMANIPULATION_CONFIGURATION_SCALING_INERTIA;
+      DIRECTMANIPULATION_CONFIGURATION_INTERACTION |
+      DIRECTMANIPULATION_CONFIGURATION_TRANSLATION_X |
+      DIRECTMANIPULATION_CONFIGURATION_TRANSLATION_Y |
+      DIRECTMANIPULATION_CONFIGURATION_TRANSLATION_INERTIA |
+      DIRECTMANIPULATION_CONFIGURATION_RAILS_X |
+      DIRECTMANIPULATION_CONFIGURATION_RAILS_Y |
+      DIRECTMANIPULATION_CONFIGURATION_SCALING |
+      DIRECTMANIPULATION_CONFIGURATION_SCALING_INERTIA;
 
   hr = view_port_outer_->ActivateConfiguration(configuration);
   CHECK(SUCCEEDED(hr));
@@ -103,9 +103,11 @@ void DirectManipulationHelper::Deactivate(HWND window) {
   manager_->Deactivate(window);
 }
 
-void DirectManipulationHelper:: HandleMouseWheel(HWND window, UINT message,
-    WPARAM w_param, LPARAM l_param) {
-  MSG msg = { window, message, w_param, l_param};
+void DirectManipulationHelper::HandleMouseWheel(HWND window,
+                                                UINT message,
+                                                WPARAM w_param,
+                                                LPARAM l_param) {
+  MSG msg = {window, message, w_param, l_param};
 
   HRESULT hr = view_port_outer_->SetContact(DIRECTMANIPULATION_MOUSEFOCUS);
   if (SUCCEEDED(hr)) {
@@ -116,4 +118,4 @@ void DirectManipulationHelper:: HandleMouseWheel(HWND window, UINT message,
 }
 
 }  // namespace win.
-}  // namespace gfx.
+}  // namespace ui.

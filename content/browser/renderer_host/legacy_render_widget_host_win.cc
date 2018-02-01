@@ -19,11 +19,11 @@
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/win/direct_manipulation.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/win/direct_manipulation.h"
 
 namespace content {
 
@@ -140,7 +140,7 @@ bool LegacyRenderWidgetHostHWND::Init() {
   // Direct Manipulation is enabled on Windows 10+. The CreateInstance function
   // returns NULL if Direct Manipulation is not available.
   direct_manipulation_helper_ =
-      gfx::win::DirectManipulationHelper::CreateInstance();
+      ui::win::DirectManipulationHelper::CreateInstance();
   if (direct_manipulation_helper_)
     direct_manipulation_helper_->Initialize(hwnd());
 
