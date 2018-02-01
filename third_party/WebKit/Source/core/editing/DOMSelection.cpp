@@ -288,7 +288,6 @@ void DOMSelection::collapse(Node* node,
   UpdateFrameSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(node, offset))
-          .SetIsDirectional(GetFrame()->Selection().IsDirectional())
           .Build(),
       new_range,
       SetSelectionOptions::Builder()
@@ -418,7 +417,6 @@ void DOMSelection::setBaseAndExtent(Node* base_node,
   UpdateFrameSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtentDeprecated(base_position, extent_position)
-          .SetIsDirectional(true)
           .Build(),
       new_range, SetSelectionOptions::Builder().SetIsDirectional(true).Build());
 }
@@ -548,7 +546,7 @@ void DOMSelection::extend(Node* node,
   else
     builder.Collapse(old_anchor).Extend(new_focus);
   UpdateFrameSelection(
-      builder.SetIsDirectional(true).Build(), new_range,
+      builder.Build(), new_range,
       SetSelectionOptions::Builder().SetIsDirectional(true).Build());
 }
 

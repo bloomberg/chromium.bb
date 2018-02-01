@@ -84,7 +84,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   // True if base() <= extent().
   bool IsBaseFirst() const { return base_is_first_; }
-  bool IsDirectional() const { return is_directional_; }
 
   // TODO(yosin) Most callers probably don't want these functions, but
   // are using them for historical reasons. |toNormalizedEphemeralRange()|
@@ -131,9 +130,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   // these are cached, can be recalculated by validate()
   bool base_is_first_ : 1;        // True if base is before the extent
-  // Non-directional ignores m_baseIsFirst and selection always extends on shift
-  // + arrow key.
-  bool is_directional_ : 1;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

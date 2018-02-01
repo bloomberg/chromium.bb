@@ -666,7 +666,6 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
       current_selection_ =
           SelectionInDOMTree::Builder()
               .Collapse(position.ToPositionWithAffinity())
-              .SetIsDirectional(ShouldAlwaysUseDirectionalSelection(GetFrame()))
               .Build();
       break;
     case SelectionModifyAlteration::kExtend:
@@ -703,7 +702,6 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
         current_selection_ = SelectionInDOMTree::Builder()
                                  .Collapse(selection_.Base())
                                  .Extend(position.DeepEquivalent())
-                                 .SetIsDirectional(true)
                                  .Build();
       } else {
         TextDirection text_direction = DirectionOfEnclosingBlock();
@@ -719,7 +717,6 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                                 : position.DeepEquivalent())
                   .Extend(selection_.IsBaseFirst() ? position.DeepEquivalent()
                                                    : selection_.Extent())
-                  .SetIsDirectional(true)
                   .Build();
         } else {
           current_selection_ =
@@ -728,7 +725,6 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                                                      : selection_.Base())
                   .Extend(selection_.IsBaseFirst() ? selection_.Extent()
                                                    : position.DeepEquivalent())
-                  .SetIsDirectional(true)
                   .Build();
         }
       }
@@ -826,7 +822,6 @@ bool SelectionModifier::ModifyWithPageGranularity(
       current_selection_ =
           SelectionInDOMTree::Builder()
               .Collapse(result.ToPositionWithAffinity())
-              .SetIsDirectional(ShouldAlwaysUseDirectionalSelection(GetFrame()))
               .SetAffinity(direction == SelectionModifyVerticalDirection::kUp
                                ? TextAffinity::kUpstream
                                : TextAffinity::kDownstream)
@@ -836,7 +831,6 @@ bool SelectionModifier::ModifyWithPageGranularity(
       current_selection_ = SelectionInDOMTree::Builder()
                                .Collapse(selection_.Base())
                                .Extend(result.DeepEquivalent())
-                               .SetIsDirectional(true)
                                .Build();
       break;
     }

@@ -61,7 +61,6 @@ void CreateLinkCommand::DoApply(EditingState* editing_state) {
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentBeforeNode(*anchor_element))
             .Extend(Position::InParentAfterNode(*anchor_element))
-            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build()));
   }
 }

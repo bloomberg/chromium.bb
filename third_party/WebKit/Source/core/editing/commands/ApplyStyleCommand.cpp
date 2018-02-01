@@ -186,7 +186,6 @@ void ApplyStyleCommand::UpdateStartEnd(const Position& new_start,
       StartingSelection().IsBaseFirst() || !SelectionIsDirectional();
   const EphemeralRange range(new_start, new_end);
   SelectionInDOMTree::Builder builder;
-  builder.SetIsDirectional(EndingSelection().IsDirectional());
   if (was_base_first)
     builder.SetAsForwardSelection(range);
   else

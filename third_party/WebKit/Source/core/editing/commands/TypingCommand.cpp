@@ -118,7 +118,6 @@ PlainTextRange GetSelectionOffsets(const SelectionInDOMTree& selection) {
 
 SelectionInDOMTree CreateSelection(const size_t start,
                                    const size_t end,
-                                   const bool is_directional,
                                    Element* element) {
   const EphemeralRange& start_range =
       PlainTextRange(0, static_cast<int>(start)).CreateRange(*element);
@@ -133,7 +132,6 @@ SelectionInDOMTree CreateSelection(const size_t start,
   const SelectionInDOMTree& selection =
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(start_position, end_position)
-          .SetIsDirectional(is_directional)
           .Build();
   return selection;
 }
@@ -326,8 +324,8 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
   }
 
   const size_t new_end = selection_start + text_length;
-  const SelectionInDOMTree& selection = CreateSelection(
-      new_end, new_end, EndingSelection().IsDirectional(), element);
+  const SelectionInDOMTree& selection =
+      CreateSelection(new_end, new_end, element);
   SetEndingSelection(SelectionForUndoStep::From(selection));
 }
 
@@ -744,7 +742,6 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
   const SelectionInDOMTree& selection =
       SelectionInDOMTree::Builder()
           .Collapse(Position::FirstPositionInNode(*root))
-          .SetIsDirectional(EndingSelection().IsDirectional())
           .Build();
   SetEndingSelection(SelectionForUndoStep::From(selection));
 
@@ -870,7 +867,6 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
         SelectionInDOMTree::Builder()
             .Collapse(Position::BeforeNode(*table))
             .Extend(EndingSelection().Start())
-            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build();
     SetEndingSelection(SelectionForUndoStep::From(selection));
     TypingAddedToOpenCommand(kDeleteKey);
@@ -1010,7 +1006,6 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
             .SetBaseAndExtentDeprecated(
                 EndingSelection().End(),
                 Position::AfterNode(*downstream_end.ComputeContainerNode()))
-            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build();
     SetEndingSelection(SelectionForUndoStep::From(selection));
     TypingAddedToOpenCommand(kForwardDeleteKey);

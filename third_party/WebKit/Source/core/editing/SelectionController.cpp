@@ -892,7 +892,6 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   const bool selection_is_directional =
       frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional() ||
       set_selection_options.IsDirectional();
-  builder.SetIsDirectional(selection_is_directional);
   const SelectionInFlatTree& selection_in_flat_tree = builder.Build();
 
   const bool selection_remains_the_same =
