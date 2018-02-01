@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.Downlo
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -168,7 +167,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private final List<DownloadItemView> mViews = new ArrayList<>();
 
     private BackendProvider mBackendProvider;
-    private int mFilter = DownloadFilter.FILTER_ALL;
+    private @DownloadFilter.Type int mFilter = DownloadFilter.FILTER_ALL;
     private String mSearchQuery = EMPTY_QUERY;
     private SpaceDisplay mSpaceDisplay;
     private HeaderItem mSpaceDisplayHeaderItem;
@@ -572,7 +571,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     }
 
     /** Filters the list of downloads to show only files of a specific type. */
-    private void filter(int filterType) {
+    private void filter(@DownloadFilter.Type int filterType) {
         mFilter = filterType;
 
         List<TimedItem> filteredTimedItems = new ArrayList<>();

@@ -346,6 +346,7 @@ public class DownloadUtils {
         String intentAction;
         ArrayList<Uri> itemUris = new ArrayList<Uri>();
         StringBuilder offlinePagesString = new StringBuilder();
+        @DownloadFilter.Type
         int selectedItemsFilterType = items.get(0).getFilterType();
 
         String intentMimeType = "";

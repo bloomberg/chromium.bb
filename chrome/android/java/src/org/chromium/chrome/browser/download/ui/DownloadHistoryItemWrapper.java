@@ -106,7 +106,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     }
 
     /** @return Whether this download should be shown to the user. */
-    boolean isVisibleToUser(int filter) {
+    boolean isVisibleToUser(@DownloadFilter.Type int filter) {
         if (isDeletionPending()) return false;
         return filter == getFilterType() || filter == DownloadFilter.FILTER_ALL;
     }
@@ -167,7 +167,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     public abstract String getUrl();
 
     /** @return {@link DownloadFilter} that represents the file type. */
-    public abstract int getFilterType();
+    public abstract @DownloadFilter.Type int getFilterType();
 
     /** @return The mime type or null if the item doesn't have one. */
     public abstract String getMimeType();
@@ -420,7 +420,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
-        boolean isVisibleToUser(int filter) {
+        boolean isVisibleToUser(@DownloadFilter.Type int filter) {
             if (!super.isVisibleToUser(filter)) return false;
 
             if (TextUtils.isEmpty(getFilePath()) || TextUtils.isEmpty(getDisplayFileName())) {
