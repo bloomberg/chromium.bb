@@ -101,6 +101,11 @@ class MediaSinkInternal {
 
   static bool IsValidSinkId(const std::string& sink_id);
 
+  // Returns processed device id without "uuid:" and "-", e.g. input
+  // "uuid:6d238518-a574-eab1-017e-d0975c039081" and output
+  // "6d238518a574eab1017ed0975c039081"
+  static std::string ProcessDeviceUUID(const std::string& device_uuid);
+
  private:
   void InternalCopyConstructFrom(const MediaSinkInternal& other);
   void InternalCleanup();

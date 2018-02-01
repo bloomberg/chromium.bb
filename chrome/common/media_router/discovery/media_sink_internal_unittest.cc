@@ -122,4 +122,20 @@ TEST(MediaSinkInternalTest, TestSetExtraData) {
   ASSERT_EQ(cast_extra_data2, cast_sink2.cast_data());
 }
 
+TEST(MediaSinkInternalTest, TestProcessDeviceUUID) {
+  EXPECT_EQ("de51d94921f15f8af6dbf65592bb3610",
+            MediaSinkInternal::ProcessDeviceUUID(
+                "uuid:de51d949-21f1-5f8a-f6db-f65592bb3610"));
+  EXPECT_EQ("de51d94921f15f8af6dbf65592bb3610",
+            MediaSinkInternal::ProcessDeviceUUID(
+                "de51d94921f1-5f8a-f6db-f65592bb3610"));
+  EXPECT_EQ(
+      "de51d94921f15f8af6dbf65592bb3610",
+      MediaSinkInternal::ProcessDeviceUUID("DE51D94921F15F8AF6DBF65592BB3610"));
+  EXPECT_EQ("abc:de51d94921f15f8af6dbf65592bb3610",
+            MediaSinkInternal::ProcessDeviceUUID(
+                "abc:de51d949-21f1-5f8a-f6db-f65592bb3610"));
+  EXPECT_EQ("", MediaSinkInternal::ProcessDeviceUUID(""));
+}
+
 }  // namespace media_router

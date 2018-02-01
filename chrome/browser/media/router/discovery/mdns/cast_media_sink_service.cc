@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
@@ -65,7 +66,9 @@ ErrorType CreateCastMediaSink(const DnsSdService& service,
   std::string friendly_name = service_data["fn"];
   if (friendly_name.empty())
     return ErrorType::MISSING_FRIENDLY_NAME;
-  MediaSink sink(unique_id, friendly_name, SinkIconType::CAST,
+  std::string processed_uuid = MediaSinkInternal::ProcessDeviceUUID(unique_id);
+  std::string sink_id = base::StringPrintf("cast:<%s>", processed_uuid.c_str());
+  MediaSink sink(sink_id, friendly_name, SinkIconType::CAST,
                  MediaRouteProviderId::EXTENSION);
 
   CastSinkExtraData extra_data;
