@@ -32,5 +32,5 @@ enum RecordingState { "inactive", "recording", "paused" };
     [RaisesException] void resume();
     [RaisesException] void requestData();
 
-    [CallWith=ExecutionContext] static boolean isTypeSupported(DOMString type);
+    static boolean isTypeSupported(DOMString type);
 };

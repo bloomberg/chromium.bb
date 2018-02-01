@@ -45,11 +45,8 @@ void VpxEncoder::ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
 VpxEncoder::VpxEncoder(
     bool use_vp9,
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-    int32_t bits_per_second,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : VideoTrackRecorder::Encoder(on_encoded_video_callback,
-                                  bits_per_second,
-                                  std::move(main_task_runner)),
+    int32_t bits_per_second)
+    : VideoTrackRecorder::Encoder(on_encoded_video_callback, bits_per_second),
       use_vp9_(use_vp9) {
   codec_config_.g_timebase.den = 0;        // Not initialized.
   alpha_codec_config_.g_timebase.den = 0;  // Not initialized.

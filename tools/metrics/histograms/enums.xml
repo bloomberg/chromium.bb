@@ -37142,7 +37142,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="InternalWebCrypto"/>
   <int value="28" label="InternalIndexedDB"/>
   <int value="29" label="InternalMedia"/>
-  <int value="30" label="InternalMediaRealTime"/>
 </enum>
 
 <enum name="RendererSchedulerThreadType">
