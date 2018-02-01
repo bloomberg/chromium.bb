@@ -331,8 +331,10 @@ const char* const kChromeHostURLs[] = {
     kChromeUISupervisedUserInternalsHost,
     kChromeUISyncInternalsHost,
     kChromeUITaskSchedulerInternalsHost,
+#if !defined(OS_ANDROID)
     kChromeUITermsHost,
     kChromeUIThumbnailListHost,
+#endif
     kChromeUITranslateInternalsHost,
     kChromeUIUsbInternalsHost,
     kChromeUIUserActionsHost,
@@ -349,7 +351,9 @@ const char* const kChromeHostURLs[] = {
     content::kChromeUINetworkErrorsListingHost,
     content::kChromeUINetworkViewCacheHost,
     content::kChromeUIServiceWorkerInternalsHost,
+#if !defined(OS_ANDROID)
     content::kChromeUITracingHost,
+#endif
     content::kChromeUIWebRTCInternalsHost,
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)
