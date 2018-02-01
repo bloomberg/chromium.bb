@@ -83,9 +83,9 @@ component("ipc") {
 
   public_deps = [
     ":ipc_features",
+    ":ipc_type_converters",
     ":message_support",
     ":mojom",
-    ":native_handle_type_converters",
     ":param_traits",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -160,6 +160,18 @@ component("message_support") {
       "//crypto",
     ]
   }
+}
+
+source_set("ipc_type_converters") {
+  sources = [
+    "ipc_type_converters.cc",
+    "ipc_type_converters.h",
+  ]
+  public_deps = [
+    ":message_support",
+    ":mojom",
+    "//mojo/public/interfaces/bindings:bindings_shared__generator",
+  ]
 }
 
 source_set("native_handle_type_converters") {
