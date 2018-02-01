@@ -53,7 +53,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>&);
 
-  bool hasAnyMember() const { return !(any_member_.IsEmpty() || any_member_.IsNull() || any_member_.IsUndefined()); }
+  bool hasAnyMember() const { return !(any_member_.IsEmpty() || any_member_.IsUndefined()); }
   ScriptValue anyMember() const {
     return any_member_;
   }
