@@ -22,6 +22,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/trusted_sources_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -246,9 +248,14 @@ const base::FilePath& DownloadPrefs::GetDefaultDownloadDirectory() {
 // static
 DownloadPrefs* DownloadPrefs::FromDownloadManager(
     DownloadManager* download_manager) {
+  DCHECK(download_manager->GetBrowserContext());
+  DownloadCoreService* service =
+      DownloadCoreServiceFactory::GetForBrowserContext(
+          download_manager->GetBrowserContext());
+  DCHECK(service);
   ChromeDownloadManagerDelegate* delegate =
-      static_cast<ChromeDownloadManagerDelegate*>(
-          download_manager->GetDelegate());
+      service->GetDownloadManagerDelegate();
+  DCHECK(delegate);
   return delegate->download_prefs();
 }
 
