@@ -90,7 +90,7 @@
         on-close="onEnterPinDialogClose_">
       <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
       <div slot="body">
-        <network-config-input id="enterPin" password autofocus
+        <network-config-input id="enterPin" password
             label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
           </iron-a11y-keys>
@@ -100,7 +100,7 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button on-tap="sendEnterPin_">
+        <paper-button on-tap="sendEnterPin_" disabled="[[inProgress_]]">
           [[i18n('networkSimEnter')]]
         </paper-button>
       </div>
@@ -111,7 +111,7 @@
         on-close="onChangePinDialogClose_">
       <div slot="title">[[i18n('networkSimChangePinTitle')]]</div>
       <div slot="body">
-        <network-config-input id="changePinOld" password autofocus
+        <network-config-input id="changePinOld" password
             label="[[i18n('networkSimEnterOldPin')]]">
         </network-config-input>
         <network-config-input id="changePinNew1" password
@@ -127,7 +127,7 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button on-tap="sendChangePin_">
+        <paper-button on-tap="sendChangePin_" disabled="[[inProgress_]]">
           [[i18n('networkSimChange')]]
         </paper-button>
       </div>
@@ -138,7 +138,7 @@
         on-close="onUnlockPinDialogClose_">
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
-        <network-config-input id="unlockPin" password autofocus
+        <network-config-input id="unlockPin" password
             label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
           </iron-a11y-keys>
@@ -148,7 +148,7 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button on-tap="sendUnlockPin_">
+        <paper-button on-tap="sendUnlockPin_" disabled="[[inProgress_]]">
           [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
@@ -162,7 +162,7 @@
         <div>
           Enter the 8-digit PIN Unblocking Key provided by your carrier
         </div>
-        <network-config-input id="unlockPuk" password autofocus
+        <network-config-input id="unlockPuk" password
             label="[[i18n('networkSimEnterPuk')]]">
         </network-config-input>
         <network-config-input id="unlockPin1" password
@@ -181,7 +181,7 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button on-tap="sendUnlockPuk_">
+        <paper-button on-tap="sendUnlockPuk_" disabled="[[inProgress_]]">
           [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
