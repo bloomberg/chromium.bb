@@ -186,6 +186,27 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoSSL3) {
   EXPECT_LE(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
 }
 
+// Tests that SSLVersionMin correctly sets the minimum version.
+TEST_F(SSLConfigServiceManagerPrefTest, SSLVersionMin) {
+  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
+
+  TestingPrefServiceSimple local_state;
+  local_state.SetUserPref(ssl_config::prefs::kSSLVersionMin,
+                          std::make_unique<base::Value>("tls1.1"));
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  ASSERT_TRUE(config_manager.get());
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_1, ssl_config.version_min);
+}
+
 // Tests that SSL max version correctly sets the maximum version.
 TEST_F(SSLConfigServiceManagerPrefTest, SSLVersionMax) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
