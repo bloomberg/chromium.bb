@@ -72,7 +72,7 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+constexpr net::NetworkTrafficAnnotationTag kSyncFileSystemTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("sync_file_system", R"(
         semantics {
           sender: "Sync FileSystem Chrome API"
@@ -106,7 +106,7 @@ SyncEngine::DriveServiceFactory::CreateDriveService(
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
       std::string(), /* custom_user_agent */
-      kTrafficAnnotation));
+      kSyncFileSystemTrafficAnnotation));
 }
 
 class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {

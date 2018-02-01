@@ -12,7 +12,7 @@
 
 namespace {
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+constexpr net::NetworkTrafficAnnotationTag kAccountAvatarTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("credenential_avatar", R"(
         semantics {
           sender: "Chrome Password Manager"
@@ -48,7 +48,8 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 AccountAvatarFetcher::AccountAvatarFetcher(
     const GURL& url,
     const base::WeakPtr<AccountAvatarFetcherDelegate>& delegate)
-    : fetcher_(url, this, kTrafficAnnotation), delegate_(delegate) {}
+    : fetcher_(url, this, kAccountAvatarTrafficAnnotation),
+      delegate_(delegate) {}
 
 AccountAvatarFetcher::~AccountAvatarFetcher() = default;
 

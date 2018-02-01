@@ -23,8 +23,9 @@ namespace {
 const char kSbIncidentReportUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/incident";
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("safe_browsing_incident", R"(
+constexpr net::NetworkTrafficAnnotationTag
+    kSafeBrowsingIncidentTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("safe_browsing_incident", R"(
     semantics {
       sender: "Safe Browsing Incident Reporting"
       description:
@@ -81,11 +82,12 @@ IncidentReportUploaderImpl::IncidentReportUploaderImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const std::string& post_data)
     : IncidentReportUploader(callback),
-      url_fetcher_(net::URLFetcher::Create(kTestUrlFetcherId,
-                                           GetIncidentReportUrl(),
-                                           net::URLFetcher::POST,
-                                           this,
-                                           kTrafficAnnotation)),
+      url_fetcher_(
+          net::URLFetcher::Create(kTestUrlFetcherId,
+                                  GetIncidentReportUrl(),
+                                  net::URLFetcher::POST,
+                                  this,
+                                  kSafeBrowsingIncidentTrafficAnnotation)),
       time_begin_(base::TimeTicks::Now()) {
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);

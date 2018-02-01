@@ -52,8 +52,9 @@ void LogReportResult(const GURL& url, int net_error, int http_response_code) {
                            net_error);
 }
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("notification_image_reporter", R"(
+constexpr net::NetworkTrafficAnnotationTag
+    kNotificationImageReporterTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("notification_image_reporter", R"(
         semantics {
           sender: "Safe Browsing"
           description:
@@ -91,9 +92,9 @@ const char NotificationImageReporter::kReportingUploadUrl[] =
 
 NotificationImageReporter::NotificationImageReporter(
     net::URLRequestContext* request_context)
-    : NotificationImageReporter(
-          std::make_unique<net::ReportSender>(request_context,
-                                              kTrafficAnnotation)) {}
+    : NotificationImageReporter(std::make_unique<net::ReportSender>(
+          request_context,
+          kNotificationImageReporterTrafficAnnotation)) {}
 
 NotificationImageReporter::NotificationImageReporter(
     std::unique_ptr<net::ReportSender> report_sender)
