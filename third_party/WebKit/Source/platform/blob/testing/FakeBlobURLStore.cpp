@@ -29,4 +29,10 @@ void FakeBlobURLStore::Resolve(const KURL& url, ResolveCallback callback) {
   std::move(callback).Run(std::move(blob));
 }
 
+void FakeBlobURLStore::ResolveAsURLLoaderFactory(
+    const KURL&,
+    network::mojom::blink::URLLoaderFactoryRequest) {
+  NOTREACHED();
+}
+
 }  // namespace blink

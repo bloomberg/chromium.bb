@@ -25,6 +25,9 @@ class STORAGE_EXPORT BlobURLStoreImpl : public blink::mojom::BlobURLStore {
                 RegisterCallback callback) override;
   void Revoke(const GURL& url) override;
   void Resolve(const GURL& url, ResolveCallback callback) override;
+  void ResolveAsURLLoaderFactory(
+      const GURL& url,
+      network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
   void RegisterWithUUID(blink::mojom::BlobPtr blob,
