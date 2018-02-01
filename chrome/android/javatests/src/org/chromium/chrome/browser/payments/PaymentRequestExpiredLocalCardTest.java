@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -137,8 +138,9 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
     /**
      * Tests the different card unmask error messages for an expired card.
      */
-    @MediumTest
-    @Feature({"Payments"})
+    // @MediumTest
+    // @Feature({"Payments"})
+    @DisabledTest(message = "https://crbug.com/687438/")
     @Test
     public void testPromptErrorMessages()
             throws InterruptedException, ExecutionException, TimeoutException {
