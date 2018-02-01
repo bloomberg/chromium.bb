@@ -27,6 +27,8 @@
 #import "ios/web/test/web_int_test.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -70,7 +72,7 @@ ACTION_P3(VerifyNewPageStartedContext, web_state, url, context) {
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
+ACTION_P4(VerifyNewPageFinishedContext, web_state, url, mime_type, context) {
   ASSERT_EQ(*context, arg1);
   EXPECT_EQ(web_state, arg0);
   EXPECT_EQ(web_state, (*context)->GetWebState());
@@ -85,10 +87,10 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->IsRendererInitiated());
   ASSERT_TRUE((*context)->GetResponseHeaders());
-  std::string mime_type;
-  (*context)->GetResponseHeaders()->GetMimeType(&mime_type);
+  std::string actual_mime_type;
+  (*context)->GetResponseHeaders()->GetMimeType(&actual_mime_type);
   ASSERT_TRUE(web_state->IsLoading());
-  EXPECT_EQ(kExpectedMimeType, mime_type);
+  EXPECT_EQ(mime_type, actual_mime_type);
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_TRUE(!item->GetTimestamp().is_null());
@@ -382,6 +384,10 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
 
     WebStateImpl* web_state_impl = reinterpret_cast<WebStateImpl*>(web_state());
     web_state_impl->GetWebController().nativeProvider = provider_;
+
+    test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
+    RegisterDefaultHandlers(test_server_.get());
+    ASSERT_TRUE(test_server_->Start());
   }
 
   void TearDown() override {
@@ -396,6 +402,8 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
   StrictMock<WebStateObserverMock> observer_;
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
   testing::InSequence callbacks_sequence_checker_;
+
+  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationAndLoadCallbacksTest);
 };
@@ -416,7 +424,8 @@ TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url,
+                                             kExpectedMimeType, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -443,7 +452,8 @@ TEST_F(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url,
+                                             kExpectedMimeType, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -537,7 +547,8 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url,
+                                             kExpectedMimeType, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -602,7 +613,8 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url,
+                                             kExpectedMimeType, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -645,7 +657,8 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url,
+                                             kExpectedMimeType, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -984,12 +997,48 @@ TEST_F(NavigationAndLoadCallbacksTest, RedirectNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageFinishedContext(web_state(), redirect_url, &context));
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), redirect_url,
+                                             kExpectedMimeType, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
+}
+
+// Tests failed load after the navigation is sucessfully finished.
+TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
+  GURL url = test_server_->GetURL("/exabyte_response");
+
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
+                                             &context));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+  // TODO(crbug.com/806457): PageLoaded should be called only once.
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+  web::test::LoadUrl(web_state(), url);
+
+  // Server does not stop responding until it's shut down. Let the server run
+  // to make web state finish the navigation.
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(2.0, ^{
+    return !web_state()->IsLoading();
+  }));
+
+  // It this point the navigation should be finished. Shutdown the server and
+  // wait until web state stop loading.
+  ASSERT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
 }
 
 }  // namespace web
