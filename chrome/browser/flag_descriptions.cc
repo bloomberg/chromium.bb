@@ -1911,6 +1911,12 @@ const char kEnableExpandedAutofillCreditCardPopupLayoutName[] =
 const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[] =
     "If enabled, displays autofill credit card popup using expanded layout.";
 
+const char kEnableNtpArticleSuggestionsExpandableHeaderName[] =
+    "Show article suggestions expandable header on New Tab Page";
+const char kEnableNtpArticleSuggestionsExpandableHeaderDescription[] =
+    "If enabled, the article suggestions content on New Tab Page can be "
+    "toggled shown or hidden by clicking the expandable header.";
+
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 const char kEnableNtpAssetDownloadSuggestionsDescription[] =

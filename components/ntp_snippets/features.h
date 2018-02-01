@@ -40,6 +40,9 @@ extern const base::Feature kForeignSessionsSuggestionsFeature;
 ////////////////////////////////////////////////////////////////////////////////
 // Independent features. Treat as normal
 
+// Feature to allow show/hide article suggestions by clicking the header.
+extern const base::Feature kArticleSuggestionsExpandableHeader;
+
 // TODO(jkrcal): Rename to kRemoteSuggestionsFeature.
 extern const base::Feature kArticleSuggestionsFeature;
 
