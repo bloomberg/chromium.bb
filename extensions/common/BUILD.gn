@@ -115,6 +115,7 @@ if (enable_extensions) {
       "extension_resource_path_normalizer.h",
       "extension_set.cc",
       "extension_set.h",
+      "extension_updater_uma.h",
       "extension_urls.cc",
       "extension_urls.h",
       "extension_utility_types.h",
