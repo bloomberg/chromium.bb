@@ -26,6 +26,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -151,6 +152,7 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
+    @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/807807")
     public void testAddBookmark() throws InterruptedException {
         mActivityTestRule.loadUrl(mTestPage);
         // Check partner bookmarks are lazily loaded.
