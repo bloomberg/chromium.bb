@@ -69,16 +69,41 @@ CBORValue::CBORValue(const BinaryValue& in_bytes)
 CBORValue::CBORValue(BinaryValue&& in_bytes) noexcept
     : type_(Type::BYTE_STRING), bytestring_value_(std::move(in_bytes)) {}
 
-CBORValue::CBORValue(const char* in_string)
-    : CBORValue(std::string(in_string)) {}
+CBORValue::CBORValue(const char* in_string, Type type)
+    : CBORValue(base::StringPiece(in_string), type) {}
 
-CBORValue::CBORValue(std::string&& in_string) noexcept
-    : type_(Type::STRING), string_value_(std::move(in_string)) {
-  DCHECK(base::IsStringUTF8(string_value_));
+CBORValue::CBORValue(std::string&& in_string, Type type) noexcept
+    : type_(type) {
+  switch (type_) {
+    case Type::STRING:
+      new (&string_value_) std::string();
+      string_value_ = std::move(in_string);
+      DCHECK(base::IsStringUTF8(string_value_));
+      break;
+    case Type::BYTE_STRING:
+      new (&bytestring_value_) BinaryValue();
+      bytestring_value_ = BinaryValue(in_string.begin(), in_string.end());
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
-CBORValue::CBORValue(base::StringPiece in_string)
-    : CBORValue(in_string.as_string()) {}
+CBORValue::CBORValue(base::StringPiece in_string, Type type) : type_(type) {
+  switch (type_) {
+    case Type::STRING:
+      new (&string_value_) std::string();
+      string_value_ = in_string.as_string();
+      DCHECK(base::IsStringUTF8(string_value_));
+      break;
+    case Type::BYTE_STRING:
+      new (&bytestring_value_) BinaryValue();
+      bytestring_value_ = BinaryValue(in_string.begin(), in_string.end());
+      break;
+    default:
+      NOTREACHED();
+  }
+}
 
 CBORValue::CBORValue(const ArrayValue& in_array)
     : type_(Type::ARRAY), array_value_() {
@@ -169,6 +194,14 @@ const std::string& CBORValue::GetString() const {
 const CBORValue::BinaryValue& CBORValue::GetBytestring() const {
   CHECK(is_bytestring());
   return bytestring_value_;
+}
+
+base::StringPiece CBORValue::GetBytestringAsString() const {
+  CHECK(is_bytestring());
+  const auto& bytestring_value = GetBytestring();
+  return base::StringPiece(
+      reinterpret_cast<const char*>(bytestring_value.data()),
+      bytestring_value.size());
 }
 
 const CBORValue::ArrayValue& CBORValue::GetArray() const {

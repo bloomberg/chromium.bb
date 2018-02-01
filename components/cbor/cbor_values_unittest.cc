@@ -69,6 +69,14 @@ TEST(CBORValuesTest, ConstructBytestring) {
             value.GetBytestring());
 }
 
+TEST(CBORValuesTest, ConstructBytestringFromString) {
+  CBORValue value(CBORValue("hello", CBORValue::Type::BYTE_STRING));
+  ASSERT_EQ(CBORValue::Type::BYTE_STRING, value.type());
+  EXPECT_EQ(CBORValue::BinaryValue({'h', 'e', 'l', 'l', 'o'}),
+            value.GetBytestring());
+  EXPECT_EQ("hello", value.GetBytestringAsString());
+}
+
 TEST(CBORValuesTest, ConstructArray) {
   CBORValue::ArrayValue array;
   array.emplace_back(CBORValue("foo"));
