@@ -185,6 +185,7 @@
 -PolicyTest.ForceGoogleSafeSearch
 -ProfileBrowserTest.SendHPKPReport
 -ProfileBrowserTest.SendHPKPReportServerHangs
+-SecurityIndicatorTest.CheckIndicatorText
 
 # Need to add SetRequireCTDelegateForTesting to NetworkContext.
 -SymantecMessageSSLUITest.ManySubresources

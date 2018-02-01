@@ -83,6 +83,7 @@
 #include "components/ssl_config/ssl_config_switches.h"
 #include "components/suggestions/features.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/toolbar/toolbar_field_trial.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
@@ -1173,6 +1174,25 @@ const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
      kWebXrRenderPathChoiceGpuFence, arraysize(kWebXrRenderPathChoiceGpuFence),
      nullptr}};
 #endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
+
+const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {
+    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
+     toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure}};
+const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorSecureToLock[] = {
+    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
+     toolbar::features::kSimplifyHttpsIndicatorParameterSecureToLock}};
+const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorBothToLock[] = {
+    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
+     toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock}};
+
+const FeatureEntry::FeatureVariation kSimplifyHttpsIndicatorVariations[] = {
+    {"(show Secure chip for EV pages)", kSimplifyHttpsIndicatorEvToSecure,
+     arraysize(kSimplifyHttpsIndicatorEvToSecure), nullptr},
+    {"(show Lock icon for non-EV HTTPS pages)",
+     kSimplifyHttpsIndicatorSecureToLock,
+     arraysize(kSimplifyHttpsIndicatorSecureToLock), nullptr},
+    {"(show Lock icon for all HTTPS pages)", kSimplifyHttpsIndicatorBothToLock,
+     arraysize(kSimplifyHttpsIndicatorBothToLock), nullptr}};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3704,6 +3724,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUnifiedConsent)},
+
+    {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
+     flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(toolbar::features::kSimplifyHttpsIndicator,
+                                    kSimplifyHttpsIndicatorVariations,
+                                    "SimplifyHttpsIndicator")},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
