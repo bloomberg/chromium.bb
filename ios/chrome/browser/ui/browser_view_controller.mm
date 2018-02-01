@@ -1840,8 +1840,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       // by the |completion| block below.
       UIView* launchScreenView = launchScreenController.view;
       launchScreenView.userInteractionEnabled = NO;
-      launchScreenView.frame = self.view.window.bounds;
-      [self.view.window addSubview:launchScreenView];
+      UIWindow* window = UIApplication.sharedApplication.keyWindow;
+      launchScreenView.frame = window.bounds;
+      [window addSubview:launchScreenView];
 
       // Replace the completion handler sent to the superclass with one which
       // removes |launchScreenView| and resets the status bar. If |completion|
