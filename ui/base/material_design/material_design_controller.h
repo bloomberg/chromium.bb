@@ -23,7 +23,9 @@ class UI_BASE_EXPORT MaterialDesignController {
     // Basic material design.
     MATERIAL_NORMAL = 0,
     // Material design targeted at mouse/touch hybrid devices.
-    MATERIAL_HYBRID = 1
+    MATERIAL_HYBRID = 1,
+    // Material design that is more optimized for touch devices.
+    MATERIAL_TOUCH_OPTIMIZED = 2
   };
 
   // Initializes |mode_|. Must be called before checking |mode_|.
