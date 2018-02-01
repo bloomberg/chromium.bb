@@ -324,6 +324,10 @@ class WebMediaPlayer {
   // Callback called whenever the media element display type changes. By
   // default, the display type is `kInline`.
   virtual void OnDisplayTypeChanged(DisplayType) {}
+
+  // Test helper methods for exercising media suspension.
+  virtual void ForceStaleStateForTesting() {}
+  virtual bool IsSuspendedForTesting() { return false; }
 };
 
 }  // namespace blink
