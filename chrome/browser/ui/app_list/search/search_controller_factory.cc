@@ -6,9 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -21,7 +19,6 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
@@ -40,7 +37,6 @@ namespace {
 constexpr size_t kMaxAppsGroupResults = 6;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxWebstoreResults = 2;
-constexpr size_t kMaxSuggestionsResults = 6;
 constexpr size_t kMaxLauncherSearchResults = 2;
 #if defined(OS_CHROMEOS)
 // We show up to 6 Play Store results. However, part of Play Store results may
@@ -51,20 +47,6 @@ constexpr size_t kMaxLauncherSearchResults = 2;
 // TODO(753947): Consider progressive algorithm of getting Play Store results.
 constexpr size_t kMaxPlayStoreResults = 12;
 #endif
-
-// Constants related to the SuggestionsService in AppList field trial.
-constexpr char kSuggestionsProviderFieldTrialName[] =
-    "SuggestionsAppListProvider";
-constexpr char kSuggestionsProviderFieldTrialEnabledPrefix[] = "Enabled";
-
-// Returns whether the user is part of a group where the Suggestions provider is
-// enabled.
-bool IsSuggestionsSearchProviderEnabled() {
-  return base::StartsWith(
-      base::FieldTrialList::FindFullName(kSuggestionsProviderFieldTrialName),
-      kSuggestionsProviderFieldTrialEnabledPrefix,
-      base::CompareCase::SENSITIVE);
-}
 
 }  // namespace
 
@@ -110,13 +92,6 @@ std::unique_ptr<SearchController> CreateSearchController(
             profile, model_updater, list_controller,
             std::make_unique<AnswerCardWebContents>(profile),
             std::make_unique<AnswerCardWebContents>(profile)));
-  }
-  if (IsSuggestionsSearchProviderEnabled()) {
-    size_t suggestions_group_id =
-        controller->AddGroup(kMaxSuggestionsResults, 1.0, 0.0);
-    controller->AddProvider(
-        suggestions_group_id,
-        std::make_unique<SuggestionsSearchProvider>(profile, list_controller));
   }
 
   // LauncherSearchProvider is added only when flag is enabled, not in guest
