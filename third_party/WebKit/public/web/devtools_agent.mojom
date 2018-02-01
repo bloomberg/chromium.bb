@@ -56,6 +56,12 @@ interface DevToolsAgent {
   // On the other hand, we need to handle some of the messages on IO without
   // going to UI first (as described above). This means an interface bound
   // on IO thread. Thus a session per thread.
+  //
+  // Note that |io_session| is not associated with DevToolsAgent, and so
+  // there is no ordering guarantee for commands send to |io_session|
+  // relative to anything coming over regular |session|.
+  // For example, |session| may be already detached (interface unbound),
+  // while commands are still coming to |io_session|, and vice versa.
   AttachDevToolsSession(associated DevToolsSessionHost host,
                         associated DevToolsSession& session,
                         DevToolsSession& io_session,
