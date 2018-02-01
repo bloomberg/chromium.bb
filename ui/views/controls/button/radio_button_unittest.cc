@@ -127,8 +127,11 @@ TEST_F(RadioButtonTest, FocusOnClick) {
     // Button 1 gets focus on click because button 2 already had it.
     EXPECT_TRUE(button1->checked());
     EXPECT_EQ(button1, focus_manager->GetFocusedView());
-  } else {
+  } else if (button2->request_focus_on_press()) {
     EXPECT_EQ(button2, focus_manager->GetFocusedView());
+  } else {
+    // On Mac, buttons never (and can not be made to) request focus on clicks.
+    EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
   }
 }
 

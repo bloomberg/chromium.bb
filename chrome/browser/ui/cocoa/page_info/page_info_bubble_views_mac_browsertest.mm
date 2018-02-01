@@ -13,11 +13,13 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/page_transition_types.h"
 #import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -87,6 +89,12 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest, NoCrashOnFullScreenToggle) {
 // switches via keyboard shortcuts.
 IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
                        BubbleClosesOnKeyboardTabSwitch) {
+  // Always use PageInfoBubbleView for this test rather than Cocoa UI.
+  base::test::ScopedFeatureList enable_md;
+  enable_md.InitWithFeatures(
+      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
+      {});
+
   ui_test_utils::NavigateToURL(browser(), GURL(GetParam().url));
   // Add a second tab, but make sure the first is selected.
   AddTabAtIndex(1, GURL("https://test_url.com"),
