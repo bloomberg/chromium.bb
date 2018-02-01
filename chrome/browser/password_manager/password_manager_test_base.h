@@ -9,10 +9,10 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/cert/mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace autofill {
@@ -127,7 +127,7 @@ class BubbleObserver {
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };
 
-class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
+class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
  public:
   PasswordManagerBrowserTestBase();
   ~PasswordManagerBrowserTestBase() override;
@@ -135,7 +135,6 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-  void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
 
  protected:
@@ -198,15 +197,13 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
 
   // Accessors
   // Return the first created tab with a custom ManagePasswordsUIController.
-  content::WebContents* WebContents();
-  content::RenderViewHost* RenderViewHost();
-  content::RenderFrameHost* RenderFrameHost();
+  content::WebContents* WebContents() const;
+  content::RenderViewHost* RenderViewHost() const;
+  content::RenderFrameHost* RenderFrameHost() const;
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
-  net::MockCertVerifier& mock_cert_verifier() { return mock_cert_verifier_; }
 
  private:
   net::EmbeddedTestServer https_test_server_;
-  net::MockCertVerifier mock_cert_verifier_;
   // A tab with some hooks injected.
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);

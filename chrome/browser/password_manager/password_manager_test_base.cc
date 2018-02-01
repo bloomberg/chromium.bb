@@ -423,7 +423,7 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   verify_result.cert_status = 0;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = cert;
-  mock_cert_verifier().AddResultForCert(cert.get(), verify_result, net::OK);
+  mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
 
   // Add a tab with a customized ManagePasswordsUIController. Thus, we can
   // intercept useful UI events.
@@ -455,23 +455,21 @@ void PasswordManagerBrowserTestBase::TearDownOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 
-void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
-}
-
 void PasswordManagerBrowserTestBase::TearDownInProcessBrowserTestFixture() {
   ProfileIOData::SetCertVerifierForTesting(nullptr);
 }
 
-content::WebContents* PasswordManagerBrowserTestBase::WebContents() {
+content::WebContents* PasswordManagerBrowserTestBase::WebContents() const {
   return web_contents_;
 }
 
-content::RenderViewHost* PasswordManagerBrowserTestBase::RenderViewHost() {
+content::RenderViewHost* PasswordManagerBrowserTestBase::RenderViewHost()
+    const {
   return WebContents()->GetRenderViewHost();
 }
 
-content::RenderFrameHost* PasswordManagerBrowserTestBase::RenderFrameHost() {
+content::RenderFrameHost* PasswordManagerBrowserTestBase::RenderFrameHost()
+    const {
   return WebContents()->GetMainFrame();
 }
 
