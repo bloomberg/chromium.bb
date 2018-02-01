@@ -1324,9 +1324,7 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
 
 void SSLClientSocketImpl::DoConnectCallback(int rv) {
   if (!user_connect_callback_.is_null()) {
-    CompletionCallback c = user_connect_callback_;
-    user_connect_callback_.Reset();
-    c.Run(rv > OK ? OK : rv);
+    base::ResetAndReturn(&user_connect_callback_).Run(rv > OK ? OK : rv);
   }
 }
 

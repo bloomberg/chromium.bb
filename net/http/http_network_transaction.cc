@@ -11,6 +11,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/metrics/field_trial.h"
@@ -678,9 +679,7 @@ void HttpNetworkTransaction::DoCallback(int rv) {
   DCHECK(!callback_.is_null());
 
   // Since Run may result in Read being called, clear user_callback_ up front.
-  CompletionCallback c = callback_;
-  callback_.Reset();
-  c.Run(rv);
+  base::ResetAndReturn(&callback_).Run(rv);
 }
 
 void HttpNetworkTransaction::OnIOComplete(int result) {

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -800,9 +801,8 @@ void MockBlockingBackendFactory::FinishCreation() {
   if (!callback_.is_null()) {
     if (!fail_)
       backend_->reset(new MockDiskCache());
-    CompletionCallback cb = callback_;
-    callback_.Reset();
-    cb.Run(Result());  // This object can be deleted here.
+    // Running the callback might delete |this|.
+    base::ResetAndReturn(&callback_).Run(Result());
   }
 }
 

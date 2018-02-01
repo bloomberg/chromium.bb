@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -118,8 +119,7 @@ int CallbackMockHostResolver::Resolve(const RequestInfo& info,
   int result = MockHostResolver::Resolve(info, priority, addresses, callback,
                                          request, net_log);
   if (!resolve_callback_.is_null()) {
-    resolve_callback_.Run();
-    resolve_callback_.Reset();
+    base::ResetAndReturn(&resolve_callback_).Run();
   }
   return result;
 }

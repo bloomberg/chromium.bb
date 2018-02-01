@@ -172,20 +172,16 @@ class FakeDataChannel {
       return;
 
     int copied = PropagateData(read_buf_, read_buf_len_);
-    CompletionCallback callback = read_callback_;
-    read_callback_.Reset();
     read_buf_ = NULL;
     read_buf_len_ = 0;
-    callback.Run(copied);
+    base::ResetAndReturn(&read_callback_).Run(copied);
   }
 
   void DoWriteCallback() {
     if (write_callback_.is_null())
       return;
 
-    CompletionCallback callback = write_callback_;
-    write_callback_.Reset();
-    callback.Run(ERR_CONNECTION_RESET);
+    base::ResetAndReturn(&write_callback_).Run(ERR_CONNECTION_RESET);
   }
 
   int PropagateData(scoped_refptr<IOBuffer> read_buf, int read_buf_len) {

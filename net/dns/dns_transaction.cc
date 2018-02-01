@@ -11,6 +11,7 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -748,12 +749,10 @@ class DnsTransactionImpl : public DnsTransaction,
                               qnames_initial_size_ - qnames_.size());
     }
 
-    DnsTransactionFactory::CallbackType callback = callback_;
-    callback_.Reset();
-
     net_log_.EndEventWithNetErrorCode(NetLogEventType::DNS_TRANSACTION,
                                       result.rv);
-    callback.Run(this, result.rv, response);
+
+    base::ResetAndReturn(&callback_).Run(this, result.rv, response);
   }
 
   // Makes another attempt at the current name, |qnames_.front()|, using the

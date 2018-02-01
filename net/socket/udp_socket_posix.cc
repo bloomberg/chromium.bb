@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -687,20 +688,18 @@ void UDPSocketPosix::DoReadCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!read_callback_.is_null());
 
-  // since Run may result in Read being called, clear read_callback_ up front.
-  CompletionCallback c = read_callback_;
-  read_callback_.Reset();
-  c.Run(rv);
+  // Since Run() may result in Read() being called,
+  // clear |read_callback_| up front.
+  base::ResetAndReturn(&read_callback_).Run(rv);
 }
 
 void UDPSocketPosix::DoWriteCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!write_callback_.is_null());
 
-  // since Run may result in Write being called, clear write_callback_ up front.
-  CompletionCallback c = write_callback_;
-  write_callback_.Reset();
-  c.Run(rv);
+  // Since Run() may result in Write() being called,
+  // clear |write_callback_| up front.
+  base::ResetAndReturn(&write_callback_).Run(rv);
 }
 
 void UDPSocketPosix::DidCompleteRead() {

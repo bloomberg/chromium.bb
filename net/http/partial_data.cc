@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -435,9 +436,7 @@ void PartialData::GetAvailableRangeCompleted(int64_t* start, int result) {
   if (result >= 0)
     result = 1;  // Return success, go ahead and validate the entry.
 
-  CompletionCallback cb = callback_;
-  callback_.Reset();
-  cb.Run(result);
+  base::ResetAndReturn(&callback_).Run(result);
 }
 
 }  // namespace net

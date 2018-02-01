@@ -282,9 +282,7 @@ void SpdyProxyClientSocket::OnIOComplete(int result) {
   DCHECK_NE(STATE_DISCONNECTED, next_state_);
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
-    CompletionCallback c = read_callback_;
-    read_callback_.Reset();
-    c.Run(rv);
+    base::ResetAndReturn(&read_callback_).Run(rv);
   }
 }
 
@@ -475,11 +473,9 @@ void SpdyProxyClientSocket::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
 
   if (!read_callback_.is_null()) {
     int rv = PopulateUserReadBuffer(user_buffer_->data(), user_buffer_len_);
-    CompletionCallback c = read_callback_;
-    read_callback_.Reset();
     user_buffer_ = NULL;
     user_buffer_len_ = 0;
-    c.Run(rv);
+    base::ResetAndReturn(&read_callback_).Run(rv);
   }
 }
 
@@ -523,9 +519,7 @@ void SpdyProxyClientSocket::OnClose(int status)  {
   // we invoke the connect callback.
   if (connecting) {
     DCHECK(!read_callback_.is_null());
-    CompletionCallback read_callback = read_callback_;
-    read_callback_.Reset();
-    read_callback.Run(status);
+    base::ResetAndReturn(&read_callback_).Run(status);
   } else if (!read_callback_.is_null()) {
     // If we have a read_callback_, the we need to make sure we call it back.
     OnDataReceived(std::unique_ptr<SpdyBuffer>());

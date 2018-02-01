@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -374,9 +375,7 @@ void FtpNetworkTransaction::DoCallback(int rv) {
   DCHECK(!user_callback_.is_null());
 
   // Since Run may result in Read being called, clear callback_ up front.
-  CompletionCallback c = user_callback_;
-  user_callback_.Reset();
-  c.Run(rv);
+  base::ResetAndReturn(&user_callback_).Run(rv);
 }
 
 void FtpNetworkTransaction::OnIOComplete(int result) {

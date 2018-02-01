@@ -5,6 +5,7 @@
 #include "net/http/http_auth_handler_mock.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -175,9 +176,7 @@ void HttpAuthHandlerMock::OnResolveCanonicalName() {
   EXPECT_EQ(RESOLVE_ASYNC, resolve_);
   EXPECT_TRUE(!callback_.is_null());
   resolve_ = RESOLVE_TESTED;
-  CompletionCallback callback = callback_;
-  callback_.Reset();
-  callback.Run(OK);
+  base::ResetAndReturn(&callback_).Run(OK);
 }
 
 void HttpAuthHandlerMock::OnGenerateAuthToken() {
@@ -192,9 +191,7 @@ void HttpAuthHandlerMock::OnGenerateAuthToken() {
     state_ = State::DONE;
   }
   auth_token_ = NULL;
-  CompletionCallback callback = callback_;
-  callback_.Reset();
-  callback.Run(generate_rv_);
+  base::ResetAndReturn(&callback_).Run(generate_rv_);
 }
 
 HttpAuthHandlerMock::Factory::Factory()

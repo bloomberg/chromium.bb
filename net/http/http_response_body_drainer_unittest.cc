@@ -9,6 +9,7 @@
 #include <cstring>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -229,9 +230,7 @@ int MockHttpStream::ReadResponseBodyImpl(IOBuffer* buf, int buf_len) {
 void MockHttpStream::CompleteRead() {
   int result = ReadResponseBodyImpl(user_buf_.get(), buf_len_);
   user_buf_ = NULL;
-  CompletionCallback callback = callback_;
-  callback_.Reset();
-  callback.Run(result);
+  base::ResetAndReturn(&callback_).Run(result);
 }
 
 class HttpResponseBodyDrainerTest : public testing::Test {
