@@ -34,6 +34,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
@@ -1147,6 +1148,16 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   uint16_t signature_algorithm = SSL_get_peer_signature_algorithm(ssl_.get());
   if (signature_algorithm != 0) {
     base::UmaHistogramSparse("Net.SSLSignatureAlgorithm", signature_algorithm);
+  }
+
+  if (IsTLS13ExperimentHost(host_and_port_.host())) {
+    // To measure the effects of TLS 1.3's anti-downgrade mechanism, record
+    // whether the codepath would have been blocked against servers known to
+    // implement draft TLS 1.3. This should be a safe security measure to
+    // enable, but some middleboxes have non-compliant behavior here. See
+    // https://crbug.com/boringssl/226.
+    UMA_HISTOGRAM_BOOLEAN("Net.SSLDraftDowngradeTLS13Experiment",
+                          !!SSL_is_draft_downgrade(ssl_.get()));
   }
 
   // Verify the certificate.
