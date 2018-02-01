@@ -39,8 +39,7 @@ class MockCallback {
 };
 
 std::string GetSinkId(const Display& display) {
-  return WiredDisplayMediaRouteProvider::kSinkPrefix +
-         std::to_string(display.id());
+  return WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(display);
 }
 
 class MockPresentationReceiver : public WiredDisplayPresentationReceiver {

@@ -27,11 +27,6 @@ namespace media_router {
 
 namespace {
 
-std::string GetSinkIdForDisplay(const Display& display) {
-  return WiredDisplayMediaRouteProvider::kSinkPrefix +
-         std::to_string(display.id());
-}
-
 bool IsPresentationSource(const std::string& media_source) {
   const GURL source_url(media_source);
   return source_url.is_valid() && source_url.SchemeIsHTTPOrHTTPS() &&
@@ -41,7 +36,8 @@ bool IsPresentationSource(const std::string& media_source) {
 
 MediaSinkInternal CreateSinkForDisplay(const Display& display,
                                        int display_index) {
-  const std::string sink_id = GetSinkIdForDisplay(display);
+  const std::string sink_id =
+      WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(display);
   const std::string sink_name =
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_WIRED_DISPLAY_SINK_NAME,
                                 base::FormatNumber(display_index));
@@ -74,7 +70,10 @@ const MediaRouteProviderId WiredDisplayMediaRouteProvider::kProviderId =
     MediaRouteProviderId::WIRED_DISPLAY;
 
 // static
-const char WiredDisplayMediaRouteProvider::kSinkPrefix[] = "wired_display_";
+std::string WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(
+    const Display& display) {
+  return "wired_display_" + std::to_string(display.id());
+}
 
 WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
@@ -421,8 +420,8 @@ base::Optional<Display> WiredDisplayMediaRouteProvider::GetDisplayBySinkId(
     const std::string& sink_id) const {
   std::vector<Display> displays = GetAllDisplays();
   auto it = std::find_if(displays.begin(), displays.end(),
-                         [&sink_id](const Display& d) {
-                           return GetSinkIdForDisplay(d) == sink_id;
+                         [&sink_id](const Display& display) {
+                           return GetSinkIdForDisplay(display) == sink_id;
                          });
   return it == displays.end() ? base::nullopt
                               : base::make_optional<Display>(std::move(*it));

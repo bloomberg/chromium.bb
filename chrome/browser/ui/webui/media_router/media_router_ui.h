@@ -8,12 +8,15 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
@@ -26,7 +29,12 @@
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
+#include "ui/base/ui_features.h"
 #include "url/gurl.h"
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/ui/webui/media_router/web_contents_display_observer.h"
+#endif
 
 namespace content {
 struct PresentationRequest;
@@ -145,13 +153,15 @@ class MediaRouterUI
   // mode is MediaCastMode::DESKTOP_MIRROR.
   virtual void RecordCastModeSelection(MediaCastMode cast_mode);
 
+  // Returns a subset of |sinks_| that should be listed in the dialog.
+  std::vector<MediaSinkWithCastModes> GetEnabledSinks() const;
+
   // Returns the hostname of the PresentationRequest's parent frame URL.
   std::string GetPresentationRequestSourceName() const;
   std::string GetTruncatedPresentationRequestSourceName() const;
   bool HasPendingRouteRequest() const {
     return current_route_request_id_ != -1;
   }
-  const std::vector<MediaSinkWithCastModes>& sinks() const { return sinks_; }
   const std::vector<MediaRoute>& routes() const { return routes_; }
   const std::vector<MediaRoute::Id>& joinable_route_ids() const {
     return joinable_route_ids_;
@@ -193,6 +203,13 @@ class MediaRouterUI
 
   void InitForTest(std::unique_ptr<MediaRouterFileDialog> file_dialog);
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+  void set_display_observer_for_test(
+      std::unique_ptr<WebContentsDisplayObserver> display_observer) {
+    display_observer_ = std::move(display_observer);
+  }
+#endif
+
  private:
   friend class MediaRouterUITest;
 
@@ -216,6 +233,8 @@ class MediaRouterUI
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendMediaCommands);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendMediaStatusUpdate);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendInitialMediaStatusUpdate);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+                           UpdateSinksWhenDialogMovesToAnotherDisplay);
 
   class UIIssuesObserver;
   class WebContentsFullscreenOnLoadedObserver;
@@ -223,8 +242,8 @@ class MediaRouterUI
   class UIMediaRoutesObserver : public MediaRoutesObserver {
    public:
     using RoutesUpdatedCallback =
-        base::Callback<void(const std::vector<MediaRoute>&,
-                            const std::vector<MediaRoute::Id>&)>;
+        base::RepeatingCallback<void(const std::vector<MediaRoute>&,
+                                     const std::vector<MediaRoute::Id>&)>;
     UIMediaRoutesObserver(MediaRouter* router,
                           const MediaSource::Id& source_id,
                           const RoutesUpdatedCallback& callback);
@@ -381,6 +400,9 @@ class MediaRouterUI
   // Returns the IssueManager associated with |router_|.
   IssueManager* GetIssueManager();
 
+  // Sends the current list of enabled sinks to |handler_|.
+  void UpdateSinks();
+
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
   MediaRouterWebUIMessageHandler* handler_ = nullptr;
@@ -448,6 +470,11 @@ class MediaRouterUI
 
   // If set, a cast mode that is required to be shown first.
   base::Optional<MediaCastMode> forced_cast_mode_;
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+  // Keeps track of which display the dialog WebContents is on.
+  std::unique_ptr<WebContentsDisplayObserver> display_observer_;
+#endif
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.

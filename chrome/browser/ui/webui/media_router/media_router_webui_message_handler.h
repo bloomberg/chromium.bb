@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_WEBUI_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_WEBUI_MESSAGE_HANDLER_H_
 
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -41,7 +43,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   ~MediaRouterWebUIMessageHandler() override;
 
   // Methods to update the status displayed by the dialog.
-  void UpdateSinks(const std::vector<MediaSinkWithCastModes>& sinks);
+  virtual void UpdateSinks(const std::vector<MediaSinkWithCastModes>& sinks);
   void UpdateRoutes(const std::vector<MediaRoute>& routes,
                     const std::vector<MediaRoute::Id>& joinable_route_ids,
                     const std::unordered_map<MediaRoute::Id, MediaCastMode>&
