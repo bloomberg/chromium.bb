@@ -38,7 +38,9 @@ class AppWindowController : public WindowController {
   void SetFullscreenMode(bool is_fullscreen,
                          const GURL& extension_url) const override;
   Browser* GetBrowser() const override;
-  bool IsVisibleToExtension(const Extension* extension) const override;
+  bool IsVisibleToTabsAPIForExtension(
+      const Extension* extension,
+      bool allow_dev_tools_windows) const override;
 
  private:
   AppWindow* app_window_;  // Owns us.

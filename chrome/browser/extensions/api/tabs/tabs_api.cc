@@ -928,8 +928,8 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
     if (!include_incognito() && profile != browser->profile())
       continue;
 
-    if (!browser->extension_window_controller()->IsVisibleToExtension(
-            extension())) {
+    if (!browser->extension_window_controller()->IsVisibleToTabsAPIForExtension(
+            extension(), false /*allow_dev_tools_windows*/)) {
       continue;
     }
 

@@ -73,8 +73,11 @@ chrome.test.sendMessage('ready', function (message) {
         chrome.test.assertTrue(win.focus == true,
                                'Missing focus event for ' + win.type);
     }
-    chrome.test.assertEq(3, unfilteredCount);
-    chrome.test.assertTrue(includes_app && includes_devtools,
+    chrome.test.assertEq(2, unfilteredCount);
+    chrome.test.assertFalse(
+        includes_app,
+        'Should not include windows for a separate platform app.');
+    chrome.test.assertTrue(includes_devtools,
                            'Could not find app or devtools windows');
 
     chrome.test.notifyPass();

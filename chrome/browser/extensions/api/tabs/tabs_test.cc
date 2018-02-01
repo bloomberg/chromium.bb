@@ -301,12 +301,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
     window_ids.insert(ExtensionTabUtil::GetWindowId(new_browser));
   }
 
-  // Application windows should not be accessible, unless allWindowTypes is set
-  // to true.
+  // Application windows should not be accessible to extensions (app windows are
+  // only accessible to the owning item).
   AppWindow* app_window = CreateTestAppWindow("{}");
 
-  // Undocked DevTools window should not be accessible, unless allWindowTypes is
-  // set to true.
+  // Undocked DevTools window should not be accessible, unless included in the
+  // type filter mask.
   DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
       browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
 
@@ -370,11 +370,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
     window_ids.insert(ExtensionTabUtil::GetWindowId(new_browser));
   }
 
-  // Application windows should be accessible.
+  // Application windows should not be accessible to extensions (app windows are
+  // only accessible to the owning item).
   AppWindow* app_window = CreateTestAppWindow("{}");
-  window_ids.insert(app_window->session_id().id());
 
-  // Undocked DevTools window should be accessible too.
+  // Undocked DevTools window should be accessible too, since they have been
+  // explicitly requested as part of the type filter mask.
   DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
       browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
   window_ids.insert(ExtensionTabUtil::GetWindowId(
@@ -401,8 +402,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
     base::ListValue* tabs = nullptr;
     EXPECT_FALSE(result_window->GetList(keys::kTabsKey, &tabs));
   }
-  // The returned ids should contain all the current app, browser and
-  // devtools instance ids.
+  // The returned ids should contain all the browser and devtools instance ids.
   EXPECT_EQ(window_ids, result_ids);
 
   result_ids.clear();
@@ -425,8 +425,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
     base::ListValue* tabs = nullptr;
     EXPECT_TRUE(result_window->GetList(keys::kTabsKey, &tabs));
   }
-  // The returned ids should contain all the current app, browser and
-  // devtools instance ids.
+  // The returned ids should contain all the browser and devtools instance ids.
   EXPECT_EQ(window_ids, result_ids);
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
@@ -762,55 +761,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
       keys::kInvalidWindowStateError));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateAppWindowSizeConstraint) {
-  AppWindow* app_window = CreateTestAppWindow(
-      "{\"outerBounds\": "
-      "{\"width\": 300, \"height\": 300,"
-      " \"minWidth\": 200, \"minHeight\": 200,"
-      " \"maxWidth\": 400, \"maxHeight\": 400}}");
-
-  scoped_refptr<WindowsGetFunction> get_function = new WindowsGetFunction();
-  scoped_refptr<Extension> extension(ExtensionBuilder("Test").Build().get());
-  get_function->set_extension(extension.get());
-  std::unique_ptr<base::DictionaryValue> result(
-      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
-          get_function.get(),
-          base::StringPrintf("[%u, {\"windowTypes\": [\"app\"]}]",
-                             app_window->session_id().id()),
-          browser())));
-
-  EXPECT_EQ(300, api_test_utils::GetInteger(result.get(), "width"));
-  EXPECT_EQ(300, api_test_utils::GetInteger(result.get(), "height"));
-
-  // Verify the min width/height of the application window are
-  // respected.
-  scoped_refptr<WindowsUpdateFunction> update_min_function =
-      new WindowsUpdateFunction();
-  result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
-      update_min_function.get(),
-      base::StringPrintf("[%u, {\"width\": 100, \"height\": 100}]",
-                         app_window->session_id().id()),
-      browser())));
-
-  EXPECT_EQ(200, api_test_utils::GetInteger(result.get(), "width"));
-  EXPECT_EQ(200, api_test_utils::GetInteger(result.get(), "height"));
-
-  // Verify the max width/height of the application window are
-  // respected.
-  scoped_refptr<WindowsUpdateFunction> update_max_function =
-      new WindowsUpdateFunction();
-  result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
-      update_max_function.get(),
-      base::StringPrintf("[%u, {\"width\": 500, \"height\": 500}]",
-                         app_window->session_id().id()),
-      browser())));
-
-  EXPECT_EQ(400, api_test_utils::GetInteger(result.get(), "width"));
-  EXPECT_EQ(400, api_test_utils::GetInteger(result.get(), "height"));
-
-  CloseAppWindow(app_window);
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateDevToolsWindow) {
   DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
       browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
@@ -865,6 +815,8 @@ class ExtensionWindowLastFocusedTest : public ExtensionTabsTest {
 
   base::Value* RunFunction(UIThreadExtensionFunction* function,
                            const std::string& params);
+
+  const Extension* extension() { return extension_.get(); }
 
  private:
   // A helper class to wait for an views::Widget to become activated.
@@ -1083,13 +1035,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> get_current_app_function =
         new WindowsGetLastFocusedFunction();
-    std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
-        RunFunction(get_current_app_function.get(),
-                    "[{\"populate\": true, \"windowTypes\": [ \"app\" ]}]")));
-    int app_window_id = app_window->session_id().id();
-    EXPECT_EQ(app_window_id, api_test_utils::GetInteger(result.get(), "id"));
-    EXPECT_EQ(-1, GetTabId(result.get()));
-    EXPECT_EQ("app", api_test_utils::GetString(result.get(), "type"));
+    get_current_app_function->set_extension(extension());
+    EXPECT_EQ(
+        tabs_constants::kNoLastFocusedWindowError,
+        extension_function_test_utils::RunFunctionAndReturnError(
+            get_current_app_function.get(),
+            "[{\"populate\": true, \"windowTypes\": [ \"app\" ]}]", browser()));
   }
 
   chrome::CloseWindow(normal_browser);

@@ -64,9 +64,13 @@ bool CanOperateOnWindow(const UIThreadExtensionFunction* function,
   if (filter && !controller->MatchesFilter(filter))
     return false;
 
-  if (!filter && function->extension() &&
-      !controller->IsVisibleToExtension(function->extension()))
+  // TODO(https://crbug.com/807313): Remove this.
+  bool allow_dev_tools_windows = !!filter;
+  if (function->extension() &&
+      !controller->IsVisibleToTabsAPIForExtension(function->extension(),
+                                                  allow_dev_tools_windows)) {
     return false;
+  }
 
   if (function->browser_context() == controller->profile())
     return true;

@@ -336,8 +336,9 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   // If we have a matching AppWindow with a controller, get the tab value
   // from its controller instead.
   WindowController* controller = GetAppWindowController(contents);
-  if (controller &&
-      (!extension || controller->IsVisibleToExtension(extension))) {
+  if (controller) {
+    DCHECK(!extension || controller->IsVisibleToTabsAPIForExtension(
+                             extension, false /*allow_dev_tools_windows*/));
     return controller->CreateTabObject(extension, tab_index);
   }
   std::unique_ptr<api::tabs::Tab> result =

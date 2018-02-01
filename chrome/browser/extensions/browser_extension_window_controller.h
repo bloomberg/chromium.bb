@@ -31,8 +31,9 @@ class BrowserExtensionWindowController : public extensions::WindowController {
   void SetFullscreenMode(bool is_fullscreen,
                          const GURL& extension_url) const override;
   Browser* GetBrowser() const override;
-  bool IsVisibleToExtension(
-      const extensions::Extension* extension) const override;
+  bool IsVisibleToTabsAPIForExtension(
+      const extensions::Extension* extension,
+      bool allow_dev_tools_windows) const override;
 
  private:
   Browser* const browser_;

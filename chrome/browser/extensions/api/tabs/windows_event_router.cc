@@ -42,14 +42,19 @@ bool ControllerVisibleToListener(WindowController* window_controller,
 
   // If there is no filter the visibility is based on the extension.
   const base::ListValue* filter_value = nullptr;
-  if (!listener_filter ||
-      !listener_filter->GetList(keys::kWindowTypesKey, &filter_value))
-    return window_controller->IsVisibleToExtension(extension);
+  if (listener_filter)
+    listener_filter->GetList(keys::kWindowTypesKey, &filter_value);
 
-  // Otherwise it's based on the type filter.
-  WindowController::TypeFilter filter =
-      WindowController::GetFilterFromWindowTypesValues(filter_value);
-  return window_controller->MatchesFilter(filter);
+  // TODO(https://crbug.com/807313): Remove this.
+  bool allow_dev_tools_windows = !!filter_value;
+  if (!window_controller->IsVisibleToTabsAPIForExtension(
+          extension, allow_dev_tools_windows)) {
+    return false;
+  }
+
+  return !filter_value ||
+         window_controller->MatchesFilter(
+             WindowController::GetFilterFromWindowTypesValues(filter_value));
 }
 
 bool WillDispatchWindowEvent(WindowController* window_controller,
@@ -59,6 +64,13 @@ bool WillDispatchWindowEvent(WindowController* window_controller,
                              const base::DictionaryValue* listener_filter) {
   bool has_filter =
       listener_filter && listener_filter->HasKey(keys::kWindowTypesKey);
+  // TODO(https://crbug.com/807313): Remove this.
+  bool allow_dev_tools_windows = has_filter;
+  if (!window_controller->IsVisibleToTabsAPIForExtension(
+          extension, allow_dev_tools_windows)) {
+    return false;
+  }
+
   // Cleanup previous values.
   event->filter_info = EventFilteringInfo();
   // Only set the window type if the listener has set a filter.
@@ -66,8 +78,7 @@ bool WillDispatchWindowEvent(WindowController* window_controller,
   if (has_filter) {
     event->filter_info.window_type = window_controller->GetWindowTypeText();
   } else {
-    event->filter_info.window_exposed_by_default =
-        window_controller->IsVisibleToExtension(extension);
+    event->filter_info.window_exposed_by_default = true;
   }
   return true;
 }
