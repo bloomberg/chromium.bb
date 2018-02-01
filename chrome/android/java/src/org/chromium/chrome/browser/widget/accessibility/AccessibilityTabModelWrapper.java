@@ -98,7 +98,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
      *                 parent.
      */
     public void setup(AccessibilityTabModelAdapterListener listener) {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
             mTabIconDarkColor =
                     ApiCompatibilityUtils.getColorStateList(getResources(), R.color.black_alpha_65);
             mTabIconSelectedDarkColor = ApiCompatibilityUtils.getColorStateList(
@@ -182,7 +182,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         boolean incognitoSelected = mTabModelSelector.isIncognitoSelected();
 
         updateVisibilityForLayoutOrStackButton();
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
             if (incognitoSelected) {
                 setBackgroundColor(ApiCompatibilityUtils.getColor(
                         getResources(), R.color.incognito_primary_color));
@@ -252,7 +252,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     private void updateVisibilityForLayoutOrStackButton() {
         boolean incognitoEnabled =
                 mTabModelSelector.getModel(true).getComprehensiveModel().getCount() > 0;
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
             mModernLayout.setVisibility(incognitoEnabled ? View.VISIBLE : View.GONE);
         } else {
             mStackButtonWrapper.setVisibility(incognitoEnabled ? View.VISIBLE : View.GONE);
