@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -406,16 +407,9 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
 }
 
 gfx::Size AppsGridView::GetTotalTileSize() const {
-  static gfx::Size rect_size;
-
-  if (!rect_size.IsEmpty())
-    return rect_size;
-
   gfx::Rect rect(GetTileViewSize());
   rect.Inset(GetTilePadding());
-  rect_size = rect.size();
-
-  return rect_size;
+  return rect.size();
 }
 
 gfx::Insets AppsGridView::GetTilePadding() const {
@@ -433,7 +427,6 @@ gfx::Size AppsGridView::GetTileGridSizeWithoutPadding() const {
 
 void AppsGridView::ResetForShowApps() {
   UpdateSuggestions();
-  activated_folder_item_view_ = nullptr;
   ClearDragState();
   layer()->SetOpacity(1.0f);
   SetVisible(true);
@@ -696,14 +689,6 @@ void AppsGridView::StopPageFlipTimer() {
 
 AppListItemView* AppsGridView::GetItemViewAt(int index) const {
   return view_model_.view_at(index);
-}
-
-void AppsGridView::SetTopItemViewsVisible(bool visible) {
-  int top_item_count =
-      std::min(static_cast<int>(FolderImage::kNumFolderTopItems),
-               view_model_.view_size());
-  for (int i = 0; i < top_item_count; ++i)
-    GetItemViewAt(i)->icon()->SetVisible(visible);
 }
 
 void AppsGridView::ScheduleShowHideAnimation(bool show) {
@@ -2139,15 +2124,13 @@ void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
   gfx::Rect target_icon_rect =
       GetTargetIconRectInFolder(drag_item_view, activated_folder_item_view_);
 
-  gfx::Rect drag_view_icon_to_grid =
-      drag_item_view->ConvertRectToParent(drag_item_view->GetIconBounds());
-  drag_view_icon_to_grid.ClampToCenteredSize(
-      gfx::Size(kGridIconDimension, kGridIconDimension));
-  TopIconAnimationView* icon_view =
-      new TopIconAnimationView(drag_item_view->item()->icon(), target_icon_rect,
-                               false); /* animate like closing folder */
+  gfx::Rect drag_view_rect = drag_item_view->bounds();
+  TopIconAnimationView* icon_view = new TopIconAnimationView(
+      drag_item_view->item()->icon(),
+      base::UTF8ToUTF16(drag_item_view->item()->GetDisplayName()),
+      target_icon_rect, false, true); /* animate like closing folder */
   AddChildView(icon_view);
-  icon_view->SetBoundsRect(drag_view_icon_to_grid);
+  icon_view->SetBoundsRect(drag_view_rect);
   icon_view->TransformView();
 }
 
@@ -2332,6 +2315,7 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
   gfx::Rect bounds = GetContentsBounds();
   const int current_page = pagination_model_.selected_page();
   bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(current_page), 0, 0);
+  bounds.Inset(GetTilePadding());
   const gfx::Size total_tile_size = GetTotalTileSize();
   int col = base::ClampToRange(
       (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_ - 1);
@@ -2346,10 +2330,11 @@ gfx::Size AppsGridView::GetTileGridSize() const {
   if (!folder_delegate_)
     return gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
 
-  gfx::Rect bounds = GetExpectedTileBounds(Index(0, 0));
-  bounds.Union(GetExpectedTileBounds(Index(0, rows_per_page_ * cols_ - 1)));
-  bounds.Inset(GetTilePadding());
-  return bounds.size();
+  gfx::Rect rect(GetTotalTileSize());
+  rect.set_size(
+      gfx::Size(rect.width() * cols_, rect.height() * rows_per_page_));
+  rect.Inset(-GetTilePadding());
+  return rect.size();
 }
 
 int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
@@ -2362,9 +2347,9 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
            suggestions_container_->GetPreferredSize().height() +
            kSuggestionsAllAppsIndicatorPadding +
            all_apps_indicator_->GetPreferredSize().height() +
-           kAllAppsIndicatorBottomPadding - kTileVerticalPadding;
+           kAllAppsIndicatorBottomPadding;
   }
-  return kSearchBoxBottomPadding - kTileVerticalPadding;
+  return kSearchBoxBottomPadding;
 }
 
 gfx::Rect AppsGridView::GetExpectedTileBounds(const Index& index) const {
@@ -2372,10 +2357,8 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(const Index& index) const {
     return gfx::Rect();
 
   gfx::Rect bounds(GetContentsBounds());
-  if (!folder_delegate_)
-    bounds.Offset(-kTileHorizontalPadding, 0);
-
   bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(index.page), 0, 0);
+  bounds.Inset(GetTilePadding());
   int row = index.slot / cols_;
   int col = index.slot % cols_;
   const gfx::Size total_tile_size = GetTotalTileSize();

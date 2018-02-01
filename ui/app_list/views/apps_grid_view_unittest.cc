@@ -829,10 +829,8 @@ TEST_F(AppsGridViewTest,
 }
 
 TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
-  // Disable the animation for the folder top items for test purpose.
   AppsContainerView* apps_container_view =
       contents_view_->apps_container_view();
-  apps_container_view->set_folder_top_items_animation_enabled_for_test(false);
 
   const size_t kTotalItems = kMaxFolderItemsPerPage;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -853,10 +851,6 @@ TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
 }
 
 TEST_F(AppsGridViewTest, PageResetAfterOpenFolder) {
-  // Disable the animation for the folder top items for test purpose.
-  contents_view_->apps_container_view()
-      ->set_folder_top_items_animation_enabled_for_test(false);
-
   const size_t kTotalItems = kMaxFolderPages * kMaxFolderItemsPerPage;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
@@ -882,10 +876,6 @@ TEST_F(AppsGridViewTest, PageResetAfterOpenFolder) {
 }
 
 TEST_F(AppsGridViewTest, FolderColsAndRows) {
-  // Disable the animation for the folder top items for test purpose.
-  contents_view_->apps_container_view()
-      ->set_folder_top_items_animation_enabled_for_test(false);
-
   // Populate folders with different number of apps.
   model_->CreateAndPopulateFolderWithApps(2);
   model_->CreateAndPopulateFolderWithApps(5);

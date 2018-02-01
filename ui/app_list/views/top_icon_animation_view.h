@@ -12,19 +12,21 @@
 
 namespace views {
 class ImageView;
+class Label;
 }
 
 namespace app_list {
 
+class TopIconAnimationView;
+
 // Observer for top icon animation completion.
 class TopIconAnimationObserver {
  public:
-  // Called when top icon animation completes.
-  virtual void OnTopIconAnimationsComplete() {}
-
- protected:
   TopIconAnimationObserver() {}
   virtual ~TopIconAnimationObserver() {}
+
+  // Called when top icon animation completes.
+  virtual void OnTopIconAnimationsComplete(TopIconAnimationView* view) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TopIconAnimationObserver);
@@ -36,12 +38,16 @@ class TopIconAnimationView : public views::View,
                              public ui::ImplicitAnimationObserver {
  public:
   // |icon|: The icon image of the item icon of full scale size.
+  // |title|: The title of the item.
   // |scaled_rect|: Bounds of the small icon inside folder icon.
   // |open_folder|: Specify open/close folder animation to perform.
+  // |item_in_folder_icon|: True if the item is inside folder icon.
   // The view will be self-cleaned by the end of animation.
   TopIconAnimationView(const gfx::ImageSkia& icon,
+                       const base::string16& title,
                        const gfx::Rect& scaled_rect,
-                       bool open_folder);
+                       bool open_folder,
+                       bool item_in_folder_icon);
   ~TopIconAnimationView() override;
 
   void AddObserver(TopIconAnimationObserver* observer);
@@ -64,10 +70,13 @@ class TopIconAnimationView : public views::View,
 
   gfx::Size icon_size_;
   views::ImageView* icon_;  // Owned by views hierarchy.
+  views::Label* title_;     // Owned by views hierarchy.
   // Rect of the scaled down top item icon inside folder icon's ink bubble.
   gfx::Rect scaled_rect_;
   // true: opening folder; false: closing folder.
   bool open_folder_;
+
+  bool item_in_folder_icon_;
 
   base::ObserverList<TopIconAnimationObserver> observers_;
 

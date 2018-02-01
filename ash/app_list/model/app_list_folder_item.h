@@ -19,7 +19,6 @@
 #include "base/macros.h"
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 }  // namespace gfx
 
@@ -43,9 +42,6 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
 
   AppListFolderItem(const std::string& id, FolderType folder_type);
   ~AppListFolderItem() override;
-
-  // Returns the icon of one of the top items with |item_index|.
-  const gfx::ImageSkia& GetTopIcon(size_t item_index);
 
   // Returns the target icon bounds for |item| to fly back to its parent folder
   // icon in animation UI. If |item| is one of the top item icon, this will
