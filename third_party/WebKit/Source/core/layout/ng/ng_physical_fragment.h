@@ -88,6 +88,9 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsOutOfFlowPositioned() const {
     return BoxType() == NGBoxType::kOutOfFlowPositioned;
   }
+  bool IsFloatingOrOutOfFlowPositioned() const {
+    return IsFloating() || IsOutOfFlowPositioned();
+  }
   bool IsBlockFlow() const;
 
   // A block sub-layout starts on this fragment. Inline blocks, floats, out of

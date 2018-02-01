@@ -292,8 +292,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-
 
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-box-002.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-117a.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-118a.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Failure ]
@@ -342,7 +340,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html 
 
 ### virtual/layout_ng/fast/block/float
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/012.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/014.html [ Failure Crash ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/022.html [ Failure ]
@@ -380,6 +377,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hit
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash.html [ Crash Pass ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.html [ Crash ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
@@ -438,13 +436,12 @@ crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-continuation.ht
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-wrap-with-parent-padding.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-offset.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/positionedLifetime.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/bpm-inline-ancestors.html [ Failure ]
 
 ### Image/text failures also on LayoutNG
 crbug.com/714962 virtual/layout_ng/fast/inline/absolute-positioned-inline-in-centred-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/br-client-rect.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/break-between-nobr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/drawStyledEmptyInlines.html [ Failure ]
@@ -469,28 +466,10 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inl
 
 ### virtual/layout_ng/fast/block/float/
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/002.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/015.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/017.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/021.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it-3.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/intruding-float-add-in-sibling-block-on-static-position.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/intruding-float-add-in-sibling-block-on-static-position2.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/intruding-float-remove-from-sibling-block-on-absolute-position.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/intruding-float-remove-from-sibling-block-on-absolute-position2.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/intruding-float-remove-from-sibling-block-on-fixed-position.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/intruding-float-remove-from-sibling-block-on-fixed-position2.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-after-height-decrease.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-float-add-in-static-position-block.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-float-add-in-static-position-block2.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-absolute-position-block.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-absolute-position-block2.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/float/relayout-nested-float-after-line.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/trailing-float-with-content.html [ Failure ]
-
-### virtual/layout_ng/fast/block/margin-collapse/
-crbug.com/714962 virtual/layout_ng/fast/block/margin-collapse/044.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/block/margin-collapse/line-beside-float-complex-margin-collapsing.html [ Failure ]
 
 ### virtual/layout_ng/fast/writing-mode/
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
@@ -529,7 +508,6 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/logical-height-after-clear.
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/margins.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/orthogonal-inline-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/orthogonal-writing-modes-available-width-absolute-crash.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/orthogonal-writing-modes-in-layoutview-with-floats.html [ Crash ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-height-orthogonal-writing-modes-quirks.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-margins-absolute-replaced.html [ Failure ]
