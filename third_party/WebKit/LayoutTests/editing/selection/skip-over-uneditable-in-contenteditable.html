@@ -1,46 +1,118 @@
 <!DOCTYPE HTML>
-<html>
-<body>
-<script src="../../resources/js-test.js"></script>
-
-<div contentEditable>
-<p id="before">Before</p>
-<p id="middle" contentEditable="false">Middle</p>
-<p id="after">After</p>
-</div>
-
-<div id="console"></div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-description("Ensure that extending a selection inside a contentEditable skips past an uneditable region.");
+// Ensure that extending a selection inside a contenteditable skips past an
+// uneditable region.
 
-var before = document.getElementById("before");
-var after = document.getElementById("after");
+// Extend before uneditable
+selection_test(
+  [
+    '<div contenteditable>',
+      '<p>^Before|</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After</p>',
+    '</div>'
+  ],
+  selection => selection.modify('extend', 'forward', 'character'),
+  [
+    '<div contenteditable>',
+      '<p>^Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>|After</p>',
+    '</div>'
+  ],
+  'Extend by character before uneditable');
 
-var sel = window.getSelection();
-sel.setBaseAndExtent(before, 0, before, 1);
-sel.modify("extend", "forward", "character");
-shouldBe("sel.focusNode", "after");
+selection_test(
+  [
+    '<div contenteditable>',
+      '<p>^Before|</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After</p>',
+    '</div>'
+  ],
+  selection => selection.modify('extend', 'forward', 'word'),
+  [
+    '<div contenteditable>',
+      '<p>^Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>|After</p>',
+    '</div>'
+  ],
+  'Extend by word before uneditable');
 
-sel.setBaseAndExtent(after, 1, after, 0);
-sel.modify("extend", "backward", "character");
-shouldBe("sel.focusNode.parentElement", "before");
+selection_test(
+  [
+    '<div contenteditable>',
+      '<p>^Before|</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After</p>',
+    '</div>'
+  ],
+  selection => selection.modify('extend', 'forward', 'line'),
+  [
+    '<div contenteditable>',
+      '<p>^Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After|</p>',
+    '</div>'
+  ],
+  'Extend by line before uneditable');
 
-sel.setBaseAndExtent(before, 0, before, 1);
-sel.modify("extend", "forward", "word");
-shouldBe("sel.focusNode", "after");
+// Extend after uneditable
+selection_test(
+  [
+    '<div contenteditable>',
+      '<p>Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>|After^</p>',
+    '</div>'
+  ],
+  selection => selection.modify('extend', 'backward', 'character'),
+  [
+    '<div contenteditable>',
+      '<p>Before|</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After^</p>',
+    '</div>'
+  ],
+  'Extend by character after uneditable');
 
-sel.setBaseAndExtent(after, 1, after, 0);
-sel.modify("extend", "backward", "word");
-shouldBe("sel.focusNode.parentElement", "before");
+selection_test(
+  [
+    '<div contenteditable>',
+      '<p>Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>|After^</p>',
+    '</div>'
+  ],
+  selection => selection.modify('extend', 'backward', 'word'),
+  [
+    '<div contenteditable>',
+      '<p>Before|</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After^</p>',
+    '</div>'
+  ],
+  'Extend by word after uneditable');
 
-sel.setBaseAndExtent(before, 0, before, 1);
-sel.modify("extend", "forward", "line");
-shouldBe("sel.focusNode.parentElement", "after");
-
-sel.setBaseAndExtent(after, 1, after, 0);
-sel.modify("extend", "backward", "line");
-shouldBe("sel.focusNode.parentElement", "before");
+selection_test(
+  [
+    '<div contenteditable>',
+      '<p>Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>|After^</p>',
+    '</div>'
+  ],
+  selection => selection.modify('extend', 'backward', 'line'),
+  [
+    '<div contenteditable>',
+      '<p>|Before</p>',
+      '<p contenteditable="false">Middle</p>',
+      '<p>After^</p>',
+    '</div>'
+  ],
+  'Extend by line after uneditable');
 </script>
-
-</body>
-</html>
