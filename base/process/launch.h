@@ -198,6 +198,16 @@ struct BASE_EXPORT LaunchOptions {
   // from the parent process.
   uint32_t clone_flags =
       LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB | LP_CLONE_FDIO_STDIO;
+
+  // Specifies the namespace paths which are to be cloned in the child process'
+  // namespace. If left unset, the child process will be launched with an empty
+  // namespace.
+  // This flag allows the parent to pass only the bare minimum OS capabilities
+  // to the child process, so that the potential attack surface is reduced in
+  // case child process is compromised.
+  // Cannot be combined with the clone flag LP_CLONE_FDIO_NAMESPACE, which is
+  // equivalent to cloning every path.
+  std::vector<std::string> paths_to_map;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
