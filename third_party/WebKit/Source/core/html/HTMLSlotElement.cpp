@@ -112,15 +112,6 @@ const HeapVector<Member<Node>>& HTMLSlotElement::AssignedNodes() const {
 
 namespace {
 
-const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
-    const Node& node) {
-  if (auto* slot = ToHTMLSlotElementOrNull(node)) {
-    if (slot->SupportsAssignment())
-      return slot;
-  }
-  return nullptr;
-}
-
 HeapVector<Member<Node>> CollectFlattenedAssignedNodes(
     const HTMLSlotElement& slot) {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
@@ -211,11 +202,12 @@ void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
 void HTMLSlotElement::ResolveDistributedNodes() {
   for (auto& node : assigned_nodes_) {
     DCHECK(node->IsSlotable());
-    if (IsHTMLSlotElement(*node) &&
-        ToHTMLSlotElement(*node).SupportsAssignment())
-      AppendDistributedNodesFrom(ToHTMLSlotElement(*node));
-    else
+    if (HTMLSlotElement* slot =
+            ToHTMLSlotElementIfSupportsAssignmentOrNull(*node)) {
+      AppendDistributedNodesFrom(*slot);
+    } else {
       AppendDistributedNode(*node);
+    }
 
     if (IsChildOfV1ShadowHost())
       ParentElementShadow()->SetNeedsDistributionRecalc();

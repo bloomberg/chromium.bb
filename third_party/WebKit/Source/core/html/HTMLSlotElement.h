@@ -201,6 +201,36 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   friend class HTMLSlotElementTest;
 };
 
+inline const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
+    const Node& node) {
+  if (auto* slot = ToHTMLSlotElementOrNull(node)) {
+    if (slot->SupportsAssignment())
+      return slot;
+  }
+  return nullptr;
+}
+
+inline HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
+    Node& node) {
+  return const_cast<HTMLSlotElement*>(
+      ToHTMLSlotElementIfSupportsAssignmentOrNull(
+          static_cast<const Node&>(node)));
+}
+
+inline const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
+    const Node* node) {
+  if (!node)
+    return nullptr;
+  return ToHTMLSlotElementIfSupportsAssignmentOrNull(*node);
+}
+
+inline HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
+    Node* node) {
+  return const_cast<HTMLSlotElement*>(
+      ToHTMLSlotElementIfSupportsAssignmentOrNull(
+          static_cast<const Node*>(node)));
+}
+
 }  // namespace blink
 
 #endif  // HTMLSlotElement_h

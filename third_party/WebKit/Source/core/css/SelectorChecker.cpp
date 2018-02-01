@@ -504,10 +504,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
     }
 
     case CSSSelector::kShadowSlot: {
-      if (IsHTMLSlotElement(context.element) &&
-          ToHTMLSlotElement(context.element)->SupportsAssignment()) {
+      if (ToHTMLSlotElementIfSupportsAssignmentOrNull(*context.element))
         return kSelectorFailsCompletely;
-      }
       const HTMLSlotElement* slot = FindSlotElementInScope(context);
       if (!slot)
         return kSelectorFailsCompletely;
