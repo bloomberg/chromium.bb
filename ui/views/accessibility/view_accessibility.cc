@@ -50,7 +50,8 @@ const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.
-  if (!owner_view_->GetWidget() || owner_view_->GetWidget()->IsClosed()) {
+  views::Widget* widget = owner_view_->GetWidget();
+  if (!widget || !widget->widget_delegate() || widget->IsClosed()) {
     data->role = ax::mojom::Role::kUnknown;
     data->SetRestriction(ax::mojom::Restriction::kDisabled);
     return;
