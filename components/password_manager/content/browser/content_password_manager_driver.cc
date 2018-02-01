@@ -248,13 +248,13 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
   }
 }
 
-void ContentPasswordManagerDriver::InPageNavigation(
+void ContentPasswordManagerDriver::SameDocumentNavigation(
     const autofill::PasswordForm& password_form) {
   if (!CheckChildProcessSecurityPolicy(
           password_form.origin,
           BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
     return;
-  GetPasswordManager()->OnInPageNavigation(this, password_form);
+  GetPasswordManager()->OnSameDocumentNavigation(this, password_form);
 }
 
 void ContentPasswordManagerDriver::PresaveGeneratedPassword(

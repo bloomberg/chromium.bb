@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       PromptForSubmitWithInPageNavigation) {
+                       PromptForSubmitWithSameDocumentNavigation) {
   NavigateToFile("/password/password_navigate_before_submit.html");
 
   // Fill a form and submit through a <input type="submit"> button. Nothing
@@ -536,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
-    NoPromptForFailedLoginFromMainFrameWithMultiFramesInPage) {
+    NoPromptForFailedLoginFromMainFrameWithMultiFramesSameDocument) {
   NavigateToFile("/password/multi_frames.html");
 
   // Make sure that we don't prompt to save the password for a failed login
@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
-    NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage) {
+    NoPromptForFailedLoginFromSubFrameWithMultiFramesSameDocument) {
   NavigateToFile("/password/multi_frames.html");
 
   // Make sure that we don't prompt to save the password for a failed login

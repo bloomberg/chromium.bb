@@ -1133,7 +1133,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames) {
   manager()->OnPasswordFormsParsed(&driver_b, observed);
 }
 
-TEST_F(PasswordManagerTest, InPageNavigation) {
+TEST_F(PasswordManagerTest, SameDocumentNavigation) {
   // Test that observing a newly submitted form shows the save password bar on
   // call in page navigation.
   std::vector<PasswordForm> observed;
@@ -1151,7 +1151,7 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  manager()->OnInPageNavigation(&driver_, form);
+  manager()->OnSameDocumentNavigation(&driver_, form);
   ASSERT_TRUE(form_manager_to_save);
 
   // Simulate saving the form, as if the info bar was accepted.
@@ -1162,7 +1162,7 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
   form_manager_to_save->Save();
 }
 
-TEST_F(PasswordManagerTest, InPageNavigationBlacklistedSite) {
+TEST_F(PasswordManagerTest, SameDocumentBlacklistedSite) {
   // Test that observing a newly submitted form on blacklisted site does notify
   // the embedder on call in page navigation.
   std::vector<PasswordForm> observed;
@@ -1186,7 +1186,7 @@ TEST_F(PasswordManagerTest, InPageNavigationBlacklistedSite) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  manager()->OnInPageNavigation(&driver_, form);
+  manager()->OnSameDocumentNavigation(&driver_, form);
   EXPECT_TRUE(form_manager_to_save->IsBlacklisted());
 }
 

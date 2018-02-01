@@ -55,7 +55,8 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
 
   void HideManualFallbackForSaving() override {}
 
-  void InPageNavigation(const autofill::PasswordForm& password_form) override {}
+  void SameDocumentNavigation(
+      const autofill::PasswordForm& password_form) override {}
 
   void PresaveGeneratedPassword(
       const autofill::PasswordForm& password_form) override {}

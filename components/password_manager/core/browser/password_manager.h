@@ -177,8 +177,8 @@ class PasswordManager : public LoginModel {
   // means history.pushState being called from JavaScript. If this causes false
   // positive in password saving, update http://crbug.com/357696.
   // TODO(https://crbug.com/795462): find better name for this function.
-  void OnInPageNavigation(password_manager::PasswordManagerDriver* driver,
-                          const autofill::PasswordForm& password_form);
+  void OnSameDocumentNavigation(password_manager::PasswordManagerDriver* driver,
+                                const autofill::PasswordForm& password_form);
 
   void ProcessAutofillPredictions(
       password_manager::PasswordManagerDriver* driver,

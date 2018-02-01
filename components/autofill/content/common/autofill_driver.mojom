@@ -93,9 +93,9 @@ interface PasswordManagerDriver {
   // save/update prompt anchored to the omnibox icon should be removed.
   HideManualFallbackForSaving();
 
-  // Notification that in-page navigation happened and at this moment we have
-  // filled password form. We use this as a signal for successful login.
-  InPageNavigation(PasswordForm password_form);
+  // Notification that same-document navigation happened and at this moment we
+  // have filled password form. We use this as a signal for successful login.
+  SameDocumentNavigation(PasswordForm password_form);
 
   // Sends |log| to browser for displaying to the user. Only strings passed as
   // an argument to methods overriding SavePasswordProgressLogger::SendLog may
