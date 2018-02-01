@@ -29,6 +29,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,13 +48,18 @@ public class TransitionUtils {
     /**
      * Forces the browser into VR mode via a VrShellDelegate call.
      */
-    public static void forceEnterVr() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VrShellDelegate.enterVrIfNecessary();
-            }
-        });
+    public static boolean forceEnterVr() {
+        Boolean result = false;
+        try {
+            result = ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return VrShellDelegate.enterVrIfNecessary();
+                }
+            });
+        } catch (ExecutionException e) {
+        }
+        return result;
     }
 
     /**

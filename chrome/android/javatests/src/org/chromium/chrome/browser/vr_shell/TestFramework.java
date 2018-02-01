@@ -9,8 +9,10 @@ import android.support.annotation.IntDef;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -93,6 +95,18 @@ public class TestFramework {
 
     public ChromeActivityTestRule getRule() {
         return mRule;
+    }
+
+    public void simulateRendererKilled() {
+        final Tab tab = getRule().getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return tab.isShowingSadTab();
+            }
+        });
     }
 
     /**

@@ -15,6 +15,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.widget.ImageView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,9 +24,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
@@ -40,6 +43,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -284,5 +288,46 @@ public class VrShellTransitionTest {
                 "stepVerifySecondPresent()", mVrTestFramework.getFirstTabWebContents());
 
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that you can't enter VR in Overview mode with tabs.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testEnterVrInOverviewMode() throws InterruptedException, TimeoutException {
+        final ChromeTabbedActivity activity = mVrTestRule.getActivity();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ImageView tabSwitcher = (ImageView) activity.findViewById(R.id.tab_switcher_button);
+                tabSwitcher.callOnClick();
+            }
+        });
+
+        Assert.assertTrue(activity.isInOverviewMode());
+        Assert.assertFalse(VrTransitionUtils.forceEnterVr());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                activity.getTabModelSelector().closeAllTabs();
+            }
+        });
+        CriteriaHelper.pollUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return activity.getCurrentTabModel().getCount() == 0;
+            }
+        });
+
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
+        Assert.assertTrue(VrTransitionUtils.forceEnterVr());
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
+        Assert.assertFalse(mockApi.getExitFromVrCalled());
+        Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
     }
 }

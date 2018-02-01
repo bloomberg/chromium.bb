@@ -86,8 +86,7 @@ class VrShell : device::GvrGamepadDataProvider,
           int display_height_pixels);
   void SwapContents(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
-                    const base::android::JavaParamRef<jobject>& web_contents,
-                    float android_view_dip_scale);
+                    const base::android::JavaParamRef<jobject>& web_contents);
   void SetAndroidGestureTarget(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -168,7 +167,6 @@ class VrShell : device::GvrGamepadDataProvider,
                   const base::DictionaryValue* arguments);
 
   void SetHighAccuracyLocation(bool high_accuracy_location);
-  void SetContentCssSize(float width, float height, float dpr);
 
   void ForceExitVr();
   void ExitPresent();
