@@ -231,7 +231,7 @@ class TestImporter(object):
         cq_try_results = cl_status.try_job_results
 
         if not cq_try_results:
-            _log.error('No CQ try results found in try results: %s.', try_results)
+            _log.error('No CQ try results found in try results')
             self.git_cl.run(['set-close'])
             return False
 
