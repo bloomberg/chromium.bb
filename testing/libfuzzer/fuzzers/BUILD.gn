@@ -528,8 +528,6 @@ fuzzer_test("v8_fully_instrumented_fuzzer") {
 if (!is_win) {
   fuzzer_test("skia_image_filter_proto_fuzzer") {
     sources = [
-      "../proto/skia_image_filter_proto_converter.cc",
-      "../proto/skia_image_filter_proto_converter.h",
       "skia_image_filter_proto_fuzzer.cc",
     ]
 
