@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 
+#include <algorithm>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -506,7 +508,8 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
                          base::StringPrintf(kHelpPageUrlPrefix, 3249268));
 
   std::unique_ptr<base::DictionaryValue> sinks_and_identity(
-      SinksAndIdentityToValue(media_router_ui_->sinks(), GetAccountInfo()));
+      SinksAndIdentityToValue(media_router_ui_->GetEnabledSinks(),
+                              GetAccountInfo()));
   initial_data.Set("sinksAndIdentity", std::move(sinks_and_identity));
 
   std::unique_ptr<base::ListValue> routes(RoutesToValue(

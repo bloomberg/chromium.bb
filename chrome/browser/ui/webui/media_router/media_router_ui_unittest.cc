@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
@@ -30,6 +31,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
+#include "chrome/browser/ui/webui/media_router/web_contents_display_observer.h"
+#include "ui/display/display.h"
+#endif
 
 using content::WebContents;
 using testing::_;
@@ -53,6 +60,8 @@ class MockMediaRouterWebUIMessageHandler
       : MediaRouterWebUIMessageHandler(media_router_ui) {}
   ~MockMediaRouterWebUIMessageHandler() override {}
 
+  MOCK_METHOD1(UpdateSinks,
+               void(const std::vector<MediaSinkWithCastModes>& sinks));
   MOCK_METHOD1(UpdateIssue, void(const Issue& issue));
   MOCK_METHOD1(UpdateMediaRouteStatus, void(const MediaStatus& status));
   MOCK_METHOD3(UpdateCastModes,
@@ -70,6 +79,24 @@ class MockMediaRouterFileDialog : public MediaRouterFileDialog {
   MOCK_METHOD0(GetLastSelectedFileName, base::string16());
   MOCK_METHOD1(OpenFileDialog, void(Browser* browser));
 };
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+class TestWebContentsDisplayObserver : public WebContentsDisplayObserver {
+ public:
+  explicit TestWebContentsDisplayObserver(const display::Display& display)
+      : display_(display) {}
+  ~TestWebContentsDisplayObserver() override {}
+
+  const display::Display& GetCurrentDisplay() const override {
+    return display_;
+  }
+
+  void set_display(const display::Display& display) { display_ = display; }
+
+ private:
+  display::Display display_;
+};
+#endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 class PresentationRequestCallbacks {
  public:
@@ -793,5 +820,68 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   // |media_router_ui_| takes ownership of |request_callbacks|.
   media_router_ui_.reset();
 }
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+// A wired display sink should not be on the sinks list when the dialog is on
+// that display, to prevent showing a fullscreen presentation window over the
+// controlling window.
+TEST_F(MediaRouterUITest, UpdateSinksWhenDialogMovesToAnotherDisplay) {
+  const display::Display display1(1000001);
+  const display::Display display2(1000002);
+  const std::string display_sink_id1 =
+      WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(display1);
+  const std::string display_sink_id2 =
+      WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(display2);
+
+  CreateMediaRouterUI(profile());
+
+  auto display_observer_unique =
+      std::make_unique<TestWebContentsDisplayObserver>(display1);
+  TestWebContentsDisplayObserver* display_observer =
+      display_observer_unique.get();
+  media_router_ui_->set_display_observer_for_test(
+      std::move(display_observer_unique));
+
+  std::vector<MediaSinkWithCastModes> sinks;
+  MediaSinkWithCastModes display_sink1(
+      MediaSink(display_sink_id1, "sink", SinkIconType::GENERIC));
+  sinks.push_back(display_sink1);
+  MediaSinkWithCastModes display_sink2(
+      MediaSink(display_sink_id2, "sink", SinkIconType::GENERIC));
+  sinks.push_back(display_sink2);
+  MediaSinkWithCastModes sink3(MediaSink("id3", "sink", SinkIconType::GENERIC));
+  sinks.push_back(sink3);
+  media_router_ui_->OnResultsUpdated(sinks);
+
+  // Initially |display_sink1| should not be on the sinks list because we are on
+  // |display1|.
+  EXPECT_CALL(*message_handler_, UpdateSinks(_))
+      .WillOnce(Invoke([&display_sink_id1](
+                           const std::vector<MediaSinkWithCastModes>& sinks) {
+        EXPECT_EQ(2u, sinks.size());
+        EXPECT_TRUE(std::find_if(sinks.begin(), sinks.end(),
+                                 [&display_sink_id1](
+                                     const MediaSinkWithCastModes& sink) {
+                                   return sink.sink.id() == display_sink_id1;
+                                 }) == sinks.end());
+      }));
+  media_router_ui_->UpdateSinks();
+
+  // Change the display to |display2|. Now |display_sink2| should be removed
+  // from the list of sinks.
+  EXPECT_CALL(*message_handler_, UpdateSinks(_))
+      .WillOnce(Invoke([&display_sink_id2](
+                           const std::vector<MediaSinkWithCastModes>& sinks) {
+        EXPECT_EQ(2u, sinks.size());
+        EXPECT_TRUE(std::find_if(sinks.begin(), sinks.end(),
+                                 [&display_sink_id2](
+                                     const MediaSinkWithCastModes& sink) {
+                                   return sink.sink.id() == display_sink_id2;
+                                 }) == sinks.end());
+      }));
+  display_observer->set_display(display2);
+  media_router_ui_->UpdateSinks();
+}
+#endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 }  // namespace media_router
