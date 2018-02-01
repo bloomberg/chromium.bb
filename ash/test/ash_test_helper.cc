@@ -174,6 +174,12 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       std::unique_ptr<aura::InputStateLookup>());
 
   Shell* shell = Shell::Get();
+
+  // Cursor is visible by default in tests.
+  // CursorManager is null on MASH.
+  if (shell->cursor_manager())
+    shell->cursor_manager()->ShowCursor();
+
   if (provide_local_state) {
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     Shell::RegisterLocalStatePrefs(pref_service->registry());

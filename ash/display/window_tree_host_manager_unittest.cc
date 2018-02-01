@@ -1572,6 +1572,33 @@ TEST_F(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
 }
 
 TEST_F(WindowTreeHostManagerTest,
+       DontUpdateInvisibleCursorLocationAfterDisplayChange) {
+  UpdateDisplay("500x300");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  aura::Env* env = aura::Env::GetInstance();
+
+  ui::test::EventGenerator generator(root_windows[0]);
+
+  // Logical cursor location is updated to keep the same physical location.
+  generator.MoveMouseToInHost(350, 150);
+  EXPECT_EQ("350,150", env->last_mouse_location().ToString());
+
+  UpdateDisplay("300x500/r");
+  EXPECT_EQ("250,150", env->last_mouse_location().ToString());
+
+  // Logical cursor location change shouldn't change when the cursor isn't
+  // visible.
+  UpdateDisplay("500x300");
+  generator.MoveMouseToInHost(350, 150);
+  EXPECT_EQ("350,150", env->last_mouse_location().ToString());
+
+  Shell::Get()->cursor_manager()->HideCursor();
+  UpdateDisplay("300x500/r");
+  EXPECT_EQ("350,150", env->last_mouse_location().ToString());
+}
+
+TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_2ndOnLeft) {
   // Set the 2nd display on the left.
   display::DisplayLayoutStore* layout_store = display_manager()->layout_store();
