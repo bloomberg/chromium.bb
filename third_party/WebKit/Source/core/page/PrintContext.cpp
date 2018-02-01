@@ -226,16 +226,9 @@ void PrintContext::OutputLinkedDestinations(GraphicsContext& context,
     LayoutObject* layout_object = entry.value->GetLayoutObject();
     if (!layout_object || !layout_object->GetFrameView())
       continue;
-    IntRect bounding_box = layout_object->AbsoluteBoundingBoxRect();
-    // TODO(bokan): |bounding_box| looks to be in content coordinates but
-    // ConvertToRootFrame() doesn't apply scroll offsets when converting up to
-    // the root frame.
-    IntPoint point = layout_object->GetFrameView()->ConvertToRootFrame(
-        bounding_box.Location());
-    if (!page_rect.Contains(point))
-      continue;
-    point.ClampNegativeToZero();
-    context.SetURLDestinationLocation(entry.key, point);
+    IntPoint anchor_point = layout_object->AbsoluteBoundingBoxRect().Location();
+    if (page_rect.Contains(anchor_point))
+      context.SetURLDestinationLocation(entry.key, anchor_point);
   }
 }
 
