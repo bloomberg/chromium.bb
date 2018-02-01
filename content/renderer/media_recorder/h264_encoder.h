@@ -30,7 +30,8 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
 
   H264Encoder(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-      int32_t bits_per_second);
+      int32_t bits_per_second,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   // VideoTrackRecorder::Encoder implementation.

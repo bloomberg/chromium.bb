@@ -36,8 +36,11 @@ void H264Encoder::ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
 
 H264Encoder::H264Encoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-    int32_t bits_per_second)
-    : Encoder(on_encoded_video_callback, bits_per_second) {
+    int32_t bits_per_second,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : Encoder(on_encoded_video_callback,
+              bits_per_second,
+              std::move(task_runner)) {
   DCHECK(encoding_thread_->IsRunning());
 }
 

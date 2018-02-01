@@ -33,7 +33,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
       const VideoTrackRecorder::OnErrorCB& on_error_callback,
       int32_t bits_per_second,
       media::VideoCodecProfile codec,
-      const gfx::Size& size);
+      const gfx::Size& size,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // media::VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,

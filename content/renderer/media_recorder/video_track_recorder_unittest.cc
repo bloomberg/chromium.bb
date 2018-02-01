@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 using media::VideoFrame;
@@ -98,7 +99,8 @@ class VideoTrackRecorderTest
         codec, blink_track_,
         base::Bind(&VideoTrackRecorderTest::OnEncodedVideo,
                    base::Unretained(this)),
-        0 /* bits_per_second */));
+        0 /* bits_per_second */,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   }
 
   MOCK_METHOD5(DoOnEncodedVideo,

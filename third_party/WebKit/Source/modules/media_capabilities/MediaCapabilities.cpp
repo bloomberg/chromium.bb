@@ -19,6 +19,7 @@
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/ParsedContentType.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMediaRecorderHandler.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
@@ -282,7 +283,9 @@ ScriptPromise MediaCapabilities::encodingInfo(
   }
 
   std::unique_ptr<WebMediaRecorderHandler> handler =
-      Platform::Current()->CreateMediaRecorderHandler();
+      Platform::Current()->CreateMediaRecorderHandler(
+          ExecutionContext::From(script_state)
+              ->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler) {
     resolver->Reject(DOMException::Create(
         kInvalidStateError,

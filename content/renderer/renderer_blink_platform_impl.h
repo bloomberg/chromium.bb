@@ -170,8 +170,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
-  std::unique_ptr<blink::WebMediaRecorderHandler> CreateMediaRecorderHandler()
-      override;
+  std::unique_ptr<blink::WebMediaRecorderHandler> CreateMediaRecorderHandler(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;
   std::unique_ptr<blink::WebCanvasCaptureHandler> CreateCanvasCaptureHandler(
