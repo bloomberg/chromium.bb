@@ -10,6 +10,6 @@ source_set("cpp") {
 
   deps = [
     "//device/usb",
-    "//device/usb/public/interfaces",
+    "//device/usb/public/mojom",
   ]
 }

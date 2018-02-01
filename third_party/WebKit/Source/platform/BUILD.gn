@@ -1542,7 +1542,7 @@ jumbo_component("platform") {
     "//base/allocator:features",
     "//components/viz/service",
     "//device/base/synchronization",
-    "//device/vr:mojo_bindings_blink",
+    "//device/vr/public/mojom:mojom_blink",
     "//gin",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings",

@@ -4,7 +4,7 @@
 #ifndef DEVICE_VR_OPENVR_TYPE_CONVERTERS_H
 #define DEVICE_VR_OPENVR_TYPE_CONVERTERS_H
 
-#include "device/vr/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
 namespace mojo {

@@ -7,7 +7,7 @@
 
 #include "core/frame/PlatformEventDispatcher.h"
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "device/gamepad/public/interfaces/gamepad.mojom-blink.h"
+#include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepadListener.h"
 

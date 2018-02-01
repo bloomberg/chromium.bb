@@ -7,12 +7,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
-#include "device/bluetooth/public/interfaces/adapter.mojom.h"
+#include "device/bluetooth/public/mojom/adapter.mojom.h"
 
 namespace bluetooth {
 
 // Implementation of Mojo DiscoverySession in
-// device/bluetooth/public/interfaces/adapter.mojom.
+// device/bluetooth/public/mojom/adapter.mojom.
 // It handles requests to interact with a DiscoverySession.
 // Uses the platform abstraction of device/bluetooth.
 // An instance of this class is constructed by Adapter and strongly bound

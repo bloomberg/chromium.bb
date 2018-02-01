@@ -12,8 +12,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
-#include "device/screen_orientation/public/interfaces/screen_orientation_lock_types.mojom.h"
+#include "services/device/public/interfaces/screen_orientation.mojom.h"
+#include "services/device/public/interfaces/screen_orientation_lock_types.mojom.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace content {

@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace bluetooth {

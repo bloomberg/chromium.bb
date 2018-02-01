@@ -20,6 +20,8 @@ mojom("interfaces") {
     "nfc_provider.mojom",
     "power_monitor.mojom",
     "public_ip_address_geolocation_provider.mojom",
+    "screen_orientation.mojom",
+    "screen_orientation_lock_types.mojom",
     "serial.mojom",
     "time_zone_monitor.mojom",
     "vibration_manager.mojom",

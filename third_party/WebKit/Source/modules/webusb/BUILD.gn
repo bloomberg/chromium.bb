@@ -31,6 +31,6 @@ blink_modules_sources("webusb") {
   ]
 
   deps = [
-    "//device/usb/public/interfaces:interfaces_blink",
+    "//device/usb/public/mojom:mojom_blink",
   ]
 }

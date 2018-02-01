@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "device/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "extensions/common/extension.h"
 
 namespace device {

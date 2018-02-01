@@ -16,7 +16,7 @@
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "device/gamepad/public/interfaces/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 
 struct IOUSBDeviceStruct320;
 struct IOUSBInterfaceStruct300;

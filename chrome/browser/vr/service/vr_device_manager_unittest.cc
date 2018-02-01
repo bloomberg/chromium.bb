@@ -12,11 +12,11 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_device_provider.h"
 #include "device/vr/test/fake_vr_service_client.h"
 #include "device/vr/vr_device_provider.h"
-#include "device/vr/vr_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {

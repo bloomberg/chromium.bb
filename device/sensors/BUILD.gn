@@ -40,7 +40,7 @@ component("sensors") {
   ]
 
   public_deps = [
-    "//device/sensors/public/interfaces",
+    "//device/sensors/public/mojom",
   ]
 
   if (is_win) {

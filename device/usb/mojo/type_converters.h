@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "device/usb/public/interfaces/device.mojom.h"
-#include "device/usb/public/interfaces/device_manager.mojom.h"
+#include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_device_handle.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 

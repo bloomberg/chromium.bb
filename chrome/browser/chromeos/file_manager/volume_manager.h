@@ -28,7 +28,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
-#include "device/media_transfer_protocol/public/interfaces/mtp_storage_info.mojom.h"
+#include "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom.h"
 
 class Profile;
 

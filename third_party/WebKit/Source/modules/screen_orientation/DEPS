@@ -1,6 +1,6 @@
 include_rules = [
     "+common/associated_interfaces/associated_interface_provider.h",
-    "+device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h",
+    "+services/device/public/interfaces/screen_orientation.mojom-blink.h",
     "-modules",
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",

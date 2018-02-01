@@ -22,7 +22,7 @@ source_set("screen_orientation") {
   ]
 
   public_deps = [
-    "//device/screen_orientation/public/interfaces",
+    "//services/device/public/interfaces",
   ]
 
   if (is_android) {

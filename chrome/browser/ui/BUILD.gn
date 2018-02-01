@@ -1259,7 +1259,7 @@ split_static_library("ui") {
       "//crypto:platform",
       "//device/usb/mojo",
       "//device/usb/public/cpp",
-      "//device/usb/public/interfaces",
+      "//device/usb/public/mojom",
       "//device/vr/features",
       "//ui/android",
     ]

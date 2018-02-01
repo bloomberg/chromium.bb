@@ -69,7 +69,7 @@ static_library("vr_android") {
   ]
 
   public_deps = [
-    "//device/vr:mojo_bindings",
+    "//device/vr/public/mojom",
   ]
 
   libs = [

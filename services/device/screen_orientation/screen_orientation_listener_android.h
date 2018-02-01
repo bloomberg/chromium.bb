@@ -6,7 +6,7 @@
 #define SERVICES_DEVICE_SCREEN_ORIENTATION_SCREEN_ORIENTATION_LISTENER_ANDROID_H_
 
 #include "base/macros.h"
-#include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
+#include "services/device/public/interfaces/screen_orientation.mojom.h"
 
 namespace device {
 

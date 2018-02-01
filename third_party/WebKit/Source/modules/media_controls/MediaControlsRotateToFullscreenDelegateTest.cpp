@@ -17,7 +17,6 @@
 #include "core/html_names.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/PageTestBase.h"
-#include "device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/media_controls/MediaControlsImpl.h"
@@ -29,6 +28,7 @@
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "services/device/public/interfaces/screen_orientation.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

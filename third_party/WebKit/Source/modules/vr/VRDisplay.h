@@ -9,7 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/PausableObject.h"
 #include "core/dom/events/EventTarget.h"
-#include "device/vr/vr_service.mojom-blink.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplayCapabilities.h"
 #include "modules/vr/VRLayerInit.h"
 #include "mojo/public/cpp/bindings/binding.h"

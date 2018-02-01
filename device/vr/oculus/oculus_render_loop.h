@@ -8,7 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "device/vr/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"

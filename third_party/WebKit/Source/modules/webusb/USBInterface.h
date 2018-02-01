@@ -5,7 +5,7 @@
 #ifndef USBInterface_h
 #define USBInterface_h
 
-#include "device/usb/public/interfaces/device.mojom-blink.h"
+#include "device/usb/public/mojom/device.mojom-blink.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 

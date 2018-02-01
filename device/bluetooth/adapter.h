@@ -12,13 +12,13 @@
 #include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
-#include "device/bluetooth/public/interfaces/adapter.mojom.h"
-#include "device/bluetooth/public/interfaces/device.mojom.h"
+#include "device/bluetooth/public/mojom/adapter.mojom.h"
+#include "device/bluetooth/public/mojom/device.mojom.h"
 
 namespace bluetooth {
 
 // Implementation of Mojo Adapter located in
-// device/bluetooth/public/interfaces/adapter.mojom.
+// device/bluetooth/public/mojom/adapter.mojom.
 // It handles requests for Bluetooth adapter capabilities
 // and devices and uses the platform abstraction of device/bluetooth.
 class Adapter : public mojom::Adapter,

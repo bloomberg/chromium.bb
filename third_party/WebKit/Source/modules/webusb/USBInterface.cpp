@@ -5,7 +5,7 @@
 #include "modules/webusb/USBInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "device/usb/public/interfaces/device.mojom-blink.h"
+#include "device/usb/public/mojom/device.mojom-blink.h"
 #include "modules/webusb/USBAlternateInterface.h"
 #include "modules/webusb/USBConfiguration.h"
 #include "modules/webusb/USBDevice.h"

@@ -9,11 +9,11 @@
 #include "core/dom/Document.h"
 #include "core/frame/PlatformEventController.h"
 #include "core/frame/ScreenOrientationController.h"
-#include "device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "services/device/public/interfaces/screen_orientation.mojom-blink.h"
 
 namespace blink {
 

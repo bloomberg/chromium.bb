@@ -1,2 +1,4 @@
-file://device/screen_orientation/OWNERS
+blundell@chromium.org
+mlamouri@chromium.org
 
+# COMPONENT: Blink>ScreenOrientation

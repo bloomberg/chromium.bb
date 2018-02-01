@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
-#include "device/vr/vr_service.mojom.h"
 
 namespace device {
 

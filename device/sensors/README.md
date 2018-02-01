@@ -4,7 +4,7 @@
 Events](https://www.w3.org/TR/orientation-event/) implementation.
 
 * Sensor [Mojo](../../mojo/README.md) interfaces are defined in the
-  `public/interfaces` subdirectory.
+  `public/mojom` subdirectory.
 * The content renderer layer is located in `content/renderer/device_sensors`.
 * The web exposed API is implemented in
   `third_party/WebKit/Source/modules/device_orientation`.

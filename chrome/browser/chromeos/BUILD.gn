@@ -145,7 +145,7 @@ source_set("chromeos") {
     "//device/bluetooth",
     "//device/media_transfer_protocol",
     "//device/usb/public/cpp",
-    "//device/usb/public/interfaces",
+    "//device/usb/public/mojom",
     "//extensions/browser",
     "//extensions/browser/kiosk",
     "//gpu",

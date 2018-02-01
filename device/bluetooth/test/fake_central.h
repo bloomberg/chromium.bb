@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace bluetooth {
@@ -21,7 +21,7 @@ class FakeRemoteGattDescriptor;
 class FakeRemoteGattService;
 
 // Implementation of FakeCentral in
-// src/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.
+// src/device/bluetooth/public/mojom/test/fake_bluetooth.mojom.
 // Implemented on top of the C++ device/bluetooth API, mainly
 // device/bluetooth/bluetooth_adapter.h.
 //

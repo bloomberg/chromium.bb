@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_core_info.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
-#include "device/vr/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {

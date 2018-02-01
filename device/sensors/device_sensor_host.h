@@ -9,8 +9,8 @@
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_checker.h"
 #include "device/sensors/device_sensors_consts.h"
-#include "device/sensors/public/interfaces/motion.mojom.h"
-#include "device/sensors/public/interfaces/orientation.mojom.h"
+#include "device/sensors/public/mojom/motion.mojom.h"
+#include "device/sensors/public/mojom/orientation.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {

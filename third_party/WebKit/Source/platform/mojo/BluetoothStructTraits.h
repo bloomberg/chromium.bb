@@ -5,7 +5,7 @@
 #ifndef BluetoothStructTraits_h
 #define BluetoothStructTraits_h
 
-#include "device/bluetooth/public/interfaces/uuid.mojom-blink.h"
+#include "device/bluetooth/public/mojom/uuid.mojom-blink.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 

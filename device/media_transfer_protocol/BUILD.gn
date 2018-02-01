@@ -34,7 +34,7 @@ static_library("media_transfer_protocol") {
     ":mtp_file_entry_proto",
     ":mtp_storage_info_proto",
     "//base",
-    "//device/media_transfer_protocol/public/interfaces",
+    "//device/media_transfer_protocol/public/mojom",
   ]
   deps = [
     "//chromeos",

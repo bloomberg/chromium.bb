@@ -11,7 +11,7 @@
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "device/gamepad/public/interfaces/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 
