@@ -176,7 +176,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
           context->GetTaskRunner(TaskType::kDOMManipulation))) {
   DCHECK(stream_->getTracks().size());
 
-  recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler();
+  recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler(
+      context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   DCHECK(recorder_handler_);
 
   if (!recorder_handler_) {
@@ -285,9 +286,11 @@ void MediaRecorder::requestData(ExceptionState& exception_state) {
             WTF::CurrentTimeMS());
 }
 
-bool MediaRecorder::isTypeSupported(const String& type) {
+bool MediaRecorder::isTypeSupported(ExecutionContext* context,
+                                    const String& type) {
   std::unique_ptr<WebMediaRecorderHandler> handler =
-      Platform::Current()->CreateMediaRecorderHandler();
+      Platform::Current()->CreateMediaRecorderHandler(
+          context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler)
     return false;
 

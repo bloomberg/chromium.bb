@@ -594,7 +594,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Creates a WebMediaRecorderHandler to record MediaStreams.
   // May return null if the functionality is not available or out of resources.
-  virtual std::unique_ptr<WebMediaRecorderHandler> CreateMediaRecorderHandler();
+  virtual std::unique_ptr<WebMediaRecorderHandler> CreateMediaRecorderHandler(
+      scoped_refptr<base::SingleThreadTaskRunner>);
 
   // May return null if WebRTC functionality is not available or out of
   // resources.

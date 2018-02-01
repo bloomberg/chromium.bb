@@ -64,7 +64,7 @@ class MODULES_EXPORT MediaRecorder final
   void resume(ExceptionState&);
   void requestData(ExceptionState&);
 
-  static bool isTypeSupported(const String& type);
+  static bool isTypeSupported(ExecutionContext*, const String& type);
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
