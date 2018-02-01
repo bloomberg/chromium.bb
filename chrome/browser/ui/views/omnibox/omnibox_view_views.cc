@@ -460,13 +460,9 @@ bool OmniboxViewViews::DeleteAtEndPressed() {
 }
 
 void OmniboxViewViews::UpdatePopup() {
-  model()->SetInputInProgress(true);
-  if (!model()->has_focus())
-    return;
-
   // Prevent inline autocomplete when the caret isn't at the end of the text.
   const gfx::Range sel = GetSelectedRange();
-  model()->StartAutocomplete(!sel.is_empty(), sel.GetMax() < text().length());
+  model()->UpdateInput(!sel.is_empty(), sel.GetMax() < text().length());
 }
 
 void OmniboxViewViews::ApplyCaretVisibility() {

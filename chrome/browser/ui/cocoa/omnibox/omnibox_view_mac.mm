@@ -397,10 +397,6 @@ void OmniboxViewMac::RevertAll() {
 }
 
 void OmniboxViewMac::UpdatePopup() {
-  model()->SetInputInProgress(true);
-  if (!model()->has_focus())
-    return;
-
   // Comment copied from OmniboxViewWin::UpdatePopup():
   // Don't inline autocomplete when:
   //   * The user is deleting text
@@ -414,8 +410,8 @@ void OmniboxViewMac::UpdatePopup() {
       prevent_inline_autocomplete = true;
   }
 
-  model()->StartAutocomplete([editor selectedRange].length != 0,
-                            prevent_inline_autocomplete);
+  model()->UpdateInput([editor selectedRange].length != 0,
+                       prevent_inline_autocomplete);
 }
 
 void OmniboxViewMac::CloseOmniboxPopup() {
