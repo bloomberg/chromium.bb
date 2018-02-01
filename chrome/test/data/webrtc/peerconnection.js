@@ -568,7 +568,7 @@ function setLocalDescription(peerConnection, sessionDescription) {
 function addStreamCallback_(event) {
   debug('Receiving remote stream...');
   var videoTag = document.getElementById('remote-view');
-  attachMediaStream(videoTag, event.stream);
+  videoTag.srcObject = event.stream;
 }
 
 /** @private */

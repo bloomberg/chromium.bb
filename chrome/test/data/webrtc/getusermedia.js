@@ -50,13 +50,13 @@ $ = function(id) {
  *     on the WebRTC version.
  */
 function doGetUserMedia(constraints) {
-  if (!getUserMedia) {
+  if (!navigator.getUserMedia) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
   debug('Requesting doGetUserMedia: constraints: ' +
         JSON.stringify(constraints, null, 0).replace(/[\r\n]/g, ''));
-  getUserMedia(constraints,
+  navigator.getUserMedia(constraints,
                function(stream) {
                  ensureGotAllExpectedStreams_(stream, constraints);
                  getUserMediaOkCallback_(stream);
@@ -154,7 +154,7 @@ function getUserMediaOkCallback_(stream) {
   gLocalStream = stream;
   gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
 
-  attachMediaStream($('local-view'), stream);
+  $('local-view').srcObject = stream;
 
   returnToTest('request-callback-granted');
 }
