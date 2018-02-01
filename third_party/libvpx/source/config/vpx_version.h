@@ -1,8 +1,8 @@
 // This file is generated. Do not edit.
 #define VERSION_MAJOR  1
-#define VERSION_MINOR  6
-#define VERSION_PATCH  1
-#define VERSION_EXTRA  "1521-g742ae4b24"
+#define VERSION_MINOR  7
+#define VERSION_PATCH  0
+#define VERSION_EXTRA  "84-gefa786d46"
 #define VERSION_PACKED ((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))
-#define VERSION_STRING_NOSP "v1.6.1-1521-g742ae4b24"
-#define VERSION_STRING      " v1.6.1-1521-g742ae4b24"
+#define VERSION_STRING_NOSP "v1.7.0-84-gefa786d46"
+#define VERSION_STRING      " v1.7.0-84-gefa786d46"

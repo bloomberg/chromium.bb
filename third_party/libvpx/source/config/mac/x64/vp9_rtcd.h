@@ -12,10 +12,10 @@
  * VP9
  */
 
-#include "vpx/vpx_integer.h"
 #include "vp9/common/vp9_common.h"
 #include "vp9/common/vp9_enums.h"
 #include "vp9/common/vp9_filter.h"
+#include "vpx/vpx_integer.h"
 
 struct macroblockd;
 
@@ -413,6 +413,17 @@ void vp9_quantize_fp_ssse3(const tran_low_t* coeff_ptr,
                            uint16_t* eob_ptr,
                            const int16_t* scan,
                            const int16_t* iscan);
+void vp9_quantize_fp_avx2(const tran_low_t* coeff_ptr,
+                          intptr_t n_coeffs,
+                          int skip_block,
+                          const int16_t* round_ptr,
+                          const int16_t* quant_ptr,
+                          tran_low_t* qcoeff_ptr,
+                          tran_low_t* dqcoeff_ptr,
+                          const int16_t* dequant_ptr,
+                          uint16_t* eob_ptr,
+                          const int16_t* scan,
+                          const int16_t* iscan);
 RTCD_EXTERN void (*vp9_quantize_fp)(const tran_low_t* coeff_ptr,
                                     intptr_t n_coeffs,
                                     int skip_block,
@@ -506,6 +517,8 @@ static void setup_rtcd_internal(void) {
   vp9_quantize_fp = vp9_quantize_fp_sse2;
   if (flags & HAS_SSSE3)
     vp9_quantize_fp = vp9_quantize_fp_ssse3;
+  if (flags & HAS_AVX2)
+    vp9_quantize_fp = vp9_quantize_fp_avx2;
   vp9_quantize_fp_32x32 = vp9_quantize_fp_32x32_c;
   if (flags & HAS_SSSE3)
     vp9_quantize_fp_32x32 = vp9_quantize_fp_32x32_ssse3;
