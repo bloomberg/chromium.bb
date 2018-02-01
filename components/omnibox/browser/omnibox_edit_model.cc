@@ -357,28 +357,22 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   }
 }
 
-void OmniboxEditModel::SetInputInProgress(bool in_progress) {
-  if (in_progress && !user_input_since_focus_) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    DCHECK(last_omnibox_focus_ <= now);
-    UMA_HISTOGRAM_TIMES(kFocusToEditTimeHistogram, now - last_omnibox_focus_);
-    user_input_since_focus_ = true;
-  }
-
-  if (user_input_in_progress_ == in_progress)
+void OmniboxEditModel::UpdateInput(bool has_selected_text,
+                                   bool prevent_inline_autocomplete) {
+  bool changed = SetInputInProgressNoNotify(true);
+  if (!has_focus()) {
+    if (changed)
+      NotifyObserversInputInProgress(true);
     return;
-
-  user_input_in_progress_ = in_progress;
-  if (user_input_in_progress_) {
-    time_user_first_modified_omnibox_ = base::TimeTicks::Now();
-    base::RecordAction(base::UserMetricsAction("OmniboxInputInProgress"));
-    autocomplete_controller()->ResetSession();
   }
+  StartAutocomplete(has_selected_text, prevent_inline_autocomplete);
+  if (changed)
+    NotifyObserversInputInProgress(true);
+}
 
-  controller_->OnInputInProgress(in_progress);
-
-  if (user_input_in_progress_ || !in_revert_)
-    client_->OnInputStateChanged();
+void OmniboxEditModel::SetInputInProgress(bool in_progress) {
+  if (SetInputInProgressNoNotify(in_progress))
+    NotifyObserversInputInProgress(in_progress);
 }
 
 void OmniboxEditModel::Revert() {
@@ -1441,6 +1435,33 @@ void OmniboxEditModel::ClassifyStringForPasteAndGo(
   DCHECK(match);
   client_->GetAutocompleteClassifier()->Classify(
       text, false, false, ClassifyPage(), match, alternate_nav_url);
+}
+
+bool OmniboxEditModel::SetInputInProgressNoNotify(bool in_progress) {
+  if (in_progress && !user_input_since_focus_) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    DCHECK(last_omnibox_focus_ <= now);
+    UMA_HISTOGRAM_TIMES(kFocusToEditTimeHistogram, now - last_omnibox_focus_);
+    user_input_since_focus_ = true;
+  }
+
+  if (user_input_in_progress_ == in_progress)
+    return false;
+
+  user_input_in_progress_ = in_progress;
+  if (user_input_in_progress_) {
+    time_user_first_modified_omnibox_ = base::TimeTicks::Now();
+    base::RecordAction(base::UserMetricsAction("OmniboxInputInProgress"));
+    autocomplete_controller()->ResetSession();
+  }
+  return true;
+}
+
+void OmniboxEditModel::NotifyObserversInputInProgress(bool in_progress) {
+  controller_->OnInputInProgress(in_progress);
+
+  if (user_input_in_progress_ || !in_revert_)
+    client_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::SetFocusState(OmniboxFocusState state,

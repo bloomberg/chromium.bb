@@ -151,6 +151,12 @@ class OmniboxEditModel {
   // that state has changed.
   void SetInputInProgress(bool in_progress);
 
+  // Calls SetInputInProgress, via SetInputInProgressNoNotify and
+  // NotifyObserversInputInProgress, calling the latter after
+  // StartAutocomplete, so that the result is only updated once.
+  void UpdateInput(bool has_selected_text,
+                   bool prevent_inline_autocomplete);
+
   // Sets permanent_text_ to |text|. Returns true if the permanent text changed
   // and the change should be immediately user-visible, because either the user
   // is not editing or the edit does not have focus.
@@ -432,6 +438,13 @@ class OmniboxEditModel {
   void ClassifyStringForPasteAndGo(const base::string16& text,
                                    AutocompleteMatch* match,
                                    GURL* alternate_nav_url) const;
+
+  // Sets the state of user_input_in_progress_. Returns whether said state
+  // changed, so that the caller can evoke NotifyObserversInputInProgress().
+  bool SetInputInProgressNoNotify(bool in_progress);
+
+  // Notifies the observers that the state has changed.
+  void NotifyObserversInputInProgress(bool in_progress);
 
   // If focus_state_ does not match |state|, we update it and notify the
   // InstantController about the change (passing along the |reason| for the
