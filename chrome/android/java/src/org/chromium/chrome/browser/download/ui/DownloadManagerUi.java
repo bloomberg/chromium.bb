@@ -427,7 +427,7 @@ public class DownloadManagerUi
     }
 
     /** Called when the filter has been changed by the user. */
-    void onFilterChanged(int filter) {
+    void onFilterChanged(@DownloadFilter.Type int filter) {
         mBackendProvider.getSelectionDelegate().clearSelection();
         mToolbar.hideSearchView();
 

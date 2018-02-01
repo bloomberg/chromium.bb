@@ -225,7 +225,8 @@ public class DownloadHistoryAdapterTest {
         }
     }
 
-    private void onFilterChanged(final int flag, int numberOfCallsToWaitFor) throws Exception {
+    private void onFilterChanged(final @DownloadFilter.Type int flag, int numberOfCallsToWaitFor)
+            throws Exception {
         int callCount = mObserver.onChangedCallback.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
