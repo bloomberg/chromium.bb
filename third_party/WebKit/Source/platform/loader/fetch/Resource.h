@@ -33,6 +33,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/loader/SubresourceIntegrity.h"
+#include "platform/loader/cors/CORSStatus.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceError.h"
@@ -51,7 +52,6 @@
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/CORSStatus.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "public/platform/WebScopedVirtualTimePauser.h"
 
