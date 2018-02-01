@@ -184,6 +184,9 @@ const char kShowWebUiLock[] = "show-webui-lock";
 const char kTouchscreenUsableWhileScreenOff[] =
     "touchscreen-usable-while-screen-off";
 
+// Hides all Message Center notification popups (toasts). Used for testing.
+const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
+
 // By default we use classic IME (i.e. InputMethodChromeOS) in kMus. This flag
 // enables the IME service (i.e. InputMethodMus) instead.
 const char kUseIMEService[] = "use-ime-service";
