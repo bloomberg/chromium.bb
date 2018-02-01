@@ -9,19 +9,12 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "mojo/common/data_pipe_drainer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/completion_callback.h"
+#include "net/filter/filter_source_stream.h"
 #include "net/ssl/ssl_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
-
-namespace mojo {
-class StringDataPipeProducer;
-}  // namespace mojo
-
-namespace network {
-struct ResourceResponseHead;
-struct URLLoaderCompletionStatus;
-}  // namespace network
 
 namespace content {
 
@@ -31,47 +24,58 @@ namespace content {
 // a response with a payload which is equal to the original body.
 // TODO(https://crbug.com/803774): Implement CBOR parsing logic and verifying
 // logic.
-class SignedExchangeHandler final
-    : public mojo::common::DataPipeDrainer::Client {
+class SignedExchangeHandler final : public net::FilterSourceStream {
  public:
-  using ExchangeFoundCallback =
+  // TODO(https://crbug.com/803774): Add verification status here.
+  using ExchangeHeadersCallback =
       base::OnceCallback<void(const GURL& request_url,
                               const std::string& request_method,
                               const network::ResourceResponseHead&,
-                              base::Optional<net::SSLInfo>,
-                              mojo::ScopedDataPipeConsumerHandle)>;
-  using ExchangeFinishedCallback =
-      base::OnceCallback<void(const network::URLLoaderCompletionStatus&)>;
+                              base::Optional<net::SSLInfo>)>;
 
-  // The passed |body| will be read to parse the signed HTTP exchange.
-  // TODO(https://crbug.com/803774): Consider making SignedExchangeHandler
-  // independent from DataPipe to make it easy to port it in //net.
-  explicit SignedExchangeHandler(mojo::ScopedDataPipeConsumerHandle body);
-
+  // Once constructed |this| starts reading the |body| and parses the response
+  // as a signed HTTP exchange. The response body of the exchange can be read
+  // from |this| as a net::SourceStream after |headers_callback| is called.
+  SignedExchangeHandler(std::unique_ptr<net::SourceStream> body,
+                        ExchangeHeadersCallback headers_callback);
   ~SignedExchangeHandler() override;
 
-  // TODO(https://crbug.com/803774): Currently SignedExchangeHandler always
-  // calls found_callback and then calls finish_callback after reading the all
-  // buffer. Need to redesign this callback model when we will introduce
-  // SignedExchangeHandler::Reader class to read the body and introduce the
-  // cert verification.
-  void GetHTTPExchange(ExchangeFoundCallback found_callback,
-                       ExchangeFinishedCallback finish_callback);
+  // net::FilterSourceStream:
+  int FilterData(net::IOBuffer* output_buffer,
+                 int output_buffer_size,
+                 net::IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
+                 bool upstream_eof_reached) override;
+  std::string GetTypeAsString() const override;
 
  private:
-  // mojo::Common::DataPipeDrainer::Client
-  void OnDataAvailable(const void* data, size_t num_bytes) override;
-  void OnDataComplete() override;
+  void DoHeaderLoop();
+  void DidReadForHeaders(bool completed_syncly, int result);
+  bool MaybeRunHeadersCallback();
 
-  // Called from |data_producer_|.
-  void OnDataWritten(MojoResult result);
+  // TODO(https://crbug.com/803774): Remove this.
+  void FillMockExchangeHeaders();
 
-  mojo::ScopedDataPipeConsumerHandle body_;
-  std::unique_ptr<mojo::common::DataPipeDrainer> drainer_;
-  ExchangeFoundCallback found_callback_;
-  ExchangeFinishedCallback finish_callback_;
+  // Signed exchange contents.
+  GURL request_url_;
+  std::string request_method_;
+  network::ResourceResponseHead response_head_;
+  base::Optional<net::SSLInfo> ssl_info_;
+
+  ExchangeHeadersCallback headers_callback_;
+
+  // Internal IOBuffer used during reading the header. Note that during parsing
+  // the header we don't really need the output buffer, but we still need to
+  // give some > 0 buffer.
+  scoped_refptr<net::IOBufferWithSize> header_out_buf_;
+
+  // TODO(https://crbug.cxom/803774): Just for now. Implement the streaming
+  // parser.
   std::string original_body_string_;
-  std::unique_ptr<mojo::StringDataPipeProducer> data_producer_;
+  size_t body_string_offset_ = 0;
+
+  base::WeakPtrFactory<SignedExchangeHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeHandler);
 };

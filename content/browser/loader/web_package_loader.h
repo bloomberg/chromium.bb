@@ -7,13 +7,16 @@
 
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 
 class SignedExchangeHandler;
+class SourceStreamToDataPipe;
 
 // WebPackageLoader handles an origin-signed HTTP exchange response. It is
 // created when a WebPackageRequestHandler recieves an origin-signed HTTP
@@ -66,12 +69,9 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       const GURL& request_url,
       const std::string& request_method,
       const network::ResourceResponseHead& resource_response,
-      base::Optional<net::SSLInfo> ssl_info,
-      mojo::ScopedDataPipeConsumerHandle body);
+      base::Optional<net::SSLInfo> ssl_info);
 
-  // Called from |signed_exchange_handler_| when it finished sending the
-  // payload of the origin-signed HTTP response.
-  void OnHTTPExchangeFinished(const network::URLLoaderCompletionStatus& status);
+  void FinishReadingBody(int result);
 
   // This timing info is used to create a dummy redirect response.
   std::unique_ptr<const ResponseTimingInfo> original_response_timing_info_;
@@ -92,11 +92,10 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   network::mojom::URLLoaderClientRequest pending_client_request_;
 
   std::unique_ptr<SignedExchangeHandler> signed_exchange_handler_;
+  std::unique_ptr<SourceStreamToDataPipe> body_data_pipe_adapter_;
 
-  // This is used to keep the DataPipe until ProceedWithResponse() is called.
-  mojo::ScopedDataPipeConsumerHandle pending_body_;
-  // This is used to keep the status until ProceedWithResponse() is called.
-  base::Optional<network::URLLoaderCompletionStatus> pending_completion_status_;
+  // Kept around until ProceedWithResponse is called.
+  mojo::ScopedDataPipeConsumerHandle pending_body_consumer_;
 
   base::WeakPtrFactory<WebPackageLoader> weak_factory_;
 
