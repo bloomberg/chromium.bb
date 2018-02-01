@@ -537,12 +537,51 @@ TEST_F(ClientCertResolverTest, ExpiringCertificate) {
   EXPECT_EQ(test_cert_id_, pkcs11_id);
 
   // Verify that, after the certificate expired and the network disconnection
-  // happens, no client certificate was configured.
+  // happens, no client certificate was configured and the ClientCertResolver
+  // notified its observers with |network_properties_changed| = true.
+  network_properties_changed_count_ = 0;
   test_clock_->SetNow(base::Time::Max());
   SetWifiState(shill::kStateOffline);
   scoped_task_environment_.RunUntilIdle();
   GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(std::string(), pkcs11_id);
+  EXPECT_EQ(1, network_properties_changed_count_);
+}
+
+// Test for crbug.com/765489. When the ClientCertResolver re-resolves a network
+// as response to a NetworkConnectionStateChanged notification, and the
+// resulting cert is the same as the last resolved cert, it should not call
+// ResolveRequestCompleted with |network_properties_changed| = true.
+TEST_F(ClientCertResolverTest, SameCertAfterNetworkConnectionStateChanged) {
+  SetupTestCerts("client_1", true /* import issuer */);
+  SetupWifi();
+  scoped_task_environment_.RunUntilIdle();
+
+  SetupNetworkHandlers();
+  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  scoped_task_environment_.RunUntilIdle();
+
+  StartCertLoader();
+  scoped_task_environment_.RunUntilIdle();
+
+  SetWifiState(shill::kStateOnline);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Verify that the resolver positively matched the pattern in the policy with
+  // the test client cert and configured the network.
+  std::string pkcs11_id;
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
+
+  // Verify that after the network disconnection happens, the configured
+  // certificate doesn't change and ClientCertResolver does not notify its
+  // observers with |network_properties_changed| = true.
+  network_properties_changed_count_ = 0;
+  SetWifiState(shill::kStateOffline);
+  scoped_task_environment_.RunUntilIdle();
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
+  EXPECT_EQ(0, network_properties_changed_count_);
 }
 
 TEST_F(ClientCertResolverTest, UserPolicyUsesSystemToken) {
