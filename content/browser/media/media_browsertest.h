@@ -38,6 +38,10 @@ class MediaBrowserTest : public ContentBrowserTest {
   // message contents.
   std::string EncodeErrorMessage(const std::string& original_message);
 
+  // Tears down media playback. Called automatically as part of RunTest(), only
+  // needed for manually setup tests.
+  void CleanupTest();
+
   // Adds titles that RunTest() should wait for.
   virtual void AddTitlesToAwait(content::TitleWatcher* title_watcher);
 };
