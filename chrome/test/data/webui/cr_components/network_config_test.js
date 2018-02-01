@@ -68,6 +68,7 @@ suite('network-config', function() {
       var network = {
         GUID: 'someguid',
         Name: 'somename',
+        Source: 'Device',
         Type: 'WiFi',
         WiFi: {SSID: 'somessid', Security: 'None'}
       };
