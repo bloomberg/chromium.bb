@@ -534,6 +534,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
       const GURL& url) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
+  void DidCallFocus() override;
   RenderFrameHost* GetFocusedFrameIncludingInnerWebContents() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
@@ -952,6 +953,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            DialogsFromJavaScriptEndFullscreen);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            PopupsFromJavaScriptEndFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           FocusFromJavaScriptEndsFullscreen);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            IframeBeforeUnloadParentHang);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,

@@ -1020,13 +1020,16 @@ namespace {
 class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                                               public WebContentsDelegate {
  public:
-  TestWCDelegateForDialogsAndFullscreen()
-      : is_fullscreen_(false), message_loop_runner_(new MessageLoopRunner) {}
-  ~TestWCDelegateForDialogsAndFullscreen() override {}
+  TestWCDelegateForDialogsAndFullscreen() = default;
+  ~TestWCDelegateForDialogsAndFullscreen() override = default;
+
+  void WillWaitForDialog() { waiting_for_ = kDialog; }
+  void WillWaitForNewContents() { waiting_for_ = kNewContents; }
+  void WillWaitForFullscreenExit() { waiting_for_ = kFullscreenExit; }
 
   void Wait() {
-    message_loop_runner_->Run();
-    message_loop_runner_ = new MessageLoopRunner;
+    run_loop_->Run();
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   std::string last_message() { return last_message_; }
@@ -1045,6 +1048,9 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
 
   void ExitFullscreenModeForTab(WebContents*) override {
     is_fullscreen_ = false;
+
+    if (waiting_for_ == kFullscreenExit)
+      run_loop_->Quit();
   }
 
   bool IsFullscreenForTabOrPending(
@@ -1058,8 +1064,10 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override {
-    delete new_contents;
-    message_loop_runner_->Quit();
+    popup_.reset(new_contents);
+
+    if (waiting_for_ == kNewContents)
+      run_loop_->Quit();
   }
 
   // JavaScriptDialogManager
@@ -1074,15 +1082,18 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
     last_message_ = base::UTF16ToUTF8(message_text);
     *did_suppress_message = true;
 
-    message_loop_runner_->Quit();
-  };
+    if (waiting_for_ == kDialog)
+      run_loop_->Quit();
+  }
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override {
     std::move(callback).Run(true, base::string16());
-    message_loop_runner_->Quit();
+
+    if (waiting_for_ == kDialog)
+      run_loop_->Quit();
   }
 
   bool HandleJavaScriptDialog(WebContents* web_contents,
@@ -1095,12 +1106,15 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                      bool reset_state) override {}
 
  private:
+  enum { kDialog, kNewContents, kFullscreenExit } waiting_for_;
+
   std::string last_message_;
 
-  bool is_fullscreen_;
+  bool is_fullscreen_ = false;
 
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  std::unique_ptr<WebContents> popup_;
+
+  std::unique_ptr<base::RunLoop> run_loop_ = std::make_unique<base::RunLoop>();
 
   DISALLOW_COPY_AND_ASSIGN(TestWCDelegateForDialogsAndFullscreen);
 };
@@ -1137,6 +1151,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // A dialog from the main frame.
   std::string alert_location = "alert(document.location)";
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(root->current_frame_host(), alert_location));
   test_delegate.Wait();
@@ -1144,6 +1159,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
             GURL(test_delegate.last_message()).ReplaceComponents(clear_port));
 
   // A dialog from the subframe.
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(frame->current_frame_host(), alert_location));
   test_delegate.Wait();
@@ -1155,6 +1171,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(wc));
 
   // A dialog from the subframe.
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(frame->current_frame_host(), alert_location));
   test_delegate.Wait();
@@ -1162,6 +1179,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
             GURL(test_delegate.last_message()).ReplaceComponents(clear_port));
 
   // A dialog from the main frame.
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(root->current_frame_host(), alert_location));
   test_delegate.Wait();
@@ -1172,6 +1190,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("c.com", "/title3.html"));
   EXPECT_TRUE(WaitForLoadStop(wc));
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(root->current_frame_host(), alert_location));
   test_delegate.Wait();
@@ -1181,6 +1200,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Navigate back; ensure that dialogs work.
   wc->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(wc));
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(root->current_frame_host(), alert_location));
   test_delegate.Wait();
@@ -1517,6 +1537,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   wc->EnterFullscreenMode(url);
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   std::string script = "alert('hi')";
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
@@ -1525,6 +1546,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   wc->EnterFullscreenMode(url);
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   script = "confirm('hi')";
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
@@ -1533,6 +1555,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   wc->EnterFullscreenMode(url);
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   script = "prompt('hi')";
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
@@ -1548,6 +1571,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       base::string16());
   script = "window.onbeforeunload=function(e){ return 'x' };";
   EXPECT_TRUE(content::ExecuteScript(wc, script));
+  test_delegate.WillWaitForDialog();
   EXPECT_TRUE(NavigateToURL(shell(), url));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
@@ -1569,6 +1593,40 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   wc->EnterFullscreenMode(url);
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   std::string script = "window.open('', '', 'width=200,height=100')";
+  test_delegate.WillWaitForNewContents();
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  test_delegate.Wait();
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       FocusFromJavaScriptEndsFullscreen) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestWCDelegateForDialogsAndFullscreen test_delegate;
+  wc->SetDelegate(&test_delegate);
+
+  GURL url("about:blank");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Make a popup.
+  std::string script =
+      "window.FocusFromJavaScriptEndsFullscreen = "
+      "window.open('', '', 'width=200,height=100')";
+  test_delegate.WillWaitForNewContents();
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  test_delegate.Wait();
+
+  // Put the main contents into fullscreen ...
+  wc->EnterFullscreenMode(url);
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+
+  // ... and ensure that a call to window.focus() from it causes loss of
+  // ... fullscreen.
+  script = "window.FocusFromJavaScriptEndsFullscreen.focus()";
+  test_delegate.WillWaitForFullscreenExit();
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());

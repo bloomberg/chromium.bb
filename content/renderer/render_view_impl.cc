@@ -1640,7 +1640,7 @@ int RenderViewImpl::HistoryForwardListCount() {
 
 // blink::WebWidgetClient ----------------------------------------------------
 
-void RenderViewImpl::DidFocus() {
+void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
@@ -1653,6 +1653,12 @@ void RenderViewImpl::DidFocus() {
   if (is_processing_user_gesture &&
       !RenderThreadImpl::current()->layout_test_mode()) {
     Send(new ViewHostMsg_Focus(GetRoutingID()));
+
+    // Tattle on the frame that called |window.focus()|.
+    RenderFrameImpl* calling_render_frame =
+        RenderFrameImpl::FromWebFrame(calling_frame);
+    if (calling_render_frame)
+      calling_render_frame->FrameDidCallFocus();
   }
 }
 

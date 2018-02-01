@@ -40,7 +40,7 @@ class WebViewTestClient : public blink::WebViewClient {
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebSpeechRecognizer* SpeechRecognizer() override;
   blink::WebString AcceptLanguages() override;
-  void DidFocus() override;
+  void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;
   bool CanUpdateLayout() override;
 

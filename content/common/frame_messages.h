@@ -1717,6 +1717,9 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_ScrollRectToVisibleInParentFrame,
                     gfx::Rect /* rect_to_scroll */,
                     blink::WebScrollIntoViewParams /* properties */)
 
+// Sent to notify that a frame called |window.focus()|.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 
 // Message to show/hide a popup menu using native controls.
