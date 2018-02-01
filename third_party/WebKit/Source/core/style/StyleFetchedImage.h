@@ -31,6 +31,7 @@
 namespace blink {
 
 class Document;
+class FetchParameters;
 
 // This class represents an <image> that loads a single image resource (the
 // url(...) function.)
@@ -39,10 +40,9 @@ class StyleFetchedImage final : public StyleImage,
   USING_PRE_FINALIZER(StyleFetchedImage, Dispose);
 
  public:
-  static StyleFetchedImage* Create(ImageResourceContent* image,
-                                   const Document& document,
-                                   const KURL& url) {
-    return new StyleFetchedImage(image, document, url);
+  static StyleFetchedImage* Create(const Document& document,
+                                   FetchParameters& params) {
+    return new StyleFetchedImage(document, params);
   }
   ~StyleFetchedImage() override;
 
@@ -73,7 +73,7 @@ class StyleFetchedImage final : public StyleImage,
   virtual void Trace(blink::Visitor*);
 
  private:
-  StyleFetchedImage(ImageResourceContent*, const Document&, const KURL&);
+  StyleFetchedImage(const Document&, FetchParameters&);
 
   void Dispose();
 

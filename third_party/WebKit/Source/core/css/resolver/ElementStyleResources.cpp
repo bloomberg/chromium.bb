@@ -37,7 +37,6 @@
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleImage.h"
-#include "core/style/StyleInvalidImage.h"
 #include "core/style/StylePendingImage.h"
 #include "core/svg/SVGElementProxy.h"
 #include "platform/Length.h"
