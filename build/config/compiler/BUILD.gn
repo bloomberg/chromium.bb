@@ -8,6 +8,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/host_byteorder.gni")
+import("//build/config/ui.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
@@ -1425,13 +1426,9 @@ config("chromium_code") {
 
   # Warn on missing break statements at the end of switch cases.
   # For intentional fallthrough, use FALLTHROUGH; from base/compiler_specific.h
-  if (is_clang) {
-    # TODO(thakis): Enable this once the codebase is ready,
-    # https://crbug.com/177475
-    # cflags_cc = [ "-Wimplicit-fallthrough" ]
-    if (is_mac || is_ios) {
-      # cflags_objcc += [ "-Wimplicit-fallthrough" ]
-    }
+  # TODO(thakis): Enable for all platforms, https://crbug.com/177475
+  if (is_clang && is_linux && !is_debug && !is_chromecast && !use_ozone) {
+    cflags += [ "-Wimplicit-fallthrough" ]
   }
 
   configs = [ ":default_warnings" ]
