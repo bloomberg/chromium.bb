@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -63,6 +64,14 @@ class SitePerProcessPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
     provider_.UpdateChromePolicy(values);
+
+    // Append the automation switch which should disable Site Isolation when the
+    // "WebDriverOverridesIncompatiblePolicies" is set. This is tested in the
+    // WebDriverSitePerProcessPolicyBrowserTest class below.
+    // NOTE: This flag is on for some tests per default but we still force it
+    // it here to make sure to avoid possible regressions being missed
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableAutomation);
   }
 
  private:
@@ -96,6 +105,41 @@ class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(IsolateOriginsPolicyBrowserTest);
 };
 
+class WebDriverSitePerProcessPolicyBrowserTest
+    : public SitePerProcessPolicyBrowserTest {
+ protected:
+  WebDriverSitePerProcessPolicyBrowserTest()
+      : are_sites_isolated_for_testing_(false) {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // First take note if tests are running in site isolated environment as this
+    // will change the outcome of the test. We can't just call this method after
+    // the call to the base setup method because setting the Site Isolation
+    // policy is indistinguishable from setting the the command line flag
+    // directly.
+    are_sites_isolated_for_testing_ = content::AreAllSitesIsolatedForTesting();
+
+    // We setup the policy here, because the policy must be 'live' before the
+    // renderer is created, since the value for this policy is passed to the
+    // renderer via a command-line. Setting the policy in the test itself or in
+    // SetUpOnMainThread works for update-able policies, but is too late for
+    // this one.
+    SitePerProcessPolicyBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    policy::PolicyMap values;
+    values.Set(policy::key::kWebDriverOverridesIncompatiblePolicies,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
+               nullptr);
+    provider_.UpdateChromePolicy(values);
+  }
+
+  bool are_sites_isolated_for_testing_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebDriverSitePerProcessPolicyBrowserTest);
+};
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTest, Simple) {
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", true},
@@ -115,6 +159,14 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPolicyBrowserTest, Simple) {
       {"http://foo.com/", false},
       {"https://example.org/pumpkins.html", true},
       {"http://example.com/index.php", true},
+  };
+  CheckExpectations(expectations, arraysize(expectations));
+}
+
+IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, Simple) {
+  Expectations expectations[] = {
+      {"https://foo.com/noodles.html", are_sites_isolated_for_testing_},
+      {"http://example.org/pumpkins.html", are_sites_isolated_for_testing_},
   };
   CheckExpectations(expectations, arraysize(expectations));
 }

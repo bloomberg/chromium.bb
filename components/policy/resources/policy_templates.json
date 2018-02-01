@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 413
+#   For your editing convenience: highest ID currently used: 414
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10740,6 +10740,30 @@
       If the policy is disabled, the pre-Site Isolation process management logic will take effect.
       If the policy is not configured, the user will be able to change this setting.
       ''',
+    },
+    {
+      'name': 'WebDriverOverridesIncompatiblePolicies',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:65-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 414,
+      'caption': '''Allow WebDriver to Override Incompatible Policies''',
+      'tags': ['system-security'],
+      'desc': '''This policy allows users of the WebDriver feature to override
+      policies which can interfere with its operation.
+
+      Currently this policy disables SitePerProcess and IsolateOrigins policies.
+
+      If the policy is enabled, WebDriver will be able to override incomaptible
+      policies.
+      If the policy is disabled or not configured, WebDriver will not be allowed
+      to override incompatible policies.''',
     },
     {
       'name': 'UnsafelyTreatInsecureOriginAsSecure',

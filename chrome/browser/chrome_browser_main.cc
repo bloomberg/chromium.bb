@@ -648,6 +648,18 @@ class ScopedMainMessageLoopRunEvent {
   }
 };
 
+// Check if the policy to allow WebDriver to override Site Isolation is set and
+// if the user actually wants to use WebDriver which will cause us to skip
+// even checking if Site Isolation should be turned on by policy.
+bool IsWebDriverOverridingPolicy(PrefService* local_state) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  return (!command_line->HasSwitch(switches::kEnableAutomation) ||
+          !(local_state->IsManagedPreference(
+                prefs::kWebDriverOverridesIncompatiblePolicies) &&
+            local_state->GetBoolean(
+                prefs::kWebDriverOverridesIncompatiblePolicies)));
+}
+
 }  // namespace
 
 namespace chrome_browser {
@@ -1194,19 +1206,21 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // tasks.
   SetupFieldTrials();
 
-  // Add Site Isolation switches as dictated by policy.
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (local_state->GetBoolean(prefs::kSitePerProcess) &&
-      !command_line->HasSwitch(switches::kSitePerProcess)) {
-    command_line->AppendSwitch(switches::kSitePerProcess);
-  }
-  // We don't check for `HasSwitch` here, because we don't want the command-line
-  // switch to take precedence over enterprise policy. (This behavior is in
-  // harmony with other enterprise policy settings.)
-  if (local_state->HasPrefPath(prefs::kIsolateOrigins)) {
-    command_line->AppendSwitchASCII(
-        switches::kIsolateOrigins,
-        local_state->GetString(prefs::kIsolateOrigins));
+  if (IsWebDriverOverridingPolicy(local_state)) {
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    // Add Site Isolation switches as dictated by policy.
+    if (local_state->GetBoolean(prefs::kSitePerProcess) &&
+        !command_line->HasSwitch(switches::kSitePerProcess)) {
+      command_line->AppendSwitch(switches::kSitePerProcess);
+    }
+    // We don't check for `HasSwitch` here, because we don't want the command-
+    // line switch to take precedence over enterprise policy. (This behavior is
+    // in harmony with other enterprise policy settings.)
+    if (local_state->HasPrefPath(prefs::kIsolateOrigins)) {
+      command_line->AppendSwitchASCII(
+          switches::kIsolateOrigins,
+          local_state->GetString(prefs::kIsolateOrigins));
+    }
   }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
