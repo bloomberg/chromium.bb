@@ -13,8 +13,8 @@
 
 namespace chrome_test_util {
 
-void TapWebViewElementWithId(const std::string& element_id) {
-  web::test::TapWebViewElementWithId(GetCurrentWebState(), element_id);
+bool TapWebViewElementWithId(const std::string& element_id) {
+  return web::test::TapWebViewElementWithId(GetCurrentWebState(), element_id);
 }
 
 void SubmitWebViewFormWithId(const std::string& form_id) {
