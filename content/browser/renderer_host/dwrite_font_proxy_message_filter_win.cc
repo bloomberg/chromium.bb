@@ -200,7 +200,6 @@ void DWriteFontProxyImpl::FindFamily(const base::string16& family_name,
                                      FindFamilyCallback callback) {
   InitializeDirectWrite();
   TRACE_EVENT0("dwrite", "FontProxyHost::OnFindFamily");
-  DCHECK(collection_);
   UINT32 family_index = UINT32_MAX;
   if (collection_) {
     BOOL exists = FALSE;
@@ -218,8 +217,7 @@ void DWriteFontProxyImpl::FindFamily(const base::string16& family_name,
 void DWriteFontProxyImpl::GetFamilyCount(GetFamilyCountCallback callback) {
   InitializeDirectWrite();
   TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFamilyCount");
-  DCHECK(collection_);
-  std::move(callback).Run(collection_->GetFontFamilyCount());
+  std::move(callback).Run(collection_ ? collection_->GetFontFamilyCount() : 0);
 }
 
 void DWriteFontProxyImpl::GetFamilyNames(UINT32 family_index,
@@ -228,7 +226,6 @@ void DWriteFontProxyImpl::GetFamilyNames(UINT32 family_index,
   TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFamilyNames");
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), std::vector<mojom::DWriteStringPairPtr>());
-  DCHECK(collection_);
   if (!collection_)
     return;
 
@@ -291,7 +288,6 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), std::vector<base::FilePath>(),
       std::vector<base::File>());
-  DCHECK(collection_);
   if (!collection_)
     return;
 
