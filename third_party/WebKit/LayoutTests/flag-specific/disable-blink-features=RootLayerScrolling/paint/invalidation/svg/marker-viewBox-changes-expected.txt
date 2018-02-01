@@ -1,0 +1,33 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath path id='go'",
+          "rect": [89, 94, 108, 108],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [90, 95, 106, 106],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGPath path id='go'",
+      "reason": "full"
+    }
+  ]
+}
+

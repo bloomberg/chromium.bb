@@ -1,6 +1,6 @@
-layer at (0,0) size 1066x799
+layer at (0,0) size 800x600
   LayoutView at (0,0) size 1066x799
-layer at (0,0) size 1066x112
+layer at (0,0) size 1066x112 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 1066x112
     LayoutBlockFlow {BODY} at (8,8) size 1050x88
       LayoutBlockFlow (anonymous) at (0,0) size 1050x18

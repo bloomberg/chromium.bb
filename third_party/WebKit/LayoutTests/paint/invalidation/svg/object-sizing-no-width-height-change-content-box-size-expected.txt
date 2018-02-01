@@ -3,6 +3,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -25,6 +35,11 @@
           "object": "LayoutSVGRoot svg",
           "rect": [9, 9, 400, 400],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [209, 9, 200, 400],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGEllipse circle",
@@ -51,6 +66,10 @@
     {
       "object": "LayoutEmbeddedObject object",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
     },
     {
       "object": "LayoutSVGRoot svg",

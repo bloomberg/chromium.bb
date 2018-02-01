@@ -1,6 +1,6 @@
-layer at (0,0) size 1066x799 scrollHeight 825
+layer at (0,0) size 800x600 scrollHeight 825
   LayoutView at (0,0) size 1066x799
-layer at (0,0) size 1066x825 backgroundClip at (0,0) size 1066x799 clip at (0,0) size 1066x799
+layer at (0,0) size 1066x825 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 1066x825
     LayoutBlockFlow {BODY} at (8,16) size 1050x801
       LayoutBlockFlow {P} at (0,0) size 1050x36

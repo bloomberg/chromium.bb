@@ -1,6 +1,6 @@
-layer at (0,0) size 1046x799 scrollHeight 2567
+layer at (0,0) size 800x600 scrollHeight 2567
   LayoutView at (0,0) size 1046x799
-layer at (0,0) size 1046x2567 backgroundClip at (0,0) size 1046x799 clip at (0,0) size 1046x799
+layer at (0,0) size 1046x2567 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 1046x2567
     LayoutBlockFlow {BODY} at (8,16) size 1030x2535
       LayoutBlockFlow {P} at (0,0) size 1030x18
@@ -233,7 +233,7 @@ layer at (8,16) size 680x36
           text run at (0,0) width 681: "crbug.com/303728: Fixed-position header Line is statically positioned and will be repeated on every page."
 layer at (8,42) size 680x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,26) size 680.27x2 [border: (1px inset #EEEEEE)]
-layer at (8,2567) size 624x36 backgroundClip at (0,0) size 1046x799 clip at (0,0) size 1046x799
+layer at (8,2567) size 624x36 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (8,2567) size 624.30x36
     LayoutBlockFlow {DIV} at (0,8) size 624.30x28
       LayoutBlockFlow (anonymous) at (0,10) size 624.30x18

@@ -2,6 +2,16 @@
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 850],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -9,7 +19,7 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 850, 785, 200],
-          "reason": "incremental"
+          "reason": "background on scrolling contents layer"
         },
         {
           "object": "LayoutTableCell TD id='resizeMe'",
@@ -261,8 +271,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
     },
     {
       "object": "LayoutTableCell TD id='resizeMe'",

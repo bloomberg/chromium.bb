@@ -2,6 +2,16 @@
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 585],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -16,7 +26,8 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -1000, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

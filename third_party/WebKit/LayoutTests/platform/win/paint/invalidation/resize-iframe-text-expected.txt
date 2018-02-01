@@ -3,6 +3,23 @@
     {
       "name": "LayoutView #document",
       "bounds": [500, 400],
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 200, 500, 200],
+          "reason": "incremental"
+        }
+      ]
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [500, 400],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [500, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -15,6 +32,11 @@
           "object": "LayoutView #document",
           "rect": [0, 200, 500, 200],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 200, 500, 200],
+          "reason": "background on scrolling contents layer"
         },
         {
           "object": "LayoutBlockFlow H3",
@@ -31,6 +53,10 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "incremental"
     },
@@ -41,6 +67,10 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
     },
     {
       "object": "LayoutView #document",
