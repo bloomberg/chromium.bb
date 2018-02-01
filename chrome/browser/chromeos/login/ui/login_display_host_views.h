@@ -7,10 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 
@@ -20,7 +21,7 @@ class ExistingUserController;
 
 // A LoginDisplayHost instance that sends requests to the views-based signin
 // screen.
-class LoginDisplayHostViews : public LoginDisplayHost,
+class LoginDisplayHostViews : public LoginDisplayHostCommon,
                               public LoginScreenClient::Delegate,
                               public AuthStatusConsumer {
  public:
