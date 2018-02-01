@@ -32,6 +32,7 @@
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
+-SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
 -SitePerProcessBrowserTest.ScrollBubblingFromNestedOOPIFTest
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
 -SitePerProcessBrowserTest.TwoSubframesCreatePopupMenuWidgetsSimultaneously

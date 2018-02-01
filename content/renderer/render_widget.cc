@@ -775,18 +775,18 @@ void RenderWidget::OnClose() {
 
   if (for_oopif_) {
     // Widgets for frames may be created and closed at any time while the frame
-    // is alive. However, the closing process must happen synchronously. Frame
-    // widget and frames hold pointers to each other. If Close() is deferred to
-    // the message loop like in the non-frame widget case, WebWidget::close()
-    // can end up accessing members of an already-deleted frame.
-    Close();
-  } else {
-    // If there is a Send call on the stack, then it could be dangerous to close
-    // now.  Post a task that only gets invoked when there are no nested message
-    // loops.
-    task_runner_->PostNonNestableTask(
-        FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
+    // is alive. However, WebWidget must be closed synchronously because frame
+    // widgets and frames hold pointers to each other. The deferred call to
+    // Close() will complete cleanup and release |this|, but CloseWebWidget()
+    // prevents Close() from attempting to access members of an
+    // already-deleted frame.
+    CloseWebWidget();
   }
+  // If there is a Send call on the stack, then it could be dangerous to close
+  // now.  Post a task that only gets invoked when there are no nested message
+  // loops.
+  task_runner_->PostNonNestableTask(FROM_HERE,
+                                    base::BindOnce(&RenderWidget::Close, this));
 
   // Balances the AddRef taken when we called AddRoute.
   Release();
@@ -988,6 +988,8 @@ void RenderWidget::ApplyViewportDeltas(
     const gfx::Vector2dF& elastic_overscroll_delta,
     float page_scale,
     float top_controls_delta) {
+  if (!GetWebWidget())
+    return;
   GetWebWidget()->ApplyViewportDeltas(inner_delta, outer_delta,
                                       elastic_overscroll_delta, page_scale,
                                       top_controls_delta);
@@ -996,11 +998,15 @@ void RenderWidget::ApplyViewportDeltas(
 void RenderWidget::RecordWheelAndTouchScrollingCount(
     bool has_scrolled_by_wheel,
     bool has_scrolled_by_touch) {
+  if (!GetWebWidget())
+    return;
   GetWebWidget()->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
                                                     has_scrolled_by_touch);
 }
 
 void RenderWidget::BeginMainFrame(double frame_time_sec) {
+  if (!GetWebWidget())
+    return;
   if (input_event_queue_) {
     input_event_queue_->DispatchRafAlignedInput(
         ui::EventTimeStampFromSeconds(frame_time_sec));
@@ -1055,6 +1061,9 @@ void RenderWidget::RequestScheduleAnimation() {
 }
 
 void RenderWidget::UpdateVisualState(VisualStateUpdate requested_update) {
+  if (!GetWebWidget())
+    return;
+
   bool pre_paint_only = requested_update == VisualStateUpdate::kPrePaint;
   WebWidget::LifecycleUpdate lifecycle_update =
       pre_paint_only ? WebWidget::LifecycleUpdate::kPrePaint
@@ -1087,6 +1096,9 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
 
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
+
+  if (!GetWebWidget())
+    return;
 
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(true);
 
@@ -1681,8 +1693,12 @@ void RenderWidget::CloseWidgetSoon() {
 
 void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
-  WillCloseLayerTreeView();
+  CloseWebWidget();
   compositor_.reset();
+}
+
+void RenderWidget::CloseWebWidget() {
+  WillCloseLayerTreeView();
   if (webwidget_internal_) {
     webwidget_internal_->Close();
     webwidget_internal_ = nullptr;
