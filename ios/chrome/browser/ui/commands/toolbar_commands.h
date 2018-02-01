@@ -7,9 +7,6 @@
 
 // Protocol that describes the commands that trigger Toolbar UI changes.
 @protocol ToolbarCommands
-// Contracts the Toolbar to its regular form.
-- (void)contractToolbar;
-
 // Triggers the animation of the tools menu button.
 - (void)triggerToolsMenuButtonAnimation;
 @end

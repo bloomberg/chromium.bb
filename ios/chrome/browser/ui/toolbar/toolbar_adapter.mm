@@ -18,12 +18,11 @@
 @synthesize delegate = _delegate;
 @synthesize URLLoader = _URLLoader;
 
-- (instancetype)
-initWithDispatcher:
-    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>)
-        dispatcher
-      browserState:(ios::ChromeBrowserState*)browserState
-      webStateList:(WebStateList*)webStateList {
+- (instancetype)initWithDispatcher:
+                    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
+                        dispatcher
+                      browserState:(ios::ChromeBrowserState*)browserState
+                      webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
     _toolbarCoordinator = [[ToolbarCoordinator alloc] init];

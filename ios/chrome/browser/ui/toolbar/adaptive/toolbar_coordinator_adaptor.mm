@@ -57,12 +57,6 @@
 
 #pragma mark - ToolbarCommands
 
-- (void)contractToolbar {
-  for (id<ToolbarCommands> coordinator in self.coordinators) {
-    [coordinator contractToolbar];
-  }
-}
-
 - (void)triggerToolsMenuButtonAnimation {
   for (id<ToolbarCommands> coordinator in self.coordinators) {
     [coordinator triggerToolsMenuButtonAnimation];
