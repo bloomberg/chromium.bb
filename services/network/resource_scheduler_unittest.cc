@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/resource_scheduler.h"
+#include "services/network/resource_scheduler.h"
 
 #include <map>
 #include <memory>
@@ -36,12 +36,11 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/latency/latency_info.h"
 #include "url/scheme_host_port.h"
 
 using std::string;
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -1965,4 +1964,4 @@ TEST_F(ResourceSchedulerTest, SchedulerDisabled) {
 
 }  // unnamed namespace
 
-}  // namespace content
+}  // namespace network

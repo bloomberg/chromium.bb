@@ -32,8 +32,6 @@ jumbo_source_set("network_sources") {
   sources = [
     "cors/cors_url_loader_factory.cc",
     "cors/cors_url_loader_factory.h",
-    "resource_scheduler.cc",
-    "resource_scheduler.h",
   ]
 
   configs += [ "//content:content_implementation" ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/resource_scheduler.h"
+#include "services/network/resource_scheduler.h"
 
 #include <stdint.h>
 
@@ -31,7 +31,7 @@
 #include "services/network/public/cpp/features.h"
 #include "url/scheme_host_port.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -414,7 +414,7 @@ class ResourceScheduler::Client {
         resource_scheduler_(resource_scheduler),
         weak_ptr_factory_(this) {
     if (base::FeatureList::IsEnabled(
-            network::features::kRendererSideResourceScheduler)) {
+            features::kRendererSideResourceScheduler)) {
       // When kRendererSideResourceScheduler is enabled, "layout blocking"
       // concept is moved to the renderer side, so the shceduler works always
       // with the normal mode.
@@ -486,7 +486,7 @@ class ResourceScheduler::Client {
   void DeprecatedOnNavigate() {
     deprecated_has_html_body_ = false;
     if (base::FeatureList::IsEnabled(
-            network::features::kRendererSideResourceScheduler)) {
+            features::kRendererSideResourceScheduler)) {
       // When kRendererSideResourceScheduler is enabled, "layout blocking"
       // concept is moved to the renderer side, so the shceduler works always
       // with the normal mode.
@@ -1303,4 +1303,4 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
   }
 }
 
-}  // namespace content
+}  // namespace network
