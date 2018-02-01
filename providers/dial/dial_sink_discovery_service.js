@@ -342,7 +342,7 @@ const SinkDiscoveryService = class extends Module {
    */
   static convertSink_(mojoSink) {
 
-    const uniqueId = SinkDiscoveryService.processUniqueId(mojoSink.sink_id);
+    const uniqueId = mojoSink.sink_id;
     const extraData = mojoSink.extra_data.dial_media_sink;
     const isDiscoveryOnly =
         SinkDiscoveryService.isDiscoveryOnly_(extraData.model_name);

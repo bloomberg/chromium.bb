@@ -9,16 +9,11 @@ const DialSink = goog.require('mr.dial.Sink');
 const MockClock = goog.require('mr.MockClock');
 const Sink = goog.require('mr.Sink');
 const SinkAppStatus = goog.require('mr.dial.SinkAppStatus');
-const SinkUtils = goog.require('mr.SinkUtils');
 
 describe('DIAL Sink Tests', function() {
   let mockClock;
-  let mockSinkUtils;
 
   beforeEach(function() {
-    mockSinkUtils = jasmine.createSpyObj('SinkUtils spy', ['generateId']);
-    spyOn(SinkUtils, 'getInstance').and.returnValue(mockSinkUtils);
-    mockSinkUtils.generateId.and.returnValue('id1');
     mockClock = new MockClock(true);
   });
 
@@ -27,7 +22,7 @@ describe('DIAL Sink Tests', function() {
   });
 
   it('Gets and sets fields', function() {
-    const sink = new DialSink('name', 'uniqueId');
+    const sink = new DialSink('name', 'id1');
     expect(sink.getMrSink()).toEqual(new Sink('id1', 'name'));
 
     expect(sink.getId()).toEqual('id1');

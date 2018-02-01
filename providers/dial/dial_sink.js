@@ -7,7 +7,6 @@ goog.module.declareLegacyNamespace();
 
 const Sink = goog.require('mr.Sink');
 const SinkAppStatus = goog.require('mr.dial.SinkAppStatus');
-const SinkUtils = goog.require('mr.SinkUtils');
 
 
 /**
@@ -36,8 +35,7 @@ const DialSink = class {
     this.modelName_ = null;
 
     /** @private @const {!Sink} */
-    this.mrSink_ =
-        new Sink(SinkUtils.getInstance().generateId(uniqueId), friendlyName);
+    this.mrSink_ = new Sink(uniqueId, friendlyName);
 
     /**
      * Holds the status of applications that may be available on the sink.
