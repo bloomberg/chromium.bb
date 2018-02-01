@@ -210,7 +210,9 @@ void* DirectCompositionChildSurfaceWin::GetHandle() {
 
 gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
+  // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
+  // surface doesn't need provide presentation feedback.
+  DCHECK(!callback);
   ReleaseDrawTexture(false);
   return gfx::SwapResult::SWAP_ACK;
 }
