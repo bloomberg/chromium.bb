@@ -35,6 +35,7 @@ const char kConvertedFromUserScript[] = "converted_from_user_script";
 const char kCss[] = "css";
 const char kCtrlKey[] = "ctrlKey";
 const char kCurrentLocale[] = "current_locale";
+const char kDeclarativeHostsKey[] = "hosts";
 const char kDeclarativeNetRequestKey[] = "declarative_net_request";
 const char kDeclarativeRuleResourcesKey[] = "rule_resources";
 const char kDefaultLocale[] = "default_locale";
@@ -303,6 +304,7 @@ const char kDeclarativeNetRequestListNotPassed[] =
 const char kDefaultStateShouldNotBeSet[] =
     "The default_state key cannot be set for browser_action or page_action "
     "keys.";
+const char kEmptyDeclarativeHosts[] = "No valid hosts specified for *.* key.";
 const char kExpectString[] = "Expect string value.";
 const char kFileNotFound[] = "File not found: *.";
 const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";
@@ -365,6 +367,11 @@ const char kInvalidCss[] =
     "Invalid value for 'content_scripts[*].css[*]'.";
 const char kInvalidCssList[] =
     "Required value 'content_scripts[*].css' is invalid.";
+const char kInvalidDeclarativeHost[] = "Invalid match pattern * for *.* key.";
+const char kInvalidDeclarativeHostList[] =
+    "Invalid value for *.* key. It must be a list of string match patterns.";
+const char kInvalidDeclarativeHostScheme[] =
+    "Match pattern * has invalid scheme for *.* key.";
 const char kInvalidDeclarativeNetRequestKey[] = "Invalid value for '*' key";
 const char kInvalidDeclarativeRulesFileKey[] =
     "Invalid value for '*.*' key. It must be a list containing a single "
