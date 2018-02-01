@@ -280,7 +280,8 @@ Output.PRESSED_STATE_MAP = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: `$name $value $state $restriction $role $description`,
+      speak: `$name $node(activeDescendant) $value $state $restriction $role
+          $description`,
       braille: ``
     },
     abstractContainer: {
@@ -301,7 +302,7 @@ Output.RULES = {
       speak: `$if($valueForRange, $valueForRange, $value)
           $if($minValueForRange, @aria_value_min($minValueForRange))
           $if($maxValueForRange, @aria_value_max($maxValueForRange))
-          $name $role $description $state $restriction`
+          $name $node(activeDescendant) $role $description $state $restriction`
     },
     alert: {
       enter: `$name $role $state`,
@@ -390,7 +391,8 @@ Output.RULES = {
     listMarker: {speak: `$name`},
     menu: {
       enter: `$name $role`,
-      speak: `$name $role @@list_with_items($countChildren(menuItem))
+      speak: `$name $node(activeDescendant)
+          $role @@list_with_items($countChildren(menuItem))
           $description $state $restriction`
     },
     menuItem: {
