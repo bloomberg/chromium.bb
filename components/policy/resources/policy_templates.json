@@ -10968,11 +10968,11 @@
       'tags': [],
       'desc': '''Contains a list of patterns which are used to control the visiblity of accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Account on the device will be visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if its name matches any pattern from the list. Otherwise account will be filtered out and hidden.
+      Each Google account on the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
 
-      The wildcard character '*' can be used to match zero or more arbitrary characters. The escape character is '\\', so to match actual '*' or '\\' characters, you can put a '\\' in front of them.
+      Use the wildcard character '*' to match zero or more arbitrary characters. The escape character is '\\', so to match actual '*' or '\\' characters, put a '\\' in front of them.
 
-      If this policy is left not set then all Google accounts on the device will be visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If this policy is not set, all Google accounts on the device will be visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
     {
       'name': 'PasswordProtectionWarningTrigger',
