@@ -78,17 +78,7 @@ static void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
   } while (pred_buf_q3 < end);
 }
 
-cfl_subsample_lbd_fn get_subsample_lbd_fn_ssse3(int sub_x, int sub_y) {
-  static const cfl_subsample_lbd_fn subsample_lbd[2][2] = {
-    //  (sub_y == 0, sub_x == 0)       (sub_y == 0, sub_x == 1)
-    //  (sub_y == 1, sub_x == 0)       (sub_y == 1, sub_x == 1)
-    { cfl_luma_subsampling_444_lbd, cfl_luma_subsampling_422_lbd },
-    { cfl_luma_subsampling_440_lbd, cfl_luma_subsampling_420_lbd_ssse3 },
-  };
-  // AND sub_x and sub_y with 1 to ensures that an attacker won't be able to
-  // index the function pointer array out of bounds.
-  return subsample_lbd[sub_y & 1][sub_x & 1];
-}
+CFL_GET_SUBSAMPLE_FUNCTION(ssse3)
 
 static INLINE __m128i predict_unclipped(const __m128i *input, __m128i alpha_q12,
                                         __m128i alpha_sign, __m128i dc_q0) {

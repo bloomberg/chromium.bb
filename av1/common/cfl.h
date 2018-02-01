@@ -17,6 +17,9 @@
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
                                      int16_t *output_q3, int width, int height);
 
+typedef void (*cfl_subsample_hbd_fn)(const uint16_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height);
+
 typedef void (*cfl_predict_lbd_fn)(const int16_t *pred_buf_q3, uint8_t *dst,
                                    int dst_stride, TX_SIZE tx_size,
                                    int alpha_q3);
@@ -60,13 +63,37 @@ void cfl_store_dc_pred(MACROBLOCKD *const xd, const uint8_t *input,
 void cfl_load_dc_pred(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                       TX_SIZE tx_size, CFL_PRED_TYPE pred_plane);
 
-// TODO(ltrudeau) Remove this when 422 SIMD is added
-void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
-                                  int16_t *output_q3, int width, int height);
-// TODO(ltrudeau) Remove this when 440 SIMD is added
-void cfl_luma_subsampling_440_lbd(const uint8_t *input, int input_stride,
-                                  int16_t *output_q3, int width, int height);
-// TODO(ltrudeau) Remove this when 444 SIMD is added
-void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
-                                  int16_t *output_q3, int width, int height);
+// TODO(ltrudeau) Remove this when HBD 420 SIMD is added
+void cfl_luma_subsampling_420_hbd_c(const uint16_t *input, int input_stride,
+                                    int16_t *output_q3, int width, int height);
+
+// TODO(ltrudeau) Remove this when HBD 422 SIMD is added
+void cfl_luma_subsampling_422_hbd_c(const uint16_t *input, int input_stride,
+                                    int16_t *output_q3, int width, int height);
+
+// TODO(ltrudeau) Remove this when HBD 444 SIMD is added
+void cfl_luma_subsampling_444_hbd_c(const uint16_t *input, int input_stride,
+                                    int16_t *output_q3, int width, int height);
+
+// TODO(ltrudeau) Remove this when LBD 422 SIMD is added
+void cfl_luma_subsampling_422_lbd_c(const uint8_t *input, int input_stride,
+                                    int16_t *output_q3, int width, int height);
+// TODO(ltrudeau) Remove this when LBD 444 SIMD is added
+void cfl_luma_subsampling_444_lbd_c(const uint8_t *input, int input_stride,
+                                    int16_t *output_q3, int width, int height);
+
+#define CFL_GET_SUBSAMPLE_FUNCTION(arch)                                   \
+  cfl_subsample_lbd_fn get_subsample_lbd_fn_##arch(int sub_x, int sub_y) { \
+    if (sub_x == 1)                                                        \
+      return (sub_y == 1) ? cfl_luma_subsampling_420_lbd_##arch            \
+                          : cfl_luma_subsampling_422_lbd_c;                \
+    return cfl_luma_subsampling_444_lbd_c;                                 \
+  }                                                                        \
+  cfl_subsample_hbd_fn get_subsample_hbd_fn_##arch(int sub_x, int sub_y) { \
+    if (sub_x == 1)                                                        \
+      return (sub_y == 1) ? cfl_luma_subsampling_420_hbd_c                 \
+                          : cfl_luma_subsampling_422_hbd_c;                \
+    return cfl_luma_subsampling_444_hbd_c;                                 \
+  }
+
 #endif  // AV1_COMMON_CFL_H_
