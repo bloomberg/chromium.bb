@@ -5666,23 +5666,6 @@ static void set_ext_overrides(AV1_COMP *cpi) {
   }
 }
 
-#if !CONFIG_FRAME_SIGN_BIAS
-static void set_arf_sign_bias(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-  int arf_sign_bias;
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-  // The arf_sign_bias will be one for internal ARFs'
-  arf_sign_bias = cpi->rc.source_alt_ref_active &&
-                  (!cpi->refresh_alt_ref_frame ||
-                   gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE);
-
-  cm->ref_frame_sign_bias[ALTREF_FRAME] = arf_sign_bias;
-  cm->ref_frame_sign_bias[BWDREF_FRAME] = cm->ref_frame_sign_bias[ALTREF_FRAME];
-  cm->ref_frame_sign_bias[ALTREF2_FRAME] =
-      cm->ref_frame_sign_bias[ALTREF_FRAME];
-}
-#endif  // !CONFIG_FRAME_SIGN_BIAS
-
 static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
   InterpFilter ifilter;
   int ref_total[TOTAL_REFS_PER_FRAME] = { 0 };
@@ -5853,11 +5836,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       num_bwd_ctxs * sizeof(&cpi->tile_data[0].tctx.partition_cdf[0][0]));
   set_ext_overrides(cpi);
   aom_clear_system_state();
-
-#if !CONFIG_FRAME_SIGN_BIAS
-  // Set the arf sign bias for this frame.
-  set_arf_sign_bias(cpi);
-#endif  // !CONFIG_FRAME_SIGN_BIAS
 
 #if CONFIG_TEMPMV_SIGNALING || CONFIG_FWD_KF
   // frame type has been decided outside of this function call

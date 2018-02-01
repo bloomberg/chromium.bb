@@ -3725,9 +3725,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
         aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                              REF_FRAMES_LOG2);
-#if !CONFIG_FRAME_SIGN_BIAS
-        aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
-#endif  // !CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int i = get_ref_frame_map_idx(cpi, ref_frame);
@@ -4060,9 +4057,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
       aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                            REF_FRAMES_LOG2);
-#if !CONFIG_FRAME_SIGN_BIAS
-      aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
-#endif  // !CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int i = get_ref_frame_map_idx(cpi, ref_frame);

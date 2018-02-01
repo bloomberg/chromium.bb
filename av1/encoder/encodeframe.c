@@ -4592,9 +4592,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
   av1_setup_frame_buf_refs(cm);
   if (cpi->sf.selective_ref_frame >= 2) enforce_max_ref_frames(cpi);
-#if CONFIG_FRAME_SIGN_BIAS
   av1_setup_frame_sign_bias(cm);
-#endif  // CONFIG_FRAME_SIGN_BIAS
 
 #if CONFIG_MISMATCH_DEBUG
   mismatch_reset_frame(num_planes);

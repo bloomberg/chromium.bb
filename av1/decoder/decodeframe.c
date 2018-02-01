@@ -2887,20 +2887,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         RefBuffer *const ref_frame = &cm->frame_refs[i];
         ref_frame->idx = idx;
         ref_frame->buf = &frame_bufs[idx].buf;
-#if CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_OBU
         // NOTE: For the scenario of (cm->frame_type != S_FRAME),
         // ref_frame_sign_bias will be reset based on frame offsets.
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
 #endif  // CONFIG_OBU
-#else   // !CONFIG_FRAME_SIGN_BIAS
-#if CONFIG_OBU
-        cm->ref_frame_sign_bias[LAST_FRAME + i] =
-            (cm->frame_type == S_FRAME) ? 0 : aom_rb_read_bit(rb);
-#else   // !CONFIG_OBU
-        cm->ref_frame_sign_bias[LAST_FRAME + i] = aom_rb_read_bit(rb);
-#endif  // CONFIG_OBU
-#endif  // CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int frame_id_length = cm->seq_params.frame_id_length;
@@ -2990,12 +2981,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
   av1_setup_frame_buf_refs(cm);
 
-#if CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_OBU
   if (cm->frame_type != S_FRAME)
 #endif  // CONFIG_OBU
     av1_setup_frame_sign_bias(cm);
-#endif  // CONFIG_FRAME_SIGN_BIAS
 
 #if CONFIG_TEMPMV_SIGNALING
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;

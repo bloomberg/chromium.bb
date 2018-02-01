@@ -1327,7 +1327,6 @@ void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
         cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
 }
 
-#if CONFIG_FRAME_SIGN_BIAS
 void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
@@ -1342,7 +1341,6 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
     }
   }
 }
-#endif  // CONFIG_FRAME_SIGN_BIAS
 
 #if CONFIG_MFMV
 #define MAX_OFFSET_WIDTH 64
