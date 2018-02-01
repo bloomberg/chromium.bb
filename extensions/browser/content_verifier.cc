@@ -267,6 +267,9 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
   const base::FilePath manifest_file(kManifestFilename);
   const base::FilePath messages_file(kMessagesFilename);
   for (const base::FilePath& relative_unix_path : relative_unix_paths) {
+    if (relative_unix_path.empty())
+      continue;
+
     if (relative_unix_path == manifest_file)
       continue;
 

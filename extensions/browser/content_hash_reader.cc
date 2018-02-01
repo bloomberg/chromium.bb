@@ -51,13 +51,14 @@ bool ContentHashReader::Init() {
   // verified_contents.json. This can happen when an extension sends an XHR to a
   // resource.
   if (!verified_contents.HasTreeHashRoot(relative_path_)) {
-    // Making a request to a non-existent resource should not result in
-    // content verification failure.
-    // TODO(proberge): The relative_path_.empty() check should be moved higher
-    // in the execution flow for performance wins by saving on costly IO
-    // operations and calculations.
-    if (relative_path_.empty() ||
-        !base::PathExists(extension_root_.Append(relative_path_)))
+    base::FilePath full_path = extension_root_.Append(relative_path_);
+    // Making a request to a non-existent file or to a directory should not
+    // result in content verification failure.
+    // TODO(proberge): This logic could be simplified if |content_verify_job|
+    // kept track of whether the file being verified was successfully read.
+    // A content verification failure should be triggered if there is a mismatch
+    // between the file read state and the existence of verification hashes.
+    if (!base::PathExists(full_path) || base::DirectoryExists(full_path))
       file_missing_from_verified_contents_ = true;
 
     return false;
