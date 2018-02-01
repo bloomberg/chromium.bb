@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
@@ -15,6 +16,8 @@
 
 namespace chromeos {
 namespace {
+
+constexpr char kPPDMagicNumberString[] = "*PPD-Adobe:";
 
 // Return true if contents has a valid Gzip header.
 bool IsGZipped(const std::string& contents) {
@@ -172,6 +175,16 @@ std::unique_ptr<PpdLineReader> PpdLineReader::Create(
     const std::string& contents,
     int max_line_length) {
   return std::make_unique<PpdLineReaderImpl>(contents, max_line_length);
+}
+
+// static
+bool PpdLineReader::ContainsMagicNumber(const std::string& contents,
+                                        int max_line_length) {
+  auto line_reader = PpdLineReader::Create(contents, max_line_length);
+  std::string line;
+  return line_reader->NextLine(&line) &&
+         base::StartsWith(line, kPPDMagicNumberString,
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace chromeos

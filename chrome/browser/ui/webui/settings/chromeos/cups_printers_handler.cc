@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -32,6 +34,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_cache.h"
+#include "chromeos/printing/ppd_line_reader.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printing_constants.h"
@@ -52,6 +55,8 @@ namespace {
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
 enum PpdSourceForHistogram { kUser = 0, kScs = 1, kPpdSourceMax };
+
+constexpr int kPpdMaxLineLength = 255;
 
 void RecordPpdSource(const PpdSourceForHistogram& source) {
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PpdSource", source, kPpdSourceMax);
@@ -234,6 +239,16 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   printer->set_uri(printer_uri);
 
   return printer;
+}
+
+std::string ReadFileToStringWithMaxSize(const base::FilePath& path,
+                                        int max_size) {
+  std::string contents;
+  // This call can fail, but it doesn't matter for our purposes. If it fails,
+  // we simply return an empty string for the contents, and it will be rejected
+  // as an invalid PPD.
+  base::ReadFileToStringWithMaxSize(path, &contents, max_size);
+  return contents;
 }
 
 }  // namespace
@@ -720,8 +735,26 @@ void CupsPrintersHandler::FileSelected(const base::FilePath& path,
                                        int index,
                                        void* params) {
   DCHECK(!webui_callback_id_.empty());
+
+  // Load the beggining contents of the file located at |path| and callback into
+  // VerifyPpdContents() in order to determine whether the file appears to be a
+  // PPD file. The task's priority is USER_BLOCKING because the this task
+  // updates the UI as a result of a direct user action.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&ReadFileToStringWithMaxSize, path, kPpdMaxLineLength),
+      base::BindOnce(&CupsPrintersHandler::VerifyPpdContents,
+                     weak_factory_.GetWeakPtr(), path));
+}
+
+void CupsPrintersHandler::VerifyPpdContents(const base::FilePath& path,
+                                            const std::string& contents) {
+  std::string result = "";
+  if (PpdLineReader::ContainsMagicNumber(contents, kPpdMaxLineLength))
+    result = path.value();
+
   ResolveJavascriptCallback(base::Value(webui_callback_id_),
-                            base::Value(path.value()));
+                            base::Value(result));
   webui_callback_id_.clear();
 }
 

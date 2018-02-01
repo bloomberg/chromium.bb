@@ -103,6 +103,8 @@ const char kTestPpdGzipped[] = {
     0x81, 0x77, 0x98, 0xf6, 0xaf, 0x74, 0x2c, 0x7e, 0xda, 0x30, 0xfe, 0x60,
     0xad, 0x3f, 0xe6, 0x78, 0x79, 0x4f, 0xd4, 0x03, 0x00, 0x00};
 
+constexpr int kPpdMaxLineLength = 255;
+
 // Read |ppd_contents| line by line with a reader using |max_line_length| as the
 // line limit.  Expect the read lines to be the same as |expected_lines|.
 void RunTest(const std::string& ppd_contents,
@@ -119,21 +121,22 @@ void RunTest(const std::string& ppd_contents,
 
 // Trivial empty ppd test.
 TEST(PpdLineReaderTest, Empty) {
-  RunTest("", 255, {});
+  RunTest("", kPpdMaxLineLength, {});
 }
 
 // Read kTestPpd contents.
 TEST(PpdLineReaderTest, SimplePpd) {
   std::vector<std::string> expected = base::SplitString(
       kTestPpd, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  RunTest(kTestPpd, 255, expected);
+  RunTest(kTestPpd, kPpdMaxLineLength, expected);
 }
 
 // Same as SimplePpd test, but with gzipped contents.
 TEST(PpdLineReaderTest, SimplePpdGzipped) {
   std::vector<std::string> expected = base::SplitString(
       kTestPpd, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  RunTest(std::string(kTestPpdGzipped, sizeof(kTestPpdGzipped)), 255, expected);
+  RunTest(std::string(kTestPpdGzipped, sizeof(kTestPpdGzipped)),
+          kPpdMaxLineLength, expected);
 }
 
 // Test that we skip lines exceeding max_line_length.
@@ -169,7 +172,7 @@ TEST(PpdLineReaderTest, CorruptGzipData) {
     gzipped_contents[i] = 0;
   }
 
-  auto reader = PpdLineReader::Create(gzipped_contents, 255);
+  auto reader = PpdLineReader::Create(gzipped_contents, kPpdMaxLineLength);
   // Read as far as we can before the gzip stream gives up.
   std::string unused;
 
@@ -179,6 +182,42 @@ TEST(PpdLineReaderTest, CorruptGzipData) {
 
   // Should have flagged an error because the gzip data was corrupt.
   EXPECT_TRUE(reader->Error());
+}
+
+// Tests that the simple PPD begins with the magic number which is present at
+// the beginning of all PPD files.
+TEST(PpdLineReaderTest, SimplePpdContainsMagicNumber) {
+  EXPECT_TRUE(PpdLineReader::ContainsMagicNumber(kTestPpd, kPpdMaxLineLength));
+}
+
+// Tests that the Gzipped version of the PPD file begins with the magic number.
+TEST(PpdLineReaderTest, GzippedPpdContainsMagicNumber) {
+  const std::string gzipped_contents(kTestPpdGzipped, sizeof(kTestPpdGzipped));
+  EXPECT_TRUE(
+      PpdLineReader::ContainsMagicNumber(gzipped_contents, kPpdMaxLineLength));
+}
+
+// Tests that a file which does not begin with the PPD magic number will be
+// rejected.
+TEST(PpdLineReaderTest, InvalidPpdMagicNumber) {
+  EXPECT_FALSE(PpdLineReader::ContainsMagicNumber(
+      "*%%%% PPD file for HP PSC 900 Series with CUPS.", kPpdMaxLineLength));
+
+  EXPECT_FALSE(PpdLineReader::ContainsMagicNumber("MZ this is fake exe file",
+                                                  kPpdMaxLineLength));
+  EXPECT_FALSE(PpdLineReader::ContainsMagicNumber("PK this is a fake zip file",
+                                                  kPpdMaxLineLength));
+}
+
+// Tests that a file which begins with newline characters should still be
+// rejected even if it contains the magic number since it does not appear at the
+// beginning of the file.
+TEST(PpdLineReaderTest, RejectFileStartingWithNewline) {
+  EXPECT_FALSE(PpdLineReader::ContainsMagicNumber("\x0A*PPD-Adobe: \"4.3\"",
+                                                  kPpdMaxLineLength));
+
+  EXPECT_FALSE(PpdLineReader::ContainsMagicNumber("\x0D*PPD-Adobe: \"4.3\"",
+                                                  kPpdMaxLineLength));
 }
 
 }  // namespace
