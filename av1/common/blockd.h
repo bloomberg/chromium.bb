@@ -926,9 +926,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   (void)blk_col;
 #endif  // CONFIG_TXK_SEL
 
-  // TODO(sarahparker) This assumes reduced_tx_set_used == 0. I will do a
-  // follow up refactor to make the actual value of reduced_tx_set_used
-  // within this function.
   if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][mbmi->tx_type])
     return DCT_DCT;
 

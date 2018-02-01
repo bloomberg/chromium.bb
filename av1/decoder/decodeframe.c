@@ -2370,7 +2370,6 @@ void read_sequence_header(SequenceHeader *seq_params,
   seq_params->max_frame_height = max_frame_height;
 #endif
 
-  /* Placeholder for actually reading from the bitstream */
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
     // We must always have delta_frame_id_length < frame_id_length,
