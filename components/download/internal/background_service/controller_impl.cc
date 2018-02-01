@@ -4,6 +4,8 @@
 
 #include "components/download/internal/background_service/controller_impl.h"
 
+#include <inttypes.h>
+
 #include <string>
 #include <vector>
 
@@ -11,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -597,7 +600,9 @@ base::Optional<LogSource::EntryDetails> ControllerImpl::GetServiceDownload(
 
 bool ControllerImpl::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                   base::trace_event::ProcessMemoryDump* pmd) {
-  auto* dump = pmd->GetOrCreateAllocatorDump("components/download");
+  auto* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("components/download/controller_0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(this)));
 
   size_t memory_cost =
       base::trace_event::EstimateMemoryUsage(externally_active_downloads_);
