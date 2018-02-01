@@ -707,6 +707,13 @@ void OnStorageInfoReady(const ScopedJavaGlobalRef<jobject>& java_callback,
   base::android::RunCallbackAndroid(java_callback, list);
 }
 
+void OnLocalStorageCleared(const ScopedJavaGlobalRef<jobject>& java_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Java_StorageInfoClearedCallback_onStorageInfoCleared(
+      base::android::AttachCurrentThread(), java_callback);
+}
+
 void OnStorageInfoCleared(const ScopedJavaGlobalRef<jobject>& java_callback,
                           blink::mojom::QuotaStatusCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -810,12 +817,15 @@ static void JNI_WebsitePreferenceBridge_FetchStorageInfo(
 static void JNI_WebsitePreferenceBridge_ClearLocalStorageData(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& jorigin) {
+    const JavaParamRef<jstring>& jorigin,
+    const JavaParamRef<jobject>& java_callback) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   auto local_storage_helper =
       base::MakeRefCounted<BrowsingDataLocalStorageHelper>(profile);
   GURL origin_url = GURL(ConvertJavaStringToUTF8(env, jorigin));
-  local_storage_helper->DeleteOrigin(origin_url);
+  local_storage_helper->DeleteOrigin(
+      origin_url, base::BindOnce(&OnLocalStorageCleared,
+                                 ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_WebsitePreferenceBridge_ClearStorageData(

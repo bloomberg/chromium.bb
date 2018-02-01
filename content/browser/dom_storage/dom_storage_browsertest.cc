@@ -4,12 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -47,6 +49,30 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
           &js_result));
       FAIL() << "Failed: " << js_result;
     }
+  }
+
+  std::vector<LocalStorageUsageInfo> GetUsage() {
+    auto* context = BrowserContext::GetDefaultStoragePartition(
+                        shell()->web_contents()->GetBrowserContext())
+                        ->GetDOMStorageContext();
+    base::RunLoop loop;
+    std::vector<LocalStorageUsageInfo> usage;
+    context->GetLocalStorageUsage(base::BindLambdaForTesting(
+        [&](const std::vector<LocalStorageUsageInfo>& u) {
+          usage = u;
+          loop.Quit();
+        }));
+    loop.Run();
+    return usage;
+  }
+
+  void DeletePhysicalOrigin(GURL origin) {
+    auto* context = BrowserContext::GetDefaultStoragePartition(
+                        shell()->web_contents()->GetBrowserContext())
+                        ->GetDOMStorageContext();
+    base::RunLoop loop;
+    context->DeleteLocalStorageForPhysicalOrigin(origin, loop.QuitClosure());
+    loop.Run();
   }
 };
 
@@ -118,6 +144,15 @@ IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, PRE_DataPersists) {
 
 IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
+}
+
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, DeletePhysicalOrigin) {
+  EXPECT_EQ(0U, GetUsage().size());
+  SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
+  std::vector<LocalStorageUsageInfo> usage = GetUsage();
+  ASSERT_EQ(1U, usage.size());
+  DeletePhysicalOrigin(usage[0].origin);
+  EXPECT_EQ(0U, GetUsage().size());
 }
 
 // On Windows file://localhost/C:/src/chromium/src/content/test/data/title1.html

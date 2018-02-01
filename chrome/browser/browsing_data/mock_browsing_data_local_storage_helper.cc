@@ -25,11 +25,13 @@ void MockBrowsingDataLocalStorageHelper::StartFetching(
 }
 
 void MockBrowsingDataLocalStorageHelper::DeleteOrigin(
-    const GURL& origin) {
+    const GURL& origin,
+    base::OnceClosure callback) {
   ASSERT_FALSE(callback_.is_null());
   ASSERT_TRUE(base::ContainsKey(origins_, origin));
   last_deleted_origin_ = origin;
   origins_[origin] = false;
+  std::move(callback).Run();
 }
 
 void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {

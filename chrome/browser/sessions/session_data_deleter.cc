@@ -135,7 +135,8 @@ void SessionDataDeleter::ClearSessionOnlyLocalStorage(
     const content::LocalStorageUsageInfo& usage = usages[i];
     if (!storage_policy_->IsStorageSessionOnly(usage.origin))
       continue;
-    storage_partition->GetDOMStorageContext()->DeleteLocalStorage(usage.origin);
+    storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
+        usage.origin, base::BindOnce(&base::DoNothing));
   }
 }
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.website;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge.StorageInfoClearedCallback;
 import org.chromium.chrome.browser.util.MathUtils;
 
 import java.io.Serializable;
@@ -518,24 +519,21 @@ public class Website implements Serializable {
     }
 
     public void clearAllStoredData(final StoredDataClearedCallback callback) {
+        // Wait for callbacks from each mStorageInfo and another callback from mLocalStorageInfo.
+        mStorageInfoCallbacksLeft = mStorageInfo.size() + 1;
+        StorageInfoClearedCallback clearedCallback = () -> {
+            if (--mStorageInfoCallbacksLeft == 0) callback.onStoredDataCleared();
+        };
         if (mLocalStorageInfo != null) {
-            mLocalStorageInfo.clear();
+            mLocalStorageInfo.clear(clearedCallback);
             mLocalStorageInfo = null;
-        }
-        mStorageInfoCallbacksLeft = mStorageInfo.size();
-        if (mStorageInfoCallbacksLeft > 0) {
-            for (StorageInfo info : mStorageInfo) {
-                info.clear(new WebsitePreferenceBridge.StorageInfoClearedCallback() {
-                    @Override
-                    public void onStorageInfoCleared() {
-                        if (--mStorageInfoCallbacksLeft == 0) callback.onStoredDataCleared();
-                    }
-                });
-            }
-            mStorageInfo.clear();
         } else {
-            callback.onStoredDataCleared();
+            clearedCallback.onStorageInfoCleared();
         }
+        for (StorageInfo info : mStorageInfo) {
+            info.clear(clearedCallback);
+        }
+        mStorageInfo.clear();
     }
 
     /**

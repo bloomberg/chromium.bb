@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
@@ -251,12 +252,16 @@ void SiteSettingsHandler::OnGetUsageInfo(
   }
 }
 
-void SiteSettingsHandler::OnUsageInfoCleared(
-    blink::mojom::QuotaStatusCode code) {
+void SiteSettingsHandler::OnStorageCleared(base::OnceClosure callback,
+                                           blink::mojom::QuotaStatusCode code) {
   if (code == blink::mojom::QuotaStatusCode::kOk) {
-    CallJavascriptFunction("settings.WebsiteUsagePrivateApi.onUsageCleared",
-                           base::Value(clearing_origin_));
+    std::move(callback).Run();
   }
+}
+
+void SiteSettingsHandler::OnUsageCleared() {
+  CallJavascriptFunction("settings.WebsiteUsagePrivateApi.onUsageCleared",
+                         base::Value(clearing_origin_));
 }
 
 #if defined(OS_CHROMEOS)
@@ -358,19 +363,25 @@ void SiteSettingsHandler::HandleClearUsage(
   if (url.is_valid()) {
     clearing_origin_ = origin;
 
+    // Call OnUsageCleared when StorageInfoFetcher::ClearStorage and
+    // BrowsingDataLocalStorageHelper::DeleteOrigin are done.
+    base::RepeatingClosure barrier = base::BarrierClosure(
+        2, base::BindOnce(&SiteSettingsHandler::OnUsageCleared,
+                          base::Unretained(this)));
+
     // Start by clearing the storage data asynchronously.
     scoped_refptr<StorageInfoFetcher> storage_info_fetcher
         = new StorageInfoFetcher(profile_);
     storage_info_fetcher->ClearStorage(
         url.host(),
         static_cast<blink::mojom::StorageType>(static_cast<int>(storage_type)),
-        base::Bind(&SiteSettingsHandler::OnUsageInfoCleared,
-                   base::Unretained(this)));
+        base::BindRepeating(&SiteSettingsHandler::OnStorageCleared,
+                            base::Unretained(this), barrier));
 
     // Also clear the *local* storage data.
     scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper =
         new BrowsingDataLocalStorageHelper(profile_);
-    local_storage_helper->DeleteOrigin(url);
+    local_storage_helper->DeleteOrigin(url, barrier);
   }
 }
 

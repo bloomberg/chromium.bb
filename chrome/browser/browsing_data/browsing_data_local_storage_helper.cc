@@ -74,9 +74,11 @@ void BrowsingDataLocalStorageHelper::StartFetching(
       base::Bind(&GetUsageInfoCallback, callback));
 }
 
-void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin_url) {
+void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin_url,
+                                                  base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  dom_storage_context_->DeleteLocalStorageForPhysicalOrigin(origin_url);
+  dom_storage_context_->DeleteLocalStorageForPhysicalOrigin(
+      origin_url, std::move(callback));
 }
 
 //---------------------------------------------------------
@@ -130,13 +132,14 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
 }
 
 void CannedBrowsingDataLocalStorageHelper::DeleteOrigin(
-    const GURL& origin_url) {
+    const GURL& origin_url,
+    base::OnceClosure callback) {
   pending_local_storage_info_.erase(origin_url);
   // All suborigins associated with |origin_url| must be removed.
   // BrowsingDataLocalStorageHelper::DeleteOrigin takes care of doing that on
   // the backend so it's not necessary to call it for each suborigin, but it is
   // necessary to clear up the pending storage here.
-  BrowsingDataLocalStorageHelper::DeleteOrigin(origin_url);
+  BrowsingDataLocalStorageHelper::DeleteOrigin(origin_url, std::move(callback));
   if (pending_origins_to_pending_suborigins_.count(origin_url) > 0) {
     auto it = pending_origins_to_pending_suborigins_.find(origin_url);
     while (it != pending_origins_to_pending_suborigins_.end()) {
