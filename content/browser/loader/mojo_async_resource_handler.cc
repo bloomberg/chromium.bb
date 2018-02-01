@@ -18,7 +18,6 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/network/resource_scheduler.h"
 #include "content/public/browser/global_request_id.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -27,6 +26,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/resource_scheduler.h"
 
 namespace content {
 namespace {

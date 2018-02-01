@@ -70,7 +70,6 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/view_messages.h"
-#include "content/network/resource_scheduler.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -113,6 +112,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
+#include "services/network/resource_scheduler.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -279,7 +279,8 @@ class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
     : public ResourceThrottle {
  public:
   explicit ScheduledResourceRequestAdapter(
-      std::unique_ptr<ResourceScheduler::ScheduledResourceRequest> request)
+      std::unique_ptr<network::ResourceScheduler::ScheduledResourceRequest>
+          request)
       : request_(std::move(request)) {
     request_->set_resume_callback(base::BindOnce(
         &ScheduledResourceRequestAdapter::Resume, base::Unretained(this)));
@@ -293,7 +294,8 @@ class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
   const char* GetNameForLogging() const override { return "ResourceScheduler"; }
 
  private:
-  std::unique_ptr<ResourceScheduler::ScheduledResourceRequest> request_;
+  std::unique_ptr<network::ResourceScheduler::ScheduledResourceRequest>
+      request_;
 };
 
 ResourceDispatcherHostImpl::LoadInfo::LoadInfo() {}
@@ -693,7 +695,7 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 }
 
 void ResourceDispatcherHostImpl::OnInit() {
-  scheduler_.reset(new ResourceScheduler(enable_resource_scheduler_));
+  scheduler_.reset(new network::ResourceScheduler(enable_resource_scheduler_));
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {

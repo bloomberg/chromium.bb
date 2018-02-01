@@ -54,6 +54,10 @@ class URLRequest;
 class URLRequestContextGetter;
 }
 
+namespace network {
+class ResourceScheduler;
+}  // namespace network
+
 namespace storage {
 class FileSystemContext;
 class ShareableFileReference;
@@ -72,7 +76,6 @@ class ResourceHandler;
 class ResourceMessageDelegate;
 class ResourceRequesterInfo;
 class ResourceRequestInfoImpl;
-class ResourceScheduler;
 class ServiceWorkerNavigationHandleCore;
 struct NavigationRequestInfo;
 struct Referrer;
@@ -234,7 +237,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       network::ResourceResponse* response,
       std::string* payload);
 
-  ResourceScheduler* scheduler() { return scheduler_.get(); }
+  network::ResourceScheduler* scheduler() { return scheduler_.get(); }
 
   // Called by a ResourceHandler when it's ready to start reading data and
   // sending it to the renderer. Returns true if there are enough file
@@ -787,7 +790,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   bool allow_cross_origin_auth_prompt_;
 
-  std::unique_ptr<ResourceScheduler> scheduler_;
+  std::unique_ptr<network::ResourceScheduler> scheduler_;
 
   // Used to invoke an interceptor for the HTTP header.
   HeaderInterceptorMap http_header_interceptor_map_;

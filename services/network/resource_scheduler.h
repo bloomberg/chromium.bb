@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_RESOURCE_SCHEDULER_H_
-#define CONTENT_NETWORK_RESOURCE_SCHEDULER_H_
+#ifndef SERVICES_NETWORK_RESOURCE_SCHEDULER_H_
+#define SERVICES_NETWORK_RESOURCE_SCHEDULER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,12 +16,12 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
@@ -35,9 +35,7 @@ class URLRequest;
 class NetworkQualityEstimator;
 }  // namespace net
 
-namespace content {
-
-class ResourceThrottle;
+namespace network {
 
 // There is one ResourceScheduler. All renderer-initiated HTTP requests are
 // expected to pass through it.
@@ -65,9 +63,7 @@ class ResourceThrottle;
 // The scheduler may defer issuing the request via the ResourceThrottle
 // interface or it may alter the request's priority by calling set_priority() on
 // the URLRequest.
-// TODO(yhirano): Move this class to /services/network once kNetworkService
-// and kRendererSideResourceScheduler is moved.
-class CONTENT_EXPORT ResourceScheduler {
+class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
  public:
   class ScheduledResourceRequest {
    public:
@@ -297,6 +293,6 @@ class CONTENT_EXPORT ResourceScheduler {
   DISALLOW_COPY_AND_ASSIGN(ResourceScheduler);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_NETWORK_RESOURCE_SCHEDULER_H_
+#endif  // SERVICES_NETWORK_RESOURCE_SCHEDULER_H_

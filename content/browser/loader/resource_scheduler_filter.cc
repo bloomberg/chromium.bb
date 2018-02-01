@@ -6,13 +6,13 @@
 
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/network/resource_scheduler.h"
 #include "ipc/ipc_message_macros.h"
+#include "services/network/resource_scheduler.h"
 
 namespace content {
 
 // Some tests are lacking a ResourceDispatcherHostImpl.
-ResourceScheduler* GetResourceSchedulerOrNullptr() {
+network::ResourceScheduler* GetResourceSchedulerOrNullptr() {
   if (!ResourceDispatcherHostImpl::Get())
     return nullptr;
   return ResourceDispatcherHostImpl::Get()->scheduler();
