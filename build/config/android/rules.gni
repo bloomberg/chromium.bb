@@ -2910,7 +2910,6 @@ if (enable_java_templates) {
         ":${target_name}__runtime_deps",
         ":${target_name}__secondary_abi_runtime_deps",
         "//base:base_java",
-        "//testing/android/appurify_support:appurify_support_java",
         "//testing/android/reporter:reporter_java",
       ]
       data_deps += [
