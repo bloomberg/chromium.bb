@@ -3941,5 +3941,21 @@ TEST_F(SchedulerTest,
   EXPECT_ACTIONS("WillBeginImplFrame");
 }
 
+TEST_F(SchedulerTest, SynchronousCompositorImplSideInvalidation) {
+  // Synchronous compositor doesn't have a deadline and our heuristics can't
+  // work. We should never be prioritizing impl-side invalidations over main
+  // frames.
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  SetUpScheduler(EXTERNAL_BFS);
+
+  fake_compositor_timing_history_->SetAllEstimatesTo(kSlowDuration);
+  scheduler_->SetNeedsBeginMainFrame();
+  const bool needs_first_draw_on_activation = true;
+  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
+}
+
 }  // namespace
 }  // namespace cc
