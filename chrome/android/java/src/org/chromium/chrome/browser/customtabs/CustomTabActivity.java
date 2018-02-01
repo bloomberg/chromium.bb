@@ -503,6 +503,9 @@ public class CustomTabActivity extends ChromeActivity {
             @Override
             @Nullable
             public String getPendingUrl() {
+                if (getActivityTab() == null) return null;
+                if (getActivityTab().getWebContents() == null) return null;
+
                 NavigationEntry entry = getActivityTab().getWebContents().getNavigationController()
                         .getPendingEntry();
                 return entry != null ? entry.getUrl() : null;
