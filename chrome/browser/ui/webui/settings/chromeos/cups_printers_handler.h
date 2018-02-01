@@ -145,6 +145,13 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                     int index,
                     void* params) override;
 
+  // Used by FileSelected() in order to verify whether the beginning contents of
+  // the selected file contain the magic number present in all PPD files. |path|
+  // is used for display in the UI as this function calls back into javascript
+  // with |path| as the result.
+  void VerifyPpdContents(const base::FilePath& path,
+                         const std::string& contents);
+
   Profile* profile_;
 
   // Discovery support.  discovery_active_ tracks whether or not the UI
