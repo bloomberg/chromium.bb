@@ -358,7 +358,7 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
 PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
                                                   LinkTarget* target) {
   if (!target)
-    return DOCLINK_AREA;
+    return NONSELECTABLE_AREA;
 
   target->page = FPDFDest_GetPageIndex(engine_->doc(), destination);
 
