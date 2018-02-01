@@ -59,7 +59,7 @@ void U2fDevice::Version(VersionCallback callback) {
   }
   DeviceTransact(std::move(version_cmd),
                  base::BindOnce(&U2fDevice::OnVersionComplete, GetWeakPtr(),
-                                std::move(callback)));
+                                std::move(callback), false /* legacy */));
 }
 
 void U2fDevice::OnRegisterComplete(
@@ -115,6 +115,7 @@ void U2fDevice::OnSignComplete(MessageCallback callback,
 
 void U2fDevice::OnVersionComplete(
     VersionCallback callback,
+    bool legacy,
     bool success,
     std::unique_ptr<U2fApduResponse> version_response) {
   if (success && version_response &&
@@ -122,9 +123,19 @@ void U2fDevice::OnVersionComplete(
       version_response->data() ==
           std::vector<uint8_t>({'U', '2', 'F', '_', 'V', '2'})) {
     std::move(callback).Run(success, ProtocolVersion::U2F_V2);
-    return;
+  } else if (!legacy) {
+    // Standard GetVersion failed, attempt legacy GetVersion command
+    auto version_cmd = U2fApduCommand::CreateLegacyVersion();
+    if (!version_cmd) {
+      std::move(callback).Run(false, ProtocolVersion::UNKNOWN);
+    } else {
+      DeviceTransact(std::move(version_cmd),
+                     base::BindOnce(&U2fDevice::OnVersionComplete, GetWeakPtr(),
+                                    std::move(callback), true /* legacy */));
+    }
+  } else {
+    std::move(callback).Run(success, ProtocolVersion::UNKNOWN);
   }
-  std::move(callback).Run(success, ProtocolVersion::UNKNOWN);
 }
 
 }  // namespace device

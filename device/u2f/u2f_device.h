@@ -72,6 +72,7 @@ class U2fDevice {
                       bool success,
                       std::unique_ptr<U2fApduResponse> sign_response);
   void OnVersionComplete(VersionCallback callback,
+                         bool legacy,
                          bool success,
                          std::unique_ptr<U2fApduResponse> version_response);
 

@@ -77,6 +77,14 @@ std::vector<uint8_t> CreateMockVersionResponse(
   return MakePacket(HexEncode(channel_id) + "8300085532465f56329000");
 }
 
+// Returns a failure mock response to version request with given channel id.
+std::vector<uint8_t> CreateFailureMockVersionResponse(
+    std::vector<uint8_t> channel_id) {
+  // HID_MSG command(83), followed by payload length(0002), followed by
+  // an invalid class response code (6E00).
+  return MakePacket(HexEncode(channel_id) + "8300026E00");
+}
+
 device::mojom::HidDeviceInfoPtr TestHidDevice() {
   auto c_info = device::mojom::HidCollectionInfo::New();
   c_info->usage = device::mojom::HidUsageAndPage::New(1, 0xf1d0);
@@ -333,6 +341,78 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   EXPECT_EQ(nullptr, response1);
   EXPECT_EQ(nullptr, response2);
   EXPECT_EQ(nullptr, response3);
+}
+
+TEST_F(U2fHidDeviceTest, TestLegacyVersion) {
+  const std::vector<uint8_t> kChannelId = {0x01, 0x02, 0x03, 0x04};
+
+  U2fDeviceEnumerate callback(hid_manager_.get());
+  auto hid_device = TestHidDevice();
+
+  // Replace device HID connection with custom client connection bound to mock
+  // server-side mojo connection.
+  device::mojom::HidConnectionPtr connection_client;
+  MockHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
+
+  // Delegate custom functions to be invoked for mock hid connection.
+  EXPECT_CALL(mock_connection, WritePtr(_, _, _))
+      // HID_INIT request to authenticator for channel allocation.
+      .WillOnce(WithArgs<1, 2>(
+          Invoke([&](const std::vector<uint8_t>& buffer,
+                     device::mojom::HidConnection::WriteCallback* cb) {
+            mock_connection.SetNonce(base::make_span(buffer).subspan(7, 8));
+            std::move(*cb).Run(true);
+          })))
+
+      // HID_MSG request to authenticator for version request.
+      .WillOnce(WithArgs<2>(
+          Invoke([](device::mojom::HidConnection::WriteCallback* cb) {
+            std::move(*cb).Run(true);
+          })))
+
+      .WillOnce(WithArgs<2>(
+          Invoke([](device::mojom::HidConnection::WriteCallback* cb) {
+            std::move(*cb).Run(true);
+          })));
+
+  EXPECT_CALL(mock_connection, ReadPtr(_))
+      // Response to HID_INIT request with correct nonce.
+      .WillOnce(WithArg<0>(Invoke(
+          [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
+            std::move(*cb).Run(true, 0,
+                               CreateMockHidInitResponse(
+                                   mock_connection.nonce(),
+                                   mock_connection.connection_channel_id()));
+          })))
+      // Invalid version response from the authenticator.
+      .WillOnce(WithArg<0>(Invoke(
+          [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
+            std::move(*cb).Run(true, 0,
+                               CreateFailureMockVersionResponse(
+                                   mock_connection.connection_channel_id()));
+          })))
+      // Legacy version response from the authenticator.
+      .WillOnce(WithArg<0>(Invoke(
+          [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
+            std::move(*cb).Run(true, 0,
+                               CreateMockVersionResponse(
+                                   mock_connection.connection_channel_id()));
+          })));
+
+  // Add device and set mock connection to fake hid manager.
+  fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
+                                               std::move(connection_client));
+
+  hid_manager_->GetDevices(callback.callback());
+  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
+      callback.WaitForCallback();
+
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+  TestVersionCallback vc;
+  device->Version(vc.callback());
+  EXPECT_EQ(vc.WaitForCallback(), U2fDevice::ProtocolVersion::U2F_V2);
 }
 
 TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {

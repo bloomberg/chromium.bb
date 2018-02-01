@@ -159,8 +159,8 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateLegacyVersion() {
   auto command = std::make_unique<U2fApduCommand>();
   command->set_ins(kInsU2fVersion);
   command->set_response_length(kApduMaxResponseLength);
-  // Early U2F drafts defined the U2F version command in extended
-  // length ISO 7816-4 format so 2 additional 0x0 bytes are necessary.
+  // Early U2F drafts defined the U2F version command a format
+  // incompatible with ISO 7816-4, so 2 additional 0x0 bytes are necessary.
   // https://fidoalliance.org/specs/fido-u2f-v1.1-id-20160915/fido-u2f-raw-message-formats-v1.1-id-20160915.html#implementation-considerations
   command->set_suffix(std::vector<uint8_t>(2, 0));
   return command;
