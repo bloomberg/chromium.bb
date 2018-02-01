@@ -5912,12 +5912,6 @@ class SSLUICaptivePortalListResourceBundleTest
     }
   }
 
-  void SetUp() override {
-    CertVerifierBrowserTest::SetUp();
-    SSLErrorHandler::ResetConfigForTesting();
-    SetUpCertVerifier(0, net::OK, std::string());
-  }
-
   void TearDown() override {
     SSLErrorHandler::ResetConfigForTesting();
     CertVerifierBrowserTest::TearDown();
