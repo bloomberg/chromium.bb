@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -112,6 +113,12 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
 
   switch (new_status) {
     case cryptauth::SecureChannel::Status::AUTHENTICATED:
+      UMA_HISTOGRAM_BOOLEAN(
+          "InstantTethering.GattConnectionAttempt.SuccessRate", true);
+      UMA_HISTOGRAM_BOOLEAN(
+          "InstantTethering.GattConnectionAttempt."
+          "EffectiveSuccessRateWithRetries",
+          true);
       StartTimerForDevice(*remote_device);
       OnDeviceAuthenticated(*remote_device);
       break;
@@ -221,6 +228,8 @@ void MessageTransferOperation::HandleDeviceDisconnection(
                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
                    << "Number of GATT error: "
                    << attempts_for_device.gatt_connection_attempts;
+      UMA_HISTOGRAM_BOOLEAN(
+          "InstantTethering.GattConnectionAttempt.SuccessRate", false);
 
       if (attempts_for_device.gatt_connection_attempts >=
           kMaxGattConnectionAttemptsPerDevice) {
@@ -228,6 +237,10 @@ void MessageTransferOperation::HandleDeviceDisconnection(
                      << "device with ID "
                      << remote_device.GetTruncatedDeviceIdForLogs() << ". "
                      << "Unregistering device.";
+        UMA_HISTOGRAM_BOOLEAN(
+            "InstantTethering.GattConnectionAttempt."
+            "EffectiveSuccessRateWithRetries",
+            false);
         UnregisterDevice(remote_device);
       }
       break;

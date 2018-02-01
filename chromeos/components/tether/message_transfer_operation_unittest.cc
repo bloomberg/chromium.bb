@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
@@ -165,7 +166,19 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   void SetUp() override {
+    has_verified_metrics_ = false;
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
+  }
+
+  void TearDown() override {
+    if (has_verified_metrics_)
+      return;
+
+    VerifyConnectionMetrics(
+        0u /* num_expected_successful_gatt_connections */,
+        0u /* num_expected_failed_gatt_connections */,
+        0u /* num_expected_successful_effective_gatt_connections */,
+        0u /* num_expected_failed_effective_gatt_connections */);
   }
 
   void ConstructOperation(std::vector<cryptauth::RemoteDevice> remote_devices) {
@@ -231,7 +244,58 @@ class MessageTransferOperationTest : public testing::Test {
               GetTimerForDevice(remote_device)->GetCurrentDelay());
   }
 
+  void VerifyConnectionMetrics(
+      size_t num_expected_successful_gatt_connections,
+      size_t num_expected_failed_gatt_connections,
+      size_t num_expected_successful_effective_gatt_connections,
+      size_t num_expected_failed_effective_gatt_connections) {
+    if (num_expected_successful_gatt_connections > 0u) {
+      histogram_tester_.ExpectBucketCount(
+          "InstantTethering.GattConnectionAttempt.SuccessRate", true,
+          num_expected_successful_gatt_connections);
+    }
+
+    if (num_expected_failed_gatt_connections > 0u) {
+      histogram_tester_.ExpectBucketCount(
+          "InstantTethering.GattConnectionAttempt.SuccessRate", false,
+          num_expected_failed_gatt_connections);
+    }
+
+    if (num_expected_successful_gatt_connections == 0u &&
+        num_expected_failed_gatt_connections == 0u) {
+      histogram_tester_.ExpectTotalCount(
+          "InstantTethering.GattConnectionAttempt.SuccessRate", 0u);
+    }
+
+    if (num_expected_successful_effective_gatt_connections > 0u) {
+      histogram_tester_.ExpectBucketCount(
+          "InstantTethering.GattConnectionAttempt."
+          "EffectiveSuccessRateWithRetries",
+          true, num_expected_successful_effective_gatt_connections);
+    }
+
+    if (num_expected_failed_effective_gatt_connections > 0u) {
+      histogram_tester_.ExpectBucketCount(
+          "InstantTethering.GattConnectionAttempt."
+          "EffectiveSuccessRateWithRetries",
+          false, num_expected_failed_effective_gatt_connections);
+    }
+
+    if (num_expected_successful_effective_gatt_connections == 0u &&
+        num_expected_failed_effective_gatt_connections == 0u) {
+      histogram_tester_.ExpectTotalCount(
+          "InstantTethering.GattConnectionAttempt."
+          "EffectiveSuccessRateWithRetries",
+          0u);
+    }
+
+    has_verified_metrics_ = true;
+  }
+
   const std::vector<cryptauth::RemoteDevice> test_devices_;
+
+  base::HistogramTester histogram_tester_;
+  bool has_verified_metrics_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   TestTimerFactory* test_timer_factory_;
@@ -273,8 +337,8 @@ TEST_F(MessageTransferOperationTest, CannotReceiveResponse_RetryLimitReached) {
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
 
-  // Try and fail a third time. The maximum number of failures has been reached,
-  // so the device should be unregistered.
+  // Try and fail a third time. The maximum number of unanswered failures has
+  // been reached, so the device should be unregistered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0].GetDeviceId(),
       cryptauth::SecureChannel::Status::CONNECTING,
@@ -310,6 +374,12 @@ TEST_F(MessageTransferOperationTest,
                                     true /* has_finished */);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
+
+  VerifyConnectionMetrics(
+      0u /* num_expected_successful_gatt_connections */,
+      6u /* num_expected_failed_gatt_connections */,
+      0u /* num_expected_successful_effective_gatt_connections */,
+      1u /* num_expected_failed_effective_gatt_connections */);
 }
 
 TEST_F(MessageTransferOperationTest, MixedConnectionAttemptFailures) {
@@ -326,7 +396,7 @@ TEST_F(MessageTransferOperationTest, MixedConnectionAttemptFailures) {
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
 
-  // Now
+  // Now, fail to establish a connection via GATT errors.
   fake_ble_connection_manager_->SimulateGattErrorConnectionAttempts(
       test_devices_[0].GetDeviceId(),
       MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice);
@@ -337,9 +407,15 @@ TEST_F(MessageTransferOperationTest, MixedConnectionAttemptFailures) {
                                     true /* has_finished */);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
+
+  VerifyConnectionMetrics(
+      0u /* num_expected_successful_gatt_connections */,
+      6u /* num_expected_failed_gatt_connections */,
+      0u /* num_expected_successful_effective_gatt_connections */,
+      1u /* num_expected_failed_effective_gatt_connections */);
 }
 
-TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
+TEST_F(MessageTransferOperationTest, TestFailsThenConnects_Unanswered) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
@@ -366,6 +442,51 @@ TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
   EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
+
+  VerifyConnectionMetrics(
+      1u /* num_expected_successful_gatt_connections */,
+      0u /* num_expected_failed_gatt_connections */,
+      1u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
+}
+
+TEST_F(MessageTransferOperationTest, TestFailsThenConnects_GattError) {
+  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  InitializeOperation();
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
+      test_devices_[0].GetDeviceId()));
+
+  // Try to connect and fail. The device should still be registered.
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_devices_[0].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING,
+      BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_devices_[0].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTED,
+      BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_devices_[0].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED,
+      BleConnectionManager::StateChangeDetail::
+          STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED);
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
+      test_devices_[0].GetDeviceId()));
+
+  // Try again and succeed.
+  TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
+      test_devices_[0].GetDeviceId()));
+  EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
+  VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
+
+  EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
+
+  VerifyConnectionMetrics(
+      1u /* num_expected_successful_gatt_connections */,
+      1u /* num_expected_failed_gatt_connections */,
+      1u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
 }
 
 TEST_F(MessageTransferOperationTest,
@@ -396,6 +517,12 @@ TEST_F(MessageTransferOperationTest,
             message->GetMessageType());
   EXPECT_EQ(CreateTetherAvailabilityResponse().SerializeAsString(),
             message->GetProto()->SerializeAsString());
+
+  VerifyConnectionMetrics(
+      1u /* num_expected_successful_gatt_connections */,
+      0u /* num_expected_failed_gatt_connections */,
+      1u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
 }
 
 TEST_F(MessageTransferOperationTest, TestDevicesUnregisteredAfterDeletion) {
@@ -453,6 +580,12 @@ TEST_F(MessageTransferOperationTest,
             message->GetMessageType());
   EXPECT_EQ(CreateTetherAvailabilityResponse().SerializeAsString(),
             message->GetProto()->SerializeAsString());
+
+  VerifyConnectionMetrics(
+      1u /* num_expected_successful_gatt_connections */,
+      0u /* num_expected_failed_gatt_connections */,
+      1u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
 }
 
 TEST_F(MessageTransferOperationTest, TestAuthenticatesButTimesOut) {
@@ -472,6 +605,12 @@ TEST_F(MessageTransferOperationTest, TestAuthenticatesButTimesOut) {
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
   EXPECT_TRUE(operation_->has_operation_finished());
+
+  VerifyConnectionMetrics(
+      1u /* num_expected_successful_gatt_connections */,
+      0u /* num_expected_failed_gatt_connections */,
+      1u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
 }
 
 TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
@@ -501,6 +640,12 @@ TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
             message->GetMessageType());
   EXPECT_EQ(CreateTetherAvailabilityResponse().SerializeAsString(),
             message->GetProto()->SerializeAsString());
+
+  VerifyConnectionMetrics(
+      1u /* num_expected_successful_gatt_connections */,
+      0u /* num_expected_failed_gatt_connections */,
+      1u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
 }
 
 TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
@@ -609,7 +754,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
       test_devices_[0].GetDeviceId()));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
-  // Fail 3 times to connect to |test_devices_[1]|.
+  // Fail 3 unanswered times to connect to |test_devices_[1]|.
   test_timer_factory_->set_device_id_for_next_timer(
       test_devices_[1].GetDeviceId());
   fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
@@ -629,7 +774,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
       test_devices_[2].GetDeviceId()));
   VerifyDefaultTimerCreatedForDevice(test_devices_[2]);
 
-  // Fail 3 times to connect to |test_devices_[3]|.
+  // Fail 3 unanswered times to connect to |test_devices_[3]|.
   test_timer_factory_->set_device_id_for_next_timer(
       test_devices_[3].GetDeviceId());
   fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
@@ -639,6 +784,12 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[3].GetDeviceId()));
   EXPECT_FALSE(GetTimerForDevice(test_devices_[3]));
+
+  VerifyConnectionMetrics(
+      2u /* num_expected_successful_gatt_connections */,
+      0u /* num_expected_failed_gatt_connections */,
+      2u /* num_expected_successful_effective_gatt_connections */,
+      0u /* num_expected_failed_effective_gatt_connections */);
 }
 
 }  // namespace tether
