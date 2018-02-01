@@ -573,8 +573,8 @@ void EncryptionMigrationScreenHandler::StartMigration() {
     auth_request = CreateAuthorizationRequest();
   }
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      cryptohome::Identification(user_context_.GetAccountId()),
-      cryptohome::AuthorizationRequest(), mount,
+      cryptohome::Identification(user_context_.GetAccountId()), auth_request,
+      mount,
       base::BindOnce(&EncryptionMigrationScreenHandler::OnMountExistingVault,
                      weak_ptr_factory_.GetWeakPtr()));
 }
