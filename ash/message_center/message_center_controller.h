@@ -74,6 +74,7 @@ class ASH_EXPORT MessageCenterController
   FullscreenNotificationBlocker fullscreen_notification_blocker_;
   InactiveUserNotificationBlocker inactive_user_notification_blocker_;
   SessionStateNotificationBlocker session_state_notification_blocker_;
+  std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
 
   NotifierSettingsListener* notifier_id_ = nullptr;
 

@@ -4,6 +4,8 @@
 
 #include "ash/message_center/message_center_controller.h"
 
+#include "ash/public/cpp/ash_switches.h"
+#include "base/command_line.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -14,6 +16,23 @@ using message_center::NotifierId;
 namespace ash {
 
 namespace {
+
+// A notification blocker that unconditionally blocks toasts. Implements
+// --suppress-message-center-notifications.
+class PopupNotificationBlocker : public message_center::NotificationBlocker {
+ public:
+  PopupNotificationBlocker(MessageCenter* message_center)
+      : NotificationBlocker(message_center) {}
+  ~PopupNotificationBlocker() override = default;
+
+  bool ShouldShowNotificationAsPopup(
+      const message_center::Notification& notification) const override {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PopupNotificationBlocker);
+};
 
 // This notification delegate passes actions back to the client that asked for
 // the notification (Chrome).
@@ -51,7 +70,13 @@ MessageCenterController::MessageCenterController()
     : fullscreen_notification_blocker_(MessageCenter::Get()),
       inactive_user_notification_blocker_(MessageCenter::Get()),
       session_state_notification_blocker_(MessageCenter::Get()),
-      binding_(this) {}
+      binding_(this) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSuppressMessageCenterPopups)) {
+    all_popup_blocker_ =
+        std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
+  }
+}
 
 MessageCenterController::~MessageCenterController() = default;
 
