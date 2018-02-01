@@ -125,7 +125,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
       CreateContextWithParams(CreateContextParams());
   // By default, QUIC should be enabled for new NetworkContexts when the command
   // line indicates it should be.
-  EXPECT_TRUE(network_context->url_request_context()
+  EXPECT_TRUE(network_context->GetURLRequestContext()
                   ->http_transaction_factory()
                   ->GetSession()
                   ->params()
@@ -133,7 +133,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
 
   // Disabling QUIC should disable it on existing NetworkContexts.
   network_service()->DisableQuic();
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_transaction_factory()
                    ->GetSession()
                    ->params()
@@ -142,7 +142,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
   // Disabling QUIC should disable it new NetworkContexts.
   std::unique_ptr<NetworkContext> network_context2 =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_FALSE(network_context2->url_request_context()
+  EXPECT_FALSE(network_context2->GetURLRequestContext()
                    ->http_transaction_factory()
                    ->GetSession()
                    ->params()
@@ -152,7 +152,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
   network_service()->DisableQuic();
   std::unique_ptr<NetworkContext> network_context3 =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_FALSE(network_context3->url_request_context()
+  EXPECT_FALSE(network_context3->GetURLRequestContext()
                    ->http_transaction_factory()
                    ->GetSession()
                    ->params()
@@ -167,7 +167,7 @@ TEST_F(NetworkContextTest, EnableBrotli) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
     EXPECT_EQ(enable_brotli,
-              network_context->url_request_context()->enable_brotli());
+              network_context->GetURLRequestContext()->enable_brotli());
   }
 }
 
@@ -178,7 +178,7 @@ TEST_F(NetworkContextTest, ContextName) {
   context_params->context_name = std::string(kContextName);
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_EQ(kContextName, network_context->url_request_context()->name());
+  EXPECT_EQ(kContextName, network_context->GetURLRequestContext()->name());
 }
 
 TEST_F(NetworkContextTest, QuicUserAgentId) {
@@ -187,7 +187,7 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
   context_params->quic_user_agent_id = kQuicUserAgentId;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_EQ(kQuicUserAgentId, network_context->url_request_context()
+  EXPECT_EQ(kQuicUserAgentId, network_context->GetURLRequestContext()
                                   ->http_transaction_factory()
                                   ->GetSession()
                                   ->params()
@@ -200,7 +200,7 @@ TEST_F(NetworkContextTest, DisableDataUrlSupport) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_FALSE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+      network_context->GetURLRequestContext()->job_factory()->IsHandledProtocol(
           url::kDataScheme));
 }
 
@@ -210,7 +210,7 @@ TEST_F(NetworkContextTest, EnableDataUrlSupport) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_TRUE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+      network_context->GetURLRequestContext()->job_factory()->IsHandledProtocol(
           url::kDataScheme));
 }
 
@@ -220,7 +220,7 @@ TEST_F(NetworkContextTest, DisableFileUrlSupport) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_FALSE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+      network_context->GetURLRequestContext()->job_factory()->IsHandledProtocol(
           url::kFileScheme));
 }
 
@@ -231,7 +231,7 @@ TEST_F(NetworkContextTest, EnableFileUrlSupport) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_TRUE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+      network_context->GetURLRequestContext()->job_factory()->IsHandledProtocol(
           url::kFileScheme));
 }
 #endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
@@ -242,7 +242,7 @@ TEST_F(NetworkContextTest, DisableFtpUrlSupport) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_FALSE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+      network_context->GetURLRequestContext()->job_factory()->IsHandledProtocol(
           url::kFtpScheme));
 }
 
@@ -253,7 +253,7 @@ TEST_F(NetworkContextTest, EnableFtpUrlSupport) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_TRUE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+      network_context->GetURLRequestContext()->job_factory()->IsHandledProtocol(
           url::kFtpScheme));
 }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -265,7 +265,7 @@ TEST_F(NetworkContextTest, DisableReporting) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_FALSE(network_context->url_request_context()->reporting_service());
+  EXPECT_FALSE(network_context->GetURLRequestContext()->reporting_service());
 }
 
 TEST_F(NetworkContextTest, EnableReporting) {
@@ -274,7 +274,7 @@ TEST_F(NetworkContextTest, EnableReporting) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_TRUE(network_context->url_request_context()->reporting_service());
+  EXPECT_TRUE(network_context->GetURLRequestContext()->reporting_service());
 }
 
 TEST_F(NetworkContextTest, DisableNetworkErrorLogging) {
@@ -283,8 +283,8 @@ TEST_F(NetworkContextTest, DisableNetworkErrorLogging) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_FALSE(
-      network_context->url_request_context()->network_error_logging_delegate());
+  EXPECT_FALSE(network_context->GetURLRequestContext()
+                   ->network_error_logging_delegate());
 }
 
 TEST_F(NetworkContextTest, EnableNetworkErrorLogging) {
@@ -293,8 +293,8 @@ TEST_F(NetworkContextTest, EnableNetworkErrorLogging) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_TRUE(
-      network_context->url_request_context()->network_error_logging_delegate());
+  EXPECT_TRUE(network_context->GetURLRequestContext()
+                  ->network_error_logging_delegate());
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -303,7 +303,7 @@ TEST_F(NetworkContextTest, Http09Disabled) {
   context_params->http_09_on_non_default_ports_enabled = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_transaction_factory()
                    ->GetSession()
                    ->params()
@@ -315,7 +315,7 @@ TEST_F(NetworkContextTest, Http09Enabled) {
   context_params->http_09_on_non_default_ports_enabled = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_TRUE(network_context->url_request_context()
+  EXPECT_TRUE(network_context->GetURLRequestContext()
                   ->http_transaction_factory()
                   ->GetSession()
                   ->params()
@@ -327,7 +327,7 @@ TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
       CreateContextWithParams(CreateContextParams());
 
   const net::HttpNetworkSession::Params& params =
-      network_context->url_request_context()
+      network_context->GetURLRequestContext()
           ->http_transaction_factory()
           ->GetSession()
           ->params();
@@ -353,7 +353,7 @@ TEST_F(NetworkContextTest, FixedHttpPort) {
       CreateContextWithParams(CreateContextParams());
 
   const net::HttpNetworkSession::Params& params =
-      network_context->url_request_context()
+      network_context->GetURLRequestContext()
           ->http_transaction_factory()
           ->GetSession()
           ->params();
@@ -367,7 +367,7 @@ TEST_F(NetworkContextTest, NoCache) {
   context_params->http_cache_enabled = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_transaction_factory()
                    ->GetCache());
 }
@@ -377,7 +377,7 @@ TEST_F(NetworkContextTest, MemoryCache) {
   context_params->http_cache_enabled = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  net::HttpCache* cache = network_context->url_request_context()
+  net::HttpCache* cache = network_context->GetURLRequestContext()
                               ->http_transaction_factory()
                               ->GetCache();
   ASSERT_TRUE(cache);
@@ -401,7 +401,7 @@ TEST_F(NetworkContextTest, DiskCache) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  net::HttpCache* cache = network_context->url_request_context()
+  net::HttpCache* cache = network_context->GetURLRequestContext()
                               ->http_transaction_factory()
                               ->GetCache();
   ASSERT_TRUE(cache);
@@ -432,7 +432,7 @@ TEST_F(NetworkContextTest, SimpleCache) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  net::HttpCache* cache = network_context->url_request_context()
+  net::HttpCache* cache = network_context->GetURLRequestContext()
                               ->http_transaction_factory()
                               ->GetCache();
   ASSERT_TRUE(cache);
@@ -466,12 +466,12 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
 
   // Wait for properties to load from disk, and sanity check initial state.
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
 
   // Set a property.
-  network_context->url_request_context()
+  network_context->GetURLRequestContext()
       ->http_server_properties()
       ->SetSupportsSpdy(kSchemeHostPort, true);
   // Deleting the context will cause it to flush state. Wait for the pref
@@ -487,7 +487,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   // Wait for properties to load from disk.
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(network_context->url_request_context()
+  EXPECT_TRUE(network_context->GetURLRequestContext()
                   ->http_server_properties()
                   ->GetSupportsSpdy(kSchemeHostPort));
 
@@ -497,7 +497,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
       base::Time::Now() - base::TimeDelta::FromHours(1),
       run_loop2.QuitClosure());
   run_loop2.Run();
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
 
@@ -516,13 +516,13 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(mojom::NetworkContextParams::New());
 
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
-  network_context->url_request_context()
+  network_context->GetURLRequestContext()
       ->http_server_properties()
       ->SetSupportsSpdy(kSchemeHostPort, true);
-  EXPECT_TRUE(network_context->url_request_context()
+  EXPECT_TRUE(network_context->GetURLRequestContext()
                   ->http_server_properties()
                   ->GetSupportsSpdy(kSchemeHostPort));
 
@@ -531,7 +531,7 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
       base::Time::Now() - base::TimeDelta::FromHours(1),
       run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_FALSE(network_context->url_request_context()
+  EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
 }
@@ -573,7 +573,7 @@ TEST_F(NetworkContextTest, CookieManager) {
   // the network context.
   base::RunLoop run_loop2;
   net::CookieList cookies;
-  network_context->url_request_context()
+  network_context->GetURLRequestContext()
       ->cookie_store()
       ->GetCookieListWithOptionsAsync(
           GURL("http://www.test.com/whatever"), net::CookieOptions(),
@@ -611,7 +611,7 @@ TEST_F(NetworkContextTest, ProxyConfig) {
         CreateContextWithParams(std::move(context_params));
 
     net::ProxyResolutionService* proxy_resolution_service =
-        network_context->url_request_context()->proxy_resolution_service();
+        network_context->GetURLRequestContext()->proxy_resolution_service();
     // Kick the ProxyResolutionService into action, as it doesn't start updating
     // its config until it's first used.
     proxy_resolution_service->ForceReloadProxyConfig();
@@ -642,7 +642,7 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
       CreateContextWithParams(std::move(context_params));
 
   net::ProxyResolutionService* proxy_resolution_service =
-      network_context->url_request_context()->proxy_resolution_service();
+      network_context->GetURLRequestContext()->proxy_resolution_service();
   // Kick the ProxyResolutionService into action, as it doesn't start updating
   // its config until it's first used.
   proxy_resolution_service->ForceReloadProxyConfig();
@@ -660,7 +660,7 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
       CreateContextWithParams(std::move(context_params));
 
   net::ProxyResolutionService* proxy_resolution_service =
-      network_context->url_request_context()->proxy_resolution_service();
+      network_context->GetURLRequestContext()->proxy_resolution_service();
   EXPECT_FALSE(proxy_resolution_service->config().is_valid());
   EXPECT_FALSE(proxy_resolution_service->fetched_config().is_valid());
 

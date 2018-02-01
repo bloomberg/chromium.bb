@@ -1228,7 +1228,8 @@ void ProfileIOData::Init(
         std::move(profile_params_->main_network_context_params).get(),
         io_thread_globals->quic_disabled, io_thread->net_log());
     main_request_context_ =
-        main_request_context_owner_.url_request_context.get();
+        main_request_context_owner_.url_request_context_getter
+            ->GetURLRequestContext();
   } else {
     main_network_context_ =
         content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(

@@ -824,7 +824,8 @@ void IOThread::ConstructSystemRequestContext() {
         std::move(builder)->Create(std::move(network_context_params_).get(),
                                    !is_quic_allowed_on_init_, net_log_);
     globals_->system_request_context =
-        globals_->system_request_context_owner.url_request_context.get();
+        globals_->system_request_context_owner.url_request_context_getter
+            ->GetURLRequestContext();
   } else {
     globals_->system_network_context =
         content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(

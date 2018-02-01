@@ -17,36 +17,37 @@
 #include "net/http/http_raw_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context_getter_observer.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/upload_progress_tracker.h"
 
 namespace net {
 class HttpResponseHeaders;
+class URLRequestContextGetter;
 }
 
 namespace network {
 
-class NetworkContext;
 class NetToMojoPendingBuffer;
 struct ResourceResponse;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
-      public net::URLRequest::Delegate {
+      public net::URLRequest::Delegate,
+      public net::URLRequestContextGetterObserver {
  public:
-  URLLoader(NetworkContext* context,
-            mojom::URLLoaderRequest url_loader_request,
-            int32_t options,
-            const ResourceRequest& request,
-            bool report_raw_headers,
-            mojom::URLLoaderClientPtr url_loader_client,
-            const net::NetworkTrafficAnnotationTag& traffic_annotation,
-            uint32_t process_id);
+  URLLoader(
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      mojom::NetworkServiceClient* network_service_client,
+      mojom::URLLoaderRequest url_loader_request,
+      int32_t options,
+      const ResourceRequest& request,
+      bool report_raw_headers,
+      mojom::URLLoaderClientPtr url_loader_client,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      uint32_t process_id);
   ~URLLoader() override;
-
-  // Called when the associated NetworkContext is going away.
-  void Cleanup();
 
   // mojom::URLLoader implementation:
   void FollowRedirect() override;
@@ -56,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
-  // net::URLRequest::Delegate methods:
+  // net::URLRequest::Delegate implementation:
   void OnReceivedRedirect(net::URLRequest* url_request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
@@ -69,6 +70,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
                              bool fatal) override;
   void OnResponseStarted(net::URLRequest* url_request, int net_error) override;
   void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
+
+  // net::URLRequestContextGetterObserver implementation:
+  void OnContextShuttingDown() override;
 
   // Returns a WeakPtr so tests can validate that the object was destroyed.
   base::WeakPtr<URLLoader> GetWeakPtrForTests();
@@ -97,7 +101,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
 
-  NetworkContext* context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  mojom::NetworkServiceClient* network_service_client_;
   int32_t options_;
   int resource_type_;
   bool is_load_timing_enabled_;

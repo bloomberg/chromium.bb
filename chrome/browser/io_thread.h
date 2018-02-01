@@ -32,8 +32,8 @@
 #include "extensions/features/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "services/network/public/cpp/url_request_context_owner.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/url_request_context_owner.h"
 
 class PrefRegistrySimple;
 class PrefService;

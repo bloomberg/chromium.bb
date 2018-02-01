@@ -21,10 +21,9 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/loader_util.h"
-#include "services/network/network_context.h"
-#include "services/network/network_service.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -234,15 +233,18 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 
 }  // namespace
 
-URLLoader::URLLoader(NetworkContext* context,
-                     mojom::URLLoaderRequest url_loader_request,
-                     int32_t options,
-                     const ResourceRequest& request,
-                     bool report_raw_headers,
-                     mojom::URLLoaderClientPtr url_loader_client,
-                     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-                     uint32_t process_id)
-    : context_(context),
+URLLoader::URLLoader(
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    mojom::NetworkServiceClient* network_service_client,
+    mojom::URLLoaderRequest url_loader_request,
+    int32_t options,
+    const ResourceRequest& request,
+    bool report_raw_headers,
+    mojom::URLLoaderClientPtr url_loader_client,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    uint32_t process_id)
+    : url_request_context_getter_(url_request_context_getter),
+      network_service_client_(network_service_client),
       options_(options),
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
@@ -257,12 +259,13 @@ URLLoader::URLLoader(NetworkContext* context,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       report_raw_headers_(report_raw_headers),
       weak_ptr_factory_(this) {
-  context_->RegisterURLLoader(this);
+  url_request_context_getter_->AddObserver(this);
   binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
 
-  url_request_ = context_->url_request_context()->CreateRequest(
-      GURL(request.url), request.priority, this, traffic_annotation);
+  url_request_ =
+      url_request_context_getter_->GetURLRequestContext()->CreateRequest(
+          GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
@@ -307,13 +310,7 @@ URLLoader::URLLoader(NetworkContext* context,
 
 URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
-  context_->DeregisterURLLoader(this);
-}
-
-void URLLoader::Cleanup() {
-  // The associated network context is going away and we have to destroy
-  // net::URLRequest held by this loader.
-  delete this;
+  url_request_context_getter_->RemoveObserver(this);
 }
 
 void URLLoader::FollowRedirect() {
@@ -404,14 +401,13 @@ void URLLoader::OnAuthRequired(net::URLRequest* unused,
 
 void URLLoader::OnCertificateRequested(net::URLRequest* unused,
                                        net::SSLCertRequestInfo* cert_info) {
-  // The network service can be null in tests.
-  if (!context_->network_service()) {
+  if (!network_service_client_) {
     OnCertificateRequestedResponse(nullptr, std::vector<uint16_t>(), nullptr,
                                    true /* cancel_certificate_selection */);
     return;
   }
 
-  context_->network_service()->client()->OnCertificateRequested(
+  network_service_client_->OnCertificateRequested(
       process_id_, render_frame_id_, cert_info,
       base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -420,12 +416,11 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
 void URLLoader::OnSSLCertificateError(net::URLRequest* request,
                                       const net::SSLInfo& ssl_info,
                                       bool fatal) {
-  // The network service can be null in tests.
-  if (!context_->network_service()) {
+  if (!network_service_client_) {
     OnSSLCertificateErrorResponse(ssl_info, net::ERR_INSECURE_RESPONSE);
     return;
   }
-  context_->network_service()->client()->OnSSLCertificateError(
+  network_service_client_->OnSSLCertificateError(
       resource_type_, url_request_->url(), process_id_, render_frame_id_,
       ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
@@ -582,6 +577,12 @@ void URLLoader::OnReadCompleted(net::URLRequest* url_request, int bytes_read) {
 
   DidRead(bytes_read, false);
   // |this| may have been deleted.
+}
+
+void URLLoader::OnContextShuttingDown() {
+  // The associated network context is going away and we have to destroy
+  // net::URLRequest held by this loader.
+  delete this;
 }
 
 base::WeakPtr<URLLoader> URLLoader::GetWeakPtrForTests() {
