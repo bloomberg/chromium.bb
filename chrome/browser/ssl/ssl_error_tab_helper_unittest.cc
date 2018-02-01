@@ -21,14 +21,14 @@
 
 namespace {
 
-const char kMetricsName[] = "test_ssl_blocking_page";
+const char kTestSslMetricsName[] = "test_ssl_blocking_page";
 
-std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+std::unique_ptr<ChromeMetricsHelper> CreateTestSslMetricsHelper(
     content::WebContents* web_contents) {
   security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix = kMetricsName;
-  return std::make_unique<ChromeMetricsHelper>(web_contents, GURL(),
-                                               report_details, kMetricsName);
+  report_details.metric_prefix = kTestSslMetricsName;
+  return std::make_unique<ChromeMetricsHelper>(
+      web_contents, GURL(), report_details, kTestSslMetricsName);
 }
 
 class TestSSLBlockingPage : public SSLBlockingPage {
@@ -47,7 +47,7 @@ class TestSSLBlockingPage : public SSLBlockingPage {
             GURL(),
             nullptr /* ssl_cert_reporter */,
             true /* overridable */,
-            CreateMetricsHelper(web_contents),
+            CreateTestSslMetricsHelper(web_contents),
             false /* is_superfish */,
             base::Callback<void(content::CertificateRequestResultType)>()),
         destroyed_tracker_(destroyed_tracker) {}

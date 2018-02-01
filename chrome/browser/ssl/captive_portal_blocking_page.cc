@@ -46,16 +46,16 @@
 
 namespace {
 
-const char kMetricsName[] = "captive_portal";
+const char kCaptivePortalMetricsName[] = "captive_portal";
 
-std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+std::unique_ptr<ChromeMetricsHelper> CreateCaptivePortalMetricsHelper(
     content::WebContents* web_contents,
     const GURL& request_url) {
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix = kMetricsName;
+  reporting_info.metric_prefix = kCaptivePortalMetricsName;
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
-                                            reporting_info, kMetricsName);
+      std::make_unique<ChromeMetricsHelper>(
+          web_contents, request_url, reporting_info, kCaptivePortalMetricsName);
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
   return metrics_helper;
 }
@@ -85,7 +85,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
               web_contents,
               ssl_info,
               request_url,
-              CreateMetricsHelper(web_contents, request_url))),
+              CreateCaptivePortalMetricsHelper(web_contents, request_url))),
       login_url_(login_url),
       ssl_info_(ssl_info),
       callback_(callback) {

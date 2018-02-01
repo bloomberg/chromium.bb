@@ -58,7 +58,7 @@ std::string GetSamplingEventName(const bool overridable, const int cert_error) {
   return event_name;
 }
 
-std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+std::unique_ptr<ChromeMetricsHelper> CreateSslProblemMetricsHelper(
     content::WebContents* web_contents,
     int cert_error,
     const GURL& request_url,
@@ -96,8 +96,9 @@ SSLBlockingPage* SSLBlockingPage::Create(
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
   bool overridable = IsOverridable(options_mask);
-  std::unique_ptr<ChromeMetricsHelper> metrics_helper(CreateMetricsHelper(
-      web_contents, cert_error, request_url, overridable, is_superfish));
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper(
+      CreateSslProblemMetricsHelper(web_contents, cert_error, request_url,
+                                    overridable, is_superfish));
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(overridable);
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
