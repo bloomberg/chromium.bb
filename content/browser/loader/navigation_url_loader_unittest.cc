@@ -71,27 +71,6 @@ class StreamProtocolHandler
   DISALLOW_COPY_AND_ASSIGN(StreamProtocolHandler);
 };
 
-class DownloadProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  DownloadProtocolHandler() {}
-
-  // net::URLRequestJobFactory::ProtocolHandler implementation.
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    static const char kHeaders[] =
-        "HTTP/1.1 200 OK\n"
-        "Content-type: text/html\n"
-        "Content-disposition: attachment\n"
-        "\n";
-    return new net::URLRequestTestJob(request, network_delegate, kHeaders,
-                                      "test", false);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadProtocolHandler);
-};
-
 class RequestBlockingResourceDispatcherHostDelegate
     : public ResourceDispatcherHostDelegate {
  public:
@@ -104,7 +83,7 @@ class RequestBlockingResourceDispatcherHostDelegate
   }
 };
 
-std::unique_ptr<ResourceHandler> CreateDownloadResourceHandler(
+std::unique_ptr<ResourceHandler> CreateTestResourceHandler(
     net::URLRequest* request) {
   return std::make_unique<TestResourceHandler>();
 }
@@ -116,7 +95,7 @@ class NavigationURLLoaderTest : public testing::Test {
   NavigationURLLoaderTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext),
-        host_(base::Bind(&CreateDownloadResourceHandler),
+        host_(base::BindRepeating(&CreateTestResourceHandler),
               base::ThreadTaskRunnerHandle::Get(),
               /* enable_resource_scheduler */ true) {
     host_.SetLoaderDelegate(&loader_delegate_);
@@ -130,21 +109,18 @@ class NavigationURLLoaderTest : public testing::Test {
     job_factory_.SetProtocolHandler(
         "blob", std::make_unique<StreamProtocolHandler>(
                     StreamContext::GetFor(browser_context_.get())->registry()));
-    job_factory_.SetProtocolHandler(
-        "download", std::make_unique<DownloadProtocolHandler>());
     request_context->set_job_factory(&job_factory_);
   }
 
   std::unique_ptr<NavigationURLLoader> MakeTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
-    return CreateTestLoader(url, delegate, false);
+    return CreateTestLoader(url, delegate);
   }
 
   std::unique_ptr<NavigationURLLoader> CreateTestLoader(
       const GURL& url,
-      NavigationURLLoaderDelegate* delegate,
-      bool allow_download) {
+      NavigationURLLoaderDelegate* delegate) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
             std::string() /* headers */, net::LOAD_NORMAL,
@@ -155,7 +131,6 @@ class NavigationURLLoaderTest : public testing::Test {
             url::Origin::Create(url), GURL() /* client_side_redirect_url */);
     CommonNavigationParams common_params;
     common_params.url = url;
-    common_params.allow_download = allow_download;
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
@@ -442,32 +417,6 @@ TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
 
   // Verify that URLRequestTestJob no longer has anything paused.
   EXPECT_FALSE(net::URLRequestTestJob::ProcessOnePendingMessage());
-}
-
-// Tests that download is allowed for the request.
-TEST_F(NavigationURLLoaderTest, DownloadAllowed) {
-  // Fake a top-level request to a URL whose body does not load immediately.
-  TestNavigationURLLoaderDelegate delegate;
-  std::unique_ptr<NavigationURLLoader> loader =
-      CreateTestLoader(GURL("download:test"), &delegate, true);
-
-  delegate.WaitForResponseStarted();
-  EXPECT_TRUE(delegate.is_download());
-  loader.reset();
-  base::RunLoop().RunUntilIdle();
-}
-
-// Tests that download is not allowed for the request.
-TEST_F(NavigationURLLoaderTest, DownloadDisallowed) {
-  // Fake a top-level request to a URL whose body does not load immediately.
-  TestNavigationURLLoaderDelegate delegate;
-  std::unique_ptr<NavigationURLLoader> loader =
-      CreateTestLoader(GURL("download:test"), &delegate, false);
-
-  delegate.WaitForResponseStarted();
-  EXPECT_FALSE(delegate.is_download());
-  loader.reset();
-  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content
