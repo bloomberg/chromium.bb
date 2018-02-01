@@ -143,7 +143,7 @@ LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment) {
-  paint_fragment_ = std::make_unique<NGPaintFragment>(std::move(fragment));
+  paint_fragment_ = NGPaintFragment::Create(std::move(fragment));
 }
 
 static Vector<NGPaintFragment*> GetNGPaintFragmentsInternal(
