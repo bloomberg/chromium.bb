@@ -61,10 +61,9 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
-  const NGPhysicalFragment& fragment = box_fragment_.PhysicalFragment();
-  const LayoutObject* layout_object = fragment.GetLayoutObject();
+  const LayoutObject* layout_object = PhysicalFragment().GetLayoutObject();
   DCHECK(layout_object && layout_object->IsBox());
-  if (!fragment.IsPlacedByLayoutNG()) {
+  if (!PhysicalFragment().IsPlacedByLayoutNG()) {
     // |fragment.Offset()| is valid only when it is placed by LayoutNG parent.
     // Use LayoutBox::Location() if not. crbug.com/788590
     AdjustPaintOffsetScope adjustment(ToLayoutBox(*layout_object), paint_info,
@@ -95,7 +94,7 @@ void NGBoxFragmentPainter::PaintWithAdjustedOffset(
   if (!IntersectsPaintRect(info, paint_offset))
     return;
 
-  if (box_fragment_.PhysicalFragment().IsInlineBlock())
+  if (PhysicalFragment().IsInlineBlock())
     return PaintInlineBlock(info, paint_offset);
 
   PaintPhase original_phase = info.phase;
@@ -131,12 +130,6 @@ void NGBoxFragmentPainter::PaintObject(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     bool suppress_box_decoration_background) {
-  // TODO(eae): Move this to constructor and add a PhysicalFragment method.
-  DCHECK(box_fragment_.PhysicalFragment().IsBox());
-  const NGPhysicalBoxFragment& physical_box_fragment =
-      static_cast<const NGPhysicalBoxFragment&>(
-          box_fragment_.PhysicalFragment());
-
   const PaintPhase paint_phase = paint_info.phase;
   const ComputedStyle& style = box_fragment_.Style();
   bool is_visible = style.Visibility() == EVisibility::kVisible;
@@ -206,8 +199,8 @@ void NGBoxFragmentPainter::PaintObject(
     const PaintInfo& contents_paint_info =
         scrolled_paint_info ? *scrolled_paint_info : paint_info;
 
-    if (physical_box_fragment.ChildrenInline()) {
-      if (physical_box_fragment.IsBlockFlow()) {
+    if (PhysicalFragment().ChildrenInline()) {
+      if (PhysicalFragment().IsBlockFlow()) {
         PaintBlockFlowContents(contents_paint_info, paint_offset);
         if (paint_phase == PaintPhase::kFloat ||
             paint_phase == PaintPhase::kSelection ||
@@ -250,10 +243,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
     return;
   }
 
-  const NGPhysicalBoxFragment& physical =
-      static_cast<const NGPhysicalBoxFragment&>(
-          box_fragment_.PhysicalFragment());
-  DCHECK(physical.ChildrenInline());
+  DCHECK(PhysicalFragment().ChildrenInline());
 
   LayoutRect overflow_rect(box_fragment_.VisualOverflowRect());
   overflow_rect.MoveBy(paint_offset);
@@ -405,7 +395,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 
   DrawingRecorder recorder(paint_info.context, display_item_client,
                            DisplayItem::kBoxDecorationBackground);
-  BoxDecorationData box_decoration_data(box_fragment_.PhysicalFragment());
+  BoxDecorationData box_decoration_data(PhysicalFragment());
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (!painting_overflow_contents) {
@@ -635,8 +625,7 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
       box_fragment_.Style().Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase) &&
       !paint_info.PaintRootBackgroundOnly()) {
-    LayoutObject* layout_object =
-        box_fragment_.PhysicalFragment().GetLayoutObject();
+    LayoutObject* layout_object = PhysicalFragment().GetLayoutObject();
     if (layout_object->IsLayoutBlock()) {
       LayoutBlock* layout_block = ToLayoutBlock(layout_object);
       Optional<ClipRecorder> clip_recorder;
@@ -855,6 +844,11 @@ bool NGBoxFragmentPainter::HitTestChildren(
   }
 
   return false;
+}
+
+const NGPhysicalBoxFragment& NGBoxFragmentPainter::PhysicalFragment() const {
+  return static_cast<const NGPhysicalBoxFragment&>(
+      box_fragment_.PhysicalFragment());
 }
 
 }  // namespace blink
