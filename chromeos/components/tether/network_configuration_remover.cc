@@ -5,26 +5,22 @@
 #include "chromeos/components/tether/network_configuration_remover.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace {
 
-void RemoveConfigurationSuccessCallback(const std::string& guid) {
-  PA_LOG(INFO) << "Successfully removed Wi-Fi network with GUID " << guid
+void RemoveConfigurationSuccessCallback(const std::string& path) {
+  PA_LOG(INFO) << "Successfully removed Wi-Fi network with path " << path
                << ".";
 }
 
 void RemoveConfigurationFailureCallback(
-    const std::string& guid,
+    const std::string& path,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  PA_LOG(WARNING) << "Failed to remove Wi-Fi network with GUID " << guid
+  PA_LOG(WARNING) << "Failed to remove Wi-Fi network with path " << path
                   << ". Error:" << error_name << ".";
 }
 
@@ -35,21 +31,18 @@ namespace chromeos {
 namespace tether {
 
 NetworkConfigurationRemover::NetworkConfigurationRemover(
-    NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler)
-    : network_state_handler_(network_state_handler),
-      managed_network_configuration_handler_(
+    : managed_network_configuration_handler_(
           managed_network_configuration_handler) {}
 
 NetworkConfigurationRemover::~NetworkConfigurationRemover() = default;
 
-void NetworkConfigurationRemover::RemoveNetworkConfiguration(
-    const std::string& wifi_network_guid) {
+void NetworkConfigurationRemover::RemoveNetworkConfigurationByPath(
+    const std::string& wifi_network_path) {
   managed_network_configuration_handler_->RemoveConfiguration(
-      network_state_handler_->GetNetworkStateFromGuid(wifi_network_guid)
-          ->path(),
-      base::Bind(RemoveConfigurationSuccessCallback, wifi_network_guid),
-      base::Bind(RemoveConfigurationFailureCallback, wifi_network_guid));
+      wifi_network_path,
+      base::Bind(&RemoveConfigurationSuccessCallback, wifi_network_path),
+      base::Bind(&RemoveConfigurationFailureCallback, wifi_network_path));
 }
 
 }  // namespace tether

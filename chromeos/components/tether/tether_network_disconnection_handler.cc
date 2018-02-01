@@ -60,11 +60,13 @@ void TetherNetworkDisconnectionHandler::NetworkConnectionStateChanged(
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&TetherNetworkDisconnectionHandler::
                                 HandleActiveWifiNetworkDisconnection,
-                            weak_ptr_factory_.GetWeakPtr(), network->guid()));
+                            weak_ptr_factory_.GetWeakPtr(), network->guid(),
+                            network->path()));
 }
 
 void TetherNetworkDisconnectionHandler::HandleActiveWifiNetworkDisconnection(
-    const std::string& network_guid) {
+    const std::string& network_guid,
+    const std::string& network_path) {
   PA_LOG(INFO) << "Connection to active host (Wi-Fi network GUID "
                << network_guid << ") has been lost.";
 
@@ -78,8 +80,8 @@ void TetherNetworkDisconnectionHandler::HandleActiveWifiNetworkDisconnection(
           : TetherSessionCompletionLogger::SessionCompletionReason::
                 WIFI_DISABLED);
 
-  network_configuration_remover_->RemoveNetworkConfiguration(
-      active_host_->GetWifiNetworkGuid());
+  network_configuration_remover_->RemoveNetworkConfigurationByPath(
+      network_path);
 
   // Send a DisconnectTetheringRequest to the tether host so that it can shut
   // down its Wi-Fi hotspot if it is no longer in use.

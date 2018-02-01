@@ -115,7 +115,6 @@ AsynchronousShutdownObjectContainerImpl::
               tether_host_fetcher_)),
       network_configuration_remover_(
           std::make_unique<NetworkConfigurationRemover>(
-              network_state_handler,
               managed_network_configuration_handler)),
       wifi_hotspot_disconnector_(std::make_unique<WifiHotspotDisconnectorImpl>(
           network_connection_handler,

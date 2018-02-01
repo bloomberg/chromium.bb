@@ -10,14 +10,13 @@ namespace tether {
 
 FakeNetworkConfigurationRemover::FakeNetworkConfigurationRemover()
     : NetworkConfigurationRemover(
-          nullptr /* network_state_handler */,
           nullptr /* managed_network_configuration_handler */) {}
 
 FakeNetworkConfigurationRemover::~FakeNetworkConfigurationRemover() = default;
 
-void FakeNetworkConfigurationRemover::RemoveNetworkConfiguration(
-    const std::string& wifi_network_guid) {
-  last_removed_wifi_network_guid_ = wifi_network_guid;
+void FakeNetworkConfigurationRemover::RemoveNetworkConfigurationByPath(
+    const std::string& wifi_network_path) {
+  last_removed_wifi_network_path_ = wifi_network_path;
 }
 
 }  // namespace tether

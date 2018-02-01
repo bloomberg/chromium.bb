@@ -167,8 +167,8 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
     // yet have been cleared, and the disconnecting GUID should still be in
     // prefs.
     EXPECT_TRUE(
-        fake_configuration_remover_->last_removed_wifi_network_guid().empty());
-    EXPECT_FALSE(GetDisconnectingWifiGuidFromPrefs().empty());
+        fake_configuration_remover_->last_removed_wifi_network_path().empty());
+    EXPECT_FALSE(GetDisconnectingWifiPathFromPrefs().empty());
 
     if (should_disconnect_successfully_) {
       EXPECT_FALSE(
@@ -189,8 +189,8 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
     // Now that the callbacks have been invoked, both the network
     // configuration and the disconnecting GUID should have cleared.
     EXPECT_FALSE(
-        fake_configuration_remover_->last_removed_wifi_network_guid().empty());
-    EXPECT_TRUE(GetDisconnectingWifiGuidFromPrefs().empty());
+        fake_configuration_remover_->last_removed_wifi_network_path().empty());
+    EXPECT_TRUE(GetDisconnectingWifiPathFromPrefs().empty());
   }
 
   std::string GetResultAndReset() {
@@ -199,8 +199,8 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
     return result;
   }
 
-  std::string GetDisconnectingWifiGuidFromPrefs() {
-    return test_pref_service_->GetString(prefs::kDisconnectingWifiNetworkGuid);
+  std::string GetDisconnectingWifiPathFromPrefs() {
+    return test_pref_service_->GetString(prefs::kDisconnectingWifiNetworkPath);
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -227,7 +227,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, NetworkDoesNotExist) {
 
   // Configuration should not have been removed.
   EXPECT_TRUE(
-      fake_configuration_remover_->last_removed_wifi_network_guid().empty());
+      fake_configuration_remover_->last_removed_wifi_network_path().empty());
 }
 
 TEST_F(WifiHotspotDisconnectorImplTest, NetworkNotActuallyConnected) {
@@ -240,7 +240,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, NetworkNotActuallyConnected) {
 
   // Configuration should not have been removed.
   EXPECT_TRUE(
-      fake_configuration_remover_->last_removed_wifi_network_guid().empty());
+      fake_configuration_remover_->last_removed_wifi_network_path().empty());
 }
 
 TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionFails) {
@@ -259,7 +259,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionFails) {
 
   // Configuration should have been removed despite the failure.
   EXPECT_FALSE(
-      fake_configuration_remover_->last_removed_wifi_network_guid().empty());
+      fake_configuration_remover_->last_removed_wifi_network_path().empty());
 }
 
 TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionSucceeds) {
@@ -274,7 +274,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionSucceeds) {
 
   // Configuration should have been removed.
   EXPECT_FALSE(
-      fake_configuration_remover_->last_removed_wifi_network_guid().empty());
+      fake_configuration_remover_->last_removed_wifi_network_path().empty());
 }
 
 }  // namespace tether

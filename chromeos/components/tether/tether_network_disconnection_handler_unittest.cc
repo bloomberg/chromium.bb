@@ -97,7 +97,7 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   void VerifyDisconnectionNotYetHandled() {
     EXPECT_EQ(
         std::string(),
-        fake_network_configuration_remover_->last_removed_wifi_network_guid());
+        fake_network_configuration_remover_->last_removed_wifi_network_path());
     EXPECT_EQ(
         std::vector<std::string>(),
         fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
@@ -110,8 +110,8 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   void VerifyDisconnectionHandled(
       const TetherSessionCompletionLogger::SessionCompletionReason reason) {
     EXPECT_EQ(
-        kWifiNetworkGuid,
-        fake_network_configuration_remover_->last_removed_wifi_network_guid());
+        wifi_service_path_,
+        fake_network_configuration_remover_->last_removed_wifi_network_path());
     EXPECT_EQ(
         std::vector<std::string>{kDeviceId},
         fake_disconnect_tethering_request_sender_->device_ids_sent_requests());

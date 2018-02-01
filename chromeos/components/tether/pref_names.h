@@ -39,16 +39,16 @@ extern const char kTetherNetworkGuid[];
 // value at this key is "".
 extern const char kWifiNetworkGuid[];
 
-// The Wi-Fi network GUID that is currently being disconnected. When
+// The Wi-Fi network path that is currently being disconnected. When
 // disconnecting under normal circumstances, this value is set when a
 // disconnection is initiated and is cleared when a disconnection completes.
 // However, when a disconnection is triggered by the user logging out, the
 // disconnection flow cannot complete before Chrome shuts down (due to the
-// asynchronous nature of the network stack), so this GUID remains in prefs.
+// asynchronous nature of the network stack), so this path remains in prefs.
 // When the Tether component starts up again (the next time the user logs in),
-// this GUID is fetched, the associated network configuration is removed, and
-// the GUID is cleared from prefs.
-extern const char kDisconnectingWifiNetworkGuid[];
+// this path is fetched, the associated network configuration is removed, and
+// the path is cleared from prefs.
+extern const char kDisconnectingWifiNetworkPath[];
 
 // Scanned Tether host results. The value stored is a ListValue containing
 // DictionaryValues containing the scan results. See PersistentHostScanCache for
