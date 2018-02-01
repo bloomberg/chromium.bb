@@ -39,15 +39,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   base::RunLoop().RunUntilIdle();
   io_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  cache_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
   process_launcher_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
-  file_user_blocking_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
-  file_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
-  db_thread_->Stop();
   base::RunLoop().RunUntilIdle();
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
@@ -124,16 +116,8 @@ void TestBrowserThreadBundle::Init() {
 void TestBrowserThreadBundle::CreateBrowserThreads() {
   CHECK(!threads_created_);
 
-  db_thread_ = std::make_unique<TestBrowserThread>(
-      BrowserThread::DB, base::MessageLoop::current());
-  file_thread_ = std::make_unique<TestBrowserThread>(
-      BrowserThread::FILE, base::MessageLoop::current());
-  file_user_blocking_thread_ = std::make_unique<TestBrowserThread>(
-      BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current());
   process_launcher_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::PROCESS_LAUNCHER, base::MessageLoop::current());
-  cache_thread_ = std::make_unique<TestBrowserThread>(
-      BrowserThread::CACHE, base::MessageLoop::current());
 
   if (options_ & REAL_IO_THREAD) {
     io_thread_ = std::make_unique<TestBrowserThread>(BrowserThread::IO);

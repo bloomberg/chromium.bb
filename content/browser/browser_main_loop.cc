@@ -376,25 +376,6 @@ void OnStoppedStartupTracing(const base::FilePath& trace_file) {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-NOINLINE void ResetThread_DB() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::DB);
-}
-
-NOINLINE void ResetThread_FILE() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::FILE);
-}
-
-NOINLINE void ResetThread_FILE_USER_BLOCKING() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  BrowserThreadImpl::StopRedirectionOfThreadID(
-      BrowserThread::FILE_USER_BLOCKING);
-}
-
 #if defined(OS_ANDROID)
 NOINLINE void ResetThread_PROCESS_LAUNCHER(
     std::unique_ptr<BrowserProcessSubThread> thread) {
@@ -409,21 +390,6 @@ NOINLINE void ResetThread_PROCESS_LAUNCHER() {
   BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::PROCESS_LAUNCHER);
 }
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-NOINLINE void ResetThread_CACHE(
-    std::unique_ptr<BrowserProcessSubThread> thread) {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-    thread.reset();
-}
-#else   // defined(OS_WIN)
-NOINLINE void ResetThread_CACHE() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::CACHE);
-}
-#endif  // defined(OS_WIN)
 
 NOINLINE void ResetThread_IO(std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
@@ -1093,42 +1059,10 @@ int BrowserMainLoop::CreateThreads() {
     base::MessageLoop* message_loop = nullptr;
 
     // Otherwise this thread ID will be backed by a SingleThreadTaskRunner using
-    // |non_ui_non_io_task_runner_traits| (which can be augmented below).
-    // TODO(gab): Existing non-UI/non-IO BrowserThreads allow sync primitives so
-    // the initial redirection will as well but they probably don't need to.
-    base::TaskTraits non_ui_non_io_task_runner_traits;
-
-    // Note: if you're copying these TaskTraits elsewhere, you most likely don't
-    // need and shouldn't use base::WithBaseSyncPrimitives() -- see its
-    // documentation.
-    constexpr base::TaskTraits kUserVisibleTraits = {
-        base::MayBlock(), base::WithBaseSyncPrimitives(),
-        base::TaskPriority::USER_VISIBLE,
-        base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
-    constexpr base::TaskTraits kUserBlockingTraits = {
-        base::MayBlock(), base::WithBaseSyncPrimitives(),
-        base::TaskPriority::USER_BLOCKING,
-        base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+    // |task_traits| (to be set below instead of |thread_to_start|).
+    base::TaskTraits task_traits;
 
     switch (thread_id) {
-      case BrowserThread::DB:
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::DB");
-        non_ui_non_io_task_runner_traits = kUserVisibleTraits;
-        break;
-      case BrowserThread::FILE_USER_BLOCKING:
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::FILE_USER_BLOCKING");
-        non_ui_non_io_task_runner_traits = kUserBlockingTraits;
-        break;
-      case BrowserThread::FILE:
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::FILE");
-        non_ui_non_io_task_runner_traits = kUserVisibleTraits;
-        break;
       case BrowserThread::PROCESS_LAUNCHER:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
@@ -1141,25 +1075,11 @@ int BrowserMainLoop::CreateThreads() {
         DCHECK(message_loop);
         thread_to_start = &process_launcher_thread_;
 #else   // defined(OS_ANDROID)
-        non_ui_non_io_task_runner_traits = kUserBlockingTraits;
+        // TODO(gab): WithBaseSyncPrimitives() is likely not required here.
+        task_traits = {base::MayBlock(), base::WithBaseSyncPrimitives(),
+                       base::TaskPriority::USER_BLOCKING,
+                       base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 #endif  // defined(OS_ANDROID)
-        break;
-      case BrowserThread::CACHE:
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::CACHE");
-#if defined(OS_WIN)
-        // TaskScheduler doesn't support async I/O on Windows as CACHE thread is
-        // the only user and this use case is going away in
-        // https://codereview.chromium.org/2216583003/.
-        // TODO(gavinp): Remove this ifdef (and thus enable redirection of the
-        // CACHE thread on Windows) once that CL lands.
-        thread_to_start = &cache_thread_;
-        options = io_message_loop_options;
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-#else  // OS_WIN
-        non_ui_non_io_task_runner_traits = kUserBlockingTraits;
-#endif  // OS_WIN
         break;
       case BrowserThread::IO:
         TRACE_EVENT_BEGIN1("startup",
@@ -1189,24 +1109,9 @@ int BrowserMainLoop::CreateThreads() {
       if (!message_loop && !(*thread_to_start)->StartWithOptions(options))
         LOG(FATAL) << "Failed to start the browser thread: id == " << id;
     } else {
-      scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner;
-#if defined(OS_WIN)
-      // On Windows, the FILE thread needs to have a UI message loop which
-      // pumps messages in such a way that Google Update can communicate back
-      // to us. The COM STA task runner provides this service.
-      redirection_task_runner =
-          (thread_id == BrowserThread::FILE)
-              ? base::CreateCOMSTATaskRunnerWithTraits(
-                    non_ui_non_io_task_runner_traits,
-                    base::SingleThreadTaskRunnerThreadMode::DEDICATED)
-              : base::CreateSingleThreadTaskRunnerWithTraits(
-                    non_ui_non_io_task_runner_traits,
-                    base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-#else   // defined(OS_WIN)
-      redirection_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-          non_ui_non_io_task_runner_traits,
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-#endif  // defined(OS_WIN)
+      scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              task_traits, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
       DCHECK(redirection_task_runner);
       BrowserThreadImpl::RedirectThreadIDToTaskRunner(
           id, std::move(redirection_task_runner));
@@ -1370,33 +1275,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       // BrowserThread::ID enumeration.
       //
       // The destruction order is the reverse order of occurrence in the
-      // BrowserThread::ID list. The rationale for the order is as follows (need
-      // to be filled in a bit):
-      //
-      // - The IO thread is the only user of the CACHE thread.
-      //
-      // - The PROCESS_LAUNCHER thread must be stopped after IO in case
-      //   the IO thread posted a task to terminate a process on the
-      //   process launcher thread.
-      //
-      // - (Not sure why DB stops last.)
+      // BrowserThread::ID list. The rationale for the order is that he
+      // PROCESS_LAUNCHER thread must be stopped after IO in case the IO thread
+      // posted a task to terminate a process on the process launcher thread.
       switch (thread_id) {
-        case BrowserThread::DB: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
-          ResetThread_DB();
-          break;
-        }
-        case BrowserThread::FILE: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
-          ResetThread_FILE();
-          break;
-        }
-        case BrowserThread::FILE_USER_BLOCKING: {
-          TRACE_EVENT0("shutdown",
-                       "BrowserMainLoop::Subsystem:FileUserBlockingThread");
-          ResetThread_FILE_USER_BLOCKING();
-          break;
-        }
         case BrowserThread::PROCESS_LAUNCHER: {
           TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
 #if defined(OS_ANDROID)
@@ -1404,15 +1286,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #else   // defined(OS_ANDROID)
           ResetThread_PROCESS_LAUNCHER();
 #endif  // defined(OS_ANDROID)
-          break;
-        }
-        case BrowserThread::CACHE: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
-#if defined(OS_WIN)
-          ResetThread_CACHE(std::move(cache_thread_));
-#else   // defined(OS_WIN)
-          ResetThread_CACHE();
-#endif  // defined(OS_WIN)
           break;
         }
         case BrowserThread::IO: {
