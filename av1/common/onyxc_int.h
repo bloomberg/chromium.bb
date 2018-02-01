@@ -708,7 +708,7 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
   const int buf_rows = buf->mi_rows;
   const int buf_cols = buf->mi_cols;
 
-  if (buf->mvs == NULL || buf_rows < cm->mi_rows || buf_cols < cm->mi_cols) {
+  if (buf->mvs == NULL || buf_rows != cm->mi_rows || buf_cols != cm->mi_cols) {
     aom_free(buf->mvs);
     buf->mi_rows = cm->mi_rows;
     buf->mi_cols = cm->mi_cols;
