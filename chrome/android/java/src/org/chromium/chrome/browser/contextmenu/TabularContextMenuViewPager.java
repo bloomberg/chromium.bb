@@ -10,7 +10,6 @@ import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -36,8 +35,6 @@ public class TabularContextMenuViewPager extends ViewPager {
     private int mOldHeight;
     private int mCanvasWidth;
     private int mClipHeight;
-
-    private Rect mClipBounds = new Rect();
 
     private int mDifferenceInHeight;
     private int mPreviousChildIndex = 1;
@@ -129,9 +126,6 @@ public class TabularContextMenuViewPager extends ViewPager {
                     setTranslationY((1 - animatedValue) * mDifferenceInHeight / 2);
                 }
                 mClipHeight = mOldHeight + (int) (mDifferenceInHeight * animatedValue);
-                mClipBounds.bottom = mClipHeight;
-                mClipBounds.right = mCanvasWidth;
-                setClipBounds(mClipBounds);
                 invalidate();
             }
         });
@@ -141,7 +135,6 @@ public class TabularContextMenuViewPager extends ViewPager {
                 mOldHeight = mClipHeight;
                 setTranslationY(0);
                 if (mDifferenceInHeight < 0) requestLayout();
-                setClipBounds(null);
             }
         });
     }
@@ -149,9 +142,12 @@ public class TabularContextMenuViewPager extends ViewPager {
     @Override
     public void draw(Canvas canvas) {
         mCanvasWidth = canvas.getWidth();
-        mBackgroundDrawable.setBounds(getScrollX(), 0, mCanvasWidth + getScrollX(), mClipHeight);
+        int backgroundOffsetX = getScrollX();
+        mBackgroundDrawable.setBounds(
+                backgroundOffsetX, 0, canvas.getWidth() + backgroundOffsetX, mClipHeight);
         mBackgroundDrawable.draw(canvas);
 
+        canvas.clipRect(backgroundOffsetX, 0, mCanvasWidth + backgroundOffsetX, mClipHeight);
         super.draw(canvas);
     }
 }
