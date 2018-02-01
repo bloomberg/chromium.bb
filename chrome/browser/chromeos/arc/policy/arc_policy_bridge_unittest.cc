@@ -126,6 +126,9 @@ class ArcPolicyBridgeTestBase {
         .WillRepeatedly(ReturnRef(policy_map_));
     EXPECT_CALL(policy_service_, AddObserver(policy::POLICY_DOMAIN_CHROME, _))
         .Times(1);
+    EXPECT_CALL(policy_service_,
+                RemoveObserver(policy::POLICY_DOMAIN_CHROME, _))
+        .Times(1);
 
     // Setting up user profile for ReportCompliance() tests.
     chromeos::FakeChromeUserManager* const fake_user_manager =
@@ -345,7 +348,8 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
       "saWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Y"
       "ga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCB"
       "wbGVhc3VyZS4=\"}"
-      "]}"));
+      "],"
+      "\"credentialsConfigDisabled\":true}"));
 
   // Disable CA certificates sync.
   policy_map().Set(
