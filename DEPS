@@ -165,6 +165,9 @@ allowed_hosts = [
 ]
 
 deps = {
+  'src/chrome/browser/resources/media_router/extension/src':
+    Var('chromium_git') + '/media_router.git' + '@' + '6fc8d5201d0998eb5575dc389409d74e67b2b981',
+
   'src/buildtools':
     Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
 
