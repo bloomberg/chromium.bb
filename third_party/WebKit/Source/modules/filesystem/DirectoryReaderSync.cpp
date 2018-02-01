@@ -40,62 +40,70 @@
 namespace blink {
 
 class DirectoryReaderSync::EntriesCallbackHelper final
-    : public DirectoryReaderOnDidReadCallback {
+    : public EntriesCallbacks::OnDidGetEntriesCallback {
  public:
-  explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
-      : reader_(reader) {}
-
-  void OnDidReadDirectoryEntries(const EntryHeapVector& entries) override {
-    EntrySyncHeapVector sync_entries;
-    sync_entries.ReserveInitialCapacity(entries.size());
-    for (size_t i = 0; i < entries.size(); ++i)
-      sync_entries.UncheckedAppend(EntrySync::Create(entries[i].Get()));
-    reader_->AddEntries(sync_entries);
+  static EntriesCallbackHelper* Create(DirectoryReaderSync* reader) {
+    return new EntriesCallbackHelper(reader);
   }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
-    DirectoryReaderOnDidReadCallback::Trace(visitor);
+    EntriesCallbacks::OnDidGetEntriesCallback::Trace(visitor);
+  }
+
+  void OnSuccess(EntryHeapVector* entries) override {
+    reader_->entries_.ReserveCapacity(reader_->entries_.size() +
+                                      entries->size());
+    for (const auto& entry : *entries) {
+      reader_->entries_.UncheckedAppend(EntrySync::Create(entry.Get()));
+    }
   }
 
  private:
+  explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
+      : reader_(reader) {}
+
   Member<DirectoryReaderSync> reader_;
 };
 
 class DirectoryReaderSync::ErrorCallbackHelper final
     : public ErrorCallbackBase {
  public:
-  explicit ErrorCallbackHelper(DirectoryReaderSync* reader) : reader_(reader) {}
-
-  void Invoke(FileError::ErrorCode error) override { reader_->SetError(error); }
+  static ErrorCallbackHelper* Create(DirectoryReaderSync* reader) {
+    return new ErrorCallbackHelper(reader);
+  }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
     ErrorCallbackBase::Trace(visitor);
   }
 
+  void Invoke(FileError::ErrorCode error) override {
+    reader_->error_code_ = error;
+  }
+
  private:
+  explicit ErrorCallbackHelper(DirectoryReaderSync* reader) : reader_(reader) {}
+
   Member<DirectoryReaderSync> reader_;
 };
 
 DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* file_system,
                                          const String& full_path)
-    : DirectoryReaderBase(file_system, full_path),
-      callbacks_id_(0),
-      error_code_(FileError::kOK) {}
-
-DirectoryReaderSync::~DirectoryReaderSync() = default;
+    : DirectoryReaderBase(file_system, full_path) {}
 
 EntrySyncHeapVector DirectoryReaderSync::readEntries(
     ExceptionState& exception_state) {
   if (!callbacks_id_) {
     callbacks_id_ = Filesystem()->ReadDirectory(
-        this, full_path_, new EntriesCallbackHelper(this),
-        new ErrorCallbackHelper(this), DOMFileSystemBase::kSynchronous);
+        this, full_path_, EntriesCallbackHelper::Create(this),
+        ErrorCallbackHelper::Create(this), DOMFileSystemBase::kSynchronous);
   }
 
-  if (error_code_ == FileError::kOK && has_more_entries_ && entries_.IsEmpty())
-    file_system_->WaitForAdditionalResult(callbacks_id_);
+  if (error_code_ == FileError::kOK && has_more_entries_ &&
+      entries_.IsEmpty()) {
+    CHECK(Filesystem()->WaitForAdditionalResult(callbacks_id_));
+  }
 
   if (error_code_ != FileError::kOK) {
     FileError::ThrowDOMException(exception_state, error_code_);

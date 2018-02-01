@@ -451,7 +451,7 @@ void DOMFileSystemBase::GetDirectory(
 int DOMFileSystemBase::ReadDirectory(
     DirectoryReaderBase* reader,
     const String& path,
-    DirectoryReaderOnDidReadCallback* success_callback,
+    EntriesCallbacks::OnDidGetEntriesCallback* success_callback,
     ErrorCallbackBase* error_callback,
     SynchronousType synchronous_type) {
   if (!FileSystem()) {

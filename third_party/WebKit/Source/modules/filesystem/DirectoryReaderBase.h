@@ -68,17 +68,6 @@ class DirectoryReaderBase : public ScriptWrappable {
   bool has_more_entries_;
 };
 
-class DirectoryReaderOnDidReadCallback
-    : public GarbageCollectedFinalized<DirectoryReaderOnDidReadCallback> {
- public:
-  virtual ~DirectoryReaderOnDidReadCallback() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
-  virtual void OnDidReadDirectoryEntries(const EntryHeapVector&) = 0;
-
- protected:
-  DirectoryReaderOnDidReadCallback() = default;
-};
-
 }  // namespace blink
 
 #endif  // DirectoryReaderBase_h

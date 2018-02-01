@@ -88,38 +88,6 @@ bool FileSystemCallbacksBase::ShouldScheduleCallback() const {
          execution_context_->IsContextPaused();
 }
 
-template <typename CB, typename CBArg>
-void FileSystemCallbacksBase::HandleEventOrScheduleCallback(CB* callback,
-                                                            CBArg* arg) {
-  DCHECK(callback);
-  if (callback) {
-    if (ShouldScheduleCallback()) {
-      DOMFileSystem::ScheduleCallback(
-          execution_context_.Get(),
-          WTF::Bind(&CB::handleEvent, WrapPersistent(callback),
-                    WrapPersistent(arg)));
-    } else {
-      callback->handleEvent(arg);
-    }
-  }
-  execution_context_.Clear();
-}
-
-template <typename CB>
-void FileSystemCallbacksBase::HandleEventOrScheduleCallback(CB* callback) {
-  DCHECK(callback);
-  if (callback) {
-    if (ShouldScheduleCallback()) {
-      DOMFileSystem::ScheduleCallback(
-          execution_context_.Get(),
-          WTF::Bind(&CB::handleEvent, WrapPersistent(callback)));
-    } else {
-      callback->handleEvent();
-    }
-  }
-  execution_context_.Clear();
-}
-
 template <typename CallbackMemberFunction,
           typename CallbackClass,
           typename... Args>
@@ -213,7 +181,7 @@ void EntryCallbacks::DidSucceed() {
 // EntriesCallbacks -----------------------------------------------------------
 
 std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::Create(
-    DirectoryReaderOnDidReadCallback* success_callback,
+    OnDidGetEntriesCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
     DirectoryReaderBase* directory_reader,
@@ -222,12 +190,11 @@ std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::Create(
       success_callback, error_callback, context, directory_reader, base_path));
 }
 
-EntriesCallbacks::EntriesCallbacks(
-    DirectoryReaderOnDidReadCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    DirectoryReaderBase* directory_reader,
-    const String& base_path)
+EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
+                                   ErrorCallbackBase* error_callback,
+                                   ExecutionContext* context,
+                                   DirectoryReaderBase* directory_reader,
+                                   const String& base_path)
     : FileSystemCallbacksBase(error_callback,
                               directory_reader->Filesystem(),
                               context),
@@ -239,23 +206,24 @@ EntriesCallbacks::EntriesCallbacks(
 
 void EntriesCallbacks::DidReadDirectoryEntry(const String& name,
                                              bool is_directory) {
-  if (is_directory)
-    entries_.push_back(
-        DirectoryEntry::Create(directory_reader_->Filesystem(),
-                               DOMFilePath::Append(base_path_, name)));
-  else
-    entries_.push_back(
-        FileEntry::Create(directory_reader_->Filesystem(),
-                          DOMFilePath::Append(base_path_, name)));
+  DOMFileSystemBase* filesystem = directory_reader_->Filesystem();
+  const String& path = DOMFilePath::Append(base_path_, name);
+  Entry* entry =
+      is_directory
+          ? static_cast<Entry*>(DirectoryEntry::Create(filesystem, path))
+          : static_cast<Entry*>(FileEntry::Create(filesystem, path));
+  entries_.push_back(entry);
 }
 
 void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   directory_reader_->SetHasMoreEntries(has_more);
-  EntryHeapVector entries;
-  entries.swap(entries_);
-  // FIXME: delay the callback iff shouldScheduleCallback() is true.
-  if (success_callback_)
-    success_callback_->OnDidReadDirectoryEntries(entries);
+  EntryHeapVector* entries = new EntryHeapVector(std::move(entries_));
+
+  if (!success_callback_)
+    return;
+
+  InvokeOrScheduleCallback(&OnDidGetEntriesCallback::OnSuccess,
+                           success_callback_.Get(), entries);
 }
 
 // FileSystemCallbacks --------------------------------------------------------
