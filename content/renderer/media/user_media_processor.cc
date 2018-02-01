@@ -636,15 +636,15 @@ void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
   // Only stop the device if the device is not used in another MediaStream.
   for (auto it = audio_devices.begin(); it != audio_devices.end(); ++it) {
     if (!FindLocalSource(*it)) {
-      GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_,
-                                                       it->id);
+      GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_, it->id,
+                                                       it->session_id);
     }
   }
 
   for (auto it = video_devices.begin(); it != video_devices.end(); ++it) {
     if (!FindLocalSource(*it)) {
-      GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_,
-                                                       it->id);
+      GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_, it->id,
+                                                       it->session_id);
     }
   }
 }
@@ -1161,8 +1161,9 @@ void UserMediaProcessor::OnLocalSourceStopped(
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*>(source.GetExtraData());
   media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
-  GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_,
-                                                   source_impl->device().id);
+  GetMediaStreamDispatcherHost()->StopStreamDevice(
+      render_frame_id_, source_impl->device().id,
+      source_impl->device().session_id);
 }
 
 void UserMediaProcessor::StopLocalSource(
@@ -1175,8 +1176,9 @@ void UserMediaProcessor::StopLocalSource(
 
   if (notify_dispatcher) {
     media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
-    GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_,
-                                                     source_impl->device().id);
+    GetMediaStreamDispatcherHost()->StopStreamDevice(
+        render_frame_id_, source_impl->device().id,
+        source_impl->device().session_id);
   }
 
   source_impl->ResetSourceStoppedCallback();

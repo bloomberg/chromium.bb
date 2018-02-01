@@ -76,7 +76,7 @@ interface MediaStreamDispatcherHost {
   CancelRequest(int32 render_frame_id, int32 request_id);
 
   // Closes a stream device that has been opened by GenerateStream.
-  StopStreamDevice(int32 render_frame_id, string device_id);
+  StopStreamDevice(int32 render_frame_id, string device_id, int32 session_id);
 
   // Opens a device identified by |device_id|.
   OpenDevice(int32 render_frame_id, int32 request_id, string device_id,

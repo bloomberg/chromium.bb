@@ -68,15 +68,16 @@ void MockMojoMediaStreamDispatcherHost::CancelRequest(int32_t render_frame_id,
 
 void MockMojoMediaStreamDispatcherHost::StopStreamDevice(
     int32_t render_frame_id,
-    const std::string& device_id) {
+    const std::string& device_id,
+    int32_t session_id) {
   for (const MediaStreamDevice& device : audio_devices_) {
-    if (device.id == device_id) {
+    if (device.id == device_id && device.session_id == session_id) {
       ++stop_audio_device_counter_;
       return;
     }
   }
   for (const MediaStreamDevice& device : video_devices_) {
-    if (device.id == device_id) {
+    if (device.id == device_id && device.session_id == session_id) {
       ++stop_video_device_counter_;
       return;
     }
