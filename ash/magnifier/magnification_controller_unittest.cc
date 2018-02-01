@@ -4,8 +4,10 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -13,6 +15,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -52,6 +55,21 @@ class TextInputView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TextInputView);
 };
 
+class TouchEventWatcher : public ui::EventHandler {
+ public:
+  TouchEventWatcher() = default;
+  ~TouchEventWatcher() override = default;
+
+  void OnTouchEvent(ui::TouchEvent* touch_event) override {
+    touch_events.push_back(*touch_event);
+  }
+
+  std::vector<ui::TouchEvent> touch_events;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TouchEventWatcher);
+};
+
 }  // namespace
 
 class MagnificationControllerTest : public AshTestBase {
@@ -64,11 +82,19 @@ class MagnificationControllerTest : public AshTestBase {
     UpdateDisplay(base::StringPrintf("%dx%d", kRootWidth, kRootHeight));
 
     GetMagnificationController()->DisableMoveMagnifierDelayForTesting();
+
+    touch_event_watcher_ = std::make_unique<TouchEventWatcher>();
+    GetRootWindow()->PrependPreTargetHandler(touch_event_watcher_.get());
   }
 
-  void TearDown() override { AshTestBase::TearDown(); }
+  void TearDown() override {
+    GetRootWindow()->RemovePreTargetHandler(touch_event_watcher_.get());
+    AshTestBase::TearDown();
+  }
 
  protected:
+  std::unique_ptr<TouchEventWatcher> touch_event_watcher_;
+
   aura::Window* GetRootWindow() const { return Shell::GetPrimaryRootWindow(); }
 
   std::string GetHostMouseLocation() {
@@ -126,6 +152,37 @@ class MagnificationControllerTest : public AshTestBase {
   void FocusOnTextInputView() {
     DCHECK(text_input_view_);
     text_input_view_->FocusOnTextInput();
+  }
+
+  void DispatchTouchEvent(ui::EventType event_type,
+                          const gfx::Point& point,
+                          const base::TimeTicks& time,
+                          const ui::PointerDetails& pointer_details) {
+    ui::TouchEvent event(event_type, point, time, pointer_details);
+    GetEventGenerator().Dispatch(&event);
+  }
+
+  void PerformTwoFingersScrollGesture() {
+    base::TimeTicks time = base::TimeTicks::Now();
+    ui::PointerDetails pointer_details1(
+        ui::EventPointerType::POINTER_TYPE_TOUCH, 0);
+    ui::PointerDetails pointer_details2(
+        ui::EventPointerType::POINTER_TYPE_TOUCH, 1);
+
+    DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(150, 10), time,
+                       pointer_details1);
+    DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(150, 20), time,
+                       pointer_details2);
+
+    DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(200, 10), time,
+                       pointer_details1);
+    DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(200, 20), time,
+                       pointer_details2);
+
+    DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(200, 10), time,
+                       pointer_details1);
+    DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(200, 20), time,
+                       pointer_details2);
   }
 
  private:
@@ -736,6 +793,187 @@ TEST_F(MagnificationControllerTest, AdjustScaleFromScroll) {
 
   // And the mapping is not linear.
   EXPECT_NE(21.0f / 2.0f, GetMagnificationController()->GetScaleFromScroll(.5));
+}
+
+// Performs pinch zoom and confirm that zoom level is changed. This test case
+// also tests touch event handling.
+TEST_F(MagnificationControllerTest, PinchZoom) {
+  // TODO(yawano): remove this once the flag is removed.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshNewTouchSupportForScreenMagnification);
+  GetMagnificationController()->AddEventRewriterForTesting();
+
+  ASSERT_EQ(0u, touch_event_watcher_->touch_events.size());
+
+  GetMagnificationController()->SetEnabled(true);
+  ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  ui::PointerDetails pointer_details1(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      0);
+  ui::PointerDetails pointer_details2(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      1);
+
+  // Simulate pinch gesture.
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(900, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(1100, 10), time,
+                     pointer_details2);
+
+  ASSERT_EQ(2u, touch_event_watcher_->touch_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, touch_event_watcher_->touch_events[0].type());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, touch_event_watcher_->touch_events[1].type());
+
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(850, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1150, 10), time,
+                     pointer_details2);
+
+  // Expect that event watcher receives touch cancelled events. Magnification
+  // controller should cancel existing touches when it detects interested
+  // gestures.
+  ASSERT_EQ(4u, touch_event_watcher_->touch_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_CANCELLED,
+            touch_event_watcher_->touch_events[2].type());
+  EXPECT_EQ(ui::ET_TOUCH_CANCELLED,
+            touch_event_watcher_->touch_events[3].type());
+
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(800, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1200, 10), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(800, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(1200, 10), time,
+                     pointer_details2);
+
+  // All events are consumed by the controller after it detects gesture.
+  EXPECT_EQ(4u, touch_event_watcher_->touch_events.size());
+
+  EXPECT_LT(2.0f, GetMagnificationController()->GetScale());
+
+  float ratio = GetMagnificationController()->GetScale() / 2.0f;
+
+  // Peform pinch gesture again with 4.0x.
+  GetMagnificationController()->SetScale(4.0f, false /* animate */);
+
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(900, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(1100, 10), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(800, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1200, 10), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(800, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(1200, 10), time,
+                     pointer_details2);
+
+  float ratio_zoomed = GetMagnificationController()->GetScale() / 4.0f;
+
+  // Ratio of zoom level change should be the same regardless of current zoom
+  // level.
+  EXPECT_GT(0.01f, std::abs(ratio - ratio_zoomed));
+}
+
+TEST_F(MagnificationControllerTest, TwoFingersScroll) {
+  // TODO(yawano): remove this once the flag is removed.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshNewTouchSupportForScreenMagnification);
+  GetMagnificationController()->AddEventRewriterForTesting();
+
+  GetMagnificationController()->SetEnabled(true);
+  ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  const gfx::Point initial_position =
+      GetMagnificationController()->GetWindowPosition();
+  PerformTwoFingersScrollGesture();
+  const gfx::Point moved_position =
+      GetMagnificationController()->GetWindowPosition();
+
+  // Confirm that two fingers scroll gesture moves viewport.
+  EXPECT_GT(initial_position.x(), moved_position.x());
+  EXPECT_EQ(initial_position.y(), moved_position.y());
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  int32_t delta = initial_position.x() - moved_position.x();
+
+  // Perform the same gesture with 4.0x.
+  GetMagnificationController()->SetScale(4.0f, false /* animate */);
+
+  const gfx::Point initial_position_zoomed =
+      GetMagnificationController()->GetWindowPosition();
+  PerformTwoFingersScrollGesture();
+  const gfx::Point moved_position_zoomed =
+      GetMagnificationController()->GetWindowPosition();
+
+  EXPECT_GT(initial_position_zoomed.x(), moved_position_zoomed.x());
+  EXPECT_EQ(initial_position_zoomed.y(), moved_position_zoomed.y());
+  EXPECT_EQ(4.0f, GetMagnificationController()->GetScale());
+
+  int32_t delta_zoomed =
+      initial_position_zoomed.x() - moved_position_zoomed.x();
+
+  // Scrolled delta becomes half with 4.0x compared to 2.0x.
+  EXPECT_EQ(delta, delta_zoomed * 2);
+}
+
+TEST_F(MagnificationControllerTest, GestureLock) {
+  // TODO(yawano): remove this once flag is removed.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshNewTouchSupportForScreenMagnification);
+  GetMagnificationController()->AddEventRewriterForTesting();
+
+  GetMagnificationController()->SetEnabled(true);
+  ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  // Perform pinch zoom gesture.
+  base::TimeTicks time = base::TimeTicks::Now();
+  ui::PointerDetails pointer_details1(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      0);
+  ui::PointerDetails pointer_details2(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      1);
+
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(900, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(1100, 10), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(800, 10), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1200, 10), time,
+                     pointer_details2);
+
+  // Confirm that zoom level has changed.
+  float zoomed_scale = GetMagnificationController()->GetScale();
+  EXPECT_LT(2.0f, zoomed_scale);
+
+  // Confirms that zoom level has changed more than threshold to lock gesture
+  // type.
+  ASSERT_LT(0.2f, zoomed_scale - 2.0f);
+
+  gfx::Point initial_position =
+      GetMagnificationController()->GetWindowPosition();
+
+  // Perform scroll gesture.
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(800, 100), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1200, 100), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(800, 100), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(1200, 100), time,
+                     pointer_details2);
+
+  // Confirm that nothing happens.
+  EXPECT_EQ(initial_position,
+            GetMagnificationController()->GetWindowPosition());
+  EXPECT_EQ(zoomed_scale, GetMagnificationController()->GetScale());
 }
 
 }  // namespace ash

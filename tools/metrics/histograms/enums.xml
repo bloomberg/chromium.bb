@@ -26181,6 +26181,8 @@ from previous Chrome versions.
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
   <int value="266322815" label="ChromeModernDesign:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
+  <int value="268535107"
+      label="ash-new-touch-support-for-screen-magnification"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="272631627" label="BookmarkAppsMac:enabled"/>
   <int value="274103741" label="enable-ntp-popular-sites"/>
