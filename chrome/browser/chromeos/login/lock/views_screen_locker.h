@@ -84,6 +84,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void OnAllowedInputMethodsChanged();
   void OnDevChannelInfoUpdated();
 
+  // Notifies the session manager that the lock animations are complete.
+  void NotifyChromeLockAnimationsComplete();
+
   std::unique_ptr<UserSelectionScreenProxy> user_selection_screen_proxy_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
 
