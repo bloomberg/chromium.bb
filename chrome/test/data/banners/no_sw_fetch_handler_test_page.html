@@ -1,11 +1,15 @@
 <html>
   <head>
-    <link rel="manifest" href="manifest.json" />
+    <title>Web app banner test page</title>
+    <script src="main.js"></script>
     <script>
-      navigator.serviceWorker.register('service_worker_no_fetch_handler.js');
+      // If a "manifest=/path/to/manifest.json" query argument is provided to
+      // the URL accessing this page, that path is injected as the manifest tag.
+      // Otherwise, "manifest.json" is used as the manifest tag.
+      addManifestLinkTag();
     </script>
   </head>
-  <body>
-    Page with a service worker missing a fetch handler.
+  <body onload="initializeWithWorker('service_worker_no_fetch_handler.js')">
+    Do-nothing page with a manifest and a service worker missing a fetch handler.
   </body>
 </html>

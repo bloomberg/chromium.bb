@@ -219,7 +219,7 @@ public class WebappNavigationTest {
         ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), inScopeUrl);
         Assert.assertTrue(
                 mActivityTestRule.runJavaScriptCodeInCurrentTab("document.body.textContent")
-                        .contains("Do-nothing page with a service worker"));
+                        .contains("Do-nothing page with a manifest and a service worker."));
     }
 
     /**

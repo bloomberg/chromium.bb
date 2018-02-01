@@ -494,7 +494,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     NavigateAndRunInstallableManager(browser(), tester.get(),
                                      GetManifestParams(),
-                                     "/banners/play_app_test_page.html");
+                                     GetURLOfPageWithServiceWorkerAndManifest(
+                                         "/banners/play_app_manifest.json"));
     run_loop.Run();
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
