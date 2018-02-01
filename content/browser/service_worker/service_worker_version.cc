@@ -25,13 +25,13 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/common/origin_trials/trial_policy_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -197,57 +197,39 @@ CompleteProviderHostPreparation(
   return info;
 }
 
-void DidNavigateInPaymentHandlerWindow(
+void OnOpenWindowFinished(
+    blink::mojom::ServiceWorkerHost::OpenNewTabCallback callback,
+    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(
+        nullptr /* client */,
+        std::string("Something went wrong while trying to open the window."));
+    return;
+  }
+
+  DCHECK(client_info);
+  std::move(callback).Run(std::move(client_info),
+                          base::nullopt /* error_msg */);
+}
+
+void DidShowPaymentHandlerWindow(
     const GURL& url,
     const base::WeakPtr<ServiceWorkerContextCore>& context,
-    service_worker_client_utils::NavigationCallback callback,
+    blink::mojom::ServiceWorkerHost::OpenPaymentHandlerWindowCallback callback,
     bool success,
     int render_process_id,
     int render_frame_id) {
   if (success) {
     service_worker_client_utils::DidNavigate(
-        context, url.GetOrigin(), std::move(callback), render_process_id,
-        render_frame_id);
+        context, url.GetOrigin(),
+        base::BindOnce(&OnOpenWindowFinished, std::move(callback)),
+        render_process_id, render_frame_id);
   } else {
-    std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED,
-                            blink::mojom::ServiceWorkerClientInfo::New());
-  }
-}
-
-using PaymentHandlerOpenWindowCallback =
-    base::OnceCallback<void(bool, int, int)>;
-
-void RunPaymentHandlerOpenWindowCallbackOnIO(
-    PaymentHandlerOpenWindowCallback callback,
-    bool success,
-    int render_process_id,
-    int render_frame_id) {
-  std::move(callback).Run(success, render_process_id, render_frame_id);
-}
-
-void OnOpenPaymentHandlerWindowOpenResponse(
-    PaymentHandlerOpenWindowCallback callback,
-    bool success,
-    int render_process_id,
-    int render_frame_id) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&RunPaymentHandlerOpenWindowCallbackOnIO,
-                     std::move(callback), success, render_process_id,
-                     render_frame_id));
-}
-
-void ShowPaymentHandlerWindowOnUI(
-    ContentBrowserClient* browser,
-    const scoped_refptr<ServiceWorkerContextWrapper>& context_wrapper,
-    const GURL& url,
-    PaymentHandlerOpenWindowCallback callback,
-    base::OnceCallback<void(void)> fallback) {
-  if (!browser->ShowPaymentHandlerWindow(
-          context_wrapper->storage_partition()->browser_context(), url,
-          base::BindOnce(&OnOpenPaymentHandlerWindowOpenResponse,
-                         std::move(callback)))) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, std::move(fallback));
+    OnOpenWindowFinished(std::move(callback), SERVICE_WORKER_ERROR_FAILED,
+                         blink::mojom::ServiceWorkerClientInfo::New());
   }
 }
 
@@ -1056,9 +1038,6 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
 bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenNewTab, OnOpenNewTab)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenPaymentHandlerWindow,
-                        OnOpenPaymentHandlerWindow)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToClient,
                         OnPostMessageToClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
@@ -1154,6 +1133,32 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
   service_worker_client_utils::GetClient(provider_host, std::move(callback));
 }
 
+void ServiceWorkerVersion::OpenNewTab(const GURL& url,
+                                      OpenNewTabCallback callback) {
+  OpenWindow(url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+             std::move(callback));
+}
+
+void ServiceWorkerVersion::OpenPaymentHandlerWindow(
+    const GURL& url,
+    OpenPaymentHandlerWindowCallback callback) {
+  // Just respond failure if we are shutting down.
+  if (!context_) {
+    std::move(callback).Run(
+        nullptr /* client */,
+        std::string("The service worker system is shutting down."));
+    return;
+  }
+
+  PaymentHandlerSupport::ShowPaymentHandlerWindow(
+      url, context_.get(),
+      base::BindOnce(&DidShowPaymentHandlerWindow, url, context_),
+      base::BindOnce(&ServiceWorkerVersion::OpenWindow,
+                     weak_factory_.GetWeakPtr(), url,
+                     WindowOpenDisposition::NEW_POPUP),
+      std::move(callback));
+}
+
 void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
   skip_waiting_ = true;
 
@@ -1209,6 +1214,45 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
     listener.OnCachedMetadataUpdated(this, 0);
 }
 
+void ServiceWorkerVersion::OpenWindow(GURL url,
+                                      WindowOpenDisposition disposition,
+                                      OpenNewTabCallback callback) {
+  // Just respond failure if we are shutting down.
+  if (!context_) {
+    std::move(callback).Run(
+        nullptr /* client */,
+        std::string("The service worker system is shutting down."));
+    return;
+  }
+
+  if (!url.is_valid()) {
+    mojo::ReportBadMessage(
+        "Received unexpected invalid URL from renderer process.");
+    binding_.Close();
+    return;
+  }
+
+  // The renderer treats all URLs in the about: scheme as being about:blank.
+  // Canonicalize about: URLs to about:blank.
+  if (url.SchemeIs(url::kAboutScheme))
+    url = GURL(url::kAboutBlankURL);
+
+  // Reject requests for URLs that the process is not allowed to access. It's
+  // possible to receive such requests since the renderer-side checks are
+  // slightly different. For example, the view-source scheme will not be
+  // filtered out by Blink.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          embedded_worker_->process_id(), url)) {
+    std::move(callback).Run(nullptr /* client */,
+                            url.spec() + " cannot be opened.");
+    return;
+  }
+
+  service_worker_client_utils::OpenWindow(
+      url, script_url_, embedded_worker_->process_id(), context_, disposition,
+      base::BindOnce(&OnOpenWindowFinished, std::move(callback)));
+}
+
 void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
@@ -1247,83 +1291,6 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
   }
   NOTREACHED() << "Unexpected status: " << status;
   return false;
-}
-
-void ServiceWorkerVersion::OnOpenNewTab(int request_id, const GURL& url) {
-  OnOpenWindow(request_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-}
-
-void ServiceWorkerVersion::OnOpenPaymentHandlerWindow(int request_id,
-                                                      const GURL& url) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &ShowPaymentHandlerWindowOnUI, GetContentClient()->browser(),
-          base::WrapRefCounted(context_->wrapper()), url,
-          base::BindOnce(
-              &DidNavigateInPaymentHandlerWindow, url, context_,
-              base::BindOnce(&ServiceWorkerVersion::OnOpenWindowFinished,
-                             weak_factory_.GetWeakPtr(), request_id)),
-          base::BindOnce(&ServiceWorkerVersion::OnOpenWindow,
-                         weak_factory_.GetWeakPtr(), request_id, url,
-                         WindowOpenDisposition::NEW_POPUP)));
-}
-
-void ServiceWorkerVersion::OnOpenWindow(int request_id,
-                                        GURL url,
-                                        WindowOpenDisposition disposition) {
-  // Just abort if we are shutting down.
-  if (!context_)
-    return;
-
-  if (!url.is_valid()) {
-    DVLOG(1) << "Received unexpected invalid URL from renderer process.";
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&KillEmbeddedWorkerProcess,
-                                           embedded_worker_->process_id()));
-    return;
-  }
-
-  // The renderer treats all URLs in the about: scheme as being about:blank.
-  // Canonicalize about: URLs to about:blank.
-  if (url.SchemeIs(url::kAboutScheme))
-    url = GURL(url::kAboutBlankURL);
-
-  // Reject requests for URLs that the process is not allowed to access. It's
-  // possible to receive such requests since the renderer-side checks are
-  // slightly different. For example, the view-source scheme will not be
-  // filtered out by Blink.
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          embedded_worker_->process_id(), url)) {
-    embedded_worker_->SendIpcMessage(ServiceWorkerMsg_OpenWindowError(
-        request_id, url.spec() + " cannot be opened."));
-    return;
-  }
-
-  service_worker_client_utils::OpenWindow(
-      url, script_url_, embedded_worker_->process_id(), context_, disposition,
-      base::BindOnce(&ServiceWorkerVersion::OnOpenWindowFinished,
-                     weak_factory_.GetWeakPtr(), request_id));
-}
-
-void ServiceWorkerVersion::OnOpenWindowFinished(
-    int request_id,
-    ServiceWorkerStatusCode status,
-    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (running_status() != EmbeddedWorkerStatus::RUNNING)
-    return;
-
-  if (status != SERVICE_WORKER_OK) {
-    embedded_worker_->SendIpcMessage(ServiceWorkerMsg_OpenWindowError(
-        request_id, "Something went wrong while trying to open the window."));
-    return;
-  }
-
-  DCHECK(client_info);
-  embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_OpenWindowResponse(request_id, *client_info));
 }
 
 void ServiceWorkerVersion::OnPostMessageToClient(

@@ -122,16 +122,6 @@ IPC_MESSAGE_ROUTED3(
     base::string16 /* message */,
     std::vector<blink::MessagePortChannel> /* sent_message_ports */)
 
-// Ask the browser to open a tab/window (renderer->browser).
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenNewTab,
-                    int /* request_id */,
-                    GURL /* url */)
-
-// Ask the browser to open a Payment Handler window (renderer->browser).
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenPaymentHandlerWindow,
-                    int /* request_id */,
-                    GURL /* url */)
-
 // Ask the browser to focus a client (renderer->browser).
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
                     int /* request_id */,
@@ -156,16 +146,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* thread_id */,
                      int /* handle_id */,
                      blink::mojom::ServiceWorkerState)
-
-// Sent via EmbeddedWorker as a response of OpenWindow.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerClientInfo /* client */)
-
-// Sent via EmbeddedWorker as an error response of OpenWindow.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
-                     int /* request_id */,
-                     std::string /* message */ )
 
 // Sent via EmbeddedWorker as a response of FocusClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,

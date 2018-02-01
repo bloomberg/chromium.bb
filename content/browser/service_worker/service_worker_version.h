@@ -632,28 +632,21 @@ class CONTENT_EXPORT ServiceWorkerVersion
                   GetClientsCallback callback) override;
   void GetClient(const std::string& client_uuid,
                  GetClientCallback callback) override;
+  void OpenNewTab(const GURL& url, OpenNewTabCallback callback) override;
+  void OpenPaymentHandlerWindow(
+      const GURL& url,
+      OpenPaymentHandlerWindowCallback callback) override;
   void SkipWaiting(SkipWaitingCallback callback) override;
 
   void OnSetCachedMetadataFinished(int64_t callback_id,
                                    size_t size,
                                    int result);
   void OnClearCachedMetadataFinished(int64_t callback_id, int result);
+  void OpenWindow(GURL url,
+                  WindowOpenDisposition disposition,
+                  OpenNewTabCallback callback);
 
   // Message handlers.
-
-  // Currently used for Clients.openWindow() only.
-  void OnOpenNewTab(int request_id, const GURL& url);
-
-  // Currently used for PaymentRequestEvent.openWindow() only.
-  void OnOpenPaymentHandlerWindow(int request_id, const GURL& url);
-
-  void OnOpenWindow(int request_id,
-                    GURL url,
-                    WindowOpenDisposition disposition);
-  void OnOpenWindowFinished(
-      int request_id,
-      ServiceWorkerStatusCode status,
-      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   void OnPostMessageToClient(
       const std::string& client_uuid,
