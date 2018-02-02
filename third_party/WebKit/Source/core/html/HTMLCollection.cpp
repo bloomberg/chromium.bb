@@ -96,7 +96,6 @@ static NodeListRootType RootTypeFromCollectionType(const ContainerNode& owner,
     case kWindowNamedItems:
     case kDocumentNamedItems:
     case kDocumentAllNamedItems:
-      return NodeListRootType::kTreeScope;
     case kClassCollectionType:
     case kTagCollectionType:
     case kTagCollectionNSType:
