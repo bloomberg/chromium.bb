@@ -163,10 +163,10 @@ void ContentSetting::HandleFunction(const std::string& method_name,
         // Deprecated settings are always set to "allow". Populate the result to
         // avoid breaking extensions.
         v8::Local<v8::Object> object = v8::Object::New(isolate);
-        v8::Maybe<bool> result = object->DefineOwnProperty(
+        v8::Maybe<bool> result = object->CreateDataProperty(
             context, gin::StringToSymbol(isolate, "setting"),
             gin::StringToSymbol(isolate, "allow"));
-        // Since we just defined this object, DefineOwnProperty() should never
+        // Since we just defined this object, CreateDataProperty() should never
         // fail.
         CHECK(result.ToChecked());
         args.push_back(object);
