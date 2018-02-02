@@ -202,19 +202,20 @@ class DownloadTests(unittest.TestCase):
     shutil.rmtree(self.temp_dir)
 
   def test_enumerate_files_non_recursive(self):
-    queue_size = download_from_google_storage.enumerate_work_queue(
-        self.base_path, self.queue, True, False, False, None, False, False)
+    for item in download_from_google_storage.enumerate_input(
+        self.base_path, True, False, False, None, False, False):
+      self.queue.put(item)
     expected_queue = [
         ('e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe',
             os.path.join(self.base_path, 'rootfolder_text.txt')),
        ('7871c8e24da15bad8b0be2c36edc9dc77e37727f',
             os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt'))]
     self.assertEqual(sorted(expected_queue), sorted(self.queue.queue))
-    self.assertEqual(queue_size, 2)
 
   def test_enumerate_files_recursive(self):
-    queue_size = download_from_google_storage.enumerate_work_queue(
-        self.base_path, self.queue, True, True, False, None, False, False)
+    for item in download_from_google_storage.enumerate_input(
+        self.base_path, True, True, False, None, False, False):
+      self.queue.put(item)
     expected_queue = [
         ('e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe',
             os.path.join(self.base_path, 'rootfolder_text.txt')),
@@ -223,7 +224,6 @@ class DownloadTests(unittest.TestCase):
         ('b5415aa0b64006a95c0c409182e628881d6d6463',
             os.path.join(self.base_path, 'subfolder', 'subfolder_text.txt'))]
     self.assertEqual(sorted(expected_queue), sorted(self.queue.queue))
-    self.assertEqual(queue_size, 3)
 
   def test_download_worker_single_file(self):
     sha1_hash = self.lorem_ipsum_sha1
@@ -337,7 +337,7 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
-    self.gsutil.add_expected(0, '', '')
+    self.gsutil.add_expected(0, '', '')  # ls
     self.gsutil.add_expected(101, '', 'Test error message.')
     code = download_from_google_storage.download_from_google_storage(
         input_filename=sha1_hash,
@@ -392,6 +392,7 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
+    self.gsutil.add_expected(0, '', '')  # version
     self.gsutil.add_expected(0, '', '')  # ls
     self.gsutil.add_expected(0, '', '', lambda: shutil.copyfile(
         self.lorem_ipsum, output_filename))  # cp
@@ -410,6 +411,7 @@ class DownloadTests(unittest.TestCase):
         auto_platform=False,
         extract=False)
     expected_calls = [
+        ('check_call', ('version',)),
         ('check_call',
             ('ls', input_filename)),
         ('check_call',
