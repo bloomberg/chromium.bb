@@ -12,10 +12,6 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
-#import "ios/web/public/test/http_server/html_response_provider.h"
-#import "ios/web/public/test/http_server/html_response_provider_impl.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -27,8 +23,11 @@
 #import "ios/web/test/web_int_test.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
+#include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -43,6 +42,7 @@ namespace web {
 
 namespace {
 
+const char kTestFormValue[] = "inttestvalue";
 const char kTestPageText[] = "landing!";
 const char kExpectedMimeType[] = "text/html";
 
@@ -113,8 +113,7 @@ ACTION_P3(VerifyErrorFinishedContext, web_state, url, context) {
   EXPECT_FALSE((*context)->IsPost());
   // The error code will be different on bots and for local runs. Allow both.
   NSInteger error_code = (*context)->GetError().code;
-  EXPECT_TRUE(error_code == NSURLErrorCannotFindHost ||
-              error_code == NSURLErrorNotConnectedToInternet);
+  EXPECT_TRUE(error_code == NSURLErrorNetworkConnectionLost);
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   ASSERT_FALSE(web_state->IsLoading());
@@ -356,9 +355,26 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
   MOCK_METHOD2(ShouldAllowResponse, bool(NSURLResponse*, bool for_main_frame));
 };
 
+// Responds with a page that contains an html form.
+std::unique_ptr<net::test_server::HttpResponse> HandleFormPage(
+    const net::test_server::HttpRequest& request) {
+  if (request.GetURL().path() == "/form") {
+    auto result = std::make_unique<net::test_server::BasicHttpResponse>();
+    result->set_content_type("text/html");
+    result->set_content(base::StringPrintf(
+        "<form method='post' id='form' action='echo'>"
+        "  <input type=''text' name='inttestname' value='%s'>"
+        "</form>"
+        "%s",
+        kTestFormValue, kTestPageText));
+
+    return std::move(result);
+  }
+  return nullptr;
+}
+
 }  // namespace
 
-using test::HttpServer;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
@@ -386,6 +402,7 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
     web_state_impl->GetWebController().nativeProvider = provider_;
 
     test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
+    test_server_->RegisterDefaultHandler(base::BindRepeating(&HandleFormPage));
     RegisterDefaultHandlers(test_server_.get());
     ASSERT_TRUE(test_server_->Start());
   }
@@ -410,10 +427,7 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
 
 // Tests successful navigation to a new page.
 TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -436,10 +450,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
 // any page loads (related to restoring cached session). This is a regression
 // test for crbug.com/781916.
 TEST_F(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Only expect one set of load events from the first LoadUrl(), not subsequent
   // SetWebUsageEnabled(true) calls. Web usage is already enabled, so the
@@ -465,7 +476,7 @@ TEST_F(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
 
 // Tests failed navigation to a new page.
 TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
-  const GURL url = HttpServer::MakeUrl("unsupported://chromium.test");
+  const GURL url = test_server_->GetURL("/close-socket");
 
   // Perform a navigation to url with unsupported scheme, which will fail.
   NavigationContext* context = nullptr;
@@ -489,10 +500,7 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
 
 // Tests web page reload navigation.
 TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -533,10 +541,7 @@ TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
 
 // Tests user-initiated hash change.
 TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -555,7 +560,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   ASSERT_TRUE(LoadUrl(url));
 
   // Perform same-document navigation.
-  const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
+  const GURL hash_url = test_server_->GetURL("/echo#1");
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
@@ -599,10 +604,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
 
 // Tests renderer-initiated hash change.
 TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -621,7 +623,7 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
   ASSERT_TRUE(LoadUrl(url));
 
   // Perform same-page navigation using JavaScript.
-  const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
+  const GURL hash_url = test_server_->GetURL("/echo#1");
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
@@ -643,10 +645,7 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
 
 // Tests state change.
 TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -665,7 +664,7 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   ASSERT_TRUE(LoadUrl(url));
 
   // Perform push state using JavaScript.
-  const GURL push_url = HttpServer::MakeUrl("http://chromium.test/test.html");
+  const GURL push_url = test_server_->GetURL("/test.html");
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
           web_state(), push_url, &context,
@@ -681,7 +680,7 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   ExecuteJavaScript(@"window.history.pushState('', 'Test', 'test.html')");
 
   // Perform replace state using JavaScript.
-  const GURL replace_url = HttpServer::MakeUrl("http://chromium.test/1.html");
+  const GURL replace_url = test_server_->GetURL("/1.html");
   // No ShouldAllowRequest callbacks for same-document push state navigations.
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
@@ -747,10 +746,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NativeContentReload) {
 
 // Tests successful navigation to a new page with post HTTP method.
 TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  responses[url] = kTestPageText;
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -775,19 +771,13 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
   params.post_data = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
   params.extra_headers = @{@"Content-Type" : @"text/html"};
   ASSERT_TRUE(LoadWithParams(params));
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), "foo"));
 }
 
 // Tests successful navigation to a new page with post HTTP method.
 TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  const GURL action = HttpServer::MakeUrl("http://action.test");
-  std::map<GURL, std::string> responses;
-  responses[url] =
-      base::StringPrintf("<form method='post' id='form' action='%s'></form>%s",
-                         action.spec().c_str(), kTestPageText);
-  responses[action] = "arrived!";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/form");
+  const GURL action = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -818,19 +808,13 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"document.getElementById('form').submit();");
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestFormValue));
 }
 
 // Tests successful reload of a page returned for post request.
 TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  const GURL action = HttpServer::MakeUrl("http://action.test");
-  responses[url] =
-      base::StringPrintf("<form method='post' id='form' action='%s'></form>%s",
-                         action.spec().c_str(), kTestPageText);
-  responses[action] = "arrived!";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/form");
+  const GURL action = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -856,7 +840,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestFormValue));
 
   // Reload the page.
   NavigationContext* context = nullptr;
@@ -886,14 +870,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
 
 // Tests going forward to a page rendered from post response.
 TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, std::string> responses;
-  const GURL action = HttpServer::MakeUrl("http://action.test");
-  responses[url] =
-      base::StringPrintf("<form method='post' id='form' action='%s'></form>%s",
-                         action.spec().c_str(), kTestPageText);
-  responses[action] = "arrived!";
-  web::test::SetUpSimpleHttpServer(responses);
+  const GURL url = test_server_->GetURL("/form");
+  const GURL action = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -919,7 +897,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestFormValue));
 
   // Go Back.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
@@ -976,15 +954,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
 
 // Tests server redirect navigation.
 TEST_F(NavigationAndLoadCallbacksTest, RedirectNavigation) {
-  const GURL url = HttpServer::MakeUrl("http://chromium.test");
-  std::map<GURL, HtmlResponseProviderImpl::Response> responses;
-  const GURL redirect_url = HttpServer::MakeUrl("http://chromium2.test");
-  responses[url] = HtmlResponseProviderImpl::GetRedirectResponse(
-      redirect_url, net::HTTP_MOVED_PERMANENTLY);
-  responses[redirect_url] = HtmlResponseProviderImpl::GetSimpleResponse("here");
-  std::unique_ptr<web::DataResponseProvider> provider(
-      new HtmlResponseProvider(responses));
-  web::test::SetUpHttpServer(std::move(provider));
+  const GURL url = test_server_->GetURL("/server-redirect?echo");
+  const GURL redirect_url = test_server_->GetURL("/echo");
 
   // Load url which replies with redirect.
   NavigationContext* context = nullptr;
