@@ -49,36 +49,36 @@ const int kUpdateIntervalSeconds = 60 * 60 * 24;
 
 // In case of an error while getting the family info, retry with exponential
 // backoff.
-const net::BackoffEntry::Policy kBackoffPolicy = {
-  // Number of initial errors (in sequence) to ignore before applying
-  // exponential back-off rules.
-  0,
+const net::BackoffEntry::Policy kFamilyFetchBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
 
-  // Initial delay for exponential backoff in ms.
-  2000,
+    // Initial delay for exponential backoff in ms.
+    2000,
 
-  // Factor by which the waiting time will be multiplied.
-  2,
+    // Factor by which the waiting time will be multiplied.
+    2,
 
-  // Fuzzing percentage. ex: 10% will spread requests randomly
-  // between 90%-100% of the calculated time.
-  0.2, // 20%
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.2,  // 20%
 
-  // Maximum amount of time we are willing to delay our request in ms.
-  1000 * 60 * 60 * 4, // 4 hours.
+    // Maximum amount of time we are willing to delay our request in ms.
+    1000 * 60 * 60 * 4,  // 4 hours.
 
-  // Time to keep an entry from being discarded even when it
-  // has no significant state, -1 to never discard.
-  -1,
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
 
-  // Don't use initial delay unless the last request was an error.
-  false,
+    // Don't use initial delay unless the last request was an error.
+    false,
 };
 
 ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile),
       active_(false),
-      family_fetch_backoff_(&kBackoffPolicy),
+      family_fetch_backoff_(&kFamilyFetchBackoffPolicy),
       sync_service_observer_(this),
       gaia_cookie_manager_(
           GaiaCookieManagerServiceFactory::GetForProfile(profile)),

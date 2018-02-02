@@ -18,7 +18,7 @@
 
 using net::URLFetcher;
 
-const int kNumRetries = 1;
+const int kNumFileDownloaderRetries = 1;
 
 FileDownloader::FileDownloader(
     const GURL& url,
@@ -35,7 +35,7 @@ FileDownloader::FileDownloader(
   fetcher_->SetRequestContext(request_context);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumRetries);
+  fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumFileDownloaderRetries);
   fetcher_->SaveResponseToTemporaryFile(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
