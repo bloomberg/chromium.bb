@@ -88,7 +88,7 @@ def RunScp(config_path, host, port, sources, dest, direction):
   if direction == COPY_TO_TARGET:
     dest = "%s:%s" % (host, dest)
   else:
-    sources = sources.map(lambda source : "%s:%s" % (host, source))
+    sources = ["%s:%s" % (host, source) for source in sources]
 
   scp_command += ['-F', config_path, '-P', str(port)]
   scp_command += sources
