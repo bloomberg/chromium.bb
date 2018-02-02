@@ -11,6 +11,7 @@ from chromite.lib import parallel
 
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import branch_stages
+from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import release_stages
 
 
@@ -28,6 +29,7 @@ class GeneratePayloadsBuilder(simple_builders.SimpleBuilder):
   def RunStages(self):
     """Runs through build process."""
     def _RunStageWrapper(board):
+      self._RunStage(build_stages.InitSDKStage)
       self._RunStage(release_stages.PaygenStage, board=board,
                      channels=self._run.options.channels)
 
