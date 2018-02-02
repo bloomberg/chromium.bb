@@ -6,7 +6,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -49,12 +48,12 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 - (void)setIcon:(const gfx::VectorIcon*)icon {
   icon_ = icon;
-  self.needsLayout = YES;
+  [self updateIcon];
 }
 
 - (void)setIconSize:(int)iconSize {
   iconSize_ = iconSize;
-  self.needsLayout = YES;
+  [self updateIcon];
 }
 
 - (void)setHoverSuppressed:(BOOL)hoverSuppressed {
@@ -69,6 +68,15 @@ NSColor* GetActiveColor(BOOL dark_theme) {
   return SkColorSetA(
       [[self window] hasDarkTheme] ? SK_ColorWHITE : SK_ColorBLACK,
       provider->ShouldIncreaseContrast() ? 0xFF : kIconAlpha);
+}
+
+- (void)updateIcon {
+  if (!icon_ || icon_->is_empty() || iconSize_ == 0) {
+    self.image = nil;
+    return;
+  }
+  self.image = NSImageFromImageSkia(
+      gfx::CreateVectorIcon(*icon_, iconSize_, [self iconColor]));
 }
 
 - (void)updateHoverButtonAppearanceAnimated:(BOOL)animated {
@@ -116,21 +124,25 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 // NSView overrides.
 
-- (void)layout {
-  if (!icon_ || icon_->is_empty() || iconSize_ == 0) {
-    self.image = nil;
-    return;
-  }
-  self.image = NSImageFromImageSkia(
-      gfx::CreateVectorIcon(*icon_, iconSize_, [self iconColor]));
-  [super layout];
-}
-
 - (void)drawFocusRingMask {
   CGFloat radius = self.layer.cornerRadius;
   [[NSBezierPath bezierPathWithRoundedRect:self.bounds
                                    xRadius:radius
                                    yRadius:radius] fill];
+}
+
+- (void)viewDidMoveToWindow {
+  [super viewDidMoveToWindow];
+  [self updateIcon];
+}
+
+// ThemedWindowDrawing implementation
+
+- (void)windowDidChangeTheme {
+  [self updateIcon];
+}
+
+- (void)windowDidChangeActive {
 }
 
 @end

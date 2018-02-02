@@ -7,13 +7,14 @@
 
 #import <AppKit/AppKit.h>
 
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "ui/base/cocoa/hover_button.h"
 #include "ui/gfx/vector_icon_types.h"
 
 // MDHoverButton has a gray background with rounded corners. The background is
 // only visible on hover and gets darker on click. It's friendly to subviews.
 
-@interface MDHoverButton : HoverButton
+@interface MDHoverButton : HoverButton<ThemedWindowDrawing>
 
 // An icon that's displayed in the middle of the button.
 @property(nonatomic) const gfx::VectorIcon* icon;
