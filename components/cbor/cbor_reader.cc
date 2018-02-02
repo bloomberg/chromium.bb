@@ -36,7 +36,7 @@ const char kUnknownAdditionalInfo[] =
 const char kIncompleteCBORData[] =
     "Prematurely terminated CBOR data byte array.";
 const char kIncorrectMapKeyType[] =
-    "Map keys other than utf-8 encoded strings are not allowed.";
+    "Specified map key type is not supported by the current implementation.";
 const char kTooMuchNesting[] = "Too much nesting.";
 const char kInvalidUTF8[] = "String encoding other than utf8 are not allowed.";
 const char kExtraneousData[] = "Trailing data bytes are not allowed.";
@@ -241,11 +241,15 @@ base::Optional<CBORValue> CBORReader::ReadCBORMap(uint64_t length,
     if (!key.has_value() || !value.has_value())
       return base::nullopt;
 
-    // Only CBOR maps with integer or string type keys are allowed.
-    if (key.value().type() != CBORValue::Type::STRING &&
-        key.value().type() != CBORValue::Type::UNSIGNED) {
-      error_code_ = DecoderError::INCORRECT_MAP_KEY_TYPE;
-      return base::nullopt;
+    switch (key.value().type()) {
+      case CBORValue::Type::UNSIGNED:
+      case CBORValue::Type::NEGATIVE:
+      case CBORValue::Type::STRING:
+      case CBORValue::Type::BYTE_STRING:
+        break;
+      default:
+        error_code_ = DecoderError::INCORRECT_MAP_KEY_TYPE;
+        return base::nullopt;
     }
     if (!CheckDuplicateKey(key.value(), &cbor_map) ||
         !CheckOutOfOrderKey(key.value(), &cbor_map)) {
