@@ -27,9 +27,7 @@ CrasInputStream::CrasInputStream(const AudioParameters& params,
       stream_id_(0),
       stream_direction_(CRAS_STREAM_INPUT),
       pin_device_(NO_DEVICE),
-      is_loopback_(
-          device_id == AudioDeviceDescription::kLoopbackInputDeviceId ||
-          device_id == AudioDeviceDescription::kLoopbackWithMuteDeviceId),
+      is_loopback_(AudioDeviceDescription::IsLoopbackDevice(device_id)),
       mute_system_audio_(device_id ==
                          AudioDeviceDescription::kLoopbackWithMuteDeviceId),
       mute_done_(false) {
