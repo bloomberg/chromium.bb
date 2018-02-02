@@ -31,11 +31,10 @@ class MessageCenterButtonBar : public views::View,
                                public views::ButtonListener,
                                public ui::ImplicitAnimationObserver {
  public:
-  MessageCenterButtonBar(
-      MessageCenterView* message_center_view,
-      message_center::MessageCenter* message_center,
-      bool settings_initially_visible,
-      const base::string16& title);
+  MessageCenterButtonBar(MessageCenterView* message_center_view,
+                         message_center::MessageCenter* message_center,
+                         bool settings_initially_visible,
+                         bool locked);
   ~MessageCenterButtonBar() override;
 
   void SetQuietModeState(bool is_quiet_mode);
@@ -44,6 +43,7 @@ class MessageCenterButtonBar : public views::View,
   void ChildVisibilityChanged(views::View* child) override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -66,10 +66,8 @@ class MessageCenterButtonBar : public views::View,
   // Sometimes we shouldn't see the back arrow (not in settings).
   void SetBackArrowVisible(bool visible);
 
-  // Update the label of the title.
-  void SetTitle(const base::string16& title);
-
-  void SetButtonsVisible(bool visible);
+  // Updates notification label and buttons for state specified by |locked|.
+  void SetIsLocked(bool locked);
 
  private:
   MessageCenterView* message_center_view() const {
@@ -78,6 +76,14 @@ class MessageCenterButtonBar : public views::View,
   message_center::MessageCenter* message_center() const {
     return message_center_;
   }
+
+  // Returns title for state specified by |locked|.
+  base::string16 GetTitle(bool locked) const;
+
+  // Updates notification label for state specified by |locked|.
+  void UpdateLabel(bool locked);
+
+  void SetButtonsVisible(bool visible);
 
   MessageCenterView* message_center_view_;
   message_center::MessageCenter* message_center_;
