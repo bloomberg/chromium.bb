@@ -6,14 +6,15 @@
 #include <unordered_set>
 
 #include "ash/login/ui/lock_contents_view.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
+#include "ash/login/ui/login_keyboard_test_base.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
-#include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
@@ -25,6 +26,7 @@
 namespace ash {
 
 using LockContentsViewUnitTest = LoginTestBase;
+using LockContentsViewKeyboardUnitTest = LoginKeyboardTestBase;
 
 TEST_F(LockContentsViewUnitTest, DisplayMode) {
   // Build lock screen with 1 user.
@@ -162,6 +164,153 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
     EXPECT_EQ(distance_0deg, distance_180deg);
     EXPECT_NE(distance_0deg, distance_90deg);
   }
+}
+
+TEST_F(LockContentsViewUnitTest, AutoLayoutExtraSmallUsersListAfterRotation) {
+  // Build lock screen with extra small layout (> 6 users).
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
+  SetUserCount(9);
+  ScrollableUsersListView* users_list =
+      LockContentsView::TestApi(contents).users_list();
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  // Users list in extra small layout should adjust its height to parent.
+  EXPECT_EQ(contents->height(), users_list->height());
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  // Start at 0 degrees (landscape).
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_0,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(contents->height(), users_list->height());
+
+  // Rotate the display to 90 degrees (portrait).
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(contents->height(), users_list->height());
+
+  // Rotate the display back to 0 degrees (landscape).
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_0,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(contents->height(), users_list->height());
+}
+
+TEST_F(LockContentsViewUnitTest, AutoLayoutSmallUsersListAfterRotation) {
+  // Build lock screen with small layout (3-6 users).
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
+  SetUserCount(4);
+  ScrollableUsersListView* users_list =
+      LockContentsView::TestApi(contents).users_list();
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  // Calculate top spacing between users list and lock screen contents.
+  auto top_margin = [&]() {
+    return users_list->GetBoundsInScreen().y() -
+           contents->GetBoundsInScreen().y();
+  };
+
+  // Calculate bottom spacing between users list and lock screen contents.
+  auto bottom_margin = [&]() {
+    return contents->GetBoundsInScreen().bottom() -
+           users_list->GetBoundsInScreen().bottom();
+  };
+
+  // Users list in small layout should adjust its height to content and be
+  // vertical centered in parent.
+  EXPECT_EQ(top_margin(), bottom_margin());
+  EXPECT_EQ(users_list->height(), users_list->contents()->height());
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  // Start at 0 degrees (landscape).
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_0,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(top_margin(), bottom_margin());
+  EXPECT_EQ(users_list->height(), users_list->contents()->height());
+
+  // Rotate the display to 90 degrees (portrait).
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(top_margin(), bottom_margin());
+  EXPECT_EQ(users_list->height(), users_list->contents()->height());
+
+  // Rotate the display back to 0 degrees (landscape).
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_0,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(top_margin(), bottom_margin());
+  EXPECT_EQ(users_list->height(), users_list->contents()->height());
+}
+
+TEST_F(LockContentsViewKeyboardUnitTest,
+       AutoLayoutExtraSmallUsersListForKeyboard) {
+  // Build lock screen with extra small layout (> 6 users).
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  ASSERT_NE(nullptr, contents);
+  LoadUsers(9);
+
+  // Users list in extra small layout should adjust its height to parent.
+  ScrollableUsersListView* users_list =
+      LockContentsView::TestApi(contents).users_list();
+  EXPECT_EQ(contents->height(), users_list->height());
+
+  ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+  gfx::Rect keyboard_bounds = GetKeyboardBoundsInScreen();
+  EXPECT_FALSE(users_list->GetBoundsInScreen().Intersects(keyboard_bounds));
+  EXPECT_EQ(contents->height(), users_list->height());
+
+  ASSERT_NO_FATAL_FAILURE(HideKeyboard());
+  EXPECT_EQ(contents->height(), users_list->height());
+}
+
+TEST_F(LockContentsViewKeyboardUnitTest, AutoLayoutSmallUsersListForKeyboard) {
+  // Build lock screen with small layout (3-6 users).
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  ASSERT_NE(nullptr, contents);
+  LoadUsers(4);
+  ScrollableUsersListView* users_list =
+      LockContentsView::TestApi(contents).users_list();
+
+  // Calculate top spacing between users list and lock screen contents.
+  auto top_margin = [&]() {
+    return users_list->GetBoundsInScreen().y() -
+           contents->GetBoundsInScreen().y();
+  };
+
+  // Calculate bottom spacing between users list and lock screen contents.
+  auto bottom_margin = [&]() {
+    return contents->GetBoundsInScreen().bottom() -
+           users_list->GetBoundsInScreen().bottom();
+  };
+
+  // Users list in small layout should adjust its height to content and be
+  // vertical centered in parent.
+  EXPECT_EQ(top_margin(), bottom_margin());
+  EXPECT_EQ(users_list->height(), users_list->contents()->height());
+
+  ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+  gfx::Rect keyboard_bounds = GetKeyboardBoundsInScreen();
+  EXPECT_FALSE(users_list->GetBoundsInScreen().Intersects(keyboard_bounds));
+  EXPECT_EQ(top_margin(), bottom_margin());
+
+  ASSERT_NO_FATAL_FAILURE(HideKeyboard());
+  EXPECT_EQ(top_margin(), bottom_margin());
+  EXPECT_EQ(users_list->height(), users_list->contents()->height());
 }
 
 // Ensures that when swapping between two users, only auth method display swaps.
