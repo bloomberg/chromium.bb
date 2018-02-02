@@ -33,6 +33,10 @@ class ShutdownWatcherHelper;
 class ThreeDAPIObserver;
 class WebUsbDetector;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
 #if defined(OS_WIN)
@@ -52,6 +56,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void AddParts(ChromeBrowserMainExtraParts* parts);
 
  protected:
+#if !defined(OS_ANDROID)
+  class DeferringTaskRunner;
+#endif
+
   explicit ChromeBrowserMainParts(
       const content::MainFunctionParams& parameters);
 
@@ -115,6 +123,19 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // for child processes.
   void SetupOriginTrialsCommandLine(PrefService* local_state);
 
+  // Calling during PreEarlyInitialization() to load local state. Return value
+  // is an exit status, RESULT_CODE_NORMAL_EXIT indicates success.
+  // If the return value is RESULT_CODE_MISSING_DATA, then
+  // |failed_to_load_resource_bundle| indicates if the ResourceBundle couldn't
+  // be loaded.
+  int LoadLocalState(base::SequencedTaskRunner* local_state_task_runner,
+                     bool* failed_to_load_resource_bundle);
+
+  // Applies any preferences (to local state) needed for first run. This is
+  // always called and early outs if not first-run. Return value is an exit
+  // status, RESULT_CODE_NORMAL_EXIT indicates success.
+  int ApplyFirstRunPrefs();
+
   // Methods for Main Message Loop -------------------------------------------
 
   int PreCreateThreadsImpl();
@@ -123,6 +144,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Members initialized on construction ---------------------------------------
 
   const content::MainFunctionParams parameters_;
+  // TODO(sky): remove this. This class (and related calls), may mutate the
+  // CommandLine, so it is misleading keeping a const ref here.
   const base::CommandLine& parsed_command_line_;
   int result_code_;
 
@@ -181,6 +204,13 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
   base::FilePath user_data_dir_;
+
+#if !defined(OS_ANDROID)
+  // This TaskRunner is created and the constructor and destroyed in
+  // PreCreateThreadsImpl(). It's used to queue any tasks scheduled before the
+  // real task scheduler has been created.
+  scoped_refptr<DeferringTaskRunner> initial_task_runner_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };

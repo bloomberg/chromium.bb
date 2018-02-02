@@ -867,21 +867,21 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 // static
 void ChromeContentBrowserClient::SetApplicationLocale(
     const std::string& locale) {
+  // The common case is that this function is called early in Chrome startup
+  // before any threads are created or registered. When there are no threads,
+  // we can just set the string without worrying about threadsafety.
+  if (!BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
+    g_io_thread_application_locale.Get() = locale;
+    return;
+  }
+
+  // Otherwise we're being called to change the locale. In this case set it on
+  // the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // This object is guaranteed to outlive all threads so we don't have to
-  // worry about the lack of refcounting and can just post as Unretained.
-  //
-  // The common case is that this function is called early in Chrome startup
-  // before any threads are created (it will also be called later if the user
-  // changes the pref). In this case, there will be no threads created and
-  // posting will fail. When there are no threads, we can just set the string
-  // without worrying about threadsafety.
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&SetApplicationLocaleOnIOThread, locale))) {
-    g_io_thread_application_locale.Get() = locale;
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
 }
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(

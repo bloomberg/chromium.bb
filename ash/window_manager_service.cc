@@ -88,7 +88,7 @@ void WindowManagerService::InitializeComponents(bool init_network_handler) {
   // before WindowManager::Init(). Tests might initialize their own instance.
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Initialize(
-        chromeos::DBusThreadManager::PROCESS_ASH);
+        chromeos::DBusThreadManager::kShared);
     dbus_thread_manager_initialized_ = true;
   }
 

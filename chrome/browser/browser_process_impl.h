@@ -34,6 +34,7 @@
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
+class ChromeMetricsServicesManagerClient;
 class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
@@ -73,6 +74,9 @@ class BrowserProcessImpl : public BrowserProcess,
   explicit BrowserProcessImpl(
       base::SequencedTaskRunner* local_state_task_runner);
   ~BrowserProcessImpl() override;
+
+  // Called to complete initialization.
+  void Init();
 
   // Called before the browser threads are created.
   void PreCreateThreads(const base::CommandLine& command_line);
@@ -197,6 +201,10 @@ class BrowserProcessImpl : public BrowserProcess,
   // to make sure it keeps running.
   void Pin();
   void Unpin();
+
+  // |metrics_services_manager_| owns this.
+  ChromeMetricsServicesManagerClient* metrics_services_manager_client_ =
+      nullptr;
 
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;

@@ -14,16 +14,25 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
 namespace base {
 
 // A DeferredSequencedTaskRunner is a subclass of SequencedTaskRunner that
 // queues up all requests until the first call to Start() is issued.
+// DeferredSequencedTaskRunner may be created in two ways:
+// . with an explicit SequencedTaskRunner that the events are flushed to
+// . without a SequencedTaskRunner. In this configuration the
+//   SequencedTaskRunner is supplied in StartWithTaskRunner().
 class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
  public:
   explicit DeferredSequencedTaskRunner(
       scoped_refptr<SequencedTaskRunner> target_runner);
+
+  // Use this constructor when you don't have the target SequencedTaskRunner.
+  // When using this call StartWithTaskRunner().
+  DeferredSequencedTaskRunner();
 
   // TaskRunner implementation
   bool PostDelayedTask(const Location& from_here,
@@ -42,6 +51,10 @@ class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
   // Fails when called a second time.
   void Start();
 
+  // Same as Start(), but must be used with the no-arg constructor.
+  void StartWithTaskRunner(
+      scoped_refptr<SequencedTaskRunner> target_task_runner);
+
  private:
   struct DeferredTask  {
     DeferredTask();
@@ -58,6 +71,9 @@ class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
 
   ~DeferredSequencedTaskRunner() override;
 
+  // Both variants of Start() call into this.
+  void StartImpl();
+
   // Creates a |Task| object and adds it to |deferred_tasks_queue_|.
   void QueueDeferredTask(const Location& from_here,
                          OnceClosure task,
@@ -67,8 +83,10 @@ class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
   // // Protects |started_| and |deferred_tasks_queue_|.
   mutable Lock lock_;
 
-  bool started_;
-  const scoped_refptr<SequencedTaskRunner> target_task_runner_;
+  const PlatformThreadId created_thread_id_;
+
+  bool started_ = false;
+  scoped_refptr<SequencedTaskRunner> target_task_runner_;
   std::vector<DeferredTask> deferred_tasks_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferredSequencedTaskRunner);
