@@ -45,12 +45,13 @@ cr.define('extension_code_section_tests', function() {
       expectTrue(testIsVisible('#main'));
       expectFalse(testIsVisible('#no-code'));
 
-      var fullSpan = codeSection.$$('#source span');
-      expectEquals(
-          code.beforeHighlight + code.highlight + code.afterHighlight,
-          fullSpan.textContent);
-      var highlightedText = window.getSelection().toString();
-      expectEquals(code.highlight, highlightedText);
+      let codeSections =
+          codeSection.querySelectorAll('* /deep/ #source span span');
+
+      expectEquals(code.beforeHighlight, codeSections[0].textContent);
+      expectEquals(code.highlight, codeSections[1].textContent);
+      expectEquals(code.afterHighlight, codeSections[2].textContent);
+
       expectEquals(
           '1\n2\n3\n4',
           codeSection.$$('#line-numbers span').textContent.trim());

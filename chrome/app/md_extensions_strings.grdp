@@ -42,6 +42,12 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_ERRORS" desc="The label of the button to bring the user to the page showing an extension's errors.">
     Errors
   </message>
+  <message name="IDS_MD_EXTENSIONS_ACCESSIBILITY_ERROR_LINE" desc="Accessibility message to indicate what line an error is on. The line of code will be read to the user. The place holder will be a number.">
+    Error on line <ph name="ERROR_LINE">$1</ph>
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ACCESSIBILITY_ERROR_MULTI_LINE" desc="Accessibility message to indicate the lines that an error spans. The lines of code will be read to the user. The place holders will be numbers.">
+    Error from line <ph name="ERROR_LINE_START">$1</ph> to <ph name="ERROR_LINE_END">$2</ph>
+  </message>
   <message name="IDS_MD_EXTENSIONS_GUEST_MODE" desc="The text displayed when viewing the page under guest-mode to indicate that guests cannot use this feature.">
     Extension management is not available to Guest users. Please sign in to manage extensions.
   </message>

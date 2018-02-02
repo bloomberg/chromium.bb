@@ -594,11 +594,6 @@ TEST_F('CrExtensionsErrorPageTest', 'ErrorSelection', function() {
 
 var CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get browsePreload() {
-    return 'chrome://extensions/code_section.html';
-  }
-
-  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       'extension_code_section_test.js',

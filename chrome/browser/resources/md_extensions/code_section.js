@@ -21,6 +21,8 @@ cr.define('extensions', function() {
   const CodeSection = Polymer({
     is: 'extensions-code-section',
 
+    behaviors: [I18nBehavior],
+
     properties: {
       /**
        * The code this object is displaying.
@@ -31,13 +33,17 @@ cr.define('extensions', function() {
         value: null,
       },
 
-      /**
-       * The text of the entire source file. This value does not update on
-       * highlight changes; it only updates if the content of the source
-       * changes.
-       * @private
-       */
-      codeText_: String,
+      /** @private Highlighted code. */
+      highlighted_: String,
+
+      /** @private Code before the highlighted section. */
+      before_: String,
+
+      /** @private Code after the highlighted section. */
+      after_: String,
+
+      /** @private Description for the highlighted section. */
+      highlightDescription_: String,
 
       /** @private */
       lineNumbers_: String,
@@ -67,7 +73,10 @@ cr.define('extensions', function() {
       if (!this.code ||
           (!this.code.beforeHighlight && !this.code.highlight &&
            !this.code.afterHighlight)) {
-        this.codeText_ = '';
+        this.highlighted_ = '';
+        this.highlightDescription_ = '';
+        this.before_ = '';
+        this.after_ = '';
         this.lineNumbers_ = '';
         return;
       }
@@ -91,15 +100,19 @@ cr.define('extensions', function() {
       if (visibleAfter.charAt(visibleAfter.length - 1) == '\n')
         visibleAfter += ' ';
 
-      this.codeText_ = visibleBefore + highlight + visibleAfter;
+      this.highlighted_ = highlight;
+      this.highlightDescription_ = this.getAccessibilityHighlightDescription_(
+          linesBefore.length, highlight.split('\n').length);
+      this.before_ = visibleBefore;
+      this.after_ = visibleAfter;
       this.truncatedBefore_ = linesBefore.length - visibleLineCountBefore;
       this.truncatedAfter_ = linesAfter.length - visibleLineCountAfter;
 
+      let visibleCode = visibleBefore + highlight + visibleAfter;
+
       this.setLineNumbers_(
           this.truncatedBefore_ + 1,
-          this.truncatedBefore_ + this.codeText_.split('\n').length);
-      this.createHighlight_(
-          visibleBefore.length, visibleBefore.length + highlight.length);
+          this.truncatedBefore_ + visibleCode.split('\n').length);
       this.scrollToHighlight_(visibleLineCountBefore);
     },
 
@@ -130,23 +143,6 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Uses the native text-selection API to highlight desired code.
-     * @param {number} start
-     * @param {number} end
-     * @private
-     */
-    createHighlight_: function(start, end) {
-      const range = document.createRange();
-      const node = this.$.source.querySelector('span').firstChild;
-      range.setStart(node, start);
-      range.setEnd(node, end);
-
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-    },
-
-    /**
      * @param {number} linesBeforeHighlight
      * @private
      */
@@ -160,6 +156,22 @@ cr.define('extensions', function() {
       const targetTop = highlightTop - this.clientHeight * 0.5;
 
       this.$['scroll-container'].scrollTo({top: targetTop});
+    },
+
+    /**
+     * @param {number} lineStart
+     * @param {number} numLines
+     * @return {string}
+     * @private
+     */
+    getAccessibilityHighlightDescription_: function(lineStart, numLines) {
+      if (numLines > 1) {
+        return this.i18n(
+            'accessibilityErrorMultiLine', lineStart.toString(),
+            (lineStart + numLines - 1).toString());
+      } else {
+        return this.i18n('accessibilityErrorLine', lineStart.toString());
+      }
     },
   });
 
