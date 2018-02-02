@@ -91,8 +91,10 @@ bool DownloadJob::AddInputStream(
     int64_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DownloadFile* download_file = download_item_->download_file_.get();
-  if (!download_file)
+  if (!download_file) {
+    CancelRequestWithOffset(offset);
     return false;
+  }
 
   // download_file_ is owned by download_item_ on the UI thread and is always
   // deleted on the download task runner after download_file_ is nulled out.
@@ -105,7 +107,6 @@ bool DownloadJob::AddInputStream(
 }
 
 void DownloadJob::CancelRequestWithOffset(int64_t offset) {
-  NOTREACHED();
 }
 
 bool DownloadJob::IsParallelizable() const {

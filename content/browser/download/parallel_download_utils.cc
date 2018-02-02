@@ -52,8 +52,8 @@ std::vector<DownloadItem::ReceivedSlice> FindSlicesForRemainingContent(
     }
   }
 
-  // Last slice is a half open slice, which results in sending range request
-  // like "Range:50-" to fetch from 50 bytes to the end of the file.
+  // No strong assumption that content length header is correct. So the last
+  // slice is always half open, which sends range request like "Range:50-".
   new_slices.emplace_back(current_offset,
                           download::DownloadSaveInfo::kLengthFullContent);
   return new_slices;
@@ -107,6 +107,51 @@ size_t AddOrMergeReceivedSliceIntoSortedArray(
 
   it = received_slices.emplace(it, new_slice);
   return static_cast<size_t>(std::distance(received_slices.begin(), it));
+}
+
+bool CanRecoverFromError(
+    const DownloadFileImpl::SourceStream* error_stream,
+    const DownloadFileImpl::SourceStream* preceding_neighbor) {
+  DCHECK(error_stream->offset() >= preceding_neighbor->offset())
+      << "Preceding"
+         "stream's offset should be smaller than the error stream.";
+  DCHECK_GE(error_stream->length(), 0);
+
+  if (preceding_neighbor->is_finished()) {
+    // Check if the preceding stream fetched to the end of the file without
+    // error. The error stream doesn't need to download anything.
+    if (preceding_neighbor->length() ==
+            download::DownloadSaveInfo::kLengthFullContent &&
+        preceding_neighbor->GetCompletionStatus() ==
+            DOWNLOAD_INTERRUPT_REASON_NONE) {
+      return true;
+    }
+
+    // Check if finished preceding stream has already downloaded all data for
+    // the error stream.
+    if (error_stream->length() > 0) {
+      return error_stream->offset() + error_stream->length() <=
+             preceding_neighbor->offset() + preceding_neighbor->bytes_written();
+    }
+
+    return false;
+  }
+
+  // If preceding stream is half open, and still working, we can recover.
+  if (preceding_neighbor->length() ==
+      download::DownloadSaveInfo::kLengthFullContent) {
+    return true;
+  }
+
+  // Check if unfinished preceding stream is able to download data for error
+  // stream in the future only when preceding neighbor and error stream both
+  // have an upper bound.
+  if (error_stream->length() > 0 && preceding_neighbor->length() > 0) {
+    return error_stream->offset() + error_stream->length() <=
+           preceding_neighbor->offset() + preceding_neighbor->length();
+  }
+
+  return false;
 }
 
 int64_t GetMinSliceSizeConfig() {

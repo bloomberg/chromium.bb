@@ -214,7 +214,7 @@ class ParallelDownloadJobTest : public testing::Test {
 // existing slices.
 TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   // Totally 2 requests for 100 bytes.
-  // Original request:  Range:0-49, for 50 bytes.
+  // Original request:  Range:0-, for 50 bytes.
   // Task 1:  Range:50-, for 50 bytes.
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
   BuildParallelRequests();
@@ -223,13 +223,13 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   DestroyParallelJob();
 
   // Totally 3 requests for 100 bytes.
-  // Original request:  Range:0-32, for 33 bytes.
-  // Task 1:  Range:33-65, for 33 bytes.
+  // Original request:  Range:0-, for 33 bytes.
+  // Task 1:  Range:33-, for 33 bytes.
   // Task 2:  Range:66-, for 34 bytes.
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 3, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(2u, job_->workers().size());
-  VerifyWorker(33, 33);
+  VerifyWorker(33, 0);
   VerifyWorker(66, 0);
   DestroyParallelJob();
 
@@ -263,7 +263,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   CreateParallelJob(12, 88, slices, 3, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(2u, job_->workers().size());
-  VerifyWorker(44, 27);
+  VerifyWorker(44, 0);
   VerifyWorker(71, 0);
   DestroyParallelJob();
 
@@ -298,8 +298,8 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   CreateParallelJob(0, 12, slices, 2, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(3u, job_->workers().size());
-  VerifyWorker(30, 10);
-  VerifyWorker(50, 40);
+  VerifyWorker(30, 0);
+  VerifyWorker(50, 0);
   VerifyWorker(100, 0);
   DestroyParallelJob();
 }
@@ -324,7 +324,7 @@ TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsFirstSliceFilled) {
   // Since the first hole is filled, parallel requests are created to fill other
   // two holes.
   EXPECT_EQ(2u, job_->workers().size());
-  VerifyWorker(50, 30);
+  VerifyWorker(50, 0);
   VerifyWorker(90, 0);
   DestroyParallelJob();
 }

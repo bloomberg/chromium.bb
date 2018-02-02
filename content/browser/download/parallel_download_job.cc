@@ -192,9 +192,6 @@ void ParallelDownloadJob::BuildParallelRequests() {
   }
 
   DCHECK(!slices_to_download.empty());
-  DCHECK_EQ(slices_to_download.back().received_bytes,
-            download::DownloadSaveInfo::kLengthFullContent);
-
   ForkSubRequests(slices_to_download);
   RecordParallelDownloadRequestCount(
       static_cast<int>(slices_to_download.size()));
@@ -226,12 +223,16 @@ void ParallelDownloadJob::ForkSubRequests(
     }
 
     DCHECK_GE(it->offset, initial_request_offset_);
-    CreateRequest(it->offset, it->received_bytes);
+    // All parallel requests are half open, which sends request headers like
+    // "Range:50-".
+    // If server rejects a certain request, others should take over.
+    CreateRequest(it->offset, download::DownloadSaveInfo::kLengthFullContent);
   }
 }
 
 void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   DCHECK(download_item_);
+  DCHECK_EQ(download::DownloadSaveInfo::kLengthFullContent, length);
 
   std::unique_ptr<DownloadWorker> worker =
       std::make_unique<DownloadWorker>(this, offset, length);

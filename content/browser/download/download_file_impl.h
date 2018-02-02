@@ -78,7 +78,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void Pause() override;
   void Resume() override;
 
- protected:
   // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta
   // data needed to write to a slice of the target file.
   //
@@ -124,7 +123,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // DownloadManager pass the status code to DownloadItem or DownloadFile.
     // However, a DownloadFile can have multiple SourceStreams, so we have to
     // maintain a map between data pipe and DownloadItem/DownloadFile somewhere.
-    DownloadInterruptReason GetCompletionStatus();
+    DownloadInterruptReason GetCompletionStatus() const;
 
     using CompletionCallback = base::OnceCallback<void(SourceStream*)>;
     // Register an callback to be called when download completes.
@@ -186,6 +185,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };
 
+ protected:
   // For test class overrides.
   // Write data from the offset to the file.
   // On OS level, it will seek to the |offset| and write from there.
@@ -295,8 +295,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Check whether this file is potentially sparse.
   bool IsSparseFile() const;
 
-  // Given a SourceStream object, returns its neighbor that preceds it if
-  // SourceStreams are ordered by their offsets
+  // Given a SourceStream object, returns its neighbor that precedes it if
+  // SourceStreams are ordered by their offsets.
   SourceStream* FindPrecedingNeighbor(SourceStream* source_stream);
 
   // See |cancel_request_callback_|.
