@@ -56,9 +56,13 @@ void LayoutPagedFlowThread::UpdateLayout() {
   // the others, or it'll be impossible to scroll that whole page into view.
   LayoutUnit padded_logical_bottom_in_flow_thread =
       page_logical_height * PageCount();
-  DCHECK_GE(padded_logical_bottom_in_flow_thread,
-            column_set->LogicalBottomInFlowThread());
-  column_set->EndFlow(padded_logical_bottom_in_flow_thread);
+  // In some cases we clamp the page count (see
+  // MultiColumnFragmentainerGroup::ActualColumnCount()), so that the padded
+  // offset will be less than what we already have. Forget about uniform page
+  // height in that case.
+  if (padded_logical_bottom_in_flow_thread >
+      column_set->LogicalBottomInFlowThread())
+    column_set->EndFlow(padded_logical_bottom_in_flow_thread);
 }
 
 }  // namespace blink
