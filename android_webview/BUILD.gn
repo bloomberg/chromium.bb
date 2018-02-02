@@ -413,6 +413,8 @@ if (android_64bit_target_cpu) {
     if (use_lld) {
       configs += [ "//build/config/android:lld_pack_relocations" ]
     }
+    public_configs = extra_chrome_shared_library_configs
+    deps += extra_chrome_shared_library_deps
   }
 }
 
