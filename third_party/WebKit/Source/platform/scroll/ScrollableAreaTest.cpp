@@ -34,7 +34,10 @@ class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
 
 }  // namespace
 
-using ScrollableAreaTest = ::testing::Test;
+class ScrollableAreaTest : public ::testing::Test {
+ private:
+  base::MessageLoop message_loop_;
+};
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>

@@ -29,7 +29,10 @@ class ScrollbarThemeAuraButtonOverride final : public ScrollbarThemeAura {
 
 }  // namespace
 
-using ScrollbarThemeAuraTest = ::testing::Test;
+class ScrollbarThemeAuraTest : public ::testing::Test {
+ private:
+  base::MessageLoop message_loop_;
+};
 
 TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>

@@ -15,6 +15,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blink {
@@ -96,7 +97,7 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
-    return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
+    return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
   }
 
   PlatformChromeClient* GetChromeClient() const override {
