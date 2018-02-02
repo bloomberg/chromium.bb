@@ -19,15 +19,11 @@ std::unique_ptr<MidiManager> MidiService::ManagerFactory::Create(
 }
 
 // static
-base::TimeDelta MidiService::TimestampToTimeDeltaDelay(double timestamp) {
-  base::TimeDelta delay;
-  if (timestamp != 0.0) {
-    base::TimeTicks time_to_send =
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                                timestamp * base::Time::kMicrosecondsPerSecond);
-    delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
-  }
-  return delay;
+base::TimeDelta MidiService::TimestampToTimeDeltaDelay(
+    base::TimeTicks timestamp) {
+  if (timestamp.is_null())
+    return base::TimeDelta();
+  return std::max(timestamp - base::TimeTicks::Now(), base::TimeDelta());
 }
 
 MidiService::MidiService() : MidiService(std::make_unique<ManagerFactory>()) {}
@@ -95,7 +91,7 @@ bool MidiService::EndSession(MidiManagerClient* client) {
 void MidiService::DispatchSendMidiData(MidiManagerClient* client,
                                        uint32_t port_index,
                                        const std::vector<uint8_t>& data,
-                                       double timestamp) {
+                                       base::TimeTicks timestamp) {
   base::AutoLock lock(lock_);
 
   // MidiService needs to consider invalid DispatchSendMidiData calls without

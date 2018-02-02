@@ -31,7 +31,7 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
   void SendMIDIData(unsigned port_index,
                     const unsigned char* data,
                     size_t length,
-                    double timestamp) override;
+                    base::TimeTicks timestamp) override;
 
  private:
   void addInputPort(midi::mojom::PortState state);

@@ -45,7 +45,7 @@ IPC_MESSAGE_CONTROL0(MidiHostMsg_StartSession)
 IPC_MESSAGE_CONTROL3(MidiHostMsg_SendData,
                      uint32_t /* port */,
                      std::vector<uint8_t> /* data */,
-                     double /* timestamp */)
+                     base::TimeTicks /* timestamp */)
 
 IPC_MESSAGE_CONTROL0(MidiHostMsg_EndSession)
 
@@ -70,7 +70,7 @@ IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, midi::mojom::Result /* result */)
 IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
                      uint32_t /* port */,
                      std::vector<uint8_t> /* data */,
-                     double /* timestamp */)
+                     base::TimeTicks /* timestamp */)
 
 IPC_MESSAGE_CONTROL1(MidiMsg_AcknowledgeSentData, uint32_t /* bytes sent */)
 

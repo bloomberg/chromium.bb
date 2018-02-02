@@ -61,7 +61,7 @@ class MIDI_EXPORT MidiManagerClient {
   virtual void ReceiveMidiData(uint32_t port_index,
                                const uint8_t* data,
                                size_t length,
-                               double timestamp) = 0;
+                               base::TimeTicks timestamp) = 0;
 
   // AccumulateMidiBytesSent() is called to acknowledge when bytes have
   // successfully been sent to the hardware.
@@ -118,13 +118,13 @@ class MIDI_EXPORT MidiManager {
   // |port_index| represents the specific output port from output_ports().
   // |data| represents a series of bytes encoding one or more MIDI messages.
   // |length| is the number of bytes in |data|.
-  // |timestamp| is the time to send the data, in seconds. A value of 0
-  // means send "now" or as soon as possible.
-  // The default implementation is for unsupported platforms.
+  // |timestamp| is the time to send the data. A value of 0 means send "now" or
+  // as soon as possible. The default implementation is for unsupported
+  // platforms.
   virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32_t port_index,
                                     const std::vector<uint8_t>& data,
-                                    double timestamp);
+                                    base::TimeTicks timestamp);
 
  protected:
   friend class MidiManagerUsb;
@@ -158,20 +158,10 @@ class MIDI_EXPORT MidiManager {
   void SetOutputPortState(uint32_t port_index, mojom::PortState state);
 
   // Dispatches to all clients.
-  // TODO(toyoshim): Fix the mac implementation to use
-  // |ReceiveMidiData(..., base::TimeTicks)|.
   void ReceiveMidiData(uint32_t port_index,
                        const uint8_t* data,
                        size_t length,
-                       double timestamp);
-
-  void ReceiveMidiData(uint32_t port_index,
-                       const uint8_t* data,
-                       size_t length,
-                       base::TimeTicks time) {
-    ReceiveMidiData(port_index, data, length,
-                    (time - base::TimeTicks()).InSecondsF());
-  }
+                       base::TimeTicks time);
 
   size_t clients_size_for_testing() const { return clients_.size(); }
   size_t pending_clients_size_for_testing() const {

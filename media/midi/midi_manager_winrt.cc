@@ -802,7 +802,7 @@ void MidiManagerWinrt::Finalize() {
 void MidiManagerWinrt::DispatchSendMidiData(MidiManagerClient* client,
                                             uint32_t port_index,
                                             const std::vector<uint8_t>& data,
-                                            double timestamp) {
+                                            base::TimeTicks timestamp) {
   base::TimeDelta delay = MidiService::TimestampToTimeDeltaDelay(timestamp);
   service()->task_service()->PostBoundDelayedTask(
       kComTaskRunner,

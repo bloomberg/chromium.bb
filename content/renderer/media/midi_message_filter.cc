@@ -75,7 +75,7 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
 void MidiMessageFilter::SendMidiData(uint32_t port,
                                      const uint8_t* data,
                                      size_t length,
-                                     double timestamp) {
+                                     base::TimeTicks timestamp) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if ((kMaxUnacknowledgedBytesSent - unacknowledged_bytes_sent_) < length) {
     // TODO(toyoshim): buffer up the data to send at a later time.
@@ -98,7 +98,7 @@ void MidiMessageFilter::StartSessionOnIOThread() {
 
 void MidiMessageFilter::SendMidiDataOnIOThread(uint32_t port,
                                                const std::vector<uint8_t>& data,
-                                               double timestamp) {
+                                               base::TimeTicks timestamp) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   Send(new MidiHostMsg_SendData(port, data, timestamp));
 }
@@ -189,7 +189,7 @@ void MidiMessageFilter::OnSetOutputPortState(uint32_t port, PortState state) {
 
 void MidiMessageFilter::OnDataReceived(uint32_t port,
                                        const std::vector<uint8_t>& data,
-                                       double timestamp) {
+                                       base::TimeTicks timestamp) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnDataReceived");
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Handle on the main JS thread.
@@ -260,7 +260,7 @@ void MidiMessageFilter::HandleAddOutputPort(midi::MidiPortInfo info) {
 
 void MidiMessageFilter::HandleDataReceived(uint32_t port,
                                            const std::vector<uint8_t>& data,
-                                           double timestamp) {
+                                           base::TimeTicks timestamp) {
   TRACE_EVENT0("midi", "MidiMessageFilter::HandleDataReceived");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!data.empty());

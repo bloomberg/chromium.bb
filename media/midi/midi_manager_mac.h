@@ -33,7 +33,7 @@ class MIDI_EXPORT MidiManagerMac final : public MidiManager {
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) override;
+                            base::TimeTicks timestamp) override;
 
  private:
   // Initializes CoreMIDI on |client_thread_| asynchronously. Called from
@@ -57,7 +57,7 @@ class MIDI_EXPORT MidiManagerMac final : public MidiManager {
   void SendMidiData(MidiManagerClient* client,
                     uint32_t port_index,
                     const std::vector<uint8_t>& data,
-                    double timestamp);
+                    base::TimeTicks timestamp);
 
   // CoreMIDI client reference, should be protected by |midi_client_lock_|.
   MIDIClientRef midi_client_ = 0;

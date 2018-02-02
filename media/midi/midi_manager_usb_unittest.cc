@@ -123,7 +123,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   void ReceiveMidiData(uint32_t port_index,
                        const uint8_t* data,
                        size_t size,
-                       double timestamp) override {
+                       base::TimeTicks timestamp) override {
     logger_->AddLog("MidiManagerClient::ReceiveMidiData ");
     logger_->AddLog(
         base::StringPrintf("usb:port_index = %d data =", port_index));
@@ -460,7 +460,8 @@ TEST_F(MidiManagerUsbTest, Send) {
   EXPECT_EQ(Result::OK, GetInitializationResult());
   ASSERT_EQ(2u, manager()->output_streams().size());
 
-  manager()->DispatchSendMidiData(client_.get(), 1, ToVector(data), 0);
+  manager()->DispatchSendMidiData(client_.get(), 1, ToVector(data),
+                                  base::TimeTicks());
   // Since UsbMidiDevice::Send is posted as a task, RunLoop should run to
   // invoke the task.
   base::RunLoop run_loop;
@@ -506,11 +507,13 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
   EXPECT_EQ("UsbMidiDevice::GetDescriptors\n", logger_.TakeLog());
 
   // The specified port index is invalid. The manager must ignore the request.
-  manager()->DispatchSendMidiData(client_.get(), 99, ToVector(data), 0);
+  manager()->DispatchSendMidiData(client_.get(), 99, ToVector(data),
+                                  base::TimeTicks());
   EXPECT_EQ("", logger_.TakeLog());
 
   // The specified port index is invalid. The manager must ignore the request.
-  manager()->DispatchSendMidiData(client_.get(), 2, ToVector(data), 0);
+  manager()->DispatchSendMidiData(client_.get(), 2, ToVector(data),
+                                  base::TimeTicks());
   EXPECT_EQ("", logger_.TakeLog());
 }
 

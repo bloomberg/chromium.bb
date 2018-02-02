@@ -28,7 +28,7 @@ class RendererWebMIDIAccessorImpl
   void SendMIDIData(unsigned port_index,
                     const unsigned char* data,
                     size_t length,
-                    double timestamp) override;
+                    base::TimeTicks timestamp) override;
 
  private:
   blink::WebMIDIAccessorClient* client_;

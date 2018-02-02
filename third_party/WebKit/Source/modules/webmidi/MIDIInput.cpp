@@ -83,7 +83,7 @@ void MIDIInput::AddedEventListener(
 void MIDIInput::DidReceiveMIDIData(unsigned port_index,
                                    const unsigned char* data,
                                    size_t length,
-                                   double time_stamp) {
+                                   base::TimeTicks time_stamp) {
   DCHECK(IsMainThread());
 
   if (!length)

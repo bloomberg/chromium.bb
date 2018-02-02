@@ -101,14 +101,13 @@ MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   return MidiPortInfo(id, manufacturer, name, version, state);
 }
 
-double MIDITimeStampToSeconds(MIDITimeStamp timestamp) {
+base::TimeTicks MIDITimeStampToTimeTicks(MIDITimeStamp timestamp) {
   UInt64 nanoseconds = AudioConvertHostTimeToNanos(timestamp);
-  return static_cast<double>(nanoseconds) / 1.0e9;
+  return base::TimeTicks() + base::TimeDelta::FromNanoseconds(nanoseconds);
 }
 
-MIDITimeStamp SecondsToMIDITimeStamp(double seconds) {
-  UInt64 nanos = UInt64(seconds * 1.0e9);
-  return AudioConvertNanosToHostTime(nanos);
+MIDITimeStamp TimeTicksToMIDITimeStamp(base::TimeTicks ticks) {
+  return AudioConvertNanosToHostTime(ticks.since_origin().InNanoseconds());
 }
 
 }  // namespace
@@ -147,7 +146,7 @@ void MidiManagerMac::Finalize() {
 void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,
                                           uint32_t port_index,
                                           const std::vector<uint8_t>& data,
-                                          double timestamp) {
+                                          base::TimeTicks timestamp) {
   service()->task_service()->PostBoundTask(
       kClientTaskRunner,
       base::BindOnce(&MidiManagerMac::SendMidiData, base::Unretained(this),
@@ -298,10 +297,10 @@ void MidiManagerMac::ReadMidiDispatch(const MIDIPacketList* packet_list,
   const MIDIPacket* packet = &packet_list->packet[0];
   for (size_t i = 0u; i < packet_list->numPackets; i++) {
     // Each packet contains MIDI data for one or more messages (like note-on).
-    double timestamp_seconds = MIDITimeStampToSeconds(packet->timeStamp);
+    base::TimeTicks timestamp = MIDITimeStampToTimeTicks(packet->timeStamp);
 
     manager->ReceiveMidiData(port_index, packet->data, packet->length,
-                             timestamp_seconds);
+                             timestamp);
 
     packet = MIDIPacketNext(packet);
   }
@@ -310,13 +309,13 @@ void MidiManagerMac::ReadMidiDispatch(const MIDIPacketList* packet_list,
 void MidiManagerMac::SendMidiData(MidiManagerClient* client,
                                   uint32_t port_index,
                                   const std::vector<uint8_t>& data,
-                                  double timestamp) {
+                                  base::TimeTicks timestamp) {
   DCHECK(service()->task_service()->IsOnTaskRunner(kClientTaskRunner));
 
   // Lookup the destination based on the port index.
   if (static_cast<size_t>(port_index) >= destinations_.size())
     return;
-  MIDITimeStamp coremidi_timestamp = SecondsToMIDITimeStamp(timestamp);
+  MIDITimeStamp coremidi_timestamp = TimeTicksToMIDITimeStamp(timestamp);
   MIDIEndpointRef destination = destinations_[port_index];
 
   size_t send_size;

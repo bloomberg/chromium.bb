@@ -82,7 +82,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           size_t length,
-                          double time_stamp) override {}
+                          TimeTicks time_stamp) override {}
 
  private:
   MIDIAccessInitializer(ScriptState*, const MIDIOptions&);

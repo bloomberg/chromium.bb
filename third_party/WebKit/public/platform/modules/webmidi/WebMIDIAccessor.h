@@ -31,6 +31,7 @@
 #ifndef WebMIDIAccessor_h
 #define WebMIDIAccessor_h
 
+#include "base/time/time.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -45,7 +46,7 @@ class WebMIDIAccessor {
   virtual void SendMIDIData(unsigned port_index,
                             const unsigned char* data,
                             size_t length,
-                            double time_stamp) {}
+                            base::TimeTicks time_stamp) {}
   virtual void Clear(unsigned port_index) {}
   virtual void Close(unsigned port_index) {}
 };

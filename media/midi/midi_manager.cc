@@ -201,7 +201,7 @@ void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
 void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
                                        uint32_t port_index,
                                        const std::vector<uint8_t>& data,
-                                       double timestamp) {
+                                       base::TimeTicks timestamp) {
   NOTREACHED();
 }
 
@@ -263,7 +263,7 @@ void MidiManager::SetOutputPortState(uint32_t port_index, PortState state) {
 void MidiManager::ReceiveMidiData(uint32_t port_index,
                                   const uint8_t* data,
                                   size_t length,
-                                  double timestamp) {
+                                  base::TimeTicks timestamp) {
   base::AutoLock auto_lock(lock_);
   data_received_ = true;
 

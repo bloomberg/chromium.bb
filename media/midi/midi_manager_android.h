@@ -39,7 +39,7 @@ class MidiManagerAndroid final : public MidiManager,
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) override;
+                            base::TimeTicks timestamp) override;
 
   // MidiInputPortAndroid::Delegate implementation.
   void OnReceivedData(MidiInputPortAndroid*,

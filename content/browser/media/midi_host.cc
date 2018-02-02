@@ -94,7 +94,7 @@ void MidiHost::OnStartSession() {
 
 void MidiHost::OnSendData(uint32_t port,
                           const std::vector<uint8_t>& data,
-                          double timestamp) {
+                          base::TimeTicks timestamp) {
   {
     base::AutoLock auto_lock(output_port_count_lock_);
     if (output_port_count_ <= port) {
@@ -172,7 +172,7 @@ void MidiHost::SetOutputPortState(uint32_t port, PortState state) {
 void MidiHost::ReceiveMidiData(uint32_t port,
                                const uint8_t* data,
                                size_t length,
-                               double timestamp) {
+                               base::TimeTicks timestamp) {
   TRACE_EVENT0("midi", "MidiHost::ReceiveMidiData");
 
   base::AutoLock auto_lock(messages_queues_lock_);

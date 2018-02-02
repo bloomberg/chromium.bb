@@ -28,7 +28,7 @@ class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) final;
+                            base::TimeTicks timestamp) final;
 
  private:
   // Subclasses that access private/protected members of MidiManager.
