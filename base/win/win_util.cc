@@ -166,7 +166,8 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
   bool result = false;
 
   if (GetVersion() < VERSION_WIN8) {
-    *reason = "Detection not supported";
+    if (reason)
+      *reason = "Detection not supported";
     return false;
   }
 
