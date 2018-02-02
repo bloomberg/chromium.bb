@@ -211,12 +211,11 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void LoadProgressChanged(content::WebContents* source, double progress) final;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) final;
-  void RendererResponsive(
-      content::WebContents* source,
-      content::RenderProcessHost* render_process_host) final;
+  void RendererResponsive(content::WebContents* source,
+                          content::RenderWidgetHost* render_widget_host) final;
   void RendererUnresponsive(
       content::WebContents* source,
-      content::RenderProcessHost* render_process_host) final;
+      content::RenderWidgetHost* render_widget_host) final;
   void RequestMediaAccessPermission(
       content::WebContents* source,
       const content::MediaStreamRequest& request,

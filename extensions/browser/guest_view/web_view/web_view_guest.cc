@@ -677,18 +677,20 @@ void WebViewGuest::NewGuestWebViewCallback(const content::OpenURLParams& params,
 // 'unresponsive' events.
 void WebViewGuest::RendererResponsive(
     WebContents* source,
-    content::RenderProcessHost* render_process_host) {
+    content::RenderWidgetHost* render_widget_host) {
   auto args = std::make_unique<base::DictionaryValue>();
-  args->SetInteger(webview::kProcessId, render_process_host->GetID());
+  args->SetInteger(webview::kProcessId,
+                   render_widget_host->GetProcess()->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventResponsive, std::move(args)));
 }
 
 void WebViewGuest::RendererUnresponsive(
     WebContents* source,
-    content::RenderProcessHost* render_process_host) {
+    content::RenderWidgetHost* render_widget_host) {
   auto args = std::make_unique<base::DictionaryValue>();
-  args->SetInteger(webview::kProcessId, render_process_host->GetID());
+  args->SetInteger(webview::kProcessId,
+                   render_widget_host->GetProcess()->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventUnresponsive, std::move(args)));
 }

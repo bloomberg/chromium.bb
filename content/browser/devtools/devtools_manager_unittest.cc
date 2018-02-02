@@ -86,7 +86,7 @@ class TestWebContentsDelegate : public WebContentsDelegate {
 
   // Notification that the contents is hung.
   void RendererUnresponsive(WebContents* source,
-                            RenderProcessHost* render_process_host) override {
+                            RenderWidgetHost* render_widget_host) override {
     renderer_unresponsive_received_ = true;
   }
 

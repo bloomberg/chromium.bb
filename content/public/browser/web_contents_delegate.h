@@ -44,7 +44,6 @@ namespace content {
 class ColorChooser;
 class JavaScriptDialogManager;
 class RenderFrameHost;
-class RenderProcessHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -317,13 +316,24 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 
-  // Notification that a process in the WebContents is hung.
+  // Notification that one of the frames in the WebContents is hung. |source| is
+  // the WebContents that is hung, and |render_widget_host| is the
+  // RenderWidgetHost that, while routing events to it, discovered the hang.
+  //
+  // Useful member functions on |render_widget_host|:
+  // - Getting the hung render process: GetProcess()
+  // - Querying whether the process is still hung: IsCurrentlyUnresponsive()
+  // - Waiting for the process to recover on its own:
+  //     RestartHangMonitorTimeoutIfNecessary()
   virtual void RendererUnresponsive(WebContents* source,
-                                    RenderProcessHost* render_process_host) {}
+                                    RenderWidgetHost* render_widget_host) {}
 
-  // Notification that a process in the WebContents is no longer hung.
+  // Notification that a process in the WebContents is no longer hung. |source|
+  // is the WebContents that was hung, and |render_widget_host| is the
+  // RenderWidgetHost that was passed in an earlier call to
+  // RendererUnresponsive().
   virtual void RendererResponsive(WebContents* source,
-                                  RenderProcessHost* render_process_host) {}
+                                  RenderWidgetHost* render_widget_host) {}
 
   // Invoked when a main fram navigation occurs.
   virtual void DidNavigateMainFramePostCommit(WebContents* source) {}
