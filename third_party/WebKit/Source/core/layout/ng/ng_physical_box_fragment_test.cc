@@ -57,7 +57,7 @@ TEST_F(NGPhysicalBoxFragmentTest, InlineBlockOldLayoutRoot) {
   const NGPhysicalFragment* fragment = line_box->Children().front().get();
   ASSERT_TRUE(fragment);
   EXPECT_TRUE(fragment->IsBox());
-  EXPECT_EQ(NGPhysicalFragment::kInlineBlock, fragment->BoxType());
+  EXPECT_EQ(NGPhysicalFragment::kAtomicInline, fragment->BoxType());
   EXPECT_TRUE(fragment->IsOldLayoutRoot());
   EXPECT_TRUE(fragment->IsBlockLayoutRoot());
 }

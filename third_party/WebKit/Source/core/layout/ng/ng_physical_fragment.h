@@ -50,7 +50,7 @@ class CORE_EXPORT NGPhysicalFragment
   enum NGBoxType {
     kNormalBox,
     kInlineBox,
-    kInlineBlock,
+    kAtomicInline,
     kFloating,
     kOutOfFlowPositioned,
     // When adding new values, make sure the bit size of |box_type_| is large
@@ -58,7 +58,7 @@ class CORE_EXPORT NGPhysicalFragment
 
     // Also, add after kMinimumBlockLayoutRoot if the box type is a block layout
     // root, or before otherwise. See IsBlockLayoutRoot().
-    kMinimumBlockLayoutRoot = kInlineBlock
+    kMinimumBlockLayoutRoot = kAtomicInline
   };
 
   ~NGPhysicalFragment();
@@ -79,11 +79,13 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsInlineBox() const { return BoxType() == NGBoxType::kInlineBox; }
   // Returns whether the fragment is old layout root.
   bool IsOldLayoutRoot() const { return is_old_layout_root_; }
-  // An inline block is represented as a kFragmentBox.
-  // TODO(eae): This isn't true for replaces elements at the moment.
-  bool IsInlineBlock() const { return BoxType() == NGBoxType::kInlineBlock; }
+  // An atomic inline is represented as a kFragmentBox, such as inline block and
+  // replaced elements.
+  bool IsAtomicInline() const { return BoxType() == NGBoxType::kAtomicInline; }
   // True if this fragment is in-flow in an inline formatting context.
-  bool IsInline() const { return IsText() || IsInlineBox() || IsInlineBlock(); }
+  bool IsInline() const {
+    return IsText() || IsInlineBox() || IsAtomicInline();
+  }
   bool IsFloating() const { return BoxType() == NGBoxType::kFloating; }
   bool IsOutOfFlowPositioned() const {
     return BoxType() == NGBoxType::kOutOfFlowPositioned;

@@ -139,7 +139,7 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
 unsigned GetTextOffsetBefore(const NGPhysicalBoxFragment& fragment) {
   // TODO(xiaochengh): Design more straightforward way to get text offset of
   // atomic inline box.
-  DCHECK(fragment.IsInlineBlock());
+  DCHECK(fragment.IsAtomicInline());
   const Node* node = fragment.GetNode();
   DCHECK(node);
   const Position before_node = Position::BeforeNode(*node);
@@ -196,7 +196,7 @@ CaretPositionResolution TryResolveCaretPositionWithFragment(
         ToNGPhysicalTextFragment(fragment), current_line, last_line, offset,
         affinity);
   }
-  if (fragment.IsBox() && fragment.IsInlineBlock()) {
+  if (fragment.IsBox() && fragment.IsAtomicInline()) {
     return TryResolveCaretPositionByBoxFragmentSide(
         ToNGPhysicalBoxFragment(fragment), current_line, last_line, offset,
         affinity);

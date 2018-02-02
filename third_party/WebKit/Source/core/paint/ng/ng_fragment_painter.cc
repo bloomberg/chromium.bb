@@ -65,7 +65,7 @@ children with outlines.
        NGPaintFragmentTraversal::DescendantsOf(paint_fragment_)) {
     const ComputedStyle& descendant_style = paint_descendant.fragment->Style();
     if (!paint_descendant.fragment->PhysicalFragment().IsBox() ||
-        paint_descendant.fragment->PhysicalFragment().IsInlineBlock())
+        paint_descendant.fragment->PhysicalFragment().IsAtomicInline())
       continue;
 
     if (!descendant_style.HasOutline() ||

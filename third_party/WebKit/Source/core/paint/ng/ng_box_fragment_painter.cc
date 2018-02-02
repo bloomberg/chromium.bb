@@ -94,8 +94,8 @@ void NGBoxFragmentPainter::PaintWithAdjustedOffset(
   if (!IntersectsPaintRect(info, paint_offset))
     return;
 
-  if (PhysicalFragment().IsInlineBlock())
-    return PaintInlineBlock(info, paint_offset);
+  if (PhysicalFragment().IsAtomicInline())
+    return PaintAtomicInline(info, paint_offset);
 
   PaintPhase original_phase = info.phase;
 
@@ -272,8 +272,8 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
                                             const PaintInfo& paint_info,
                                             const LayoutPoint& paint_offset) {
-  // Inline-block children should be painted by PaintInlineBlockChild.
-  DCHECK(!child.PhysicalFragment().IsInlineBlock());
+  // Atomic-inline children should be painted by PaintAtomicInlineChild.
+  DCHECK(!child.PhysicalFragment().IsAtomicInline());
 
   const NGPhysicalFragment& fragment = child.PhysicalFragment();
   PaintInfo descendants_info = paint_info.ForDescendants();
@@ -541,9 +541,9 @@ void NGBoxFragmentPainter::PaintInlineChildren(
   for (const auto& child : inline_children) {
     if (child->PhysicalFragment().IsFloating())
       continue;
-    if (child->PhysicalFragment().IsInlineBlock())
-      PaintInlineBlockChild(*child, paint_info, paint_offset,
-                            legacy_paint_offset);
+    if (child->PhysicalFragment().IsAtomicInline())
+      PaintAtomicInlineChild(*child, paint_info, paint_offset,
+                             legacy_paint_offset);
     else
       PaintInlineChild(*child, paint_info, paint_offset);
   }
@@ -556,13 +556,13 @@ void NGBoxFragmentPainter::PaintInlineChildrenOutlines(
   // TODO(layout-dev): Implement.
 }
 
-void NGBoxFragmentPainter::PaintInlineBlockChild(
+void NGBoxFragmentPainter::PaintAtomicInlineChild(
     const NGPaintFragment& child,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     const LayoutPoint& legacy_paint_offset) {
   // Inline children should be painted by PaintInlineChild.
-  DCHECK(child.PhysicalFragment().IsInlineBlock());
+  DCHECK(child.PhysicalFragment().IsAtomicInline());
 
   const NGPhysicalFragment& fragment = child.PhysicalFragment();
   if (child.HasSelfPaintingLayer())
@@ -580,8 +580,8 @@ void NGBoxFragmentPainter::PaintInlineBlockChild(
 void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
                                           const PaintInfo& paint_info,
                                           const LayoutPoint& paint_offset) {
-  // Inline blocks should be painted by PaintInlineBlockChild.
-  DCHECK(!text_fragment.PhysicalFragment().IsInlineBlock());
+  // Inline blocks should be painted by PaintAtomicInlineChild.
+  DCHECK(!text_fragment.PhysicalFragment().IsAtomicInline());
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, text_fragment,
           DisplayItem::PaintPhaseToDrawingType(paint_info.phase))) {
@@ -596,8 +596,8 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
   text_painter.Paint(paint_info, paint_offset);
 }
 
-void NGBoxFragmentPainter::PaintInlineBlock(const PaintInfo& paint_info,
-                                            const LayoutPoint& paint_offset) {
+void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info,
+                                             const LayoutPoint& paint_offset) {
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kSelection)
     return;
