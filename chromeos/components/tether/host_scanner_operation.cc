@@ -64,8 +64,11 @@ bool AreGmsCoreNotificationsDisabled(
     return false;
 
   return response->response_code() ==
-         TetherAvailabilityResponse_ResponseCode::
-             TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED;
+             TetherAvailabilityResponse_ResponseCode::
+                 TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED_LEGACY ||
+         response->response_code() ==
+             TetherAvailabilityResponse_ResponseCode::
+                 TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED_WITH_NOTIFICATION_CHANNEL;
 }
 
 }  // namespace
@@ -181,7 +184,7 @@ void HostScannerOperation::OnMessageReceived(
     PA_LOG(INFO) << "Received TetherAvailabilityResponse from device with ID "
                  << remote_device.GetTruncatedDeviceIdForLogs() << " which "
                  << "indicates that Google Play Services notifications are "
-                 << "disabled.";
+                 << "disabled. Response code: " << response->response_code();
     gms_core_notifications_disabled_devices_.push_back(remote_device);
     NotifyObserversOfScannedDeviceList(false /* is_final_scan_result */);
   } else if (!IsTetheringAvailableWithValidDeviceStatus(response)) {
