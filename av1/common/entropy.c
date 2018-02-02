@@ -558,6 +558,22 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
   const int index = AOMMIN(TOKEN_CDF_Q_CTXS - 1, cm->base_qindex / 64);
+#if CONFIG_LV_MAP
+  (void)index;
+  av1_copy(cm->fc->txb_skip_cdf, av1_default_txb_skip_cdf);
+  av1_copy(cm->fc->eob_extra_cdf, av1_default_eob_extra_cdf);
+  av1_copy(cm->fc->dc_sign_cdf, av1_default_dc_sign_cdf);
+  av1_copy(cm->fc->coeff_br_cdf, av1_default_coeff_lps_multi);
+  av1_copy(cm->fc->coeff_base_cdf, av1_default_coeff_base_multi);
+  av1_copy(cm->fc->coeff_base_eob_cdf, av1_default_coeff_base_eob_multi);
+  av1_copy(cm->fc->eob_flag_cdf16, av1_default_eob_multi16);
+  av1_copy(cm->fc->eob_flag_cdf32, av1_default_eob_multi32);
+  av1_copy(cm->fc->eob_flag_cdf64, av1_default_eob_multi64);
+  av1_copy(cm->fc->eob_flag_cdf128, av1_default_eob_multi128);
+  av1_copy(cm->fc->eob_flag_cdf256, av1_default_eob_multi256);
+  av1_copy(cm->fc->eob_flag_cdf512, av1_default_eob_multi512);
+  av1_copy(cm->fc->eob_flag_cdf1024, av1_default_eob_multi1024);
+#else
   av1_copy(cm->fc->coef_head_cdfs[TX_4X4],
            (*av1_default_qctx_coef_cdfs[index])[TX_4X4]);
   av1_copy(cm->fc->coef_head_cdfs[TX_8X8],
@@ -571,6 +587,7 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
            (*av1_default_qctx_coef_cdfs[index])[TX_32X32]);
 #endif  // CONFIG_TX64X64
   av1_coef_pareto_cdfs(cm->fc);
+#endif
 }
 
 static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
