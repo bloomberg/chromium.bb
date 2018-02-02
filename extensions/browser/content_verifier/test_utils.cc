@@ -30,15 +30,31 @@ void TestContentVerifyJobObserver::JobFinished(
     return;
   EXPECT_FALSE(failure_reason_.has_value());
   failure_reason_ = reason;
-  run_loop_.Quit();
+  job_finished_run_loop_.Quit();
+}
+
+void TestContentVerifyJobObserver::OnHashesReady(
+    const ExtensionId& extension_id,
+    const base::FilePath& relative_path,
+    bool success) {
+  if (extension_id != extension_id_ || relative_path != relative_path_)
+    return;
+  EXPECT_FALSE(seen_on_hashes_ready_);
+  seen_on_hashes_ready_ = true;
+  on_hashes_ready_run_loop_.Quit();
 }
 
 ContentVerifyJob::FailureReason
-TestContentVerifyJobObserver::WaitAndGetFailureReason() {
+TestContentVerifyJobObserver::WaitForJobFinished() {
   // Run() returns immediately if Quit() has already been called.
-  run_loop_.Run();
+  job_finished_run_loop_.Run();
   EXPECT_TRUE(failure_reason_.has_value());
   return failure_reason_.value_or(ContentVerifyJob::FAILURE_REASON_MAX);
+}
+
+void TestContentVerifyJobObserver::WaitForOnHashesReady() {
+  // Run() returns immediately if Quit() has already been called.
+  on_hashes_ready_run_loop_.Run();
 }
 
 namespace content_verifier_test_utils {

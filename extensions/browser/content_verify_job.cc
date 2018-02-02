@@ -160,6 +160,10 @@ bool ContentVerifyJob::FinishBlock() {
 void ContentVerifyJob::OnHashesReady(bool success) {
   if (g_ignore_verification_for_tests)
     return;
+  if (g_content_verify_job_test_observer) {
+    g_content_verify_job_test_observer->OnHashesReady(
+        hash_reader_->extension_id(), hash_reader_->relative_path(), success);
+  }
   if (!success) {
     // TODO(lazyboy): Make ContentHashReader::Init return an enum instead of
     // bool. This should make the following checks on |hash_reader_| easier
