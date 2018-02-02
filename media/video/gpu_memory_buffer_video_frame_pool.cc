@@ -188,7 +188,7 @@ namespace {
 
 // VideoFrame copies to GpuMemoryBuffers will be split in copies where the
 // output size is |kBytesPerCopyTarget| bytes and run in parallel.
-const size_t kBytesPerCopyTarget = 1024 * 1024;  // 1MB
+constexpr size_t kBytesPerCopyTarget = 1024 * 1024;  // 1MB
 
 // Return the GpuMemoryBuffer format to use for a specific VideoPixelFormat
 // and plane.
