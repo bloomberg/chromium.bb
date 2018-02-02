@@ -217,13 +217,13 @@ void PasswordPendingView::BuildCredentialRows(
   std::unique_ptr<views::Label> username_label(new views::Label(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
-  username_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
+  username_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   std::unique_ptr<views::Label> password_label(new views::Label(
       show_password_label
           ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL)
           : base::string16(),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
-  password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
+  password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   int labels_width = std::max(username_label->GetPreferredSize().width(),
                               password_label->GetPreferredSize().width());
 
