@@ -1747,6 +1747,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void SetNeedsOverflowRecalcAfterStyleChange();
 
+  void InvalidateClipPathCache();
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class CORE_EXPORT MutableForPainting {
@@ -1804,6 +1806,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void SetPartialInvalidationRect(const LayoutRect& r) {
       layout_object_.SetPartialInvalidationRect(r);
     }
+
+    void InvalidateClipPathCache() { layout_object_.InvalidateClipPathCache(); }
 
 #if DCHECK_IS_ON()
     // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as

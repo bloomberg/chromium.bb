@@ -125,13 +125,17 @@ void SVGPaintContext::ApplyPaintPropertyState() {
     return;
 
   if (const auto* properties = object_.FirstFragment().PaintProperties()) {
-    if (const auto* effect = properties->Effect()) {
+    // MaskClip() implies Effect(), thus we don't need to check MaskClip().
+    if (properties->Effect() || properties->ClipPathClip()) {
       auto& paint_controller = GetPaintInfo().context.GetPaintController();
       PropertyTreeState state(paint_controller.CurrentPaintChunkProperties()
                                   .property_tree_state.GetPropertyTreeState());
-      state.SetEffect(effect);
+      if (const auto* effect = properties->Effect())
+        state.SetEffect(effect);
       if (const auto* mask_clip = properties->MaskClip())
         state.SetClip(mask_clip);
+      else if (const auto* clip_path_clip = properties->ClipPathClip())
+        state.SetClip(clip_path_clip);
       scoped_paint_chunk_properties_.emplace(
           paint_controller, state, object_,
           DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));
@@ -158,9 +162,6 @@ void SVGPaintContext::ApplyCompositingIfNecessary() {
 }
 
 void SVGPaintContext::ApplyClipIfNecessary() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   if (object_.StyleRef().ClipPath())
     clip_path_clipper_.emplace(GetPaintInfo().context, object_, LayoutPoint());
 }
@@ -212,12 +213,16 @@ bool SVGPaintContext::ApplyFilterIfNecessary(SVGResources* resources) {
 }
 
 bool SVGPaintContext::IsIsolationInstalled() const {
+  // In SPv175+ isolation is modeled by effect nodes, and will be applied by
+  // PaintArtifactCompositor or PaintChunksToCcLayer depends on compositing
+  // state.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return true;
   if (compositing_recorder_)
     return true;
   if (masker_ || filter_)
     return true;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && clip_path_clipper_ &&
-      clip_path_clipper_->IsIsolationInstalled())
+  if (clip_path_clipper_ && clip_path_clipper_->IsIsolationInstalled())
     return true;
   return false;
 }

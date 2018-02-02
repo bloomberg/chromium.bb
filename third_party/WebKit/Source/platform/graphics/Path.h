@@ -202,6 +202,10 @@ class PLATFORM_EXPORT Path {
 class PLATFORM_EXPORT RefCountedPath : public Path,
                                        public RefCounted<RefCountedPath> {
   USING_FAST_MALLOC(RefCountedPath);
+
+ public:
+  template <typename... Args>
+  RefCountedPath(Args&&... args) : Path(std::forward<Args>(args)...) {}
 };
 
 // Only used for DCHECKs

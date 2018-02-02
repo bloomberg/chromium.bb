@@ -165,6 +165,7 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
       // entire <text>/<tspan>/... subtree.
       client->SetShouldDoFullPaintInvalidation(
           PaintInvalidationReason::kSVGResource);
+      client->InvalidateClipPathCache();
       // Invalidate paint properties to update effects if any.
       client->SetNeedsPaintPropertyUpdate();
       break;
