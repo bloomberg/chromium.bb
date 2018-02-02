@@ -26,6 +26,8 @@ import org.chromium.content_public.browser.WebContents;
  * CastWebContentsFragment should be removed from the activity holding it.
  * Similarily, if the fragment is removed from a activity or the activity holding
  * it is destroyed, CastContentWindowAndroid should be notified by intent.
+ *
+ * TODO(vincentli): Add a test case to test its lifecycle
  */
 public class CastWebContentsFragment extends Fragment {
     private static final String TAG = "cr_CastWebContentFrg";
@@ -33,6 +35,8 @@ public class CastWebContentsFragment extends Fragment {
     private Context mPackageContext;
 
     private CastWebContentsSurfaceHelper mSurfaceHelper;
+
+    private View mFragmentRootView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,10 +56,13 @@ public class CastWebContentsFragment extends Fragment {
                     .show();
             return null;
         }
-
-        return inflater.cloneInContext(getContext())
+        if (mFragmentRootView == null) {
+            mFragmentRootView = inflater.cloneInContext(getContext())
                 .inflate(R.layout.cast_web_contents_activity, null);
+        }
+        return mFragmentRootView;
     }
+
 
     @Override
     public Context getContext() {
@@ -69,11 +76,12 @@ public class CastWebContentsFragment extends Fragment {
     public void onStart() {
         Log.d(TAG, "onStart");
         super.onStart();
-        if (mSurfaceHelper == null) {
-            mSurfaceHelper = new CastWebContentsSurfaceHelper(getActivity(), /* hostActivity */
+        if (mSurfaceHelper != null) {
+            return;
+        }
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(getActivity(), /* hostActivity */
                     (FrameLayout) getView().findViewById(R.id.web_contents_container),
                     true /* showInFragment */);
-        }
         Bundle bundle = getArguments();
         bundle.setClassLoader(WebContents.class.getClassLoader());
         String uriString = bundle.getString(CastWebContentsComponent.INTENT_EXTRA_URI);
@@ -93,7 +101,6 @@ public class CastWebContentsFragment extends Fragment {
     public void onPause() {
         Log.d(TAG, "onPause");
         super.onPause();
-
         if (mSurfaceHelper != null) {
             mSurfaceHelper.onPause();
         }
