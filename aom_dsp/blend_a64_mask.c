@@ -40,40 +40,40 @@ void aom_blend_a64_d32_mask_c(int32_t *dst, uint32_t dst_stride,
   if (subw == 0 && subh == 0) {
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; ++j) {
-        const int64_t m = mask[i * mask_stride + j];
-        dst[i * dst_stride + j] = (int32_t)AOM_BLEND_A64(
-            m, src0[i * src0_stride + j], src1[i * src1_stride + j]);
+        const int m = mask[i * mask_stride + j];
+        dst[i * dst_stride + j] = AOM_BLEND_A64(m, src0[i * src0_stride + j],
+                                                src1[i * src1_stride + j]);
       }
     }
   } else if (subw == 1 && subh == 1) {
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; ++j) {
-        const int64_t m = ROUND_POWER_OF_TWO(
+        const int m = ROUND_POWER_OF_TWO(
             mask[(2 * i) * mask_stride + (2 * j)] +
                 mask[(2 * i + 1) * mask_stride + (2 * j)] +
                 mask[(2 * i) * mask_stride + (2 * j + 1)] +
                 mask[(2 * i + 1) * mask_stride + (2 * j + 1)],
             2);
-        dst[i * dst_stride + j] = (int32_t)AOM_BLEND_A64(
-            m, src0[i * src0_stride + j], src1[i * src1_stride + j]);
+        dst[i * dst_stride + j] = AOM_BLEND_A64(m, src0[i * src0_stride + j],
+                                                src1[i * src1_stride + j]);
       }
     }
   } else if (subw == 1 && subh == 0) {
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; ++j) {
-        const int64_t m = AOM_BLEND_AVG(mask[i * mask_stride + (2 * j)],
-                                        mask[i * mask_stride + (2 * j + 1)]);
-        dst[i * dst_stride + j] = (int32_t)AOM_BLEND_A64(
-            m, src0[i * src0_stride + j], src1[i * src1_stride + j]);
+        const int m = AOM_BLEND_AVG(mask[i * mask_stride + (2 * j)],
+                                    mask[i * mask_stride + (2 * j + 1)]);
+        dst[i * dst_stride + j] = AOM_BLEND_A64(m, src0[i * src0_stride + j],
+                                                src1[i * src1_stride + j]);
       }
     }
   } else {
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; ++j) {
-        const int64_t m = AOM_BLEND_AVG(mask[(2 * i) * mask_stride + j],
-                                        mask[(2 * i + 1) * mask_stride + j]);
-        dst[i * dst_stride + j] = (int32_t)AOM_BLEND_A64(
-            m, src0[i * src0_stride + j], src1[i * src1_stride + j]);
+        const int m = AOM_BLEND_AVG(mask[(2 * i) * mask_stride + j],
+                                    mask[(2 * i + 1) * mask_stride + j]);
+        dst[i * dst_stride + j] = AOM_BLEND_A64(m, src0[i * src0_stride + j],
+                                                src1[i * src1_stride + j]);
       }
     }
   }
