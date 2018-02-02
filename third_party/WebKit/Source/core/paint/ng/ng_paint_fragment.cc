@@ -8,6 +8,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_container_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
@@ -214,6 +215,18 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
     child->PaintInlineBoxForDescendants(paint_info, paint_offset, layout_object,
                                         offset + child->Offset());
   }
+}
+
+LayoutRect NGPaintFragment::PartialInvalidationRect() const {
+  // TODO(yochio): On SlimmingPaintV175, this function is used to invalidate old selected rect in
+  // this fragment by PaintController::GenerateRasterInvalidation.
+  // So far we just return enclosing block flow's visual rect to pass layout test
+  // but this makes performance worse. We should return LayoutRect on that
+  // ng_text_fragment_painter::PaintSelection paints selection.
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
+  const NGPaintFragment* block_fragment =
+      GetLayoutObject()->EnclosingNGBlockFlow()->PaintFragment();
+  return block_fragment->VisualRect();
 }
 
 }  // namespace blink
