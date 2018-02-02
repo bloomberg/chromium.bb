@@ -219,9 +219,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
     if (device->type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
-        (device_id == media::AudioDeviceDescription::kLoopbackInputDeviceId ||
-         device_id ==
-             media::AudioDeviceDescription::kLoopbackWithMuteDeviceId)) {
+        (media::AudioDeviceDescription::IsLoopbackDevice(device_id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }
   }

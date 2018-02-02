@@ -763,8 +763,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   // Use event-driven mode only fo regular input devices. For loopback the
   // EVENTCALLBACK flag is specified when intializing
   // |audio_render_client_for_loopback_|.
-  if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId ||
-      device_id_ == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
+  if (AudioDeviceDescription::IsLoopbackDevice(device_id_)) {
     flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
   } else {
     flags = AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
@@ -845,8 +844,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   //   samples from the capture endpoint buffer.
   //
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd316551(v=vs.85).aspx
-  if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId ||
-      device_id_ == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
+  if (AudioDeviceDescription::IsLoopbackDevice(device_id_)) {
     hr = endpoint_device_->Activate(
         __uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL,
         &audio_render_client_for_loopback_);
