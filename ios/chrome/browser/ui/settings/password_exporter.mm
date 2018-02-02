@@ -267,12 +267,14 @@ enum class ReauthenticationStatus {
 
 - (void)deleteTemporaryFile:(NSURL*)passwordsTempFileURL {
   __weak PasswordExporter* weakSelf = self;
-  base::PostTaskWithTraits(
+  base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindBlockArc(^() {
         base::AssertBlockingAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];
         [fileManager removeItemAtURL:passwordsTempFileURL error:nil];
+      }),
+      base::BindBlockArc(^() {
         [weakSelf resetExportState];
       }));
 }
