@@ -297,12 +297,6 @@ void RasterDecoderTestBase::DoDeleteTexture(GLuint client_id,
   }
 }
 
-void RasterDecoderTestBase::DoPixelStorei(GLenum pname, GLint param) {
-  EXPECT_CALL(*gl_, PixelStorei(pname, param)).Times(1).RetiresOnSaturation();
-  cmds::PixelStorei cmd;
-  cmd.Init(pname, param);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

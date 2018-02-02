@@ -165,7 +165,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
 
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
-  void DoPixelStorei(GLenum pname, GLint param);
 
   GLvoid* BufferOffset(unsigned i) { return static_cast<int8_t*>(NULL) + (i); }
 

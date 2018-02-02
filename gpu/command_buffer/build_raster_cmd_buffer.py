@@ -14,90 +14,7 @@ import build_cmd_buffer_lib
 # Empty flags because raster interface does not support glEnable
 _CAPABILITY_FLAGS = []
 
-_STATE_INFO = {
-  'PixelStore': {
-    'type': 'NamedParameter',
-    'func': 'PixelStorei',
-    'states': [
-      {
-        'name': 'pack_alignment',
-        'type': 'GLint',
-        'enum': 'GL_PACK_ALIGNMENT',
-        'default': '4'
-      },
-      {
-        'name': 'unpack_alignment',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_ALIGNMENT',
-        'default': '4'
-      },
-      {
-        'name': 'pack_row_length',
-        'type': 'GLint',
-        'enum': 'GL_PACK_ROW_LENGTH',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'pack_skip_pixels',
-        'type': 'GLint',
-        'enum': 'GL_PACK_SKIP_PIXELS',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'pack_skip_rows',
-        'type': 'GLint',
-        'enum': 'GL_PACK_SKIP_ROWS',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'unpack_row_length',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_ROW_LENGTH',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'unpack_image_height',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_IMAGE_HEIGHT',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'unpack_skip_pixels',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_SKIP_PIXELS',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'unpack_skip_rows',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_SKIP_ROWS',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      },
-      {
-        'name': 'unpack_skip_images',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_SKIP_IMAGES',
-        'default': '0',
-        'es3': True,
-        'manual': True,
-      }
-    ],
-  },
-}
+_STATE_INFO = {}
 
 # TODO(backer): Figure out which of these enums are actually valid.
 #
@@ -685,30 +602,16 @@ _NAMED_TYPE_INFO = {
 # es3:          ES3 API. True if the function requires an ES3 or WebGL2 context.
 
 _FUNCTION_INFO = {
-  'ActiveTexture': {
-    'decoder_func': 'DoActiveTexture',
-    'unit_test': False,
-    'impl_func': False,
-    'client_test': False,
-  },
-  'BindTexture': {
+  # TODO(backer): Kept for unittests remove once new raster API implemented.
+ 'BindTexture': {
     'type': 'Bind',
+    'internal' : True,
     'decoder_func': 'DoBindTexture',
     'gen_func': 'GenTextures',
     # TODO: remove this once client side caching works.
     'client_test': False,
     'unit_test': False,
     'trace_level': 2,
-  },
-  'CreateAndConsumeTextureCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_texture_mailbox",
-    'trace_level': 2,
-  },
-  'CompressedTexImage2D': {
-    'type': 'Custom',
-    'data_transfer_methods': ['bucket', 'shm'],
-    'trace_level': 1,
   },
   'CompressedTexSubImage2D': {
     'type': 'Custom',
@@ -754,12 +657,10 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoFlush',
     'trace_level': 1,
   },
-  'GenMailboxCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_texture_mailbox",
-  },
+  # TODO(backer): Kept for unittests remove once new raster API implemented.
   'GenTextures': {
     'type': 'GENn',
+    'internal' : True,
     'gl_test_func': 'glGenTextures',
     'resource_type': 'Texture',
     'resource_types': 'Textures',
@@ -782,44 +683,11 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGetIntegerv',
     'client_test': False,
   },
-  'PixelStorei': {
-    'type': 'Custom',
-    'impl_func': False,
-  },
-  'ProduceTextureDirectCHROMIUM': {
-    'decoder_func': 'DoProduceTextureDirectCHROMIUM',
-    'impl_func': False,
-    'type': 'PUT',
-    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'unit_test': False,
-    'client_test': False,
-    'extension': "CHROMIUM_texture_mailbox",
-    'trace_level': 1,
-  },
-  'TexImage2D': {
-    'type': 'Custom',
-    'impl_func': False,
-    'data_transfer_methods': ['shm'],
-    'client_test': False,
-    'trace_level': 2,
-  },
   'TexParameteri': {
     'decoder_func': 'DoTexParameteri',
     'valid_args': {
       '2': 'GL_NEAREST'
     },
-  },
-  'TexSubImage2D': {
-    'type': 'Custom',
-    'impl_func': False,
-    'data_transfer_methods': ['shm'],
-    'client_test': False,
-    'trace_level': 2,
-    'cmd_args': 'GLenumTextureTarget target, GLint level, '
-                'GLint xoffset, GLint yoffset, '
-                'GLsizei width, GLsizei height, '
-                'GLenumTextureFormat format, GLenumPixelType type, '
-                'const void* pixels, GLboolean internal'
   },
   'WaitSync': {
     'type': 'Custom',
@@ -830,23 +698,10 @@ _FUNCTION_INFO = {
     'es3': True,
     'trace_level': 1,
   },
-  'CopySubTextureCHROMIUM': {
-    'decoder_func': 'DoCopySubTextureCHROMIUM',
-    'unit_test': False,
-    'extension': "CHROMIUM_copy_texture",
-    'trace_level': 2,
-  },
   'CompressedCopyTextureCHROMIUM': {
     'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
     'unit_test': False,
     'extension': 'CHROMIUM_copy_compressed_texture',
-  },
-  'TexStorage2DEXT': {
-    'unit_test': False,
-    'extension': 'EXT_texture_storage',
-    'extension_flag': 'ext_texture_storage',
-    'decoder_func': 'DoTexStorage2DEXT',
-    'trace_level': 2,
   },
   'GenQueriesEXT': {
     'type': 'GENn',
@@ -891,16 +746,6 @@ _FUNCTION_INFO = {
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
   },
-  'BindTexImage2DCHROMIUM': {
-    'decoder_func': 'DoBindTexImage2DCHROMIUM',
-    'unit_test': False,
-    'extension': "CHROMIUM_image",
-  },
-  'ReleaseTexImage2DCHROMIUM': {
-    'decoder_func': 'DoReleaseTexImage2DCHROMIUM',
-    'unit_test': False,
-    'extension': "CHROMIUM_image",
-  },
   'ShallowFlushCHROMIUM': {
     'type': 'NoCommand',
     'extension': 'CHROMIUM_ordering_barrier',
@@ -908,20 +753,6 @@ _FUNCTION_INFO = {
   'OrderingBarrierCHROMIUM': {
     'type': 'NoCommand',
     'extension': 'CHROMIUM_ordering_barrier',
-  },
-  'TraceBeginCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'client_test': False,
-    'cmd_args': 'GLuint category_bucket_id, GLuint name_bucket_id',
-    'extension': 'CHROMIUM_trace_marker',
-  },
-  'TraceEndCHROMIUM': {
-    'impl_func': False,
-    'client_test': False,
-    'decoder_func': 'DoTraceEndCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_trace_marker',
   },
   'LoseContextCHROMIUM': {
     'decoder_func': 'DoLoseContextCHROMIUM',
@@ -987,14 +818,6 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',
   },
-  'MapRasterCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_raster_transport",
-  },
-  'UnmapRasterCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_raster_transport",
-  },
   'EndRasterCHROMIUM': {
     'decoder_func': 'DoEndRasterCHROMIUM',
     'impl_func': True,
@@ -1030,12 +853,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'unit_test': False,
     'extension': True,
-  },
-  'TexStorage2DImageCHROMIUM': {
-    'decoder_func': 'DoTexStorage2DImageCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_texture_storage_image',
-    'extension_flag': 'chromium_texture_storage_image',
   },
 }
 
@@ -1073,8 +890,8 @@ def main(argv):
   gen.WriteFormat("gpu/command_buffer/common/raster_cmd_format_autogen.h")
   gen.WriteFormatTest(
     "gpu/command_buffer/common/raster_cmd_format_test_autogen.h")
-  # gen.WriteGLES2InterfaceHeader(
-  #   "gpu/command_buffer/client/raster_interface_autogen.h")
+  gen.WriteGLES2InterfaceHeader(
+    "gpu/command_buffer/client/raster_interface_autogen.h")
   # gen.WriteGLES2InterfaceStub(
   #   "gpu/command_buffer/client/raster_interface_stub_autogen.h")
   # gen.WriteGLES2InterfaceStubImpl(

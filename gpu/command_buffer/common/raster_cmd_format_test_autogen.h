@@ -14,16 +14,6 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_TEST_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_TEST_AUTOGEN_H_
 
-TEST_F(RasterFormatTest, ActiveTexture) {
-  cmds::ActiveTexture& cmd = *GetBufferAs<cmds::ActiveTexture>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::ActiveTexture::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.texture);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(RasterFormatTest, BindTexture) {
   cmds::BindTexture& cmd = *GetBufferAs<cmds::BindTexture>();
   void* next_cmd =
@@ -33,46 +23,6 @@ TEST_F(RasterFormatTest, BindTexture) {
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.texture);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, CompressedTexImage2DBucket) {
-  cmds::CompressedTexImage2DBucket& cmd =
-      *GetBufferAs<cmds::CompressedTexImage2DBucket>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
-              static_cast<GLenum>(13), static_cast<GLsizei>(14),
-              static_cast<GLsizei>(15), static_cast<GLuint>(16));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedTexImage2DBucket::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
-  EXPECT_EQ(static_cast<GLuint>(16), cmd.bucket_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, CompressedTexImage2D) {
-  cmds::CompressedTexImage2D& cmd = *GetBufferAs<cmds::CompressedTexImage2D>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
-              static_cast<GLenum>(13), static_cast<GLsizei>(14),
-              static_cast<GLsizei>(15), static_cast<GLsizei>(16),
-              static_cast<uint32_t>(17), static_cast<uint32_t>(18));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedTexImage2D::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
-  EXPECT_EQ(static_cast<GLsizei>(16), cmd.imageSize);
-  EXPECT_EQ(static_cast<uint32_t>(17), cmd.data_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(18), cmd.data_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -152,41 +102,6 @@ TEST_F(RasterFormatTest, GetIntegerv) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(RasterFormatTest, PixelStorei) {
-  cmds::PixelStorei& cmd = *GetBufferAs<cmds::PixelStorei>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::PixelStorei::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.pname);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.param);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, TexImage2D) {
-  cmds::TexImage2D& cmd = *GetBufferAs<cmds::TexImage2D>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
-              static_cast<GLint>(13), static_cast<GLsizei>(14),
-              static_cast<GLsizei>(15), static_cast<GLenum>(16),
-              static_cast<GLenum>(17), static_cast<uint32_t>(18),
-              static_cast<uint32_t>(19));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TexImage2D::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
-  EXPECT_EQ(static_cast<GLint>(13), cmd.internalformat);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
-  EXPECT_EQ(static_cast<GLenum>(16), cmd.format);
-  EXPECT_EQ(static_cast<GLenum>(17), cmd.type);
-  EXPECT_EQ(static_cast<uint32_t>(18), cmd.pixels_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(19), cmd.pixels_shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(RasterFormatTest, TexParameteri) {
   cmds::TexParameteri& cmd = *GetBufferAs<cmds::TexParameteri>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
@@ -197,47 +112,6 @@ TEST_F(RasterFormatTest, TexParameteri) {
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
   EXPECT_EQ(static_cast<GLint>(13), cmd.param);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, TexSubImage2D) {
-  cmds::TexSubImage2D& cmd = *GetBufferAs<cmds::TexSubImage2D>();
-  void* next_cmd = cmd.Set(
-      &cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
-      static_cast<GLint>(13), static_cast<GLint>(14), static_cast<GLsizei>(15),
-      static_cast<GLsizei>(16), static_cast<GLenum>(17),
-      static_cast<GLenum>(18), static_cast<uint32_t>(19),
-      static_cast<uint32_t>(20), static_cast<GLboolean>(21));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TexSubImage2D::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
-  EXPECT_EQ(static_cast<GLint>(13), cmd.xoffset);
-  EXPECT_EQ(static_cast<GLint>(14), cmd.yoffset);
-  EXPECT_EQ(static_cast<GLsizei>(15), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(16), cmd.height);
-  EXPECT_EQ(static_cast<GLenum>(17), cmd.format);
-  EXPECT_EQ(static_cast<GLenum>(18), cmd.type);
-  EXPECT_EQ(static_cast<uint32_t>(19), cmd.pixels_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(20), cmd.pixels_shm_offset);
-  EXPECT_EQ(static_cast<GLboolean>(21), cmd.internal);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, TexStorage2DEXT) {
-  cmds::TexStorage2DEXT& cmd = *GetBufferAs<cmds::TexStorage2DEXT>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
-                           static_cast<GLsizei>(12), static_cast<GLenum>(13),
-                           static_cast<GLsizei>(14), static_cast<GLsizei>(15));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TexStorage2DEXT::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.levels);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalFormat);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -304,36 +178,6 @@ TEST_F(RasterFormatTest, EndQueryEXT) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(RasterFormatTest, CopySubTextureCHROMIUM) {
-  cmds::CopySubTextureCHROMIUM& cmd =
-      *GetBufferAs<cmds::CopySubTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(
-      &cmd, static_cast<GLuint>(11), static_cast<GLint>(12),
-      static_cast<GLenum>(13), static_cast<GLuint>(14), static_cast<GLint>(15),
-      static_cast<GLint>(16), static_cast<GLint>(17), static_cast<GLint>(18),
-      static_cast<GLint>(19), static_cast<GLsizei>(20),
-      static_cast<GLsizei>(21), static_cast<GLboolean>(22),
-      static_cast<GLboolean>(23), static_cast<GLboolean>(24));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CopySubTextureCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.source_level);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_target);
-  EXPECT_EQ(static_cast<GLuint>(14), cmd.dest_id);
-  EXPECT_EQ(static_cast<GLint>(15), cmd.dest_level);
-  EXPECT_EQ(static_cast<GLint>(16), cmd.xoffset);
-  EXPECT_EQ(static_cast<GLint>(17), cmd.yoffset);
-  EXPECT_EQ(static_cast<GLint>(18), cmd.x);
-  EXPECT_EQ(static_cast<GLint>(19), cmd.y);
-  EXPECT_EQ(static_cast<GLsizei>(20), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(21), cmd.height);
-  EXPECT_EQ(static_cast<GLboolean>(22), cmd.unpack_flip_y);
-  EXPECT_EQ(static_cast<GLboolean>(23), cmd.unpack_premultiply_alpha);
-  EXPECT_EQ(static_cast<GLboolean>(24), cmd.unpack_unmultiply_alpha);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(RasterFormatTest, CompressedCopyTextureCHROMIUM) {
   cmds::CompressedCopyTextureCHROMIUM& cmd =
       *GetBufferAs<cmds::CompressedCopyTextureCHROMIUM>();
@@ -344,86 +188,6 @@ TEST_F(RasterFormatTest, CompressedCopyTextureCHROMIUM) {
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.dest_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, ProduceTextureDirectCHROMIUMImmediate) {
-  const int kSomeBaseValueToTestWith = 51;
-  static GLbyte data[] = {
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 1),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 2),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 3),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 4),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 5),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 6),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 7),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 8),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 9),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 10),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 11),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 12),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
-      static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
-  };
-  cmds::ProduceTextureDirectCHROMIUMImmediate& cmd =
-      *GetBufferAs<cmds::ProduceTextureDirectCHROMIUMImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
-  EXPECT_EQ(static_cast<uint32_t>(
-                cmds::ProduceTextureDirectCHROMIUMImmediate::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
-            cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-}
-
-TEST_F(RasterFormatTest, BindTexImage2DCHROMIUM) {
-  cmds::BindTexImage2DCHROMIUM& cmd =
-      *GetBufferAs<cmds::BindTexImage2DCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::BindTexImage2DCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.imageId);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, ReleaseTexImage2DCHROMIUM) {
-  cmds::ReleaseTexImage2DCHROMIUM& cmd =
-      *GetBufferAs<cmds::ReleaseTexImage2DCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::ReleaseTexImage2DCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.imageId);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, TraceBeginCHROMIUM) {
-  cmds::TraceBeginCHROMIUM& cmd = *GetBufferAs<cmds::TraceBeginCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TraceBeginCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.category_bucket_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.name_bucket_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, TraceEndCHROMIUM) {
-  cmds::TraceEndCHROMIUM& cmd = *GetBufferAs<cmds::TraceEndCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd);
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TraceEndCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -580,22 +344,6 @@ TEST_F(RasterFormatTest, UnlockTransferCacheEntryINTERNAL) {
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.entry_type);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.entry_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, TexStorage2DImageCHROMIUM) {
-  cmds::TexStorage2DImageCHROMIUM& cmd =
-      *GetBufferAs<cmds::TexStorage2DImageCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
-              static_cast<GLsizei>(13), static_cast<GLsizei>(14));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TexStorage2DImageCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.internalFormat);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

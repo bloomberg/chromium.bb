@@ -6370,8 +6370,8 @@ extern const NameToFunc g_gles2_function_table[] = {
 
   def WriteGLES2InterfaceHeader(self, filename):
     """Writes the GLES2 interface header."""
-    comment = ("// This file is included by gles2_interface.h to declare the\n"
-               "// GL api functions.\n")
+    comment = ("// This file is included by %s_interface.h to declare the\n"
+               "// GL api functions.\n" % _lower_prefix)
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.original_functions:
         func.WriteGLES2InterfaceHeader(f)
