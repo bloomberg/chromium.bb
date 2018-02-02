@@ -72,7 +72,7 @@ class CleanCommand(command.CliCommand):
     group = parser.add_argument_group(
         'Unrecoverable Options (Dangerous)',
         description='Clean out objects that cannot be recovered easily.')
-    parser.add_argument(
+    group.add_argument(
         '--clobber', default=False, action='store_true',
         help='Delete all non-source objects.')
     group.add_argument(
@@ -80,6 +80,9 @@ class CleanCommand(command.CliCommand):
         help='Delete build chroot (affects all boards).')
     group.add_argument(
         '--board', action='append', help='Delete board(s) build root(s).')
+    group.add_argument(
+        '--autotest', default=False, action='store_true',
+        help='Delete build_externals packages.')
 
   def __init__(self, options):
     """Initializes cros clean."""
@@ -97,11 +100,13 @@ class CleanCommand(command.CliCommand):
             self.options.deploy or
             self.options.flash or
             self.options.images or
+            self.options.autotest or
             self.options.incrementals):
       self.options.safe = True
 
     if self.options.clobber:
       self.options.chroot = True
+      self.options.autotest = True
       self.options.safe = True
 
     if self.options.safe:
@@ -195,3 +200,10 @@ class CleanCommand(command.CliCommand):
       for d in glob.glob(os.path.join(chroot_dir, 'build', '*', 'tmp',
                                       'portage')):
         Clean(d)
+
+    if self.options.autotest:
+      logging.debug('Clean build_externals')
+      packages_dir = os.path.join(
+          constants.SOURCE_ROOT, 'src', 'third_party', 'autotest', 'files',
+          'site-packages')
+      Clean(packages_dir)
