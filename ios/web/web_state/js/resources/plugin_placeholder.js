@@ -5,16 +5,7 @@
 // This file adheres to closure-compiler conventions in order to enable
 // compilation with ADVANCED_OPTIMIZATIONS. See http://goo.gl/FwOgy
 //
-// Installs and runs the plugin placeholder function on the |__gCrWeb| object.
-
-goog.provide('__crWeb.plugin');
-
-/**
- * Namespace for this file. It depends on |__gCrWeb| having already been
- * injected.
- * TODO(crbug.com/802344): Cleanup this file.
- */
-__gCrWeb['plugin'] = {};
+// Inserts placeholders into the DOM on top of unsupported plugins.
 
 /* Beginning of anonymous object. */
 (function() {
@@ -26,7 +17,7 @@ __gCrWeb['plugin'] = {};
    * @return {boolean} Whether the node appears to be a plugin.
    * @private
    */
-  var objectNodeIsPlugin_ = function(node) {
+  var objectNodeIsPlugin = function(node) {
     return node.hasAttribute('classid') ||
       (node.hasAttribute('type') && node.type.indexOf('image/') != 0);
   };
@@ -39,7 +30,7 @@ __gCrWeb['plugin'] = {};
    * @return {boolean} Whether the node has any fallback content.
    * @private
    */
-  var nodeHasFallbackContent_ = function(node) {
+  var nodeHasFallbackContent = function(node) {
     if (node.textContent.trim().length > 0) {
       return true;
     }
@@ -63,7 +54,7 @@ __gCrWeb['plugin'] = {};
    * @return {HTMLElement} The embed fallback node, if one exists.
    * @private
    */
-  var getChildEmbedElement_ = function(node) {
+  var getChildEmbedElement = function(node) {
     var childrenCount = node.children.length;
     if (childrenCount == 0) {
       return null;
@@ -83,7 +74,7 @@ __gCrWeb['plugin'] = {};
    * @return {boolean} Whether the node is known to be flash content.
    * @private
    */
-  var embedNodeIsKnownFlashContent_ = function(node) {
+  var embedNodeIsKnownFlashContent = function(node) {
     return node.hasAttribute('type') &&
       (node.type.indexOf('application/x-shockwave-flash') == 0 ||
       node.type.indexOf('application/vnd.adobe.flash-movie') == 0);
@@ -96,13 +87,13 @@ __gCrWeb['plugin'] = {};
    * @return {boolean} Whether the node is supported.
    * @private
    */
-  var pluginNodeIsSupported_ = function(node) {
-    if (!nodeHasFallbackContent_(node)) {
+  var pluginNodeIsSupported = function(node) {
+    if (!nodeHasFallbackContent(node)) {
       return false;
     }
 
-    var embedChildNode = getChildEmbedElement_(node);
-    if (embedChildNode && embedNodeIsKnownFlashContent_(embedChildNode)) {
+    var embedChildNode = getChildEmbedElement(node);
+    if (embedChildNode && embedNodeIsKnownFlashContent(embedChildNode)) {
       return false;
     }
 
@@ -116,14 +107,13 @@ __gCrWeb['plugin'] = {};
    * @return {!Array<!HTMLElement>} A list of plugin elements.
    * @private
    */
-  var findPluginNodesWithoutFallback_ = function() {
+  var findPluginNodesWithoutFallback = function() {
     var i, pluginNodes = [];
     var objects = document.getElementsByTagName('object');
     var objectCount = objects.length;
     for (i = 0; i < objectCount; i++) {
       var object = /** @type {!HTMLElement} */(objects[i]);
-      if (objectNodeIsPlugin_(object) &&
-          !pluginNodeIsSupported_(object)) {
+      if (objectNodeIsPlugin(object) && !pluginNodeIsSupported(object)) {
         pluginNodes.push(object);
       }
     }
@@ -131,32 +121,17 @@ __gCrWeb['plugin'] = {};
     var appletsCount = applets.length;
     for (i = 0; i < appletsCount; i++) {
       var applet = /** @type {!HTMLElement} */(applets[i]);
-      if (!pluginNodeIsSupported_(applet)) {
+      if (!pluginNodeIsSupported(applet)) {
         pluginNodes.push(applet);
       }
     }
     return pluginNodes;
   };
 
-  /**
-   * Finds and stores any plugins that don't have placeholders.
-   * Returns true if any plugins without placeholders are found.
-   */
-  __gCrWeb['plugin'].updatePluginPlaceholders = function() {
-    var plugins = findPluginNodesWithoutFallback_();
-    if (plugins.length > 0) {
-      // Store the list of plugins in a known place for the replacement script
-      // to use, then trigger it.
-      __gCrWeb['placeholderTargetPlugins'] = plugins;
-      return true;
-    }
-    return false;
-  };
-
   /* Data-URL version of plugin_blocked_android.png. Served this way rather
    * than with an intercepted URL to avoid messing up https pages.
    */
-  __gCrWeb['plugin'].imageData_ =
+  var imageData =
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAQAAABLCVATAAAD' +
       'aklEQVR4Xn2Wz2tcVRTHP/e+O28mMxONJKlF4kIkP4luXFgQuuxCBaG41IWrLupOXLur+A' +
       'e4cmV3LiS6qujSLgq2CIKQUqS2YnWsRkzGSTIz7zyHw+EdchnkcOd+7+OeT84578tMwmet' +
@@ -180,14 +155,14 @@ __gCrWeb['plugin'] = {};
   /**
    * Returns the first <embed> child of the given node, if any.
    * @param {Node} node The node to check.
-   * @return {Node} The first <embed> child, or null.
+   * @return {HTMLElement} The first <embed> child, or null.
    * @private
    */
-  __gCrWeb['plugin'].getEmbedChild_ = function(node) {
+  var getEmbedChild = function(node) {
     if (node.hasChildNodes()) {
       for (var i = 0; i < node.childNodes.length; i++) {
         if (node.childNodes[i].nodeName === 'EMBED') {
-          return node.childNodes[i];
+          return /** @type {HTMLElement} */ (node.childNodes[i]);
         }
       }
     }
@@ -203,12 +178,12 @@ __gCrWeb['plugin'] = {};
    * @return {Object} The size (width and height) for the plugin element.
    * @private
    */
-  __gCrWeb['plugin'].getPluginSize_ = function(plugin) {
+  var getPluginSize = function(plugin) {
     var style;
     // For the common pattern of an IE-specific <object> wrapping an
     // all-other-browsers <embed>, the object doesn't have real style info
     // (most notably size), so this uses the embed in that case.
-    var embedChild = __gCrWeb['plugin'].getEmbedChild_(plugin);
+    var embedChild = getEmbedChild(plugin);
     if (embedChild) {
       style = window.getComputedStyle(embedChild);
     } else {
@@ -242,10 +217,10 @@ __gCrWeb['plugin'] = {};
    * @return {boolean} Whether the node is significant.
    * @private
    */
-  __gCrWeb['plugin'].isSignificantPlugin_ = function(plugin) {
+  var isSignificantPlugin = function(plugin) {
     var windowWidth = window.innerWidth;
     var windowHeight = window.innerHeight;
-    var pluginSize = __gCrWeb['plugin'].getPluginSize_(plugin);
+    var pluginSize = getPluginSize(plugin);
     var pluginWidth = parseFloat(pluginSize.width);
     var pluginHeight = parseFloat(pluginSize.height);
     // A plugin must be at least |significantFraction| of one dimension of the
@@ -263,16 +238,18 @@ __gCrWeb['plugin'] = {};
    * Walks the list of detected plugin elements, adding a placeholder to any
    * that are "significant" (see above).
    * @param {string} message The message to show in the placeholder.
+   * @param {!Array<!HTMLElement>} plugins A list of plugin elements.
+   * @private
    */
-  __gCrWeb['plugin'].addPluginPlaceholders = function(message) {
-    var i, plugins = __gCrWeb['placeholderTargetPlugins'];
+  var addPluginPlaceholders = function(message, plugins) {
+    var i;
     for (i = 0; i < plugins.length; i++) {
       var plugin = plugins[i];
-      if (!__gCrWeb['plugin'].isSignificantPlugin_(plugin)) {
+      if (!isSignificantPlugin(plugin)) {
         continue;
       }
 
-      var pluginSize = __gCrWeb['plugin'].getPluginSize_(plugin);
+      var pluginSize = getPluginSize(plugin);
       var widthStyle = pluginSize.width + 'px';
       var heightStyle = pluginSize.height + 'px';
 
@@ -285,7 +262,7 @@ __gCrWeb['plugin'] = {};
       // avoid being affected by container alignment.
       var placeholder = document.createElement('div');
       placeholder.style.width = widthStyle;
-      if (__gCrWeb['plugin'].getEmbedChild_(plugin)) {
+      if (getEmbedChild(plugin)) {
         placeholder.style.height = '0';
       } else {
         placeholder.style.height = heightStyle;
@@ -314,7 +291,7 @@ __gCrWeb['plugin'] = {};
       pluginImg.style.marginTop = '-' + halfSize + 'px';
       pluginImg.style.left = '50%';
       pluginImg.style.marginLeft = '-' + halfSize + 'px';
-      pluginImg.src = __gCrWeb['plugin'].imageData_;
+      pluginImg.src = imageData;
       placeholderBox.appendChild(pluginImg);
 
       // And below that, the message.
@@ -335,10 +312,11 @@ __gCrWeb['plugin'] = {};
   };
 
  // Add placeholders for plugin content.
- if (__gCrWeb['plugin'].updatePluginPlaceholders()) {
+ var plugins = findPluginNodesWithoutFallback();
+ if (plugins.length > 0) {
    // web::GetDocumentEndScriptForAllFrames replaces
    // $(PLUGIN_NOT_SUPPORTED_TEXT) with approproate string upon injection.
-   __gCrWeb['plugin'].addPluginPlaceholders('$(PLUGIN_NOT_SUPPORTED_TEXT)');
+   addPluginPlaceholders('$(PLUGIN_NOT_SUPPORTED_TEXT)', plugins);
  }
 
 }());  // End of anonymous object
