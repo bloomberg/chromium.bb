@@ -270,9 +270,8 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
   const SelectionTemplate<Strategy>& editing_adjusted_selection =
       SelectionAdjuster::AdjustSelectionToAvoidCrossingEditingBoundaries(
           shadow_adjusted_selection);
-  const EphemeralRangeTemplate<Strategy> editing_adjusted_range(
-      editing_adjusted_selection.ComputeStartPosition(),
-      editing_adjusted_selection.ComputeEndPosition());
+  const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
+      editing_adjusted_selection.ComputeRange();
   // TODO(editing-dev): Implement
   // const SelectionTemplate<Strategy>& adjusted_selection =
   // AdjustSelectionType(editing_adjusted_range);
