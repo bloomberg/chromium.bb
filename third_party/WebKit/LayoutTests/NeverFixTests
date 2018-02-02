@@ -1821,6 +1821,13 @@ external/wpt/css/css-color/t425-hsla-onscreen-multiple-boxes-c.xht [ WontFix ]
 external/wpt/css/mediaqueries/device-aspect-ratio-001.html [ WontFix ]
 external/wpt/css/mediaqueries/device-aspect-ratio-005.html [ WontFix ]
 
+# image() (https://drafts.csswg.org/css-images-4/#image-notation) isn't supported
+crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations.html [ WontFix ]
+crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations002.html [ WontFix ]
+crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations003.html [ WontFix ]
+crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations004.html [ WontFix ]
+crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations005.html [ WontFix ]
+
 # https://github.com/w3c/web-platform-tests/issues/8633
 external/wpt/css/css-style-attr/style-attr-braces-002-quirks.htm [ WontFix ]
 

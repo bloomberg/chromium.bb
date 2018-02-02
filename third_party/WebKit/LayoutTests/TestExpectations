@@ -1666,6 +1666,8 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-008
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-020.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/wm-propagation-body-008.xht [ Failure ]
 
+crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
+
 crbug.com/655458 crbug.com/721814 external/wpt/mediacapture-image/idlharness.html [ Skip ]
 crbug.com/626703 external/wpt/web-nfc/idlharness.https.html [ Skip ]
 
