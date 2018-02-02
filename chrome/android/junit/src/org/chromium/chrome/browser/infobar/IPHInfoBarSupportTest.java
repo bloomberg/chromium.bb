@@ -24,15 +24,15 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.IPHBubbleDelegate;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests {@link IPHInfoBarSupport}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class IPHInfoBarSupportTest {
     @Mock

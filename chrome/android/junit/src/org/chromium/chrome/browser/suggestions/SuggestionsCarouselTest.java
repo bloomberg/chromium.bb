@@ -26,7 +26,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -34,12 +34,11 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for {@link SuggestionsCarousel}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @EnableFeatures({ChromeFeatureList.CHROME_HOME, ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL})
 public class SuggestionsCarouselTest {
@@ -57,7 +56,6 @@ public class SuggestionsCarouselTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         CommandLine.init(null);
 
         SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);

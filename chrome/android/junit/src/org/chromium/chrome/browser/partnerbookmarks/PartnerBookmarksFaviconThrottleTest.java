@@ -13,13 +13,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DisableHistogramsRule;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for {@link PartnerBookmarksFaviconThrottle}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PartnerBookmarksFaviconThrottleTest {
     private static final String TEST_PREFERENCES_NAME = "partner_bookmarks_favicon_throttle_test";

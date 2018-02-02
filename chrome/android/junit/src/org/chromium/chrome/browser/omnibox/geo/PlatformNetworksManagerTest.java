@@ -43,9 +43,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Robolectric tests for {@link PlatformNetworksManager}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PlatformNetworksManagerTest {
     private static final VisibleWifi CONNECTED_WIFI =

@@ -26,12 +26,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class KeyboardHideHelperUnitTest {
     @Mock

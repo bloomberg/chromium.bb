@@ -27,20 +27,20 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.io.File;
 
 /**
  * Unit tests for OfflinePageUtils.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
         shadows = {OfflinePageUtilsUnitTest.WrappedEnvironment.class, ShadowMultiDex.class})
 public class OfflinePageUtilsUnitTest {

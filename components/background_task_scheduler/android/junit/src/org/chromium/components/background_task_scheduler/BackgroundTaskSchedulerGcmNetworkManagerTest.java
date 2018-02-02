@@ -23,20 +23,19 @@ import com.google.android.gms.gcm.TaskParams;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.gms.Shadows;
 import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link BackgroundTaskSchedulerGcmNetworkManager}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundTaskSchedulerGcmNetworkManagerTest {
@@ -48,7 +47,6 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         Shadows.shadowOf(GoogleApiAvailability.getInstance())
                 .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);

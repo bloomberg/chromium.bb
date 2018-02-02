@@ -20,15 +20,15 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager.CastSessionLaunchRequest;
 import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager.CastSessionManagerListener;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Robolectric tests for {@link CastMediaSource} class.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChromeCastSessionManagerTest {
     private CastSessionManagerListener mListener;

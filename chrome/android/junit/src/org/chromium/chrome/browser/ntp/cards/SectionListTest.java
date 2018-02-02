@@ -33,11 +33,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
@@ -57,7 +56,6 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +63,7 @@ import java.util.List;
 /**
  * Unit tests for {@link SuggestionsSection}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @EnableFeatures(ChromeFeatureList.CHROME_HOME)
 public class SectionListTest {
@@ -89,7 +87,6 @@ public class SectionListTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         FeatureUtilities.resetChromeHomeEnabledForTests();
 
         // Ensure that NetworkChangeNotifier is initialized.

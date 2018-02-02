@@ -10,15 +10,15 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.lang.ref.WeakReference;
 
 /**
  * Tests for {@link DiscardableReferencePool}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DiscardableReferencePoolTest {
     /**

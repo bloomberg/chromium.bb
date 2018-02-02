@@ -33,11 +33,11 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.cast.CastMessageHandler.RequestRecord;
 import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONObjectLike;
 import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONStringLike;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * Robolectric tests for CastSession.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastMessageHandlerTest {
     private static final String TAG = "MediaRouter";

@@ -35,10 +35,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.device.mojom.ReportingMode;
 import org.chromium.device.mojom.SensorType;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -48,7 +48,7 @@ import java.util.List;
 /**
  * Unit tests for PlatformSensor and PlatformSensorProvider.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PlatformSensorAndProviderTest {
     @Mock

@@ -23,11 +23,11 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browsing_data.UrlFilters;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.Arrays;
@@ -41,10 +41,9 @@ import java.util.Set;
  * Tests the WebappRegistry class by ensuring that it persists data to
  * SharedPreferences as expected.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {BackgroundShadowAsyncTask.class})
 public class WebappRegistryTest {
-
     // These were copied from WebappRegistry for backward compatibility checking.
     private static final String REGISTRY_FILE_NAME = "webapp_registry";
     private static final String KEY_WEBAPP_SET = "webapp_set";
@@ -80,7 +79,6 @@ public class WebappRegistryTest {
 
     @Before
     public void setUp() throws Exception {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         WebappRegistry.refreshSharedPrefsForTesting();
         mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
                 REGISTRY_FILE_NAME, Context.MODE_PRIVATE);

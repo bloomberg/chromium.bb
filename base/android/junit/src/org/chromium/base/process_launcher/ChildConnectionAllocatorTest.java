@@ -4,10 +4,6 @@
 
 package org.chromium.base.process_launcher;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.os.Bundle;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -24,6 +20,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.os.Bundle;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,15 +34,15 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /** Unit tests for the ChildConnectionAllocator class. */
 @Config(manifest = Config.NONE)
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class ChildConnectionAllocatorTest {
     private static final String TEST_PACKAGE_NAME = "org.chromium.allocator_test";
 

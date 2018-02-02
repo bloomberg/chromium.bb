@@ -20,15 +20,15 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * JUnit tests for checking {@link MediaNotificationManager.ListenerService} handles intent actionss
  * correctly.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
         shadows = {MediaNotificationTestShadowResources.class,
                 MediaNotificationTestShadowNotificationManager.class})

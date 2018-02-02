@@ -32,13 +32,13 @@ import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link BackgroundTaskScheduler}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundTaskSchedulerImplTest {
@@ -53,7 +53,6 @@ public class BackgroundTaskSchedulerImplTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
                 new BackgroundTaskSchedulerImpl(mDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);

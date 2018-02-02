@@ -15,16 +15,14 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
  * Tests logic in the Clipboard class.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ClipboardTest {
     private static final String PLAIN_TEXT = "plain";
@@ -32,7 +30,6 @@ public class ClipboardTest {
 
     @Test
     public void testClipDataToHtmlText() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         Clipboard clipboard = Clipboard.getInstance();
 
         // HTML text

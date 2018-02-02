@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.annotation.Config;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -22,10 +22,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /** Unit tests for SkipCheck. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SkipCheckTest {
-
     private static class TestableSkipCheck extends SkipCheck {
         public static <T extends Annotation> List<T> getAnnotationsForTesting(
                 AnnotatedElement element, Class<T> annotationClass) {

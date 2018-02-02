@@ -8,18 +8,18 @@ import android.os.Build;
 
 import junit.framework.TestCase;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
+
 /** Unit tests for the DisableIf annotation and its SkipCheck implementation. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 21)
 public class DisableIfTest {
-
     @Test
     public void testSdkIsLessThanAndIsLessThan() {
         TestCase sdkIsLessThan = new TestCase("sdkIsLessThan") {

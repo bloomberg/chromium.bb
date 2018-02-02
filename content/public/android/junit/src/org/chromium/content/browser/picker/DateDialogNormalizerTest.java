@@ -15,18 +15,17 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.TimeZone;
 
 /**
  * Tests for DateDialogNormalizer.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 // sdk 18 is used due to a bug in Robolectric, crbug.com/635199
 @Config(manifest = Config.NONE, sdk = 18)
 public class DateDialogNormalizerTest {
-
     private static final long MILLIS_PER_MINUTE = 60 * 1000;
     private static final long MILLIS_PER_HOUR = 60 * 60 * 1000;
     private static final long PST_OFFSET_MILLIS = 8 * MILLIS_PER_HOUR;

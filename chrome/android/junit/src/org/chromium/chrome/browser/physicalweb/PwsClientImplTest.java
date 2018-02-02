@@ -16,24 +16,21 @@ import android.text.TextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowResources;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Locale;
 
 /**
  * Tests for {@link PwsClientImpl}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PwsClientImplTest {
     private static final String ACCEPT_LANGUAGES = "en-US,en";
@@ -54,7 +51,6 @@ public class PwsClientImplTest {
 
     @Before
     public void setUp() throws Exception {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         mPwsClientImpl = new PwsClientImpl();
     }
 

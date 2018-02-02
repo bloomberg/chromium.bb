@@ -201,6 +201,7 @@ junit_binary("net_junit_tests") {
     ":net_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:base_junit_test_support",
     "//third_party/hamcrest:hamcrest_java",
   ]
   srcjar_deps = [ "//base:base_build_config_gen" ]

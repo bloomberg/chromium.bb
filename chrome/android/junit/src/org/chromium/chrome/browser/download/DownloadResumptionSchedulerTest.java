@@ -29,7 +29,7 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -37,7 +37,6 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskInfo.NetworkType;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  * {@link BackgroundTaskScheduler} based on the parameters stored about currently running downloads
  * in the persistence layer exposed by {@link DownloadSharedPreferenceHelper}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DownloadResumptionSchedulerTest {
     Context mContext;
@@ -61,7 +60,6 @@ public class DownloadResumptionSchedulerTest {
     @Before
     public void setUp() {
         mContext = RuntimeEnvironment.application;
-        ContextUtils.initApplicationContextForTests(mContext);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
     }
 

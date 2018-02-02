@@ -25,8 +25,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +34,9 @@ import java.util.List;
 /**
  * JUnit tests for {@link InnerNode}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class InnerNodeTest {
-
     private static final int[] ITEM_COUNTS = {1, 2, 3, 0, 3, 2, 1};
     private final List<TreeNode> mChildren = new ArrayList<>();
     @Mock private NodeParent mParent;

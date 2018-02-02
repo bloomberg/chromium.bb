@@ -31,14 +31,14 @@ import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowPhoneWindow;
 import org.robolectric.shadows.ShadowSurfaceView;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.gfx.mojom.Rect;
 import org.chromium.media.mojom.AndroidOverlayConfig;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests for DialogOverlayCore.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DialogOverlayCoreTest {
     private Activity mActivity;

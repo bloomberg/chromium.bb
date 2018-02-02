@@ -28,13 +28,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ContentProviderController;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
  * Tests of WebRestrictionsClient.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class WebRestrictionsClientTest {
     private static final String TEST_CONTENT_PROVIDER = "example.com";
@@ -43,7 +42,6 @@ public class WebRestrictionsClientTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         mTestClient = Mockito.spy(new WebRestrictionsClient());
         Mockito.doNothing().when(mTestClient).nativeOnWebRestrictionsChanged(anyLong());
         mProvider = Mockito.mock(ContentProvider.class);

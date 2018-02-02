@@ -17,17 +17,15 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -37,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for {@link AsyncInitTaskRunner}
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class AsyncInitTaskRunnerTest {
     private static final int THREAD_WAIT_TIME_MS = 1000;
@@ -55,7 +53,6 @@ public class AsyncInitTaskRunnerTest {
         LibraryLoader.setLibraryLoaderForTesting(mLoader);
         mVariationsSeedFetcher = mock(VariationsSeedFetcher.class);
         VariationsSeedFetcher.setVariationsSeedFetcherForTesting(mVariationsSeedFetcher);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         mLatch = new CountDownLatch(1);
         mRunner = spy(new AsyncInitTaskRunner() {

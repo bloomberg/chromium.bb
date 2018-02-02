@@ -531,6 +531,7 @@ junit_binary("content_junit_tests") {
     "//base:base_java",
     "//base:base_java_process_launcher_test_support",
     "//base:base_java_test_support",
+    "//base:base_junit_test_support",
     "//media/mojo/interfaces:interfaces_java",
     "//mojo/public/java:bindings_java",
     "//third_party/WebKit/public:android_mojo_bindings_java",

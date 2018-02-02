@@ -11,16 +11,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests the WebappInfo class's ability to parse various URLs.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class WebappInfoTest {
     private static final String SPLASH_SCREEN_URL = "https://foo.com/splash.html";

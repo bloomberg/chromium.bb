@@ -15,8 +15,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -24,7 +24,7 @@ import java.util.BitSet;
 /**
  * Verify no regressions in gamepad mappings.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class GamepadMappingsTest {
     private static final float ERROR_TOLERANCE = 0.000001f;

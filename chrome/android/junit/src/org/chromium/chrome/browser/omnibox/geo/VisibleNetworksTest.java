@@ -18,10 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell.RadioType;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Robolectric tests for {@link VisibleNetworks}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class VisibleNetworksTest {
     private static final String SSID1 = "ssid1";

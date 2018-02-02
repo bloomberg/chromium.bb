@@ -22,17 +22,17 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Test of media notifications to ensure that the favicon is displayed on normal devices and
  * not displayed on Android Go devices.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315
