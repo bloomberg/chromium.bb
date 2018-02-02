@@ -379,7 +379,7 @@ void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
   task_queue_selector_observer_ = observer;
 }
 
-bool TaskQueueSelector::AllEnabledWorkQueuesAreEmpty() const {
+bool TaskQueueSelector::EnabledWorkQueuesEmpty() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   for (TaskQueue::QueuePriority priority = TaskQueue::kControlPriority;
        priority < TaskQueue::kQueuePriorityCount;
