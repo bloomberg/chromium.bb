@@ -1869,6 +1869,8 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   const int64_t display_id = GetDisplayIdForView(this);
   const ShelfItem* item = ShelfItemForView(source);
   if (!item || !model_->GetShelfItemDelegate(item->id)) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Shelf", source_type,
+                              ui::MENU_SOURCE_TYPE_LAST);
     context_menu_id_ = ShelfID();
     std::unique_ptr<ShelfContextMenuModel> menu_model =
         std::make_unique<ShelfContextMenuModel>(
