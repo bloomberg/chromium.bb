@@ -22,7 +22,7 @@ HTMLTypeMap CreateHTMLTypeMap() {
     HTMLElementType type;
   } kTags[] = {
     {% for tag in tags|sort %}
-    { "{{tag.name}}", HTMLElementType::k{{tag.interface}} },
+    { "{{tag.name}}", HTMLElementType::k{{tag.js_interface}} },
     {% endfor %}
   };
   for (const auto& tag : kTags)

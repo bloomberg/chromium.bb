@@ -73,7 +73,10 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         for tag in tags:
             tag['interface'] = self._interface(tag)
             interface_counts[tag['interface']] += 1
-            elements.add(tag['interface'])
+            tag['js_interface'] = tag['interface']
+            if tag['JSInterfaceName']:
+                tag['js_interface'] = tag['JSInterfaceName']
+            elements.add(tag['js_interface'])
 
         for tag in tags:
             tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == self.fallback_interface)

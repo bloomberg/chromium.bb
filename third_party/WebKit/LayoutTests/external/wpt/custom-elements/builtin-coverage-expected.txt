@@ -1,6 +1,5 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Illegal constructor: localName does not match the HTML element interface
-Found 442 tests; 423 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 442 tests; 441 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a: Define a customized built-in element
 PASS a: Operator 'new' should instantiate a customized built-in element
 PASS a: document.createElement() should instantiate a customized built-in element
@@ -38,17 +37,9 @@ PASS base: Operator 'new' should instantiate a customized built-in element
 PASS base: document.createElement() should instantiate a customized built-in element
 PASS base: innerHTML should instantiate a customized built-in element
 PASS bdi: Define a customized built-in element
-FAIL bdi: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
-FAIL bdi: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyBdi extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
-FAIL bdi: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyBdi extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
+PASS bdi: Operator 'new' should instantiate a customized built-in element
+PASS bdi: document.createElement() should instantiate a customized built-in element
+PASS bdi: innerHTML should instantiate a customized built-in element
 PASS bdo: Define a customized built-in element
 PASS bdo: Operator 'new' should instantiate a customized built-in element
 PASS bdo: document.createElement() should instantiate a customized built-in element
@@ -260,17 +251,9 @@ PASS nav: Operator 'new' should instantiate a customized built-in element
 PASS nav: document.createElement() should instantiate a customized built-in element
 PASS nav: innerHTML should instantiate a customized built-in element
 PASS noscript: Define a customized built-in element
-FAIL noscript: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
-FAIL noscript: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyNoscript extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
-FAIL noscript: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyNoscript extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
+PASS noscript: Operator 'new' should instantiate a customized built-in element
+PASS noscript: document.createElement() should instantiate a customized built-in element
+PASS noscript: innerHTML should instantiate a customized built-in element
 PASS object: Define a customized built-in element
 PASS object: Operator 'new' should instantiate a customized built-in element
 PASS object: document.createElement() should instantiate a customized built-in element
@@ -320,29 +303,13 @@ PASS rp: Operator 'new' should instantiate a customized built-in element
 PASS rp: document.createElement() should instantiate a customized built-in element
 PASS rp: innerHTML should instantiate a customized built-in element
 PASS rt: Define a customized built-in element
-FAIL rt: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
-FAIL rt: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyRt extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
-FAIL rt: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyRt extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
+PASS rt: Operator 'new' should instantiate a customized built-in element
+PASS rt: document.createElement() should instantiate a customized built-in element
+PASS rt: innerHTML should instantiate a customized built-in element
 PASS ruby: Define a customized built-in element
-FAIL ruby: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
-FAIL ruby: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyRuby extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
-FAIL ruby: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyRuby extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
+PASS ruby: Operator 'new' should instantiate a customized built-in element
+PASS ruby: document.createElement() should instantiate a customized built-in element
+PASS ruby: innerHTML should instantiate a customized built-in element
 PASS s: Define a customized built-in element
 PASS s: Operator 'new' should instantiate a customized built-in element
 PASS s: document.createElement() should instantiate a customized built-in element
@@ -392,17 +359,9 @@ PASS sub: Operator 'new' should instantiate a customized built-in element
 PASS sub: document.createElement() should instantiate a customized built-in element
 PASS sub: innerHTML should instantiate a customized built-in element
 PASS summary: Define a customized built-in element
-FAIL summary: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
-FAIL summary: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MySummary extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
-FAIL summary: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySummary extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
+PASS summary: Operator 'new' should instantiate a customized built-in element
+PASS summary: document.createElement() should instantiate a customized built-in element
+PASS summary: innerHTML should instantiate a customized built-in element
 PASS sup: Define a customized built-in element
 PASS sup: Operator 'new' should instantiate a customized built-in element
 PASS sup: document.createElement() should instantiate a customized built-in element
@@ -472,17 +431,9 @@ PASS video: Operator 'new' should instantiate a customized built-in element
 PASS video: document.createElement() should instantiate a customized built-in element
 PASS video: innerHTML should instantiate a customized built-in element
 PASS wbr: Define a customized built-in element
-FAIL wbr: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
-FAIL wbr: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyWbr extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
-FAIL wbr: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyWbr extends HTMLElement {
-  constructor() {
-    super();
-  }
-}" but got function "function HTMLElement() { [native code] }"
+PASS wbr: Operator 'new' should instantiate a customized built-in element
+PASS wbr: document.createElement() should instantiate a customized built-in element
+PASS wbr: innerHTML should instantiate a customized built-in element
 PASS datalist: Define a customized built-in element
 PASS datalist: Operator 'new' should instantiate a customized built-in element
 PASS datalist: document.createElement() should instantiate a customized built-in element
