@@ -49,10 +49,6 @@ vars = {
   # custom_vars.
   'checkout_src_internal': False,
 
-  # By default, do not check out Google's internal dependencies. This can be
-  # overridden e.g. with custom_vars.
-  'checkout_google_internal': False,
-
   # Fetch the additional packages and files needed to run all of the
   # telemetry tests. This is false by default as some stuff is only
   # privately accessible.
@@ -189,12 +185,6 @@ deps = {
   'src/chrome/test/data/vr/webvr_info':
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
-  'src/clank': {
-      # TODO(mmoss): Leave "floating" until auto-roller is working.
-      'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' + 'refs/heads/master',
-      'condition': 'checkout_android and checkout_google_internal',
-  },
-
   'src/ios/third_party/earl_grey/src': {
       'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '2fd8a7d4b76f820fb95bce495c0ceb324dbe3edb',
       'condition': 'checkout_ios',
@@ -260,23 +250,12 @@ deps = {
       'condition': 'checkout_ios',
   },
 
-  'src/ios_internal': {
-      'url': 'https://chrome-internal.googlesource.com/chrome/ios_internal.git' + '@' + '671969ff8c01a14ef454a2ee9e0be1c020475990',
-      'condition': 'checkout_ios and checkout_google_internal',
-  },
-
   'src/media/cdm/api':
     Var('chromium_git') + '/chromium/cdm.git' + '@' + '3fc73b9647ada546a981b7f17bb436702f914323',
 
   'src/native_client': {
       'url': Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
       'condition': 'checkout_nacl',
-  },
-
-  'src/signing_keys': {
-      # TODO(mmoss): Leave "floating" until auto-roller is working.
-      'url': 'https://chrome-internal.googlesource.com/clank/apptestkey.git' + '@' + 'refs/heads/master',
-      'condition': 'checkout_android and checkout_google_internal',
   },
 
   'src/third_party/SPIRV-Tools/src':
@@ -295,12 +274,6 @@ deps = {
   'src/third_party/android_tools': {
       'url': Var('chromium_git') + '/android_tools.git' + '@' + 'c9f9bbf0a6c862fbef6115e80e8617093cd58e6b',
       'condition': 'checkout_android',
-  },
-
-  'src/third_party/android_tools_internal': {
-      # TODO(mmoss): Leave "floating" until auto-roller is working.
-      'url': 'https://chrome-internal.googlesource.com/clank/third_party/android_tools.git' + '@' + 'refs/heads/master',
-      'condition': 'checkout_android and checkout_google_internal',
   },
 
   'src/third_party/angle':
@@ -1411,8 +1384,4 @@ recursedeps = [
   ("src/third_party/angle", "DEPS.chromium"),
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',
-  # src/ios_internal has its own DEPS file (named DEPS.chromium until the
-  # transition to gclient conditions is complete, see http://crbug.com/803846
-  # for progress).
-  ('src/ios_internal', 'DEPS.chromium'),
 ]
