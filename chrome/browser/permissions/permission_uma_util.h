@@ -136,11 +136,13 @@ class PermissionUmaUtil {
 
   static bool IsOptedIntoPermissionActionReporting(Profile* profile);
 
+  // web_contents may be null when for recording non-prompt actions.
   static void RecordPermissionAction(ContentSettingsType permission,
                                      PermissionAction action,
                                      PermissionSourceUI source_ui,
                                      PermissionRequestGestureType gesture_type,
                                      const GURL& requesting_origin,
+                                     const content::WebContents* web_contents,
                                      Profile* profile);
 
   // Records |count| total prior actions for a prompt of type |permission|

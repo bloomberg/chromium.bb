@@ -39,7 +39,7 @@ class SourceUrlRecorderWebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  ukm::SourceId GetLastCommittedSourceId();
+  ukm::SourceId GetLastCommittedSourceId() const;
 
  private:
   explicit SourceUrlRecorderWebContentsObserver(
@@ -107,7 +107,8 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
   MaybeRecordUrl(navigation_handle, initial_url);
 }
 
-ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId() {
+ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId()
+    const {
   return last_committed_source_id_;
 }
 
@@ -149,8 +150,9 @@ void InitializeSourceUrlRecorderForWebContents(
       web_contents);
 }
 
-SourceId GetSourceIdForWebContentsDocument(content::WebContents* web_contents) {
-  internal::SourceUrlRecorderWebContentsObserver* obs =
+SourceId GetSourceIdForWebContentsDocument(
+    const content::WebContents* web_contents) {
+  const internal::SourceUrlRecorderWebContentsObserver* obs =
       internal::SourceUrlRecorderWebContentsObserver::FromWebContents(
           web_contents);
   return obs ? obs->GetLastCommittedSourceId() : kInvalidSourceId;

@@ -19,7 +19,8 @@ void InitializeSourceUrlRecorderForWebContents(
 
 // Get a UKM SourceId for the currently committed document of web contents.
 // Returns kInvalidSourceId if no commit has been observed.
-SourceId GetSourceIdForWebContentsDocument(content::WebContents* web_contents);
+SourceId GetSourceIdForWebContentsDocument(
+    const content::WebContents* web_contents);
 
 }  // namespace ukm
 

@@ -1884,6 +1884,50 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Permission">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Metrics for when a user's permission actions. Currently we only log when a
+    permission prompt is resolved. Grouped (microphone+camera) permission
+    prompts are reported separately.
+  </summary>
+  <metric name="Action">
+    <summary>
+      An enum of type PermissionAction. One of GRANTED, DENIED, DISMISSED or
+      IGNORED.
+    </summary>
+  </metric>
+  <metric name="Gesture">
+    <summary>
+      An enum of type PermissionRequestGestureType, whether the prompt was
+      initiated by a user gesture.
+    </summary>
+  </metric>
+  <metric name="PermissionType">
+    <summary>
+      An enum of type ContentSettingsType.
+    </summary>
+  </metric>
+  <metric name="PriorDismissals">
+    <summary>
+      The number of dismissed prompts for the given (origin, permission) pair,
+      capped at 10 dismissals.
+    </summary>
+  </metric>
+  <metric name="PriorIgnores">
+    <summary>
+      The number of ignored prompts for the given (origin, permission) pair,
+      capped at 10 ignores.
+    </summary>
+  </metric>
+  <metric name="Source">
+    <summary>
+      An enum of type PermissionSourceUI. The UI surface for this action.
+      Currently we only record when this is PROMPT.
+    </summary>
+  </metric>
+</event>
+
 <event name="Plugins.FlashInstance">
   <owner>tommycli@chromium.org</owner>
   <summary>
