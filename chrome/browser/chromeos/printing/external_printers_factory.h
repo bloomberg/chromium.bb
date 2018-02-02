@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/chromeos/printing/external_printers.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -24,16 +25,16 @@ class ExternalPrintersFactory {
  public:
   static ExternalPrintersFactory* Get();
 
-  // Returns a pointer to the ExternalPrinters registered for |account_id|. If
+  // Returns a WeakPtr to the ExternalPrinters registered for |account_id|. If
   // an ExternalPrinters does not exist, one will be created for |account_id|.
   // The returned object remains valid until RemoveForUserId or Shutdown is
   // called.
-  ExternalPrinters* GetForAccountId(const AccountId& account_id);
+  base::WeakPtr<ExternalPrinters> GetForAccountId(const AccountId& account_id);
 
-  // Returns a pointer to the ExternalPrinters registered for |profile| which
+  // Returns a WeakPtr to the ExternalPrinters registered for |profile| which
   // could be null if |profile| does not map to a valid AccountId. The returned
   // object remains valid until RemoveForUserId or Shutdown is called.
-  ExternalPrinters* GetForProfile(Profile* profile);
+  base::WeakPtr<ExternalPrinters> GetForProfile(Profile* profile);
 
   // Deletes the ExternalPrinters registered for |account_id|.
   void RemoveForUserId(const AccountId& account_id);

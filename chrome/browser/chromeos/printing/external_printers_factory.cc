@@ -26,19 +26,20 @@ ExternalPrintersFactory* ExternalPrintersFactory::Get() {
   return g_printers_factory.Pointer();
 }
 
-ExternalPrinters* ExternalPrintersFactory::GetForAccountId(
+base::WeakPtr<ExternalPrinters> ExternalPrintersFactory::GetForAccountId(
     const AccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto found = printers_by_user_.find(account_id);
   if (found != printers_by_user_.end()) {
-    return found->second.get();
+    return found->second->AsWeakPtr();
   }
 
   printers_by_user_[account_id] = ExternalPrinters::Create();
-  return printers_by_user_[account_id].get();
+  return printers_by_user_[account_id]->AsWeakPtr();
 }
 
-ExternalPrinters* ExternalPrintersFactory::GetForProfile(Profile* profile) {
+base::WeakPtr<ExternalPrinters> ExternalPrintersFactory::GetForProfile(
+    Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
