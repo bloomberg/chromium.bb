@@ -30,7 +30,7 @@
 
 namespace {
 
-const char kApiPath[] = "/async/newtab_ogb";
+const char kNewTabOgbApiPath[] = "/async/newtab_ogb";
 
 const char kResponsePreamble[] = ")]}'";
 
@@ -181,7 +181,8 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
       callback_(std::move(callback)) {}
 
 GURL OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetApiUrl() const {
-  GURL api_url = google_base_url_.Resolve(api_url_override_.value_or(kApiPath));
+  GURL api_url =
+      google_base_url_.Resolve(api_url_override_.value_or(kNewTabOgbApiPath));
 
   // Add the "hl=" parameter.
   api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);

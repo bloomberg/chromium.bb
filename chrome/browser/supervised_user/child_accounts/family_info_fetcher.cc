@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/child_accounts/kids_management_api.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -21,8 +22,7 @@
 const char kGetFamilyProfileApiPath[] = "families/mine?alt=json";
 const char kGetFamilyMembersApiPath[] = "families/mine/members?alt=json";
 const char kScope[] = "https://www.googleapis.com/auth/kid.family.readonly";
-const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
-const int kNumRetries = 1;
+const int kNumFamilyInfoFetcherRetries = 1;
 
 const char kIdFamily[] = "family";
 const char kIdFamilyId[] = "familyId";
@@ -204,9 +204,10 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumRetries);
-  url_fetcher_->AddExtraRequestHeader(
-      base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
+  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(
+      kNumFamilyInfoFetcherRetries);
+  url_fetcher_->AddExtraRequestHeader(base::StringPrintf(
+      supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
 
   url_fetcher_->Start();
 }

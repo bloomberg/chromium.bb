@@ -15,7 +15,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 
 namespace {
-const net::BackoffEntry::Policy kBackoffPolicy = {
+const net::BackoffEntry::Policy kForceSigninVerifierBackoffPolicy = {
     0,              // Number of initial errors to ignore before applying
                     // exponential back-off rules.
     2000,           // Initial delay in ms.
@@ -38,7 +38,7 @@ const char kForceSigninVerificationFailureTimeMetricsName[] =
 ForceSigninVerifier::ForceSigninVerifier(Profile* profile)
     : OAuth2TokenService::Consumer("force_signin_verifier"),
       has_token_verified_(false),
-      backoff_entry_(&kBackoffPolicy),
+      backoff_entry_(&kForceSigninVerifierBackoffPolicy),
       creation_time_(base::TimeTicks::Now()),
       oauth2_token_service_(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),

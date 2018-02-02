@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -26,12 +27,12 @@
 
 using net::URLFetcher;
 
-const char kApiUrl[] = "https://safesearch.googleapis.com/v1:report";
-const char kApiScope[] = "https://www.googleapis.com/auth/safesearch.reporting";
+const char kSafeSearchReportApiUrl[] =
+    "https://safesearch.googleapis.com/v1:report";
+const char kSafeSearchReportApiScope[] =
+    "https://www.googleapis.com/auth/safesearch.reporting";
 
-const int kNumRetries = 1;
-
-const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
+const int kNumSafeSearchReportRetries = 1;
 
 struct SafeSearchURLReporter::Report {
   Report(const GURL& url, const SuccessCallback& callback, int url_fetcher_id);
@@ -87,7 +88,7 @@ void SafeSearchURLReporter::ReportUrl(const GURL& url,
 
 void SafeSearchURLReporter::StartFetching(Report* report) {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kApiScope);
+  scopes.insert(kSafeSearchReportApiScope);
   report->access_token_request =
       oauth2_token_service_->StartRequest(account_id_, scopes, this);
 }
@@ -132,8 +133,8 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
           }
         })");
   (*it)->url_fetcher =
-      URLFetcher::Create((*it)->url_fetcher_id, GURL(kApiUrl), URLFetcher::POST,
-                         this, traffic_annotation);
+      URLFetcher::Create((*it)->url_fetcher_id, GURL(kSafeSearchReportApiUrl),
+                         URLFetcher::POST, this, traffic_annotation);
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       (*it)->url_fetcher.get(),
@@ -141,9 +142,10 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
   (*it)->url_fetcher->SetRequestContext(context_);
   (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                    net::LOAD_DO_NOT_SAVE_COOKIES);
-  (*it)->url_fetcher->SetAutomaticallyRetryOnNetworkChanges(kNumRetries);
-  (*it)->url_fetcher->AddExtraRequestHeader(
-      base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
+  (*it)->url_fetcher->SetAutomaticallyRetryOnNetworkChanges(
+      kNumSafeSearchReportRetries);
+  (*it)->url_fetcher->AddExtraRequestHeader(base::StringPrintf(
+      supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
 
   base::DictionaryValue dict;
   dict.SetKey("url", base::Value((*it)->url.spec()));
@@ -189,7 +191,7 @@ void SafeSearchURLReporter::OnURLFetchComplete(const URLFetcher* source) {
   if (response_code == net::HTTP_UNAUTHORIZED && !(*it)->access_token_expired) {
     (*it)->access_token_expired = true;
     OAuth2TokenService::ScopeSet scopes;
-    scopes.insert(kApiScope);
+    scopes.insert(kSafeSearchReportApiScope);
     oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
                                                  (*it)->access_token);
     StartFetching((*it).get());
