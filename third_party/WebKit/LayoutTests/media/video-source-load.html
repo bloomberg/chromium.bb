@@ -33,16 +33,16 @@ async_test(function(t) {
 
     // Add an invalid url to the first source so we test getting
     // an error event each time resource selection runs.
-    addSource("video", "content/bogus");
-    addSource("video", "content/test");
-    addSource("audio", "content/test");
+    addSource("content/bogus.ogv");
+    addSource("content/test.ogv");
+    addSource("content/test.oga");
 
     // test networkState.
     assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
 
-    function addSource(type, name) {
+    function addSource(filePath) {
         var source = document.createElement("source");
-        source.src = findMediaFile(type, name);
+        source.src = filePath;
         sourceUrls.push(source.src);
         source.type = mimeTypeForExtension(source.src.split(".").pop());
         video.appendChild(source);

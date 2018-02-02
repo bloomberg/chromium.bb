@@ -2,17 +2,16 @@
 <title>Test that media keeps playing when the source element is replaced.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <audio></audio>
 <script>
 async_test(function(t) {
     // TODO(srirama.m): Improve the test for better understanding
     var timeupdateEventCount = 0;
     var sourceReplaced = false;
-    
+
     var audio = document.querySelector("audio");
     var source = document.createElement("source");
-    source.src = findMediaFile("audio", "content/silence");
+    source.src = "content/silence.oga";
     audio.appendChild(source);
 
     audio.onerror = t.unreached_func();
@@ -34,10 +33,10 @@ async_test(function(t) {
                 // Replacing the media's source element.
                 sourceReplaced = true;
                 timeupdateEventCount = 0;
-                
+
                 audio.removeChild(source);
                 var newSource = document.createElement("source");
-                newSource.src = findMediaFile("audio", "content/test");
+                newSource.src = "content/test.oga";
                 audio.appendChild(newSource);
             } else {
                 t.done();

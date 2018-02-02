@@ -5,14 +5,13 @@
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
         <script src="../../resources/gc.js"></script>
-        <script src="../media-file.js"></script>
-    </head>
+            </head>
     <body>
         <script>
             async_test(function(t)
             {
                 var v = document.createElement('video');
-                v.src = findMediaFile('video', '../content/test');
+                v.src = '../content/test.ogv';
                 document.body.appendChild(v);
 
                 function callback(available) {}

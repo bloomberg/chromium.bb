@@ -2,7 +2,6 @@
 <title>Verify that drawing to canvas using video with source element does not taint canvas</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <canvas></canvas>
 <script>
@@ -20,7 +19,7 @@ async_test(function(t) {
     });
 
     var source = document.createElement("source");
-    source.src = findMediaFile("video", "content/counting");
+    source.src = "content/counting.ogv";
     video.appendChild(source);
 });
 </script>

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <title>Test that Audio("url") constructor loads the specified resource.</title>
-<script src="media-file.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
-    var audioFile = findMediaFile("audio", "content/test");
+    var audioFile = "content/test.oga";
     var audio = new Audio(audioFile);
 
     audio.onloadstart = t.step_func(function () {

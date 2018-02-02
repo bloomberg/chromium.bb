@@ -2525,15 +2525,6 @@ crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-r
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 
-# See https://bugs.chromium.org/p/chromium/issues/detail?id=568704#c18
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-a-bitrate.html [ Failure Pass ]
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ Failure Pass ]
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html [ Failure Pass ]
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ Failure Pass ]
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-v-bitrate.html [ Failure Pass ]
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure Pass ]
-crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure Pass ]
-
 # Rebaseline for v8's --harmony-function-tostring
 crbug.com/753073 fast/dom/TreeWalker/acceptNode-filter.html [ NeedsManualRebaseline ]
 crbug.com/753073 fast/dom/Window/anonymous-slot-with-changes.html [ NeedsManualRebaseline ]
@@ -2799,9 +2790,6 @@ crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2
 
 # Sheriff failure 2017-08-07
 crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
-
-# Sheriff failure 2017-08-29
-crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
 crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
@@ -3307,6 +3295,22 @@ crbug.com/805794 [ Linux Win ] virtual/threaded/animations/responsive/viewport-u
 crbug.com/806748 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
 # Flaky on Linux
 crbug.com/806017 [ Linux ] virtual/gpu/fast/canvas/canvas-strokePath-shadow.html [ Pass Timeout ]
+
+# These pass on bots with proprietary codecs (most CQ bots) while failing on bots without.
+crbug.com/807110 external/wpt/html/semantics/embedded-content/media-elements/mime-types/canPlayType.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-addsourcebuffer.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-buffered.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-a-bitrate.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-v-bitrate.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-endofstream.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-is-type-supported.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-sequencemode-append-buffer.html [ Failure Pass ]
+crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timestamps.html [ Failure Pass ]
 
 ################################################################################
 # Root Layer Scrolling expectations
