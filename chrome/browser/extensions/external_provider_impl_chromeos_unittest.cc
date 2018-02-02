@@ -102,6 +102,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     // So ensure we let pending extension installations finish.
     WaitForPendingStandaloneExtensionsInstalled();
     chromeos::KioskAppManager::Shutdown();
+    ExtensionServiceTestBase::TearDown();
   }
 
   // Waits until all possible standalone extensions are installed.
