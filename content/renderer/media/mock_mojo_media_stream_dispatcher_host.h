@@ -24,17 +24,14 @@ class MockMojoMediaStreamDispatcherHost
 
   mojom::MediaStreamDispatcherHostPtr CreateInterfacePtrAndBind();
 
-  void GenerateStream(int32_t render_frame_id,
-                      int32_t request_id,
+  void GenerateStream(int32_t request_id,
                       const StreamControls& controls,
                       bool user_gesture,
                       GenerateStreamCallback callback) override;
-  void CancelRequest(int32_t render_frame_id, int32_t request_id) override;
-  void StopStreamDevice(int32_t render_frame_id,
-                        const std::string& device_id,
+  void CancelRequest(int32_t request_id) override;
+  void StopStreamDevice(const std::string& device_id,
                         int32_t session_id) override;
-  void OpenDevice(int32_t render_frame_id,
-                  int32_t request_id,
+  void OpenDevice(int32_t request_id,
                   const std::string& device_id,
                   MediaStreamType type,
                   OpenDeviceCallback callback) override;

@@ -43,7 +43,6 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
 };
 
 TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
-  const int kRenderId = 3;
   const int kRequestId1 = 5;
   const int kRequestId2 = 7;
 
@@ -52,7 +51,7 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
   // OpenDevice request 1
   base::RunLoop run_loop1;
   mock_dispatcher_host_.OpenDevice(
-      kRenderId, kRequestId1, "device_path", MEDIA_DEVICE_VIDEO_CAPTURE,
+      kRequestId1, "device_path", MEDIA_DEVICE_VIDEO_CAPTURE,
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop1.QuitClosure()));
   run_loop1.Run();
@@ -61,7 +60,7 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
   // OpenDevice request 2
   base::RunLoop run_loop2;
   mock_dispatcher_host_.OpenDevice(
-      kRenderId, kRequestId2, "screen_capture", MEDIA_DESKTOP_VIDEO_CAPTURE,
+      kRequestId2, "screen_capture", MEDIA_DESKTOP_VIDEO_CAPTURE,
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
