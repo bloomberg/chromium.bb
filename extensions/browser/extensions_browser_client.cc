@@ -13,7 +13,7 @@ namespace extensions {
 
 namespace {
 
-ExtensionsBrowserClient* g_client = NULL;
+ExtensionsBrowserClient* g_extension_browser_client = NULL;
 
 }  // namespace
 
@@ -59,11 +59,11 @@ bool ExtensionsBrowserClient::IsExtensionEnabled(
 }
 
 ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
-  return g_client;
+  return g_extension_browser_client;
 }
 
 void ExtensionsBrowserClient::Set(ExtensionsBrowserClient* client) {
-  g_client = client;
+  g_extension_browser_client = client;
 }
 
 }  // namespace extensions
