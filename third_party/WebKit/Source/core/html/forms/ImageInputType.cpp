@@ -73,6 +73,12 @@ void ImageInputType::AppendToFormData(FormData& form_data) const {
   DEFINE_STATIC_LOCAL(String, dot_y_string, (".y"));
   form_data.append(name + dot_x_string, click_location_.X());
   form_data.append(name + dot_y_string, click_location_.Y());
+
+  if (!GetElement().value().IsEmpty()) {
+    UseCounter::Count(GetElement().GetDocument(),
+                      WebFeature::kImageInputTypeFormDataWithNonEmptyValue);
+    form_data.append(name, GetElement().value());
+  }
 }
 
 String ImageInputType::ResultForDialogSubmit() const {
