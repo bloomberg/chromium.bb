@@ -98,6 +98,14 @@ bool CoordinationUnitBase::GetProperty(const mojom::PropertyType property_type,
   return false;
 }
 
+int64_t CoordinationUnitBase::GetPropertyOrDefault(
+    const mojom::PropertyType property_type, int64_t default_value) const {
+  int64_t value = 0;
+  if (GetProperty(property_type, &value))
+    return value;
+  return default_value;
+}
+
 void CoordinationUnitBase::OnEventReceived(mojom::Event event) {
   for (auto& observer : observers())
     observer.OnEventReceived(this, event);

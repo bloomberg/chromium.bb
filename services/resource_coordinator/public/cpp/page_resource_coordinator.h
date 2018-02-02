@@ -20,6 +20,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT PageResourceCoordinator
   PageResourceCoordinator(service_manager::Connector* connector);
   ~PageResourceCoordinator() override;
 
+  void SetIsLoading(bool is_loading);
   void SetVisibility(bool visible);
   void SetUKMSourceId(int64_t ukm_source_id);
   void OnFaviconUpdated();

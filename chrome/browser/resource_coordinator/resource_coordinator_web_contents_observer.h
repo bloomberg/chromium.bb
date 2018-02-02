@@ -34,6 +34,8 @@ class ResourceCoordinatorWebContentsObserver
   }
 
   // WebContentsObserver implementation.
+  void DidStartLoading() override;
+  void DidStopLoading() override;
   void WasShown() override;
   void WasHidden() override;
   void WebContentsDestroyed() override;

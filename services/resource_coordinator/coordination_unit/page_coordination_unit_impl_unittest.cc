@@ -52,7 +52,7 @@ TEST_F(PageCoordinationUnitImplTest, AddFrameBasic) {
   page_cu->AddFrame(frame1_cu->id());
   page_cu->AddFrame(frame2_cu->id());
   page_cu->AddFrame(frame3_cu->id());
-  EXPECT_EQ(3u, page_cu->frame_coordination_units_for_testing().size());
+  EXPECT_EQ(3u, page_cu->GetFrameCoordinationUnits().size());
 }
 
 TEST_F(PageCoordinationUnitImplTest, AddReduplicativeFrame) {
@@ -63,7 +63,7 @@ TEST_F(PageCoordinationUnitImplTest, AddReduplicativeFrame) {
   page_cu->AddFrame(frame1_cu->id());
   page_cu->AddFrame(frame2_cu->id());
   page_cu->AddFrame(frame1_cu->id());
-  EXPECT_EQ(2u, page_cu->frame_coordination_units_for_testing().size());
+  EXPECT_EQ(2u, page_cu->GetFrameCoordinationUnits().size());
 }
 
 TEST_F(PageCoordinationUnitImplTest, RemoveFrame) {
@@ -71,21 +71,20 @@ TEST_F(PageCoordinationUnitImplTest, RemoveFrame) {
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
 
   // Parent-child relationships have not been established yet.
-  EXPECT_EQ(0u, page_cu->frame_coordination_units_for_testing().size());
+  EXPECT_EQ(0u, page_cu->GetFrameCoordinationUnits().size());
   EXPECT_FALSE(frame_cu->GetPageCoordinationUnit());
 
   page_cu->AddFrame(frame_cu->id());
 
   // Ensure correct Parent-child relationships have been established.
-  EXPECT_EQ(1u, page_cu->frame_coordination_units_for_testing().size());
-  EXPECT_EQ(1u, page_cu->frame_coordination_units_for_testing().count(
-                    frame_cu.get()));
+  EXPECT_EQ(1u, page_cu->GetFrameCoordinationUnits().size());
+  EXPECT_EQ(1u, page_cu->GetFrameCoordinationUnits().count(frame_cu.get()));
   EXPECT_EQ(page_cu.get(), frame_cu->GetPageCoordinationUnit());
 
   page_cu->RemoveFrame(frame_cu->id());
 
   // Parent-child relationships should no longer exist.
-  EXPECT_EQ(0u, page_cu->frame_coordination_units_for_testing().size());
+  EXPECT_EQ(0u, page_cu->GetFrameCoordinationUnits().size());
   EXPECT_FALSE(frame_cu->GetPageCoordinationUnit());
 }
 
@@ -182,28 +181,28 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
             cu_graph.page->TimeSinceLastNavigation());
 }
 
-TEST_F(PageCoordinationUnitImplTest, PageAlmostIdle) {
+TEST_F(PageCoordinationUnitImplTest, IsLoading) {
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
-  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
-  EXPECT_FALSE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
+  auto* page_cu = cu_graph.page.get();
 
-  cu_graph.process->SetMainThreadTaskLoadIsLow(true);
-  cu_graph.frame->SetNetworkAlmostIdle(true);
-  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
-  EXPECT_TRUE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
-  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+  // First attempt should fail, as the property is unset.
+  int64_t loading = 0;
+  EXPECT_FALSE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
 
-  cu_graph.process->SetMainThreadTaskLoadIsLow(false);
-  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
-  EXPECT_FALSE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
-  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+  // Set to false and the property should read false.
+  page_cu->SetIsLoading(false);
+  EXPECT_TRUE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_EQ(0u, loading);
 
-  cu_graph.page->OnMainFrameNavigationCommitted();
-  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
-  cu_graph.process->SetMainThreadTaskLoadIsLow(true);
-  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
-  EXPECT_TRUE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
-  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+  // Set to true and the property should read true.
+  page_cu->SetIsLoading(true);
+  EXPECT_TRUE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_EQ(1u, loading);
+
+  // Set to false and the property should read false again.
+  page_cu->SetIsLoading(false);
+  EXPECT_TRUE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_EQ(0u, loading);
 }
 
 }  // namespace resource_coordinator

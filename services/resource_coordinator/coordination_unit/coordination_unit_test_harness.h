@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
@@ -68,6 +68,9 @@ class CoordinationUnitTestHarness : public testing::Test {
   void TearDown() override;
 
  protected:
+  base::test::ScopedTaskEnvironment& task_env() {
+    return task_env_;
+  }
   service_manager::ServiceContextRefFactory* service_context_ref_factory() {
     return &service_ref_factory_;
   }
@@ -77,7 +80,7 @@ class CoordinationUnitTestHarness : public testing::Test {
   CoordinationUnitProviderImpl* provider() { return &provider_; }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_env_;
   service_manager::ServiceContextRefFactory service_ref_factory_;
   CoordinationUnitManager coordination_unit_manager_;
   CoordinationUnitProviderImpl provider_;

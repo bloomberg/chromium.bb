@@ -15,6 +15,12 @@ PageResourceCoordinator::PageResourceCoordinator(
 
 PageResourceCoordinator::~PageResourceCoordinator() = default;
 
+void PageResourceCoordinator::SetIsLoading(bool is_loading) {
+  if (!service_)
+    return;
+  service_->SetIsLoading(is_loading);
+}
+
 void PageResourceCoordinator::SetVisibility(bool visible) {
   if (!service_)
     return;

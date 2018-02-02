@@ -56,6 +56,7 @@ interface PageCoordinationUnit {
   RemoveFrame(CoordinationUnitID cu_id);
 
   // Property signals.
+  SetIsLoading(bool is_loading);
   SetVisibility(bool visible);
   SetUKMSourceId(int64 ukm_source_id);
 
