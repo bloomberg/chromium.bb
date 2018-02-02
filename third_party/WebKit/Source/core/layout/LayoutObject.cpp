@@ -1963,6 +1963,9 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
       SetShouldDoFullPaintInvalidation();
     else
       SetShouldDoFullPaintInvalidationWithoutGeometryChange();
+
+    if (old_style && !old_style->ClipPathDataEquivalent(*style_))
+      InvalidateClipPathCache();
   }
 
   if (diff.NeedsVisualRectUpdate())
@@ -3592,6 +3595,8 @@ void LayoutObject::SetNeedsBoundariesUpdate() {
     auto* resources = SVGResourcesCache::CachedResourcesForLayoutObject(this);
     if (resources && resources->Masker())
       SetNeedsPaintPropertyUpdate();
+    if (resources && resources->Clipper())
+      InvalidateClipPathCache();
   }
   if (LayoutObject* layout_object = Parent())
     layout_object->SetNeedsBoundariesUpdate();
@@ -3903,6 +3908,13 @@ bool LayoutObject::CanBeSelectionLeaf() const {
   if (SlowFirstChild() || Style()->Visibility() != EVisibility::kVisible)
     return false;
   return CanBeSelectionLeafInternal();
+}
+
+void LayoutObject::InvalidateClipPathCache() {
+  SetNeedsPaintPropertyUpdate();
+  for (auto* fragment = &fragment_; fragment;
+       fragment = fragment->NextFragment())
+    fragment->InvalidateClipPathCache();
 }
 
 }  // namespace blink

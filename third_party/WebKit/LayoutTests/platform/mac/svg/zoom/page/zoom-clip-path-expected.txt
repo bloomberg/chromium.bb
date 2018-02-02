@@ -18,15 +18,15 @@ layer at (0,0) size 800x249
       LayoutText {#text} at (0,0) size 0x0
 layer at (0,0) size 415x415
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 414.72x414.72 [bgcolor=#000000]
-layer at (0,0) size 207x207
+layer at (0,0) size 207x207 backgroundClip at (21,21) size 104x104 clip at (21,21) size 104x104
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 207.36x207.36 [bgcolor=#008000]
-layer at (0,0) size 207x207
+layer at (0,0) size 207x207 backgroundClip at (124,124) size 104x104 clip at (124,124) size 104x104
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 207.36x207.36 [bgcolor=#008000]
-layer at (0,0) size 207x207
+layer at (0,0) size 207x207 backgroundClip at (228,21) size 208x208 clip at (228,21) size 208x208
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 207.36x207.36 [bgcolor=#008000]
-layer at (0,0) size 207x207
+layer at (0,0) size 207x207 backgroundClip at (21,228) size 104x104 clip at (21,228) size 104x104
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 207.36x207.36 [bgcolor=#008000]
-layer at (0,0) size 207x207
+layer at (0,0) size 207x207 backgroundClip at (124,332) size 104x104 clip at (124,332) size 104x104
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 207.36x207.36 [bgcolor=#008000]
-layer at (0,0) size 207x207
+layer at (0,0) size 207x207 backgroundClip at (228,228) size 208x208 clip at (228,228) size 208x208
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 207.36x207.36 [bgcolor=#008000]

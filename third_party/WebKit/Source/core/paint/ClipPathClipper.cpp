@@ -17,6 +17,7 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 
 namespace blink {
 
@@ -145,6 +146,10 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
       paint_offset_(paint_offset) {
   DCHECK(layout_object.StyleRef().ClipPath());
 
+  // Technically we should apply the mask clip and mask isolation property
+  // nodes to match clip_recorder_ and mask_isolation_recorder_ below,
+  // but we can safely omit those, because they will be applied in bundle
+  // when the contents are painted.
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
@@ -197,10 +202,18 @@ static AffineTransform MaskToContentTransform(
 }
 
 ClipPathClipper::~ClipPathClipper() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  Optional<ScopedPaintChunkProperties> scoped_properties;
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    const auto* properties = layout_object_.FirstFragment().PaintProperties();
+    if (!properties || !properties->ClipPath())
+      return;
+    scoped_properties.emplace(
+        context_.GetPaintController(),
+        layout_object_.FirstFragment().ClipPathProperties(), layout_object_,
+        DisplayItem::kSVGClip);
+  } else if (!mask_isolation_recorder_) {
     return;
-  if (!mask_isolation_recorder_)
-    return;
+  }
 
   bool is_svg_child = layout_object_.IsSVGChild();
   FloatRect reference_box = LocalReferenceBox(layout_object_);
