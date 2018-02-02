@@ -319,27 +319,14 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
 }
 
 TEST_F(HostScannerOperationTest,
-       TestOperation_OneDevice_NotificationsDisabled_Legacy) {
+       TestOperation_OneDevice_NotificationsDisabled) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
 
   TestOperationWithOneDevice(
       TetherAvailabilityResponse_ResponseCode ::
-          TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED_LEGACY);
-  EXPECT_EQ(std::vector<cryptauth::RemoteDevice>{test_devices_[0]},
-            test_observer_->gms_core_notifications_disabled_devices());
-}
-
-TEST_F(HostScannerOperationTest,
-       TestOperation_OneDevice_NotificationsDisabled_NotificationChannel) {
-  EXPECT_CALL(*mock_tether_host_response_recorder_,
-              RecordSuccessfulTetherAvailabilityResponse(_))
-      .Times(0);
-
-  TestOperationWithOneDevice(
-      TetherAvailabilityResponse_ResponseCode ::
-          TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED_WITH_NOTIFICATION_CHANNEL);
+          TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED);
   EXPECT_EQ(std::vector<cryptauth::RemoteDevice>{test_devices_[0]},
             test_observer_->gms_core_notifications_disabled_devices());
 }
