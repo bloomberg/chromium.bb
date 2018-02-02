@@ -316,11 +316,11 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
     callback.Run(base::File(base::File::FILE_ERROR_SECURITY), base::Closure());
     return;
   }
+  auto* task_runner = context->task_runner();
   CreateSnapshotFile(
       std::move(context), url,
       base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
-                 base::RetainedRef(context->task_runner()), file_flags,
-                 callback));
+                 base::RetainedRef(task_runner), file_flags, callback));
 }
 
 void DeviceMediaAsyncFileUtil::EnsureFileExists(
