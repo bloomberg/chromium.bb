@@ -474,7 +474,22 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
                                scrollable_area->GetScrollOffset());
     web_layer->SetScrollPosition(scroll_position);
-    web_layer->SetBounds(scrollable_area->ContentsSize());
+    // TODO(bokan): This method shouldn't be resizing the layer geometry. That
+    // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
+    LayoutSize subpixel_accumulation =
+        scrollable_area->Layer()
+            ? scrollable_area->Layer()->SubpixelAccumulation()
+            : LayoutSize();
+    LayoutSize contents_size =
+        scrollable_area->GetLayoutBox()
+            ? LayoutSize(scrollable_area->GetLayoutBox()->ScrollWidth(),
+                         scrollable_area->GetLayoutBox()->ScrollHeight())
+            : LayoutSize(scrollable_area->ContentsSize());
+    IntSize scroll_contents_size =
+        PixelSnappedIntRect(
+            LayoutRect(LayoutPoint(subpixel_accumulation), contents_size))
+            .Size();
+    web_layer->SetBounds(scroll_contents_size);
     // VisualViewport scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
     // since it needs to be set in tandem with the page scale delta.
