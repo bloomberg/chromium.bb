@@ -158,9 +158,12 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Node>>& GetDistributedNodes();
 
   HeapVector<Member<Node>> assigned_nodes_;
+
+  // For Non-IncrmentalShadowDOM. IncremntalShadowDOM never use these members.
   HeapVector<Member<Node>> distributed_nodes_;
   HeapVector<Member<Node>> old_distributed_nodes_;
   HeapHashMap<Member<const Node>, size_t> distributed_indices_;
+
   bool slotchange_event_enqueued_ = false;
 
   // TODO(hayato): Move this to more appropriate directory (e.g. platform/wtf)
