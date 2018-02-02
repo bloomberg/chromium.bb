@@ -274,6 +274,8 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-in
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-percentage-002.xht [ Failure ]
 
 # Inline: border in continuations. Fail in Blink.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-empty-001.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-empty-004.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Failure ]
 

@@ -17,38 +17,23 @@ const char* kNGInlineItemTypeStrings[] = {
     "Text",     "Control",  "AtomicInline",        "OpenTag",
     "CloseTag", "Floating", "OutOfFlowPositioned", "BidiControl"};
 
-// Returns true if this item is "empty", i.e. if the node contains only empty
-// items it will produce a single zero block-size line box.
-static bool IsEmptyItem(NGInlineItem::NGInlineItemType type,
-                        const ComputedStyle* style,
-                        LayoutObject* layout_object) {
-  if (type == NGInlineItem::kAtomicInline || type == NGInlineItem::kControl ||
-      type == NGInlineItem::kText)
+// Returns true if this inline box is "empty", i.e. if the node contains only
+// empty items it will produce a single zero block-size line box.
+//
+// While the spec defines "non-zero margins, padding, or borders" prevents
+// line boxes to be zero-height, tests indicate that only inline direction
+// of them do so. https://drafts.csswg.org/css2/visuren.html
+bool IsInlineBoxEmpty(const ComputedStyle& style,
+                      const LayoutObject& layout_object) {
+  if (style.BorderStart().NonZero() || !style.PaddingStart().IsZero() ||
+      style.BorderEnd().NonZero() || !style.PaddingEnd().IsZero())
     return false;
 
-  if (type == NGInlineItem::kOpenTag) {
-    DCHECK(style && layout_object);
-
-    if (style->BorderStart().NonZero() || !style->PaddingStart().IsZero())
-      return false;
-
-    // Non-zero margin can prevent "empty" only in non-quirks mode.
-    // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
-    if (!style->MarginStart().IsZero() &&
-        !layout_object->GetDocument().InLineHeightQuirksMode())
-      return false;
-  }
-
-  if (type == NGInlineItem::kCloseTag) {
-    DCHECK(style && layout_object);
-
-    if (style->BorderEnd().NonZero() || !style->PaddingEnd().IsZero())
-      return false;
-
-    if (!style->MarginEnd().IsZero() &&
-        !layout_object->GetDocument().InLineHeightQuirksMode())
-      return false;
-  }
+  // Non-zero margin can prevent "empty" only in non-quirks mode.
+  // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
+  if ((!style.MarginStart().IsZero() || !style.MarginEnd().IsZero()) &&
+      !layout_object.GetDocument().InLineHeightQuirksMode())
+    return false;
 
   return true;
 }
@@ -68,11 +53,40 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       type_(type),
       bidi_level_(UBIDI_LTR),
       shape_options_(kPreContext | kPostContext),
-      is_empty_item_(::blink::IsEmptyItem(type, style, layout_object)) {
+      is_empty_item_(false),
+      should_create_box_fragment_(false) {
   DCHECK_GE(end, start);
+  ComputeBoxProperties();
 }
 
 NGInlineItem::~NGInlineItem() = default;
+
+void NGInlineItem::ComputeBoxProperties() {
+  DCHECK(!is_empty_item_);
+  DCHECK(!should_create_box_fragment_);
+
+  if (type_ == NGInlineItem::kText || type_ == NGInlineItem::kAtomicInline ||
+      type_ == NGInlineItem::kControl)
+    return;
+
+  if (type_ == NGInlineItem::kOpenTag) {
+    DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
+    if (layout_object_->HasBoxDecorationBackground() || style_->HasPadding() ||
+        style_->HasMargin()) {
+      is_empty_item_ = IsInlineBoxEmpty(*style_, *layout_object_);
+      should_create_box_fragment_ = true;
+    } else {
+      is_empty_item_ = true;
+      should_create_box_fragment_ =
+          ToLayoutBoxModelObject(layout_object_)->HasSelfPaintingLayer() ||
+          style_->HasOutline() || style_->CanContainAbsolutePositionObjects() ||
+          style_->CanContainFixedPositionObjects();
+    }
+    return;
+  }
+
+  is_empty_item_ = true;
+}
 
 const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
   return kNGInlineItemTypeStrings[val];

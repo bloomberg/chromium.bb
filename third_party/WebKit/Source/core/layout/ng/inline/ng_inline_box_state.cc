@@ -16,17 +16,21 @@
 namespace blink {
 
 void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
-                                          FontBaseline baseline_type,
-                                          bool line_height_quirk) {
+                                          FontBaseline baseline_type) {
   text_metrics = NGLineHeightMetrics(style, baseline_type);
   text_top = -text_metrics.ascent;
   text_height = text_metrics.LineHeight();
   text_metrics.AddLeading(style.ComputedLineHeightAsFixed());
 
-  if (!line_height_quirk)
-    metrics.Unite(text_metrics);
+  metrics.Unite(text_metrics);
 
   include_used_fonts = style.LineHeight().IsNegative();
+}
+
+void NGInlineBoxState::EnsureTextMetrics(const ComputedStyle& style,
+                                         FontBaseline baseline_type) {
+  if (text_metrics.IsEmpty())
+    ComputeTextMetrics(style, baseline_type);
 }
 
 void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
@@ -83,7 +87,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
       if (!line_height_quirk)
         box.metrics = box.text_metrics;
       else
-        box.metrics = NGLineHeightMetrics();
+        box.metrics = box.text_metrics = NGLineHeightMetrics();
       if (box.needs_box_fragment) {
         // Existing box states are wrapped before they were closed, and hence
         // they do not have start edges.
@@ -99,12 +103,15 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 
   // Initialize the box state for the line box.
   NGInlineBoxState& line_box = LineBoxState();
-  line_box.style = line_style;
+  if (line_box.style != line_style) {
+    line_box.style = line_style;
 
-  // Use a "strut" (a zero-width inline box with the element's font and
-  // line height properties) as the initial metrics for the line box.
-  // https://drafts.csswg.org/css2/visudet.html#strut
-  line_box.ComputeTextMetrics(*line_style, baseline_type, line_height_quirk);
+    // Use a "strut" (a zero-width inline box with the element's font and
+    // line height properties) as the initial metrics for the line box.
+    // https://drafts.csswg.org/css2/visudet.html#strut
+    if (!line_height_quirk)
+      line_box.ComputeTextMetrics(*line_style, baseline_type);
+  }
 
   return &stack_.back();
 }
@@ -181,12 +188,9 @@ void NGInlineLayoutStateStack::EndBoxState(
   }
 }
 
-void NGInlineBoxState::SetNeedsBoxFragment(bool when_empty) {
-  needs_box_fragment_when_empty = when_empty;
-  if (!needs_box_fragment) {
-    DCHECK(item);
-    needs_box_fragment = true;
-  }
+void NGInlineBoxState::SetNeedsBoxFragment() {
+  DCHECK(item);
+  needs_box_fragment = true;
 }
 
 void NGInlineBoxState::SetLineRightForBoxFragment(
@@ -213,16 +217,6 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     NGLineBoxFragmentBuilder::ChildList* line_box,
     FontBaseline baseline_type) {
   DCHECK(box->needs_box_fragment);
-  unsigned fragment_end = line_box->size();
-  if (box->fragment_start == fragment_end &&
-      !box->needs_box_fragment_when_empty) {
-    // Don't create a box if the inline box is "empty".
-    // Inline boxes with inline margins/borders/paddings are not "empty",
-    // but background doesn't make difference in this context.
-    // Whether to create this box or not affects layout when the line contains
-    // only this box, since this box participates the line height.
-    return;
-  }
 
   // The inline box should have the height of the font metrics without the
   // line-height property. Compute from style because |box->metrics| includes
@@ -238,6 +232,8 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   NGLogicalSize size(LayoutUnit(), metrics.LineHeight() +
                                        box->border_padding_block_start +
                                        box->border_padding_block_end);
+
+  unsigned fragment_end = line_box->size();
   DCHECK(box->item);
   box_data_list_.push_back(
       BoxData{box->fragment_start, fragment_end, box->item, size});

@@ -68,6 +68,10 @@ class CORE_EXPORT NGInlineItem {
   // If this item is "empty" for the purpose of empty block calculation.
   bool IsEmptyItem() const { return is_empty_item_; }
 
+  // If this item should create a box fragment. Box fragments can be omitted for
+  // optimization if this is false.
+  bool ShouldCreateBoxFragment() const { return should_create_box_fragment_; }
+
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   unsigned Length() const { return end_offset_ - start_offset_; }
@@ -101,6 +105,8 @@ class CORE_EXPORT NGInlineItem {
   String ToString() const;
 
  private:
+  void ComputeBoxProperties();
+
   unsigned start_offset_;
   unsigned end_offset_;
   UScriptCode script_;
@@ -112,6 +118,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned bidi_level_ : 8;  // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
+  unsigned should_create_box_fragment_ : 1;
 
   friend class NGInlineNode;
 };
