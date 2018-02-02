@@ -3533,6 +3533,34 @@ TEST_F(TaskQueueManagerTest, DefaultTaskRunnerSupport) {
   DCHECK_EQ(original_task_runner, message_loop.task_runner());
 }
 
+TEST_F(TaskQueueManagerTest, CanceledTasksInQueueCantMakeOtherTasksSkipAhead) {
+  Initialize(2u);
+
+  CancelableTask task1(&now_src_);
+  CancelableTask task2(&now_src_);
+  std::vector<base::TimeTicks> run_times;
+
+  runners_[0]->PostTask(
+      FROM_HERE, base::BindOnce(&CancelableTask::RecordTimeTask,
+                                task1.weak_factory_.GetWeakPtr(), &run_times));
+  runners_[0]->PostTask(
+      FROM_HERE, base::BindOnce(&CancelableTask::RecordTimeTask,
+                                task2.weak_factory_.GetWeakPtr(), &run_times));
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[1]->PostTask(FROM_HERE,
+                        base::BindRepeating(&TestTask, 1, &run_order));
+
+  runners_[0]->PostTask(FROM_HERE,
+                        base::BindRepeating(&TestTask, 2, &run_order));
+
+  task1.weak_factory_.InvalidateWeakPtrs();
+  task2.weak_factory_.InvalidateWeakPtrs();
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1, 2));
+}
+
 }  // namespace task_queue_manager_unittest
 }  // namespace scheduler
 }  // namespace blink
