@@ -338,10 +338,11 @@ var ConveyancePreference = {
  */
 function conveyancePreference(enrollChallenge) {
   if (enrollChallenge.hasOwnProperty('attestation') &&
-      enrollChallenge['attestation'] == 'none') {
-    return ConveyancePreference.NONE;
+      (enrollChallenge['attestation'] == 'direct' ||
+       enrollChallenge['attestation'] == 'indirect')) {
+    return ConveyancePreference.DIRECT;
   }
-  return ConveyancePreference.DIRECT;
+  return ConveyancePreference.NONE;
 }
 
 /**
