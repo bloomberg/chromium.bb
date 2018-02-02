@@ -914,10 +914,11 @@ void SchedulerStateMachine::WillInvalidateLayerTreeFrameSink() {
   active_tree_needs_first_draw_ = false;  // blocks commit if true
 }
 
-void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
+void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency(
+    bool skip) {
   TRACE_EVENT_INSTANT0("cc", "Scheduler: SkipNextBeginMainFrameToReduceLatency",
                        TRACE_EVENT_SCOPE_THREAD);
-  skip_next_begin_main_frame_to_reduce_latency_ = true;
+  skip_next_begin_main_frame_to_reduce_latency_ = skip;
 }
 
 bool SchedulerStateMachine::BeginFrameNeededForVideo() const {

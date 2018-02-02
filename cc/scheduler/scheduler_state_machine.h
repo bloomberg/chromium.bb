@@ -242,7 +242,7 @@ class CC_EXPORT SchedulerStateMachine {
   void BeginMainFrameAborted(CommitEarlyOutReason reason);
 
   // Indicates production should be skipped to recover latency.
-  void SetSkipNextBeginMainFrameToReduceLatency();
+  void SetSkipNextBeginMainFrameToReduceLatency(bool skip);
 
   // Resourceless software draws are allowed even when invisible.
   void SetResourcelessSoftwareDraw(bool resourceless_draw);
