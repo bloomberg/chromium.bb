@@ -4541,9 +4541,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleBeginRasterCHROMIUM(
   GLboolean use_distance_field_text =
       static_cast<GLboolean>(c.use_distance_field_text);
   GLint pixel_config = static_cast<GLint>(c.pixel_config);
+  GLuint color_space_transfer_cache_id =
+      static_cast<GLuint>(c.color_space_transfer_cache_id);
   error::Error error = DoBeginRasterCHROMIUM(
       texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
-      use_distance_field_text, pixel_config);
+      use_distance_field_text, pixel_config, color_space_transfer_cache_id);
   if (error != error::kNoError) {
     return error;
   }

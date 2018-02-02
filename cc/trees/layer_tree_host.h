@@ -624,6 +624,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float page_scale_factor_ = 1.f;
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;
+
+  int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;

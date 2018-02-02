@@ -8,6 +8,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 cc_component("paint") {
   output_name = "cc_paint"
   sources = [
+    "color_space_transfer_cache_entry.cc",
+    "color_space_transfer_cache_entry.h",
     "decode_stashing_image_provider.cc",
     "decode_stashing_image_provider.h",
     "decoded_draw_image.cc",
@@ -102,6 +104,7 @@ cc_component("paint") {
   deps = [
     "//base",
     "//ui/gfx/animation",
+    "//ui/gfx/ipc/color",
   ]
 }
 

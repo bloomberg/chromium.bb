@@ -5317,7 +5317,8 @@ TEST_F(GLES2FormatTest, BeginRasterCHROMIUM) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
               static_cast<GLuint>(13), static_cast<GLboolean>(14),
-              static_cast<GLboolean>(15), static_cast<GLint>(16));
+              static_cast<GLboolean>(15), static_cast<GLint>(16),
+              static_cast<GLuint>(17));
   EXPECT_EQ(static_cast<uint32_t>(cmds::BeginRasterCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -5327,6 +5328,7 @@ TEST_F(GLES2FormatTest, BeginRasterCHROMIUM) {
   EXPECT_EQ(static_cast<GLboolean>(14), cmd.can_use_lcd_text);
   EXPECT_EQ(static_cast<GLboolean>(15), cmd.use_distance_field_text);
   EXPECT_EQ(static_cast<GLint>(16), cmd.pixel_config);
+  EXPECT_EQ(static_cast<GLuint>(17), cmd.color_space_transfer_cache_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

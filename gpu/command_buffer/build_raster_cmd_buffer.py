@@ -805,7 +805,8 @@ _FUNCTION_INFO = {
   },
   'BeginRasterCHROMIUM': {
     'decoder_func': 'DoBeginRasterCHROMIUM',
-    'impl_func': True,
+    'internal': True,
+    'impl_func': False,
     'unit_test': False,
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',

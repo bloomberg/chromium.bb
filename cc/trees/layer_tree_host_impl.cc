@@ -254,7 +254,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       has_scrolled_by_wheel_(false),
       has_scrolled_by_touch_(false),
       touchpad_and_wheel_scroll_latching_enabled_(false),
-      impl_thread_phase_(ImplThreadPhase::IDLE) {
+      impl_thread_phase_(ImplThreadPhase::IDLE),
+      default_color_space_id_(gfx::ColorSpace::GetNextId()),
+      default_color_space_(gfx::ColorSpace::CreateSRGB()) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -1476,25 +1478,28 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
-gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
-  gfx::ColorSpace result;
+RasterColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
+  RasterColorSpace result;
   // The pending tree will have the most recently updated color space, so
   // prefer that.
-  if (pending_tree_)
-    result = pending_tree_->raster_color_space();
-  else if (active_tree_)
-    result = active_tree_->raster_color_space();
+  if (pending_tree_) {
+    result.color_space = pending_tree_->raster_color_space();
+    result.color_space_id = pending_tree_->raster_color_space_id();
+  } else if (active_tree_) {
+    result.color_space = active_tree_->raster_color_space();
+    result.color_space_id = active_tree_->raster_color_space_id();
+  }
 
-  // If we are likely to software composite the resource, use sRGB because
-  // software compositing is unable to perform color conversion.
-  if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider())
-    result = gfx::ColorSpace::CreateSRGB();
-
-  // Always specify a color space if color correct rasterization is requested
+  // If we are likely to software composite the resource, we use sRGB because
+  // software compositing is unable to perform color conversion. Also always
+  // specify a color space if color correct rasterization is requested
   // (not specifying a color space indicates that no color conversion is
   // required).
-  if (!result.IsValid())
-    result = gfx::ColorSpace::CreateSRGB();
+  if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider() ||
+      !result.color_space.IsValid()) {
+    result.color_space = default_color_space_;
+    result.color_space_id = default_color_space_id_;
+  }
   return result;
 }
 
@@ -2693,7 +2698,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
   decoded_image_tracker_.QueueImageDecode(
-      image, GetRasterColorSpace(),
+      image, GetRasterColorSpace().color_space,
       base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
                  base::Unretained(this), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);

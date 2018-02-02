@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
@@ -22,6 +23,8 @@ std::unique_ptr<ServiceTransferCacheEntry> ServiceTransferCacheEntry::Create(
       return std::make_unique<ServiceImageTransferCacheEntry>();
     case TransferCacheEntryType::kPaintTypeface:
       return std::make_unique<ServicePaintTypefaceTransferCacheEntry>();
+    case TransferCacheEntryType::kColorSpace:
+      return std::make_unique<ServiceColorSpaceTransferCacheEntry>();
   }
 
   NOTREACHED();

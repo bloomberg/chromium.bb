@@ -1755,15 +1755,17 @@ void GL_APIENTRY GLES2UnlockDiscardableTextureCHROMIUM(GLuint texture_id) {
 bool GL_APIENTRY GLES2LockDiscardableTextureCHROMIUM(GLuint texture_id) {
   return gles2::GetGLContext()->LockDiscardableTextureCHROMIUM(texture_id);
 }
-void GL_APIENTRY GLES2BeginRasterCHROMIUM(GLuint texture_id,
-                                          GLuint sk_color,
-                                          GLuint msaa_sample_count,
-                                          GLboolean can_use_lcd_text,
-                                          GLboolean use_distance_field_text,
-                                          GLint pixel_config) {
+void GL_APIENTRY
+GLES2BeginRasterCHROMIUM(GLuint texture_id,
+                         GLuint sk_color,
+                         GLuint msaa_sample_count,
+                         GLboolean can_use_lcd_text,
+                         GLboolean use_distance_field_text,
+                         GLint pixel_config,
+                         GLuint color_space_transfer_cache_id) {
   gles2::GetGLContext()->BeginRasterCHROMIUM(
       texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
-      use_distance_field_text, pixel_config);
+      use_distance_field_text, pixel_config, color_space_transfer_cache_id);
 }
 void* GL_APIENTRY GLES2MapRasterCHROMIUM(GLsizeiptr size) {
   return gles2::GetGLContext()->MapRasterCHROMIUM(size);

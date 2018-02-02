@@ -19,6 +19,6 @@ jumbo_component("color") {
   public_deps = [
     "//base",
     "//ipc",
-    "//ui/gfx:gfx",
+    "//ui/gfx:color_space",
   ]
 }

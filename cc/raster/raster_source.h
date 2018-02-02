@@ -14,6 +14,7 @@
 #include "cc/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/recording_source.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/image_id.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
@@ -41,6 +42,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
     // The ImageProvider used to replace images during playback.
     ImageProvider* image_provider = nullptr;
+
+    RasterColorSpace raster_color_space;
   };
 
   // Helper function to apply a few common operations before passing the canvas
