@@ -116,11 +116,13 @@ Polymer({
     },
   },
 
+  // <if expr="not is_macosx">
   observers: [
     'updateSpellcheckLanguages_(languages.enabled.*, ' +
         'languages.forcedSpellCheckLanguages.*)',
     'updateSpellcheckEnabled_(prefs.browser.enable_spellchecking.*)',
   ],
+  // </if>
 
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to
