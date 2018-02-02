@@ -14,6 +14,8 @@ component("cpp") {
     "cors/cors_legacy.h",
     "cors/cors_url_loader.cc",
     "cors/cors_url_loader.h",
+    "cors/cors_url_loader_factory.cc",
+    "cors/cors_url_loader_factory.h",
     "features.cc",
     "features.h",
     "mutable_network_traffic_annotation_tag_struct_traits.h",

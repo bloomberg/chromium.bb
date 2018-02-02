@@ -298,7 +298,6 @@ static_library("test_support") {
     "//content/browser/speech/proto",
     "//content/child:for_content_tests",
     "//content/gpu",
-    "//content/network",
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
@@ -1526,7 +1525,6 @@ test("content_unittests") {
     "../common/webplugininfo_unittest.cc",
 
     # TODO(jam): move these network/ tests to services/network.
-    "../network/cors/cors_url_loader_unittest.cc",
     "../public/common/drop_data_unittest.cc",
     "../public/common/network_connection_tracker_unittest.cc",
     "../public/common/simple_url_loader_unittest.cc",
@@ -1662,7 +1660,6 @@ test("content_unittests") {
     "//content/browser/speech/proto",
     "//content/child:for_content_tests",
     "//content/gpu",
-    "//content/network",
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
@@ -1703,9 +1700,6 @@ test("content_unittests") {
     "//services/file/public/interfaces",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/interfaces",
-
-    # TODO(jam): remove once the remaining tests in content/network are moved to
-    # services/network.
     "//services/network:network_service",
     "//services/network:test_support",
     "//services/network/public/cpp",

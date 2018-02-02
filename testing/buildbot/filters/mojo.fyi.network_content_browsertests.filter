@@ -84,7 +84,7 @@
 -WorkerTest.WorkerTlsClientAuthFetch
 -WorkerTest.WorkerTlsClientAuthImportScripts
 
-# content/network/url_loader_impl.cc should handle failure in
+# services/network/url_loader.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
 # sometimes.
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0

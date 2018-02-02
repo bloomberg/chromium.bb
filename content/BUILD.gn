@@ -60,7 +60,6 @@ config("content_implementation") {
 if (!is_nacl_nonsfi) {
   content_shared_components = [
     "//content/gpu:gpu_sources",
-    "//content/network:network_sources",
     "//content/public/browser:browser_sources",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",

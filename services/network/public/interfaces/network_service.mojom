@@ -173,8 +173,8 @@ interface NetworkContext {
 // The content/browser implementation of this SSLPrivateKey interface wraps the
 // scoped_refptr<net::SSLPrivateKey> that is received from
 // SSLClientAuthDelegate::ContinueWithCertificate(), and this mojo interface is
-// sent from content/browser to content/network so that content/network can have
-// its own net::SSLPrivateKey implementation that internally uses this mojo
+// sent from content/browser to services/network so that services/network can
+// have its own net::SSLPrivateKey implementation that internally uses this mojo
 // interface.
 // The |algorithm| and |input| parameters correspond to the |algorithm| and
 // |input| parameters in net::SSLPrivateKey::Sign().
