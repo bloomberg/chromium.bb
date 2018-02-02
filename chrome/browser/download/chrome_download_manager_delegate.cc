@@ -806,7 +806,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
             download, suggested_path, callback);
         return;
       }
-    // Fallthrough
+      FALLTHROUGH;
 
     // If we cannot reserve the path and the WebContent is already gone, there
     // is no way to prompt user for an infobar. This could happen after chrome

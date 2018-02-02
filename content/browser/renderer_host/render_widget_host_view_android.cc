@@ -2397,6 +2397,7 @@ void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
     case ui::MotionEvent::ACTION_POINTER_UP:
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_RELEASED",
                                   delta.InMicroseconds(), 1, 1000000, 50);
+      return;
     default:
       return;
   }

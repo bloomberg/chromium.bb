@@ -38,7 +38,8 @@ void VrMetricsUtil::LogGvrVersionForVrViewerType(
         encoded_version = kGvrTooOld;
         break;
       }
-    // Fall through since a version can be logged in this case.
+      // Fall through since a version can be logged in this case.
+      FALLTHROUGH;
     case VrCoreCompatibility::VR_CORE_COMPATIBILITY_VR_READY:
       encoded_version =
           std::min(vr_core_info.gvr_sdk_version.major, 999) * 1000 * 1000 +

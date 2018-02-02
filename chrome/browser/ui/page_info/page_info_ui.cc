@@ -208,11 +208,12 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
       return CreateSecurityDescription(SecuritySummaryColor::GREEN,
                                        IDS_PAGE_INFO_INTERNAL_PAGE,
                                        IDS_PAGE_INFO_INTERNAL_PAGE);
-#endif
+#else
       // Internal pages on desktop have their own UI implementations which
       // should never call this function.
       NOTREACHED();
       FALLTHROUGH;
+#endif
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
