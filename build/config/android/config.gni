@@ -188,6 +188,11 @@ if (is_android) {
     # When true, updates all android_aar_prebuilt() .info files during gn gen.
     # Refer to android_aar_prebuilt() for more details.
     update_android_aar_prebuilts = false
+
+    # When true, uses the third party libraries from //third_party/android_deps
+    # over the ones in other places. (instead of the support library from
+    # android_tools for example)
+    enable_android_deps_repository = false
   }
 
   # We need a second declare_args block to make sure we are using the overridden
