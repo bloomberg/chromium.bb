@@ -1072,6 +1072,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_EXPORT_PASSWORDS_ALERT_MESSAGE" desc="The message of the alert displayed as a warning to the user who tapped on the button to export passwords. [iOS only]">
         Your passwords will be visible to anyone who can see the exported file.
       </message>
+      <message name="IDS_IOS_EXPORT_PASSWORDS_PREPARING_ALERT_TITLE" desc="The title of the alert displayed to indicate that the passwords are being prepared for export. [iOS only]">
+        Preparing Passwords...
+      </message>
       <message name="IDS_IOS_EXPORT_PASSWORDS_FAILED_ALERT_TITLE" desc="Title of the alert informing the user that exporting passwords has failed. [iOS only]">
         Can't Export Passwords
       </message>

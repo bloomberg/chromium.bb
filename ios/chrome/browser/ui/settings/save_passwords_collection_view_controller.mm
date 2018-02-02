@@ -168,6 +168,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // Boolean containing whether the export button and functionality are enabled
   // or not.
   BOOL exportEnabled_;
+  // Alert informing the user that passwords are being prepared for
+  // export.
+  UIAlertController* preparingPasswordsAlert_;
 }
 
 // Kick off async request to get logins from password store.
@@ -194,9 +197,12 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
-    passwordExporter_ = [[PasswordExporter alloc]
-        initWithReauthenticationModule:reauthenticationModule_
-                              delegate:self];
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kPasswordExport)) {
+      passwordExporter_ = [[PasswordExporter alloc]
+          initWithReauthenticationModule:reauthenticationModule_
+                                delegate:self];
+    }
     self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
@@ -279,7 +285,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     exportPasswordsItem_ = [self exportPasswordsItem];
     [model addItem:exportPasswordsItem_
         toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-    [self updateExportPasswordsItem];
+    [self updateExportPasswordsButton];
   }
 }
 
@@ -484,22 +490,24 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [self reloadData];
 }
 
-- (void)updateExportPasswordsItem {
-  if (savedForms_.empty()) {
+- (void)updateExportPasswordsButton {
+  if (!exportPasswordsItem_)
+    return;
+  if (!savedForms_.empty() &&
+      self.passwordExporter.exportState == ExportState::IDLE) {
+    exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint900];
+    exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitButton;
+    [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
+    exportEnabled_ = YES;
+  } else {
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint500];
     exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitNotEnabled;
     [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
     exportEnabled_ = NO;
-  } else {
-    exportEnabled_ = YES;
   }
 }
 
 - (void)startPasswordsExportFlow {
-  // TODO(crbug.com/789122): Consider disabling the button while another export
-  // operation is in progress.
-  if (self.passwordExporter.isExporting)
-    return;
   UIAlertController* exportConfirmation = [UIAlertController
       alertControllerWithTitle:nil
                        message:l10n_util::GetNSString(
@@ -524,6 +532,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
                 [strongSelf.passwordExporter
                     startExportFlow:CopyOf(strongSelf->savedForms_)];
               }];
+
   [exportConfirmation addAction:exportAction];
 
   [self presentViewController:exportConfirmation animated:YES completion:nil];
@@ -696,7 +705,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
         [strongSelf updateEditButton];
         if (base::FeatureList::IsEnabled(
                 password_manager::features::kPasswordExport)) {
-          [strongSelf updateExportPasswordsItem];
+          [strongSelf updateExportPasswordsButton];
         }
       }];
 }
@@ -775,6 +784,26 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
+- (void)showPreparingPasswordsAlert {
+  preparingPasswordsAlert_ = [UIAlertController
+      alertControllerWithTitle:
+          l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS_PREPARING_ALERT_TITLE)
+                       message:nil
+                preferredStyle:UIAlertControllerStyleAlert];
+  __weak SavePasswordsCollectionViewController* weakSelf = self;
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                         IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON)
+                               style:UIAlertActionStyleCancel
+                             handler:^(UIAlertAction*) {
+                               [weakSelf.passwordExporter cancelExport];
+                             }];
+  [preparingPasswordsAlert_ addAction:cancelAction];
+  [self presentViewController:preparingPasswordsAlert_
+                     animated:YES
+                   completion:nil];
+}
+
 - (void)showExportErrorAlertWithLocalizedReason:(NSString*)localizedReason {
   UIAlertController* alertController = [UIAlertController
       alertControllerWithTitle:l10n_util::GetNSString(
@@ -786,7 +815,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
                                style:UIAlertActionStyleDefault
                              handler:nil];
   [alertController addAction:okAction];
-  [self presentViewController:alertController animated:YES completion:nil];
+  [self presentViewController:alertController];
 }
 
 - (void)showActivityViewWithActivityItems:(NSArray*)activityItems
@@ -826,9 +855,23 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   activityViewController.popoverPresentationController
       .permittedArrowDirections =
       UIPopoverArrowDirectionDown | UIPopoverArrowDirectionDown;
-  [self presentViewController:activityViewController
-                     animated:YES
-                   completion:nil];
+
+  [self presentViewController:activityViewController];
+}
+
+- (void)presentViewController:(UIViewController*)viewController {
+  if (self.presentedViewController == preparingPasswordsAlert_ &&
+      !preparingPasswordsAlert_.beingDismissed) {
+    __weak SavePasswordsCollectionViewController* weakSelf = self;
+    [self dismissViewControllerAnimated:YES
+                             completion:^() {
+                               [weakSelf presentViewController:viewController
+                                                      animated:YES
+                                                    completion:nil];
+                             }];
+  } else {
+    [self presentViewController:viewController animated:YES completion:nil];
+  }
 }
 
 #pragma mark Helper methods

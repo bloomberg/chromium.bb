@@ -20,6 +20,12 @@ enum class WriteToURLStatus {
   UNKNOWN_ERROR,
 };
 
+enum class ExportState {
+  IDLE,
+  ONGOING,
+  CANCELLING,
+};
+
 @protocol ReauthenticationProtocol;
 
 @protocol FileWriterProtocol<NSObject>
@@ -48,6 +54,10 @@ enum class WriteToURLStatus {
 // in order to export passwords.
 - (void)showSetPasscodeDialog;
 
+// Displays an alert which informs the user that the passwords are being
+// prepared to be exported and gives them the option of cancelling the export.
+- (void)showPreparingPasswordsAlert;
+
 // Displays an alert detailing an error that has occured during export.
 - (void)showExportErrorAlertWithLocalizedReason:(NSString*)errorReason;
 
@@ -59,6 +69,9 @@ enum class WriteToURLStatus {
                                       BOOL completed,
                                       NSArray* returnedItems,
                                       NSError* activityError))completionHandler;
+
+// Enables or disables the export button based on the export state.
+- (void)updateExportPasswordsButton;
 
 @end
 
@@ -80,8 +93,11 @@ enum class WriteToURLStatus {
 - (void)startExportFlow:
     (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords;
 
-// Whether an export operation is already in progress.
-@property(nonatomic, assign, readonly) BOOL isExporting;
+// Called when the user cancels the export operation.
+- (void)cancelExport;
+
+// State of the export operation.
+@property(nonatomic, readonly, assign) ExportState exportState;
 
 @end
 
