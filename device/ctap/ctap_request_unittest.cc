@@ -24,7 +24,7 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       0x03, 0x02, 0x01, 0x02, 0x30, 0x82, 0x01, 0x93, 0x30, 0x82};
 
   static constexpr uint8_t kSerializedRequest[] = {
-      // clang format-off
+      // clang-format off
       0x01,        // authenticatorMakeCredential command
       0xa5,        // map(5)
       0x01,        //  clientDataHash
@@ -104,8 +104,7 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       0x62,        // text(2)
       0x75, 0x76,  // "uv"
       0xf5         // True(21)
-
-      // clang format-on
+      // clang-format on
   };
 
   PublicKeyCredentialRPEntity rp("acme.com");
@@ -135,7 +134,7 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       0xb8, 0x8c, 0x25, 0xdb, 0x9e, 0x60, 0x26, 0x45, 0xf1, 0x41};
 
   static constexpr uint8_t kSerializedRequest[] = {
-      // clang format-off
+      // clang-format off
       0x02,  // authenticatorGetAssertion command
       0xa4,  // map(4)
 
@@ -194,7 +193,7 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       0x75, 0x76,  // "uv"
       0xf5         // True(21)
 
-      // clang format-on
+      // clang-format on
   };
 
   CTAPGetAssertionRequestParam get_assertion_req(

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("ctap") {
   sources = [
@@ -24,6 +25,8 @@ source_set("ctap") {
     "ctap_make_credential_request_param.h",
     "ctap_request_param.cc",
     "ctap_request_param.h",
+    "device_response_converter.cc",
+    "device_response_converter.h",
     "public_key_credential_descriptor.cc",
     "public_key_credential_descriptor.h",
     "public_key_credential_params.cc",
@@ -41,4 +44,15 @@ source_set("ctap") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
+}
+
+fuzzer_test("ctap_response_fuzzer") {
+  sources = [
+    "ctap_response_fuzzer.cc",
+  ]
+  deps = [
+    ":ctap",
+  ]
+  seed_corpus = "ctap_response_fuzzer_corpus/"
+  libfuzzer_options = [ "max_len=65537" ]
 }

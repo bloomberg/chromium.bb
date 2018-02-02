@@ -65,6 +65,7 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "bluetooth/uribeacon/uri_encoder_unittest.cc",
     "ctap/ctap_request_unittest.cc",
+    "ctap/ctap_response_unittest.cc",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
