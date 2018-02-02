@@ -10,10 +10,11 @@
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace profiling {
 
-ProfilingService::ProfilingService() : weak_factory_(this) {}
+ProfilingService::ProfilingService() : binding_(this), weak_factory_(this) {}
 
 ProfilingService::~ProfilingService() {}
 
@@ -22,11 +23,8 @@ std::unique_ptr<service_manager::Service> ProfilingService::CreateService() {
 }
 
 void ProfilingService::OnStart() {
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(base::Bind(
-      &ProfilingService::MaybeRequestQuitDelayed, weak_factory_.GetWeakPtr())));
-  registry_.AddInterface(
-      base::Bind(&ProfilingService::OnProfilingServiceRequest,
-                 base::Unretained(this), ref_factory_.get()));
+  registry_.AddInterface(base::Bind(
+      &ProfilingService::OnProfilingServiceRequest, base::Unretained(this)));
 }
 
 void ProfilingService::OnBindInterface(
@@ -34,31 +32,11 @@ void ProfilingService::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
-
-  // TODO(ajwong): Maybe signal shutdown when all interfaces are closed?  What
-  // does ServiceManager actually do?
-}
-
-void ProfilingService::MaybeRequestQuitDelayed() {
-  // TODO(ajwong): What does this and the MaybeRequestQuit() function actually
-  // do? This is just cargo-culted from another mojo service.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ProfilingService::MaybeRequestQuit,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(5));
-}
-
-void ProfilingService::MaybeRequestQuit() {
-  DCHECK(ref_factory_);
-  if (ref_factory_->HasNoRefs())
-    context()->CreateQuitClosure().Run();
 }
 
 void ProfilingService::OnProfilingServiceRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
     mojom::ProfilingServiceRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void ProfilingService::AddProfilingClient(

@@ -8,11 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/profiling/profiling_service.mojom.h"
 #include "chrome/profiling/memlog_connection_manager.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace profiling {
 
@@ -54,13 +53,7 @@ class ProfilingService : public service_manager::Service,
   void GetProfiledPids(GetProfiledPidsCallback callback) override;
 
  private:
-  void MaybeRequestQuitDelayed();
-  void MaybeRequestQuit();
-
-  // Uses |binding_set_| to resolve |request| allowing for on instance of
-  // MemlogImpl to serve all interface bindings.
   void OnProfilingServiceRequest(
-      service_manager::ServiceContextRefFactory* ref_factory,
       mojom::ProfilingServiceRequest request);
 
   void OnGetVmRegionsCompleteForDumpProcessesForTracing(
@@ -70,10 +63,8 @@ class ProfilingService : public service_manager::Service,
       bool success,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
-  // State needed to manage service lifecycle and lifecycle of bound clients.
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<mojom::ProfilingService> binding_set_;
+  mojo::Binding<mojom::ProfilingService> binding_;
 
   memory_instrumentation::mojom::HeapProfilerHelperPtr helper_;
   MemlogConnectionManager connection_manager_;
