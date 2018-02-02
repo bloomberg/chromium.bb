@@ -15,8 +15,7 @@
 
 // static
 ConsentAuditorFactory* ConsentAuditorFactory::GetInstance() {
-  CR_DEFINE_STATIC_LOCAL(ConsentAuditorFactory, factory, ());
-  return &factory;
+  return base::Singleton<ConsentAuditorFactory>::get();
 }
 
 // static
