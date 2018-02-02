@@ -75,6 +75,9 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
              completionHandler:(void (^)(NSDictionary*))handler;
 // Sets the value of |_DOMElementForLastTouch|.
 - (void)setDOMElementForLastTouch:(NSDictionary*)element;
+// Logs the time taken to fetch DOM element details.
+- (void)logElementFetchDurationWithStartTime:
+    (base::TimeTicks)elementFetchStartTime;
 // Forwards the execution of |script| to |javaScriptDelegate| and if it is nil,
 // to |webView|.
 - (void)executeJavaScript:(NSString*)script
@@ -286,6 +289,12 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   }
 }
 
+- (void)logElementFetchDurationWithStartTime:
+    (base::TimeTicks)elementFetchStartTime {
+  UMA_HISTOGRAM_TIMES("ContextMenu.DOMElementFetchDuration",
+                      base::TimeTicks::Now() - elementFetchStartTime);
+}
+
 #pragma mark -
 #pragma mark UIGestureRecognizerDelegate
 
@@ -309,10 +318,14 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   // fetched - system context menu will be shown.
   [self setDOMElementForLastTouch:nil];
   _contextMenuNeedsDisplay = NO;
+
+  base::TimeTicks fetchStartTime = base::TimeTicks::Now();
   __weak CRWContextMenuController* weakSelf = self;
   [self fetchDOMElementAtPoint:[touch locationInView:_webView]
              completionHandler:^(NSDictionary* element) {
-               [weakSelf setDOMElementForLastTouch:element];
+               CRWContextMenuController* strongSelf = weakSelf;
+               [strongSelf logElementFetchDurationWithStartTime:fetchStartTime];
+               [strongSelf setDOMElementForLastTouch:element];
              }];
   return YES;
 }
