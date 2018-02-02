@@ -8,6 +8,11 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
+
 namespace consent_auditor {
 class ConsentAuditor;
 }
@@ -27,6 +32,8 @@ class ConsentAuditorFactory : public BrowserContextKeyedServiceFactory {
   static consent_auditor::ConsentAuditor* GetForProfile(Profile* profile);
 
  private:
+  friend struct base::DefaultSingletonTraits<ConsentAuditorFactory>;
+
   ConsentAuditorFactory();
   ~ConsentAuditorFactory() override;
 
