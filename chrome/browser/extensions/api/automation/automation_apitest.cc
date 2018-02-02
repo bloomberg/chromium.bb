@@ -293,13 +293,6 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Attributes) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, ReverseRelations) {
-  StartEmbeddedTestServer();
-  ASSERT_TRUE(
-      RunExtensionSubtest("automation/tests/tabs", "reverse_relations.html"))
-      << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TreeChange) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tree_change.html"))

@@ -123,7 +123,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
       const std::string& name,
       void (*callback)(v8::Isolate* isolate,
                        v8::ReturnValue<v8::Value> result,
-                       ui::AXTree* tree,
                        ui::AXNode* node,
                        const std::string& attribute_name));
   void RouteNodeIDPlusRangeFunction(

@@ -553,62 +553,6 @@ chrome.automation.AutomationNode.prototype.activeDescendant;
 chrome.automation.AutomationNode.prototype.inPageLinkTarget;
 
 /**
- * A node that provides more details about the current node.
- * @type {(!chrome.automation.AutomationNode|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-details
- */
-chrome.automation.AutomationNode.prototype.details;
-
-/**
- * A node that provides an error message for a current node.
- * @type {(!chrome.automation.AutomationNode|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-errorMessage
- */
-chrome.automation.AutomationNode.prototype.errorMessage;
-
-/**
- * Reverse relationship for details.
- * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-detailsFor
- */
-chrome.automation.AutomationNode.prototype.detailsFor;
-
-/**
- * Reverse relationship for errorMessage.
- * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-errorMessageFor
- */
-chrome.automation.AutomationNode.prototype.errorMessageFor;
-
-/**
- * Reverse relationship for controls.
- * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-controlledBy
- */
-chrome.automation.AutomationNode.prototype.controlledBy;
-
-/**
- * Reverse relationship for describedBy.
- * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-descriptionFor
- */
-chrome.automation.AutomationNode.prototype.descriptionFor;
-
-/**
- * Reverse relationship for flowTo.
- * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-flowFrom
- */
-chrome.automation.AutomationNode.prototype.flowFrom;
-
-/**
- * Reverse relationship for labelledBy.
- * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-labelFor
- */
-chrome.automation.AutomationNode.prototype.labelFor;
-
-/**
  * An array of custom actions.
  * @type {(!Array<!chrome.automation.CustomAction>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-customActions

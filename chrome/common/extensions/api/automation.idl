@@ -464,30 +464,6 @@
     // The target of an in-page link.
     AutomationNode? inPageLinkTarget;
 
-    // A node that provides more details about the current node.
-    AutomationNode? details;
-
-    // A node that provides an error message for a current node.
-    AutomationNode? errorMessage;
-
-    // Reverse relationship for details.
-    AutomationNode[]? detailsFor;
-
-    // Reverse relationship for errorMessage.
-    AutomationNode[]? errorMessageFor;
-
-    // Reverse relationship for controls.
-    AutomationNode[]? controlledBy;
-
-    // Reverse relationship for describedBy.
-    AutomationNode[]? descriptionFor;
-
-    // Reverse relationship for flowTo.
-    AutomationNode[]? flowFrom;
-
-    // Reverse relationship for labelledBy.
-    AutomationNode[]? labelFor;
-
     // An array of custom actions.
     CustomAction[]? customActions;
 
