@@ -2489,6 +2489,7 @@ split_static_library("ui") {
         "cocoa/bookmarks/bookmark_editor_base_controller.mm",
         "cocoa/bookmarks/bookmark_editor_controller.h",
         "cocoa/bookmarks/bookmark_editor_controller.mm",
+        "cocoa/constrained_web_dialog_delegate_mac.mm",
         "cocoa/download/download_danger_prompt_impl.cc",
         "cocoa/extensions/chooser_dialog_cocoa.h",
         "cocoa/extensions/chooser_dialog_cocoa.mm",
@@ -2518,6 +2519,9 @@ split_static_library("ui") {
         "cocoa/simple_message_box_bridge_views.mm",
         "cocoa/simple_message_box_cocoa.h",
         "cocoa/simple_message_box_cocoa.mm",
+        "javascript_dialogs/javascript_dialog_cocoa.h",
+        "javascript_dialogs/javascript_dialog_cocoa.mm",
+        "javascript_dialogs/javascript_dialog_mac.cc",
       ]
     }
   } else {  # non-Mac.
