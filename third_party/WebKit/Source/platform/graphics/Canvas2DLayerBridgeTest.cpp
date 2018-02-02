@@ -135,6 +135,8 @@ class ImageTrackingDecodeCache : public cc::StubDecodeCache {
 
   cc::DecodedDrawImage GetDecodedImageForDraw(
       const cc::DrawImage& image) override {
+    EXPECT_FALSE(disallow_cache_use_);
+
     num_locked_images_++;
     decoded_images_.push_back(image);
     SkBitmap bitmap;
@@ -147,10 +149,12 @@ class ImageTrackingDecodeCache : public cc::StubDecodeCache {
   }
 
   void set_budget_exceeded(bool exceeded) { budget_exceeded_ = exceeded; }
+  void set_disallow_cache_use(bool disallow) { disallow_cache_use_ = disallow; }
 
   void DrawWithImageFinished(
       const cc::DrawImage& image,
       const cc::DecodedDrawImage& decoded_image) override {
+    EXPECT_FALSE(disallow_cache_use_);
     num_locked_images_--;
   }
 
@@ -163,6 +167,7 @@ class ImageTrackingDecodeCache : public cc::StubDecodeCache {
   std::vector<cc::DrawImage> decoded_images_;
   int num_locked_images_ = 0;
   bool budget_exceeded_ = false;
+  bool disallow_cache_use_ = false;
 };
 
 }  // anonymous namespace
@@ -179,7 +184,7 @@ class Canvas2DLayerBridgeTest : public Test {
     return bridge;
   }
   void SetUp() override {
-    auto factory = [](FakeGLES2Interface* gl, cc::ImageDecodeCache* cache,
+    auto factory = [](FakeGLES2Interface* gl, ImageTrackingDecodeCache* cache,
                       bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
@@ -1367,6 +1372,33 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
   // Ask the provider to release everything, no locked images should remain.
   bridge->GetOrCreateResourceProvider()->ReleaseLockedImages();
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 0);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
+  // Disable deferral so we use the raster canvas directly.
+  auto color_params =
+      CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
+  Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, Canvas2DLayerBridge::kEnableAcceleration,
+      color_params)));
+  bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
+
+  cc::PaintFlags flags;
+  std::vector<cc::DrawImage> images = {
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
+                    SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
+                    SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
+                    0u, color_params.GetStorageGfxColorSpace())};
+  bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
+
+  // Lose the context and ensure that the image provider is not used.
+  bridge->GetResourceProvider()->OnContextDestroyed();
+  // We should unref all images on the cache when the context is destroyed.
+  EXPECT_EQ(image_decode_cache_.num_locked_images(), 0);
+  image_decode_cache_.set_disallow_cache_use(true);
+  bridge->Canvas()->drawImage(images[1].paint_image(), 0u, 0u, &flags);
 }
 
 }  // namespace blink

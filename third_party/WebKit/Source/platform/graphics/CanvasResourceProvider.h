@@ -7,10 +7,11 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/paint/decode_stashing_image_provider.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/playback_image_provider.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
+#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"
@@ -55,7 +56,8 @@ class WebGraphicsContext3DProviderWrapper;
 //   2) use Canvas() to get a drawing interface
 //   3) Call Snapshot() to acquire a bitmap with the rendered image in it.
 
-class PLATFORM_EXPORT CanvasResourceProvider {
+class PLATFORM_EXPORT CanvasResourceProvider
+    : public WebGraphicsContext3DProviderWrapper::DestructionObserver {
   WTF_MAKE_NONCOPYABLE(CanvasResourceProvider);
 
  public:
@@ -78,6 +80,9 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   // to be transfered via TransferableResource should call Snapshot() instead.
   virtual scoped_refptr<CanvasResource> ProduceFrame() = 0;
   scoped_refptr<StaticBitmapImage> Snapshot();
+
+  // WebGraphicsContext3DProvider::DestructionObserver implementation.
+  void OnContextDestroyed() override;
 
   cc::PaintCanvas* Canvas();
   void ReleaseLockedImages();
@@ -103,7 +108,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
     return 0;
   }
   void Clear();
-  virtual ~CanvasResourceProvider();
+  ~CanvasResourceProvider() override;
 
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
@@ -153,7 +158,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   IntSize size_;
   CanvasColorParams color_params_;
   Optional<CanvasImageProvider> canvas_image_provider_;
-  std::unique_ptr<cc::PaintCanvas> canvas_;
+  std::unique_ptr<cc::SkiaPaintCanvas> canvas_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
   std::unique_ptr<SkCanvas> xform_canvas_;
   WTF::Vector<scoped_refptr<CanvasResource>> recycled_resources_;

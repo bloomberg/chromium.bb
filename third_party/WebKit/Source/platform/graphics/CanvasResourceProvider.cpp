@@ -347,9 +347,15 @@ CanvasResourceProvider::CanvasResourceProvider(
     : weak_ptr_factory_(this),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       size_(size),
-      color_params_(color_params) {}
+      color_params_(color_params) {
+  if (context_provider_wrapper_)
+    context_provider_wrapper_->AddObserver(this);
+}
 
-CanvasResourceProvider::~CanvasResourceProvider() = default;
+CanvasResourceProvider::~CanvasResourceProvider() {
+  if (context_provider_wrapper_)
+    context_provider_wrapper_->RemoveObserver(this);
+}
 
 SkSurface* CanvasResourceProvider::GetSkSurface() const {
   if (!surface_) {
@@ -378,7 +384,16 @@ PaintCanvas* CanvasResourceProvider::Canvas() {
           GetSkSurface()->getCanvas(), std::move(image_provider));
     }
   }
+
   return canvas_.get();
+}
+
+void CanvasResourceProvider::OnContextDestroyed() {
+  if (canvas_image_provider_) {
+    DCHECK(canvas_);
+    canvas_->reset_image_provider();
+    canvas_image_provider_.reset();
+  }
 }
 
 void CanvasResourceProvider::ReleaseLockedImages() {

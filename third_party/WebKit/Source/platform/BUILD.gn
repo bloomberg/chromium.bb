@@ -1044,6 +1044,7 @@ jumbo_component("platform") {
     "graphics/VideoFrameResourceProvider.h",
     "graphics/VideoFrameSubmitter.cpp",
     "graphics/VideoFrameSubmitter.h",
+    "graphics/WebGraphicsContext3DProviderWrapper.cpp",
     "graphics/WebGraphicsContext3DProviderWrapper.h",
     "graphics/compositing/CompositedLayerRasterInvalidator.cpp",
     "graphics/compositing/CompositedLayerRasterInvalidator.h",
