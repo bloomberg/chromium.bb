@@ -15,9 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/simple_test_clock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_error_factory_mock.h"
@@ -54,8 +52,6 @@ namespace {
 // PasswordForm values for tests.
 constexpr autofill::PasswordForm::Type kArbitraryType =
     autofill::PasswordForm::TYPE_GENERATED;
-constexpr char kAndroidAutofillRealm[] = "android://hash@com.magisto";
-constexpr char kAndroidCorrectRealm[] = "android://hash@com.magisto/";
 constexpr char kIconUrl[] = "https://fb.com/Icon";
 constexpr char kDisplayName[] = "Agent Smith";
 constexpr char kFederationUrl[] = "https://fb.com/";
@@ -73,8 +69,8 @@ const sync_pb::PasswordSpecificsData& GetPasswordSpecifics(
   return sync_data.GetSpecifics().password().client_only_encrypted_data();
 }
 
-MATCHER_P(HasDateSynced, time, "") {
-  return arg.date_synced == time;
+MATCHER(HasDateSynced, "") {
+  return !arg.date_synced.is_null() && !arg.date_synced.is_max();
 }
 
 MATCHER_P(PasswordIs, form, "") {
@@ -124,14 +120,6 @@ MATCHER_P2(SyncChangeIs, change_type, password, "") {
 // responsible for the lifetime of all the password forms.
 ACTION_P(AppendForm, form) {
   arg0->push_back(std::make_unique<autofill::PasswordForm>(form));
-  return true;
-}
-
-// The argument is std::vector<autofill::PasswordForm*>*. The caller is
-// responsible for the lifetime of all the password forms.
-ACTION_P(AppendForms, forms) {
-  for (const autofill::PasswordForm& form : forms)
-    arg0->push_back(std::make_unique<autofill::PasswordForm>(form));
   return true;
 }
 
@@ -185,14 +173,12 @@ class PasswordSyncableServiceWrapper {
     password_store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     service_.reset(
         new PasswordSyncableService(password_store_->GetSyncInterface()));
-    auto clock = std::make_unique<base::SimpleTestClock>();
-    clock->SetNow(time());
-    service_->set_clock(std::move(clock));
-    ON_CALL(*password_store_, AddLoginImpl(HasDateSynced(time())))
+
+    ON_CALL(*password_store_, AddLoginImpl(HasDateSynced()))
         .WillByDefault(Return(PasswordStoreChangeList()));
     ON_CALL(*password_store_, RemoveLoginImpl(_))
         .WillByDefault(Return(PasswordStoreChangeList()));
-    ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced(time())))
+    ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced()))
         .WillByDefault(Return(PasswordStoreChangeList()));
     EXPECT_CALL(*password_store(), NotifyLoginsChanged(_)).Times(AnyNumber());
   }
@@ -202,8 +188,6 @@ class PasswordSyncableServiceWrapper {
   MockPasswordStore* password_store() { return password_store_.get(); }
 
   PasswordSyncableService* service() { return service_.get(); }
-
-  static base::Time time() { return base::Time::FromInternalValue(100000); }
 
   // Returnes the scoped_ptr to |service_| thus NULLing out it.
   std::unique_ptr<syncer::SyncChangeProcessor> ReleaseSyncableService() {
@@ -233,6 +217,7 @@ class PasswordSyncableServiceTest : public testing::Test {
   std::unique_ptr<MockSyncChangeProcessor> processor_;
 
  private:
+  // Used by the password store.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   PasswordSyncableServiceWrapper wrapper_;
 };
@@ -675,546 +660,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   EXPECT_EQ("https://google.com/icon", specifics.avatar_url());
   EXPECT_TRUE(specifics.has_federation_url());
   EXPECT_EQ("https://google.com", specifics.federation_url());
-}
-
-// Tests for Android Autofill credentials. Those are saved in the wrong format
-// without trailing '/'. Nevertheless, password store should always contain the
-// correct values.
-class PasswordSyncableServiceAndroidAutofillTest : public testing::Test {
- public:
-  PasswordSyncableServiceAndroidAutofillTest() = default;
-
-  static PasswordFormData android_incorrect(double creation_time) {
-    PasswordFormData data = {autofill::PasswordForm::SCHEME_HTML,
-                             kAndroidAutofillRealm,
-                             kAndroidAutofillRealm,
-                             "",
-                             L"",
-                             L"",
-                             L"",
-                             L"username_value_1",
-                             L"11111",
-                             true,
-                             creation_time};
-    return data;
-  }
-
-  static PasswordFormData android_correct(double creation_time) {
-    PasswordFormData data = {autofill::PasswordForm::SCHEME_HTML,
-                             kAndroidCorrectRealm,
-                             kAndroidCorrectRealm,
-                             "",
-                             L"",
-                             L"",
-                             L"",
-                             L"username_value_1",
-                             L"22222",
-                             true,
-                             creation_time};
-    return data;
-  }
-
-  static PasswordFormData android_incorrect2(double creation_time) {
-    PasswordFormData data = {autofill::PasswordForm::SCHEME_HTML,
-                             kAndroidAutofillRealm,
-                             kAndroidAutofillRealm,
-                             "",
-                             L"",
-                             L"",
-                             L"",
-                             L"username_value_1",
-                             L"33333",
-                             false,
-                             creation_time};
-    return data;
-  }
-
-  static PasswordFormData android_correct2(double creation_time) {
-    PasswordFormData data = {autofill::PasswordForm::SCHEME_HTML,
-                             kAndroidCorrectRealm,
-                             kAndroidCorrectRealm,
-                             "",
-                             L"",
-                             L"",
-                             L"",
-                             L"username_value_1",
-                             L"444444",
-                             false,
-                             creation_time};
-    return data;
-  }
-
-  static autofill::PasswordForm FormWithCorrectTag(PasswordFormData data) {
-    autofill::PasswordForm form = *FillPasswordFormWithData(data);
-    form.signon_realm = kAndroidCorrectRealm;
-    form.origin = GURL(kAndroidCorrectRealm);
-    form.date_synced = PasswordSyncableServiceWrapper::time();
-    return form;
-  }
-
-  static autofill::PasswordForm FormWithAndroidAutofillTag(
-      PasswordFormData data) {
-    autofill::PasswordForm form = *FillPasswordFormWithData(data);
-    form.signon_realm = kAndroidAutofillRealm;
-    form.origin = GURL(kAndroidAutofillRealm);
-    form.date_synced = PasswordSyncableServiceWrapper::time();
-    return form;
-  }
-
-  // Transforms |val| into |count| numbers from 1 to |count| inclusive.
-  static std::vector<unsigned> ExtractTimestamps(unsigned val, unsigned count) {
-    std::vector<unsigned> result;
-    for (unsigned i = 0; i < count; ++i) {
-      result.push_back(val % count + 1);
-      val /= count;
-    }
-    return result;
-  }
-
-  static testing::Message FormDataMessage(const std::string& prefix,
-                                          const PasswordFormData* data) {
-    testing::Message message;
-    message << prefix;
-    if (data)
-      message << *FillPasswordFormWithData(*data);
-    else
-      message << "NULL";
-    return message;
-  }
-
- protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-};
-
-TEST_F(PasswordSyncableServiceAndroidAutofillTest, FourWayMerge) {
-  for (unsigned val = 0; val < 4 * 4 * 4 * 4; ++val) {
-    // Generate 4 creation timestamps for all the entries.
-    std::vector<unsigned> dates = ExtractTimestamps(val, 4);
-    ASSERT_EQ(4u, dates.size());
-    const unsigned latest = *std::max_element(dates.begin(), dates.end());
-    // Sync correct, Sync Android autofill, local correct, local incorrect.
-    const PasswordFormData data[4] = {
-        android_correct(dates[0]), android_incorrect(dates[1]),
-        android_correct2(dates[2]), android_incorrect2(dates[3])};
-    const PasswordFormData* latest_data =
-        std::find_if(data, data + 4, [latest](const PasswordFormData& data) {
-          return data.creation_time == latest;
-        });
-    ASSERT_TRUE(latest_data);
-    std::vector<autofill::PasswordForm> expected_sync_updates;
-    if (latest_data != &data[0])
-      expected_sync_updates.push_back(FormWithCorrectTag(*latest_data));
-    if (latest_data != &data[1])
-      expected_sync_updates.push_back(FormWithAndroidAutofillTag(*latest_data));
-    autofill::PasswordForm local_correct = *FillPasswordFormWithData(data[2]);
-    autofill::PasswordForm local_incorrect = *FillPasswordFormWithData(data[3]);
-    syncer::SyncData sync_correct =
-        SyncDataFromPassword(*FillPasswordFormWithData(data[0]));
-    syncer::SyncData sync_incorrect =
-        SyncDataFromPassword(*FillPasswordFormWithData(data[1]));
-
-    SCOPED_TRACE(*FillPasswordFormWithData(data[0]));
-    SCOPED_TRACE(*FillPasswordFormWithData(data[1]));
-    SCOPED_TRACE(*FillPasswordFormWithData(data[2]));
-    SCOPED_TRACE(*FillPasswordFormWithData(data[3]));
-
-    for (bool correct_sync_first : {true, false}) {
-      auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
-      auto processor =
-          std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
-
-      std::vector<autofill::PasswordForm> stored_forms = {local_correct,
-                                                          local_incorrect};
-      EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-          .WillOnce(AppendForms(stored_forms));
-      EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
-          .WillOnce(Return(true));
-      if (latest_data != &data[2]) {
-        EXPECT_CALL(*wrapper->password_store(),
-                    UpdateLoginImpl(FormWithCorrectTag(*latest_data)));
-      }
-      if (latest_data != &data[3]) {
-        EXPECT_CALL(*wrapper->password_store(),
-                    UpdateLoginImpl(FormWithAndroidAutofillTag(*latest_data)));
-      }
-
-      if (expected_sync_updates.size() == 1) {
-        EXPECT_CALL(*processor,
-                    ProcessSyncChanges(_, ElementsAre(SyncChangeIs(
-                                              SyncChange::ACTION_UPDATE,
-                                              expected_sync_updates[0]))));
-      } else {
-        EXPECT_CALL(
-            *processor,
-            ProcessSyncChanges(_, UnorderedElementsAre(
-                                      SyncChangeIs(SyncChange::ACTION_UPDATE,
-                                                   expected_sync_updates[0]),
-                                      SyncChangeIs(SyncChange::ACTION_UPDATE,
-                                                   expected_sync_updates[1]))));
-      }
-
-      SyncDataList sync_list = {sync_correct, sync_incorrect};
-      if (!correct_sync_first)
-        std::swap(sync_list[0], sync_list[1]);
-      wrapper->service()->MergeDataAndStartSyncing(
-          syncer::PASSWORDS, sync_list, std::move(processor),
-          std::unique_ptr<syncer::SyncErrorFactory>());
-      wrapper.reset();
-      // Wait til PasswordStore is destroy end therefore all the expectations on
-      // it are checked.
-      scoped_task_environment_.RunUntilIdle();
-    }
-  }
-}
-
-TEST_F(PasswordSyncableServiceAndroidAutofillTest, ThreeWayMerge) {
-  for (int j = 0; j < 4; ++j) {
-    // Whether the entry exists: Sync correct, Sync Android autofill,
-    // local correct, local incorrect.
-    bool entry_present[4] = {true, true, true, true};
-    entry_present[j] = false;
-    for (unsigned val = 0; val < 3 * 3 * 3; ++val) {
-      // Generate 3 creation timestamps for all the entries.
-      std::vector<unsigned> dates = ExtractTimestamps(val, 3);
-      ASSERT_EQ(3u, dates.size());
-      const unsigned latest = *std::max_element(dates.begin(), dates.end());
-
-      // Sync correct, Sync Android autofill, local correct, local incorrect.
-      std::vector<std::unique_ptr<PasswordFormData>> data;
-      int date_index = 0;
-      data.push_back(entry_present[0]
-                         ? std::make_unique<PasswordFormData>(
-                               android_correct(dates[date_index++]))
-                         : nullptr);
-      data.push_back(entry_present[1]
-                         ? std::make_unique<PasswordFormData>(
-                               android_incorrect(dates[date_index++]))
-                         : nullptr);
-      data.push_back(entry_present[2]
-                         ? std::make_unique<PasswordFormData>(
-                               android_correct2(dates[date_index++]))
-                         : nullptr);
-      data.push_back(entry_present[3]
-                         ? std::make_unique<PasswordFormData>(
-                               android_incorrect2(dates[date_index++]))
-                         : nullptr);
-
-      SCOPED_TRACE(val);
-      SCOPED_TRACE(j);
-      SCOPED_TRACE(FormDataMessage("data[0]=", data[0].get()));
-      SCOPED_TRACE(FormDataMessage("data[1]=", data[1].get()));
-      SCOPED_TRACE(FormDataMessage("data[2]=", data[2].get()));
-      SCOPED_TRACE(FormDataMessage("data[3]=", data[3].get()));
-
-      const PasswordFormData* latest_data =
-          std::find_if(data.begin(), data.end(),
-                       [latest](const std::unique_ptr<PasswordFormData>& data) {
-                         return data && data->creation_time == latest;
-                       })
-              ->get();
-      ASSERT_TRUE(latest_data);
-      std::vector<std::pair<SyncChange::SyncChangeType, autofill::PasswordForm>>
-          expected_sync_updates;
-      for (int i = 0; i < 2; ++i) {
-        if (latest_data != data[i].get()) {
-          expected_sync_updates.push_back(std::make_pair(
-              data[i] ? SyncChange::ACTION_UPDATE : SyncChange::ACTION_ADD,
-              i == 0 ? FormWithCorrectTag(*latest_data)
-                     : FormWithAndroidAutofillTag(*latest_data)));
-        }
-      }
-
-      std::vector<autofill::PasswordForm> stored_forms;
-      for (int i = 2; i < 4; ++i) {
-        if (data[i])
-          stored_forms.push_back(*FillPasswordFormWithData(*data[i]));
-      }
-
-      SyncDataList sync_list;
-      for (int i = 0; i < 2; ++i) {
-        if (data[i]) {
-          sync_list.push_back(
-              SyncDataFromPassword(*FillPasswordFormWithData(*data[i])));
-        }
-      }
-
-      for (bool swap_sync_list : {false, true}) {
-        auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
-        auto processor =
-            std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
-
-        EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-            .WillOnce(AppendForms(stored_forms));
-        EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
-            .WillOnce(Return(true));
-        for (int i = 2; i < 4; ++i) {
-          if (latest_data != data[i].get()) {
-            autofill::PasswordForm latest_form =
-                i == 2 ? FormWithCorrectTag(*latest_data)
-                       : FormWithAndroidAutofillTag(*latest_data);
-            if (data[i]) {
-              EXPECT_CALL(*wrapper->password_store(),
-                          UpdateLoginImpl(latest_form));
-            } else {
-              EXPECT_CALL(*wrapper->password_store(),
-                          AddLoginImpl(latest_form));
-            }
-          }
-        }
-
-        if (expected_sync_updates.size() == 0) {
-          EXPECT_CALL(*processor, ProcessSyncChanges(_, IsEmpty()));
-        } else if (expected_sync_updates.size() == 1) {
-          EXPECT_CALL(
-              *processor,
-              ProcessSyncChanges(_, ElementsAre(SyncChangeIs(
-                                        expected_sync_updates[0].first,
-                                        expected_sync_updates[0].second))));
-        } else if (expected_sync_updates.size() == 2) {
-          EXPECT_CALL(
-              *processor,
-              ProcessSyncChanges(
-                  _, UnorderedElementsAre(
-                         SyncChangeIs(expected_sync_updates[0].first,
-                                      expected_sync_updates[0].second),
-                         SyncChangeIs(expected_sync_updates[1].first,
-                                      expected_sync_updates[1].second))));
-        }
-
-        if (swap_sync_list && sync_list.size() == 2)
-          std::swap(sync_list[0], sync_list[1]);
-        wrapper->service()->MergeDataAndStartSyncing(
-            syncer::PASSWORDS, sync_list, std::move(processor),
-            std::unique_ptr<syncer::SyncErrorFactory>());
-        wrapper.reset();
-        // Wait til PasswordStore is destroy end therefore all the expectations
-        // on it are checked.
-        scoped_task_environment_.RunUntilIdle();
-      }
-    }
-  }
-}
-
-TEST_F(PasswordSyncableServiceAndroidAutofillTest, TwoWayServerAndLocalMerge) {
-  for (unsigned i = 0; i < 2 * 2; ++i) {
-    // Generate 4 different combinations for local/server entries.
-    std::vector<unsigned> combination = ExtractTimestamps(i, 2);
-    ASSERT_EQ(2u, combination.size());
-    const bool sync_data_correct = !!combination[0];
-    const bool local_data_correct = !!combination[1];
-
-    for (unsigned val = 0; val < 2 * 2; ++val) {
-      std::vector<unsigned> dates = ExtractTimestamps(val, 2);
-      ASSERT_EQ(2u, dates.size());
-
-      const PasswordFormData sync_data = sync_data_correct
-                                             ? android_correct(dates[0])
-                                             : android_incorrect(dates[0]);
-      const PasswordFormData local_data = local_data_correct
-                                              ? android_correct2(dates[1])
-                                              : android_incorrect2(dates[1]);
-
-      const PasswordFormData* latest_data =
-          dates[1] > dates[0] ? &local_data : &sync_data;
-
-      auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
-      auto processor =
-          std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
-
-      EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-          .WillOnce(AppendForm(*FillPasswordFormWithData(local_data)));
-      EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
-          .WillOnce(Return(true));
-      if (!local_data_correct || latest_data == &sync_data) {
-        if (local_data_correct) {
-          EXPECT_CALL(*wrapper->password_store(),
-                      UpdateLoginImpl(FormWithCorrectTag(*latest_data)));
-        } else {
-          EXPECT_CALL(*wrapper->password_store(),
-                      AddLoginImpl(FormWithCorrectTag(*latest_data)));
-        }
-      }
-      if (!local_data_correct && latest_data == &sync_data) {
-        EXPECT_CALL(*wrapper->password_store(),
-                    UpdateLoginImpl(FormWithAndroidAutofillTag(*latest_data)));
-      } else if (local_data_correct && !sync_data_correct) {
-        EXPECT_CALL(*wrapper->password_store(),
-                    AddLoginImpl(FormWithAndroidAutofillTag(*latest_data)));
-      }
-
-      std::vector<std::pair<SyncChange::SyncChangeType, autofill::PasswordForm>>
-          expected_sync_updates;
-      // Deal with the correct sync entry and incorrect one.
-      if (sync_data_correct) {
-        if (latest_data != &sync_data) {
-          expected_sync_updates.push_back(std::make_pair(
-              SyncChange::ACTION_UPDATE, FormWithCorrectTag(*latest_data)));
-        }
-        if (!local_data_correct) {
-          expected_sync_updates.push_back(
-              std::make_pair(SyncChange::ACTION_ADD,
-                             FormWithAndroidAutofillTag(*latest_data)));
-        }
-      } else {
-        expected_sync_updates.push_back(std::make_pair(
-            SyncChange::ACTION_ADD, FormWithCorrectTag(*latest_data)));
-        if (latest_data != &sync_data) {
-          expected_sync_updates.push_back(
-              std::make_pair(SyncChange::ACTION_UPDATE,
-                             FormWithAndroidAutofillTag(*latest_data)));
-        }
-      }
-
-      // Set expectation on |processor|.
-      if (expected_sync_updates.size() == 0) {
-        EXPECT_CALL(*processor, ProcessSyncChanges(_, IsEmpty()));
-      } else if (expected_sync_updates.size() == 1) {
-        EXPECT_CALL(
-            *processor,
-            ProcessSyncChanges(
-                _, ElementsAre(SyncChangeIs(expected_sync_updates[0].first,
-                                            expected_sync_updates[0].second))));
-      } else if (expected_sync_updates.size() == 2) {
-        EXPECT_CALL(*processor,
-                    ProcessSyncChanges(
-                        _, UnorderedElementsAre(
-                               SyncChangeIs(expected_sync_updates[0].first,
-                                            expected_sync_updates[0].second),
-                               SyncChangeIs(expected_sync_updates[1].first,
-                                            expected_sync_updates[1].second))));
-      }
-
-      SyncDataList sync_list = {
-          SyncDataFromPassword(*FillPasswordFormWithData(sync_data))};
-      wrapper->service()->MergeDataAndStartSyncing(
-          syncer::PASSWORDS, sync_list, std::move(processor),
-          std::unique_ptr<syncer::SyncErrorFactory>());
-      wrapper.reset();
-      // Wait til PasswordStore is destroy end therefore all the expectations on
-      // it are checked.
-      scoped_task_environment_.RunUntilIdle();
-    }
-  }
-}
-
-TEST_F(PasswordSyncableServiceAndroidAutofillTest, OneEntryOnly) {
-  for (int i = 0; i < 3; ++i) {
-    // The case when only local incorrect entry exists is excluded. It's very
-    // exotic because a local incorrect entry can come only from the server.
-    // In such a case a copy will be uploaded to the server and next
-    // MergeDataAndStartSyncing will do a proper migration.
-    SCOPED_TRACE(i);
-    // Whether the entry exists: Sync correct, Sync Android autofill,
-    // local correct, local incorrect.
-    const bool entry_is_correct = i == 0 || i == 2;
-    const bool entry_is_local = i >= 2;
-    PasswordFormData data =
-        entry_is_correct ? android_correct(100) : android_incorrect(100);
-
-    auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
-    auto processor =
-        std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
-
-    if (entry_is_local) {
-      EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-          .WillOnce(AppendForm(*FillPasswordFormWithData(data)));
-    } else {
-      EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-          .WillOnce(Return(true));
-    }
-    EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
-        .WillOnce(Return(true));
-    if (!entry_is_local && !entry_is_correct) {
-      EXPECT_CALL(*wrapper->password_store(),
-                  AddLoginImpl(FormWithAndroidAutofillTag(data)));
-    }
-    if (!entry_is_local) {
-      EXPECT_CALL(*wrapper->password_store(),
-                  AddLoginImpl(FormWithCorrectTag(data)));
-    }
-
-    if (entry_is_correct && !entry_is_local) {
-      EXPECT_CALL(*processor, ProcessSyncChanges(_, IsEmpty()));
-    } else {
-      EXPECT_CALL(*processor,
-                  ProcessSyncChanges(
-                      _, ElementsAre(SyncChangeIs(SyncChange::ACTION_ADD,
-                                                  FormWithCorrectTag(data)))));
-    }
-
-    SyncDataList sync_list;
-    if (!entry_is_local) {
-      sync_list.push_back(
-          SyncDataFromPassword(*FillPasswordFormWithData(data)));
-    }
-    wrapper->service()->MergeDataAndStartSyncing(
-        syncer::PASSWORDS, sync_list, std::move(processor),
-        std::unique_ptr<syncer::SyncErrorFactory>());
-    wrapper.reset();
-    // Wait til PasswordStore is destroy end therefore all the expectations on
-    // it are checked.
-    scoped_task_environment_.RunUntilIdle();
-  }
-}
-
-TEST_F(PasswordSyncableServiceAndroidAutofillTest, FourEqualEntries) {
-  // Sync correct, Sync Android autofill, local correct, local incorrect with
-  // the same content. Nothing should happen.
-  const PasswordFormData data = android_correct(100);
-  autofill::PasswordForm local_correct = FormWithCorrectTag(data);
-  autofill::PasswordForm local_incorrect = FormWithAndroidAutofillTag(data);
-  syncer::SyncData sync_correct = SyncDataFromPassword(local_correct);
-  syncer::SyncData sync_incorrect = SyncDataFromPassword(local_incorrect);
-
-  for (bool correct_sync_first : {true, false}) {
-    auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
-    auto processor =
-        std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
-
-    std::vector<autofill::PasswordForm> stored_forms = {local_correct,
-                                                        local_incorrect};
-    EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-        .WillOnce(AppendForms(stored_forms));
-    EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*processor, ProcessSyncChanges(_, IsEmpty()));
-
-    SyncDataList sync_list = {sync_correct, sync_incorrect};
-    if (!correct_sync_first)
-      std::swap(sync_list[0], sync_list[1]);
-    wrapper->service()->MergeDataAndStartSyncing(
-        syncer::PASSWORDS, sync_list, std::move(processor),
-        std::unique_ptr<syncer::SyncErrorFactory>());
-    wrapper.reset();
-    // Wait til PasswordStore is destroy end therefore all the expectations on
-    // it are checked.
-    scoped_task_environment_.RunUntilIdle();
-  }
-}
-
-TEST_F(PasswordSyncableServiceAndroidAutofillTest, AndroidCorrectEqualEntries) {
-  // Sync correct, local correct with the same content. Nothing should happen.
-  const PasswordFormData data = android_correct(100);
-  autofill::PasswordForm local_correct = FormWithCorrectTag(data);
-  syncer::SyncData sync_correct = SyncDataFromPassword(local_correct);
-
-  auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
-  auto processor =
-      std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
-
-  EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-      .WillOnce(AppendForm(local_correct));
-  EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*processor, ProcessSyncChanges(_, IsEmpty()));
-
-  wrapper->service()->MergeDataAndStartSyncing(
-      syncer::PASSWORDS, {sync_correct}, std::move(processor),
-      std::unique_ptr<syncer::SyncErrorFactory>());
-  wrapper.reset();
-  // Wait til PasswordStore is destroy end therefore all the expectations on
-  // it are checked.
-  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace
