@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 
@@ -58,6 +59,12 @@ CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
 CONTENT_EXPORT size_t AddOrMergeReceivedSliceIntoSortedArray(
     const DownloadItem::ReceivedSlice& new_slice,
     std::vector<DownloadItem::ReceivedSlice>& received_slices);
+
+// Returns if a preceding stream can still download the part of content that
+// was arranged to |error_stream|.
+CONTENT_EXPORT bool CanRecoverFromError(
+    const DownloadFileImpl::SourceStream* error_stream,
+    const DownloadFileImpl::SourceStream* preceding_neighbor);
 
 // Finch configuration utilities.
 //

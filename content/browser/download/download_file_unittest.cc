@@ -438,13 +438,19 @@ class DownloadFileTest : public testing::Test {
 
   void VerifySourceStreamsStates(const SourceStreamTestData& data) {
     DCHECK(download_file_->source_streams_.find(data.offset) !=
-           download_file_->source_streams_.end());
+           download_file_->source_streams_.end())
+        << "Can't find stream at offset : " << data.offset;
     DownloadFileImpl::SourceStream* stream =
         download_file_->source_streams_[data.offset].get();
     DCHECK(stream);
     EXPECT_EQ(data.offset, stream->offset());
     EXPECT_EQ(data.bytes_written, stream->bytes_written());
     EXPECT_EQ(data.finished, stream->is_finished());
+  }
+
+  size_t source_streams_count() const {
+    DCHECK(download_file_);
+    return download_file_->source_streams_.size();
   }
 
   int64_t TotalBytesReceived() const {
@@ -902,7 +908,7 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
 // Tests for concurrent streams handling, used for parallel download.
 //
 // Activate both streams at the same time.
-TEST_F(DownloadFileTest, MutipleStreamsWrite) {
+TEST_F(DownloadFileTest, MultipleStreamsWrite) {
   int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
   int64_t stream_1_length = GetBuffersLength(kTestData7, 2);
 
@@ -994,7 +1000,7 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
 }
 
 // Activate and deplete one stream, later add the second stream.
-TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
+TEST_F(DownloadFileTest, MultipleStreamsFirstStreamWriteAllData) {
   int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
 
   ASSERT_TRUE(CreateDownloadFile(0,
@@ -1020,10 +1026,9 @@ TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
   base::RunLoop().RunUntilIdle();
 
   SourceStreamTestData stream_data_0(0, stream_0_length, true);
-  SourceStreamTestData stream_data_1(stream_0_length - 1, 0, false);
   VerifySourceStreamsStates(stream_data_0);
-  VerifySourceStreamsStates(stream_data_1);
   EXPECT_EQ(stream_0_length, TotalBytesReceived());
+  EXPECT_EQ(1u, source_streams_count());
 
   DestroyDownloadFile(0);
 }

@@ -95,6 +95,7 @@ constexpr int kTestRequestCount = 3;
 const std::string kOriginOne = "one.example";
 const std::string kOriginTwo = "two.example";
 const std::string kOriginThree = "example.com";
+const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
 
 // Implementation of TestContentBrowserClient that overrides
 // AllowRenderingMhtmlOverHttp() and allows consumers to set a value.
@@ -902,6 +903,39 @@ class ParallelDownloadTest : public DownloadContentTest {
 
   ~ParallelDownloadTest() override {}
 
+  // Verify parallel download completion tests.
+  void RunCompletionTest(TestDownloadHttpResponse::Parameters& parameters) {
+    EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
+
+    GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+    GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+
+    // Only parallel download needs to specify the connection type to http 1.1,
+    // other tests will automatically fall back to non-parallel download even if
+    // the ParallelDownloading feature is enabled based on
+    // fieldtrial_testing_config.json.
+    parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+    TestRequestPauseHandler request_pause_handler;
+    parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
+    parameters.pause_offset = DownloadRequestCore::kDownloadByteStreamSize;
+    TestDownloadHttpResponse::StartServing(parameters, server_url);
+
+    DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
+    // Send some data for the first request and pause it so download won't
+    // complete before other parallel requests are created.
+    test_response_handler()->WaitUntilCompletion(2u);
+
+    // Now resume the first request.
+    request_pause_handler.Resume();
+    WaitForCompletion(download);
+
+    const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+        test_response_handler()->completed_requests();
+    EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
+    ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                              parameters.size, download->GetTargetFilePath());
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -1318,7 +1352,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectBeforeResume) {
   // Now that the download is interrupted, make all intermediate servers return
   // a 404. The only way a resumption request would succeed if the resumption
   // request is sent to the final server in the chain.
-  const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
   TestDownloadHttpResponse::StartServingStaticResponse(k404Response, first_url);
   TestDownloadHttpResponse::StartServingStaticResponse(k404Response,
                                                        second_url);
@@ -2896,39 +2929,49 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
 // Verify parallel download in normal case.
 IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
-  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
-
-  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
-  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
   TestDownloadHttpResponse::Parameters parameters;
   parameters.etag = "ABC";
   parameters.size = 5097152;
 
-  // Only parallel download needs to specify the connection type to http 1.1,
-  // other tests will automatically fall back to non-parallel download even if
-  // the ParallelDownloading feature is enabled based on
-  // fieldtrial_testing_config.json.
-  parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
-  TestRequestPauseHandler request_pause_handler;
-  parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
-  parameters.pause_offset = DownloadRequestCore::kDownloadByteStreamSize;
-  TestDownloadHttpResponse::StartServing(parameters, server_url);
+  RunCompletionTest(parameters);
+}
 
-  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
-  // Send some data for the first request and pause it so download won't
-  // complete before other parallel requests are created.
-  test_response_handler()->WaitUntilCompletion(1u);
+// When the last request is rejected by the server, other parallel requests
+// should take over and complete the download.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, LastRequestRejected) {
+  TestDownloadHttpResponse::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 5097152;
+  // The 3rd request will always fail. Other requests should take over.
+  parameters.SetResponseForRangeRequest(3398000, -1, k404Response,
+                                        std::string());
 
-  // Now resume the first request.
-  request_pause_handler.Resume();
-  WaitForCompletion(download);
+  RunCompletionTest(parameters);
+}
 
-  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
-      test_response_handler()->completed_requests();
-  EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
+// When the second request is rejected by the server, other parallel requests
+// should take over and complete the download.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, SecondRequestRejected) {
+  TestDownloadHttpResponse::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 5097152;
+  // The 2nd request will always fail. Other requests should take over.
+  parameters.SetResponseForRangeRequest(1699000, 2000000, k404Response,
+                                        std::string());
+  RunCompletionTest(parameters);
+}
 
-  ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
-                            download->GetTargetFilePath());
+// The server will only accept the original request, and reject all other
+// requests. The original request should complete the whole download.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, OnlyFirstRequestValid) {
+  TestDownloadHttpResponse::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 5097152;
+
+  // 2nd and 3rd request will fail, the original request should complete the
+  // download.
+  parameters.SetResponseForRangeRequest(1000, -1, k404Response, std::string());
+  RunCompletionTest(parameters);
 }
 
 // Verify parallel download resumption.
@@ -3095,8 +3138,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   EXPECT_EQ(1u, items.size());
 
   // Now server will start to response 404 with empty body.
-  const std::string k404ResponseHeader = "HTTP/1.1 404 Not found\r\n\r\n";
-  TestDownloadHttpResponse::StartServingStaticResponse(k404ResponseHeader,
+  TestDownloadHttpResponse::StartServingStaticResponse(k404Response,
                                                        server_url);
   DownloadItem* download = items[0];
 
