@@ -329,28 +329,6 @@ class CONTENT_EXPORT SavePackage
   // presented as the total and received bytes.
   int64_t CurrentSpeed() const;
 
-  // Helper function for preparing suggested name for the SaveAs Dialog. The
-  // suggested name is determined by the web document's title.
-  static base::FilePath GetSuggestedNameForSaveAs(
-      const base::string16& title,
-      const GURL& page_url,
-      bool can_save_as_complete,
-      const std::string& contents_mime_type);
-
-  // Ensures that the file name has a proper extension for HTML by adding ".htm"
-  // if necessary.
-  static base::FilePath EnsureHtmlExtension(const base::FilePath& name);
-
-  // Ensures that the file name has a proper extension for supported formats
-  // if necessary.
-  static base::FilePath EnsureMimeExtension(const base::FilePath& name,
-      const std::string& contents_mime_type);
-
-  // Returns extension for supported MIME types (for example, for "text/plain"
-  // it returns "txt").
-  static const base::FilePath::CharType* ExtensionForMimeType(
-      const std::string& contents_mime_type);
-
   // A queue for items we are about to start saving.
   base::circular_deque<std::unique_ptr<SaveItem>> waiting_item_queue_;
 
