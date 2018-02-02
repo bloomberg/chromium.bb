@@ -13,6 +13,15 @@
 namespace blink {
 
 class LocalFrameView;
+class LayoutObject;
+class ObjectPaintProperties;
+
+namespace PaintPropertyTreePrinter {
+
+void UpdateDebugNames(const LocalFrameView&);
+void UpdateDebugNames(const LayoutObject&, ObjectPaintProperties&);
+
+}  // namespace PaintPropertyTreePrinter
 
 }  // namespace blink
 
@@ -31,8 +40,6 @@ CORE_EXPORT String
 effectPropertyTreeAsString(const blink::LocalFrameView& rootFrame);
 CORE_EXPORT String
 scrollPropertyTreeAsString(const blink::LocalFrameView& rootFrame);
-
-CORE_EXPORT String paintPropertyTreeGraph(const blink::LocalFrameView&);
 
 #endif  // if DCHECK_IS_ON()
 

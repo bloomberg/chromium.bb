@@ -68,51 +68,6 @@ inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
          a.Effect() == b.Effect();
 }
 
-#if DCHECK_IS_ON()
-
-template <typename PropertyTreeNode>
-class PropertyTreeStatePrinter {
- public:
-  String PathAsString(const PropertyTreeNode* last_node) {
-    const PropertyTreeNode* node = last_node;
-    while (!node->IsRoot()) {
-      AddPropertyNode(node, "");
-      node = node->Parent();
-    }
-    AddPropertyNode(node, "root");
-
-    StringBuilder string_builder;
-    AddAllPropertyNodes(string_builder, node);
-    return string_builder.ToString();
-  }
-
-  void AddPropertyNode(const PropertyTreeNode* node, String debug_info) {
-    node_to_debug_string_.Set(node, debug_info);
-  }
-
-  void AddAllPropertyNodes(StringBuilder& string_builder,
-                           const PropertyTreeNode* node,
-                           unsigned indent = 0) {
-    DCHECK(node);
-    for (unsigned i = 0; i < indent; i++)
-      string_builder.Append(' ');
-    if (node_to_debug_string_.Contains(node))
-      string_builder.Append(node_to_debug_string_.at(node));
-    string_builder.Append(String::Format(" %p ", node));
-    string_builder.Append(node->ToString());
-    string_builder.Append("\n");
-
-    for (const auto* child_node : node_to_debug_string_.Keys()) {
-      if (child_node->Parent() == node)
-        AddAllPropertyNodes(string_builder, child_node, indent + 2);
-    }
-  }
-
-  HashMap<const PropertyTreeNode*, String> node_to_debug_string_;
-};
-
-#endif
-
 }  // namespace blink
 
 #endif  // PropertyTreeState_h

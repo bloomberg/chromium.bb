@@ -5,7 +5,6 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
 
 namespace blink {
 
@@ -37,14 +36,5 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
   }
   return json;
 }
-
-#if DCHECK_IS_ON()
-
-String ClipPaintPropertyNode::ToTreeString() const {
-  return blink::PropertyTreeStatePrinter<blink::ClipPaintPropertyNode>()
-      .PathAsString(this);
-}
-
-#endif
 
 }  // namespace blink

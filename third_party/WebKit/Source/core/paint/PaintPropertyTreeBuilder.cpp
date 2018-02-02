@@ -27,6 +27,7 @@
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/PaintPropertyTreePrinter.h"
 #include "core/paint/SVGRootPainter.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/CompositingReasonFinder.h"
@@ -278,6 +279,10 @@ void FrameViewPaintPropertyTreeBuilder::Update(
   std::unique_ptr<PropertyTreeState> contents_state(new PropertyTreeState(
       context.current.transform, context.current.clip, context.current_effect));
   frame_view.SetTotalPropertyTreeStateForContents(std::move(contents_state));
+
+#if DCHECK_IS_ON()
+  PaintPropertyTreePrinter::UpdateDebugNames(frame_view);
+#endif
 }
 
 namespace {
@@ -299,6 +304,10 @@ class FragmentPaintPropertyTreeBuilder {
 
   ~FragmentPaintPropertyTreeBuilder() {
     full_context_.force_subtree_update |= property_added_or_removed_;
+#if DCHECK_IS_ON()
+    if (properties_)
+      PaintPropertyTreePrinter::UpdateDebugNames(object_, *properties_);
+#endif
   }
 
   ALWAYS_INLINE void UpdateForSelf();
