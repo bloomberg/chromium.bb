@@ -128,7 +128,14 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, DISABLED_TestMemoryInfra) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED, &json_events);
 }
 
-IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestBackgroundMemoryInfra) {
+// crbug.com/808152: This test is flakily failing on LSAN.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_TestBackgroundMemoryInfra DISABLED_TestBackgroundMemoryInfra
+#else
+#define MAYBE_TestBackgroundMemoryInfra TestBackgroundMemoryInfra
+#endif
+IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest,
+                       MAYBE_TestBackgroundMemoryInfra) {
   // TODO(ssid): Test for dump success once the on start tracing done callback
   // is fixed to be called after enable tracing is acked by all processes,
   // crbug.com/709524. The test still tests if dumping does not crash.
