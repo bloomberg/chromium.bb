@@ -584,6 +584,18 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 
   ax_tree_id_ = ui::AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
       GetProcess()->GetID(), routing_id_);
+
+  // Content-Security-Policy: The CSP source 'self' is usually the origin of the
+  // current document, set by SetLastCommittedOrigin(). However, before a new
+  // frame commits its first navigation, 'self' should correspond to the origin
+  // of the parent (in case of a new iframe) or the opener (in case of a new
+  // window). This is necessary to correctly enforce CSP during the initial
+  // navigation.
+  FrameTreeNode* frame_owner = frame_tree_node_->parent()
+                                   ? frame_tree_node_->parent()
+                                   : frame_tree_node_->opener();
+  if (frame_owner)
+    CSPContext::SetSelf(frame_owner->current_origin());
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
