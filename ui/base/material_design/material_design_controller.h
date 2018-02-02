@@ -38,6 +38,9 @@ class UI_BASE_EXPORT MaterialDesignController {
   // should be extended to cover secondary UI.
   static bool IsSecondaryUiMaterial();
 
+  // Returns true if the touch-optimized UI material design mode is enabled;
+  static bool IsTouchOptimizedUiEnabled();
+
   // Returns the per-platform default material design variant.
   static Mode DefaultMode();
 

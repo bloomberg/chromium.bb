@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -138,6 +139,44 @@ constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
 
+// ----------------------------------------------------------------------------
+// Defaults for properties when the touch-optimized UI is enabled.
+
+constexpr SkColor kActiveFrameColorTouchOptimized =
+    SkColorSetRGB(0xD0, 0xD2, 0xD6);
+constexpr SkColor kInactiveFrameColorTouchOptimized =
+    SkColorSetRGB(0xE3, 0xE5, 0xE8);
+constexpr SkColor kIncognitoActiveFrameColorTouchOptimized =
+    SkColorSetRGB(0x20, 0x21, 0x24);
+constexpr SkColor kIncognitoInactiveFrameColorTouchOptimized =
+    SkColorSetRGB(0x32, 0x36, 0x39);
+
+// Returns a |nullopt| if the touch-optimized UI is not enabled, or it's enabled
+// but for the given |id|, there's no touch-optimized specific colors, and we
+// should fall back to the default colors.
+base::Optional<SkColor> MaybeGetDefaultColorForTouchOptimizedUi(
+    int id,
+    bool incognito) {
+  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    return base::nullopt;
+
+  switch (id) {
+    case ThemeProperties::COLOR_FRAME:
+      // Active frame colors.
+      return incognito ? kIncognitoActiveFrameColorTouchOptimized
+                       : kActiveFrameColorTouchOptimized;
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+      // Inactive frame colors.
+      return incognito ? kIncognitoInactiveFrameColorTouchOptimized
+                       : kInactiveFrameColorTouchOptimized;
+
+    // TODO: Place all touch-optimized UI related colors here.
+
+    default:
+      return base::nullopt;
+  }
+}
+
 }  // namespace
 
 // static
@@ -226,6 +265,11 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
 
 // static
 SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
+  const base::Optional<SkColor> color =
+      MaybeGetDefaultColorForTouchOptimizedUi(id, incognito);
+  if (color)
+    return color.value();
+
   switch (id) {
     // Properties stored in theme pack.
     case COLOR_FRAME:

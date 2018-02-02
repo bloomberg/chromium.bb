@@ -83,6 +83,11 @@ bool MaterialDesignController::IsSecondaryUiMaterial() {
 }
 
 // static
+bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
+  return GetMode() == MATERIAL_TOUCH_OPTIMIZED;
+}
+
+// static
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
   // If a scan of available devices has already completed, use material-hybrid

@@ -121,8 +121,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   constexpr int kTouchOptimizedCaptionButtonsSpacing = 8;
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
-      ui::MaterialDesignController::GetMode() ==
-              ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
           ? kTouchOptimizedCaptionButtonsSpacing
           : 0);
   layout->set_cross_axis_alignment(
