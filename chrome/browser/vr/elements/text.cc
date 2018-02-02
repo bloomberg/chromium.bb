@@ -101,6 +101,10 @@ class TextTexture : public UiTexture {
 
   void SetColor(SkColor color) { SetAndDirty(&color_, color); }
 
+  void SetSelectionColors(const TextSelectionColors& colors) {
+    SetAndDirty(&selection_colors_, colors);
+  }
+
   void SetFormatting(const TextFormatting& formatting) {
     SetAndDirty(&formatting_, formatting);
   }
@@ -117,8 +121,9 @@ class TextTexture : public UiTexture {
     SetAndDirty(&cursor_enabled_, enabled);
   }
 
-  void SetCursorPosition(int position) {
-    SetAndDirty(&cursor_position_, position);
+  void SetSelectionIndices(int start, int end) {
+    SetAndDirty(&selection_start_, start);
+    SetAndDirty(&selection_end_, end);
   }
 
   int GetCursorPositionFromPoint(const gfx::PointF& point) const {
@@ -165,9 +170,11 @@ class TextTexture : public UiTexture {
   TextAlignment alignment_ = kTextAlignmentCenter;
   TextLayoutMode text_layout_mode_ = kMultiLineFixedWidth;
   SkColor color_ = SK_ColorBLACK;
+  TextSelectionColors selection_colors_;
   TextFormatting formatting_;
   bool cursor_enabled_ = false;
-  int cursor_position_ = 0;
+  int selection_start_ = 0;
+  int selection_end_ = 0;
   gfx::Rect cursor_bounds_;
   bool shadows_enabled_ = false;
   std::vector<std::unique_ptr<gfx::RenderText>> lines_;
@@ -194,6 +201,10 @@ void Text::SetColor(SkColor color) {
   texture_->SetColor(color);
 }
 
+void Text::SetSelectionColors(const TextSelectionColors& colors) {
+  texture_->SetSelectionColors(colors);
+}
+
 void Text::SetFormatting(const TextFormatting& formatting) {
   texture_->SetFormatting(formatting);
 }
@@ -211,8 +222,8 @@ void Text::SetCursorEnabled(bool enabled) {
   texture_->SetCursorEnabled(enabled);
 }
 
-void Text::SetCursorPosition(int position) {
-  texture_->SetCursorPosition(position);
+void Text::SetSelectionIndices(int start, int end) {
+  texture_->SetSelectionIndices(start, end);
 }
 
 gfx::Rect Text::GetRawCursorBounds() const {
@@ -285,7 +296,7 @@ void TextTexture::LayOutText() {
                                      ? kWrappingBehaviorWrap
                                      : kWrappingBehaviorNoWrap;
   parameters.cursor_enabled = cursor_enabled_;
-  parameters.cursor_position = cursor_position_;
+  parameters.cursor_position = selection_end_;
   parameters.shadows_enabled = shadows_enabled_;
   parameters.shadow_size = kTextShadowScaleFactor * font_height_dmms_;
 
@@ -294,8 +305,22 @@ void TextTexture::LayOutText() {
       // this function into this class.
       PrepareDrawStringRect(text_, fonts, &text_bounds, parameters);
 
-  if (cursor_enabled_)
-    cursor_bounds_ = lines_.front()->GetUpdatedCursorBounds();
+  if (cursor_enabled_) {
+    DCHECK_EQ(lines_.size(), 1u);
+    gfx::RenderText* render_text = lines_.front().get();
+
+    if (selection_start_ != selection_end_) {
+      render_text->set_focused(true);
+      gfx::Range range(selection_start_, selection_end_);
+      render_text->SetSelection(gfx::SelectionModel(
+          range, gfx::LogicalCursorDirection::CURSOR_FORWARD));
+      render_text->set_selection_background_focused_color(
+          selection_colors_.background);
+      render_text->set_selection_color(selection_colors_.foreground);
+    }
+
+    cursor_bounds_ = render_text->GetUpdatedCursorBounds();
+  }
 
   if (!formatting_.empty()) {
     DCHECK_EQ(parameters.wrapping_behavior, kWrappingBehaviorNoWrap);

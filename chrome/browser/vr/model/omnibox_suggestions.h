@@ -11,7 +11,25 @@
 
 namespace vr {
 
+struct Autocompletion {
+  Autocompletion();
+  Autocompletion(const base::string16& new_input,
+                 const base::string16& new_suffix);
+
+  bool operator==(const Autocompletion& other) const;
+  bool operator!=(const Autocompletion& other) const {
+    return !(*this == other);
+  }
+
+  // Input string that yielded the autocomplete text.
+  base::string16 input;
+  // The suffix to be appended to |input| to generate a complete match.
+  base::string16 suffix;
+};
+
 struct OmniboxSuggestion {
+  OmniboxSuggestion();
+
   OmniboxSuggestion(const base::string16& new_contents,
                     const base::string16& new_description,
                     const AutocompleteMatch::ACMatchClassifications&
@@ -19,7 +37,9 @@ struct OmniboxSuggestion {
                     const AutocompleteMatch::ACMatchClassifications&
                         new_description_classifications,
                     AutocompleteMatch::Type new_type,
-                    GURL new_destination);
+                    GURL new_destination,
+                    const base::string16& new_input,
+                    const base::string16& new_inline_autocompletion);
   OmniboxSuggestion(const OmniboxSuggestion& other);
   ~OmniboxSuggestion();
 
@@ -27,8 +47,9 @@ struct OmniboxSuggestion {
   base::string16 description;
   AutocompleteMatch::ACMatchClassifications contents_classifications;
   AutocompleteMatch::ACMatchClassifications description_classifications;
-  AutocompleteMatch::Type type;
+  AutocompleteMatch::Type type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
   GURL destination;
+  Autocompletion autocompletion;
 };
 
 struct OmniboxSuggestions {
@@ -36,6 +57,14 @@ struct OmniboxSuggestions {
   ~OmniboxSuggestions();
 
   std::vector<OmniboxSuggestion> suggestions;
+};
+
+// This struct contains the minimal set of information required to construct an
+// AutocompleteInput on VR's behalf.
+struct AutocompleteRequest {
+  base::string16 text;
+  size_t cursor_position = 0;
+  bool prevent_inline_autocomplete = false;
 };
 
 // This struct represents the current request to the AutocompleteController.

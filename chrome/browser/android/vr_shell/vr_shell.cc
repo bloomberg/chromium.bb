@@ -804,8 +804,8 @@ void VrShell::SetVoiceSearchActive(bool active) {
   }
 }
 
-void VrShell::StartAutocomplete(const base::string16& string) {
-  autocomplete_controller_->Start(string);
+void VrShell::StartAutocomplete(const vr::AutocompleteRequest& request) {
+  autocomplete_controller_->Start(request);
 }
 
 void VrShell::StopAutocomplete() {

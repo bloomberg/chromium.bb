@@ -22,6 +22,8 @@ struct TextInputInfo {
   bool operator==(const TextInputInfo& other) const;
   bool operator!=(const TextInputInfo& other) const;
 
+  size_t SelectionSize() const;
+
   // The value of the input field.
   base::string16 text;
 

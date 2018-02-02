@@ -35,6 +35,14 @@ struct UrlBarColors {
   SkColor separator = SK_ColorBLACK;
 };
 
+struct TextSelectionColors {
+  bool operator==(const TextSelectionColors& other) const;
+  bool operator!=(const TextSelectionColors& other) const;
+  SkColor cursor;
+  SkColor background;
+  SkColor foreground;
+};
+
 struct ColorScheme {
   enum Mode : int {
     kModeNormal = 0,
@@ -110,6 +118,7 @@ struct ColorScheme {
   SkColor omnibox_icon;
   SkColor omnibox_text;
   SkColor omnibox_hint;
+  TextSelectionColors omnibox_text_selection;
   SkColor suggestion_text;
   SkColor suggestion_dim_text;
   SkColor suggestion_url_text;
@@ -133,8 +142,6 @@ struct ColorScheme {
   float normal_factor = 0.0f;
   float incognito_factor = 0.0f;
   float fullscreen_factor = 0.0f;
-
-  SkColor cursor;
 };
 
 }  // namespace vr
