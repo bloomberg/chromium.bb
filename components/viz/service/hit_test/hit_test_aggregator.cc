@@ -31,9 +31,11 @@ void PrepareTransformForReadOnlySharedMemory(gfx::Transform* transform) {
 }  // namespace
 
 HitTestAggregator::HitTestAggregator(const HitTestManager* hit_test_manager,
-                                     HitTestAggregatorDelegate* delegate)
+                                     HitTestAggregatorDelegate* delegate,
+                                     const FrameSinkId& frame_sink_id)
     : hit_test_manager_(hit_test_manager),
       delegate_(delegate),
+      root_frame_sink_id_(frame_sink_id),
       weak_ptr_factory_(this) {
   AllocateHitTestRegionArray();
 }
@@ -52,11 +54,13 @@ void HitTestAggregator::GrowRegionList() {
 void HitTestAggregator::Swap() {
   SwapHandles();
   if (!handle_replaced_) {
-    delegate_->SwitchActiveAggregatedHitTestRegionList(active_handle_index_);
+    delegate_->SwitchActiveAggregatedHitTestRegionList(root_frame_sink_id_,
+                                                       active_handle_index_);
     return;
   }
 
   delegate_->OnAggregatedHitTestRegionListUpdated(
+      root_frame_sink_id_,
       read_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
       read_size_,
       write_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
@@ -74,7 +78,9 @@ void HitTestAggregator::AllocateHitTestRegionArray() {
 void HitTestAggregator::ResizeHitTestRegionArray(uint32_t size) {
   size_t num_bytes = size * sizeof(AggregatedHitTestRegion);
   write_handle_ = mojo::SharedBufferHandle::Create(num_bytes);
+  DCHECK(write_handle_.is_valid());
   auto new_buffer_ = write_handle_->Map(num_bytes);
+  DCHECK(new_buffer_);
   handle_replaced_ = true;
 
   AggregatedHitTestRegion* region = (AggregatedHitTestRegion*)new_buffer_.get();

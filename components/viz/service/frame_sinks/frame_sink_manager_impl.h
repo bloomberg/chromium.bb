@@ -20,6 +20,7 @@
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
 #include "components/viz/service/frame_sinks/video_detector.h"
+#include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/surfaces/surface_observer.h"
@@ -41,7 +42,8 @@ class DisplayProvider;
 class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     : public SurfaceObserver,
       public FrameSinkVideoCapturerManager,
-      public mojom::FrameSinkManager {
+      public mojom::FrameSinkManager,
+      public HitTestAggregatorDelegate {
  public:
   FrameSinkManagerImpl(uint32_t number_of_frames_to_activation_deadline = 4u,
                        DisplayProvider* display_provider = nullptr);
@@ -85,6 +87,28 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void CreateVideoCapturer(
       mojom::FrameSinkVideoCapturerRequest request) override;
 
+  // SurfaceObserver implementation.
+  void OnSurfaceCreated(const SurfaceId& surface_id) override;
+  void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
+  void OnSurfaceActivated(const SurfaceId& surface_id) override;
+  bool OnSurfaceDamaged(const SurfaceId& surface_id,
+                        const BeginFrameAck& ack) override;
+  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                               const BeginFrameArgs& args) override;
+
+  // HitTestAggregatorDelegate implementation:
+  void OnAggregatedHitTestRegionListUpdated(
+      const FrameSinkId& frame_sink_id,
+      mojo::ScopedSharedBufferHandle active_handle,
+      uint32_t active_handle_size,
+      mojo::ScopedSharedBufferHandle idle_handle,
+      uint32_t idle_handle_size) override;
+  void SwitchActiveAggregatedHitTestRegionList(
+      const FrameSinkId& frame_sink_id,
+      uint8_t active_handle_index) override;
+
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
   // registered and unregistered in any order with respect to each other.
   //
@@ -114,27 +138,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   const HitTestManager* hit_test_manager() { return &hit_test_manager_; }
 
-  // SurfaceObserver implementation.
-  void OnSurfaceCreated(const SurfaceId& surface_id) override;
-  void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
-  void OnSurfaceActivated(const SurfaceId& surface_id) override;
-  bool OnSurfaceDamaged(const SurfaceId& surface_id,
-                        const BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
-  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                               const BeginFrameArgs& args) override;
-
   void OnClientConnectionLost(const FrameSinkId& frame_sink_id);
-
-  void OnAggregatedHitTestRegionListUpdated(
-      const FrameSinkId& frame_sink_id,
-      mojo::ScopedSharedBufferHandle active_handle,
-      uint32_t active_handle_size,
-      mojo::ScopedSharedBufferHandle idle_handle,
-      uint32_t idle_handle_size);
-  void SwitchActiveAggregatedHitTestRegionList(const FrameSinkId& frame_sink_id,
-                                               uint8_t active_handle_index);
 
   void SubmitHitTestRegionList(
       const SurfaceId& surface_id,

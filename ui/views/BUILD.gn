@@ -1188,6 +1188,7 @@ test("views_perftests") {
     ":test_support",
     "//base/test:test_support",
     "//cc/base:base",
+    "//mojo/edk/system",
     "//testing/perf",
     "//ui/resources:ui_test_pak",
   ]

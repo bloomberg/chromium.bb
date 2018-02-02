@@ -241,6 +241,66 @@ void FrameSinkManagerImpl::CreateVideoCapturer(
       std::make_unique<FrameSinkVideoCapturerImpl>(this, std::move(request)));
 }
 
+void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceId& surface_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (client_) {
+    client_->OnSurfaceCreated(surface_id);
+  } else {
+    // There is no client to assign an owner for the temporary reference, so we
+    // can drop the temporary reference safely.
+    surface_manager_.DropTemporaryReference(surface_id);
+  }
+}
+
+void FrameSinkManagerImpl::OnFirstSurfaceActivation(
+    const SurfaceInfo& surface_info) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
+
+  if (client_)
+    client_->OnFirstSurfaceActivation(surface_info);
+}
+
+void FrameSinkManagerImpl::OnSurfaceActivated(const SurfaceId& surface_id) {}
+
+bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
+                                            const BeginFrameAck& ack) {
+  return false;
+}
+
+void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
+
+void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
+
+void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                                                   const BeginFrameArgs& args) {
+}
+
+void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(
+    const FrameSinkId& frame_sink_id,
+    mojo::ScopedSharedBufferHandle active_handle,
+    uint32_t active_handle_size,
+    mojo::ScopedSharedBufferHandle idle_handle,
+    uint32_t idle_handle_size) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (client_) {
+    client_->OnAggregatedHitTestRegionListUpdated(
+        frame_sink_id, std::move(active_handle), active_handle_size,
+        std::move(idle_handle), idle_handle_size);
+  }
+}
+
+void FrameSinkManagerImpl::SwitchActiveAggregatedHitTestRegionList(
+    const FrameSinkId& frame_sink_id,
+    uint8_t active_handle_index) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (client_) {
+    client_->SwitchActiveAggregatedHitTestRegionList(frame_sink_id,
+                                                     active_handle_index);
+  }
+}
+
 void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupport* support) {
@@ -384,42 +444,6 @@ bool FrameSinkManagerImpl::ChildContains(
   return false;
 }
 
-void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceId& surface_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (client_) {
-    client_->OnSurfaceCreated(surface_id);
-  } else {
-    // There is no client to assign an owner for the temporary reference, so we
-    // can drop the temporary reference safely.
-    surface_manager_.DropTemporaryReference(surface_id);
-  }
-}
-
-void FrameSinkManagerImpl::OnFirstSurfaceActivation(
-    const SurfaceInfo& surface_info) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
-
-  if (client_)
-    client_->OnFirstSurfaceActivation(surface_info);
-}
-
-void FrameSinkManagerImpl::OnSurfaceActivated(const SurfaceId& surface_id) {}
-
-bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                            const BeginFrameAck& ack) {
-  return false;
-}
-
-void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
-
-void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
-
-void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                                                   const BeginFrameArgs& args) {
-}
-
 void FrameSinkManagerImpl::OnClientConnectionLost(
     const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -444,30 +468,6 @@ void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                                                uint32_t frame_token) {
   if (client_)
     client_->OnFrameTokenChanged(frame_sink_id, frame_token);
-}
-
-void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(
-    const FrameSinkId& frame_sink_id,
-    mojo::ScopedSharedBufferHandle active_handle,
-    uint32_t active_handle_size,
-    mojo::ScopedSharedBufferHandle idle_handle,
-    uint32_t idle_handle_size) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (client_) {
-    client_->OnAggregatedHitTestRegionListUpdated(
-        frame_sink_id, std::move(active_handle), active_handle_size,
-        std::move(idle_handle), idle_handle_size);
-  }
-}
-
-void FrameSinkManagerImpl::SwitchActiveAggregatedHitTestRegionList(
-    const FrameSinkId& frame_sink_id,
-    uint8_t active_handle_index) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (client_) {
-    client_->SwitchActiveAggregatedHitTestRegionList(frame_sink_id,
-                                                     active_handle_index);
-  }
 }
 
 VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(

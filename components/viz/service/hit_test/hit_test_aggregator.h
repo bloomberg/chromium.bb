@@ -27,7 +27,8 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
  public:
   // |delegate| owns and outlives HitTestAggregator.
   HitTestAggregator(const HitTestManager* hit_test_manager,
-                    HitTestAggregatorDelegate* delegate);
+                    HitTestAggregatorDelegate* delegate,
+                    const FrameSinkId& frame_sink_id);
   ~HitTestAggregator();
 
   // Called after surfaces have been aggregated into the DisplayFrame.
@@ -42,25 +43,6 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
 
  private:
   friend class TestHitTestAggregator;
-
-  const HitTestManager* const hit_test_manager_;
-
-  mojo::ScopedSharedBufferHandle read_handle_;
-  mojo::ScopedSharedBufferHandle write_handle_;
-
-  // The number of elements allocated.
-  uint32_t read_size_ = 0;
-  uint32_t write_size_ = 0;
-
-  mojo::ScopedSharedBufferMapping read_buffer_;
-  mojo::ScopedSharedBufferMapping write_buffer_;
-
-  bool handle_replaced_ = false;
-
-  // Can only be 0 or 1 when we only have two buffers.
-  uint8_t active_handle_index_ = 0;
-
-  HitTestAggregatorDelegate* const delegate_;
 
   // Allocates memory for the AggregatedHitTestRegion array.
   void AllocateHitTestRegionArray();
@@ -92,6 +74,28 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
                    int32_t child_count);
   // Marks the element at the given index as the end of list.
   void MarkEndAt(size_t index);
+
+  const HitTestManager* const hit_test_manager_;
+
+  mojo::ScopedSharedBufferHandle read_handle_;
+  mojo::ScopedSharedBufferHandle write_handle_;
+
+  // The number of elements allocated.
+  uint32_t read_size_ = 0;
+  uint32_t write_size_ = 0;
+
+  mojo::ScopedSharedBufferMapping read_buffer_;
+  mojo::ScopedSharedBufferMapping write_buffer_;
+
+  bool handle_replaced_ = false;
+
+  // Can only be 0 or 1 when we only have two buffers.
+  uint8_t active_handle_index_ = 0;
+
+  HitTestAggregatorDelegate* const delegate_;
+
+  // This is the FrameSinkId for the corresponding root CompositorFrameSink.
+  const FrameSinkId root_frame_sink_id_;
 
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.

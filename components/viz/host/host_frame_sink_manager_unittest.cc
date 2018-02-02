@@ -493,9 +493,8 @@ TEST_F(HostFrameSinkManagerLocalTest, DisplayRootTemporaryReference) {
   GetFrameSinkManagerClient()->OnSurfaceCreated(surface_id);
 }
 
-// Test the creation and desctruction of HitTestQuery, which is stored in
-// HostFrameSinkManager::display_hit_test_query_.
-TEST_F(HostFrameSinkManagerLocalTest, DisplayHitTestQueryMap) {
+// Test the creation and desctruction of HitTestAggregator and HitTestQuery.
+TEST_F(HostFrameSinkManagerLocalTest, HitTestAggregatorQuery) {
   FakeHostFrameSinkClient client;
   EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
   host().RegisterFrameSinkId(kFrameSinkChild1, &client);
@@ -504,7 +503,9 @@ TEST_F(HostFrameSinkManagerLocalTest, DisplayHitTestQueryMap) {
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
   auto support =
       CreateCompositorFrameSinkSupport(kFrameSinkChild1, true /* is_root */);
+  support->SetUpHitTest();
   EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
+  EXPECT_TRUE(support->GetHitTestAggregator());
 
   host().InvalidateFrameSinkId(kFrameSinkChild1);
   support.reset();

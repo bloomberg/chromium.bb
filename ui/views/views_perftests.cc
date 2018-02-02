@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/test/launcher/unit_test_launcher.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "ui/views/views_test_suite.h"
 
 int main(int argc, char** argv) {
   views::ViewsTestSuite test_suite(argc, argv);
+  mojo::edk::Init();
   return base::LaunchUnitTestsSerially(
       argc, argv,
       base::Bind(&views::ViewsTestSuite::Run, base::Unretained(&test_suite)));
