@@ -214,6 +214,7 @@
     {
       name: "CSSAdditiveAnimations",
       depends_on: ["StackedCSSPropertyAnimations"],
+      settable_from_internals: true,
       status: "experimental",
     },
     {
@@ -1138,6 +1139,7 @@
     },
     {
       name: "WebAnimationsAPI",
+      settable_from_internals: true,
       status: "experimental",
     },
     {
