@@ -49,15 +49,20 @@ class _SymbolizerFilter(object):
     # Compute remote/local path mappings using the manifest data.
     for next_line in open(manifest_path):
       split = next_line.strip().split('=')
-      target = split[0]
 
+      # Check that the file exists in the unstripped directories and
+      # that it is an executable binary (indicated by the existence of
+      # an ELF header.)
+      target = split[0]
       source = os.path.join(output_dir, split[1])
       with open(source, 'rb') as f:
         file_tag = f.read(4)
       if file_tag != '\x7fELF':
         continue
-
       source = _GetUnstrippedPath(source)
+      if not os.path.exists(source):
+        raise Exception('Unstripped binary not found at %s' % source)
+
       self._symbols_mapping[os.path.basename(target)] = source
       self._symbols_mapping[target] = source
       logging.debug('Symbols: %s -> %s' % (source, target))

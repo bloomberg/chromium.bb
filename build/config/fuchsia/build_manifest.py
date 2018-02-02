@@ -122,10 +122,16 @@ def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
         in_package_path = 'bin/app'
         app_found = True
 
-      output.write('%s=%s\n' % (in_package_path, next_file))
+      # The source path is relativized so that it can be used on multiple
+      # environments with differing parent directory structures,
+      # e.g. builder bots and swarming clients.
+      output.write('%s=%s\n' % (in_package_path,
+                                os.path.relpath(next_file, out_dir)))
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
-    output.write('meta/sandbox=%s%s\n' % (root_dir, SANDBOX_POLICY_PATH))
+    output.write('meta/sandbox=' +
+                 os.path.relpath(os.path.join(root_dir, SANDBOX_POLICY_PATH),
+                                 out_dir))
 
   return 0
 
