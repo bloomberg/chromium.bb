@@ -44,6 +44,8 @@ const NSInteger kShowTabStripButtonMaxTabCount = 99;
 
 const LayoutOffset kToolbarButtonAnimationOffset = -10.0;
 
+const CGFloat kAdaptiveToolbarHorizontalMargin = 8;
+
 const CGFloat kAdaptiveLocationBarCornerRadius = 11;
 const CGFloat kIcongnitoAdaptiveLocationBackgroundColor = 0x6A6A6A;
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.12;

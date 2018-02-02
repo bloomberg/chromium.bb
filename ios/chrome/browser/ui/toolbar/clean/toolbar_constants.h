@@ -57,6 +57,9 @@ extern const NSInteger kShowTabStripButtonMaxTabCount;
 // Animation constants.
 extern const LayoutOffset kToolbarButtonAnimationOffset;
 
+// Adaptive toolbar position constants.
+extern const CGFloat kAdaptiveToolbarHorizontalMargin;
+
 // Adaptive Location bar constants.
 extern const CGFloat kAdaptiveLocationBarCornerRadius;
 extern const CGFloat kIcongnitoAdaptiveLocationBackgroundColor;

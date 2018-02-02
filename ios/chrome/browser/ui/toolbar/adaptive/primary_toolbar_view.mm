@@ -122,10 +122,10 @@
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self setUpBlurredBackground];
-  [self setUpCancelButton];
-  [self setUpLocationBar];
   [self setUpLeadingStackView];
   [self setUpTrailingStackView];
+  [self setUpCancelButton];
+  [self setUpLocationBar];
   [self setUpProgressBar];
 
   [self setUpConstraints];
@@ -240,12 +240,23 @@
       constraintEqualToConstant:kToolbarHeight -
                                 2 * kLocationBarVerticalMargin];
   [NSLayoutConstraint activateConstraints:@[
-    [self.locationBarContainer.leadingAnchor
-        constraintEqualToAnchor:self.leadingStackView.trailingAnchor],
     [self.locationBarContainer.bottomAnchor
         constraintEqualToAnchor:self.bottomAnchor
                        constant:-kLocationBarVerticalMargin],
     self.locationBarHeight,
+  ]];
+  [self.unfocusedConstraints addObjectsFromArray:@[
+    [self.locationBarContainer.trailingAnchor
+        constraintEqualToAnchor:self.trailingStackView.leadingAnchor],
+    [self.locationBarContainer.leadingAnchor
+        constraintEqualToAnchor:self.leadingStackView.trailingAnchor],
+  ]];
+  [self.focusedConstraints addObjectsFromArray:@[
+    [self.locationBarContainer.trailingAnchor
+        constraintEqualToAnchor:self.cancelButton.leadingAnchor],
+    [self.locationBarContainer.leadingAnchor
+        constraintEqualToAnchor:safeArea.leadingAnchor
+                       constant:kAdaptiveToolbarHorizontalMargin]
   ]];
 
   // Trailing StackView constraints.
@@ -257,13 +268,6 @@
     [self.trailingStackView.heightAnchor
         constraintEqualToConstant:kToolbarHeight],
   ]];
-  [self.unfocusedConstraints
-      addObject:[self.trailingStackView.leadingAnchor
-                    constraintEqualToAnchor:self.locationBarContainer
-                                                .trailingAnchor]];
-  [self.focusedConstraints
-      addObject:[self.trailingStackView.leadingAnchor
-                    constraintEqualToAnchor:self.cancelButton.trailingAnchor]];
 
   // locationBarView constraints, if present.
   if (self.locationBarView) {
@@ -278,9 +282,9 @@
         constraintEqualToAnchor:self.trailingStackView.bottomAnchor],
   ]];
   [self.focusedConstraints
-      addObject:[self.cancelButton.leadingAnchor
-                    constraintEqualToAnchor:self.locationBarContainer
-                                                .trailingAnchor]];
+      addObject:[self.cancelButton.trailingAnchor
+                    constraintEqualToAnchor:safeArea.trailingAnchor
+                                   constant:-kAdaptiveToolbarHorizontalMargin]];
   [self.unfocusedConstraints
       addObject:[self.cancelButton.leadingAnchor
                     constraintEqualToAnchor:self.trailingAnchor]];
