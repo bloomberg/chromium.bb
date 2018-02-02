@@ -243,16 +243,7 @@ AppWindow::AppWindow(BrowserContext* context,
                      const Extension* extension)
     : browser_context_(context),
       extension_id_(extension->id()),
-      window_type_(WINDOW_TYPE_DEFAULT),
       app_delegate_(app_delegate),
-      fullscreen_types_(FULLSCREEN_TYPE_NONE),
-      has_been_shown_(false),
-      is_hidden_(false),
-      cached_always_on_top_(false),
-      requested_alpha_enabled_(false),
-      is_ime_window_(false),
-      show_on_lock_screen_(false),
-      show_in_shelf_(false),
       image_loader_ptr_factory_(this) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
@@ -594,16 +585,14 @@ base::string16 AppWindow::GetTitle() const {
 }
 
 void AppWindow::SetAppIconUrl(const GURL& url) {
-  // Avoid using any previous icons that were being downloaded.
-  image_loader_ptr_factory_.InvalidateWeakPtrs();
   app_icon_url_ = url;
-  web_contents()->DownloadImage(
-      url,
-      true,   // is a favicon
-      0,      // no maximum size
-      false,  // normal cache policy
-      base::Bind(&AppWindow::DidDownloadFavicon,
-                 image_loader_ptr_factory_.GetWeakPtr()));
+
+  // Don't start custom app icon loading in the case window is not ready yet.
+  // see crbug.com/788531.
+  if (!window_ready_)
+    return;
+
+  StartAppIconDownload();
 }
 
 void AppWindow::UpdateShape(std::unique_ptr<ShapeRects> rects) {
@@ -792,6 +781,19 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
 
 //------------------------------------------------------------------------------
 // Private methods
+void AppWindow::StartAppIconDownload() {
+  DCHECK(app_icon_url_.is_valid());
+
+  // Avoid using any previous icons that were being downloaded.
+  image_loader_ptr_factory_.InvalidateWeakPtrs();
+  web_contents()->DownloadImage(
+      app_icon_url_,
+      true,   // is a favicon
+      0,      // no maximum size
+      false,  // normal cache policy
+      base::Bind(&AppWindow::DidDownloadFavicon,
+                 image_loader_ptr_factory_.GetWeakPtr()));
+}
 
 void AppWindow::DidDownloadFavicon(
     int id,
@@ -910,8 +912,13 @@ void AppWindow::ExitFullscreenModeForTab(content::WebContents* source) {
 }
 
 void AppWindow::OnAppWindowReady() {
+  window_ready_ = true;
+
   if (app_window_contents_)
     app_window_contents_->OnWindowReady();
+
+  if (app_icon_url_.is_valid())
+    StartAppIconDownload();
 }
 
 void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
