@@ -732,6 +732,7 @@ static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
 
 static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                    int mi_row, int mi_col, aom_reader *r) {
+  const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
@@ -751,7 +752,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       read_palette_colors_y(xd, cm->bit_depth, pmi, r);
     }
   }
-  if (mbmi->uv_mode == UV_DC_PRED &&
+  if (num_planes > 1 && mbmi->uv_mode == UV_DC_PRED &&
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
