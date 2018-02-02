@@ -2171,6 +2171,7 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_DEBUG
     assert(is_cfl_allowed(mbmi));
     const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
+    (void)plane_bsize;
     assert(plane_bsize < BLOCK_SIZES_ALL);
     if (!xd->lossless[mbmi->segment_id]) {
       assert(blk_col == 0);

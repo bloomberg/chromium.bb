@@ -5341,6 +5341,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   assert(is_cfl_allowed(mbmi));
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]);
+  (void)plane_bsize;
   assert(plane_bsize < BLOCK_SIZES_ALL);
   if (!xd->lossless[mbmi->segment_id]) {
     assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
