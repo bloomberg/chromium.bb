@@ -361,7 +361,10 @@ class TestExporterTest(LoggingTestCase):
 
         self.assertFalse(success)
         self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
-                        'ERROR: Gerrit API fails.\n'])
+                        'INFO: Searching for exportable in-flight CLs.\n',
+                        'INFO: In-flight CLs cannot be exported due to the following error:\n',
+                        'ERROR: Gerrit API fails.\n',
+                        'INFO: Searching for exportable Chromium commits.\n'])
 
     def test_run_returns_false_on_patch_failure(self):
         test_exporter = TestExporter(self.host)
@@ -372,4 +375,7 @@ class TestExporterTest(LoggingTestCase):
 
         self.assertFalse(success)
         self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
+                        'INFO: Searching for exportable in-flight CLs.\n',
+                        'INFO: Searching for exportable Chromium commits.\n',
+                        'INFO: Attention: The following errors have prevented some commits from being exported:\n',
                         'ERROR: There was an error with the rutabaga.\n'])
