@@ -1,5 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <!-- Categories -->
+  <message name="IDS_KSV_CATEGORY_POPULAR" desc="Category of the keyboard shortcut.">
+    Popular Shortcut
+  </message>
+  <message name="IDS_KSV_CATEGORY_TAB_WINDOW" desc="Category of the keyboard shortcut.">
+    Tab And Windows
+  </message>
+  <message name="IDS_KSV_CATEGORY_PAGE_BROWSER" desc="Category of the keyboard shortcut.">
+    Page and Web Browser
+  </message>
+  <message name="IDS_KSV_CATEGORY_SYSTEM_DISPLAY" desc="Category of the keyboard shortcut.">
+    System and Display Settings
+  </message>
+  <message name="IDS_KSV_CATEGORY_TEXT_EDITING" desc="Category of the keyboard shortcut.">
+    Text Editing
+  </message>
+  <message name="IDS_KSV_CATEGORY_ACCESSIBILITY" desc="Category of the keyboard shortcut.">
+    Accessibility
+  </message>
+
+  <!-- Modifiers -->
+  <message name="IDS_KSV_MODIFIER_CONTROL" desc="Name of [Ctrl] key. Shouldn't be translated in many languages.">
+    Ctrl
+  </message>
+  <message name="IDS_KSV_MODIFIER_ALT" desc="Name of [Alt] key. Shouldn't be translated in many languages.">
+    Alt
+  </message>
+  <message name="IDS_KSV_MODIFIER_SHIFT" desc="Name of [Shift] key. Shouldn't be translated in many languages.">
+    Shift
+  </message>
+  <message name="IDS_KSV_MODIFIER_SEARCH" desc="Name of [Search] key.">
+    Search
+  </message>
+  <message name="IDS_KSV_MODIFIER_LAUNCHER" desc="Name of [Launcher] key.">
+    Launcher
+  </message>
+
   <!-- Generic shortcut strings -->
   <message name="IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY" desc="Human readable version of the keyboard shortcut. This is for all single modifier shortcuts.">
     <ph name="modifier">$1<ex>CTRL</ex></ph> + <ph name="key">$2<ex>V</ex></ph>
