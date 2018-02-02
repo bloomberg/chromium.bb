@@ -1,93 +1,28 @@
-<!DOCTYPE html>
 <html>
-<head>
 <script src="./resources/webgl-test-utils-full.js"></script>
 <script src="./resources/tex-image-and-sub-image-utils.js"></script>
-<script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize-video.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
 <body>
 <script>
-var wtu = WebGLTestUtils;
-var tiu = TexImageUtils;
-var gl = null;
-var internalFormat = "RGBA";
-var pixelFormat = "RGBA";
-var pixelType = "UNSIGNED_BYTE";
-
-function testImageBitmap()
-{
-    var bitmaps = {};
-
-    var canvas = document.createElement('canvas');
-    canvas.width = 4;
-    canvas.height = 4;
-    document.body.appendChild(canvas);
-    gl = canvas.getContext("webgl");
-
-    gl.clearColor(0,0,0,1);
-    gl.clearDepth(1);
-
-    var options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
-    var p1 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
-
-    options.imageOrientation = "none";
-    options.premultiplyAlpha = "premultiply";
-    var p2 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
-
-    options.premultiplyAlpha = "default";
-    var p3 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
-
-    options.premultiplyAlpha = "none";
-    var p4 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
-
-    options.imageOrientation = "flipY";
-    options.premultiplyAlpha = "premultiply";
-    var p5 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
-
-    options.premultiplyAlpha = "default";
-    var p6 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
-
-    options.premultiplyAlpha = "none";
-    var p7 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
-
-    options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
-    var p8 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
-
-    options.colorSpaceConversion = "none";
-    var p9 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
-
-    options.colorSpaceConversion = "default";
-    var p10 = createImageBitmap(video, options).then(
-        function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
-
-    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(
-    t.step_func_done(function() {
-        var alphaVal = 1;
-        var testPassed = runTest(bitmaps, alphaVal, false);
-        if (!testPassed)
-            assert_true(false, 'Test failed');
-    }), t.step_func_done(function() {
-        assert_true(false, 'Promise rejected');
-    }));
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
 }
 
-var t = async_test('createImageBitmap(HTMLVideoElement) with resize and other options');
-
 var video = document.createElement("video");
-video.oncanplaythrough = t.step_func(function() {
-    testImageBitmap();
-});
+var canvas = document.createElement('canvas');
+canvas.width = 400;
+canvas.height = 400;
+document.body.appendChild(canvas);
+
+var testOptions = {sourceName: "HTMLVideoElement", imageSource: video,
+                   sourceIsPremul: true, resizeWidth: 16, resizeHeight: 16,
+                   resultsCanvas: canvas};
+prepareWebGLContext(testOptions);
+
+video.oncanplaythrough = function() {
+    prepareResizedImageBitmapsAndRuntTests(testOptions);
+};
+
 video.src = "resources/red-green-blue-white-2x2.ogv";
 </script>
-</body>
-</html>
