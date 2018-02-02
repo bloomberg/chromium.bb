@@ -42,7 +42,17 @@ chrome.test.runTests([
           // renderer if the frame doesn't exist anymore.
           var iframeChromeApp = iframe.contentWindow.chrome.app;
           document.body.removeChild(iframe);
-          chrome.test.assertEq(undefined, iframeChromeApp.getDetails());
+          var getDetailsResult;
+          // Note: native bindings throw an error when accessed after
+          // invalidation (to let the script know something when wrong); JS
+          // bindings just return undefined.
+          try {
+            getDetailsResult = iframeChromeApp.getDetails();
+          } catch (e) {
+            chrome.test.assertTrue(e.message.includes('context invalidated'),
+                                   e.message);
+          }
+          chrome.test.assertEq(undefined, getDetailsResult);
           chrome.test.succeed();
           break;
         }
