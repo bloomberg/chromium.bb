@@ -111,16 +111,15 @@ class EmptyNotificationView : public views::View {
 
 class MessageCenterScrollView : public views::ScrollView {
  public:
-  explicit MessageCenterScrollView(MessageCenterView* owner) : owner_(owner) {}
+  MessageCenterScrollView() = default;
 
  private:
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kDialog;
-    node_data->SetName(owner_->GetButtonBarTitle());
+    node_data->SetName(
+        l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE));
   }
-
-  MessageCenterView* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterScrollView);
 };
@@ -150,12 +149,12 @@ MessageCenterView::MessageCenterView(
   SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
   button_bar_ = new MessageCenterButtonBar(
-      this, message_center, initially_settings_visible, GetButtonBarTitle());
+      this, message_center, initially_settings_visible, is_locked_);
   button_bar_->SetCloseAllButtonEnabled(false);
 
   const int button_height = button_bar_->GetPreferredSize().height();
 
-  scroller_ = new MessageCenterScrollView(this);
+  scroller_ = new MessageCenterScrollView();
   if (!switches::IsSidebarEnabled()) {
     scroller_->SetBackgroundColor(kBackgroundColor);
   } else {
@@ -290,12 +289,6 @@ void MessageCenterView::SetIsClosing(bool is_closing) {
     message_center_->RemoveObserver(this);
   else
     message_center_->AddObserver(this);
-}
-
-base::string16 MessageCenterView::GetButtonBarTitle() const {
-  return is_locked_ ?
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_LOCKSCREEN) :
-          l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE);
 }
 
 void MessageCenterView::OnDidChangeFocus(views::View* before,
@@ -622,8 +615,7 @@ void MessageCenterView::UpdateButtonBarStatus() {
   }
 
   button_bar_->SetBackArrowVisible(mode_ == Mode::SETTINGS);
-  button_bar_->SetButtonsVisible(!is_locked_);
-  button_bar_->SetTitle(GetButtonBarTitle());
+  button_bar_->SetIsLocked(is_locked_);
 
   if (!is_locked_)
     EnableCloseAllIfAppropriate();

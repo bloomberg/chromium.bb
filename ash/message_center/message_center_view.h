@@ -69,8 +69,6 @@ class ASH_EXPORT MessageCenterView
 
   void SetIsClosing(bool is_closing);
 
-  base::string16 GetButtonBarTitle() const;
-
   void SetMaxHeight(int max_height) { max_height_ = max_height; }
 
   // Overridden from views::FocusChangeListener
