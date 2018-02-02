@@ -184,6 +184,18 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
                             : BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR;
 }
 
+std::vector<gfx::Image> GetImagesForAccounts(
+    const std::vector<AccountInfo>& accounts,
+    Profile* profile) {
+  AccountTrackerService* tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  std::vector<gfx::Image> images;
+  for (auto account : accounts) {
+    images.push_back(tracker_service->GetAccountImage(account.account_id));
+  }
+  return images;
+}
+
 }  // namespace
 
 // A title card with one back button left aligned and one label center aligned.
@@ -374,6 +386,7 @@ void ProfileChooserView::ResetView() {
   gaia_signin_cancel_button_ = nullptr;
   remove_account_button_ = nullptr;
   account_removal_cancel_button_ = nullptr;
+  sync_to_another_account_button_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -652,8 +665,16 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == signin_current_profile_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
   } else if (sender == signin_with_gaia_account_button_) {
-    signin_ui_util::EnableSync(browser_, dice_sync_promo_account_,
+    DCHECK(!dice_sync_promo_accounts_.empty());
+    signin_ui_util::EnableSync(browser_, dice_sync_promo_accounts_[0],
                                access_point_);
+  } else if (sender == sync_to_another_account_button_) {
+    // Display a submenu listing the GAIA web accounts (without the first one).
+    std::vector<AccountInfo> accounts(dice_sync_promo_accounts_.begin() + 1,
+                                      dice_sync_promo_accounts_.end());
+    dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
+        accounts, GetImagesForAccounts(accounts, browser_->profile()));
+    dice_accounts_menu_->Show(sender);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -997,7 +1018,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 
 views::View* ProfileChooserView::CreateDiceSigninView() {
   // Fetch signed in GAIA web accounts.
-  std::vector<AccountInfo> accounts =
+  dice_sync_promo_accounts_ =
       signin_ui_util::GetAccountsForDicePromos(browser_->profile());
 
   // Create a view that holds an illustration and a promo, which includes a
@@ -1006,7 +1027,8 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   // |kIllustrationPromoOverlap|. The illustration will be changed in the
   // future, once the final asset is ready.
   constexpr int kIllustrationPromoOverlap = 48;
-  const int additional_bottom_spacing = accounts.empty() ? 0 : 8;
+  const int additional_bottom_spacing =
+      dice_sync_promo_accounts_.empty() ? 0 : 8;
   views::View* view = new views::View();
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
@@ -1044,7 +1066,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   signin_button_view->SetBorder(
       views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
 
-  if (accounts.empty()) {
+  if (dice_sync_promo_accounts_.empty()) {
     // When there is no signed in web account, just display a sign-in button.
     signin_current_profile_button_ =
         views::MdTextButton::CreateSecondaryUiBlueButton(
@@ -1056,10 +1078,12 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
     return view;
   }
 
-  // Create a hover button to sign in the first account of |accounts|.
+  // Create a hover button to sign in the first account of
+  // |dice_sync_promo_accounts_|.
+  AccountInfo dice_promo_default_account = dice_sync_promo_accounts_[0];
   gfx::Image account_icon =
       AccountTrackerServiceFactory::GetForProfile(browser_->profile())
-          ->GetAccountImage(accounts[0].account_id);
+          ->GetAccountImage(dice_promo_default_account.account_id);
   if (account_icon.IsEmpty()) {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
@@ -1067,32 +1091,30 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   auto account_photo = std::make_unique<BadgedProfilePhoto>(
       BadgedProfilePhoto::BADGE_TYPE_NONE, account_icon);
   base::string16 first_account_button_title =
-      accounts[0].full_name.empty()
+      dice_promo_default_account.full_name.empty()
           ? l10n_util::GetStringUTF16(
                 IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME)
           : l10n_util::GetStringFUTF16(
                 IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON,
-                base::UTF8ToUTF16(accounts[0].full_name));
+                base::UTF8ToUTF16(dice_promo_default_account.full_name));
   HoverButton* first_account_button = new HoverButton(
       this, std::move(account_photo), first_account_button_title,
-      base::UTF8ToUTF16(accounts[0].email));
+      base::UTF8ToUTF16(dice_promo_default_account.email));
   first_account_button->SetStyle(HoverButton::STYLE_PROMINENT);
 
   signin_button_view->AddChildView(first_account_button);
   promo_button_container->AddChildView(signin_button_view);
 
   signin_with_gaia_account_button_ = first_account_button;
-  dice_sync_promo_account_ = accounts[0];
 
   constexpr int kSmallMenuIconSize = 16;
-  HoverButton* sync_to_another_account_button = new HoverButton(
+  sync_to_another_account_button_ = new HoverButton(
       this,
       gfx::CreateVectorIcon(kSyncSwitchAccountIcon, kSmallMenuIconSize,
                             gfx::kChromeIconGrey),
       l10n_util::GetStringUTF16(
           IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON));
-  signin_current_profile_button_ = sync_to_another_account_button;
-  promo_button_container->AddChildView(sync_to_another_account_button);
+  promo_button_container->AddChildView(sync_to_another_account_button_);
 
   view->AddChildView(promo_button_container);
   return view;

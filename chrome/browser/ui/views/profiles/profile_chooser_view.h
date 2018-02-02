@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
+#include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -194,6 +195,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::LabelButton* manage_accounts_button_;
   views::LabelButton* signin_current_profile_button_;
   views::LabelButton* signin_with_gaia_account_button_;
+  views::LabelButton* sync_to_another_account_button_;
 
   // For material design user menu, the active profile card owns the profile
   // name and photo.
@@ -229,8 +231,12 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 
-  // Account that is presented in the enable sync promo.
-  AccountInfo dice_sync_promo_account_;
+  // Accounts that are presented in the enable sync promo.
+  std::vector<AccountInfo> dice_sync_promo_accounts_;
+
+  // Accounts submenu that is shown when |sync_to_another_account_button_| is
+  // pressed.
+  std::unique_ptr<DiceAccountsMenu> dice_accounts_menu_;
 
   const bool dice_enabled_;
 
