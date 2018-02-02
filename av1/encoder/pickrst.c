@@ -349,19 +349,6 @@ void encode_xq(int *xq, int *xqd) {
   xqd[1] = clamp(xqd[1], SGRPROJ_PRJ_MIN1, SGRPROJ_PRJ_MAX1);
 }
 
-static void sgr_filter_block(const sgr_params_type *params, const uint8_t *dat8,
-                             int width, int height, int dat_stride,
-                             int use_highbd, int bit_depth, int32_t *flt1,
-                             int32_t *flt2, int flt_stride) {
-#if CONFIG_FAST_SGR == 2
-  av1_selfguided_restoration_c(dat8, width, height, dat_stride, flt1, flt2,
-                               flt_stride, params, bit_depth, use_highbd);
-#else
-  av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, flt2,
-                             flt_stride, params, bit_depth, use_highbd);
-#endif  // CONFIG_FAST_SGR == 2
-}
-
 // Apply the self-guided filter across an entire restoration unit.
 static void apply_sgr(const sgr_params_type *params, const uint8_t *dat8,
                       int width, int height, int dat_stride, int use_highbd,
@@ -376,8 +363,9 @@ static void apply_sgr(const sgr_params_type *params, const uint8_t *dat8,
     // Iterate over the stripe in blocks of width pu_width
     for (int j = 0; j < width; j += pu_width) {
       const int w = AOMMIN(pu_width, width - j);
-      sgr_filter_block(params, dat8_row + j, w, h, dat_stride, use_highbd,
-                       bit_depth, flt1_row + j, flt2_row + j, flt_stride);
+      av1_selfguided_restoration(dat8_row + j, w, h, dat_stride, flt1_row + j,
+                                 flt2_row + j, flt_stride, params, bit_depth,
+                                 use_highbd);
     }
   }
 }
