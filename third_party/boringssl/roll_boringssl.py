@@ -118,6 +118,12 @@ BUG=none
 """ % (head[:9], commit[:9], head, commit)
   subprocess.check_call(['git', 'commit', '-m', message], cwd=SRC_PATH)
 
+  # Print update notes.
+  notes = subprocess.check_output(['git', 'log', '--grep', '^Update-Note:', '-i', '%s..%s' % (head, commit)], cwd=BORINGSSL_SRC_PATH).strip()
+  if len(notes) > 0:
+    print "\x1b[1mThe following changes contain updating notes\x1b[0m:\n\n"
+    print notes
+
   return 0
 
 
