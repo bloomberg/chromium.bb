@@ -18,6 +18,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter_observer.h"
+#include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/upload_progress_tracker.h"
@@ -30,6 +31,7 @@ class URLRequestContextGetter;
 namespace network {
 
 class NetToMojoPendingBuffer;
+class KeepaliveStatisticsRecorder;
 struct ResourceResponse;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
@@ -46,7 +48,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       bool report_raw_headers,
       mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      uint32_t process_id);
+      uint32_t process_id,
+      base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -109,6 +112,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   uint32_t process_id_;
   uint32_t render_frame_id_;
   bool connected_;
+  const bool keepalive_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
   mojom::URLLoaderClientPtr url_loader_client_;
@@ -147,6 +151,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   int64_t body_read_before_paused_ = -1;
 
   mojom::SSLPrivateKeyPtr ssl_private_key_;
+
+  base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

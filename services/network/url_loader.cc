@@ -242,7 +242,8 @@ URLLoader::URLLoader(
     bool report_raw_headers,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    uint32_t process_id)
+    uint32_t process_id,
+    base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder)
     : url_request_context_getter_(url_request_context_getter),
       network_service_client_(network_service_client),
       options_(options),
@@ -251,6 +252,7 @@ URLLoader::URLLoader(
       process_id_(process_id),
       render_frame_id_(request.render_frame_id),
       connected_(true),
+      keepalive_(request.keepalive),
       binding_(this, std::move(url_loader_request)),
       url_loader_client_(std::move(url_loader_client)),
       writable_handle_watcher_(FROM_HERE,
@@ -258,6 +260,7 @@ URLLoader::URLLoader(
       peer_closed_handle_watcher_(FROM_HERE,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       report_raw_headers_(report_raw_headers),
+      keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       weak_ptr_factory_(this) {
   url_request_context_getter_->AddObserver(this);
   binding_.set_connection_error_handler(
@@ -305,12 +308,18 @@ URLLoader::URLLoader(
         base::Bind(&URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
 
+  if (keepalive_ && keepalive_statistics_recorder_)
+    keepalive_statistics_recorder_->OnLoadStarted(process_id_);
+
   url_request_->Start();
 }
 
 URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
   url_request_context_getter_->RemoveObserver(this);
+
+  if (keepalive_ && keepalive_statistics_recorder_)
+    keepalive_statistics_recorder_->OnLoadFinished(process_id_);
 }
 
 void URLLoader::FollowRedirect() {
