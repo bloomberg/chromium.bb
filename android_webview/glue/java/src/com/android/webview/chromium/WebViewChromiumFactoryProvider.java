@@ -124,6 +124,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         mRunQueue.addTask(task);
     }
 
+    /**
+     * Class that takes care of chromium lazy initialization.
+     * This is package-public so that a downstream subclass can access it.
+     */
+    /* package */ WebViewChromiumAwInit mAwInit;
+
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
     // This member is not private only because the downstream subclass needs to access it,
@@ -178,8 +184,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         initialize(delegate);
     }
 
+    // Protected to allow downstream to override.
+    protected WebViewChromiumAwInit createAwInit(WebViewChromiumFactoryProvider provider) {
+        return new WebViewChromiumAwInit(provider);
+    }
+
     @TargetApi(Build.VERSION_CODES.N) // For getSystemService() and isUserUnlocked().
     private void initialize(WebViewDelegate webViewDelegate) {
+        mAwInit = createAwInit(this);
         mWebViewDelegate = webViewDelegate;
         Context ctx = mWebViewDelegate.getApplication().getApplicationContext();
 
@@ -368,6 +380,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private static final int DIR_RESOURCE_PAKS_ANDROID = 3003;
 
     protected void startChromiumLocked() {
+        // TODO(gsennton): remove this when down-stream is up-to-date:
+        // Call into the AwInit to allow down-stream to override startChromiumLocked
+        mAwInit.startChromiumLocked();
         assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
 
         // The post-condition of this method is everything is ready, so notify now to cover all
