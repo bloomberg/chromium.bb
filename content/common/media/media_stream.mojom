@@ -62,23 +62,25 @@ interface MediaStreamDeviceObserver {
   OnDeviceStopped(string label, MediaStreamDevice device);
 };
 
-// Per-frame browser-side interface that is used by the renderer process to
+// Per-process browser-side interface that is used by the renderer process to
 // make media stream requests.
 interface MediaStreamDispatcherHost {
   // Requests a new media stream.
-  GenerateStream(int32 request_id, StreamControls controls, bool user_gesture)
+  GenerateStream(int32 render_frame_id, int32 request_id,
+                 StreamControls controls, bool user_gesture)
       => (MediaStreamRequestResult result, string label,
          array<MediaStreamDevice> audio_devices,
          array<MediaStreamDevice> video_devices);
 
   // Cancels the request for a new media stream or opening a device.
-  CancelRequest(int32 request_id);
+  CancelRequest(int32 render_frame_id, int32 request_id);
 
   // Closes a stream device that has been opened by GenerateStream.
-  StopStreamDevice(string device_id, int32 session_id);
+  StopStreamDevice(int32 render_frame_id, string device_id, int32 session_id);
 
   // Opens a device identified by |device_id|.
-  OpenDevice(int32 request_id, string device_id, MediaStreamType type)
+  OpenDevice(int32 render_frame_id, int32 request_id, string device_id,
+             MediaStreamType type)
       => (bool success, string label, MediaStreamDevice device);
 
   // Cancels an open request identified by |label|.

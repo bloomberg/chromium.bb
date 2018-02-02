@@ -284,7 +284,7 @@ class CONTENT_EXPORT UserMediaProcessor
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  RenderFrame* const render_frame_;
+  const int render_frame_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
