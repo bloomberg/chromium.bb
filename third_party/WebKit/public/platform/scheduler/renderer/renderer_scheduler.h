@@ -9,8 +9,10 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebInputEventResult.h"
@@ -50,7 +52,12 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   };
 
   ~RendererScheduler() override;
-  static std::unique_ptr<RendererScheduler> Create();
+
+  // If |initial_virtual_time| is specified then the scheduler will be created
+  // with virtual time enabled and paused, and base::Time will be overridden to
+  // start at |initial_virtual_time|.
+  static std::unique_ptr<RendererScheduler> Create(
+      base::Optional<base::Time> initial_virtual_time = base::nullopt);
 
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner>

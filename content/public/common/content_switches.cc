@@ -543,6 +543,10 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 const char kHistoryEntryRequiresUserGesture[] =
     "history-entry-requires-user-gesture";
 
+// Start the renderer with an initial virtual time override specified in
+// seconds since the epoch.
+const char kInitialVirtualTime[] = "initial-virtual-time";
+
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 

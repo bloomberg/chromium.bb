@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 
@@ -44,6 +45,10 @@ class HeadlessBrowserContextOptions {
   // Set HeadlessBrowser::Options::incognito_mode.
   bool incognito_mode() const;
 
+  // If set the renderer will be constructed with virtual time enabled and in it
+  // base::Time::Now will be overridden to initially return this value.
+  base::Optional<base::Time> initial_virtual_time() const;
+
   bool allow_cookies() const;
 
   // Custom network protocol handlers. These can be used to override URL
@@ -72,6 +77,7 @@ class HeadlessBrowserContextOptions {
   base::Optional<gfx::Size> window_size_;
   base::Optional<base::FilePath> user_data_dir_;
   base::Optional<bool> incognito_mode_;
+  base::Optional<base::Time> initial_virtual_time_;
   base::Optional<bool> allow_cookies_;
   base::Optional<base::Callback<void(WebPreferences*)>>
       override_web_preferences_callback_;

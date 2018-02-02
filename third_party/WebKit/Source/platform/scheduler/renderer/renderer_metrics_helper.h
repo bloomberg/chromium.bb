@@ -67,6 +67,8 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
   void RecordForegroundMainThreadTaskLoad(base::TimeTicks time, double load);
   void RecordBackgroundMainThreadTaskLoad(base::TimeTicks time, double load);
 
+  void ResetForTest(base::TimeTicks now);
+
  private:
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
 

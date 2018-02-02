@@ -46,7 +46,8 @@ TestingPlatformSupportWithMockScheduler::
       scheduler_(new scheduler::RendererSchedulerImpl(
           scheduler::CreateTaskQueueManagerForTest(nullptr,
                                                    mock_task_runner_,
-                                                   &clock_))),
+                                                   &clock_),
+          base::nullopt)),
       thread_(scheduler_->CreateMainThread()) {
   DCHECK(IsMainThread());
   // Set the work batch size to one so RunPendingTasks behaves as expected.

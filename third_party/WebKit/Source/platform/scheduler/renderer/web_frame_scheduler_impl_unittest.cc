@@ -33,7 +33,8 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_.reset(new RendererSchedulerImpl(
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_)));
+        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        base::nullopt));
     web_view_scheduler_.reset(
         new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
     web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
