@@ -6,9 +6,11 @@
 
 #include <algorithm>
 
+#include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/bind.h"
 #include "base/bit_cast.h"
+#include "base/bits.h"
 #include "base/debug/stack_trace.h"
 #include "base/location.h"
 #include "base/rand_util.h"
@@ -153,6 +155,94 @@ class TimeClamper {
 base::LazyInstance<TimeClamper>::Leaky g_time_clamper =
     LAZY_INSTANCE_INITIALIZER;
 
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+base::PageAccessibilityConfiguration GetPageConfig(
+    v8::PageAllocator::Permission permission) {
+  switch (permission) {
+    case v8::PageAllocator::Permission::kReadWrite:
+      return base::PageReadWrite;
+    case v8::PageAllocator::Permission::kReadWriteExecute:
+      return base::PageReadWriteExecute;
+    case v8::PageAllocator::Permission::kReadExecute:
+      return base::PageReadExecute;
+    default:
+      DCHECK_EQ(v8::PageAllocator::Permission::kNoAccess, permission);
+      return base::PageInaccessible;
+  }
+}
+
+class PageAllocator : public v8::PageAllocator {
+ public:
+  ~PageAllocator() override = default;
+
+  size_t AllocatePageSize() override {
+    return base::kPageAllocationGranularity;
+  }
+
+  size_t CommitPageSize() override { return base::kSystemPageSize; }
+
+  void SetRandomMmapSeed(int64_t seed) override {
+    base::SetRandomPageBaseSeed(seed);
+  }
+
+  void* GetRandomMmapAddr() override { return base::GetRandomPageBase(); }
+
+  void* AllocatePages(void* address,
+                      size_t length,
+                      size_t alignment,
+                      v8::PageAllocator::Permission permissions) override {
+    // V8 doesn't align the hint.
+    // TODO(bbudge) Remove this when V8 aligns hint addresses.
+    address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) &
+                                      ~(alignment - 1));
+    base::PageAccessibilityConfiguration config = GetPageConfig(permissions);
+    bool commit = (permissions != v8::PageAllocator::Permission::kNoAccess);
+    return base::AllocPages(address, length, alignment, config, commit);
+  }
+
+  bool FreePages(void* address, size_t length) override {
+// V8 doesn't align the size properly on Windows.
+// TODO(bbudge) Remove this when V8 returns the right length on Windows.
+#if defined(OS_WIN)
+    length = base::bits::Align(length, base::kPageAllocationGranularity);
+#endif
+    base::FreePages(address, length);
+    return true;
+  }
+
+  bool ReleasePages(void* address, size_t length, size_t new_length) override {
+    DCHECK_LT(new_length, length);
+    uint8_t* release_base = reinterpret_cast<uint8_t*>(address) + new_length;
+    size_t release_size = length - new_length;
+#if defined(OS_POSIX)
+    // On POSIX, we can unmap the trailing pages.
+    base::FreePages(release_base, release_size);
+#else  // defined(OS_WIN)
+    // On Windows, we can only de-commit the trailing pages.
+    base::DecommitSystemPages(release_base, release_size);
+#endif
+    return true;
+  }
+
+  bool SetPermissions(void* address,
+                      size_t length,
+                      Permission permissions) override {
+    // If V8 sets permissions to none, we can discard the memory.
+    if (permissions == v8::PageAllocator::Permission::kNoAccess) {
+      base::DecommitSystemPages(address, length);
+      return true;
+    } else {
+      return base::SetSystemPagesAccess(address, length,
+                                        GetPageConfig(permissions));
+    }
+  }
+};
+
+base::LazyInstance<PageAllocator>::Leaky g_page_allocator =
+    LAZY_INSTANCE_INITIALIZER;
+
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
+
 }  // namespace
 
 class V8Platform::TracingControllerImpl : public v8::TracingController {
@@ -223,13 +313,19 @@ V8Platform::V8Platform() : tracing_controller_(new TracingControllerImpl) {}
 
 V8Platform::~V8Platform() = default;
 
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+v8::PageAllocator* V8Platform::GetPageAllocator() {
+  return g_page_allocator.Pointer();
+}
+
 void V8Platform::OnCriticalMemoryPressure() {
-#if defined(OS_WIN)
-  // Some configurations do not use page_allocator. Only 32 bit Windows systems
-  // reserve memory currently.
+// We only have a reservation on 32-bit Windows systems.
+// TODO(bbudge) Make the #if's in BlinkInitializer match.
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
   base::ReleaseReservation();
 #endif
 }
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 std::shared_ptr<v8::TaskRunner> V8Platform::GetForegroundTaskRunner(
     v8::Isolate* isolate) {
