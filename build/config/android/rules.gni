@@ -1382,9 +1382,6 @@ if (enable_java_templates) {
         requires_android = _requires_android
         possible_config_deps = _deps
         build_config = _build_config
-        if (_proguard_enabled) {
-          proguard_info = "${invoker.output}.info"
-        }
       }
 
       _deps += [ ":$_build_config_target_name" ]
@@ -1406,9 +1403,9 @@ if (enable_java_templates) {
 
         output_jar_path = invoker.output
         args = [
-          "--proguard-configs=@FileArg($_rebased_build_config:proguard:all_configs)",
+          "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
-          "--classpath=@FileArg($_rebased_build_config:proguard:extra_jars)",
+          "--classpath=@FileArg($_rebased_build_config:deps_info:proguard_all_extra_jars)",
         ]
         if (defined(invoker.proguard_config_exclusions)) {
           _rebased_proguard_config_exclusions =
@@ -1547,7 +1544,7 @@ if (enable_java_templates) {
         "--jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
         "--r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
-        "--proguard-configs=@FileArg($_rebased_build_config:proguard:all_configs)",
+        "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
       ]
       if (defined(invoker.android_manifest)) {
         args += [
@@ -2157,16 +2154,12 @@ if (enable_java_templates) {
       dex_path = _lib_dex_path
       apk_path = _final_apk_path
 
-      if (defined(invoker.apk_under_test)) {
-        deps += [ "${invoker.apk_under_test}" ]
-      }
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
       incremental_install_json_path = _incremental_install_json_path
 
       proguard_enabled = _proguard_enabled
       if (_proguard_enabled) {
-        proguard_info = "$_proguard_output_jar_path.info"
         proguard_configs = [ _generated_proguard_config ]
         if (defined(invoker.proguard_configs)) {
           proguard_configs += invoker.proguard_configs
@@ -2229,9 +2222,9 @@ if (enable_java_templates) {
 
         output_jar_path = _proguard_output_jar_path
         args = [
-          "--proguard-configs=@FileArg($_rebased_build_config:proguard:all_configs)",
+          "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
-          "--classpath=@FileArg($_rebased_build_config:proguard:extra_jars)",
+          "--classpath=@FileArg($_rebased_build_config:deps_info:proguard_all_extra_jars)",
         ]
         if (defined(invoker.proguard_config_exclusions)) {
           _rebased_proguard_config_exclusions =
@@ -2239,19 +2232,6 @@ if (enable_java_templates) {
           args += [
             "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
           ]
-        }
-
-        if (defined(invoker.apk_under_test)) {
-          deps += [
-            "${invoker.apk_under_test}__build_config",
-            "${invoker.apk_under_test}__proguard",
-          ]
-          _apk_under_test_build_config =
-              get_label_info(invoker.apk_under_test, "target_gen_dir") + "/" +
-              get_label_info(invoker.apk_under_test, "name") + ".build_config"
-          _rebased_apk_under_test_build_config =
-              rebase_path(_apk_under_test_build_config, root_build_dir)
-          args += [ "--tested-apk-info=@FileArg($_rebased_apk_under_test_build_config:deps_info:proguard_info)" ]
         }
       }
       _dex_sources = [ _proguard_output_jar_path ]
@@ -2759,6 +2739,9 @@ if (enable_java_templates) {
         "//tools/android/forwarder2",
         "//tools/android/md5sum",
       ]
+      if (defined(invoker.apk_under_test)) {
+        data_deps += [ invoker.apk_under_test ]
+      }
       if (defined(invoker.additional_apks)) {
         data_deps += invoker.additional_apks
       }
