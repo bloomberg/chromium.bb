@@ -381,6 +381,9 @@ TEST(URLCanonTest, Host) {
       // Maps uppercase letters to lower case letters. UTS 46 table 4 row (e)
     {"M\xc3\x9cNCHEN", L"M\xdcNCHEN", "xn--mnchen-3ya",
       Component(0, 14), CanonHostInfo::NEUTRAL, -1, ""},
+      // An already-IDNA host is not modified.
+    {"xn--mnchen-3ya", L"xn--mnchen-3ya", "xn--mnchen-3ya",
+      Component(0, 14), CanonHostInfo::NEUTRAL, -1, ""},
       // Symbol/punctuations are allowed in IDNA 2003/UTS46.
       // Not allowed in IDNA 2008. UTS 46 table 4 row (f).
     {"\xe2\x99\xa5ny.us", L"\x2665ny.us", "xn--ny-s0x.us",
@@ -503,6 +506,9 @@ TEST(URLCanonTest, Host) {
     {"12345678912345.12345678912345.de", L"12345678912345.12345678912345.de", "12345678912345.12345678912345.de", Component(0, 32), CanonHostInfo::NEUTRAL, -1, ""},
     {"1.2.0xB3A73CE5B59.de", L"1.2.0xB3A73CE5B59.de", "1.2.0xb3a73ce5b59.de", Component(0, 20), CanonHostInfo::NEUTRAL, -1, ""},
     {"12345678912345.0xde", L"12345678912345.0xde", "12345678912345.0xde", Component(0, 19), CanonHostInfo::BROKEN, -1, ""},
+    // A label that starts with "xn--" but contains non-ASCII characters should
+    // be an error. Escape the invalid characters.
+    {"xn--m\xc3\xbcnchen", L"xn--m\xfcnchen", "xn--m%C3%BCnchen", Component(0, 16), CanonHostInfo::BROKEN, -1, ""},
   };
 
   // CanonicalizeHost() non-verbose.
@@ -2323,6 +2329,57 @@ TEST(URLCanonTest, DefaultPortForScheme) {
     EXPECT_EQ(test_case.expected_port,
               DefaultPortForScheme(test_case.scheme, strlen(test_case.scheme)));
   }
+}
+
+TEST(URLCanonTest, IDNToASCII) {
+  RawCanonOutputW<1024> output;
+
+  // Basic ASCII test.
+  base::string16 str = base::UTF8ToUTF16("hello");
+  EXPECT_TRUE(IDNToASCII(str.data(), str.length(), &output));
+  EXPECT_EQ(base::UTF8ToUTF16("hello"), base::string16(output.data()));
+  output.set_length(0);
+
+  // Mixed ASCII/non-ASCII.
+  str = base::UTF8ToUTF16("hellö");
+  EXPECT_TRUE(IDNToASCII(str.data(), str.length(), &output));
+  EXPECT_EQ(base::UTF8ToUTF16("xn--hell-8qa"), base::string16(output.data()));
+  output.set_length(0);
+
+  // All non-ASCII.
+  str = base::UTF8ToUTF16("你好");
+  EXPECT_TRUE(IDNToASCII(str.data(), str.length(), &output));
+  EXPECT_EQ(base::UTF8ToUTF16("xn--6qq79v"), base::string16(output.data()));
+  output.set_length(0);
+
+  // Characters that need mapping (the resulting Punycode is the encoding for
+  // "1⁄4").
+  str = base::UTF8ToUTF16("¼");
+  EXPECT_TRUE(IDNToASCII(str.data(), str.length(), &output));
+  EXPECT_EQ(base::UTF8ToUTF16("xn--14-c6t"), base::string16(output.data()));
+  output.set_length(0);
+
+  // String to encode already starts with "xn--", and all ASCII. Should not
+  // modify the string.
+  str = base::UTF8ToUTF16("xn--hell-8qa");
+  EXPECT_TRUE(IDNToASCII(str.data(), str.length(), &output));
+  EXPECT_EQ(base::UTF8ToUTF16("xn--hell-8qa"), base::string16(output.data()));
+  output.set_length(0);
+
+  // String to encode already starts with "xn--", and mixed ASCII/non-ASCII.
+  // Should fail, due to a special case: if the label starts with "xn--", it
+  // should be parsed as Punycode, which must be all ASCII.
+  str = base::UTF8ToUTF16("xn--hellö");
+  EXPECT_FALSE(IDNToASCII(str.data(), str.length(), &output));
+  output.set_length(0);
+
+  // String to encode already starts with "xn--", and mixed ASCII/non-ASCII.
+  // This tests that there is still an error for the character '⁄' (U+2044),
+  // which would be a valid ASCII character, U+0044, if the high byte were
+  // ignored.
+  str = base::UTF8ToUTF16("xn--1⁄4");
+  EXPECT_FALSE(IDNToASCII(str.data(), str.length(), &output));
+  output.set_length(0);
 }
 
 }  // namespace url
