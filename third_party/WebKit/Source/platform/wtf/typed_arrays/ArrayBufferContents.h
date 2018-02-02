@@ -35,6 +35,10 @@
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/WTFExport.h"
 
+namespace base {
+struct PartitionRootGeneric;
+}  // namespace base
+
 namespace WTF {
 
 class WTF_EXPORT ArrayBufferContents {
@@ -177,8 +181,9 @@ class WTF_EXPORT ArrayBufferContents {
   void CopyTo(ArrayBufferContents& other);
 
   static void* AllocateMemoryOrNull(size_t, InitializationPolicy);
-  static void* ReserveMemory(size_t);
+  static void* AllocateMemoryOrNull(void*, size_t, InitializationPolicy);
   static void FreeMemory(void*);
+  static void* ReserveMemory(size_t);
   static void ReleaseReservedMemory(void*, size_t);
   static DataHandle CreateDataHandle(size_t, InitializationPolicy);
   static void Initialize(
@@ -200,7 +205,10 @@ class WTF_EXPORT ArrayBufferContents {
   }
 
  private:
-  static void* AllocateMemoryWithFlags(size_t, InitializationPolicy, int);
+  static void* AllocateMemoryWithFlags(base::PartitionRootGeneric*,
+                                       size_t,
+                                       InitializationPolicy,
+                                       int);
 
   static void DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
       int64_t diff);
