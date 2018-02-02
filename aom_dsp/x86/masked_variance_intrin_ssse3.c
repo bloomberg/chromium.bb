@@ -15,11 +15,12 @@
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
-#include "aom_dsp/blend.h"
 #include "aom/aom_integer.h"
-#include "aom_ports/mem.h"
 #include "aom_dsp/aom_filter.h"
+#include "aom_dsp/blend.h"
+#include "aom_dsp/x86/masked_variance_intrin_ssse3.h"
 #include "aom_dsp/x86/synonyms.h"
+#include "aom_ports/mem.h"
 
 // For width a multiple of 16
 static void bilinear_filter(const uint8_t *src, int src_stride, int xoffset,
@@ -1040,32 +1041,6 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
   *sse = _mm_cvtsi128_si32(_mm_srli_si128(sum, 4));
 }
 
-static INLINE void comp_mask_pred_16_ssse3(const uint8_t *src0,
-                                           const uint8_t *src1,
-                                           const uint8_t *mask, uint8_t *dst) {
-  const __m128i alpha_max = _mm_set1_epi8(AOM_BLEND_A64_MAX_ALPHA);
-  const __m128i round_offset =
-      _mm_set1_epi16(1 << (15 - AOM_BLEND_A64_ROUND_BITS));
-
-  const __m128i sA0 = _mm_lddqu_si128((const __m128i *)(src0));
-  const __m128i sA1 = _mm_lddqu_si128((const __m128i *)(src1));
-  const __m128i aA = _mm_load_si128((const __m128i *)(mask));
-
-  const __m128i maA = _mm_sub_epi8(alpha_max, aA);
-
-  const __m128i ssAL = _mm_unpacklo_epi8(sA0, sA1);
-  const __m128i aaAL = _mm_unpacklo_epi8(aA, maA);
-  const __m128i ssAH = _mm_unpackhi_epi8(sA0, sA1);
-  const __m128i aaAH = _mm_unpackhi_epi8(aA, maA);
-
-  const __m128i blendAL = _mm_maddubs_epi16(ssAL, aaAL);
-  const __m128i blendAH = _mm_maddubs_epi16(ssAH, aaAH);
-
-  const __m128i roundAL = _mm_mulhrs_epi16(blendAL, round_offset);
-  const __m128i roundAH = _mm_mulhrs_epi16(blendAH, round_offset);
-  _mm_store_si128((__m128i *)dst, _mm_packus_epi16(roundAL, roundAH));
-}
-
 void aom_comp_mask_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
                               int width, int height, const uint8_t *ref,
                               int ref_stride, const uint8_t *mask,
@@ -1074,46 +1049,11 @@ void aom_comp_mask_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
   const uint8_t *src1 = invert_mask ? ref : pred;
   const int stride0 = invert_mask ? width : ref_stride;
   const int stride1 = invert_mask ? ref_stride : width;
-
-  const __m128i alpha_max = _mm_set1_epi8(AOM_BLEND_A64_MAX_ALPHA);
-  const __m128i round_offset =
-      _mm_set1_epi16(1 << (15 - AOM_BLEND_A64_ROUND_BITS));
   assert(height % 2 == 0);
-  assert(width % 8 == 0);
   int i = 0;
   if (width == 8) {
-    do {
-      // odd line A
-      const __m128i sA0 = _mm_loadl_epi64((const __m128i *)(src0));
-      const __m128i sA1 = _mm_loadl_epi64((const __m128i *)(src1));
-      const __m128i aA = _mm_loadl_epi64((const __m128i *)(mask));
-
-      // even line B
-      const __m128i sB0 = _mm_loadl_epi64((const __m128i *)(src0 + stride0));
-      const __m128i sB1 = _mm_loadl_epi64((const __m128i *)(src1 + stride1));
-      const __m128i a = _mm_castps_si128(_mm_loadh_pi(
-          _mm_castsi128_ps(aA), (const __m64 *)(mask + mask_stride)));
-
-      const __m128i ssA = _mm_unpacklo_epi8(sA0, sA1);
-      const __m128i ssB = _mm_unpacklo_epi8(sB0, sB1);
-
-      const __m128i ma = _mm_sub_epi8(alpha_max, a);
-      const __m128i aaA = _mm_unpacklo_epi8(a, ma);
-      const __m128i aaB = _mm_unpackhi_epi8(a, ma);
-
-      const __m128i blendA = _mm_maddubs_epi16(ssA, aaA);
-      const __m128i blendB = _mm_maddubs_epi16(ssB, aaB);
-      const __m128i roundA = _mm_mulhrs_epi16(blendA, round_offset);
-      const __m128i roundB = _mm_mulhrs_epi16(blendB, round_offset);
-      const __m128i round = _mm_packus_epi16(roundA, roundB);
-      // comp_pred's stride == width == 8
-      _mm_store_si128((__m128i *)(comp_pred), round);
-      comp_pred += (width << 1);
-      src0 += (stride0 << 1);
-      src1 += (stride1 << 1);
-      mask += (mask_stride << 1);
-      i += 2;
-    } while (i < height);
+    comp_mask_pred_8_ssse3(comp_pred, height, src0, stride0, src1, stride1,
+                           mask, mask_stride);
   } else if (width == 16) {
     do {
       comp_mask_pred_16_ssse3(src0, src1, mask, comp_pred);
@@ -1126,6 +1066,7 @@ void aom_comp_mask_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
       i += 2;
     } while (i < height);
   } else {  // width == 32
+    assert(width == 32);
     do {
       comp_mask_pred_16_ssse3(src0, src1, mask, comp_pred);
       comp_mask_pred_16_ssse3(src0 + 16, src1 + 16, mask + 16, comp_pred + 16);

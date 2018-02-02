@@ -392,6 +392,7 @@ if (CONFIG_AV1_ENCODER)
       set(AOM_DSP_ENCODER_INTRIN_SSSE3
           ${AOM_DSP_ENCODER_INTRIN_SSSE3}
           "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
+          "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.h"
           "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c")
 
       set(AOM_DSP_ENCODER_INTRIN_SSE2

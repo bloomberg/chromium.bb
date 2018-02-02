@@ -11,7 +11,6 @@
 
 #include <cstdlib>
 #include <new>
-#include <vector>
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
@@ -28,15 +27,13 @@
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-using std::vector;
-
 namespace AV1CompMaskVariance {
 typedef void (*comp_mask_pred_func)(uint8_t *comp_pred, const uint8_t *pred,
                                     int width, int height, const uint8_t *ref,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask);
 
-const BLOCK_SIZE valid_bsize[] = {
+const BLOCK_SIZE kValidBlockSize[] = {
   BLOCK_8X8,   BLOCK_8X16, BLOCK_8X32,  BLOCK_16X8,  BLOCK_16X16,
   BLOCK_16X32, BLOCK_32X8, BLOCK_32X16, BLOCK_32X32,
 };
@@ -53,12 +50,13 @@ class AV1CompMaskVarianceTest
  protected:
   void RunCheckOutput(comp_mask_pred_func test_impl, BLOCK_SIZE bsize, int inv);
   void RunSpeedTest(comp_mask_pred_func test_impl, BLOCK_SIZE bsize);
-  bool CheckResult(int w, int h) {
-    for (int i = 0; i < h; ++i) {
-      for (int j = 0; j < w; ++j) {
-        int idx = i * w + j;
+  bool CheckResult(int width, int height) {
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        const int idx = y * width + x;
         if (comp_pred1_[idx] != comp_pred2_[idx]) {
-          printf("%dx%d mismatch @%d(%d,%d) ", w, h, idx, i, j);
+          printf("%dx%d mismatch @%d(%d,%d) ", width, height, idx, y, x);
+          printf("%d != %d ", comp_pred1_[idx], comp_pred2_[idx]);
           return false;
         }
       }
@@ -160,7 +158,14 @@ TEST_P(AV1CompMaskVarianceTest, DISABLED_Speed) {
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AV1CompMaskVarianceTest,
     ::testing::Combine(::testing::Values(&aom_comp_mask_pred_ssse3),
-                       ::testing::ValuesIn(valid_bsize)));
+                       ::testing::ValuesIn(kValidBlockSize)));
+#endif
+
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(
+    AVX2, AV1CompMaskVarianceTest,
+    ::testing::Combine(::testing::Values(&aom_comp_mask_pred_avx2),
+                       ::testing::ValuesIn(kValidBlockSize)));
 #endif
 
 #ifndef aom_comp_mask_pred
@@ -249,7 +254,15 @@ TEST_P(AV1CompMaskUpVarianceTest, DISABLED_Speed) {
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AV1CompMaskUpVarianceTest,
     ::testing::Combine(::testing::Values(&aom_comp_mask_pred_ssse3),
-                       ::testing::ValuesIn(valid_bsize)));
+                       ::testing::ValuesIn(kValidBlockSize)));
 #endif
+
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(
+    AVX2, AV1CompMaskUpVarianceTest,
+    ::testing::Combine(::testing::Values(&aom_comp_mask_pred_avx2),
+                       ::testing::ValuesIn(kValidBlockSize)));
 #endif
+
+#endif  // ifndef aom_comp_mask_pred
 }  // namespace AV1CompMaskVariance
