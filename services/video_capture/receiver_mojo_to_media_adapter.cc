@@ -80,10 +80,6 @@ ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
 
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;
 
-void ReceiverMojoToMediaAdapter::ResetConnectionErrorHandler() {
-  receiver_.set_connection_error_handler(base::Closure());
-}
-
 void ReceiverMojoToMediaAdapter::OnNewBufferHandle(
     int buffer_id,
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>

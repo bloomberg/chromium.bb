@@ -10,6 +10,7 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
+#include "services/video_capture/test/mock_device.h"
 #include "services/video_capture/test/mock_device_factory.h"
 #include "services/video_capture/test/mock_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,44 +20,6 @@ class MessageLoop;
 }
 
 namespace video_capture {
-
-// To ensure correct operation, this mock device holds on to the |client|
-// that is passed to it in AllocateAndStart() and releases it on
-// StopAndDeAllocate().
-class MockDevice : public media::VideoCaptureDevice {
- public:
-  MockDevice();
-  ~MockDevice() override;
-
-  void SendStubFrame(const media::VideoCaptureFormat& format,
-                     int rotation,
-                     int frame_feedback_id);
-
-  // media::VideoCaptureDevice implementation.
-  MOCK_METHOD2(DoAllocateAndStart,
-               void(const media::VideoCaptureParams& params,
-                    std::unique_ptr<Client>* client));
-  MOCK_METHOD0(RequestRefreshFrame, void());
-  MOCK_METHOD0(DoStopAndDeAllocate, void());
-  MOCK_METHOD1(DoGetPhotoState, void(GetPhotoStateCallback* callback));
-  MOCK_METHOD2(DoSetPhotoOptions,
-               void(media::mojom::PhotoSettingsPtr* settings,
-                    SetPhotoOptionsCallback* callback));
-  MOCK_METHOD1(DoTakePhoto, void(TakePhotoCallback* callback));
-  MOCK_METHOD2(OnUtilizationReport,
-               void(int frame_feedback_id, double utilization));
-
-  void AllocateAndStart(const media::VideoCaptureParams& params,
-                        std::unique_ptr<Client> client) override;
-  void StopAndDeAllocate() override;
-  void GetPhotoState(GetPhotoStateCallback callback) override;
-  void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
-                       SetPhotoOptionsCallback callback) override;
-  void TakePhoto(TakePhotoCallback callback) override;
-
- private:
-  std::unique_ptr<Client> client_;
-};
 
 // Reusable test setup for testing with a single mock device.
 class MockDeviceTest : public ::testing::Test {
