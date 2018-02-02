@@ -5,6 +5,8 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+assert(is_chromeos)
+
 component("app_list") {
   sources = [
     "app_list_constants.cc",
@@ -71,7 +73,6 @@ component("app_list") {
     "views/pulsing_block_view.h",
     "views/search_box_view.cc",
     "views/search_box_view.h",
-    "views/search_box_view_delegate.h",
     "views/search_result_actions_view.cc",
     "views/search_result_actions_view.h",
     "views/search_result_actions_view_delegate.h",
@@ -118,6 +119,7 @@ component("app_list") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/chromeos/search_box",
     "//ui/compositor",
     "//ui/display",
     "//ui/events",
@@ -223,6 +225,7 @@ test("app_list_unittests") {
     "//ui/accessibility",
     "//ui/app_list/vector_icons",
     "//ui/base",
+    "//ui/chromeos/search_box",
     "//ui/compositor",
     "//ui/events:test_support",
     "//ui/gfx:test_support",

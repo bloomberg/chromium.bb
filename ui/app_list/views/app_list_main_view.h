@@ -13,8 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/views/view.h"
+
+namespace search_box {
+class SearchBoxViewBase;
+}  // namespace search_box
 
 namespace app_list {
 
@@ -29,9 +33,10 @@ class SearchBoxView;
 
 // AppListMainView contains the normal view of the app list, which is shown
 // when the user is signed in.
-class APP_LIST_EXPORT AppListMainView : public views::View,
-                                        public AppListModelObserver,
-                                        public SearchBoxViewDelegate {
+class APP_LIST_EXPORT AppListMainView
+    : public views::View,
+      public AppListModelObserver,
+      public search_box::SearchBoxViewDelegate {
  public:
   AppListMainView(AppListViewDelegate* delegate, AppListView* app_list_view);
   ~AppListMainView() override;
@@ -84,7 +89,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   PaginationModel* GetAppsPaginationModel();
 
   // Overridden from SearchBoxViewDelegate:
-  void QueryChanged(SearchBoxView* sender) override;
+  void QueryChanged(search_box::SearchBoxViewBase* sender) override;
   void BackButtonPressed() override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
