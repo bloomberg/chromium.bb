@@ -17,7 +17,7 @@ namespace {
 // Reads the file in |path| and then deletes it.
 // Returns a tuple containing: the file content, whether the read was
 // successful, whether the delete was successful.
-std::tuple<std::string, bool, bool> ReadAndDeleteFile(
+std::tuple<std::string, bool, bool> ReadAndDeleteTextFile(
     const base::FilePath& path) {
   std::string contents;
   bool read_success = base::ReadFileToString(path, &contents);
@@ -69,7 +69,7 @@ void JsonFileSanitizer::Start(service_manager::Connector* connector,
   for (const base::FilePath& path : file_paths_) {
     base::PostTaskAndReplyWithResult(
         extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
-        base::BindOnce(&ReadAndDeleteFile, path),
+        base::BindOnce(&ReadAndDeleteTextFile, path),
         base::BindOnce(&JsonFileSanitizer::JsonFileRead,
                        weak_factory_.GetWeakPtr(), path));
   }
