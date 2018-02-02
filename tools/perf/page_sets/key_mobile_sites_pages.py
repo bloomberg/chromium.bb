@@ -199,25 +199,6 @@ class GoogleNewsMobilePage(KeyMobileSitesPage):
         'NEWS_telemetryReady == true')
 
 
-class GoogleNewsMobile2Page(KeyMobileSitesPage):
-  """
-  Why: Google News: this iOS version is slower than accelerated scrolling
-  """
-
-  def __init__(self, page_set, name='', extra_browser_args=None):
-    super(GoogleNewsMobile2Page, self).__init__(
-        url='http://mobile-news.sandbox.google.com/news/pt0',
-        page_set=page_set,
-        name=name,
-        extra_browser_args=extra_browser_args)
-
-  def RunNavigateSteps(self, action_runner):
-    super(GoogleNewsMobile2Page, self).RunNavigateSteps(action_runner)
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementById(":h") != null')
-    action_runner.Wait(1)
-
-
 class AmazonNicolasCagePage(KeyMobileSitesPage):
   """
   Why: #1 world commerce website by visits; #3 commerce in the US by time spent

@@ -108,18 +108,6 @@ class GroupClonedListImagesPage(
           use_touch=True)
 
 
-class GoogleNewsMobile2SmoothPage(key_mobile_sites_pages.GoogleNewsMobile2Page):
-
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('ScrollAction'):
-      action_runner.ScrollElement(
-          element_function='document.getElementById(":5")',
-          distance_expr="""
-              Math.max(0, 2500 +
-                  document.getElementById(':h').getBoundingClientRect().top)""",
-          use_touch=True)
-
-
 class AmazonNicolasCageSmoothPage(key_mobile_sites_pages.AmazonNicolasCagePage):
 
   def RunPageInteractions(self, action_runner):
@@ -170,7 +158,6 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
     # GroupClonedListImagesPage.
     # See crbug.com/409086.
     # self.AddStory(GroupClonedListImagesSmoothPage(self))
-    self.AddStory(GoogleNewsMobile2SmoothPage(self))
     # Amazon's Nicolas Cage search is currently failing. Reenable it once it's
     # not anymore.
     # crbug.com/667432
