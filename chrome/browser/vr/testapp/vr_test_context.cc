@@ -361,7 +361,7 @@ void VrTestContext::OnGlInitialized() {
 
   ui_->OnGlInitialized(
       content_texture_id, UiElementRenderer::kTextureLocationLocal,
-      content_texture_id, UiElementRenderer::kTextureLocationLocal, false);
+      content_texture_id, UiElementRenderer::kTextureLocationLocal, 0, false);
 
   keyboard_delegate_->Initialize(ui_->scene()->SurfaceProviderForTesting(),
                                  ui_->ui_element_renderer());

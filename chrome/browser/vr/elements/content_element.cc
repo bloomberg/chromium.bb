@@ -77,53 +77,64 @@ void ContentElement::OnInputCommitted(const TextInputInfo& info) {
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {
-  delegate_->OnContentEnter(position);
+  if (delegate_)
+    delegate_->OnContentEnter(position);
 }
 
 void ContentElement::OnHoverLeave() {
-  delegate_->OnContentLeave();
+  if (delegate_)
+
+    delegate_->OnContentLeave();
 }
 
 void ContentElement::OnMove(const gfx::PointF& position) {
-  delegate_->OnContentMove(position);
+  if (delegate_)
+    delegate_->OnContentMove(position);
 }
 
 void ContentElement::OnButtonDown(const gfx::PointF& position) {
-  delegate_->OnContentDown(position);
+  if (delegate_)
+    delegate_->OnContentDown(position);
 }
 
 void ContentElement::OnButtonUp(const gfx::PointF& position) {
-  delegate_->OnContentUp(position);
+  if (delegate_)
+    delegate_->OnContentUp(position);
 }
 
 void ContentElement::OnFlingStart(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
-  delegate_->OnContentFlingStart(std::move(gesture), position);
+  if (delegate_)
+    delegate_->OnContentFlingStart(std::move(gesture), position);
 }
 
 void ContentElement::OnFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
-  delegate_->OnContentFlingCancel(std::move(gesture), position);
+  if (delegate_)
+    delegate_->OnContentFlingCancel(std::move(gesture), position);
 }
 
 void ContentElement::OnScrollBegin(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
-  delegate_->OnContentScrollBegin(std::move(gesture), position);
+  if (delegate_)
+    delegate_->OnContentScrollBegin(std::move(gesture), position);
 }
 
 void ContentElement::OnScrollUpdate(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
-  delegate_->OnContentScrollUpdate(std::move(gesture), position);
+  if (delegate_)
+    delegate_->OnContentScrollUpdate(std::move(gesture), position);
 }
 
 void ContentElement::OnScrollEnd(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
-  delegate_->OnContentScrollEnd(std::move(gesture), position);
+  if (delegate_)
+    delegate_->OnContentScrollEnd(std::move(gesture), position);
 }
 
 void ContentElement::SetTextureId(unsigned int texture_id) {
@@ -227,6 +238,10 @@ bool ContentElement::OnBeginFrame(const base::TimeTicks& time,
     return true;
   }
   return false;
+}
+
+void ContentElement::SetDelegate(ContentInputDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 }  // namespace vr

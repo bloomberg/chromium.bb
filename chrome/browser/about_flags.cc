@@ -1929,6 +1929,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabModalJsDialogName,
      flag_descriptions::kTabModalJsDialogDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabModalJsDialog)},
+    {"vr-browsing-native-android-ui",
+     flag_descriptions::kVrBrowsingNativeAndroidUiName,
+     flag_descriptions::kVrBrowsingNativeAndroidUiDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kVrBrowsingNativeAndroidUi)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,

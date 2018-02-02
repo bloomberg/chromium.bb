@@ -97,10 +97,19 @@ void VrGLThread::ContentSurfaceCreated(jobject surface,
 
 void VrGLThread::ContentOverlaySurfaceCreated(jobject surface,
                                               gl::SurfaceTexture* texture) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VrShell::ContentOverlaySurfaceCreated, weak_vr_shell_,
                      surface, base::Unretained(texture)));
+}
+
+void VrGLThread::DialogSurfaceCreated(jobject surface,
+                                      gl::SurfaceTexture* texture) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::DialogSurfaceCreated, weak_vr_shell_,
+                            surface, base::Unretained(texture)));
 }
 
 void VrGLThread::GvrDelegateReady(
@@ -131,6 +140,14 @@ void VrGLThread::OnWebInputEdited(const vr::TextInputInfo& info, bool commit) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VrShell::OnWebInputEdited, weak_vr_shell_, info, commit));
+}
+
+void VrGLThread::ForwardDialogEvent(
+    std::unique_ptr<blink::WebInputEvent> event) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::ProcessDialogGesture, weak_vr_shell_,
+                            base::Passed(std::move(event))));
 }
 
 void VrGLThread::ForceExitVr() {

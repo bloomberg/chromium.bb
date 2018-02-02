@@ -2218,6 +2218,10 @@ const char kUpdateMenuItemDescription[] =
     R"*(When enabled, an "Update Chrome" item will be shown in the app )*"
     R"*(menu.)*";
 
+const char kVrBrowsingNativeAndroidUiName[] = "VR browsing native android ui";
+const char kVrBrowsingNativeAndroidUiDescription[] =
+    "Enable Android UI elements in VR.";
+
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";
 const char kThirdPartyDoodlesDescription[] =

@@ -146,6 +146,7 @@ static_library("vr_common") {
     "model/modal_prompt_type.h",
     "model/model.cc",
     "model/model.h",
+    "model/native_ui_model.h",
     "model/omnibox_suggestions.cc",
     "model/omnibox_suggestions.h",
     "model/reticle_model.h",

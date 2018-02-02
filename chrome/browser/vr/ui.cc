@@ -226,6 +226,21 @@ void Ui::UpdateWebInputText(const base::string16& text) {
   model_->web_input_text_field_info.text = text;
 }
 
+void Ui::SetAlertDialogEnabled(bool enabled,
+                               ContentInputDelegate* delegate,
+                               int width,
+                               int height) {
+  model_->native_ui.hosted_ui_enabled = enabled;
+  model_->native_ui.size_ratio =
+      static_cast<float>(height) / static_cast<float>(width);
+  model_->native_ui.delegate = delegate;
+}
+
+void Ui::SetAlertDialogSize(int width, int height) {
+  model_->native_ui.size_ratio =
+      static_cast<float>(height) / static_cast<float>(width);
+}
+
 bool Ui::ShouldRenderWebVr() {
   return model_->web_vr.has_produced_frames();
 }
@@ -235,6 +250,7 @@ void Ui::OnGlInitialized(
     UiElementRenderer::TextureLocation content_location,
     unsigned int content_overlay_texture_id,
     UiElementRenderer::TextureLocation content_overlay_location,
+    unsigned int ui_texture_id,
     bool use_ganesh) {
   ui_element_renderer_ = std::make_unique<UiElementRenderer>();
   ui_renderer_ =
@@ -249,6 +265,7 @@ void Ui::OnGlInitialized(
   model_->content_overlay_texture_id = content_overlay_texture_id;
   model_->content_location = content_location;
   model_->content_overlay_location = content_overlay_location;
+  model_->native_ui.texture_id = ui_texture_id;
 }
 
 void Ui::RequestFocus(int element_id) {

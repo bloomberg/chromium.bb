@@ -1204,6 +1204,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return mModalDialogManager;
     }
 
+    /**
+     * Sets the modal dialog mangaer.
+     */
+    public void setModalDialogManager(ModalDialogManager modalDialogManager) {
+        mModalDialogManager = modalDialogManager;
+    }
+
     protected Drawable getBackgroundDrawable() {
         return new ColorDrawable(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_background_color));

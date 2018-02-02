@@ -255,6 +255,17 @@ public class ModalDialogManager {
         }
     }
 
+    /**
+     * Dismiss the dialog currently shown and remove all pending dialogs and call the onCancelled
+     * callbacks from the modal dialogs.
+     */
+    public void cancelAllDialogs() {
+        while (!mPendingDialogs.isEmpty()) {
+            mPendingDialogs.remove(0).first.getController().onCancel();
+        }
+        if (isShowing()) cancelDialog(mCurrentPresenter.getModalDialog());
+    }
+
     @VisibleForTesting
     public ModalDialogView getCurrentDialogForTest() {
         return mCurrentPresenter == null ? null : mCurrentPresenter.getModalDialog();

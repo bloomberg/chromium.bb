@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.tab.Tab;
  * Abstracts away the VrShell class, which may or may not be present at runtime depending on
  * compile flags.
  */
-public interface VrShell {
+public interface VrShell extends VrDialogManager {
     /**
      * Performs native VrShell initialization.
      */

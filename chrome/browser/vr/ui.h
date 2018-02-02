@@ -111,6 +111,11 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
                                         int composition_end) override;
   void UpdateWebInputText(const base::string16& text) override;
 
+  void SetAlertDialogEnabled(bool enabled,
+                             ContentInputDelegate* delegate,
+                             int width,
+                             int height);
+  void SetAlertDialogSize(int width, int height);
   bool ShouldRenderWebVr();
 
   void OnGlInitialized(
@@ -118,6 +123,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
       UiElementRenderer::TextureLocation content_location,
       unsigned int content_overlay_texture_id,
       UiElementRenderer::TextureLocation content_overlay_location,
+      unsigned int ui_texture_id,
       bool use_ganesh);
 
   void OnAppButtonClicked();

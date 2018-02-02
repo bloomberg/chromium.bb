@@ -586,6 +586,7 @@ void UiSceneCreator::CreateScene() {
   CreateBackground();
   CreateViewportAwareRoot();
   CreateContentQuad();
+  CreateHostedUi();
   CreateExitPrompt();
   CreateAudioPermissionPrompt();
   CreateSystemIndicators();
@@ -604,6 +605,58 @@ void UiSceneCreator::CreateScene() {
   CreateWebVrSubtree();
   CreateKeyboard();
   CreateController();
+}
+
+void UiSceneCreator::CreateHostedUi() {
+  auto backplane = std::make_unique<InvisibleHitTarget>();
+  backplane->SetDrawPhase(kPhaseForeground);
+  backplane->SetName(kHostedUiBackplane);
+  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
+  backplane->SetTranslate(0.0,
+                          kContentVerticalOffset + kExitPromptVerticalOffset,
+                          -kContentDistance);
+  VR_BIND_VISIBILITY(backplane, model->native_ui.hosted_ui_enabled);
+
+  std::unique_ptr<ContentElement> hosted_ui = std::make_unique<ContentElement>(
+      content_input_delegate_, base::Bind([](const gfx::SizeF&) {}));
+  hosted_ui->SetName(kHostedUi);
+  hosted_ui->SetDrawPhase(kPhaseForeground);
+  hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
+                     kContentHeight * kHostedUiHeightRatio);
+  hosted_ui->SetVisible(false);
+  hosted_ui->set_requires_layout(false);
+  hosted_ui->set_corner_radius(kContentCornerRadius);
+  hosted_ui->SetTransitionedProperties({BOUNDS});
+  hosted_ui->SetTranslate(0, 0, kHostedUiDepthOffset);
+
+  hosted_ui->AddBinding(VR_BIND_FUNC(ContentInputDelegatePtr, Model, model_,
+                                     model->native_ui.delegate, ContentElement,
+                                     hosted_ui.get(), SetDelegate));
+  hosted_ui->AddBinding(
+      VR_BIND_FUNC(unsigned int, Model, model_, model->native_ui.texture_id,
+                   ContentElement, hosted_ui.get(), SetTextureId));
+  hosted_ui->AddBinding(std::make_unique<Binding<bool>>(
+      base::Bind([](Model* m) { return m->native_ui.hosted_ui_enabled; },
+                 base::Unretained(model_)),
+      base::Bind(
+          [](ContentElement* dialog, const bool& enabled) {
+            dialog->SetVisible(enabled);
+            dialog->set_requires_layout(enabled);
+            dialog->set_hit_testable(enabled);
+          },
+          base::Unretained(hosted_ui.get()))));
+
+  hosted_ui->AddBinding(std::make_unique<Binding<float>>(
+      base::Bind([](Model* m) { return m->native_ui.size_ratio; },
+                 base::Unretained(model_)),
+      base::Bind(
+          [](ContentElement* dialog, const float& value) {
+            dialog->SetSize(kContentWidth * kHostedUiWidthRatio,
+                            kContentWidth * kHostedUiWidthRatio * value);
+          },
+          base::Unretained(hosted_ui.get()))));
+  backplane->AddChild(std::move(hosted_ui));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(backplane));
 }
 
 void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
