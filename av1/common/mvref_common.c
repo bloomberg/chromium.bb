@@ -986,11 +986,11 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                              int_mv *mv_ref_list, int mi_row, int mi_col,
                              find_mv_refs_sync sync, void *const data,
-                             int16_t *mode_context, int_mv zeromv) {
+                             int16_t *mode_context, int_mv zeromv,
+                             uint8_t refmv_count) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
   const int sb_mi_size = mi_size_wide[cm->sb_size];
-  int i, refmv_count = 0;
-  int different_ref_found = 0;
+  int i;
   int context_counter = 0;
 
 #if CONFIG_MFMV
@@ -1092,44 +1092,10 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_INTRABC
       // Keep counts for entropy encoding.
       context_counter += mode_2_counter[candidate->mode];
-      different_ref_found = 1;
-
-      if (candidate->ref_frame[0] == ref_frame)
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 0, mv_ref->col),
-                        refmv_count, mv_ref_list, bw, bh, xd, Done);
-      else if (candidate->ref_frame[1] == ref_frame)
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 1, mv_ref->col),
-                        refmv_count, mv_ref_list, bw, bh, xd, Done);
     }
   }
 
-  // Check the rest of the neighbors in much the same way
-  // as before except we don't need to keep track of sub blocks or
-  // mode counts.
-  for (; i < MVREF_NEIGHBOURS; ++i) {
-    const POSITION *const mv_ref = &mv_ref_search[i];
-    if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, mv_ref)) {
-      const MB_MODE_INFO *const candidate =
-          !xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]
-              ? NULL
-              : &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
-      if (candidate == NULL) continue;
-#if CONFIG_INTRABC
-      if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
-#endif  // CONFIG_INTRABC
-      if ((mi_row & (sb_mi_size - 1)) + mv_ref->row >= sb_mi_size ||
-          (mi_col & (sb_mi_size - 1)) + mv_ref->col >= sb_mi_size)
-        continue;
-      different_ref_found = 1;
-
-      if (candidate->ref_frame[0] == ref_frame)
-        ADD_MV_REF_LIST(candidate->mv[0], refmv_count, mv_ref_list, bw, bh, xd,
-                        Done);
-      else if (candidate->ref_frame[1] == ref_frame)
-        ADD_MV_REF_LIST(candidate->mv[1], refmv_count, mv_ref_list, bw, bh, xd,
-                        Done);
-    }
-  }
+  if (refmv_count >= MAX_MV_REF_CANDIDATES) goto Done;
 
 // TODO(hkuang): Remove this sync after fixing pthread_cond_broadcast
 // on windows platform. The sync here is unncessary if use_perv_frame_mvs
@@ -1162,9 +1128,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Since we couldn't find 2 mvs from the same reference frame
   // go back through the neighbors and find motion vectors from
   // different reference frames.
-  if (different_ref_found
+  if (
 #if CONFIG_INTRABC
-      && ref_frame != INTRA_FRAME
+      ref_frame != INTRA_FRAME
 #endif  // CONFIG_INTRABC
       ) {
     for (i = 0; i < MVREF_NEIGHBOURS; ++i) {
@@ -1256,15 +1222,15 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     zeromv[0].as_int = zeromv[1].as_int = 0;
   }
 
-  if (ref_frame <= ALTREF_FRAME)
-    find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col, sync,
-                     data, compound_mode_context, zeromv[0]);
-
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
 #if USE_CUR_GM_REFMV
                     zeromv,
 #endif  // USE_CUR_GM_REFMV
                     mi_row, mi_col, mode_context);
+
+  if (ref_frame <= ALTREF_FRAME)
+    find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col, sync,
+                     data, compound_mode_context, zeromv[0], *ref_mv_count);
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
