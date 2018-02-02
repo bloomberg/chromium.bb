@@ -88,10 +88,10 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache() {
   if (image_decode_cache_)
     return image_decode_cache_.get();
 
-  // The max working set bytes is used to cap the maximum memory for images that
-  // can be pre-decoded and locked before rasterization. Since users of this
-  // context don't pre-decode images, this limit is not relevant.
-  static const size_t kMaxWorkingSetBytes = 0u;
+  // This denotes the allocated GPU memory budget for the cache used for
+  // book-keeping. The cache indicates when the total memory locked exceeds this
+  // budget in cc::DecodedDrawImage.
+  static const size_t kMaxWorkingSetBytes = 64 * 1024 * 1024;
 
   // TransferCache is used only with OOP raster.
   const bool use_transfer_cache = false;

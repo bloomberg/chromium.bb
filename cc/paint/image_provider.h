@@ -21,7 +21,7 @@ class CC_PAINT_EXPORT ImageProvider {
  public:
   class CC_PAINT_EXPORT ScopedDecodedDrawImage {
    public:
-    using DestructionCallback = base::OnceCallback<void(DecodedDrawImage)>;
+    using DestructionCallback = base::OnceClosure;
 
     ScopedDecodedDrawImage();
     explicit ScopedDecodedDrawImage(DecodedDrawImage image);

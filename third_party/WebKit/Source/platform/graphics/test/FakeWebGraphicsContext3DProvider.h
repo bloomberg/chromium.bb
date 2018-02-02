@@ -18,13 +18,11 @@ namespace blink {
 
 class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
-  FakeWebGraphicsContext3DProvider(
-      gpu::gles2::GLES2Interface* gl,
-      std::unique_ptr<cc::ImageDecodeCache> cache = nullptr)
-      : gl_(gl) {
+  FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl,
+                                   cc::ImageDecodeCache* cache = nullptr)
+      : gl_(gl), image_decode_cache_(cache) {
     sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
     gr_context_ = GrContext::MakeGL(std::move(gl_interface));
-    image_decode_cache_ = std::move(cache);
   }
   ~FakeWebGraphicsContext3DProvider() override = default;
 
@@ -53,7 +51,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
       base::RepeatingCallback<void(const char*, int32_t id)>) {}
   void SignalQuery(uint32_t, base::OnceClosure) override {}
   cc::ImageDecodeCache* ImageDecodeCache() override {
-    return image_decode_cache_.get();
+    return image_decode_cache_;
   }
 
  private:
@@ -61,7 +59,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   sk_sp<GrContext> gr_context_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
-  std::unique_ptr<cc::ImageDecodeCache> image_decode_cache_;
+  cc::ImageDecodeCache* image_decode_cache_;
 };
 
 }  // namespace blink

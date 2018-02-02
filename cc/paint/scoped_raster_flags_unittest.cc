@@ -31,7 +31,7 @@ class MockImageProvider : public ImageProvider {
         base::BindOnce(&MockImageProvider::UnrefImage, base::Unretained(this)));
   }
 
-  void UnrefImage(DecodedDrawImage decoded_image) {
+  void UnrefImage() {
     ref_count_--;
     CHECK_GE(ref_count_, 0);
   }

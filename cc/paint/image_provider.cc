@@ -38,7 +38,7 @@ ImageProvider::ScopedDecodedDrawImage::~ScopedDecodedDrawImage() {
 
 void ImageProvider::ScopedDecodedDrawImage::DestroyDecode() {
   if (!destruction_callback_.is_null())
-    std::move(destruction_callback_).Run(std::move(image_));
+    std::move(destruction_callback_).Run();
 }
 
 }  // namespace cc

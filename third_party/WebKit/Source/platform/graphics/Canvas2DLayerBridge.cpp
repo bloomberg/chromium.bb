@@ -521,6 +521,11 @@ void Canvas2DLayerBridge::FlushRecording() {
       sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
       canvas->drawPicture(recording);
     }
+
+    // Rastering the recording would have locked images, since we've flushed
+    // all recorded ops, we should relase all locked images as well.
+    GetOrCreateResourceProvider()->ReleaseLockedImages();
+
     if (is_deferral_enabled_)
       StartRecording();
     have_recorded_draw_commands_ = false;
