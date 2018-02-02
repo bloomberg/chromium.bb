@@ -348,6 +348,7 @@ VISIT_PROTO_FIELDS(const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(sync_user_agent);
   VISIT(chrome_version);
   VISIT(signin_scoped_device_id);
+  VISIT(last_updated_timestamp);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DictionarySpecifics& proto) {
@@ -701,6 +702,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ReadingListSpecifics& proto) {
   VISIT(creation_time_us);
   VISIT(update_time_us);
   VISIT_ENUM(status);
+  VISIT(first_read_time_us);
+  VISIT(update_title_time_us);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {
