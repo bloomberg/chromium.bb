@@ -26,6 +26,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/SyncReattachContext.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageFallbackHelper.h"
 #include "core/html/HTMLImageLoader.h"
@@ -75,8 +76,9 @@ void ImageInputType::AppendToFormData(FormData& form_data) const {
   form_data.append(name + dot_y_string, click_location_.Y());
 
   if (!GetElement().value().IsEmpty()) {
-    UseCounter::Count(GetElement().GetDocument(),
-                      WebFeature::kImageInputTypeFormDataWithNonEmptyValue);
+    Deprecation::CountDeprecation(
+        GetElement().GetDocument(),
+        WebFeature::kImageInputTypeFormDataWithNonEmptyValue);
     form_data.append(name, GetElement().value());
   }
 }
