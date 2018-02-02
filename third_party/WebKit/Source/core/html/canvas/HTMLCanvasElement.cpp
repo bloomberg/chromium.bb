@@ -1558,6 +1558,7 @@ void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
   RestoreCanvasMatrixClipStack(new_buffer->Canvas());
   new_buffer->DidRestoreCanvasMatrixClipStack(new_buffer->Canvas());
   canvas2d_bridge_ = std::move(new_buffer);
+  canvas2d_bridge_->SetCanvasResourceHost(this);
 }
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::NewImageSnapshot(
