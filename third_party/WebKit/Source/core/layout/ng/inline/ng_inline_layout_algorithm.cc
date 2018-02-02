@@ -35,15 +35,6 @@
 namespace blink {
 namespace {
 
-inline bool ShouldCreateBoxFragment(const NGInlineItem& item,
-                                    const NGInlineItemResult& item_result) {
-  DCHECK(item.Style());
-  const ComputedStyle& style = *item.Style();
-  // TODO(kojii): We might need more conditions to create box fragments.
-  return style.HasBoxDecorationBackground() || style.HasOutline() ||
-         item_result.needs_box_when_empty;
-}
-
 // Represents a data struct that are needed for 'text-align' and justifications.
 struct NGLineAlign {
   STACK_ALLOCATED();
@@ -144,19 +135,18 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
       }
       DCHECK(item.GetLayoutObject()->IsText() ||
              item.GetLayoutObject()->IsLayoutNGListItem());
-      DCHECK(!box->text_metrics.IsEmpty());
       if (item_result.shape_result) {
         if (quirks_mode_)
-          box->ActivateTextMetrics();
+          box->EnsureTextMetrics(*item.Style(), baseline_type_);
         // Take all used fonts into account if 'line-height: normal'.
         if (box->include_used_fonts && item.Type() == NGInlineItem::kText) {
           box->AccumulateUsedFonts(item_result.shape_result.get(),
                                    baseline_type_);
         }
       } else {
-        if (quirks_mode_ && !box->HasMetrics())
-          box->ActivateTextMetrics();
         DCHECK(!item.TextShapeResult());  // kControl or unit tests.
+        if (quirks_mode_ && !box->HasMetrics())
+          box->EnsureTextMetrics(*item.Style(), baseline_type_);
       }
 
       text_builder.SetItem(&item_result, box->text_height);
@@ -169,20 +159,20 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = box_states_->OnOpenTag(item, item_result, line_box_);
       // Compute text metrics for all inline boxes since even empty inlines
-      // influence the line height.
+      // influence the line height, except when quirks mode and the box is empty
+      // for the purpose of empty block calculation.
       // https://drafts.csswg.org/css2/visudet.html#line-height
-      box->ComputeTextMetrics(*item.Style(), baseline_type_, quirks_mode_);
-      if (quirks_mode_ && item_result.needs_box_when_empty)
-        box->ActivateTextMetrics();
-      if (ShouldCreateBoxFragment(item, item_result))
-        box->SetNeedsBoxFragment(item_result.needs_box_when_empty);
+      if (!(item.IsEmptyItem() && quirks_mode_))
+        box->ComputeTextMetrics(*item.Style(), baseline_type_);
+      if (item.ShouldCreateBoxFragment())
+        box->SetNeedsBoxFragment();
     } else if (item.Type() == NGInlineItem::kCloseTag) {
-      if (box->needs_box_fragment || item_result.needs_box_when_empty) {
-        if (item_result.needs_box_when_empty)
-          box->SetNeedsBoxFragment(true);
+      if (!box->needs_box_fragment && item_result.inline_size)
+        box->SetNeedsBoxFragment();
+      if (box->needs_box_fragment) {
         box->SetLineRightForBoxFragment(item, item_result);
         if (quirks_mode_)
-          box->ActivateTextMetrics();
+          box->EnsureTextMetrics(*item.Style(), baseline_type_);
       }
       box = box_states_->OnCloseTag(&line_box_, box, baseline_type_);
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
@@ -277,13 +267,15 @@ void NGInlineLayoutAlgorithm::PlaceGeneratedContent(
     NGInlineBoxState* box,
     NGTextFragmentBuilder* text_builder) {
   if (box->CanAddTextOfStyle(*style)) {
+    if (quirks_mode_)
+      box->EnsureTextMetrics(*style, baseline_type_);
     PlaceText(std::move(shape_result), std::move(style), 0, box, text_builder);
   } else {
     scoped_refptr<ComputedStyle> text_style =
         ComputedStyle::CreateAnonymousStyleWithDisplay(*style,
                                                        EDisplay::kInline);
     NGInlineBoxState* box = box_states_->OnOpenTag(*text_style, line_box_);
-    box->ComputeTextMetrics(*text_style, baseline_type_, false);
+    box->ComputeTextMetrics(*text_style, baseline_type_);
     PlaceText(std::move(shape_result), std::move(style), 0, box, text_builder);
     box_states_->OnCloseTag(&line_box_, box, baseline_type_);
   }
@@ -298,6 +290,7 @@ void NGInlineLayoutAlgorithm::PlaceText(
   unsigned start_offset = shape_result->StartIndexForResult();
   unsigned end_offset = shape_result->EndIndexForResult();
   LayoutUnit inline_size = shape_result->SnappedWidth();
+  DCHECK(!box->text_metrics.IsEmpty());
   text_builder->SetText(std::move(style), std::move(shape_result),
                         {inline_size, box->text_height});
   scoped_refptr<NGPhysicalTextFragment> text_fragment =
@@ -402,8 +395,10 @@ bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
 void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
                                               NGInlineItemResult* item_result,
                                               const NGLineInfo& line_info) {
-  if (quirks_mode_)
-    box_states_->LineBoxState().ActivateTextMetrics();
+  if (quirks_mode_) {
+    box_states_->LineBoxState().EnsureTextMetrics(*item.Style(),
+                                                  baseline_type_);
+  }
 
   item_result->layout_result =
       NGBlockNode(ToLayoutBox(item.GetLayoutObject()))

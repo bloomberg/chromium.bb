@@ -689,10 +689,10 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
 
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
-  item_result->needs_box_when_empty = false;
   item_result->has_edge = item.HasStartEdge();
-  if (style.HasBorder() || style.HasPadding() ||
-      (style.HasMargin() && item_result->has_edge)) {
+  if (item.ShouldCreateBoxFragment() &&
+      (style.HasBorder() || style.HasPadding() ||
+       (style.HasMargin() && item_result->has_edge))) {
     NGBoxStrut borders = ComputeBorders(constraint_space_, style);
     NGBoxStrut paddings = ComputePadding(constraint_space_, style);
     item_result->padding = paddings;
@@ -710,15 +710,12 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
       // line boxes to be zero-height, tests indicate that only inline direction
       // of them do so. See should_create_line_box_.
       // Force to create a box, because such inline boxes affect line heights.
-      item_result->needs_box_when_empty =
-          item_result->inline_size ||
-          (item_result->margins.inline_start && !in_line_height_quirks_mode_);
-      line_.should_create_line_box |= item_result->needs_box_when_empty;
+      if (!line_.should_create_line_box &&
+          (item_result->inline_size ||
+           (item_result->margins.inline_start && !in_line_height_quirks_mode_)))
+        line_.should_create_line_box = true;
     }
   }
-  item_result->needs_box_when_empty |=
-      style.CanContainAbsolutePositionObjects() ||
-      style.CanContainFixedPositionObjects();
   SetCurrentStyle(style);
   MoveToNextOf(item);
 }
@@ -726,7 +723,6 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
 void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
                                    NGInlineItemResults* item_results) {
   NGInlineItemResult* item_result = AddItem(item, item_results);
-  item_result->needs_box_when_empty = false;
   item_result->has_edge = item.HasEndEdge();
   if (item_result->has_edge) {
     DCHECK(item.Style());
@@ -738,10 +734,10 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
                                borders.inline_end + paddings.inline_end;
     line_.position += item_result->inline_size;
 
-    item_result->needs_box_when_empty =
-        item_result->inline_size ||
-        (item_result->margins.inline_end && !in_line_height_quirks_mode_);
-    line_.should_create_line_box |= item_result->needs_box_when_empty;
+    if (!line_.should_create_line_box &&
+        (item_result->inline_size ||
+         (item_result->margins.inline_end && !in_line_height_quirks_mode_)))
+      line_.should_create_line_box = true;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());
   bool was_auto_wrap = auto_wrap_;

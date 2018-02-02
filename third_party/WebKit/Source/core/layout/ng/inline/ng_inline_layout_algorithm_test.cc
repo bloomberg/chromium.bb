@@ -69,6 +69,41 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
 }
 
+// This test ensures that if an inline box generates (or does not generate) box
+// fragments for a wrapped line, it should consistently do so for other lines
+// too, when the inline box is fragmented to multiple lines.
+TEST_F(NGInlineLayoutAlgorithmTest, BoxForEndMargin) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    #container {
+      font: 10px/1 Ahem;
+      width: 50px;
+    }
+    span {
+      border-right: 10px solid blue;
+    }
+    </style>
+    <!-- This line wraps, and only 2nd line has a border. -->
+    <div id=container>12 <span>3 45</span> 6</div>
+  )HTML");
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
+  ASSERT_TRUE(block_box);
+  EXPECT_EQ(2u, block_box->Children().size());
+  const NGPhysicalLineBoxFragment& line_box1 =
+      ToNGPhysicalLineBoxFragment(*block_box->Children()[0]);
+  EXPECT_EQ(2u, line_box1.Children().size());
+
+  // The <span> generates a box fragment for the 2nd line because it has a
+  // right border. It should also generate a box fragment for the 1st line even
+  // though there's no borders on the 1st line.
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, line_box1.Children()[1]->Type());
+}
+
 // A block with inline children generates fragment tree as follows:
 // - A box fragment created by NGBlockNode
 //   - A wrapper box fragment created by NGInlineNode

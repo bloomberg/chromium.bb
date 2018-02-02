@@ -64,9 +64,6 @@ struct CORE_EXPORT NGInlineItemResult {
   // Has start/end edge for open/close tags.
   bool has_edge = false;
 
-  // Create a box when the box is empty, for open/close tags.
-  bool needs_box_when_empty = false;
-
   // Inside of this may be breakable. False means there are no break
   // opportunities, or has CSS properties that prohibit breaking.
   // Used only during line breaking.
