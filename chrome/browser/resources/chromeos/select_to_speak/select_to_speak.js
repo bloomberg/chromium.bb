@@ -142,20 +142,24 @@ const WORD_END_REGEXP = /\S\s/;
  * @return {number} The index of the next word's start
  */
 function getNextWordStart(text, indexAfter, nodeGroupItem) {
-  if (nodeGroupItem.node.wordStarts === undefined) {
+  if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
+    let node = findInlineTextNodeByCharacterIndex(
+        nodeGroupItem.node, indexAfter - nodeGroupItem.startChar);
+    let startCharInParent = getStartCharIndexInParent(node);
+    for (var i = 0; i < node.wordStarts.length; i++) {
+      if (node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent <
+          indexAfter) {
+        continue;
+      }
+      return node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent;
+    }
+    // Default.
+    return indexAfter;
+  } else {
     // Try to parse using a regex, which is imperfect.
     // Fall back to the given index if we can't find a match.
     return nextWordHelper(text, indexAfter, WORD_START_REGEXP, indexAfter);
   }
-  for (var i = 0; i < nodeGroupItem.node.wordStarts.length; i++) {
-    if (nodeGroupItem.node.wordStarts[i] + nodeGroupItem.startChar <
-        indexAfter) {
-      continue;
-    }
-    return nodeGroupItem.node.wordStarts[i] + nodeGroupItem.startChar;
-  }
-  // Default.
-  return indexAfter;
 }
 
 /**
@@ -169,21 +173,27 @@ function getNextWordStart(text, indexAfter, nodeGroupItem) {
  * @return {number} The index of the next word's end
  */
 function getNextWordEnd(text, indexAfter, nodeGroupItem) {
-  if (nodeGroupItem.node.wordEnds === undefined) {
+  if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
+    let node = findInlineTextNodeByCharacterIndex(
+        nodeGroupItem.node, indexAfter - nodeGroupItem.startChar);
+    let startCharInParent = getStartCharIndexInParent(node);
+    for (var i = 0; i < node.wordEnds.length; i++) {
+      if (node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent - 1 <
+          indexAfter) {
+        continue;
+      }
+      let result =
+          node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent;
+      return text.length > result ? result : text.length;
+    }
+    // Default.
+    return text.length;
+  } else {
     // Try to parse using a regex, which is imperfect.
     // Fall back to the full length of the text if we can't find a match.
     return nextWordHelper(text, indexAfter, WORD_END_REGEXP, text.length - 1) +
         1;
   }
-  for (var i = 0; i < nodeGroupItem.node.wordEnds.length; i++) {
-    if (nodeGroupItem.node.wordEnds[i] + nodeGroupItem.startChar < indexAfter) {
-      continue;
-    }
-    let result = nodeGroupItem.node.wordEnds[i] + nodeGroupItem.startChar;
-    return text.length > result ? result : text.length;
-  }
-  // Default.
-  return text.length;
 }
 
 /**
@@ -301,7 +311,6 @@ function getDeepEquivalentForSelection(parent, offset) {
   // We are off the end of the last node.
   return {node: node, offset: node.name ? node.name.length : 0};
 }
-
 
 /**
  * @constructor
@@ -639,19 +648,19 @@ SelectToSpeak.prototype = {
     }
 
     // Adjust such that non-text types don't have offsets into their names.
-    if (firstPosition.node.role != 'staticText' &&
-        firstPosition.node.role != 'inlineTextBox') {
+    if (firstPosition.node.role != RoleType.STATIC_TEXT &&
+        firstPosition.node.role != RoleType.INLINE_TEXT_BOX) {
       firstPosition.offset = 0;
     }
-    if (lastPosition.node.role != 'staticText' &&
-        lastPosition.node.role != 'inlineTextBox') {
+    if (lastPosition.node.role != RoleType.STATIC_TEXT &&
+        lastPosition.node.role != RoleType.INLINE_TEXT_BOX) {
       lastPosition.offset =
           lastPosition.node.name ? lastPosition.node.name.length : 0;
     }
 
     let nodes = [];
     let selectedNode = firstPosition.node;
-    if (firstPosition.offset < selectedNode.name.length &&
+    if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
         !shouldIgnoreNode(selectedNode)) {
       // Initialize to the first node in the list if it's valid and inside
       // of the offset bounds.
@@ -762,21 +771,33 @@ SelectToSpeak.prototype = {
         // Must check opt_startIndex in its own if statement to make the
         // Closure compiler happy.
         if (opt_startIndex !== undefined) {
-          nodeGroup.text = ' '.repeat(opt_startIndex) +
-              nodeGroup.text.substr(opt_startIndex);
+          if (nodeGroup.nodes[0].hasInlineText) {
+            // The first node is inlineText type. Find the start index in
+            // its staticText parent.
+            let startIndexInParent = getStartCharIndexInParent(nodes[0]);
+            opt_startIndex += startIndexInParent;
+            nodeGroup.text = ' '.repeat(opt_startIndex) +
+                nodeGroup.text.substr(opt_startIndex);
+          }
         }
       }
       let isFirst = i == 0;
       // Advance i to the end of this group, to skip all nodes it contains.
       i = nodeGroup.endIndex;
       let isLast = (i == nodes.length - 1);
-      if (isLast && opt_endIndex !== undefined) {
+      if (isLast && opt_endIndex !== undefined && nodeGroup.nodes.length > 0) {
         // We need to stop in the middle of a node. Remove all text after
         // the end index so it is not spoken. Backfill with spaces so that
         // index counting functions don't get confused.
-        nodeGroup.text = nodeGroup.text.substr(
-            0,
-            nodeGroup.text.length - (nodes[i].name.length - opt_endIndex) - 1);
+        // This only applies to inlineText nodes.
+        if (nodeGroup.nodes[nodeGroup.nodes.length - 1].hasInlineText) {
+          let startIndexInParent = getStartCharIndexInParent(nodes[i]);
+          opt_endIndex += startIndexInParent;
+          nodeGroup.text = nodeGroup.text.substr(
+              0,
+              nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar +
+                  opt_endIndex);
+        }
       }
       if (nodeGroup.nodes.length == 0 && !isLast) {
         continue;
@@ -789,27 +810,8 @@ SelectToSpeak.prototype = {
         onEvent:
             (event) => {
               if (event.type == 'start' && nodeGroup.nodes.length > 0) {
-                if (nodeGroup.endIndex != nodeGroup.startIndex) {
-                  // The block parent only matters if the block has more
-                  // than one item in it.
-                  this.currentBlockParent_ = nodeGroup.blockParent;
-                } else {
-                  this.currentBlockParent_ = null;
-                }
-                // The node group index may not be 0 if we are using
-                // opt_startIndex. For example, if the user highlighted
-                // partway through the second inlineTextBox in a
-                // paragraph.
+                this.currentBlockParent_ = nodeGroup.blockParent;
                 this.currentNodeGroupIndex_ = 0;
-                if (opt_startIndex !== undefined && isFirst) {
-                  for (let i = 0; i < nodeGroup.nodes.length; i++) {
-                    if (opt_startIndex < nodeGroup.nodes[i].startChar +
-                            nodeGroup.nodes[i].node.name.length) {
-                      this.currentNodeGroupIndex_ = i;
-                      break;
-                    }
-                  }
-                }
                 this.currentNode_ =
                     nodeGroup.nodes[this.currentNodeGroupIndex_];
                 if (this.wordHighlight_) {
@@ -819,7 +821,8 @@ SelectToSpeak.prototype = {
                   // If this is the first nodeGroup, pass the opt_startIndex.
                   // If this is the last nodeGroup, pass the opt_endIndex.
                   this.updateNodeHighlight_(
-                      nodeGroup.text, 0, isFirst ? opt_startIndex : undefined,
+                      nodeGroup.text, event.charIndex,
+                      isFirst ? opt_startIndex : undefined,
                       isLast ? opt_endIndex : undefined);
                 } else {
                   this.testCurrentNode_();
@@ -841,7 +844,7 @@ SelectToSpeak.prototype = {
                   // character index of the event. Add 1 for the space character
                   // between words, and another to make it to the start of the
                   // next node name.
-                  if (event.charIndex + 2 >= next.startChar) {
+                  if (event.charIndex + 1 >= next.startChar) {
                     // Move to the next node.
                     this.currentNodeGroupIndex_ += 1;
                     this.currentNode_ = next;
@@ -1053,8 +1056,9 @@ SelectToSpeak.prototype = {
    * @param {boolean} inForeground Whether the node is in the foreground window.
    */
   updateFromNodeState_: function(nodeGroupItem, inForeground) {
-    let node = nodeGroupItem.hasInlineTextChildren() ?
-        nodeGroupItem.node.children[nodeGroupItem.inlineTextBoxIndex] :
+    let node = nodeGroupItem.hasInlineText ?
+        findInlineTextNodeByCharacterIndex(
+            nodeGroupItem.node, this.currentNodeWord_.start) :
         nodeGroupItem.node;
     switch (getNodeState(node)) {
       case NodeState.NODE_STATE_INVALID:
@@ -1076,9 +1080,11 @@ SelectToSpeak.prototype = {
             // Highlight should be only for text.
             // Note that boundsForRange doesn't work on staticText.
             if (node.role == RoleType.INLINE_TEXT_BOX) {
+              let charIndexInParent = getStartCharIndexInParent(node);
               chrome.accessibilityPrivate.setHighlights(
                   [node.boundsForRange(
-                      this.currentNodeWord_.start, this.currentNodeWord_.end)],
+                      this.currentNodeWord_.start - charIndexInParent,
+                      this.currentNodeWord_.end - charIndexInParent)],
                   this.highlightColor_);
             } else {
               chrome.accessibilityPrivate.setHighlights(
@@ -1170,22 +1176,17 @@ SelectToSpeak.prototype = {
       return;
     }
     // Get the next word based on the event's charIndex.
-    let currentNode = this.currentNode_.hasInlineTextChildren() ?
-        new NodeGroupItem(
-            this.currentNode_.node
-                .children[this.currentNode_.inlineTextBoxIndex],
-            this.currentNode_.startChar) :
-        this.currentNode_;
-    let nextWordStart = getNextWordStart(text, charIndex, currentNode);
+    let nextWordStart = getNextWordStart(text, charIndex, this.currentNode_);
     let nextWordEnd = getNextWordEnd(
         text, opt_startIndex === undefined ? nextWordStart : opt_startIndex,
-        currentNode);
+        this.currentNode_);
     // Map the next word into the node's index from the text.
     let nodeStart = opt_startIndex === undefined ?
-        nextWordStart - currentNode.startChar :
-        opt_startIndex - currentNode.startChar;
+        nextWordStart - this.currentNode_.startChar :
+        opt_startIndex - this.currentNode_.startChar;
     let nodeEnd = Math.min(
-        nextWordEnd - currentNode.startChar, currentNode.node.name.length);
+        nextWordEnd - this.currentNode_.startChar,
+        this.currentNode_.node.name.length);
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
         nodeStart != nodeEnd) {
