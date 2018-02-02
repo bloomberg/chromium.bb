@@ -328,7 +328,7 @@ def Main():
   if os.path.exists(alt_boto):
     env['BOTO_CONFIG'] = alt_boto
   cwd_drive = os.path.splitdrive(os.getcwd())[0]
-  env['GSUTIL'] = cwd_drive + '/b/build/third_party/gsutil/gsutil'
+  env['GSUTIL'] = cwd_drive + '/b/depot_tools/gsutil.py'
 
   # When running from cygwin, we sometimes want to use a native python.
   # The native python will use the depot_tools version by invoking python.bat.
