@@ -3629,19 +3629,58 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                        int plane_bsize, const ENTROPY_CONTEXT *a,
                        const ENTROPY_CONTEXT *l, RD_STATS *rd_stats, int fast,
                        TX_SIZE_RD_INFO *rd_info_array) {
+  const struct macroblock_plane *const p = &x->plane[plane];
 #if CONFIG_TXK_SEL
-  (void)fast;
-  (void)rd_info_array;
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
+  const uint16_t cur_joint_ctx =
+      (txb_ctx.dc_sign_ctx << 8) + txb_ctx.txb_skip_ctx;
+
+  // Look up RD and terminate early in case when we've already processed exactly
+  // the same residual with exactly the same entropy context.
+  if (rd_info_array != NULL && rd_info_array->valid &&
+      rd_info_array->entropy_context == cur_joint_ctx &&
+      rd_info_array->fast == fast) {
+    rd_stats->rate += rd_info_array->rate;
+    rd_stats->dist += rd_info_array->dist;
+    rd_stats->sse += rd_info_array->sse;
+    rd_stats->skip &= rd_info_array->eob == 0;
+    p->eobs[block] = rd_info_array->eob;
+    p->txb_entropy_ctx[block] = rd_info_array->txb_entropy_ctx;
+    if (plane == 0) {
+      x->e_mbd.mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
+          rd_info_array->tx_type;
+    }
+    return;
+  }
 
   RD_STATS this_rd_stats;
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   a, l, 0, &this_rd_stats);
+
   av1_merge_rd_stats(rd_stats, &this_rd_stats);
+
+  // Save RD results for possible reuse in future.
+  if (rd_info_array != NULL) {
+    rd_info_array->valid = 1;
+    rd_info_array->entropy_context = cur_joint_ctx;
+    rd_info_array->fast = fast;
+    rd_info_array->rate = this_rd_stats.rate;
+    rd_info_array->dist = this_rd_stats.dist;
+    rd_info_array->sse = this_rd_stats.sse;
+    rd_info_array->eob = p->eobs[block];
+    rd_info_array->txb_entropy_ctx = p->txb_entropy_ctx[block];
+    if (plane == 0) {
+      rd_info_array->tx_type =
+          x->e_mbd.mi[0]
+              ->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+    }
+  }
+
   return;
 #else
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  const struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
 
   // This function is used only for inter
@@ -4611,11 +4650,18 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
           const int rd_record_idx =
               row_in_sb * (MAX_MIB_SIZE >> (cur_tx_size + 1 - TX_8X8)) +
               col_in_sb;
+
           int idx = find_tx_size_rd_info(
               &rd_records_table[cur_tx_size - TX_8X8][rd_record_idx], hash);
+#if CONFIG_TXK_SEL
+          dst_rd_info[cur_rd_info_idx].rd_info_array =
+              &rd_records_table[cur_tx_size - TX_8X8][rd_record_idx]
+                   .tx_rd_info[idx];
+#else
           dst_rd_info[cur_rd_info_idx].rd_info_array =
               rd_records_table[cur_tx_size - TX_8X8][rd_record_idx]
                   .tx_rd_info[idx];
+#endif
         }
 
         // Update the output quadtree RD info structure.
