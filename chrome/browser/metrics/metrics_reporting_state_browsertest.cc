@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -28,6 +27,22 @@
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+void SetMetricsReportingEnabledChromeOS(
+    bool value,
+    base::DictionaryValue* local_state_dict) {
+  namespace em = enterprise_management;
+  em::ChromeDeviceSettingsProto device_settings_proto;
+  device_settings_proto.mutable_metrics_enabled()->set_metrics_enabled(value);
+  em::PolicyData policy_data;
+  policy_data.set_policy_type("google/chromeos/device");
+  policy_data.set_policy_value(device_settings_proto.SerializeAsString());
+  local_state_dict->SetString(
+      prefs::kDeviceSettingsCache,
+      chromeos::device_settings_cache::PolicyDataToString(policy_data));
+}
 #endif
 
 // ChromeBrowserMainExtraParts implementation that asserts the metrics and
@@ -68,9 +83,25 @@ class MetricsReportingStateTest : public InProcessBrowserTest,
 
   // InProcessBrowserTest overrides:
   bool SetUpUserDataDirectory() override {
-    local_state_path_ = metrics::SetUpUserDataDirectoryForTesting(
-        is_metrics_reporting_enabled_initial_value());
-    return !local_state_path_.empty();
+    // Set up local state so that that value for reporting is
+    // is_metrics_reporting_enabled_initial_value().
+    base::DictionaryValue local_state_dict;
+    local_state_dict.SetBoolean(metrics::prefs::kMetricsReportingEnabled,
+                                is_metrics_reporting_enabled_initial_value());
+
+    base::FilePath user_data_dir;
+    if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+      return false;
+
+#if defined(OS_CHROMEOS)
+    // ChromeOS checks a separate place for reporting enabled.
+    SetMetricsReportingEnabledChromeOS(
+        is_metrics_reporting_enabled_initial_value(), &local_state_dict);
+#endif
+
+    local_state_path_ = user_data_dir.Append(chrome::kLocalStateFilename);
+    return JSONFileValueSerializer(local_state_path_)
+        .Serialize(local_state_dict);
   }
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
