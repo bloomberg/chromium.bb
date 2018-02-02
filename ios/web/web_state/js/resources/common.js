@@ -703,4 +703,20 @@ __gCrWeb['common'] = __gCrWeb.common;
     return new URL(url_one).origin == new URL(url_two).origin;
   }
 
+  /**
+   * Posts |message| to the webkit message handler specified by |handlerName|.
+   *
+   * @param {string} handlerName The name of the webkit message handler.
+   * @param {Object} message The message to post to the handler.
+   */
+  __gCrWeb.common.sendWebKitMessage = function(handlerName, message) {
+    // A web page can override |window.webkit| with any value. Deleting the
+    // object ensures that original and working implementation of
+    // window.webkit is restored.
+    var oldWebkit = window.webkit;
+    delete window['webkit'];
+    window.webkit.messageHandlers[handlerName].postMessage(message);
+    window.webkit = oldWebkit;
+ }
+
 }());  // End of anonymous object
