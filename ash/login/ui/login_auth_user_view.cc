@@ -346,14 +346,19 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
 }
 
 void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
-  password_view_->SetReadOnly(false);
-  if (auth_success.has_value()) {
-    // Clear the password if auth fails.
-    if (!auth_success.value())
-      password_view_->Clear();
+  if (!auth_success.has_value())
+    return;
 
-    on_auth_.Run(auth_success.value());
+  // Clear the password only if auth fails. Make sure to keep the password view
+  // disabled even if auth succeededs, as if the user submits a password while
+  // animating the next lock screen will not work as expected. See
+  // https://crbug.com/808486.
+  if (!auth_success.value()) {
+    password_view_->Clear();
+    password_view_->SetReadOnly(false);
   }
+
+  on_auth_.Run(auth_success.value());
 }
 
 void LoginAuthUserView::OnUserViewTap() {
