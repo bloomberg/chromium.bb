@@ -2060,7 +2060,10 @@ struct WeakProcessingHashTableHelper<kWeakHandlingInCollections,
   static void EphemeronIteration(typename Allocator::Visitor* visitor,
                                  void* closure) {
     HashTableType* table = reinterpret_cast<HashTableType*>(closure);
-    DCHECK(table->table_);
+    // During incremental marking, the table may be freed after the callback has
+    // been registered.
+    if (!table->table_)
+      return;
     // Check the hash table for elements that we now know will not be
     // removed by weak processing. Those elements need to have their strong
     // pointers traced.
