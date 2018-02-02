@@ -16,13 +16,13 @@
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
 void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
                       int32_t size, int8_t bit) {
-  const int64_t maxValue = (1LL << (bit - 1)) - 1;
-  const int64_t minValue = -(1LL << (bit - 1));
+  const int64_t max_value = (1LL << (bit - 1)) - 1;
+  const int64_t min_value = -(1LL << (bit - 1));
 
   int in_range = 1;
 
   for (int i = 0; i < size; ++i) {
-    if (buf[i] < minValue || buf[i] > maxValue) {
+    if (buf[i] < min_value || buf[i] > max_value) {
       in_range = 0;
     }
   }
@@ -31,8 +31,8 @@ void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
     fprintf(stderr, "Error: coeffs contain out-of-range values\n");
     fprintf(stderr, "size: %d\n", size);
     fprintf(stderr, "stage: %d\n", stage);
-    fprintf(stderr, "allowed range: [%" PRId64 ";%" PRId64 "]\n", minValue,
-            maxValue);
+    fprintf(stderr, "allowed range: [%" PRId64 ";%" PRId64 "]\n", min_value,
+            max_value);
 
     fprintf(stderr, "coeffs: ");
 
@@ -74,9 +74,9 @@ static INLINE void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
 
 static INLINE int32_t clamp_value(int32_t value, int8_t bit) {
   if (bit <= 16) {
-    const int32_t maxValue = (1 << 15) - 1;
-    const int32_t minValue = -(1 << 15);
-    return clamp(value, minValue, maxValue);
+    const int32_t max_value = (1 << 15) - 1;
+    const int32_t min_value = -(1 << 15);
+    return clamp(value, min_value, max_value);
   }
   return value;
 }

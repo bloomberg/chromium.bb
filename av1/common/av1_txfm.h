@@ -95,9 +95,9 @@ static INLINE const int32_t *sinpi_arr(int n) {
 
 static INLINE int32_t range_check_value(int32_t value, int8_t bit) {
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-  const int64_t maxValue = (1LL << (bit - 1)) - 1;
-  const int64_t minValue = -(1LL << (bit - 1));
-  if (value < minValue || value > maxValue) {
+  const int64_t max_value = (1LL << (bit - 1)) - 1;
+  const int64_t min_value = -(1LL << (bit - 1));
+  if (value < min_value || value > max_value) {
     fprintf(stderr, "coeff out of bit range, value: %d bit %d\n", value, bit);
     assert(0);
   }
