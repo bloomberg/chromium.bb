@@ -35,8 +35,6 @@ if (concurrent_links == -1) {
     _args = [ "--mem_per_link_gb=4" ]
   } else if (is_android && !is_component_build && symbol_level == 2) {
     _args = [ "--mem_per_link_gb=25" ]
-  } else if (is_android && !is_component_build && symbol_level == 1) {
-    _args = [ "--mem_per_link_gb=4" ]
   } else if (is_linux && !is_chromeos && symbol_level == 1) {
     _args = [ "--mem_per_link_gb=3" ]
   } else {
