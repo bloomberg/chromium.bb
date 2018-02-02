@@ -18,16 +18,16 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 
-namespace {
+namespace extensions {
+
+namespace computed_hashes {
 const char kBlockHashesKey[] = "block_hashes";
 const char kBlockSizeKey[] = "block_size";
 const char kFileHashesKey[] = "file_hashes";
 const char kPathKey[] = "path";
 const char kVersionKey[] = "version";
 const int kVersion = 2;
-}  // namespace
-
-namespace extensions {
+}  // namespace computed_hashes
 
 ComputedHashes::Reader::Reader() {
 }
@@ -48,11 +48,12 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
   // For now we don't support forwards or backwards compatability in the
   // format, so we return false on version mismatch.
   int version = 0;
-  if (!top_dictionary->GetInteger(kVersionKey, &version) || version != kVersion)
+  if (!top_dictionary->GetInteger(computed_hashes::kVersionKey, &version) ||
+      version != computed_hashes::kVersion)
     return false;
 
   base::ListValue* all_hashes = NULL;
-  if (!top_dictionary->GetList(kFileHashesKey, &all_hashes))
+  if (!top_dictionary->GetList(computed_hashes::kFileHashesKey, &all_hashes))
     return false;
 
   for (size_t i = 0; i < all_hashes->GetSize(); i++) {
@@ -61,11 +62,11 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
       return false;
 
     std::string relative_path_utf8;
-    if (!dictionary->GetString(kPathKey, &relative_path_utf8))
+    if (!dictionary->GetString(computed_hashes::kPathKey, &relative_path_utf8))
       return false;
 
     int block_size;
-    if (!dictionary->GetInteger(kBlockSizeKey, &block_size))
+    if (!dictionary->GetInteger(computed_hashes::kBlockSizeKey, &block_size))
       return false;
     if (block_size <= 0 || ((block_size % 1024) != 0)) {
       LOG(ERROR) << "Invalid block size: " << block_size;
@@ -73,7 +74,7 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
     }
 
     base::ListValue* hashes_list = NULL;
-    if (!dictionary->GetList(kBlockHashesKey, &hashes_list))
+    if (!dictionary->GetList(computed_hashes::kBlockHashesKey, &hashes_list))
       return false;
 
     base::FilePath relative_path =
@@ -145,18 +146,19 @@ void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
   }
 
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString(kPathKey,
+  dict->SetString(computed_hashes::kPathKey,
                   relative_path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe());
-  dict->SetInteger(kBlockSizeKey, block_size);
-  dict->Set(kBlockHashesKey, std::move(block_hashes));
+  dict->SetInteger(computed_hashes::kBlockSizeKey, block_size);
+  dict->Set(computed_hashes::kBlockHashesKey, std::move(block_hashes));
   file_list_->Append(std::move(dict));
 }
 
 bool ComputedHashes::Writer::WriteToFile(const base::FilePath& path) {
   std::string json;
   base::DictionaryValue top_dictionary;
-  top_dictionary.SetInteger(kVersionKey, kVersion);
-  top_dictionary.Set(kFileHashesKey, std::move(file_list_));
+  top_dictionary.SetInteger(computed_hashes::kVersionKey,
+                            computed_hashes::kVersion);
+  top_dictionary.Set(computed_hashes::kFileHashesKey, std::move(file_list_));
 
   if (!base::JSONWriter::Write(top_dictionary, &json))
     return false;
