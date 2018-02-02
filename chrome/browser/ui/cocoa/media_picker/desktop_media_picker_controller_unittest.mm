@@ -129,15 +129,21 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
         DesktopMediaID(DesktopMediaID::TYPE_WINDOW, id));
   }
 
+  void RemoveWindow(int id) { window_list_->RemoveSource(id); }
+
   void AddScreen(int id) {
     screen_list_->AddSourceByFullMediaID(
         DesktopMediaID(DesktopMediaID::TYPE_SCREEN, id));
   }
 
+  void RemoveScreen(int id) { screen_list_->RemoveSource(id); }
+
   void AddTab(int id) {
     tab_list_->AddSourceByFullMediaID(
         DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, id));
   }
+
+  void RemoveTab(int id) { tab_list_->RemoveSource(id); }
 
  protected:
   void OnResult(DesktopMediaID source) {
@@ -191,6 +197,27 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareScreen) {
   EXPECT_EQ(screen_list_->GetSource(0).id, source_reported_);
 }
 
+TEST_F(DesktopMediaPickerControllerTest, ShareDisabledOnScreenRemove) {
+  [controller_ showWindow:nil];
+  ChangeType(DesktopMediaID::TYPE_SCREEN);
+
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
+  AddScreen(0);
+  screen_list_->SetSourceThumbnail(0);
+  AddScreen(1);
+  screen_list_->SetSourceThumbnail(1);
+  EXPECT_EQ(2U, [[controller_ screenItems] count]);
+
+  constexpr int kScreenToRemove = 0;
+  NSIndexSet* index_set = [NSIndexSet indexSetWithIndex:kScreenToRemove];
+  [[controller_ tabBrowser] selectRowIndexes:index_set byExtendingSelection:NO];
+  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
+
+  RemoveScreen(kScreenToRemove);
+
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
+}
+
 TEST_F(DesktopMediaPickerControllerTest, ClickShareWindow) {
   [controller_ showWindow:nil];
   ChangeType(DesktopMediaID::TYPE_WINDOW);
@@ -210,6 +237,28 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareWindow) {
   [[controller_ shareButton] performClick:nil];
   EXPECT_TRUE(WaitForCallback());
   EXPECT_EQ(window_list_->GetSource(1).id, source_reported_);
+}
+
+TEST_F(DesktopMediaPickerControllerTest, ShareDisabledOnWindowRemove) {
+  [controller_ showWindow:nil];
+  ChangeType(DesktopMediaID::TYPE_WINDOW);
+
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
+  AddWindow(0);
+  window_list_->SetSourceThumbnail(0);
+  AddWindow(1);
+  window_list_->SetSourceThumbnail(1);
+  EXPECT_EQ(2U, [[controller_ windowItems] count]);
+
+  constexpr int kWindowToRemove = 0;
+  NSIndexSet* index_set = [NSIndexSet indexSetWithIndex:kWindowToRemove];
+  [[controller_ windowBrowser] setSelectionIndexes:index_set
+                              byExtendingSelection:NO];
+  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
+
+  RemoveWindow(kWindowToRemove);
+
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
 }
 
 TEST_F(DesktopMediaPickerControllerTest, ClickShareTab) {
@@ -233,6 +282,27 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareTab) {
   [[controller_ shareButton] performClick:nil];
   EXPECT_TRUE(WaitForCallback());
   EXPECT_EQ(tab_list_->GetSource(1).id, source_reported_);
+}
+
+TEST_F(DesktopMediaPickerControllerTest, ShareDisabledOnTabRemove) {
+  [controller_ showWindow:nil];
+  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  AddTab(0);
+  tab_list_->SetSourceThumbnail(0);
+  AddTab(1);
+  tab_list_->SetSourceThumbnail(1);
+
+  EXPECT_EQ(2U, [[controller_ tabItems] count]);
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
+
+  constexpr int kTabToRemove = 0;
+  NSIndexSet* index_set = [NSIndexSet indexSetWithIndex:kTabToRemove];
+  [[controller_ tabBrowser] selectRowIndexes:index_set byExtendingSelection:NO];
+  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
+
+  RemoveTab(kTabToRemove);
+
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
 }
 
 TEST_F(DesktopMediaPickerControllerTest, ClickCancel) {

@@ -595,6 +595,11 @@ NSString* const kTitleId = @"title";
     indexes = [NSIndexSet indexSetWithIndex:index];
 
   [tabBrowser_ selectRowIndexes:indexes byExtendingSelection:NO];
+
+  // Enable or disable the OK button based on whether we have a selection.
+  // There is no guarantee that -imageBrowserSelectionDidChange: will trigger
+  // if the selection is cleared above.
+  [shareButton_ setEnabled:([indexes count] > 0)];
 }
 
 #pragma mark NSWindowDelegate
