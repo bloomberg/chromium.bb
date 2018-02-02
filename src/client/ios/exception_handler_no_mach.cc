@@ -31,7 +31,7 @@
 #include <TargetConditionals.h>
 
 #include "client/mac/handler/minidump_generator.h"
-#include "client/ios/handler/exception_handler_no_mach.h"
+#include "client/ios/exception_handler_no_mach.h"
 
 #ifndef USE_PROTECTED_ALLOCATIONS
 #if TARGET_OS_TV
@@ -200,8 +200,6 @@ bool ExceptionHandler::InstallHandlers() {
   // If a handler is already installed, something is really wrong.
   if (gProtectedData.handler != NULL) {
     return false;
-  }
-  gProtectedData.handler = this;
   for (int i = 0; i < kNumHandledSignals; ++i) {
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
@@ -213,11 +211,12 @@ bool ExceptionHandler::InstallHandlers() {
     if (sigaction(kExceptionSignals[i], &sa, old_handlers[i].get()) == -1) {
       return false;
     }
-#if USE_PROTECTED_ALLOCATIONS
-    assert(((size_t)(gProtectedData.protected_buffer) & PAGE_MASK) == 0);
-    mprotect(gProtectedData.protected_buffer, PAGE_SIZE, PROT_READ);
-#endif  // USE_PROTECTED_ALLOCATIONS
   }
+  gProtectedData.handler = this;
+#if USE_PROTECTED_ALLOCATIONS
+  assert(((size_t)(gProtectedData.protected_buffer) & PAGE_MASK) == 0);
+  mprotect(gProtectedData.protected_buffer, PAGE_SIZE, PROT_READ);
+#endif  // USE_PROTECTED_ALLOCATIONS
   installed_exception_handler_ = true;
   return true;
 }
@@ -226,13 +225,13 @@ bool ExceptionHandler::UninstallHandlers() {
   for (int i = 0; i < kNumHandledSignals; ++i) {
     if (old_handlers[i].get()) {
       sigaction(kExceptionSignals[i], old_handlers[i].get(), NULL);
-#if USE_PROTECTED_ALLOCATIONS
-      mprotect(gProtectedData.protected_buffer, PAGE_SIZE, PROT_READ | PROT_WRITE);
-#endif  // USE_PROTECTED_ALLOCATIONS
       old_handlers[i].reset();
     }
-    gProtectedData.handler = NULL;
   }
+#if USE_PROTECTED_ALLOCATIONS
+  mprotect(gProtectedData.protected_buffer, PAGE_SIZE, PROT_READ | PROT_WRITE);
+#endif  // USE_PROTECTED_ALLOCATIONS
+  gProtectedData.handler = NULL;
   installed_exception_handler_ = false;
   return true;
 }

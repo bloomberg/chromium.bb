@@ -50,7 +50,7 @@
 #if !TARGET_OS_TV && !TARGET_OS_WATCH
 #import "client/mac/handler/exception_handler.h"
 #else
-#import "client/ios/handler/exception_handler_no_mach.h"
+#import "client/ios/exception_handler_no_mach.h"
 #endif  // !TARGET_OS_TV && !TARGET_OS_WATCH
 
 #if !defined(__EXCEPTIONS) || (__clang__ && !__has_feature(cxx_exceptions))
