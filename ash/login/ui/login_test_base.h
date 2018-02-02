@@ -37,9 +37,6 @@ class LoginTestBase : public AshTestBase {
   // shown.
   std::unique_ptr<views::Widget> CreateWidgetWithContent(views::View* content);
 
-  // Utility method to create a new |mojom::UserInfoPtr| instance.
-  mojom::LoginUserInfoPtr CreateUser(const std::string& name) const;
-
   // Changes the active number of users. Fires an event on |data_dispatcher()|.
   void SetUserCount(size_t count);
 

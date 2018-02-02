@@ -8,6 +8,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_password_view.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 
 namespace ash {
 
@@ -15,6 +16,9 @@ namespace ash {
 LockContentsView::TestApi MakeLockContentsViewTestApi(LockContentsView* view);
 LoginAuthUserView::TestApi MakeLoginPrimaryAuthTestApi(LockContentsView* view);
 LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view);
+
+// Utility method to create a new |mojom::UserInfoPtr| instance.
+mojom::LoginUserInfoPtr CreateUser(const std::string& name);
 
 }  // namespace ash
 

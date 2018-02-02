@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/login/ui/login_test_utils.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
@@ -66,18 +67,6 @@ std::unique_ptr<views::Widget> LoginTestBase::CreateWidgetWithContent(
   new_widget->SetContentsView(content);
   new_widget->Show();
   return new_widget;
-}
-
-mojom::LoginUserInfoPtr LoginTestBase::CreateUser(
-    const std::string& name) const {
-  auto user = mojom::LoginUserInfo::New();
-  user->basic_user_info = mojom::UserInfo::New();
-  user->basic_user_info->account_id =
-      AccountId::FromUserEmail(name + "@foo.com");
-  user->basic_user_info->display_name = "User " + name;
-  user->basic_user_info->display_email =
-      user->basic_user_info->account_id.GetUserEmail();
-  return user;
 }
 
 void LoginTestBase::SetUserCount(size_t count) {

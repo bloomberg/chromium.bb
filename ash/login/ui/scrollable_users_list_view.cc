@@ -177,10 +177,13 @@ void ScrollableUsersListView::Layout() {
     // Adjust height of the content. In extra small style, contents occupies the
     // whole height of the parent. In small style, content is centered
     // vertically.
-    ClipHeightTo(layout_params_.display_style == LoginDisplayStyle::kExtraSmall
-                     ? parent_height
-                     : contents_height,
-                 parent_height);
+    int target_height =
+        layout_params_.display_style == LoginDisplayStyle::kExtraSmall
+            ? parent_height
+            : contents_height;
+    ClipHeightTo(target_height, parent_height);
+    if (height() != target_height)
+      PreferredSizeChanged();
   }
   ScrollView::Layout();
   if (scroll_bar_)

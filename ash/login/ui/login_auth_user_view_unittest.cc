@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_test_base.h"
+#include "ash/login/ui/login_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
