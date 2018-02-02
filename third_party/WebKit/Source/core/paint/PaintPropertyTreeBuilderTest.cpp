@@ -5091,4 +5091,20 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
     EXPECT_EQ(LayoutRect(8, 50, 20, 20), content->FirstFragment().VisualRect());
 }
 
+// The following test tests that we restrict actual column count, to not run
+// into unnecessary performance problems. The code that applies this limitation
+// is in MultiColumnFragmentainerGroup::ActualColumnCount().
+TEST_P(PaintPropertyTreeBuilderTest, ShortColumnTallContent) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="multicol" style="columns:3; column-gap:1px; width:101px; height:1px;">
+      <div style="height:1000000px;"></div>
+    </div>
+  )HTML");
+
+  const auto* flow_thread =
+      GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
+  EXPECT_EQ(10u, NumFragments(flow_thread));
+}
+
 }  // namespace blink

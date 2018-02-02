@@ -2021,9 +2021,6 @@ void ObjectPaintPropertyTreeBuilder::
   }
 }
 
-// Limit the maximum number of fragments, to avoid pathological situations.
-static const int kMaxNumFragments = 500;
-
 void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
   // Note: It is important to short-circuit on object_.StyleRef().ClipPath()
   // because NeedsClipPathClip() and NeedsEffect() requires the clip path
@@ -2079,8 +2076,7 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
     FragmentData* current_fragment_data = nullptr;
 
     int fragment_count = 0;
-    for (; !iterator.AtEnd() && fragment_count < kMaxNumFragments;
-         iterator.Advance(), fragment_count++) {
+    for (; !iterator.AtEnd(); iterator.Advance(), fragment_count++) {
       if (!current_fragment_data) {
         current_fragment_data =
             &object_.GetMutableForPainting().FirstFragment();

@@ -5,6 +5,7 @@
 #ifndef MultiColumnFragmentainerGroup_h
 #define MultiColumnFragmentainerGroup_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "platform/wtf/Allocator.h"
 
@@ -29,7 +30,7 @@ namespace blink {
 // or they'd overflow the outer fragmentainer in the inline direction. If we
 // need more columns than what a group has room for, we'll create another group
 // and put them there (and make them appear in the next outer fragmentainer).
-class MultiColumnFragmentainerGroup {
+class CORE_EXPORT MultiColumnFragmentainerGroup {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
@@ -160,6 +161,13 @@ class MultiColumnFragmentainerGroup {
 
   unsigned ColumnIndexAtOffset(LayoutUnit offset_in_flow_thread,
                                LayoutBox::PageBoundaryRule) const;
+
+  // Like ColumnIndexAtOffset(), but with the return value clamped to actual
+  // column count. While there are legitimate reasons for dealing with columns
+  // out of bounds during layout, this should not happen when performing read
+  // operations on the tree (like painting and hit-testing).
+  unsigned ConstrainedColumnIndexAtOffset(LayoutUnit offset_in_flow_thread,
+                                          LayoutBox::PageBoundaryRule) const;
 
   // The "CSS actual" value of column-count. This includes overflowing columns,
   // if any.

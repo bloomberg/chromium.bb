@@ -43,18 +43,20 @@ LayoutUnit MultiColumnFragmentainerGroup::LogicalHeightInFlowThreadAt(
   LayoutUnit column_height = ColumnLogicalHeight();
   LayoutUnit logical_top = LogicalTopInFlowThreadAt(column_index);
   LayoutUnit logical_bottom = logical_top + column_height;
-  if (logical_bottom > LogicalBottomInFlowThread()) {
-    DCHECK_GE(column_index + 1, ActualColumnCount());
-    // Stay within the bounds of the flow thread. We need this clamping when
-    // we're dealing with the last column, and also if we're given a column
-    // index *after* the last column. Height should obviously be 0 then. We may
-    // be called with a column index that's one entry past the end if we're
-    // dealing with zero-height content at the very end of the flow thread, and
-    // this location is at a column boundary.
-    logical_bottom = LogicalBottomInFlowThread();
-    // If the column index is out of bounds, the height better become zero.
-    DCHECK(column_index + 1 == ActualColumnCount() ||
-           logical_bottom <= logical_top);
+  unsigned actual_count = ActualColumnCount();
+  if (column_index + 1 >= actual_count) {
+    // The last column may contain overflow content, if the actual column count
+    // was clamped, so using the column height won't do. This is also a way to
+    // stay within the bounds of the flow thread, if the last column happens to
+    // contain LESS than the other columns. We also need this clamping if we're
+    // given a column index *after* the last column. Height should obviously be
+    // 0 then. We may be called with a column index that's one entry past the
+    // end if we're dealing with zero-height content at the very end of the flow
+    // thread, and this location is at a column boundary.
+    if (column_index + 1 == actual_count)
+      logical_bottom = LogicalBottomInFlowThread();
+    else
+      logical_bottom = logical_top;
   }
   return (logical_bottom - logical_top).ClampNegativeToZero();
 }
@@ -323,6 +325,20 @@ unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
   // flowThreadPortionHeight may be saturated, so detect the remainder manually.
   if (count * column_height < flow_thread_portion_height)
     count++;
+
+  static const unsigned kColumnCountClampMin = 10;
+  static const unsigned kColumnCountClampMax = 500;
+  if (count > kColumnCountClampMin) {
+    // To avoid performance problems, limit the maximum number of columns. Try
+    // to identify legitimate reasons for creating many columns, and allow many
+    // columns in such cases. We currently use a function of column height to
+    // determine this (limit the column count to the column height in pixels,
+    // but never clamp to less than 10 columns).
+    unsigned max_count = column_height.ToInt();
+    count = std::min(count, std::max(std::min(max_count, kColumnCountClampMax),
+                                     kColumnCountClampMin));
+  }
+
   DCHECK_GE(count, 1u);
   return count;
 }
@@ -541,6 +557,14 @@ unsigned MultiColumnFragmentainerGroup::ColumnIndexAtOffset(
   return column_index;
 }
 
+unsigned MultiColumnFragmentainerGroup::ConstrainedColumnIndexAtOffset(
+    LayoutUnit offset_in_flow_thread,
+    LayoutBox::PageBoundaryRule page_boundary_rule) const {
+  unsigned index =
+      ColumnIndexAtOffset(offset_in_flow_thread, page_boundary_rule);
+  return std::min(index, ActualColumnCount() - 1);
+}
+
 unsigned MultiColumnFragmentainerGroup::ColumnIndexAtVisualPoint(
     const LayoutPoint& visual_point) const {
   bool is_column_progression_inline =
@@ -578,17 +602,17 @@ void MultiColumnFragmentainerGroup::ColumnIntervalForBlockRangeInFlowThread(
       std::max(logical_top_in_flow_thread, LogicalTopInFlowThread());
   logical_bottom_in_flow_thread =
       std::min(logical_bottom_in_flow_thread, LogicalBottomInFlowThread());
-  first_column = ColumnIndexAtOffset(logical_top_in_flow_thread,
-                                     LayoutBox::kAssociateWithLatterPage);
+  first_column = ConstrainedColumnIndexAtOffset(
+      logical_top_in_flow_thread, LayoutBox::kAssociateWithLatterPage);
   if (logical_bottom_in_flow_thread <= logical_top_in_flow_thread) {
     // Zero-height block range. There'll be one column in the interval. Set it
     // right away. This is important if we're at a column boundary, since
-    // calling columnIndexAtOffset() with the end-exclusive bottom offset would
-    // actually give us the *previous* column.
+    // calling ConstrainedColumnIndexAtOffset() with the end-exclusive bottom
+    // offset would actually give us the *previous* column.
     last_column = first_column;
   } else {
-    last_column = ColumnIndexAtOffset(logical_bottom_in_flow_thread,
-                                      LayoutBox::kAssociateWithFormerPage);
+    last_column = ConstrainedColumnIndexAtOffset(
+        logical_bottom_in_flow_thread, LayoutBox::kAssociateWithFormerPage);
   }
 }
 
