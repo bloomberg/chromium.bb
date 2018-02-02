@@ -5682,7 +5682,6 @@ crbug.com/591099 paint/invalidation/background/viewport-gradient-background-html
 crbug.com/591099 paint/invalidation/block-layout-inline-children-replaced.html [ Failure ]
 crbug.com/591099 paint/invalidation/block-no-inflow-children.html [ Failure ]
 crbug.com/591099 paint/invalidation/block-shift-repaint.html [ Failure ]
-crbug.com/591099 paint/invalidation/body-background-not-propagated.html [ Failure ]
 crbug.com/591099 paint/invalidation/box/border-radius-repaint-2.html [ Failure ]
 crbug.com/591099 paint/invalidation/box/border-radius-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/box/border-repaint-glitch.html [ Failure ]
