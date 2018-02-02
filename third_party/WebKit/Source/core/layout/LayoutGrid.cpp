@@ -1832,7 +1832,8 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
   bool has_same_writing_mode =
       child.StyleRef().GetWritingMode() == StyleRef().GetWritingMode();
   bool child_is_ltr = child.StyleRef().IsLeftToRightDirection();
-  if (!HasStaticPositionForChild(child, kForRows))
+  if (child.IsOutOfFlowPositioned() &&
+      !HasStaticPositionForChild(child, kForRows))
     return kGridAxisStart;
 
   switch (AlignSelfForChild(child).GetPosition()) {
@@ -1905,7 +1906,8 @@ GridAxisPosition LayoutGrid::RowAxisPositionForChild(
   bool has_same_direction =
       child.StyleRef().Direction() == StyleRef().Direction();
   bool grid_is_ltr = StyleRef().IsLeftToRightDirection();
-  if (!HasStaticPositionForChild(child, kForColumns))
+  if (child.IsOutOfFlowPositioned() &&
+      !HasStaticPositionForChild(child, kForColumns))
     return kGridAxisStart;
 
   switch (JustifySelfForChild(child).GetPosition()) {
