@@ -65,10 +65,10 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                            double load_progress) override;
   void RendererUnresponsive(
       content::WebContents* source,
-      content::RenderProcessHost* render_process_host) override;
+      content::RenderWidgetHost* render_widget_host) override;
   void RendererResponsive(
       content::WebContents* source,
-      content::RenderProcessHost* render_process_host) override;
+      content::RenderWidgetHost* render_widget_host) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_process_id,
                           int opener_render_frame_id,

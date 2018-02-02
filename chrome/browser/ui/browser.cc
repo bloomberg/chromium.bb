@@ -1668,7 +1668,7 @@ void Browser::WebContentsCreated(WebContents* source_contents,
 
 void Browser::RendererUnresponsive(
     WebContents* source,
-    content::RenderProcessHost* render_process_host) {
+    content::RenderWidgetHost* render_widget_host) {
   // Ignore hangs if a tab is blocked.
   int index = tab_strip_model_->GetIndexOfWebContents(source);
   DCHECK_NE(TabStripModel::kNoTab, index);
@@ -1680,7 +1680,7 @@ void Browser::RendererUnresponsive(
 
 void Browser::RendererResponsive(
     WebContents* source,
-    content::RenderProcessHost* render_process_host) {
+    content::RenderWidgetHost* render_widget_host) {
   TabDialogs::FromWebContents(source)->HideHungRendererDialog();
 }
 

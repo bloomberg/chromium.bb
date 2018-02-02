@@ -169,7 +169,7 @@ void WebContentsDelegateAndroid::LoadProgressChanged(WebContents* source,
 
 void WebContentsDelegateAndroid::RendererUnresponsive(
     WebContents* source,
-    content::RenderProcessHost* render_process_host) {
+    content::RenderWidgetHost* render_widget_host) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
@@ -179,7 +179,7 @@ void WebContentsDelegateAndroid::RendererUnresponsive(
 
 void WebContentsDelegateAndroid::RendererResponsive(
     WebContents* source,
-    content::RenderProcessHost* render_process_host) {
+    content::RenderWidgetHost* render_widget_host) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

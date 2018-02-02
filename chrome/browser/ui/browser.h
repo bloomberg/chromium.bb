@@ -617,10 +617,10 @@ class Browser : public TabStripModelObserver,
                           content::WebContents* new_contents) override;
   void RendererUnresponsive(
       content::WebContents* source,
-      content::RenderProcessHost* render_process_host) override;
+      content::RenderWidgetHost* render_widget_host) override;
   void RendererResponsive(
       content::WebContents* source,
-      content::RenderProcessHost* render_process_host) override;
+      content::RenderWidgetHost* render_widget_host) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
