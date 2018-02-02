@@ -1,10 +1,13 @@
 {
     "archives": {
         "WasmSpaceBuggy": {
-            "DEFAULT": "wasm_realworld_pages_001.wprgo"
+            "DEFAULT": "wasm_realworld_pages_002.wprgo"
         },
         "WasmTanks": {
-            "DEFAULT": "wasm_realworld_pages_001.wprgo"
+            "DEFAULT": "wasm_realworld_pages_002.wprgo"
+        },
+        "WasmZenGarden": {
+            "DEFAULT": "wasm_realworld_pages_002.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
