@@ -39,11 +39,16 @@
 }
 
 - (void)executeHandler {
-  _serializedPasswordsHandler("test serialized passwords");
+  _serializedPasswordsHandler("test serialized passwords string");
 }
+
 @end
 
 @interface FakePasswordFileWriter : NSObject<FileWriterProtocol>
+
+// Allows for on demand execution of the block that should be executed after
+// the file has finished writing.
+- (void)executeHandler;
 
 // Indicates if the writing of the file was finished successfully or with an
 // error.
@@ -51,14 +56,21 @@
 
 @end
 
-@implementation FakePasswordFileWriter
+@implementation FakePasswordFileWriter {
+  // Handler executed after the file write operation finishes.
+  void (^_writeStatusHandler)(WriteToURLStatus);
+}
 
 @synthesize writingStatus = _writingStatus;
 
 - (void)writeData:(NSString*)data
             toURL:(NSURL*)fileURL
           handler:(void (^)(WriteToURLStatus))handler {
-  handler(self.writingStatus);
+  _writeStatusHandler = handler;
+}
+
+- (void)executeHandler {
+  _writeStatusHandler(self.writingStatus);
 }
 
 @end
@@ -120,7 +132,8 @@ class PasswordExporterTest : public PlatformTest {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(PasswordExporterTest, PasswordFileWriteAuthSuccessful) {
+// Tests that the passwords file is written if reauthentication is successful.
+TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
   mock_reauthentication_module_.shouldSucceed = YES;
   NSURL* passwords_file_url = GetPasswordsFileURL();
 
@@ -133,11 +146,116 @@ TEST_F(PasswordExporterTest, PasswordFileWriteAuthSuccessful) {
   // Wait for all asynchronous tasks to complete.
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
   EXPECT_TRUE(PasswordFileExists());
+  EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
 }
 
-TEST_F(PasswordExporterTest, PasswordFileWriteAuthFailed) {
+// Tests that the exporter becomes idle after the export finishes.
+TEST_F(PasswordExporterTest, ExportIdleAfterFinishing) {
+  mock_reauthentication_module_.shouldSucceed = YES;
+  NSURL* passwords_file_url = GetPasswordsFileURL();
+
+  OCMStub(
+      [password_exporter_delegate_
+          showActivityViewWithActivityItems:[OCMArg
+                                                isEqual:@[ passwords_file_url ]]
+                          completionHandler:[OCMArg any]])
+      .andDo(^(NSInvocation* invocation) {
+        void (^completionHandler)(NSString* activityType, BOOL completed,
+                                  NSArray* returnedItems,
+                                  NSError* activityError);
+        [invocation getArgument:&completionHandler atIndex:3];
+        // Since the completion handler doesn't use any of the
+        // passed in parameters, dummy arguments are passed for
+        // convenience.
+        completionHandler(@"", YES, @[], nil);
+      });
+
+  [password_exporter_ startExportFlow:CreatePasswordList()];
+
+  // Wait for all asynchronous tasks to complete.
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+}
+
+// Tests that if the file writing fails because of not enough disk space
+// the appropriate error is displayed and the export operation
+// is interrupted.
+TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
+  mock_reauthentication_module_.shouldSucceed = YES;
+  FakePasswordFileWriter* fake_password_file_writer =
+      [[FakePasswordFileWriter alloc] init];
+  fake_password_file_writer.writingStatus =
+      WriteToURLStatus::OUT_OF_DISK_SPACE_ERROR;
+  [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
+
+  OCMExpect([password_exporter_delegate_
+      showExportErrorAlertWithLocalizedReason:
+          l10n_util::GetNSString(
+              IDS_IOS_EXPORT_PASSWORDS_OUT_OF_SPACE_ALERT_MESSAGE)]);
+  [[password_exporter_delegate_ reject]
+      showActivityViewWithActivityItems:[OCMArg any]
+                      completionHandler:[OCMArg any]];
+  [password_exporter_ startExportFlow:CreatePasswordList()];
+
+  // Wait for all asynchronous tasks to complete.
+  scoped_task_environment_.RunUntilIdle();
+
+  // Use @try/@catch as -reject raises an exception.
+  @try {
+    [fake_password_file_writer executeHandler];
+    EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
+  } @catch (NSException* exception) {
+    // The exception is raised when
+    // - showActivityViewWithActivityItems:completionHandler:
+    // is invoked. As this should not happen, mark the test as failed.
+    GTEST_FAIL();
+  }
+
+  // Failure to write the passwords file ends the export operation.
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+}
+
+// Tests that if a file write fails with an error other than not having
+// enough disk space, the appropriate error is displayed and the export
+// operation is interrupted.
+TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
+  mock_reauthentication_module_.shouldSucceed = YES;
+  FakePasswordFileWriter* fake_password_file_writer =
+      [[FakePasswordFileWriter alloc] init];
+  fake_password_file_writer.writingStatus = WriteToURLStatus::UNKNOWN_ERROR;
+  [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
+
+  OCMExpect([password_exporter_delegate_
+      showExportErrorAlertWithLocalizedReason:
+          l10n_util::GetNSString(
+              IDS_IOS_EXPORT_PASSWORDS_UNKNOWN_ERROR_ALERT_MESSAGE)]);
+  [[password_exporter_delegate_ reject]
+      showActivityViewWithActivityItems:[OCMArg any]
+                      completionHandler:[OCMArg any]];
+  [password_exporter_ startExportFlow:CreatePasswordList()];
+
+  // Wait for all asynchronous tasks to complete.
+  scoped_task_environment_.RunUntilIdle();
+
+  // Use @try/@catch as -reject raises an exception.
+  @try {
+    [fake_password_file_writer executeHandler];
+    EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
+  } @catch (NSException* exception) {
+    // The exception is raised when
+    // - showActivityViewWithActivityItems:completionHandler:
+    // is invoked. As this should not happen, mark the test as failed.
+    GTEST_FAIL();
+  }
+
+  // Failure to write the passwords file ends the export operation.
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+}
+
+// Tests that when reauthentication fails the export flow is interrupted.
+TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
   mock_reauthentication_module_.shouldSucceed = NO;
   FakePasswordSerialzerBridge* fake_password_serializer_bridge =
       [[FakePasswordSerialzerBridge alloc] init];
@@ -161,18 +279,23 @@ TEST_F(PasswordExporterTest, PasswordFileWriteAuthFailed) {
     GTEST_FAIL();
   }
   // Serializing passwords hasn't finished.
-  EXPECT_FALSE(PasswordFileExists());
-  EXPECT_TRUE(password_exporter_.isExporting);
+  EXPECT_EQ(ExportState::ONGOING, password_exporter_.exportState);
 
   [fake_password_serializer_bridge executeHandler];
 
-  // Serializing password has finished, but reauthentication was not successful.
+  // Make sure this test doesn't pass only because file writing hasn't finished
+  // yet.
+  scoped_task_environment_.RunUntilIdle();
+
+  // Serializing passwords has finished, but reauthentication was not
+  // successful, so the file is not written.
   EXPECT_FALSE(PasswordFileExists());
-  EXPECT_FALSE(password_exporter_.isExporting);
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 }
 
-TEST_F(PasswordExporterTest,
-       PasswordFileNotWrittenBeforeSerializationFinished) {
+// Tests that cancelling the export while serialization is still ongoing
+// waits for it to finish before cleaning up.
+TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
   mock_reauthentication_module_.shouldSucceed = YES;
   FakePasswordSerialzerBridge* fake_password_serializer_bridge =
       [[FakePasswordSerialzerBridge alloc] init];
@@ -183,10 +306,13 @@ TEST_F(PasswordExporterTest,
       showActivityViewWithActivityItems:[OCMArg any]
                       completionHandler:[OCMArg any]];
 
+  [password_exporter_ startExportFlow:CreatePasswordList()];
+  [password_exporter_ cancelExport];
+  EXPECT_EQ(ExportState::CANCELLING, password_exporter_.exportState);
+
   // Use @try/@catch as -reject raises an exception.
   @try {
-    [password_exporter_ startExportFlow:CreatePasswordList()];
-
+    [fake_password_serializer_bridge executeHandler];
     // Wait for all asynchronous tasks to complete.
     scoped_task_environment_.RunUntilIdle();
     EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
@@ -197,49 +323,70 @@ TEST_F(PasswordExporterTest,
     GTEST_FAIL();
   }
   EXPECT_FALSE(PasswordFileExists());
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 }
 
-TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
+// Tests that if the export is cancelled before writing to file finishes
+// successfully the request to show the activity controller isn't made.
+TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFinishesSuccessfully) {
   mock_reauthentication_module_.shouldSucceed = YES;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
-  fake_password_file_writer.writingStatus =
-      WriteToURLStatus::OUT_OF_DISK_SPACE_ERROR;
+  fake_password_file_writer.writingStatus = WriteToURLStatus::SUCCESS;
   [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
 
-  OCMExpect([password_exporter_delegate_
-      showExportErrorAlertWithLocalizedReason:
-          l10n_util::GetNSString(
-              IDS_IOS_EXPORT_PASSWORDS_OUT_OF_SPACE_ALERT_MESSAGE)]);
+  [[password_exporter_delegate_ reject]
+      showActivityViewWithActivityItems:[OCMArg any]
+                      completionHandler:[OCMArg any]];
 
   [password_exporter_ startExportFlow:CreatePasswordList()];
-
   // Wait for all asynchronous tasks to complete.
   scoped_task_environment_.RunUntilIdle();
+  [password_exporter_ cancelExport];
+  EXPECT_EQ(ExportState::CANCELLING, password_exporter_.exportState);
 
-  EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
-  EXPECT_FALSE(password_exporter_.isExporting);
+  // Use @try/@catch as -reject raises an exception.
+  @try {
+    [fake_password_file_writer executeHandler];
+    EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
+  } @catch (NSException* exception) {
+    // The exception is raised when
+    // - showActivityViewWithActivityItems:completionHandler:
+    // is invoked. As this should not happen, mark the test as failed.
+    GTEST_FAIL();
+  }
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 }
 
-TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
+// Tests that if the export is cancelled before writing to file fails
+// with an error, the request to show the error alert isn't made.
+TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFails) {
   mock_reauthentication_module_.shouldSucceed = YES;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
   fake_password_file_writer.writingStatus = WriteToURLStatus::UNKNOWN_ERROR;
   [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
 
-  OCMExpect([password_exporter_delegate_
-      showExportErrorAlertWithLocalizedReason:
-          l10n_util::GetNSString(
-              IDS_IOS_EXPORT_PASSWORDS_UNKNOWN_ERROR_ALERT_MESSAGE)]);
+  [[password_exporter_delegate_ reject]
+      showExportErrorAlertWithLocalizedReason:[OCMArg any]];
 
   [password_exporter_ startExportFlow:CreatePasswordList()];
-
   // Wait for all asynchronous tasks to complete.
   scoped_task_environment_.RunUntilIdle();
+  [password_exporter_ cancelExport];
+  EXPECT_EQ(ExportState::CANCELLING, password_exporter_.exportState);
 
-  EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
-  EXPECT_FALSE(password_exporter_.isExporting);
+  // Use @try/@catch as -reject raises an exception.
+  @try {
+    [fake_password_file_writer executeHandler];
+    EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
+  } @catch (NSException* exception) {
+    // The exception is raised when
+    // - showExportErrorAlertWithLocalizedReason:
+    // is invoked. As this should not happen, mark the test as failed.
+    GTEST_FAIL();
+  }
+  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 }
 
 }  // namespace
