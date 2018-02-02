@@ -21,8 +21,6 @@ class VideoCapturerSource;
 
 namespace content {
 
-class RenderFrame;
-
 // Representation of a video stream coming from a camera, owned by Blink as
 // WebMediaStreamSource. Objects of this class are created and live on main
 // Render thread. Objects can be constructed either by indicating a |device| to
@@ -34,7 +32,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(
-      int render_frame_id,
       const SourceStoppedCallback& stop_callback,
       const MediaStreamDevice& device,
       const media::VideoCaptureParams& capture_params);
@@ -65,12 +62,9 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,
                          bool is_running);
 
-  const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost(
-      RenderFrame* render_frame);
+  const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
 
   mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
-
-  int render_frame_id_;
 
   // The source that provides video frames.
   const std::unique_ptr<media::VideoCapturerSource> source_;

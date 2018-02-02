@@ -32,7 +32,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
     : public mojom::MediaStreamDispatcherHost {
  public:
   MediaStreamDispatcherHost(int render_process_id,
-                            int render_frame_id,
                             MediaStreamManager* media_stream_manager);
   ~MediaStreamDispatcherHost() override;
 
@@ -43,26 +42,31 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
     salt_and_origin_callback_ = std::move(callback);
   }
   void SetMediaStreamDeviceObserverForTesting(
+      int render_frame_id,
       mojom::MediaStreamDeviceObserverPtr observer) {
-    media_stream_device_observer_ = std::move(observer);
+    observers_[render_frame_id] = std::move(observer);
   }
 
  private:
   friend class MockMediaStreamDispatcherHost;
 
-  const mojom::MediaStreamDeviceObserverPtr& GetMediaStreamDeviceObserver();
-  void OnMediaStreamDeviceObserverConnectionError();
+  mojom::MediaStreamDeviceObserver* GetMediaStreamDeviceObserverForFrame(
+      int render_frame_id);
+  void OnMediaStreamDeviceObserverConnectionError(int render_frame_id);
   void CancelAllRequests();
 
   // mojom::MediaStreamDispatcherHost implementation
-  void GenerateStream(int32_t request_id,
+  void GenerateStream(int32_t render_frame_id,
+                      int32_t request_id,
                       const StreamControls& controls,
                       bool user_gesture,
                       GenerateStreamCallback callback) override;
-  void CancelRequest(int32_t request_id) override;
-  void StopStreamDevice(const std::string& device_id,
+  void CancelRequest(int32_t render_frame_id, int32_t request_id) override;
+  void StopStreamDevice(int32_t render_frame_id,
+                        const std::string& device_id,
                         int32_t session_id) override;
-  void OpenDevice(int32_t request_id,
+  void OpenDevice(int32_t render_frame_id,
+                  int32_t request_id,
                   const std::string& device_id,
                   MediaStreamType type,
                   OpenDeviceCallback callback) override;
@@ -73,24 +77,26 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OnStreamStarted(const std::string& label) override;
 
   void DoGenerateStream(
+      int32_t render_frame_id,
       int32_t request_id,
       const StreamControls& controls,
       bool user_gesture,
       GenerateStreamCallback callback,
       const std::pair<std::string, url::Origin>& salt_and_origin);
-  void DoOpenDevice(int32_t request_id,
+  void DoOpenDevice(int32_t render_frame_id,
+                    int32_t request_id,
                     const std::string& device_id,
                     MediaStreamType type,
                     OpenDeviceCallback callback,
                     const std::pair<std::string, url::Origin>& salt_and_origin);
 
-  void OnDeviceStopped(const std::string& label,
+  void OnDeviceStopped(int render_frame_id,
+                       const std::string& label,
                        const MediaStreamDevice& device);
 
   const int render_process_id_;
-  const int render_frame_id_;
   MediaStreamManager* media_stream_manager_;
-  mojom::MediaStreamDeviceObserverPtr media_stream_device_observer_;
+  std::map<int, mojom::MediaStreamDeviceObserverPtr> observers_;
   mojo::BindingSet<mojom::MediaStreamDispatcherHost> bindings_;
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 

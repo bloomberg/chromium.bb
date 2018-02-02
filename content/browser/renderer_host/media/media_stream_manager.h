@@ -91,7 +91,8 @@ class CONTENT_EXPORT MediaStreamManager
                               const MediaStreamDevice& device)>;
 
   using DeviceStoppedCallback =
-      base::RepeatingCallback<void(const std::string& label,
+      base::RepeatingCallback<void(int render_frame_id,
+                                   const std::string& label,
                                    const MediaStreamDevice& device)>;
 
   // Callback for testing.
@@ -171,11 +172,10 @@ class CONTENT_EXPORT MediaStreamManager
                      int page_request_id);
 
   // Cancel an open request identified by |label|.
-  void CancelRequest(const std::string& label);
+  virtual void CancelRequest(const std::string& label);
 
-  // Cancel all requests for the given |render_process_id| and
-  // |render_frame_id|.
-  void CancelAllRequests(int render_process_id, int render_frame_id);
+  // Cancel all requests for the given |render_process_id|.
+  void CancelAllRequests(int render_process_id);
 
   // Closes the stream device for a certain render frame. The stream must have
   // been opened by a call to GenerateStream.
