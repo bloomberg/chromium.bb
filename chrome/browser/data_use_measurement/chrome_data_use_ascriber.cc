@@ -92,7 +92,7 @@ ChromeDataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
 }
 
 ChromeDataUseAscriber::DataUseRecorderEntry
-ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request) {
+ChromeDataUseAscriber::GetDataUseRecorderEntry(const net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // If a DataUseRecorder has already been set as user data, then return that.
@@ -192,6 +192,17 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   return entry;
 }
 
+void ChromeDataUseAscriber::OnBeforeUrlRequest(net::URLRequest* request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(request);
+
+  if (IsDisabled())
+    return;
+
+  requests_.insert(request);
+  DataUseAscriber::OnBeforeUrlRequest(request);
+}
+
 void ChromeDataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
                                                   bool started) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -200,10 +211,15 @@ void ChromeDataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
   if (IsDisabled())
     return;
 
+  if (requests_.find(request) == requests_.end())
+    return;
+
   const DataUseRecorderEntry entry = GetDataUseRecorderEntry(request);
 
-  if (entry == data_use_recorders_.end())
+  if (entry == data_use_recorders_.end()) {
+    requests_.erase(request);
     return;
+  }
 
   for (auto& observer : observers_)
     observer.OnPageResourceLoad(*request, &entry->data_use());
@@ -212,6 +228,15 @@ void ChromeDataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
 }
 
 void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(request);
+
+  if (IsDisabled())
+    return;
+
+  if (requests_.find(request) == requests_.end())
+    return;
+
   OnUrlRequestCompletedOrDestroyed(request);
 }
 
@@ -227,8 +252,10 @@ void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
 
   const DataUseRecorderEntry entry = GetDataUseRecorderEntry(request);
 
-  if (entry == data_use_recorders_.end())
+  if (entry == data_use_recorders_.end()) {
+    requests_.erase(request);
     return;
+  }
 
   {
     const content::ResourceRequestInfo* request_info =
@@ -279,6 +306,8 @@ void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
     NotifyPageLoadConcluded(entry);
     data_use_recorders_.erase(entry);
   }
+
+  requests_.erase(request);
 }
 
 void ChromeDataUseAscriber::RenderFrameCreated(int render_process_id,
@@ -335,6 +364,7 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
       for (net::URLRequest* request : pending_url_requests) {
         OnUrlRequestCompletedOrDestroyed(request);
       }
+      ValidateAndCleanUp(entry);
       DCHECK(entry->IsDataUseComplete());
       NotifyPageLoadConcluded(entry);
       data_use_recorders_.erase(entry);
@@ -342,6 +372,31 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
     }
   }
   subframe_to_mainframe_map_.erase(key);
+}
+
+void ChromeDataUseAscriber::ValidateAndCleanUp(DataUseRecorderEntry entry) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  for (auto it = requests_.begin(); it != requests_.end();) {
+    const net::URLRequest* request = *it;
+
+    DCHECK(request);
+
+    const DataUseRecorderEntry request_entry = GetDataUseRecorderEntry(request);
+
+    if (request_entry == data_use_recorders_.end()) {
+      requests_.erase(it++);
+      continue;
+    }
+    // All requests that point to |entry| should have been deleted.
+    DCHECK(entry != request_entry);
+
+    if (entry == request_entry) {
+      requests_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
@@ -486,6 +541,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       OnUrlRequestCompletedOrDestroyed(request);
     }
     DCHECK(old_frame_entry->IsDataUseComplete());
+    ValidateAndCleanUp(old_frame_entry);
 
     NotifyPageLoadConcluded(old_frame_entry);
     data_use_recorders_.erase(old_frame_entry);
