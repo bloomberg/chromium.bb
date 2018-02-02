@@ -46,8 +46,6 @@ class ProguardCmdBuilder(object):
   def __init__(self, proguard_jar):
     assert os.path.exists(proguard_jar)
     self._proguard_jar_path = proguard_jar
-    self._tested_apk_info_path = None
-    self._tested_apk_info = None
     self._mapping = None
     self._libraries = None
     self._injars = None
@@ -62,11 +60,6 @@ class ProguardCmdBuilder(object):
     assert self._cmd is None
     assert self._outjar is None
     self._outjar = path
-
-  def tested_apk_info(self, tested_apk_info_path):
-    assert self._cmd is None
-    assert self._tested_apk_info is None
-    self._tested_apk_info_path = tested_apk_info_path
 
   def mapping(self, path):
     assert self._cmd is None
@@ -118,9 +111,6 @@ class ProguardCmdBuilder(object):
       'java', '-jar', self._proguard_jar_path,
       '-forceprocessing',
     ]
-    if self._tested_apk_info_path:
-      tested_apk_info = build_utils.ReadJson(self._tested_apk_info_path)
-      self._configs += tested_apk_info['configs']
 
     for path in self._config_exclusions:
       self._configs.remove(path)
@@ -165,8 +155,6 @@ class ProguardCmdBuilder(object):
     inputs = self._configs + self._injars
     if self._libraries:
       inputs += self._libraries
-    if self._tested_apk_info_path:
-      inputs += [self._tested_apk_info_path]
     return inputs
 
   def GetInputs(self):

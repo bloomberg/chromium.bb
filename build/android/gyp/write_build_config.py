@@ -345,8 +345,6 @@ def main(argv):
       help='Whether proguard is enabled for this apk.')
   parser.add_option('--proguard-configs',
       help='GN-list of proguard flag files to use in final apk.')
-  parser.add_option('--proguard-info',
-      help='Path to the proguard .info output for this apk.')
   parser.add_option('--fail',
       help='GN-list of error message lines to fail with.')
 
@@ -642,6 +640,22 @@ def main(argv):
     if extra_jars:
       deps_info['extra_classpath_jars'] = extra_jars
 
+  if options.proguard_configs:
+    deps_info['proguard_configs'] = (
+        build_utils.ParseGnList(options.proguard_configs))
+
+  if options.type in ('android_apk', 'dist_aar', 'dist_jar'):
+    all_configs = deps_info.get('proguard_configs', [])
+    extra_jars = []
+    for c in all_library_deps:
+      all_configs.extend(
+          p for p in c.get('proguard_configs', []) if p not in all_configs)
+      extra_jars.extend(
+          p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
+    deps_info['proguard_all_configs'] = all_configs
+    deps_info['proguard_all_extra_jars'] = extra_jars
+    deps_info['proguard_enabled'] = options.proguard_enabled
+
   # The java code for an instrumentation test apk is assembled differently for
   # ProGuard vs. non-ProGuard.
   #
@@ -662,6 +676,11 @@ def main(argv):
     if tested_apk_config['proguard_enabled']:
       assert options.proguard_enabled, ('proguard must be enabled for '
           'instrumentation apks if it\'s enabled for the tested apk.')
+      # Mutating lists, so no need to explicitly re-assign to dict.
+      all_configs.extend(p for p in tested_apk_config['proguard_all_configs']
+                         if p not in all_configs)
+      extra_jars.extend(p for p in tested_apk_config['proguard_all_extra_jars']
+                        if p not in extra_jars)
 
     expected_tested_package = tested_apk_config['package_name']
     AndroidManifest(options.android_manifest).CheckInstrumentationElements(
@@ -694,25 +713,6 @@ def main(argv):
     tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
     deps_dex_files = [
         p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
-
-  if options.proguard_configs:
-    deps_info['proguard_configs'] = (
-        build_utils.ParseGnList(options.proguard_configs))
-
-  if options.type in ('android_apk', 'dist_aar', 'dist_jar'):
-    deps_info['proguard_enabled'] = options.proguard_enabled
-    deps_info['proguard_info'] = options.proguard_info
-    config['proguard'] = {}
-    proguard_config = config['proguard']
-    extra_jars = []
-    all_configs = deps_info.get('proguard_configs', [])
-    for c in all_library_deps:
-      extra_jars.extend(
-          p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
-      all_configs.extend(
-          p for p in c.get('proguard_configs', []) if p not in all_configs)
-    proguard_config['extra_jars'] = extra_jars
-    proguard_config['all_configs'] = all_configs
 
   # Dependencies for the final dex file of an apk.
   if options.type == 'android_apk':

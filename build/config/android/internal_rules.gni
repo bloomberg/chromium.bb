@@ -336,11 +336,7 @@ template("write_build_config") {
       args += [ "--extra-classpath-jars=$_rebased_input_jars_paths" ]
     }
     if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
-      args += [
-        "--proguard-enabled",
-        "--proguard-info",
-        rebase_path(invoker.proguard_info, root_build_dir),
-      ]
+      args += [ "--proguard-enabled" ]
     }
     if (defined(invoker.proguard_configs)) {
       _rebased_proguard_configs =
@@ -2452,7 +2448,6 @@ if (enable_java_templates) {
             "incremental_apk_path",
             "incremental_install_json_path",
             "proguard_enabled",
-            "proguard_info",
             "non_native_packed_relocations",
             "shared_libraries_runtime_deps_file",
             "secondary_abi_shared_libraries_runtime_deps_file",
@@ -2471,6 +2466,9 @@ if (enable_java_templates) {
       build_config = _build_config
       is_prebuilt = _is_prebuilt
       possible_config_deps = _accumulated_deps
+      if (defined(apk_under_test)) {
+        possible_config_deps += [ apk_under_test ]
+      }
       supports_android = _supports_android
       requires_android = _requires_android
       bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
@@ -2502,6 +2500,11 @@ if (enable_java_templates) {
       }
     }
     _accumulated_deps += [ ":$_build_config_target_name" ]
+
+    # Don't need to depend on the apk-under-test to be packaged.
+    if (defined(invoker.apk_under_test)) {
+      _accumulated_deps += [ "${invoker.apk_under_test}__java" ]
+    }
     if (defined(invoker.android_manifest_dep)) {
       _accumulated_deps += [ invoker.android_manifest_dep ]
     }
