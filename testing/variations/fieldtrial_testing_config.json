@@ -1596,29 +1596,6 @@
             ]
         }
     ],
-    "HTTPBadPhase3": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "NotSecureWarning",
-                    "params": {
-                        "treatment": "warning"
-                    },
-                    "enable_features": [
-                        "MarkHttpAs"
-                    ]
-                }
-            ]
-        }
-    ],
     "Html5ByDefault": [
         {
             "platforms": [
