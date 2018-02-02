@@ -74,13 +74,13 @@
 
     <template is="cr-lazy-render" id="sharedMenu">
       <dialog is="cr-action-menu">
-        <button id="menuMoreButton" class="dropdown-item"
+        <button id="menuMoreButton" slot="item" class="dropdown-item"
             hidden="[[!canSearchMoreFromSite_(
                 searchedTerm, actionMenuModel_.item.domain)]]"
             on-tap="onMoreFromSiteTap_">
           $i18n{moreFromSite}
         </button>
-        <button id="menuRemoveButton" class="dropdown-item"
+        <button id="menuRemoveButton" slot="item" class="dropdown-item"
             hidden="[[!canDeleteHistory_]]"
             on-tap="onRemoveFromHistoryTap_">
           $i18n{removeFromHistory}

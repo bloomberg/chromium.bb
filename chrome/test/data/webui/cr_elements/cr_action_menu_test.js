@@ -22,10 +22,10 @@ suite('CrActionMenu', function() {
     document.body.innerHTML = `
       <button id="dots">...</button>
       <dialog is="cr-action-menu">
-        <button class="dropdown-item">Un</button>
-        <hr>
-        <button class="dropdown-item">Dos</button>
-        <button class="dropdown-item">Tres</button>
+        <button slot="item" class="dropdown-item">Un</button>
+        <hr slot="item">
+        <button slot="item" class="dropdown-item">Dos</button>
+        <button slot="item" class="dropdown-item">Tres</button>
       </dialog>
     `;
 
@@ -111,6 +111,7 @@ suite('CrActionMenu', function() {
     // Can modify children after attached() and before showAt().
     const item = document.createElement('button');
     item.classList.add('dropdown-item');
+    item.setAttribute('slot', 'item');
     menu.insertBefore(item, items[0]);
     menu.showAt(dots);
 
@@ -197,6 +198,7 @@ suite('CrActionMenu', function() {
 
   test('items automatically given accessibility role', function() {
     const newItem = document.createElement('button');
+    newItem.setAttribute('slot', 'item');
     newItem.classList.add('dropdown-item');
 
     items[1].setAttribute('role', 'checkbox');

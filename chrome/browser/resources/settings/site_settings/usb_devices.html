@@ -41,7 +41,8 @@
     </template>
 
     <dialog is="cr-action-menu">
-      <button id="removeButton" class="dropdown-item" on-tap="onRemoveTap_">
+      <button id="removeButton" slot="item" class="dropdown-item"
+          on-tap="onRemoveTap_">
         $i18n{handlerRemove}
       </button>
     </dialog>

@@ -265,7 +265,8 @@
           <dialog is="cr-action-menu"
               class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
-            <paper-checkbox id="uiLanguageItem" class="dropdown-item"
+            <paper-checkbox id="uiLanguageItem" slot="item"
+                class="dropdown-item"
                 checked="[[isProspectiveUILanguage_(
                     detailLanguage_.language.code,
                     languages.prospectiveUILanguage)]]"
@@ -275,7 +276,8 @@
                 $i18n{displayInThisLanguage}
             </paper-checkbox>
 </if>
-            <paper-checkbox id="offerTranslations" class="dropdown-item"
+            <paper-checkbox id="offerTranslations" slot="item"
+                class="dropdown-item"
                 checked="[[detailLanguage_.translateEnabled]]"
                 on-change="onTranslateCheckboxChange_"
                 hidden="[[!prefs.translate.enabled.value]]"
@@ -283,25 +285,25 @@
                     detailLanguage_.language, languages.translateTarget)]]">
               $i18n{offerToTranslateInThisLanguage}
             </paper-checkbox>
-            <hr>
-            <button class="dropdown-item" role="menuitem"
+            <hr slot="item">
+            <button slot="item" class="dropdown-item" role="menuitem"
                 on-tap="onMoveToTopTap_"
                 hidden="[[isNthLanguage_(
                     0, detailLanguage_, languages.enabled.*)]]">
               $i18n{moveToTop}
             </button>
-            <button class="dropdown-item" role="menuitem"
+            <button slot="item" class="dropdown-item" role="menuitem"
                 on-tap="onMoveUpTap_"
                 hidden="[[!showMoveUp_(detailLanguage_, languages.enabled.*)]]">
               $i18n{moveUp}
             </button>
-            <button class="dropdown-item" role="menuitem"
+            <button slot="item" class="dropdown-item" role="menuitem"
                 on-tap="onMoveDownTap_"
                 hidden="[[!showMoveDown_(
                     detailLanguage_, languages.enabled.*)]]">
               $i18n{moveDown}
             </button>
-            <button class="dropdown-item" role="menuitem"
+            <button slot="item" class="dropdown-item" role="menuitem"
                 on-tap="onRemoveLanguageTap_"
                 hidden="[[!detailLanguage_.removable]]">
               $i18n{removeLanguage}
