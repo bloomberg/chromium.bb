@@ -101,16 +101,14 @@ VisibleSelectionInFlatTree CreateVisibleSelectionWithGranularity(
 
 template <typename Strategy>
 static SelectionType ComputeSelectionType(
-    const PositionTemplate<Strategy>& start,
-    const PositionTemplate<Strategy>& end) {
-  if (start.IsNull()) {
-    DCHECK(end.IsNull());
+    const EphemeralRangeTemplate<Strategy>& range) {
+  if (range.IsNull())
     return kNoSelection;
-  }
-  DCHECK(!NeedsLayoutTreeUpdate(start)) << start << ' ' << end;
-  if (start == end)
+  DCHECK(!NeedsLayoutTreeUpdate(range.StartPosition())) << range;
+  if (range.IsCollapsed())
     return kCaretSelection;
-  if (MostBackwardCaretPosition(start) == MostBackwardCaretPosition(end))
+  if (MostBackwardCaretPosition(range.StartPosition()) ==
+      MostBackwardCaretPosition(range.EndPosition()))
     return kCaretSelection;
   return kRangeSelection;
 }
@@ -276,8 +274,7 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
   // const SelectionTemplate<Strategy>& adjusted_selection =
   // AdjustSelectionType(editing_adjusted_range);
   const SelectionType selection_type =
-      ComputeSelectionType(editing_adjusted_range.StartPosition(),
-                           editing_adjusted_range.EndPosition());
+      ComputeSelectionType(editing_adjusted_range);
   if (selection_type == kCaretSelection) {
     return typename SelectionTemplate<Strategy>::Builder()
         .Collapse(PositionWithAffinityTemplate<Strategy>(
