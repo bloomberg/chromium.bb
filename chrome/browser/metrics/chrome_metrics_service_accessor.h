@@ -45,6 +45,10 @@ class ChromeMetricsPrivateDelegate;
 class FileManagerPrivateIsUMAEnabledFunction;
 }
 
+namespace metrics {
+class UkmConsentParamBrowserTest;
+}
+
 namespace metrics_services_manager {
 class MetricsServicesManager;
 }
@@ -139,6 +143,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
 
   // Testing related friends.
   friend class MetricsReportingStateTest;
+  friend class metrics::UkmConsentParamBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
 
