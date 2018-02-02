@@ -2885,7 +2885,10 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
         ConvertUnitDouble(page_rect.width(), kPixelsPerInch, kPointsPerInch);
     double height_in_points =
         ConvertUnitDouble(page_rect.height(), kPixelsPerInch, kPointsPerInch);
-    FPDFPage_New(doc_, i, width_in_points, height_in_points);
+    // Add a new page to the document, but delete the FPDF_PAGE object.
+    FPDF_PAGE temp_page =
+        FPDFPage_New(doc_, i, width_in_points, height_in_points);
+    FPDF_ClosePage(temp_page);
     pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, true));
   }
 
