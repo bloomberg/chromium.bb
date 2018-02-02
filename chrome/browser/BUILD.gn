@@ -735,8 +735,6 @@ split_static_library("browser") {
     "metrics/sampling_metrics_provider.h",
     "metrics/subprocess_metrics_provider.cc",
     "metrics/subprocess_metrics_provider.h",
-    "metrics/testing/metrics_reporting_pref_helper.cc",
-    "metrics/testing/metrics_reporting_pref_helper.h",
     "metrics/thread_watcher.cc",
     "metrics/thread_watcher.h",
     "metrics/thread_watcher_android.cc",
