@@ -254,7 +254,6 @@ Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(SupportsAssignment());
   ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
-  // TODO(crbug.com/776656): Assert that assigned_nodes_ is up-to-date.
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
   size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
@@ -267,7 +266,6 @@ Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(SupportsAssignment());
   ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
-  // TODO(crbug.com/776656): Assert that assigned_nodes_ is up-to-date.
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
   size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
@@ -277,6 +275,7 @@ Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
 }
 
 Node* HTMLSlotElement::DistributedNodeNextTo(const Node& node) const {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(SupportsAssignment());
   const auto& it = distributed_indices_.find(&node);
   if (it == distributed_indices_.end())
@@ -288,6 +287,7 @@ Node* HTMLSlotElement::DistributedNodeNextTo(const Node& node) const {
 }
 
 Node* HTMLSlotElement::DistributedNodePreviousTo(const Node& node) const {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(SupportsAssignment());
   const auto& it = distributed_indices_.find(&node);
   if (it == distributed_indices_.end())
@@ -317,11 +317,15 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   }
 }
 
+// TODO(hayato): Rename this function once we enable IncrementalShadowDOM
+// by default because this function doesn't consider fallback elements in case
+// of IncementalShadowDOM.
 const HeapVector<Member<Node>>&
 HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
-  return RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()
-             ? AssignedNodes()
-             : distributed_nodes_;
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    return AssignedNodes();
+  DCHECK(!NeedsDistributionRecalc());
+  return distributed_nodes_;
 }
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
