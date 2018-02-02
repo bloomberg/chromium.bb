@@ -485,7 +485,8 @@ void MetricsService::InitializeMetricsState() {
 
   StabilityMetricsProvider provider(local_state_);
   if (!state_manager_->clean_exit_beacon()->exited_cleanly()) {
-    provider.LogCrash();
+    provider.LogCrash(
+        state_manager_->clean_exit_beacon()->browser_last_live_timestamp());
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     state_manager_->clean_exit_beacon()->WriteBeaconValue(true);

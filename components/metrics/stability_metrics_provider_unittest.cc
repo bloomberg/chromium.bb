@@ -4,6 +4,8 @@
 
 #include "components/metrics/stability_metrics_provider.h"
 
+#include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
@@ -46,7 +48,7 @@ TEST_F(StabilityMetricsProviderTest, RecordStabilityMetrics) {
   {
     StabilityMetricsProvider recorder(&prefs_);
     recorder.LogLaunch();
-    recorder.LogCrash();
+    recorder.LogCrash(base::Time());
     recorder.MarkSessionEndCompleted(false);
     recorder.CheckLastSessionEndCompleted();
     recorder.RecordBreakpadRegistration(true);
@@ -72,5 +74,59 @@ TEST_F(StabilityMetricsProviderTest, RecordStabilityMetrics) {
     EXPECT_EQ(1, stability.debugger_not_present_count());
   }
 }
+
+#if defined(OS_WIN)
+namespace {
+
+class TestingStabilityMetricsProvider : public StabilityMetricsProvider {
+ public:
+  TestingStabilityMetricsProvider(PrefService* local_state,
+                                  base::Time unclean_session_time)
+      : StabilityMetricsProvider(local_state),
+        unclean_session_time_(unclean_session_time) {}
+
+  bool IsUncleanSystemSession(base::Time last_live_timestamp) override {
+    return last_live_timestamp == unclean_session_time_;
+  }
+
+ private:
+  const base::Time unclean_session_time_;
+};
+
+}  // namespace
+
+TEST_F(StabilityMetricsProviderTest, RecordSystemCrashMetrics) {
+  {
+    base::Time unclean_time = base::Time::Now();
+    TestingStabilityMetricsProvider recorder(&prefs_, unclean_time);
+
+    // Any crash with a last_live_timestamp equal to unclean_time will
+    // be logged as a system crash as per the implementation of
+    // TestingStabilityMetricsProvider, so this will log a system crash.
+    recorder.LogCrash(unclean_time);
+
+    // Record a crash with no system crash.
+    recorder.LogCrash(unclean_time - base::TimeDelta::FromMinutes(1));
+  }
+
+  {
+    StabilityMetricsProvider stability_provider(&prefs_);
+    MetricsProvider* provider = &stability_provider;
+    SystemProfileProto system_profile;
+
+    base::HistogramTester histogram_tester;
+
+    provider->ProvideStabilityMetrics(&system_profile);
+
+    const SystemProfileProto_Stability& stability = system_profile.stability();
+    // Two crashes, one system crash.
+    EXPECT_EQ(2, stability.crash_count());
+
+    histogram_tester.ExpectTotalCount("Stability.Internals.SystemCrashCount",
+                                      1);
+  }
+}
+
+#endif
 
 }  // namespace metrics

@@ -193,6 +193,12 @@ const char kStabilityStatsBuildTime[] =
 const char kStabilityStatsVersion[] =
     "user_experience_metrics.stability.stats_version";
 
+// Number of times the application exited uncleanly and the system session
+// embedding the browser session ended abnormally since the last report.
+// Windows only.
+const char kStabilitySystemCrashCount[] =
+    "user_experience_metrics.stability.system_crash_count";
+
 // Number of times the version number stored in prefs did not match the
 // serialized system profile version number.
 const char kStabilityVersionMismatchCount[] =

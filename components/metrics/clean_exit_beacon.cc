@@ -71,7 +71,7 @@ void CleanExitBeacon::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
 
   registry->RegisterTimePref(prefs::kStabilityBrowserLastLiveTimeStamp,
-                             base::Time::Now(), PrefRegistry::LOSSY_PREF);
+                             base::Time(), PrefRegistry::LOSSY_PREF);
 }
 
 void CleanExitBeacon::WriteBeaconValue(bool value) {

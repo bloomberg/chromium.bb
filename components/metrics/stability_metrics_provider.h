@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_STABILITY_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_STABILITY_METRICS_PROVIDER_H_
 
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_provider.h"
 
 class PrefService;
@@ -28,13 +30,21 @@ class StabilityMetricsProvider : public MetricsProvider {
   void CheckLastSessionEndCompleted();
   void MarkSessionEndCompleted(bool end_completed);
 
-  void LogCrash();
+  void LogCrash(base::Time last_live_timestamp);
   void LogStabilityLogDeferred();
   void LogStabilityDataDiscarded();
   void LogLaunch();
   void LogStabilityVersionMismatch();
 
  private:
+#if defined(OS_WIN)
+  // This function is virtual for testing. The |last_live_timestamp| is a
+  // time point where the previous browser was known to be alive, and is used
+  // to determine whether the system session embedding that timestamp terminated
+  // uncleanly.
+  virtual bool IsUncleanSystemSession(base::Time last_live_timestamp);
+  void MaybeLogSystemCrash(base::Time last_live_timestamp);
+#endif
   // Increments an Integer pref value specified by |path|.
   void IncrementPrefValue(const char* path);
 
