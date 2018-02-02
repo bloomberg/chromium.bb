@@ -15,6 +15,9 @@ namespace {
 
 constexpr int kAvatarIconSize = 16;
 
+// Used to identify the "Use another account" button.
+constexpr int kUseAnotherAccountCmdId = std::numeric_limits<int>::max();
+
 gfx::Image SizeAndCircleIcon(const gfx::Image& icon) {
   return profiles::GetSizedAvatarIcon(icon, true, kAvatarIconSize,
                                       kAvatarIconSize, profiles::SHAPE_CIRCLE);
@@ -23,8 +26,11 @@ gfx::Image SizeAndCircleIcon(const gfx::Image& icon) {
 }  // namespace
 
 DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
-                                   const std::vector<gfx::Image>& icons)
-    : menu_(this), accounts_(accounts) {
+                                   const std::vector<gfx::Image>& icons,
+                                   Callback account_selected_callback)
+    : menu_(this),
+      accounts_(accounts),
+      account_selected_callback_(std::move(account_selected_callback)) {
   DCHECK_EQ(accounts.size(), icons.size());
   gfx::Image default_icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -40,9 +46,9 @@ DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
   }
   // Add the "Use another account" button at the bottom.
   menu_.AddItem(
-      accounts.size(),
+      kUseAnotherAccountCmdId,
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON));
-  menu_.SetIcon(menu_.GetIndexOfCommandId(accounts.size()),
+  menu_.SetIcon(menu_.GetIndexOfCommandId(kUseAnotherAccountCmdId),
                 SizeAndCircleIcon(default_icon));
   menu_.AddSeparator(ui::SPACING_SEPARATOR);
 }
@@ -67,5 +73,10 @@ bool DiceAccountsMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void DiceAccountsMenu::ExecuteCommand(int id, int event_flags) {
-  NOTIMPLEMENTED() << "Selected id: " << id;
+  DCHECK((0 <= id && static_cast<size_t>(id) < accounts_.size()) ||
+         id == kUseAnotherAccountCmdId);
+  base::Optional<AccountInfo> account;
+  if (id != kUseAnotherAccountCmdId)
+    account = accounts_[id];
+  std::move(account_selected_callback_).Run(account);
 }
