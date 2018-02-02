@@ -4,8 +4,6 @@
 
 #include "components/password_manager/core/common/password_manager_features.h"
 
-#include "build/build_config.h"
-
 namespace password_manager {
 
 namespace features {
@@ -66,13 +64,8 @@ const base::Feature kProtectSyncCredentialOnReauth = {
     "ProtectSyncCredentialOnReauth", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls the ability to export passwords from Chrome's settings page.
-#if defined(OS_IOS)
-const base::Feature kPasswordExport = {"PasswordExport",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#else
 const base::Feature kPasswordExport = {"PasswordExport",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
