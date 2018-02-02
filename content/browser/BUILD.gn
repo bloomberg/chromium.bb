@@ -79,7 +79,6 @@ jumbo_source_set("browser") {
     "//content/common",
     "//content/common:features",
     "//content/common:mojo_bindings",
-    "//content/network:network_sources",
     "//content/public/common:common_sources",
     "//content/public/common:zygote_features",
     "//crypto",

@@ -719,9 +719,6 @@
                   'content/browser/loader|' \
                   'content/child/*loader',
     },
-    'content_network' : {
-      'filepath': 'content/network/',
-    },
     'content_renderer': {
       'filepath': 'content/renderer/',
     },
@@ -1963,10 +1960,6 @@
                           'ortuno+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org',
                        'rdsmith+watch@chromium.org'],
-    'content_network': ['asanka@chromium.org',
-                        'rdsmith+watch@chromium.org',
-                        'kinuko@chromium.org',
-                        'yzshen+watch@chromium.org'],
     'content_renderer': ['mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
                       'mlamouri+watch-content@chromium.org',

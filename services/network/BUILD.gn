@@ -114,6 +114,7 @@ source_set("tests") {
 
   sources = [
     "cookie_manager_unittest.cc",
+    "cors_url_loader_unittest.cc",
     "data_pipe_element_reader_unittest.cc",
     "ignore_errors_cert_verifier_unittest.cc",
     "keepalive_statistics_recorder_unittest.cc",

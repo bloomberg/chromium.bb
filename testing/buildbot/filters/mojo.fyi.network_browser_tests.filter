@@ -589,8 +589,8 @@
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/1
 
 # Depends on captive portal component making requests through URLLoader instead of
-# URLLoaderFetcher, which is blocked on moving content/network to services/network
-# so that it can be used on ios. https://crbug.com/753658
+# URLLoaderFetcher, which is blocked on services/network efforts so that it can
+# be used on ios. https://crbug.com/753658
 # TODO(jam): started converting to use interceptor but then blocked on above, see
 # https://chromium-review.googlesource.com/c/chromium/src/+/823222
 -CaptivePortalBrowserTest.AbortLoad

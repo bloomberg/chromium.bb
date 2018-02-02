@@ -5,8 +5,7 @@ per-file *_param_traits*.*=file://ipc/SECURITY_OWNERS
 per-file dwrite_font_platform_win.h=scottmg@chromium.org
 
 # Network Service. These files will be moved into services/network.
-per-file network*=file://content/network/OWNERS
-per-file simple_url_loader*=file://content/network/OWNERS
+per-file network*=file://services/network/OWNERS
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
