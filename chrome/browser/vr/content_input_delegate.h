@@ -31,6 +31,8 @@ class ContentInputForwarder {
                             int content_id) = 0;
   // Text input specific.
   virtual void OnWebInputEdited(const TextInputInfo& info, bool commit) = 0;
+  virtual void ForwardDialogEvent(
+      std::unique_ptr<blink::WebInputEvent> event) = 0;
 };
 
 class PlatformController;
@@ -38,14 +40,15 @@ class PlatformController;
 // Receives interaction events with the web content.
 class ContentInputDelegate {
  public:
+  ContentInputDelegate() {}
   explicit ContentInputDelegate(ContentInputForwarder* content);
   virtual ~ContentInputDelegate();
 
-  void OnContentEnter(const gfx::PointF& normalized_hit_point);
-  void OnContentLeave();
-  void OnContentMove(const gfx::PointF& normalized_hit_point);
-  void OnContentDown(const gfx::PointF& normalized_hit_point);
-  void OnContentUp(const gfx::PointF& normalized_hit_point);
+  virtual void OnContentEnter(const gfx::PointF& normalized_hit_point);
+  virtual void OnContentLeave();
+  virtual void OnContentMove(const gfx::PointF& normalized_hit_point);
+  virtual void OnContentDown(const gfx::PointF& normalized_hit_point);
+  virtual void OnContentUp(const gfx::PointF& normalized_hit_point);
 
   // Text Input specific.
   void OnWebInputEdited(const TextInputInfo& info, bool commit);

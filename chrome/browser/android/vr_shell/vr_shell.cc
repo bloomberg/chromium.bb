@@ -223,6 +223,14 @@ void VrShell::SetAndroidGestureTarget(
       AndroidUiGestureTarget::FromJavaObject(android_ui_gesture_target));
 }
 
+void VrShell::SetDialogGestureTarget(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& dialog_gesture_target) {
+  dialog_gesture_target_.reset(
+      AndroidUiGestureTarget::FromJavaObject(dialog_gesture_target));
+}
+
 void VrShell::SetUiState() {
   toolbar_->Update();
 
@@ -484,6 +492,34 @@ void VrShell::OnTabRemoved(JNIEnv* env,
   ui_->RemoveTab(incognito, id);
 }
 
+void VrShell::SetAlertDialog(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             int width,
+                             int height) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::EnableAlertDialog,
+                                           gl_thread_->GetVrShellGl(),
+                                           gl_thread_.get(), width, height));
+}
+
+void VrShell::CloseAlertDialog(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::DisableAlertDialog,
+                                           gl_thread_->GetVrShellGl()));
+}
+
+void VrShell::SetAlertDialogSize(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int width,
+    int height) {
+  if (ui_surface_texture_)
+    ui_surface_texture_->SetDefaultBufferSize(width, height);
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::SetAlertDialogSize,
+                                gl_thread_->GetVrShellGl(), width, height));
+}
+
 void VrShell::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtr submit_client,
     device::mojom::VRPresentationProviderRequest request,
@@ -524,6 +560,14 @@ void VrShell::ContentOverlaySurfaceCreated(jobject surface,
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> ref(env, surface);
   Java_VrShellImpl_contentOverlaySurfaceCreated(env, j_vr_shell_, ref);
+}
+
+void VrShell::DialogSurfaceCreated(jobject surface,
+                                   gl::SurfaceTexture* texture) {
+  ui_surface_texture_ = texture;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaGlobalRef<jobject> ref(env, surface);
+  Java_VrShellImpl_dialogSurfaceCreated(env, j_vr_shell_, ref);
 }
 
 void VrShell::GvrDelegateReady(
@@ -859,6 +903,14 @@ void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
     return;
 
   android_ui_gesture_target_->DispatchWebInputEvent(std::move(event));
+}
+
+void VrShell::ProcessDialogGesture(
+    std::unique_ptr<blink::WebInputEvent> event) {
+  if (!dialog_gesture_target_)
+    return;
+
+  dialog_gesture_target_->DispatchWebInputEvent(std::move(event));
 }
 
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
