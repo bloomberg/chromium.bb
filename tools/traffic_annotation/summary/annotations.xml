@@ -201,6 +201,7 @@ Refer to README.md for content description and update process.
  <item id="speech_recognition_upstream" hash_code="66846958" type="0" content_hash_code="7706219" os_list="linux,windows" file_path="content/browser/speech/speech_recognition_engine.cc"/>
  <item id="spellcheck_hunspell_dictionary" hash_code="117649486" type="0" content_hash_code="45660952" os_list="linux,windows" file_path="chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc"/>
  <item id="spellcheck_lookup" hash_code="132553989" type="0" content_hash_code="27978613" os_list="linux,windows" file_path="components/spellcheck/browser/spelling_service_client.cc"/>
+ <item id="ssl_hmac_channel_authenticator" hash_code="106124561" type="0" content_hash_code="93707499" os_list="linux,windows" file_path="remoting/protocol/ssl_hmac_channel_authenticator.cc"/>
  <item id="ssl_name_mismatch_lookup" hash_code="114468207" type="0" content_hash_code="97619078" os_list="linux,windows" file_path="chrome/browser/ssl/common_name_mismatch_handler.cc"/>
  <item id="suggestions_image_manager" hash_code="13211343" type="0" content_hash_code="36271280" os_list="linux,windows" file_path="components/suggestions/image_manager.cc"/>
  <item id="suggestions_service" hash_code="35370363" type="0" content_hash_code="66296423" os_list="linux,windows" file_path="components/suggestions/suggestions_service_impl.cc"/>

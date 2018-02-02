@@ -34,6 +34,8 @@ namespace protocol {
 // SslHmacChannelAuthenticator implements ChannelAuthenticator that
 // secures channels using SSL and authenticates them with a shared
 // secret HMAC.
+// Please update network traffic annotation in the .cc file if this class is
+// used for any new purposes.
 class SslHmacChannelAuthenticator : public ChannelAuthenticator {
  public:
   enum LegacyMode {
