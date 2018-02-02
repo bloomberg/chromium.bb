@@ -826,6 +826,9 @@ bool ParamTraits<viz::CompositorFrame>::Read(const base::Pickle* m,
     p->render_pass_list.push_back(std::move(render_pass));
   }
 
+  if (p->render_pass_list.back()->output_rect.size().IsEmpty())
+    return false;
+
   return true;
 }
 

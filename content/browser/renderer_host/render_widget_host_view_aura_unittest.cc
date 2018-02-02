@@ -3213,9 +3213,9 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->CreateNewRendererCompositorFrameSink();
 
   // Submit a frame from the new RendererCompositorFrameSink.
-  view_->SubmitCompositorFrame(
-      parent_local_surface_id_allocator_.GenerateId(),
-      MakeDelegatedFrame(1.f, gfx::Size(), gfx::Rect()), nullptr);
+  view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
+                               MakeDelegatedFrame(1.f, frame_size, view_rect),
+                               nullptr);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
   EXPECT_EQ(view_rect, DamageRectForView(view_));
   view_->RunOnCompositingDidCommit();

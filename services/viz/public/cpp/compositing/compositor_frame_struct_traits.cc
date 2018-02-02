@@ -17,7 +17,9 @@ bool StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame>::
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "StructTraits::CompositorFrame::Read");
   return data.ReadPasses(&out->render_pass_list) &&
-         !out->render_pass_list.empty() && data.ReadMetadata(&out->metadata) &&
+         !out->render_pass_list.empty() &&
+         !out->render_pass_list.back()->output_rect.size().IsEmpty() &&
+         data.ReadMetadata(&out->metadata) &&
          data.ReadResources(&out->resource_list);
 }
 

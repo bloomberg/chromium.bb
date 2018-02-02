@@ -499,20 +499,15 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     root_pass->damage_rect = gfx::Rect(frame_size);
   }
 
-  if (frame_size.IsEmpty()) {
-    DCHECK(frame.resource_list.empty());
-    EvictDelegatedFrame();
-  } else {
-    frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
-                                       skipped_latency_info_list_.begin(),
-                                       skipped_latency_info_list_.end());
-    skipped_latency_info_list_.clear();
+  frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
+                                     skipped_latency_info_list_.begin(),
+                                     skipped_latency_info_list_.end());
+  skipped_latency_info_list_.clear();
 
-    // If surface synchronization is off, then OnFirstSurfaceActivation will be
-    // called in the same call stack.
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                    std::move(hit_test_region_list));
-  }
+  // If surface synchronization is off, then OnFirstSurfaceActivation will be
+  // called in the same call stack.
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  std::move(hit_test_region_list));
 }
 
 void DelegatedFrameHost::ClearDelegatedFrame() {

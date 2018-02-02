@@ -185,6 +185,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
                "FrameSinkId", frame_sink_id_.ToString());
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
+  DCHECK(!frame.size_in_pixels().IsEmpty());
   DCHECK(success);
   *success = true;
 
