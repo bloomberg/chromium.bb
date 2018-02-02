@@ -336,7 +336,7 @@ RequestResult RuntimeHooksDelegate::HandleGetPackageDirectoryEntryCallback(
   v8::Isolate* isolate = script_context->isolate();
   v8::Local<v8::Context> v8_context = script_context->v8_context();
 
-  v8::Local<v8::Function> get_bind_directory_entry_callback;
+  v8::MaybeLocal<v8::Value> maybe_custom_callback;
   {  // Begin natives enabled scope (for requiring the module).
     ModuleSystem::NativesEnabledScope enable_natives(
         script_context->module_system());
@@ -391,16 +391,16 @@ RequestResult RuntimeHooksDelegate::HandleGetPackageDirectoryEntryCallback(
       return RequestResult(RequestResult::HANDLED);
     }
 
-    get_bind_directory_entry_callback =
+    v8::Local<v8::Function> get_bind_directory_entry_callback =
         get_bind_directory_entry_callback_value.As<v8::Function>();
-  }  // End modules enabled scope.
 
-  v8::MaybeLocal<v8::Value> script_result =
-      JSRunner::Get(v8_context)
-          ->RunJSFunctionSync(get_bind_directory_entry_callback, v8_context, 0,
-                              nullptr);
+    maybe_custom_callback =
+        JSRunner::Get(v8_context)
+            ->RunJSFunctionSync(get_bind_directory_entry_callback, v8_context,
+                                0, nullptr);
+  }  // End modules enabled scope.
   v8::Local<v8::Value> callback;
-  if (!script_result.ToLocal(&callback)) {
+  if (!maybe_custom_callback.ToLocal(&callback)) {
     NOTREACHED();
     return RequestResult(RequestResult::THROWN);
   }
