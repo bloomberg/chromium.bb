@@ -4,6 +4,7 @@
 
 #include "core/editing/EphemeralRange.h"
 
+#include <ostream>  // NOLINT
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
@@ -189,6 +190,27 @@ Range* CreateRange(const EphemeralRange& range) {
     return nullptr;
   return Range::Create(range.GetDocument(), range.StartPosition(),
                        range.EndPosition());
+}
+
+template <typename Strategy>
+static std::ostream& PrintEphemeralRange(
+    std::ostream& ostream,
+    const EphemeralRangeTemplate<Strategy> range) {
+  if (range.IsNull())
+    return ostream << "null";
+  if (range.IsCollapsed())
+    return ostream << range.StartPosition();
+  return ostream << '[' << range.StartPosition() << ", " << range.EndPosition()
+                 << ']';
+}
+
+std::ostream& operator<<(std::ostream& ostream, const EphemeralRange& range) {
+  return PrintEphemeralRange(ostream, range);
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const EphemeralRangeInFlatTree& range) {
+  return PrintEphemeralRange(ostream, range);
 }
 
 template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;

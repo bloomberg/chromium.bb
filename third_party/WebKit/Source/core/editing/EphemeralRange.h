@@ -149,6 +149,10 @@ using EphemeralRangeInFlatTree =
 // |range.isNull()| returns true.
 CORE_EXPORT Range* CreateRange(const EphemeralRange& /* range */);
 
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const EphemeralRange&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&,
+                                     const EphemeralRangeInFlatTree&);
+
 }  // namespace blink
 
 #endif
