@@ -24,7 +24,8 @@
  */
 
 [
-    Constructor(DOMString type, optional RTCPeerConnectionIceEventInit eventInitDict)
+    Constructor(DOMString type, optional RTCPeerConnectionIceEventInit eventInitDict),
+    Exposed=Window
 ] interface RTCPeerConnectionIceEvent : Event {
     readonly attribute RTCIceCandidate? candidate;
     // TODO(loonybear): add nullable url attribute here:
