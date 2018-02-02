@@ -3767,6 +3767,11 @@
     },
     'modifications': {
       # chromium.fyi
+      'Dummy WebKit Mac10.13': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',
