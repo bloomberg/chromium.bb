@@ -20,7 +20,8 @@ bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
 }
 
 bool IsEmpty(const page_load_metrics::mojom::InteractiveTiming& timing) {
-  return !timing.interactive && !timing.interactive_detection;
+  return !timing.interactive && !timing.interactive_detection &&
+         !timing.first_input_delay;
 }
 
 bool IsEmpty(const page_load_metrics::mojom::PaintTiming& timing) {

@@ -58,6 +58,7 @@ class CORE_EXPORT InteractiveDetector
   void OnFirstMeaningfulPaintDetected(TimeTicks fmp_time);
   void OnDomContentLoadedEnd(TimeTicks dcl_time);
   void OnInvalidatingInputEvent(TimeTicks invalidation_time);
+  void OnFirstInputDelay(TimeDelta delay_seconds);
 
   // Returns Interactive Time if already detected, or 0.0 otherwise.
   TimeTicks GetInteractiveTime() const;
@@ -70,6 +71,10 @@ class CORE_EXPORT InteractiveDetector
   // Returns the first time interactive detector received a significant input
   // that may cause observers to discard the interactive time value.
   TimeTicks GetFirstInvalidatingInputTime() const;
+
+  // The duration between the hardware timestamp and being queued on the main
+  // thread for the first click, tap or key press.
+  TimeDelta GetFirstInputDelay() const;
 
   virtual void Trace(Visitor*);
 
@@ -88,6 +93,7 @@ class CORE_EXPORT InteractiveDetector
     TimeTicks dom_content_loaded_end;
     TimeTicks nav_start;
     TimeTicks first_invalidating_input;
+    TimeDelta first_input_delay;
   } page_event_times_;
 
   // Stores sufficiently long quiet windows on main thread and network.

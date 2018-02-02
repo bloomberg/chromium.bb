@@ -62,6 +62,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/loader/InteractiveDetector.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -71,6 +72,9 @@
 #include "core/paint/PaintLayerPainter.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "gin/handle.h"
+#include "gin/object_template_builder.h"
+#include "gin/wrappable.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
@@ -82,6 +86,7 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/testing/wtf/ScopedMockClock.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCoalescedInputEvent.h"
@@ -120,6 +125,7 @@
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
 #include "public/web/mac/WebSubstringUtil.h"
@@ -5043,6 +5049,114 @@ TEST_P(WebViewTest, DetachPluginInLayout) {
   web_view->UpdateAllLifecyclePhases();
   EXPECT_FALSE(plugin_element->OwnedPlugin());
   EXPECT_EQ("done", frame_client.Message());
+  web_view_helper_.Reset();  // Remove dependency on locally scoped client.
+}
+
+// Check that first input delay is correctly reported to the document.
+TEST_P(WebViewTest, FirstInputDelayReported) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   "<html><body></body></html>", base_url);
+
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+
+  WTF::ScopedMockClock clock;
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+  ASSERT_NE(nullptr, interactive_detector);
+
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+
+  WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::kTimeStampForTesting);
+  key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event1.windows_key_code = VKEY_SPACE;
+  key_event1.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
+
+  EXPECT_EQ(50, interactive_detector->GetFirstInputDelay().InMillisecondsF());
+
+  // Sending a second event won't change the FirstInputDelay.
+  WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::kTimeStampForTesting);
+  key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event2.windows_key_code = VKEY_SPACE;
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  key_event2.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
+
+  EXPECT_EQ(50, interactive_detector->GetFirstInputDelay().InMillisecondsF());
+}
+
+// Check that the input delay is correctly reported to the document.
+TEST_P(WebViewTest, FirstInputDelayExcludesProcessingTime) {
+  // We need a way for JS to advance the mock clock. Hook into console.log, so
+  // that logging advances the clock by 6 seconds.
+  class MockClockAdvancingWebFrameClient
+      : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    MockClockAdvancingWebFrameClient(WTF::ScopedMockClock* mock_clock)
+        : mock_clock_(mock_clock) {}
+    // WebFrameClient overrides:
+    void DidAddMessageToConsole(const WebConsoleMessage& message,
+                                const WebString& source_name,
+                                unsigned source_line,
+                                const WebString& stack_trace) {
+      mock_clock_->Advance(TimeDelta::FromMilliseconds(6000));
+    }
+
+   private:
+    WTF::ScopedMockClock* mock_clock_;
+  };
+
+  WTF::ScopedMockClock clock;
+  // Page load timing logic depends on the time not being zero.
+  clock.Advance(TimeDelta::FromMilliseconds(1));
+  MockClockAdvancingWebFrameClient frame_client(&clock);
+  WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   "<html><body></body></html>", base_url);
+
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+
+  WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
+  // console.log will advance the mock clock.
+  frame->ExecuteScript(
+      WebScriptSource("document.addEventListener('keydown', "
+                      "() => {console.log('advancing timer');})"));
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+  ASSERT_NE(nullptr, interactive_detector);
+
+  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+                             WebInputEvent::kNoModifiers,
+                             WebInputEvent::kTimeStampForTesting);
+  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.windows_key_code = VKEY_SPACE;
+  key_event.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+
+  clock.Advance(TimeDelta::FromMilliseconds(5000));
+
+  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+
+  TimeDelta first_input_delay = interactive_detector->GetFirstInputDelay();
+  EXPECT_EQ(5000, first_input_delay.InMillisecondsF());
+
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
 }
 
