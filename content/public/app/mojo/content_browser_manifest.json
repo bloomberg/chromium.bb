@@ -41,7 +41,6 @@
           "content::mojom::FieldTrialRecorder",
           "content::mojom::FileUtilitiesHost",
           "content::mojom::FrameSinkProvider",
-          "content::mojom::MediaStreamDispatcherHost",
           "content::mojom::MemoryCoordinatorHandle",
           "content::mojom::PushMessaging",
           "content::mojom::RendererHost",
@@ -150,6 +149,7 @@
           // InputInjector is only exposed when gpu benchmarking is enabled.
           "content::mojom::InputInjector",
 
+          "content::mojom::MediaStreamDispatcherHost",
           "content::mojom::RendererAudioInputStreamFactory",
           "content::mojom::RendererAudioOutputStreamFactory",
           "content::mojom::SharedWorkerConnector",

@@ -665,11 +665,13 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
   DeleteRequest(label);
 }
 
-void MediaStreamManager::CancelAllRequests(int render_process_id) {
+void MediaStreamManager::CancelAllRequests(int render_process_id,
+                                           int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DeviceRequests::iterator request_it = requests_.begin();
   while (request_it != requests_.end()) {
-    if (request_it->second->requesting_process_id != render_process_id) {
+    if (request_it->second->requesting_process_id != render_process_id ||
+        request_it->second->requesting_frame_id != render_frame_id) {
       ++request_it;
       continue;
     }
@@ -862,8 +864,7 @@ void MediaStreamManager::StopRemovedDevice(
       if (device.id == source_id && device.type == stream_type) {
         session_ids.push_back(device.session_id);
         if (request->device_stopped_cb) {
-          request->device_stopped_cb.Run(request->requesting_frame_id,
-                                         labeled_request.first, device);
+          request->device_stopped_cb.Run(labeled_request.first, device);
         }
       }
     }
@@ -1632,8 +1633,7 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
   // Notify renderers that the devices in the stream will be stopped.
   if (request->device_stopped_cb) {
     for (const MediaStreamDevice& device : request->devices) {
-      request->device_stopped_cb.Run(request->requesting_frame_id, label,
-                                     device);
+      request->device_stopped_cb.Run(label, device);
     }
   }
 

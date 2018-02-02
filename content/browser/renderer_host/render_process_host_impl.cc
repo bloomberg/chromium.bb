@@ -109,7 +109,6 @@
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
-#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -1917,12 +1916,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&FileUtilitiesHostImpl::Create, GetID()),
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-  registry->AddInterface(
-      base::Bind(&RenderProcessHostImpl::CreateMediaStreamDispatcherHost,
-                 base::Unretained(this), media_stream_manager));
-#endif
 
   registry->AddInterface(
       base::Bind(&metrics::CreateSingleSampleMetricsProvider));
@@ -4031,17 +4024,6 @@ RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-void RenderProcessHostImpl::CreateMediaStreamDispatcherHost(
-    MediaStreamManager* media_stream_manager,
-    mojom::MediaStreamDispatcherHostRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!media_stream_dispatcher_host_) {
-    media_stream_dispatcher_host_.reset(
-        new MediaStreamDispatcherHost(GetID(), media_stream_manager));
-  }
-  media_stream_dispatcher_host_->BindRequest(std::move(request));
-}
-
 void RenderProcessHostImpl::OnRegisterAecDumpConsumer(int id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

@@ -10,16 +10,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/child_thread_impl.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/media_features.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
@@ -184,7 +181,7 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   GetMediaStreamDispatcherHost()->OpenDevice(
-      routing_id(), request_id, device_id,
+      request_id, device_id,
       PepperMediaDeviceManager::FromPepperDeviceType(type),
       base::BindOnce(&PepperMediaDeviceManager::OnDeviceOpened, AsWeakPtr(),
                      request_id));
@@ -202,7 +199,7 @@ void PepperMediaDeviceManager::CancelOpenDevice(int request_id) {
   open_callbacks_.erase(request_id);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  GetMediaStreamDispatcherHost()->CancelRequest(routing_id(), request_id);
+  GetMediaStreamDispatcherHost()->CancelRequest(request_id);
 #endif
 }
 
@@ -287,8 +284,10 @@ void PepperMediaDeviceManager::DevicesEnumerated(
 const mojom::MediaStreamDispatcherHostPtr&
 PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, &dispatcher_host_);
+    CHECK(render_frame());
+    CHECK(render_frame()->GetRemoteInterfaces());
+    render_frame()->GetRemoteInterfaces()->GetInterface(
+        mojo::MakeRequest(&dispatcher_host_));
   }
   return dispatcher_host_;
 }
