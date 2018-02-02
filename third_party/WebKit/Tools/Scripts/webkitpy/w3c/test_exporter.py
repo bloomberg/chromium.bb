@@ -57,21 +57,27 @@ class TestExporter(object):
         self.local_wpt = self.local_wpt or LocalWPT(self.host, credentials['GH_TOKEN'])
         self.local_wpt.fetch()
 
+        _log.info('Searching for exportable in-flight CLs.')
         # The Gerrit search API is slow and easy to fail, so we wrap it in a try
         # statement to continue exporting landed commits when it fails.
         try:
             open_gerrit_cls = self.gerrit.query_exportable_open_cls()
         except GerritError as e:
+            _log.info('In-flight CLs cannot be exported due to the following error:')
             _log.error(str(e))
             gerrit_error = True
         else:
             self.process_gerrit_cls(open_gerrit_cls)
             gerrit_error = False
 
+        _log.info('Searching for exportable Chromium commits.')
         exportable_commits, git_errors = self.get_exportable_commits()
-        for error in git_errors:
-            _log.error(error)
         self.process_chromium_commits(exportable_commits)
+        if git_errors:
+            _log.info('Attention: The following errors have prevented some commits from being '
+                      'exported:')
+            for error in git_errors:
+                _log.error(error)
 
         return not (gerrit_error or git_errors)
 
