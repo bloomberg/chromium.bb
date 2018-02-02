@@ -422,7 +422,7 @@ component("skia") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_android || is_fuchsia) {
     sources += [
       # Retain the files for the SkFontMgr_Android on linux to emulate android
       # fonts. See content/zygote/zygote_main_linux.cc
@@ -444,7 +444,7 @@ component("skia") {
     sources += [
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
       "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
-      "//third_party/skia/src/ports/SkFontMgr_custom_empty_factory.cpp",
+      "ext/fontmgr_default_fuchsia.cc",
     ]
   }
 
@@ -532,6 +532,10 @@ component("skia") {
     set_sources_assignment_filter([])
     sources += [ "//third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp" ]
     set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  if (is_fuchsia) {
+    deps += [ "//third_party/expat" ]
   }
 }
 

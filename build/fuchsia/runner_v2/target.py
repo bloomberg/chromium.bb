@@ -81,22 +81,41 @@ class Target(object):
     source: The path of the file being copied.
     dest: The path on the remote filesystem which will be copied to."""
 
+    assert type(source) is str
+    self.PutFiles([source], dest)
+
+  def PutFiles(self, sources, dest):
+    """Copies files from the local filesystem to the target filesystem.
+
+    sources: List of local file paths to copy from, or a single path.
+    dest: The path on the remote filesystem which will be copied to."""
+
+    assert type(sources) is tuple or type(sources) is list
     self._AssertIsStarted()
     host, port = self._GetEndpoint()
-    logging.debug('copy local:%s => remote:%s' % (source, dest))
+    logging.debug('copy local:%s => remote:%s' % (sources, dest))
     command = remote_cmd.RunScp(self._GetSshConfigPath(), host, port,
-                                source, dest, remote_cmd.COPY_TO_TARGET)
+                                sources, dest, remote_cmd.COPY_TO_TARGET)
 
   def GetFile(self, source, dest):
     """Copies a file from the target filesystem to the local filesystem.
 
     source: The path of the file being copied.
     dest: The path on the local filesystem which will be copied to."""
+    assert type(source) is str
+    self.GetFiles([source], dest)
+
+  def GetFiles(self, sources, dest):
+    """Copies files from the target filesystem to the local filesystem.
+
+    sources: List of remote file paths to copy.
+    dest: The path on the local filesystem which will be copied to."""
+    assert type(sources) is tuple or type(sources) is list
     self._AssertIsStarted()
     host, port = self._GetEndpoint()
-    logging.debug('copy remote:%s => local:%s' % (source, dest))
+    logging.debug('copy remote:%s => local:%s' % (sources, dest))
     return remote_cmd.RunScp(self._GetSshConfigPath(), host, port,
-                             source, dest, remote_cmd.COPY_FROM_TARGET)
+                             sources, dest, remote_cmd.COPY_FROM_TARGET)
 
   def _GetEndpoint(self):
     """Returns a (host, port) tuple for the SSH connection to the target."""
