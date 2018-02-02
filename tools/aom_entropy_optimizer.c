@@ -257,7 +257,8 @@ int main(int argc, const char **argv) {
   }
 
   FRAME_COUNTS fc;
-  fread(&fc, sizeof(FRAME_COUNTS), 1, statsfile);
+  const size_t bytes = fread(&fc, sizeof(FRAME_COUNTS), 1, statsfile);
+  if (!bytes) return 1;
 
   FILE *const probsfile = fopen("optimized_probs.c", "w");
   if (probsfile == NULL) {
