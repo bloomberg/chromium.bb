@@ -23,10 +23,11 @@ namespace extensions {
 
 namespace {
 
-class Static {
+class FeatureProviderStatic {
  public:
-  Static() {
-    TRACE_EVENT0("startup", "extensions::FeatureProvider::Static");
+  FeatureProviderStatic() {
+    TRACE_EVENT0("startup",
+                 "extensions::FeatureProvider::FeatureProviderStatic");
     base::Time begin_time = base::Time::Now();
 
     ExtensionsClient* client = ExtensionsClient::Get();
@@ -61,10 +62,11 @@ class Static {
  private:
   std::map<std::string, std::unique_ptr<FeatureProvider>> feature_providers_;
 
-  DISALLOW_COPY_AND_ASSIGN(Static);
+  DISALLOW_COPY_AND_ASSIGN(FeatureProviderStatic);
 };
 
-base::LazyInstance<Static>::Leaky g_static = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<FeatureProviderStatic>::Leaky g_feature_provider_static =
+    LAZY_INSTANCE_INITIALIZER;
 
 const Feature* GetFeatureFromProviderByName(const std::string& provider_name,
                                             const std::string& feature_name) {
@@ -84,7 +86,7 @@ FeatureProvider::~FeatureProvider() {}
 
 // static
 const FeatureProvider* FeatureProvider::GetByName(const std::string& name) {
-  return g_static.Get().GetFeatures(name);
+  return g_feature_provider_static.Get().GetFeatures(name);
 }
 
 // static

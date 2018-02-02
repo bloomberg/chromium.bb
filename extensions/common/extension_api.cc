@@ -87,16 +87,15 @@ const base::DictionaryValue* GetSchemaChild(
   return NULL;
 }
 
-struct Static {
-  Static()
-      : api(ExtensionAPI::CreateWithDefaultConfiguration()) {
-  }
+struct ExtensionAPIStatic {
+  ExtensionAPIStatic() : api(ExtensionAPI::CreateWithDefaultConfiguration()) {}
   std::unique_ptr<ExtensionAPI> api;
 };
 
-base::LazyInstance<Static>::Leaky g_lazy_instance = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ExtensionAPIStatic>::Leaky g_extension_api_static =
+    LAZY_INSTANCE_INITIALIZER;
 
-// May override |g_lazy_instance| for a test.
+// May override |g_extension_api_static| for a test.
 ExtensionAPI* g_shared_instance_for_test = NULL;
 
 }  // namespace
@@ -104,7 +103,7 @@ ExtensionAPI* g_shared_instance_for_test = NULL;
 // static
 ExtensionAPI* ExtensionAPI::GetSharedInstance() {
   return g_shared_instance_for_test ? g_shared_instance_for_test
-                                    : g_lazy_instance.Get().api.get();
+                                    : g_extension_api_static.Get().api.get();
 }
 
 // static
