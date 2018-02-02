@@ -189,11 +189,10 @@ class BASE_EXPORT SharedMemory {
   // identifier is not portable.
   SharedMemoryHandle handle() const;
 
-  // Returns the underlying OS handle for this segment. The caller also gets
-  // ownership of the handle. This is logically equivalent to:
-  //   SharedMemoryHandle dup = DuplicateHandle(handle());
-  //   Close();
-  //   return dup;
+  // Returns the underlying OS handle for this segment. The caller takes
+  // ownership of the handle and memory is unmapped. This is equivalent to
+  // duplicating the handle and then calling Unmap() and Close() on this object,
+  // without the overhead of duplicating the handle.
   SharedMemoryHandle TakeHandle();
 
   // Closes the open shared memory segment. The memory will remain mapped if
