@@ -13,23 +13,25 @@
 
 namespace ui {
 
-static IMEBridge* g_ime_bridge = NULL;
+static IMEBridge* g_ime_bridge = nullptr;
 
 // An implementation of IMEBridge.
 class IMEBridgeImpl : public IMEBridge {
  public:
 #if defined(OS_CHROMEOS)
   IMEBridgeImpl()
-      : input_context_handler_(NULL),
-        engine_handler_(NULL),
+      : input_context_handler_(nullptr),
+        engine_handler_(nullptr),
+        observer_(nullptr),
         current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
                                ui::TEXT_INPUT_MODE_DEFAULT,
                                0),
-        candidate_window_handler_(NULL) {}
+        candidate_window_handler_(nullptr) {}
 #else
   IMEBridgeImpl()
-      : input_context_handler_(NULL),
-        engine_handler_(NULL),
+      : input_context_handler_(nullptr),
+        engine_handler_(nullptr),
+        observer_(nullptr),
         current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
                                ui::TEXT_INPUT_MODE_DEFAULT,
                                0) {}
@@ -70,6 +72,17 @@ class IMEBridgeImpl : public IMEBridge {
     return current_input_context_;
   }
 
+  // IMEBridge override.
+  void SetObserver(ui::IMEBridgeObserver* observer) override {
+    observer_ = observer;
+  }
+
+  // IMEBridge override.
+  void MaybeSwitchEngine() override {
+    if (observer_)
+      observer_->OnRequestSwitchEngine();
+  }
+
 #if defined(OS_CHROMEOS)
   // IMEBridge override.
   void SetCandidateWindowHandler(
@@ -87,6 +100,7 @@ class IMEBridgeImpl : public IMEBridge {
  private:
   IMEInputContextHandlerInterface* input_context_handler_;
   IMEEngineHandlerInterface* engine_handler_;
+  IMEBridgeObserver* observer_;
   IMEEngineHandlerInterface::InputContext current_input_context_;
 
 #if defined(OS_CHROMEOS)
@@ -111,7 +125,7 @@ void IMEBridge::Initialize() {
 // static.
 void IMEBridge::Shutdown() {
   delete g_ime_bridge;
-  g_ime_bridge = NULL;
+  g_ime_bridge = nullptr;
 }
 
 // static.

@@ -107,9 +107,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                                           int anchor_pos,
                                           int offset_pos) = 0;
 
-    // Called when the engine's MaybeSwitchEngine is called.
-    virtual void OnRequestEngineSwitch() = 0;
-
 #if defined(OS_CHROMEOS)
 
     // Called when an InputContext's properties change while it is focused.
@@ -143,7 +140,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   void Enable(const std::string& component_id) override;
   void Disable() override;
   void Reset() override;
-  void MaybeSwitchEngine() override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        KeyEventDoneCallback& callback) override;
   void SetSurroundingText(const std::string& text,

@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "ui/base/ime/ime_bridge_observer.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_flags.h"
 
@@ -62,7 +63,6 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
                                 int cursor_pos,
                                 int anchor_pos,
                                 int offset_pos) override;
-  void OnRequestEngineSwitch() override {}
 
  protected:
   // Helper function used to forward the given event to the |profile_|'s event
@@ -176,6 +176,7 @@ class InputImeAPI : public BrowserContextKeyedAPI,
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<InputImeAPI>* GetFactoryInstance();
+
   void Shutdown() override;
 
   // ExtensionRegistryObserver implementation.
@@ -210,6 +211,8 @@ class InputImeAPI : public BrowserContextKeyedAPI,
       extension_registry_observer_;
 
   content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<ui::IMEBridgeObserver> observer_;
 };
 
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile);

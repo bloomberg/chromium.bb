@@ -63,6 +63,20 @@ bool IsInputImeEnabled() {
       switches::kDisableInputImeAPI);
 }
 
+class ImeBridgeObserver : public ui::IMEBridgeObserver {
+ public:
+  void OnRequestSwitchEngine() override {
+    Browser* browser = chrome::FindLastActive();
+    if (!browser)
+      return;
+    extensions::InputImeEventRouter* router =
+        extensions::GetInputImeEventRouter(browser->profile());
+    if (!router)
+      return;
+    ui::IMEBridge::Get()->SetCurrentEngineHandler(router->active_engine());
+  }
+};
+
 class ImeObserverNonChromeOS : public ui::ImeObserver {
  public:
   ImeObserverNonChromeOS(const std::string& extension_id, Profile* profile)
@@ -92,17 +106,6 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_COMPOSITION_BOUNDS_CHANGED,
         OnCompositionBoundsChanged::kEventName, std::move(args));
-  }
-
-  void OnRequestEngineSwitch() override {
-    Browser* browser = chrome::FindLastActive();
-    if (!browser)
-      return;
-    extensions::InputImeEventRouter* router =
-        extensions::GetInputImeEventRouter(browser->profile());
-    if (!router)
-      return;
-    ui::IMEBridge::Get()->SetCurrentEngineHandler(router->active_engine());
   }
 
  private:
@@ -145,6 +148,10 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   // No-op if called multiple times.
   ui::IMEBridge::Initialize();
+  if (!observer_) {
+    observer_ = std::make_unique<ImeBridgeObserver>();
+    ui::IMEBridge::Get()->SetObserver(observer_.get());
+  }
 
   // Set the preference kPrefNeverActivatedSinceLoaded true to indicate
   // input.ime.activate API has been never called since loaded.

@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace input_ime = extensions::api::input_ime;
@@ -413,6 +414,9 @@ InputImeAPI::~InputImeAPI() = default;
 void InputImeAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
   registrar_.RemoveAll();
+  if (observer_ && ui::IMEBridge::Get()) {
+    ui::IMEBridge::Get()->SetObserver(nullptr);
+  }
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI>>::

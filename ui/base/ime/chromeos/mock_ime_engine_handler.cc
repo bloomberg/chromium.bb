@@ -49,9 +49,6 @@ void MockIMEEngineHandler::Reset() {
   ++reset_call_count_;
 }
 
-void MockIMEEngineHandler::MaybeSwitchEngine() {
-}
-
 bool MockIMEEngineHandler::IsInterestedInKeyEvent() const {
   return true;
 }

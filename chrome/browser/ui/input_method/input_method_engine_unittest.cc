@@ -114,7 +114,6 @@ class TestObserver : public InputMethodEngineBase::Observer {
     surrounding_info_.anchor = anchor_pos;
     surrounding_info_.offset = offset;
   }
-  void OnRequestEngineSwitch() override {}
 
   // Returns and resets the bitmap |calls_bitmap_|.
   unsigned char GetCallsBitmapAndReset() {
