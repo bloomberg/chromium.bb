@@ -7,6 +7,7 @@
 
 #include "base/containers/span.h"
 #include "base/memory/aligned_memory.h"
+#include "base/optional.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/paint_filter.h"
 #include "services/viz/public/cpp/compositing/paint_filter_struct_traits.h"
@@ -136,10 +137,11 @@ struct StructTraits<viz::mojom::FilterOperationDataView, cc::FilterOperation> {
     return operation.image_filter();
   }
 
-  static base::span<const float> matrix(const cc::FilterOperation& operation) {
+  static base::Optional<base::span<const float>> matrix(
+      const cc::FilterOperation& operation) {
     if (operation.type() != cc::FilterOperation::COLOR_MATRIX)
-      return base::span<const float>();
-    return operation.matrix();
+      return base::nullopt;
+    return base::make_span(operation.matrix());
   }
 
   static base::span<const gfx::Rect> shape(
