@@ -59,7 +59,8 @@ bool InsertIfNotPresent(std::unordered_map<std::string, Printer>* new_printers,
 }
 
 class SyncedPrintersManagerImpl : public SyncedPrintersManager,
-                                  public PrintersSyncBridge::Observer {
+                                  public PrintersSyncBridge::Observer,
+                                  public ExternalPrinters::Observer {
  public:
   SyncedPrintersManagerImpl(Profile* profile,
                             std::unique_ptr<PrintersSyncBridge> sync_bridge)
@@ -76,13 +77,23 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     if (base::FeatureList::IsEnabled(features::kBulkPrinters)) {
       printers_observer_ = std::make_unique<ExternalPrintersPrefBridge>(
           UserPolicyNames(), profile_);
+      external_printers_ =
+          ExternalPrintersFactory::Get()->GetForProfile(profile_);
+      if (external_printers_) {
+        external_printers_->AddObserver(this);
+      }
     }
 
     UpdateRecommendedPrinters();
     sync_bridge_->AddObserver(this);
   }
 
-  ~SyncedPrintersManagerImpl() override { sync_bridge_->RemoveObserver(this); }
+  ~SyncedPrintersManagerImpl() override {
+    if (external_printers_) {
+      external_printers_->RemoveObserver(this);
+    }
+    sync_bridge_->RemoveObserver(this);
+  }
 
   std::vector<Printer> GetConfiguredPrinters() const override {
     // No need to lock here, since sync_bridge_ is thread safe and we don't
@@ -152,6 +163,16 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
         FROM_HERE,
         &SyncedPrintersManager::Observer::OnConfiguredPrintersChanged,
         GetConfiguredPrinters());
+  }
+
+  // ExternalPrinters::Observer override
+  void OnPrintersChanged(
+      bool valid,
+      const std::map<const ::std::string, const Printer>& printers) override {
+    // User or device policy printers changed.  Update the lists.
+    // |valid| is safe to ignore here since we're recomputing and the cached
+    // printers are always cleared.
+    UpdateRecommendedPrinters();
   }
 
  private:
@@ -296,6 +317,9 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Bulk user printers. Unowned.
+  base::WeakPtr<ExternalPrinters> external_printers_;
 
   // The backend for profile printers.
   std::unique_ptr<PrintersSyncBridge> sync_bridge_;
