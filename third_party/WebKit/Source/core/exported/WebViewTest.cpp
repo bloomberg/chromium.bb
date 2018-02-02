@@ -5097,6 +5097,92 @@ TEST_P(WebViewTest, FirstInputDelayReported) {
   EXPECT_EQ(50, interactive_detector->GetFirstInputDelay().InMillisecondsF());
 }
 
+// Check that first input delay is correctly reported to the document when the
+// first input is a pointer down event, and we receive a pointer up event.
+TEST_P(WebViewTest, PointerDownUpFirstInputDelay) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   "<html><body></body></html>", base_url);
+
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+
+  WTF::ScopedMockClock clock;
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+  ASSERT_NE(nullptr, interactive_detector);
+
+  WebPointerEvent pointer_down(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  pointer_down.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
+
+  // We don't know if this pointer event will result in a scroll or not, so we
+  // can't report its delay. We don't consider a scroll to be meaningful input.
+  EXPECT_EQ(0, interactive_detector->GetFirstInputDelay().InMillisecondsF());
+
+  // When we receive a pointer up, we report the delay of the pointer down.
+  WebPointerEvent pointer_up(
+      WebInputEvent::kPointerUp,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  pointer_up.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_up));
+
+  EXPECT_EQ(50, interactive_detector->GetFirstInputDelay().InMillisecondsF());
+}
+
+// Check that first input delay isn't reported to the document when the
+// first input is a pointer down event followed by a pointer cancel event.
+TEST_P(WebViewTest, PointerDownCancelFirstInputDelay) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   "<html><body></body></html>", base_url);
+
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+
+  WTF::ScopedMockClock clock;
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+  ASSERT_NE(nullptr, interactive_detector);
+
+  WebPointerEvent pointer_down(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  pointer_down.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
+
+  // We don't know if this pointer event will result in a scroll or not, so we
+  // can't report its delay. We don't consider a scroll to be meaningful input.
+  EXPECT_EQ(0, interactive_detector->GetFirstInputDelay().InMillisecondsF());
+
+  // When we receive a pointer up, we report the delay of the pointer down.
+  WebPointerEvent pointer_cancel(
+      WebInputEvent::kPointerCancel,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  pointer_cancel.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_cancel));
+
+  // We received a pointer cancel, so this is a scroll gesture. No meaningful
+  // input has occurred yet.
+  EXPECT_EQ(0, interactive_detector->GetFirstInputDelay().InMillisecondsF());
+}
+
 // Check that the input delay is correctly reported to the document.
 TEST_P(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   // We need a way for JS to advance the mock clock. Hook into console.log, so

@@ -10,6 +10,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/wtf/Time.h"
+#include "public/platform/WebInputEvent.h"
 
 namespace blink {
 
@@ -115,6 +116,50 @@ TimeTicks InteractiveDetector::GetFirstInvalidatingInputTime() const {
 
 TimeDelta InteractiveDetector::GetFirstInputDelay() const {
   return page_event_times_.first_input_delay;
+}
+
+// This is called early enough in the pipeline that we don't need to worry about
+// javascript dispatching untrusted input events.
+void InteractiveDetector::HandleForFirstInputDelay(const WebInputEvent& event) {
+  if (!page_event_times_.first_input_delay.is_zero())
+    return;
+
+  DCHECK(event.GetType() != WebInputEvent::kTouchStart);
+
+  // We can't report a pointerDown until the pointerUp, in case it turns into a
+  // scroll.
+  if (event.GetType() == WebInputEvent::kPointerDown) {
+    pending_pointerdown_delay_ = TimeDelta::FromSecondsD(
+        CurrentTimeTicksInSeconds() - event.TimeStampSeconds());
+    return;
+  }
+
+  bool event_is_meaningful =
+      event.GetType() == WebInputEvent::kMouseDown ||
+      event.GetType() == WebInputEvent::kKeyDown ||
+      event.GetType() == WebInputEvent::kRawKeyDown ||
+      // We need to explicitly include tap, as if there are no listeners, we
+      // won't receive the pointer events.
+      event.GetType() == WebInputEvent::kGestureTap ||
+      event.GetType() == WebInputEvent::kPointerUp;
+
+  if (!event_is_meaningful)
+    return;
+
+  // It is possible that this pointer up doesn't match with the pointer down
+  // whose delay is stored in pending_pointerdown_delay_. In this case, the user
+  // gesture started by this event contained some non-scroll input, so we
+  // consider it reasonable to use the delay of the initial event.
+  const TimeDelta delay =
+      event.GetType() == WebInputEvent::kPointerUp
+          ? pending_pointerdown_delay_
+          : TimeDelta::FromSecondsD(CurrentTimeTicksInSeconds() -
+                                    event.TimeStampSeconds());
+  pending_pointerdown_delay_ = base::TimeDelta();
+
+  page_event_times_.first_input_delay = delay;
+  if (GetSupplementable()->Loader())
+    GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
 void InteractiveDetector::BeginNetworkQuietPeriod(TimeTicks current_time) {

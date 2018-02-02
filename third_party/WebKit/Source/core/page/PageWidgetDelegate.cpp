@@ -131,7 +131,18 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     const WebCoalescedInputEvent& coalesced_event,
     LocalFrame* root) {
   const WebInputEvent& event = coalesced_event.Event();
-  ReportFirstInputDelay(event, root);
+  if (root) {
+    Document* document = root->GetDocument();
+    DCHECK(document);
+
+    InteractiveDetector* interactive_detector(
+        InteractiveDetector::From(*document));
+
+    // interactive_detector is null in the OOPIF case.
+    // TODO(crbug.com/808089): report across OOPIFs.
+    if (interactive_detector)
+      interactive_detector->HandleForFirstInputDelay(event);
+  }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&
       WebInputEvent::IsMouseEventType(event.GetType())) {
