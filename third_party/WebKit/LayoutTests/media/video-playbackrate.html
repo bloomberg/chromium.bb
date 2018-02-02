@@ -2,7 +2,6 @@
 <title>Test playbackRate and defaultPlaybackRate.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 // "playbackRate" should not change when play() is called.
@@ -27,7 +26,7 @@ async_test(function(t) {
         assert_equals(video.defaultPlaybackRate, 2);
 
         // Test extreme playback rates.
-        
+
         video.defaultPlaybackRate = Number.MIN_VALUE;
         assert_equals(video.defaultPlaybackRate, Number.MIN_VALUE);
 
@@ -78,6 +77,6 @@ async_test(function(t) {
         }
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

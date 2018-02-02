@@ -11,7 +11,7 @@ async_test(t => {
 
     var video = document.createElement('video');
     video.setAttribute('controls', '');
-    video.src = findMediaFile('video', '../content/test');
+    video.src = '../content/test.ogv';
     document.body.appendChild(video);
 
     video.play();

@@ -2,7 +2,6 @@
 <title>autoplay with preload set to none.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script>
 function autoplay_test(tagName, src)
 {
@@ -30,6 +29,6 @@ function autoplay_test(tagName, src)
     }, tagName + '.autoplay with preload="none"');
 }
 
-autoplay_test('audio', findMediaFile('audio', 'content/test'));
-autoplay_test('video', findMediaFile('video', 'content/test'));
+autoplay_test('audio', 'content/test.oga');
+autoplay_test('video', 'content/test.ogv');
 </script>

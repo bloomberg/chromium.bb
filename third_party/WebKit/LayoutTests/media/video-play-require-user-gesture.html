@@ -3,7 +3,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-controls.js"></script>
-<script src="media-file.js"></script>
 <script>
 internals.settings.setAutoplayPolicy('user-gesture-required');
 </script>
@@ -35,6 +34,6 @@ async_test(function(t) {
         assert_true(video.paused);
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

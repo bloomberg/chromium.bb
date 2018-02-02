@@ -2,7 +2,6 @@
 <title>Test media element readystate value on load.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -19,6 +18,6 @@ async_test(function(t) {
         assert_equals(video.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

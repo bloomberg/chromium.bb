@@ -55,8 +55,4 @@ MEDIA_EXPORT bool ParseAudioCodecString(const std::string& mime_type,
       mime_type, codec_id, ambiguous_codec_string, out_codec);
 }
 
-void RemoveProprietaryMediaTypesAndCodecsForTests() {
-  GetMimeUtil()->RemoveProprietaryMediaTypesAndCodecs();
-}
-
 }  // namespace media

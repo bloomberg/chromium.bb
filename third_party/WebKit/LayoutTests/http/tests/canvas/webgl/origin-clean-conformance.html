@@ -86,34 +86,14 @@ var testVideo = false;
 
 function init() {
   var video = document.getElementById("video");
-
-  var base = "http://localhost:8000/resources/";
-  var videos = [
-    ["video/mp4", base + "test.mp4"],
-    ["video/ogg", base + "test.ogv"],
-  ];
-  var videoFile = null;
-  for (var i = 0; i < videos.length; ++i) {
-    if (video.canPlayType(videos[i][0])) {
-      videoFile = videos[i][1];
-      break;
-    }
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
   }
-  assertMsg(videoFile, "Playable video format found");
-
-  if (videoFile) {
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
-    }
-    video.src = videoFile;
-    video.addEventListener("playing", runTests);
-    video.play();
-    testVideo = true;
-  } else {
-    // Still run the other tests, even if the video failed.
-    runTests();
-  }
+  video.src = "http://localhost:8000/resources/test.ogv";
+  video.addEventListener("playing", runTests);
+  video.play();
+  testVideo = true;
 }
 
 function runTests() {

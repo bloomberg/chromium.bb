@@ -17,8 +17,8 @@ async_test(function(t) {
 
     assert_equals(video.canPlayType("video/webm"), "maybe")
 
-    // Note: can't use findMediaFile because it prioritizes ogv over webm.
-    // ogv files do not seem to support pixel aspect ratios, where as webms do.
+    // Note: Do not use an ogv file. Ogv files do not seem to support pixel
+    // aspect ratios, where as webms do.
     video.src = "content/test-par-5-7.webm";
 });
 </script>
