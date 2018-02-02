@@ -90,7 +90,7 @@
               <paper-input-container no-label-float>
                 <input id="nameserver[[index]]" is="iron-input" value="[[item]]"
                     disabled="[[!canEdit_(editable, nameserversType_)]]"
-                    on-change="onValueChange_">
+                    on-change="onValueChange_" slot="input">
               </paper-input-container>
             </template>
           </div>

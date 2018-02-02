@@ -54,7 +54,7 @@
       }
     </style>
     <paper-input-container id="pageselector" no-label-float>
-      <input id="input" is="iron-input" value="{{pageNo}}"
+      <input id="input" is="iron-input" value="{{pageNo}}" slot="input"
           prevent-invalid-input allowed-pattern="\d" on-mouseup="select"
           on-change="pageNoCommitted" aria-label$="{{strings.labelPageNumber}}">
     </paper-input-container>
