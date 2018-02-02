@@ -2535,8 +2535,6 @@ split_static_library("browser") {
       "net/firefox_proxy_settings.h",
       "notifications/message_center_notification_manager.cc",
       "notifications/message_center_notification_manager.h",
-      "notifications/message_center_stats_collector.cc",
-      "notifications/message_center_stats_collector.h",
       "notifications/notification_system_observer.cc",
       "notifications/notification_system_observer.h",
       "notifications/notification_ui_manager_desktop.cc",

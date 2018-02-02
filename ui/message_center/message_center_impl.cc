@@ -67,7 +67,8 @@ class ScopedNotificationsIterationLock {
 
 MessageCenterImpl::MessageCenterImpl()
     : MessageCenter(),
-      popup_timers_controller_(new PopupTimersController(this)) {
+      popup_timers_controller_(std::make_unique<PopupTimersController>(this)),
+      stats_collector_(this) {
   notification_list_.reset(new NotificationList(this));
   notification_change_queue_.reset(new ChangeQueue());
 }
