@@ -131,7 +131,6 @@ std::unique_ptr<internal::TaskQueueImpl> TaskQueueManager::CreateTaskQueueImpl(
 }
 
 void TaskQueueManager::SetObserver(Observer* observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   main_thread_only().observer = observer;
 }
 
@@ -344,8 +343,15 @@ void TaskQueueManager::DoWork(WorkType work_type) {
 
     WakeUpReadyDelayedQueues(&lazy_now);
 
+    // Find the next non-canceled task to run, if any.
     internal::WorkQueue* work_queue = nullptr;
-    if (!SelectWorkQueueToService(&work_queue))
+    while (SelectWorkQueueToService(&work_queue)) {
+      if (!work_queue->RemoveAllCanceledTasksFromFront())
+        break;
+      work_queue = nullptr;
+    }
+
+    if (!work_queue)
       break;
 
     // NB this may unregister |work_queue|.

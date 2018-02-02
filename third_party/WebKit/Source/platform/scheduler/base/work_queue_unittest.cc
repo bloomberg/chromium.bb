@@ -18,7 +18,15 @@ namespace scheduler {
 namespace internal {
 namespace {
 void NopTask() {}
-}
+
+struct Cancelable {
+  Cancelable() : weak_ptr_factory(this) {}
+
+  void NopTask() {}
+
+  base::WeakPtrFactory<Cancelable> weak_ptr_factory;
+};
+}  // namespace
 
 class WorkQueueTest : public ::testing::Test {
  public:
@@ -36,6 +44,17 @@ class WorkQueueTest : public ::testing::Test {
   void TearDown() override { work_queue_sets_->RemoveQueue(work_queue_.get()); }
 
  protected:
+  TaskQueueImpl::Task FakeCancelableTaskWithEnqueueOrder(
+      int enqueue_order,
+      base::WeakPtr<Cancelable> weak_ptr) {
+    TaskQueueImpl::Task fake_task(
+        TaskQueue::PostedTask(base::BindOnce(&Cancelable::NopTask, weak_ptr),
+                              FROM_HERE),
+        base::TimeTicks(), 0);
+    fake_task.set_enqueue_order(enqueue_order);
+    return fake_task;
+  }
+
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
         TaskQueue::PostedTask(base::BindOnce(&NopTask), FROM_HERE),
@@ -412,6 +431,42 @@ TEST_F(WorkQueueTest, InsertFenceAfterEnqueuing) {
 
   EnqueueOrder enqueue_order;
   EXPECT_FALSE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
+}
+
+TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFront) {
+  {
+    Cancelable cancelable;
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        2, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        3, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        4, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeTaskWithEnqueueOrder(5));
+  }
+  EXPECT_TRUE(work_queue_->RemoveAllCanceledTasksFromFront());
+
+  EnqueueOrder enqueue_order;
+  EXPECT_TRUE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
+  EXPECT_EQ(5ull, enqueue_order);
+}
+
+TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFrontTasksNotCanceled) {
+  {
+    Cancelable cancelable;
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        2, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        3, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        4, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeTaskWithEnqueueOrder(5));
+    EXPECT_FALSE(work_queue_->RemoveAllCanceledTasksFromFront());
+
+    EnqueueOrder enqueue_order;
+    EXPECT_TRUE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
+    EXPECT_EQ(2ull, enqueue_order);
+  }
 }
 
 }  // namespace internal

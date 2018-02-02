@@ -132,16 +132,6 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
   DCHECK(!work_queue_.empty());
 
-  // Skip over canceled tasks, except for the last one since we always return
-  // something.
-  while (work_queue_.size() > 1u) {
-    if (!work_queue_.front().task || work_queue_.front().task.IsCancelled()) {
-      work_queue_.pop_front();
-    } else {
-      break;
-    }
-  }
-
   TaskQueueImpl::Task pending_task = work_queue_.TakeFirst();
   // NB immediate tasks have a different pipeline to delayed ones.
   if (queue_type_ == QueueType::kImmediate && work_queue_.empty()) {
@@ -153,6 +143,26 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   work_queue_sets_->OnPopQueue(this);
   task_queue_->TraceQueueSize();
   return pending_task;
+}
+
+bool WorkQueue::RemoveAllCanceledTasksFromFront() {
+  DCHECK(work_queue_sets_);
+  bool task_removed = false;
+  while (!work_queue_.empty() && (!work_queue_.front().task ||
+                                  work_queue_.front().task.IsCancelled())) {
+    work_queue_.pop_front();
+    task_removed = true;
+  }
+  if (task_removed) {
+    // NB immediate tasks have a different pipeline to delayed ones.
+    if (queue_type_ == QueueType::kImmediate && work_queue_.empty()) {
+      // Short-circuit the queue reload so that OnPopQueue does the right thing.
+      work_queue_ = task_queue_->TakeImmediateIncomingQueue();
+    }
+    work_queue_sets_->OnPopQueue(this);
+    task_queue_->TraceQueueSize();
+  }
+  return task_removed;
 }
 
 void WorkQueue::AssignToWorkQueueSets(WorkQueueSets* work_queue_sets) {
