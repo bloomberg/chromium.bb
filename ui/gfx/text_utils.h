@@ -47,6 +47,9 @@ FindValidBoundaryBefore(const base::string16& text, size_t index);
 GFX_EXPORT size_t
 FindValidBoundaryAfter(const base::string16& text, size_t index);
 
+// If the UI layout is right-to-left, flip the alignment direction.
+GFX_EXPORT HorizontalAlignment MaybeFlipForRTL(HorizontalAlignment alignment);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_TEXT_UTILS_H_

@@ -7,6 +7,8 @@
 
 #include <list>
 #include <map>
+#include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -15,6 +17,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
@@ -62,6 +65,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
     // If set, the whole range will be put on a single line.
     bool disable_line_wrapping = false;
+
+    // A custom view shown instead of the underlying text. Ownership of custom
+    // views must be passed to StyledLabel via AddCustomView().
+    View* custom_view = nullptr;
   };
 
   // Note that any trailing whitespace in |text| will be trimmed.
@@ -80,6 +87,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
   void AddStyleRange(const gfx::Range& range, const RangeStyleInfo& style_info);
+
+  // Passes ownership of a custom view for use by RangeStyleInfo structs.
+  void AddCustomView(std::unique_ptr<View> custom_view);
 
   // Set the context of this text. All ranges have the same context.
   // |text_context| must be a value from views::style::TextContext.
@@ -125,6 +135,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // LinkListener implementation:
   void LinkClicked(Link* source, int event_flags) override;
 
+  // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
+  void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
+
  private:
   struct StyleRange {
     StyleRange(const gfx::Range& range,
@@ -155,6 +168,15 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // |width_at_last_size_calculation_|. Returns the needed size.
   gfx::Size CalculateAndDoLayout(int width, bool dry_run);
 
+  // Adjusts the offsets of the views in a line for alignment and other line
+  // parameters.
+  void AdvanceOneLine(int* line_number,
+                      gfx::Point* offset,
+                      int* max_line_height,
+                      int width,
+                      std::vector<View*>* views_in_a_line,
+                      bool new_line = true);
+
   // The text to display.
   base::string16 text_;
 
@@ -174,6 +196,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // that correspond to ranges with is_link style set will be added to the map.
   std::map<View*, gfx::Range> link_targets_;
 
+  // Owns the custom views used to replace ranges of text with icons, etc.
+  std::set<std::unique_ptr<View>> custom_views_;
+
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.
   mutable gfx::Size calculated_size_;
@@ -187,6 +212,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Controls whether the text is automatically re-colored to be readable on the
   // background.
   bool auto_color_readability_enabled_;
+
+  // The horizontal alignment. This value is flipped for RTL. The default
+  // behavior is to align left in LTR UI and right in RTL UI.
+  gfx::HorizontalAlignment horizontal_alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(StyledLabel);
 };

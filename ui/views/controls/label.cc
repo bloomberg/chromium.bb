@@ -25,6 +25,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -150,12 +151,7 @@ void Label::SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled) {
 }
 
 void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
-  // If the UI layout is right-to-left, flip the alignment direction.
-  if (base::i18n::IsRTL() &&
-      (alignment == gfx::ALIGN_LEFT || alignment == gfx::ALIGN_RIGHT)) {
-    alignment = (alignment == gfx::ALIGN_LEFT) ?
-        gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
-  }
+  alignment = gfx::MaybeFlipForRTL(alignment);
   if (horizontal_alignment() == alignment)
     return;
   is_first_paint_text_ = true;

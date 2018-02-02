@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/i18n/char_iterator.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -106,6 +107,15 @@ size_t FindValidBoundaryAfter(const base::string16& text, size_t index) {
   // If |index| straddles a UTF-16 surrogate pair, go forward.
   U16_SET_CP_LIMIT(text.data(), 0, text_index, text_length);
   return static_cast<size_t>(text_index);
+}
+
+HorizontalAlignment MaybeFlipForRTL(HorizontalAlignment alignment) {
+  if (base::i18n::IsRTL() &&
+      (alignment == gfx::ALIGN_LEFT || alignment == gfx::ALIGN_RIGHT)) {
+    alignment =
+        (alignment == gfx::ALIGN_LEFT) ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
+  }
+  return alignment;
 }
 
 }  // namespace gfx
