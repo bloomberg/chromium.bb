@@ -543,15 +543,15 @@
         },
         "fuzzer": {
             "_template": "fuzzer",
+            "build_type": "binary",
+            "chroot_replace": false,
+            "description": "Incremental Builds",
             "disk_layout": "2gb-rootfs",
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-            ],
+            "display_label": "incremental",
+            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+            "hw_tests_override": [],
             "profile": "fuzzer",
+            "uprev": false,
             "vm_tests": [
                 "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
@@ -1714,19 +1714,15 @@
     },
     "amd64-generic-fuzzer": {
         "_template": "fuzzer",
+        "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic"
         ],
-        "build_type": "binary",
         "buildslave_type": "baremetal",
-        "chroot_replace": false,
         "description": "Build for fuzzing testing",
         "disk_layout": "4gb-rootfs",
-        "display_label": "incremental",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "hw_tests_override": null,
-        "trybot_list": true,
-        "uprev": false
+        "trybot_list": true
     },
     "amd64-generic-goofy-chrome-pfq": {
         "_template": "chrome_pfq",

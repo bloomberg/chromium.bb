@@ -799,6 +799,7 @@ _waterfall_config_map = {
 
         # ASAN.
         'amd64-generic-asan',
+        'amd64-generic-fuzzer',
     ]),
 
     waterfall.WATERFALL_INTERNAL: frozenset([
@@ -1320,6 +1321,8 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'fuzzer',
       site_config.templates.default_hw_tests_override,
+      site_config.templates.incremental,
+      site_config.templates.no_hwtest_builder,
       profile='fuzzer',
       # Need larger rootfs since fuzzing also enables asan.
       disk_layout='2gb-rootfs',
@@ -3109,8 +3112,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'amd64-generic-fuzzer',
       site_config.templates.fuzzer,
-      site_config.templates.incremental,
-      site_config.templates.no_hwtest_builder,
       boards=['amd64-generic'],
       description='Build for fuzzing testing',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
