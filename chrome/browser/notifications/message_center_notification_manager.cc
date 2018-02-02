@@ -33,9 +33,7 @@ using message_center::NotifierId;
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center)
-    : message_center_(message_center),
-      system_observer_(this),
-      stats_collector_(message_center) {
+    : message_center_(message_center), system_observer_(this) {
   message_center_->AddObserver(this);
 
 #if !defined(OS_CHROMEOS)

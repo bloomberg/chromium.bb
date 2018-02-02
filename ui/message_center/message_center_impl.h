@@ -19,6 +19,7 @@
 #include "ui/message_center/change_queue.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/message_center_stats_collector.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/popup_timers_controller.h"
@@ -120,6 +121,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   bool iterating_ = false;
 
   base::string16 system_notification_app_name_;
+
+  MessageCenterStatsCollector stats_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };
