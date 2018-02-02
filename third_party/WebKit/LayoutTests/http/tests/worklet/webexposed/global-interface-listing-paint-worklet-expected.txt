@@ -39,6 +39,10 @@ CONSOLE MESSAGE: line 147:     setter matrix
 CONSOLE MESSAGE: line 147: interface CSSNumericArray
 CONSOLE MESSAGE: line 147:     getter length
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     method entries
+CONSOLE MESSAGE: line 147:     method forEach
+CONSOLE MESSAGE: line 147:     method keys
+CONSOLE MESSAGE: line 147:     method values
 CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor
@@ -323,6 +327,10 @@ CONSOLE MESSAGE: line 147:     setter matrix
 CONSOLE MESSAGE: line 147: interface CSSNumericArray
 CONSOLE MESSAGE: line 147:     getter length
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     method entries
+CONSOLE MESSAGE: line 147:     method forEach
+CONSOLE MESSAGE: line 147:     method keys
+CONSOLE MESSAGE: line 147:     method values
 CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor

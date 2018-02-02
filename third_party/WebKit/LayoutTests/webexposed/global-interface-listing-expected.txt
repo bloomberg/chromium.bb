@@ -689,6 +689,10 @@ interface CSSNumericArray
     getter length
     method @@iterator
     method constructor
+    method entries
+    method forEach
+    method keys
+    method values
 interface CSSNumericValue : CSSStyleValue
     attribute @@toStringTag
     method add

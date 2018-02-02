@@ -11,4 +11,5 @@
 ] interface CSSNumericArray {
   readonly attribute unsigned long length;
   getter CSSNumericValue(unsigned long index);
+  iterable<CSSNumericValue>;
 };
