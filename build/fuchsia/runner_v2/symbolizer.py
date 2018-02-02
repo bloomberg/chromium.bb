@@ -20,16 +20,31 @@ _BACKTRACE_ENTRY_RE = re.compile(
 
 
 def _GetUnstrippedPath(path):
-  """Computes the path to the unstripped binary stored at |path|."""
+  """If there is a binary located at |path|, returns a path to its unstripped
+  source.
+
+  Returns None if |path| isn't a binary or doesn't exist in the lib.unstripped
+  or exe.unstripped directories."""
 
   if path.endswith('.so'):
-    return os.path.normpath(
+    maybe_unstripped_path = os.path.normpath(
         os.path.join(path, os.path.pardir, 'lib.unstripped',
                      os.path.basename(path)))
   else:
-    return os.path.normpath(
+    maybe_unstripped_path = os.path.normpath(
         os.path.join(path, os.path.pardir, 'exe.unstripped',
                      os.path.basename(path)))
+
+  if not os.path.exists(maybe_unstripped_path):
+    return None
+
+  with open(maybe_unstripped_path, 'rb') as f:
+    file_tag = f.read(4)
+  if file_tag != '\x7fELF':
+    logging.warn('Expected an ELF binary: ' + maybe_unstripped_path)
+    return None
+
+  return maybe_unstripped_path
 
 
 def FilterStream(stream, manifest_path, output_dir):
@@ -48,23 +63,13 @@ class _SymbolizerFilter(object):
 
     # Compute remote/local path mappings using the manifest data.
     for next_line in open(manifest_path):
-      split = next_line.strip().split('=')
-
-      # Check that the file exists in the unstripped directories and
-      # that it is an executable binary (indicated by the existence of
-      # an ELF header.)
-      target = split[0]
-      source = os.path.join(output_dir, split[1])
-      with open(source, 'rb') as f:
-        file_tag = f.read(4)
-      if file_tag != '\x7fELF':
+      target, source = next_line.strip().split('=')
+      stripped_binary_path = _GetUnstrippedPath(os.path.join(output_dir, source))
+      if not stripped_binary_path:
         continue
-      source = _GetUnstrippedPath(source)
-      if not os.path.exists(source):
-        raise Exception('Unstripped binary not found at %s' % source)
 
-      self._symbols_mapping[os.path.basename(target)] = source
-      self._symbols_mapping[target] = source
+      self._symbols_mapping[os.path.basename(target)] = stripped_binary_path
+      self._symbols_mapping[target] = stripped_binary_path
       logging.debug('Symbols: %s -> %s' % (source, target))
 
   def _SymbolizeEntries(self, entries):
