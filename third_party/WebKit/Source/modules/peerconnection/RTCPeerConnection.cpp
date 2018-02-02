@@ -1621,7 +1621,11 @@ void RTCPeerConnection::DidAddRemoteTrack(
   }
   DCHECK(FindReceiver(*web_rtp_receiver) == rtp_receivers_.end());
   MediaStreamTrack* track = GetTrack(web_rtp_receiver->Track());
-  DCHECK(track);
+  if (!track) {
+    // Receiver with track, without a stream. May be created by Unified Plan.
+    track = MediaStreamTrack::Create(GetExecutionContext(),
+                                     web_rtp_receiver->Track());
+  }
   RTCRtpReceiver* rtp_receiver =
       new RTCRtpReceiver(std::move(web_rtp_receiver), track, streams);
   rtp_receivers_.push_back(rtp_receiver);
