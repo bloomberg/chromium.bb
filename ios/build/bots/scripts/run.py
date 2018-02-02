@@ -48,6 +48,7 @@ def main():
         env_vars=args.env_var,
         mac_toolchain=args.mac_toolchain_cmd,
         retries=args.retries,
+        shards=args.shards,
         test_args=test_args,
         test_cases=args.test_cases,
         xcode_path=args.xcode_path,
@@ -142,6 +143,13 @@ def parse_args():
     '-r',
     '--retries',
     help='Number of times to retry failed test cases.',
+    metavar='n',
+    type=int,
+  )
+  parser.add_argument(
+    '-s',
+    '--shards',
+    help='Number of shards to split test cases. (Not implemented yet)',
     metavar='n',
     type=int,
   )
