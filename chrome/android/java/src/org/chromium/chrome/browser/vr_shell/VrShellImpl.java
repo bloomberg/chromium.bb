@@ -25,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -48,6 +49,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
@@ -92,6 +94,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     private InterceptNavigationDelegateImpl mNonVrInterceptNavigationDelegate;
     private TabRedirectHandler mNonVrTabRedirectHandler;
+
     private TabModelSelector mTabModelSelector;
     private float mLastContentWidth;
     private float mLastContentHeight;
@@ -126,6 +129,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mContentVirtualDisplay.setTo(primaryDisplay);
 
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
+        reparentAllTabs(mContentVrWindowAndroid);
 
         mCompositorView = mActivity.getCompositorViewHolder().getCompositorView();
         mVrCompositorSurfaceManager = new VrCompositorSurfaceManager(mCompositorView);
@@ -294,8 +298,13 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @SuppressLint("NewApi")
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
-        // Make sure the bottom sheet (Chrome Home) is hidden.
+        Tab tab = mActivity.getActivityTab();
+        if (mActivity.isInOverviewMode() || tab == null) {
+            launchNTP();
+            tab = mActivity.getActivityTab();
+        }
         if (mActivity.getBottomSheet() != null) {
+            // Make sure the bottom sheet (Chrome Home) is hidden.
             mActivity.getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
         }
 
@@ -315,7 +324,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
                 displayHeightMeters, dm.widthPixels, dm.heightPixels);
 
-        reparentAllTabs(mContentVrWindowAndroid);
         swapToTab(currentTab);
         createTabList();
         mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
@@ -869,6 +877,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private float getNativePageScrollRatio() {
         return mActivity.getWindowAndroid().getDisplay().getDipScale()
                 / mContentVrWindowAndroid.getDisplay().getDipScale();
+    }
+
+    private void launchNTP() {
+        NewTabButton button = (NewTabButton) mActivity.findViewById(R.id.new_tab_button);
+        button.callOnClick();
     }
 
     /**

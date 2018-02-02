@@ -43,7 +43,6 @@ import org.chromium.content.browser.test.util.DOMUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -291,7 +290,7 @@ public class VrShellTransitionTest {
     }
 
     /**
-     * Tests that you can't enter VR in Overview mode with tabs.
+     * Tests that you can enter VR in Overview mode, and the NTP shows up.
      */
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
@@ -307,20 +306,6 @@ public class VrShellTransitionTest {
         });
 
         Assert.assertTrue(activity.isInOverviewMode());
-        Assert.assertFalse(VrTransitionUtils.forceEnterVr());
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                activity.getTabModelSelector().closeAllTabs();
-            }
-        });
-        CriteriaHelper.pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return activity.getCurrentTabModel().getCount() == 0;
-            }
-        });
 
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);

@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
@@ -1098,17 +1097,6 @@ public class VrShellDelegate
         boolean presenting = mRequestedWebVr || mListeningForWebVrActivate
                 || (justCompletedDon && mListeningForWebVrActivateBeforePause) || mAutopresentWebVr;
         if (!isVrShellEnabled(mVrSupportLevel) && !presenting) return false;
-
-        // TODO(mthiesse): We don't want to show the tab switcher in VR, and there's no easy way to
-        // exit it right now.
-        if (mActivity.isInOverviewMode() && mActivity.getCurrentTabModel().getCount() != 0) {
-            return false;
-        }
-        Tab tab = mActivity.getActivityTab();
-        if (tab != null && tab.isNativePage()
-                && tab.getNativePage().getHost() == UrlConstants.NTP_HOST) {
-            return false;
-        }
         return true;
     }
 
