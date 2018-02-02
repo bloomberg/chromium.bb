@@ -34,8 +34,10 @@ void BindMediaStreamDeviceObserverRequest(
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
+    int render_frame_id,
     MediaStreamManager* media_stream_manager)
     : render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       media_stream_manager_(media_stream_manager),
       salt_and_origin_callback_(
           base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),
@@ -62,79 +64,64 @@ void MediaStreamDispatcherHost::BindRequest(
 }
 
 void MediaStreamDispatcherHost::OnDeviceStopped(
-    int render_frame_id,
     const std::string& label,
     const MediaStreamDevice& device) {
-  DVLOG(1) << __func__ << " label=" << label << " type=" << device.type
-           << " device_id=" << device.id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  GetMediaStreamDeviceObserverForFrame(render_frame_id)
-      ->OnDeviceStopped(label, device);
+  GetMediaStreamDeviceObserver()->OnDeviceStopped(label, device);
 }
 
-mojom::MediaStreamDeviceObserver*
-MediaStreamDispatcherHost::GetMediaStreamDeviceObserverForFrame(
-    int render_frame_id) {
+const mojom::MediaStreamDeviceObserverPtr&
+MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto it = observers_.find(render_frame_id);
-  if (it != observers_.end())
-    return it->second.get();
+  if (media_stream_device_observer_)
+    return media_stream_device_observer_;
 
   mojom::MediaStreamDeviceObserverPtr observer;
   auto dispatcher_request = mojo::MakeRequest(&observer);
   observer.set_connection_error_handler(base::BindOnce(
       &MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError,
-      weak_factory_.GetWeakPtr(), render_frame_id));
+      weak_factory_.GetWeakPtr()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&BindMediaStreamDeviceObserverRequest, render_process_id_,
-                     render_frame_id, std::move(dispatcher_request)));
-  observers_[render_frame_id] = std::move(observer);
-
-  return observers_[render_frame_id].get();
+                     render_frame_id_, std::move(dispatcher_request)));
+  media_stream_device_observer_ = std::move(observer);
+  return media_stream_device_observer_;
 }
 
-void MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError(
-    int render_frame_id) {
+void MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  observers_.erase(render_frame_id);
+  media_stream_device_observer_.reset();
 }
 
 void MediaStreamDispatcherHost::CancelAllRequests() {
   if (!bindings_.empty())
     return;
 
-  media_stream_manager_->CancelAllRequests(render_process_id_);
+  media_stream_manager_->CancelAllRequests(render_process_id_,
+                                           render_frame_id_);
 }
 
 void MediaStreamDispatcherHost::GenerateStream(
-    int32_t render_frame_id,
     int32_t page_request_id,
     const StreamControls& controls,
     bool user_gesture,
     GenerateStreamCallback callback) {
-  DVLOG(1) << __func__ << " render_frame_id=" << render_frame_id
-           << " page_request_id=" << page_request_id
-           << " audio=" << controls.audio.requested
-           << " video=" << controls.video.requested
-           << " user_gesture=" << user_gesture;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
-                     render_frame_id),
+                     render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoGenerateStream,
-                     weak_factory_.GetWeakPtr(), render_frame_id,
-                     page_request_id, controls, user_gesture,
-                     base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), page_request_id, controls,
+                     user_gesture, base::Passed(&callback)));
 }
 
 void MediaStreamDispatcherHost::DoGenerateStream(
-    int32_t render_frame_id,
     int32_t page_request_id,
     const StreamControls& controls,
     bool user_gesture,
@@ -150,56 +137,44 @@ void MediaStreamDispatcherHost::DoGenerateStream(
   }
 
   media_stream_manager_->GenerateStream(
-      render_process_id_, render_frame_id, salt_and_origin.first,
+      render_process_id_, render_frame_id_, salt_and_origin.first,
       page_request_id, controls, salt_and_origin.second, user_gesture,
       std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
                           weak_factory_.GetWeakPtr()));
 }
 
-void MediaStreamDispatcherHost::CancelRequest(int render_frame_id,
-                                              int page_request_id) {
-  DVLOG(1) << __func__ << " render_frame_id=" << render_frame_id
-           << " page_request_id=" << page_request_id;
+void MediaStreamDispatcherHost::CancelRequest(int page_request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  media_stream_manager_->CancelRequest(render_process_id_, render_frame_id,
+  media_stream_manager_->CancelRequest(render_process_id_, render_frame_id_,
                                        page_request_id);
 }
 
-void MediaStreamDispatcherHost::StopStreamDevice(int32_t render_frame_id,
-                                                 const std::string& device_id,
+void MediaStreamDispatcherHost::StopStreamDevice(const std::string& device_id,
                                                  int32_t session_id) {
-  DVLOG(1) << __func__ << " render_frame_id=" << render_frame_id
-           << " device_id=" << device_id << " session_id=" << session_id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  media_stream_manager_->StopStreamDevice(render_process_id_, render_frame_id,
+  media_stream_manager_->StopStreamDevice(render_process_id_, render_frame_id_,
                                           device_id, session_id);
 }
 
-void MediaStreamDispatcherHost::OpenDevice(int32_t render_frame_id,
-                                           int32_t page_request_id,
+void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
                                            const std::string& device_id,
                                            MediaStreamType type,
                                            OpenDeviceCallback callback) {
-  DVLOG(1) << __func__ << " render_frame_id=" << render_frame_id
-           << " page_request_id=" << page_request_id
-           << " device_id=" << device_id << " type=" << type;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
-                     render_frame_id),
+                     render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoOpenDevice,
-                     weak_factory_.GetWeakPtr(), render_frame_id,
-                     page_request_id, device_id, type,
-                     base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), page_request_id, device_id,
+                     type, base::Passed(&callback)));
 }
 
 void MediaStreamDispatcherHost::DoOpenDevice(
-    int32_t render_frame_id,
     int32_t page_request_id,
     const std::string& device_id,
     MediaStreamType type,
@@ -214,7 +189,7 @@ void MediaStreamDispatcherHost::DoOpenDevice(
   }
 
   media_stream_manager_->OpenDevice(
-      render_process_id_, render_frame_id, salt_and_origin.first,
+      render_process_id_, render_frame_id_, salt_and_origin.first,
       page_request_id, device_id, type, salt_and_origin.second,
       std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
@@ -222,7 +197,6 @@ void MediaStreamDispatcherHost::DoOpenDevice(
 }
 
 void MediaStreamDispatcherHost::CloseDevice(const std::string& label) {
-  DVLOG(1) << __func__ << " label= " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   media_stream_manager_->CancelRequest(label);
@@ -231,8 +205,6 @@ void MediaStreamDispatcherHost::CloseDevice(const std::string& label) {
 void MediaStreamDispatcherHost::SetCapturingLinkSecured(int32_t session_id,
                                                         MediaStreamType type,
                                                         bool is_secure) {
-  DVLOG(1) << __func__ << " session_id=" << session_id << " type=" << type
-           << " is_secure=" << is_secure;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   media_stream_manager_->SetCapturingLinkSecured(render_process_id_, session_id,
@@ -240,7 +212,6 @@ void MediaStreamDispatcherHost::SetCapturingLinkSecured(int32_t session_id,
 }
 
 void MediaStreamDispatcherHost::OnStreamStarted(const std::string& label) {
-  DVLOG(1) << __func__ << " label= " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   media_stream_manager_->OnStreamStarted(label);

@@ -46,6 +46,7 @@
 #include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_dialog_type.h"
@@ -140,6 +141,10 @@ struct FrameOwnerProperties;
 struct RequestNavigationParams;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+class MediaStreamDispatcherHost;
+#endif
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
@@ -986,6 +991,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateAudioOutputStreamFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
+#if BUILDFLAG(ENABLE_WEBRTC)
+  void CreateMediaStreamDispatcherHost(
+      MediaStreamManager* media_stream_manager,
+      mojom::MediaStreamDispatcherHostRequest request);
+#endif
+
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
 
@@ -1322,6 +1333,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   UniqueAudioInputStreamFactoryPtr audio_input_stream_factory_;
   UniqueAudioOutputStreamFactoryPtr audio_output_stream_factory_;
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  std::unique_ptr<MediaStreamDispatcherHost, BrowserThread::DeleteOnIOThread>
+      media_stream_dispatcher_host_;
+#endif
 
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.

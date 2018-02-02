@@ -13,9 +13,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/child/child_thread_impl.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/service_names.mojom.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -23,7 +22,8 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video_capturer_source.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -161,7 +161,12 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
-    : dispatcher_host_(nullptr), source_(std::move(source)) {
+    : source_(std::move(source)) {
+  blink::WebLocalFrame* web_frame =
+      blink::WebLocalFrame::FrameForCurrentContext();
+  RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
+  render_frame_id_ =
+      render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();
@@ -169,10 +174,11 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
+    int render_frame_id,
     const SourceStoppedCallback& stop_callback,
     const MediaStreamDevice& device,
     const media::VideoCaptureParams& capture_params)
-    : dispatcher_host_(nullptr),
+    : render_frame_id_(render_frame_id),
       source_(new LocalVideoCapturerSource(device.session_id)),
       capture_params_(capture_params) {
   SetStopCallback(stop_callback);
@@ -199,8 +205,11 @@ void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
 
 void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
-      device().session_id, device().type, is_secure);
+  RenderFrame* render_frame = RenderFrame::FromRoutingID(render_frame_id_);
+  if (!render_frame)
+    return;
+  GetMediaStreamDispatcherHost(render_frame)
+      ->SetCapturingLinkSecured(device().session_id, device().type, is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
@@ -298,11 +307,12 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
 }
 
 const mojom::MediaStreamDispatcherHostPtr&
-MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
+MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost(
+    RenderFrame* render_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!dispatcher_host_) {
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, &dispatcher_host_);
+    render_frame->GetRemoteInterfaces()->GetInterface(
+        mojo::MakeRequest(&dispatcher_host_));
   }
   return dispatcher_host_;
 }
