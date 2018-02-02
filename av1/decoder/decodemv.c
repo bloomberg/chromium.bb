@@ -353,22 +353,20 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
   int is_split = 0;
-  const int tx_row = blk_row >> 1;
-  const int tx_col = blk_col >> 1;
-  const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
-  const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
-  TX_SIZE(*const inter_tx_size)
-  [MAX_MIB_SIZE] =
-      (TX_SIZE(*)[MAX_MIB_SIZE]) & mbmi->inter_tx_size[tx_row][tx_col];
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const int max_blocks_high = max_block_high(xd, bsize, 0);
+  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
   assert(tx_size > TX_4X4);
 
   if (depth == MAX_VARTX_DEPTH) {
-    int idx, idy;
-    inter_tx_size[0][0] = tx_size;
-    for (idy = 0; idy < AOMMAX(1, tx_size_high_unit[tx_size] / 2); ++idy)
-      for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
-        inter_tx_size[idy][idx] = tx_size;
+    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
+      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
+        const int index =
+            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
+        mbmi->inter_tx_size[index] = tx_size;
+      }
+    }
     mbmi->tx_size = tx_size;
     mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
     txfm_partition_update(xd->above_txfm_context + blk_col,
@@ -376,9 +374,9 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
   }
 
-  int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
-                                   xd->left_txfm_context + blk_row,
-                                   mbmi->sb_type, tx_size);
+  const int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
+                                         xd->left_txfm_context + blk_row,
+                                         mbmi->sb_type, tx_size);
   is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
 
   if (is_split) {
@@ -387,11 +385,13 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     const int bsh = tx_size_high_unit[sub_txs];
 
     if (sub_txs == TX_4X4) {
-      int idx, idy;
-      inter_tx_size[0][0] = sub_txs;
-      for (idy = 0; idy < AOMMAX(1, tx_size_high_unit[tx_size] / 2); ++idy)
-        for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
-          inter_tx_size[idy][idx] = inter_tx_size[0][0];
+      for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
+        for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
+          const int index =
+              av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
+          mbmi->inter_tx_size[index] = sub_txs;
+        }
+      }
       mbmi->tx_size = sub_txs;
       mbmi->min_tx_size = mbmi->tx_size;
       txfm_partition_update(xd->above_txfm_context + blk_col,
@@ -409,11 +409,13 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
       }
     }
   } else {
-    int idx, idy;
-    inter_tx_size[0][0] = tx_size;
-    for (idy = 0; idy < AOMMAX(1, tx_size_high_unit[tx_size] / 2); ++idy)
-      for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
-        inter_tx_size[idy][idx] = tx_size;
+    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
+      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
+        const int index =
+            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
+        mbmi->inter_tx_size[index] = tx_size;
+      }
+    }
     mbmi->tx_size = tx_size;
     mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
     txfm_partition_update(xd->above_txfm_context + blk_col,
@@ -933,9 +935,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
     } else {
       mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
-      for (int idy = 0; idy < height; ++idy)
-        for (int idx = 0; idx < width; ++idx)
-          mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
+      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
       mbmi->min_tx_size = mbmi->tx_size;
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
     }
@@ -2188,14 +2188,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
         read_tx_size_vartx(cm, xd, mbmi, max_tx_size, 0, idy, idx, r);
   } else {
     mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
-
-    if (inter_block) {
-      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-      const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-      for (int idy = 0; idy < height; ++idy)
-        for (int idx = 0; idx < width; ++idx)
-          mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
-    }
+    if (inter_block)
+      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
     mbmi->min_tx_size = mbmi->tx_size;
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
   }
