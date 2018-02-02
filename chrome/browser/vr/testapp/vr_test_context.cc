@@ -182,6 +182,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_B:
         ui_->Dump(true);
+        break;
       case ui::DomCode::US_V:
         CreateFakeVoiceSearchResult();
         break;
