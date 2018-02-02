@@ -24,21 +24,30 @@ class TestContentVerifyJobObserver : ContentVerifyJob::TestObserver {
                                const base::FilePath& relative_path);
   ~TestContentVerifyJobObserver();
 
-  void JobStarted(const std::string& extension_id,
+  // ContentVerifyJob::TestObserver:
+  void JobStarted(const ExtensionId& extension_id,
                   const base::FilePath& relative_path) override {}
-
-  void JobFinished(const std::string& extension_id,
+  void JobFinished(const ExtensionId& extension_id,
                    const base::FilePath& relative_path,
                    ContentVerifyJob::FailureReason reason) override;
+  void OnHashesReady(const ExtensionId& extension_id,
+                     const base::FilePath& relative_path,
+                     bool success) override;
 
   // Waits for a ContentVerifyJob to finish and returns job's status.
-  ContentVerifyJob::FailureReason WaitAndGetFailureReason();
+  ContentVerifyJob::FailureReason WaitForJobFinished() WARN_UNUSED_RESULT;
+
+  // Waits for ContentVerifyJob to finish the attempt to read content hashes.
+  void WaitForOnHashesReady();
 
  private:
-  base::RunLoop run_loop_;
+  base::RunLoop job_finished_run_loop_;
+  base::RunLoop on_hashes_ready_run_loop_;
+
   ExtensionId extension_id_;
   base::FilePath relative_path_;
   base::Optional<ContentVerifyJob::FailureReason> failure_reason_;
+  bool seen_on_hashes_ready_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentVerifyJobObserver);
 };

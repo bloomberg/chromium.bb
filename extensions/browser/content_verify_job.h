@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class FilePath;
@@ -71,12 +72,16 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
   class TestObserver {
    public:
-    virtual void JobStarted(const std::string& extension_id,
+    virtual void JobStarted(const ExtensionId& extension_id,
                             const base::FilePath& relative_path) = 0;
 
-    virtual void JobFinished(const std::string& extension_id,
+    virtual void JobFinished(const ExtensionId& extension_id,
                              const base::FilePath& relative_path,
                              FailureReason failure_reason) = 0;
+
+    virtual void OnHashesReady(const ExtensionId& extension_id,
+                               const base::FilePath& relative_path,
+                               bool success) = 0;
   };
 
   static void SetIgnoreVerificationForTests(bool value);

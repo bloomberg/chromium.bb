@@ -133,12 +133,14 @@ class JobObserver : public ContentVerifyJob::TestObserver {
   bool WaitForExpectedJobs();
 
   // ContentVerifyJob::TestObserver interface
-  void JobStarted(const std::string& extension_id,
+  void JobStarted(const ExtensionId& extension_id,
                   const base::FilePath& relative_path) override;
-
-  void JobFinished(const std::string& extension_id,
+  void JobFinished(const ExtensionId& extension_id,
                    const base::FilePath& relative_path,
                    ContentVerifyJob::FailureReason failure_reason) override;
+  void OnHashesReady(const ExtensionId& extension_id,
+                     const base::FilePath& relative_path,
+                     bool success) override {}
 
  private:
   struct ExpectedResult {
@@ -147,12 +149,10 @@ class JobObserver : public ContentVerifyJob::TestObserver {
     base::FilePath path;
     Result result;
 
-    ExpectedResult(const std::string& extension_id, const base::FilePath& path,
-                   Result result) {
-      this->extension_id = extension_id;
-      this->path = path;
-      this->result = result;
-    }
+    ExpectedResult(const ExtensionId& extension_id,
+                   const base::FilePath& path,
+                   Result result)
+        : extension_id(extension_id), path(path), result(result) {}
   };
   std::list<ExpectedResult> expectations_;
   content::BrowserThread::ID creation_thread_;

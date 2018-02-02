@@ -487,7 +487,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForFileAccessErrors) {
     content::RunAllPendingInMessageLoop();
 
     EXPECT_EQ(net::OK, DoRequest(*extension, kJs));
-    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitForJobFinished());
   }
 
   // chmod -r 1024.js.
@@ -496,8 +496,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForFileAccessErrors) {
     base::FilePath file_path = unzipped_path.AppendASCII(kJs);
     ASSERT_TRUE(base::MakeFileUnreadable(file_path));
     EXPECT_EQ(net::ERR_ACCESS_DENIED, DoRequest(*extension, kJs));
-    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
-              observer.WaitAndGetFailureReason());
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH, observer.WaitForJobFinished());
     // NOTE: In production, hash mismatch would have disabled |extension|, but
     // since UnzipToDirAndLoadExtension() doesn't add the extension to
     // ExtensionRegistry, ChromeContentVerifierDelegate won't disable it.
@@ -511,8 +510,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForFileAccessErrors) {
     base::FilePath file_path = unzipped_path.AppendASCII(kJs);
     ASSERT_TRUE(base::DieFileDie(file_path, false));
     EXPECT_EQ(net::ERR_FILE_NOT_FOUND, DoRequest(*extension, kJs));
-    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
-              observer.WaitAndGetFailureReason());
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH, observer.WaitForJobFinished());
   }
 }
 
@@ -550,7 +548,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
     content::RunAllPendingInMessageLoop();
 
     EXPECT_EQ(net::OK, DoRequest(*extension, kEmptyJs));
-    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitForJobFinished());
   }
 
   // chmod -r empty.js.
@@ -562,7 +560,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
     base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
     ASSERT_TRUE(base::MakeFileUnreadable(file_path));
     EXPECT_EQ(net::ERR_ACCESS_DENIED, DoRequest(*extension, kEmptyJs));
-    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitForJobFinished());
   }
 
   // rm empty.js.
@@ -574,7 +572,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
     base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
     ASSERT_TRUE(base::DieFileDie(file_path, false));
     EXPECT_EQ(net::ERR_FILE_NOT_FOUND, DoRequest(*extension, kEmptyJs));
-    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitAndGetFailureReason());
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitForJobFinished());
   }
 }
 
