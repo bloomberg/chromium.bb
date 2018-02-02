@@ -308,7 +308,8 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
     case THREAD_PRIORITY_TIME_CRITICAL:
       return ThreadPriority::REALTIME_AUDIO;
     case THREAD_PRIORITY_ERROR_RETURN:
-      DPCHECK(false) << "GetThreadPriority error";  // Falls through.
+      DPCHECK(false) << "GetThreadPriority error";
+      FALLTHROUGH;
     default:
       NOTREACHED() << "Unexpected priority: " << priority;
       return ThreadPriority::NORMAL;

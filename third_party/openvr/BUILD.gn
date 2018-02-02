@@ -5,8 +5,12 @@
 component("openvr") {
   output_name = "openvr_api"
 
-  # Some ascii versions of Windows APIs are used in this code.
-  configs -= [ "//build/config/win:unicode" ]
+  configs -= [
+    # Some ascii versions of Windows APIs are used in this code.
+    "//build/config/win:unicode",
+    "//build/config/compiler:chromium_code",
+  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   # This code can be built using internal OpenVR functionality, but the internal
   # dependencies aren't available to us.

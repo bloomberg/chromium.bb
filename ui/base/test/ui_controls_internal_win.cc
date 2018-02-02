@@ -271,6 +271,7 @@ UINT MapVirtualKeyToScanCode(UINT code) {
     case VK_DOWN:
     case VK_NUMLOCK:
       ret_code |= KF_EXTENDED;
+      break;
     default:
       break;
   }

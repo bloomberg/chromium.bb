@@ -1750,7 +1750,7 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
     case PT_TOUCH:
       if (kUsePointerEventsForTouch)
         return HandlePointerEventTypeTouch(message, w_param, l_param);
-    // FALLTHROUGH_INTENDED
+      FALLTHROUGH;
     default:
       SetMsgHandled(FALSE);
       return -1;

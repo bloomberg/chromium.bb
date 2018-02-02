@@ -235,6 +235,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 // platforms.
 #if defined(OS_WIN)
       flip = true;
+      FALLTHROUGH;
 #endif
     case PIXEL_FORMAT_ARGB:
       origin_colorspace = libyuv::FOURCC_ARGB;
