@@ -669,7 +669,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          # TODO(crbug.com/807966): Re-enable tests once there are devices to run them on.
         },
       },
       'ToTAndroid64': {
