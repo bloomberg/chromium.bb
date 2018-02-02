@@ -31,12 +31,11 @@ typedef void (*jntcompavg_func)(uint8_t *comp_pred, const uint8_t *pred,
                                 int ref_stride,
                                 const JNT_COMP_PARAMS *jcp_param);
 
-typedef void (*jntcompavgupsampled_func)(uint8_t *comp_pred,
-                                         const uint8_t *pred, int width,
-                                         int height, int subpel_x_q3,
-                                         int subpel_y_q3, const uint8_t *ref,
-                                         int ref_stride,
-                                         const JNT_COMP_PARAMS *jcp_param);
+typedef void (*jntcompavgupsampled_func)(
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+    int ref_stride, const JNT_COMP_PARAMS *jcp_param);
 
 typedef void (*highbdjntcompavg_func)(uint16_t *comp_pred, const uint8_t *pred8,
                                       int width, int height,
@@ -44,9 +43,10 @@ typedef void (*highbdjntcompavg_func)(uint16_t *comp_pred, const uint8_t *pred8,
                                       const JNT_COMP_PARAMS *jcp_param);
 
 typedef void (*highbdjntcompavgupsampled_func)(
-    uint16_t *comp_pred, const uint8_t *pred8, int width, int height,
-    int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8, int ref_stride,
-    int bd, const JNT_COMP_PARAMS *jcp_param);
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
+    int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param);
 
 typedef ::testing::tuple<jntcompavg_func, BLOCK_SIZE> JNTCOMPAVGParam;
 
@@ -225,12 +225,14 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
 
             const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
             const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
+
             aom_jnt_comp_avg_upsampled_pred_c(
-                output, pred8 + offset_r * w + offset_c, in_w, in_h, sub_x_q3,
-                sub_y_q3, ref8 + offset_r * w + offset_c, in_w,
-                &jnt_comp_params);
-            test_impl(output2, pred8 + offset_r * w + offset_c, in_w, in_h,
-                      sub_x_q3, sub_y_q3, ref8 + offset_r * w + offset_c, in_w,
+                NULL, NULL, 0, 0, NULL, output, pred8 + offset_r * w + offset_c,
+                in_w, in_h, sub_x_q3, sub_y_q3, ref8 + offset_r * w + offset_c,
+                in_w, &jnt_comp_params);
+            test_impl(NULL, NULL, 0, 0, NULL, output2,
+                      pred8 + offset_r * w + offset_c, in_w, in_h, sub_x_q3,
+                      sub_y_q3, ref8 + offset_r * w + offset_c, in_w,
                       &jnt_comp_params);
 
             for (int i = 0; i < in_h; ++i) {
@@ -279,8 +281,9 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
     aom_usec_timer_start(&timer);
 
     for (int i = 0; i < num_loops; ++i)
-      aom_jnt_comp_avg_upsampled_pred_c(output, pred8, in_w, in_h, sub_x_q3,
-                                        sub_y_q3, ref8, in_w, &jnt_comp_params);
+      aom_jnt_comp_avg_upsampled_pred_c(NULL, NULL, 0, 0, NULL, output, pred8,
+                                        in_w, in_h, sub_x_q3, sub_y_q3, ref8,
+                                        in_w, &jnt_comp_params);
 
     aom_usec_timer_mark(&timer);
     const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
@@ -291,8 +294,8 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
     aom_usec_timer_start(&timer1);
 
     for (int i = 0; i < num_loops; ++i)
-      test_impl(output2, pred8, in_w, in_h, sub_x_q3, sub_y_q3, ref8, in_w,
-                &jnt_comp_params);
+      test_impl(NULL, NULL, 0, 0, NULL, output2, pred8, in_w, in_h, sub_x_q3,
+                sub_y_q3, ref8, in_w, &jnt_comp_params);
 
     aom_usec_timer_mark(&timer1);
     const int elapsed_time1 = static_cast<int>(aom_usec_timer_elapsed(&timer1));
@@ -451,12 +454,14 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
 
             const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
             const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
+
             aom_highbd_jnt_comp_avg_upsampled_pred_c(
-                output, CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c,
-                in_w, in_h, sub_x_q3, sub_y_q3,
+                NULL, NULL, 0, 0, NULL, output,
+                CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c, in_w, in_h,
+                sub_x_q3, sub_y_q3,
                 CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c, in_w, bd,
                 &jnt_comp_params);
-            test_impl(output2,
+            test_impl(NULL, NULL, 0, 0, NULL, output2,
                       CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c, in_w,
                       in_h, sub_x_q3, sub_y_q3,
                       CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c, in_w,
@@ -508,8 +513,9 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
 
     for (int i = 0; i < num_loops; ++i)
       aom_highbd_jnt_comp_avg_upsampled_pred_c(
-          output, CONVERT_TO_BYTEPTR(pred8), in_w, in_h, sub_x_q3, sub_y_q3,
-          CONVERT_TO_BYTEPTR(ref8), in_w, bd, &jnt_comp_params);
+          NULL, NULL, 0, 0, NULL, output, CONVERT_TO_BYTEPTR(pred8), in_w, in_h,
+          sub_x_q3, sub_y_q3, CONVERT_TO_BYTEPTR(ref8), in_w, bd,
+          &jnt_comp_params);
 
     aom_usec_timer_mark(&timer);
     const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
@@ -520,8 +526,9 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
     aom_usec_timer_start(&timer1);
 
     for (int i = 0; i < num_loops; ++i)
-      test_impl(output2, CONVERT_TO_BYTEPTR(pred8), in_w, in_h, sub_x_q3,
-                sub_y_q3, CONVERT_TO_BYTEPTR(ref8), in_w, bd, &jnt_comp_params);
+      test_impl(NULL, NULL, 0, 0, NULL, output2, CONVERT_TO_BYTEPTR(pred8),
+                in_w, in_h, sub_x_q3, sub_y_q3, CONVERT_TO_BYTEPTR(ref8), in_w,
+                bd, &jnt_comp_params);
 
     aom_usec_timer_mark(&timer1);
     const int elapsed_time1 = static_cast<int>(aom_usec_timer_elapsed(&timer1));

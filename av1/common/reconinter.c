@@ -55,7 +55,7 @@ static INLINE int allow_warp(const MB_MODE_INFO *const mbmi,
   return 0;
 }
 
-static INLINE void av1_make_inter_predictor(
+void av1_make_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
     int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,

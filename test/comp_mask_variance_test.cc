@@ -197,12 +197,14 @@ void AV1CompMaskUpVarianceTest::RunCheckOutput(comp_mask_pred_func test_impl,
       const uint8_t *mask = av1_get_contiguous_soft_mask(wedge_index, 1, bsize);
 
       aom_comp_mask_pred = aom_comp_mask_pred_c;  // ref
-      aom_comp_mask_upsampled_pred(comp_pred1_, pred_, w, h, subx, suby, ref_,
-                                   MAX_SB_SIZE, mask, w, inv);
+      aom_comp_mask_upsampled_pred(NULL, NULL, 0, 0, NULL, comp_pred1_, pred_,
+                                   w, h, subx, suby, ref_, MAX_SB_SIZE, mask, w,
+                                   inv);
 
       aom_comp_mask_pred = test_impl;  // test
-      aom_comp_mask_upsampled_pred(comp_pred2_, pred_, w, h, subx, suby, ref_,
-                                   MAX_SB_SIZE, mask, w, inv);
+      aom_comp_mask_upsampled_pred(NULL, NULL, 0, 0, NULL, comp_pred2_, pred_,
+                                   w, h, subx, suby, ref_, MAX_SB_SIZE, mask, w,
+                                   inv);
       ASSERT_EQ(CheckResult(w, h), true)
           << " wedge " << wedge_index << " inv " << inv << "sub (" << subx
           << "," << suby << ")";
@@ -229,8 +231,9 @@ void AV1CompMaskUpVarianceTest::RunSpeedTest(comp_mask_pred_func test_impl,
     aom_usec_timer_start(&timer);
     aom_comp_mask_pred = funcs[i];
     for (int j = 0; j < num_loops; ++j) {
-      aom_comp_mask_upsampled_pred(comp_pred1_, pred_, w, h, subx, suby, ref_,
-                                   MAX_SB_SIZE, mask, w, 0);
+      aom_comp_mask_upsampled_pred(NULL, NULL, 0, 0, NULL, comp_pred1_, pred_,
+                                   w, h, subx, suby, ref_, MAX_SB_SIZE, mask, w,
+                                   0);
     }
     aom_usec_timer_mark(&timer);
     double time = static_cast<double>(aom_usec_timer_elapsed(&timer));

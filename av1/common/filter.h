@@ -78,9 +78,6 @@ typedef struct InterpFilterParams {
   InterpFilter interp_filter;
 } InterpFilterParams;
 
-InterpFilterParams av1_get_interp_filter_params(
-    const InterpFilter interp_filter);
-
 const int16_t *av1_get_interp_filter_kernel(const InterpFilter interp_filter);
 
 InterpFilterParams av1_get_interp_filter_params_with_block_size(

@@ -271,7 +271,8 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
                                           src_stride, &sse);
   } else {
     bestsme = cpi->find_fractional_mv_step(
-        x, &best_ref_mv1, cpi->common.allow_high_precision_mv, x->errorperbit,
+        x, &cpi->common, 0, 0, &best_ref_mv1,
+        cpi->common.allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[BLOCK_16X16], 0, mv_sf->subpel_iters_per_step,
         cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
         NULL, 0, 0, 0, 0, 0);

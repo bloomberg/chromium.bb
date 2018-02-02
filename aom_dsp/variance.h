@@ -71,11 +71,12 @@ typedef unsigned int (*aom_masked_subpixvariance_fn_t)(
     const uint8_t *ref, int ref_stride, const uint8_t *second_pred,
     const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse);
 
-void aom_comp_mask_upsampled_pred(uint8_t *comp_pred, const uint8_t *pred,
-                                  int width, int height, int subsample_x_q3,
-                                  int subsample_y_q3, const uint8_t *ref,
-                                  int ref_stride, const uint8_t *mask,
-                                  int mask_stride, int invert_mask);
+void aom_comp_mask_upsampled_pred(
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+    int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask);
+
 #endif  // CONFIG_AV1
 
 #if CONFIG_AV1

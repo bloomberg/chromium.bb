@@ -176,6 +176,14 @@ static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
   return wedge_params_lookup[sb_type].bits;
 }
 
+void av1_make_inter_predictor(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
+    const int subpel_x, const int subpel_y, const struct scale_factors *sf,
+    int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
+    const WarpTypesAllowed *warp_types, int p_col, int p_row, int plane,
+    int ref, const MB_MODE_INFO *mi, int build_for_obmc, int xs, int ys,
+    const MACROBLOCKD *xd, int can_use_previous);
+
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,

@@ -24,6 +24,8 @@
 
 #include "./av1_rtcd.h"
 #include "av1/common/filter.h"
+#include "av1/common/onyxc_int.h"
+#include "av1/common/reconinter.h"
 
 uint32_t aom_get4x4sse_cs_c(const uint8_t *a, int a_stride, const uint8_t *b,
                             int b_stride) {
@@ -301,60 +303,142 @@ void aom_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
 }
 
 // Get pred block from up-sampled reference.
-void aom_upsampled_pred_c(uint8_t *comp_pred, int width, int height,
+void aom_upsampled_pred_c(MACROBLOCKD *xd, const AV1_COMMON *const cm,
+                          int mi_row, int mi_col, const MV *const mv,
+                          uint8_t *comp_pred, int width, int height,
                           int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
                           int ref_stride) {
+  // expect xd == NULL only in tests
+  if (xd != NULL) {
+    const MB_MODE_INFO *mi = xd->mi[0];
+    const int ref_num = 0;
+    const int is_intrabc = is_intrabc_block(mi);
+    const struct scale_factors *const sf =
+        is_intrabc ? &cm->sf_identity : &xd->block_refs[ref_num]->sf;
+    const int is_scaled = av1_is_scaled(sf);
+
+    if (is_scaled) {
+      // Note: This is mostly a copy from the >=8X8 case in
+      // build_inter_predictors() function, with some small tweaks.
+
+      // Some assumptions.
+      const int plane = 0;
+
+      // Get pre-requisites.
+      const struct macroblockd_plane *const pd = &xd->plane[plane];
+      const int ssx = pd->subsampling_x;
+      const int ssy = pd->subsampling_y;
+      assert(ssx == 0 && ssy == 0);
+      const struct buf_2d *const dst_buf = &pd->dst;
+      const struct buf_2d *const pre_buf =
+          is_intrabc ? dst_buf : &pd->pre[ref_num];
+      const int mi_x = mi_col * MI_SIZE;
+      const int mi_y = mi_row * MI_SIZE;
+
+      // Calculate subpel_x/y and x/y_step.
+      const int row_start = 0;  // Because ss_y is 0.
+      const int col_start = 0;  // Because ss_x is 0.
+      const int pre_x = (mi_x + MI_SIZE * col_start) >> ssx;
+      const int pre_y = (mi_y + MI_SIZE * row_start) >> ssy;
+      int orig_pos_y = pre_y << SUBPEL_BITS;
+      orig_pos_y += mv->row * (1 << (1 - ssy));
+      int orig_pos_x = pre_x << SUBPEL_BITS;
+      orig_pos_x += mv->col * (1 << (1 - ssx));
+      int pos_y = sf->scale_value_y(orig_pos_y, sf);
+      int pos_x = sf->scale_value_x(orig_pos_x, sf);
+      pos_x += SCALE_EXTRA_OFF;
+      pos_y += SCALE_EXTRA_OFF;
+
+      const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
+      const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
+      const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
+                         << SCALE_SUBPEL_BITS;
+      const int right = (pre_buf->width + AOM_INTERP_EXTEND)
+                        << SCALE_SUBPEL_BITS;
+      pos_y = clamp(pos_y, top, bottom);
+      pos_x = clamp(pos_x, left, right);
+
+      const uint8_t *const pre =
+          pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+          (pos_x >> SCALE_SUBPEL_BITS);
+      const int subpel_x = pos_x & SCALE_SUBPEL_MASK;
+      const int subpel_y = pos_y & SCALE_SUBPEL_MASK;
+      const int xs = sf->x_step_q4;
+      const int ys = sf->y_step_q4;
+
+      // Get warp types.
+      const WarpedMotionParams *const wm =
+          &xd->global_motion[mi->ref_frame[ref_num]];
+      const int is_global = is_global_mv_block(mi, wm->wmtype);
+      WarpTypesAllowed warp_types;
+      warp_types.global_warp_allowed = is_global;
+      warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
+
+      // Get convolve parameters.
+      ConvolveParams conv_params = get_conv_params(ref_num, 0, plane, xd->bd);
+      const InterpFilters filters =
+          av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
+
+      // Get the inter predictor.
+      const int build_for_obmc = 0;
+      av1_make_inter_predictor(
+          pre, pre_buf->stride, comp_pred, width, subpel_x, subpel_y, sf, width,
+          height, &conv_params, filters, &warp_types, mi_x >> pd->subsampling_x,
+          mi_y >> pd->subsampling_y, plane, ref_num, mi, build_for_obmc, xs, ys,
+          xd, cm->allow_warped_motion);
+
+      return;
+    }
+  }
+
+  const InterpFilterParams filter =
+      av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
+
   if (!subpel_x_q3 && !subpel_y_q3) {
-    int i;
-    for (i = 0; i < height; i++) {
+    for (int i = 0; i < height; i++) {
       memcpy(comp_pred, ref, width * sizeof(*comp_pred));
       comp_pred += width;
       ref += ref_stride;
     }
+  } else if (!subpel_y_q3) {
+    const int16_t *const kernel =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+    aom_convolve8_horiz(ref, ref_stride, comp_pred, width, kernel, 16, NULL, -1,
+                        width, height);
+  } else if (!subpel_x_q3) {
+    const int16_t *const kernel =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+    aom_convolve8_vert(ref, ref_stride, comp_pred, width, NULL, -1, kernel, 16,
+                       width, height);
   } else {
-    const InterpFilterParams filter =
-        av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
-    if (!subpel_y_q3) {
-      const int16_t *kernel =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-      /*Directly call C version to allow this to work for small (2x2) sizes.*/
-      aom_convolve8_horiz_c(ref, ref_stride, comp_pred, width, kernel, 16, NULL,
-                            -1, width, height);
-    } else if (!subpel_x_q3) {
-      const int16_t *kernel =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-      /*Directly call C version to allow this to work for small (2x2) sizes.*/
-      aom_convolve8_vert_c(ref, ref_stride, comp_pred, width, NULL, -1, kernel,
-                           16, width, height);
-    } else {
-      DECLARE_ALIGNED(16, uint8_t,
-                      temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
-      const int16_t *kernel_x =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-      const int16_t *kernel_y =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-      const int intermediate_height =
-          (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
-      assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
-      /*Directly call C versions to allow this to work for small (2x2) sizes.*/
-      aom_convolve8_horiz_c(ref - ref_stride * ((filter.taps >> 1) - 1),
-                            ref_stride, temp, MAX_SB_SIZE, kernel_x, 16, NULL,
-                            -1, width, intermediate_height);
-      aom_convolve8_vert_c(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1),
-                           MAX_SB_SIZE, comp_pred, width, NULL, -1, kernel_y,
-                           16, width, height);
-    }
+    DECLARE_ALIGNED(16, uint8_t,
+                    temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
+    const int16_t *const kernel_x =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+    const int16_t *const kernel_y =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+    const int intermediate_height =
+        (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
+    assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
+    aom_convolve8_horiz(ref - ref_stride * ((filter.taps >> 1) - 1), ref_stride,
+                        temp, MAX_SB_SIZE, kernel_x, 16, NULL, -1, width,
+                        intermediate_height);
+    aom_convolve8_vert(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1),
+                       MAX_SB_SIZE, comp_pred, width, NULL, -1, kernel_y, 16,
+                       width, height);
   }
 }
 
-void aom_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
+void aom_comp_avg_upsampled_pred_c(MACROBLOCKD *xd, const AV1_COMMON *const cm,
+                                   int mi_row, int mi_col, const MV *const mv,
+                                   uint8_t *comp_pred, const uint8_t *pred,
                                    int width, int height, int subpel_x_q3,
                                    int subpel_y_q3, const uint8_t *ref,
                                    int ref_stride) {
   int i, j;
 
-  aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
-                     ref_stride);
+  aom_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width, height,
+                     subpel_x_q3, subpel_y_q3, ref, ref_stride);
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
       comp_pred[j] = ROUND_POWER_OF_TWO(comp_pred[j] + pred[j], 1);
@@ -383,17 +467,17 @@ void aom_jnt_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
   }
 }
 
-void aom_jnt_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
-                                       int width, int height, int subpel_x_q3,
-                                       int subpel_y_q3, const uint8_t *ref,
-                                       int ref_stride,
-                                       const JNT_COMP_PARAMS *jcp_param) {
+void aom_jnt_comp_avg_upsampled_pred_c(
+    MACROBLOCKD *xd, const AV1_COMMON *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+    int ref_stride, const JNT_COMP_PARAMS *jcp_param) {
   int i, j;
   const int fwd_offset = jcp_param->fwd_offset;
   const int bck_offset = jcp_param->bck_offset;
 
-  aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
-                     ref_stride);
+  aom_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width, height,
+                     subpel_x_q3, subpel_y_q3, ref, ref_stride);
 
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
@@ -810,9 +894,99 @@ void aom_highbd_comp_avg_pred_c(uint16_t *comp_pred, const uint8_t *pred8,
   }
 }
 
-void aom_highbd_upsampled_pred_c(uint16_t *comp_pred, int width, int height,
+void aom_highbd_upsampled_pred_c(MACROBLOCKD *xd,
+                                 const struct AV1Common *const cm, int mi_row,
+                                 int mi_col, const MV *const mv,
+                                 uint16_t *comp_pred, int width, int height,
                                  int subpel_x_q3, int subpel_y_q3,
                                  const uint8_t *ref8, int ref_stride, int bd) {
+  // expect xd == NULL only in tests
+  if (xd != NULL) {
+    const MB_MODE_INFO *mi = xd->mi[0];
+    const int ref_num = 0;
+    const int is_intrabc = is_intrabc_block(mi);
+    const struct scale_factors *const sf =
+        is_intrabc ? &cm->sf_identity : &xd->block_refs[ref_num]->sf;
+    const int is_scaled = av1_is_scaled(sf);
+
+    if (is_scaled) {
+      // Note: This is mostly a copy from the >=8X8 case in
+      // build_inter_predictors() function, with some small tweaks.
+      uint8_t *comp_pred8 = CONVERT_TO_BYTEPTR(comp_pred);
+
+      // Some assumptions.
+      const int plane = 0;
+
+      // Get pre-requisites.
+      const struct macroblockd_plane *const pd = &xd->plane[plane];
+      const int ssx = pd->subsampling_x;
+      const int ssy = pd->subsampling_y;
+      assert(ssx == 0 && ssy == 0);
+      const struct buf_2d *const dst_buf = &pd->dst;
+      const struct buf_2d *const pre_buf =
+          is_intrabc ? dst_buf : &pd->pre[ref_num];
+      const int mi_x = mi_col * MI_SIZE;
+      const int mi_y = mi_row * MI_SIZE;
+
+      // Calculate subpel_x/y and x/y_step.
+      const int row_start = 0;  // Because ss_y is 0.
+      const int col_start = 0;  // Because ss_x is 0.
+      const int pre_x = (mi_x + MI_SIZE * col_start) >> ssx;
+      const int pre_y = (mi_y + MI_SIZE * row_start) >> ssy;
+      int orig_pos_y = pre_y << SUBPEL_BITS;
+      orig_pos_y += mv->row * (1 << (1 - ssy));
+      int orig_pos_x = pre_x << SUBPEL_BITS;
+      orig_pos_x += mv->col * (1 << (1 - ssx));
+      int pos_y = sf->scale_value_y(orig_pos_y, sf);
+      int pos_x = sf->scale_value_x(orig_pos_x, sf);
+      pos_x += SCALE_EXTRA_OFF;
+      pos_y += SCALE_EXTRA_OFF;
+
+      const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
+      const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
+      const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
+                         << SCALE_SUBPEL_BITS;
+      const int right = (pre_buf->width + AOM_INTERP_EXTEND)
+                        << SCALE_SUBPEL_BITS;
+      pos_y = clamp(pos_y, top, bottom);
+      pos_x = clamp(pos_x, left, right);
+
+      const uint8_t *const pre =
+          pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+          (pos_x >> SCALE_SUBPEL_BITS);
+      const int subpel_x = pos_x & SCALE_SUBPEL_MASK;
+      const int subpel_y = pos_y & SCALE_SUBPEL_MASK;
+      const int xs = sf->x_step_q4;
+      const int ys = sf->y_step_q4;
+
+      // Get warp types.
+      const WarpedMotionParams *const wm =
+          &xd->global_motion[mi->ref_frame[ref_num]];
+      const int is_global = is_global_mv_block(mi, wm->wmtype);
+      WarpTypesAllowed warp_types;
+      warp_types.global_warp_allowed = is_global;
+      warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
+
+      // Get convolve parameters.
+      ConvolveParams conv_params = get_conv_params(ref_num, 0, plane, xd->bd);
+      const InterpFilters filters =
+          av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
+
+      // Get the inter predictor.
+      const int build_for_obmc = 0;
+      av1_make_inter_predictor(
+          pre, pre_buf->stride, comp_pred8, width, subpel_x, subpel_y, sf,
+          width, height, &conv_params, filters, &warp_types,
+          mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, plane, ref_num,
+          mi, build_for_obmc, xs, ys, xd, cm->allow_warped_motion);
+
+      return;
+    }
+  }
+
+  const InterpFilterParams filter =
+      av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
+
   if (!subpel_x_q3 && !subpel_y_q3) {
     const uint16_t *ref;
     int i;
@@ -822,56 +996,48 @@ void aom_highbd_upsampled_pred_c(uint16_t *comp_pred, int width, int height,
       comp_pred += width;
       ref += ref_stride;
     }
+  } else if (!subpel_y_q3) {
+    const int16_t *const kernel =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+    aom_highbd_convolve8_horiz(ref8, ref_stride, CONVERT_TO_BYTEPTR(comp_pred),
+                               width, kernel, 16, NULL, -1, width, height, bd);
+  } else if (!subpel_x_q3) {
+    const int16_t *const kernel =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+    aom_highbd_convolve8_vert(ref8, ref_stride, CONVERT_TO_BYTEPTR(comp_pred),
+                              width, NULL, -1, kernel, 16, width, height, bd);
   } else {
-    const InterpFilterParams filter =
-        av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
-    if (!subpel_y_q3) {
-      const int16_t *kernel =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-      /*Directly call C version to allow this to work for small (2x2) sizes.*/
-      aom_highbd_convolve8_horiz_c(ref8, ref_stride,
-                                   CONVERT_TO_BYTEPTR(comp_pred), width, kernel,
-                                   16, NULL, -1, width, height, bd);
-    } else if (!subpel_x_q3) {
-      const int16_t *kernel =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-      /*Directly call C version to allow this to work for small (2x2) sizes.*/
-      aom_highbd_convolve8_vert_c(ref8, ref_stride,
-                                  CONVERT_TO_BYTEPTR(comp_pred), width, NULL,
-                                  -1, kernel, 16, width, height, bd);
-    } else {
-      DECLARE_ALIGNED(16, uint16_t,
-                      temp[((MAX_SB_SIZE + 16) + 16) * MAX_SB_SIZE]);
-      const int16_t *kernel_x =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-      const int16_t *kernel_y =
-          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-      const int intermediate_height =
-          (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
-      assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
-      /*Directly call C versions to allow this to work for small (2x2) sizes.*/
-      aom_highbd_convolve8_horiz_c(ref8 - ref_stride * ((filter.taps >> 1) - 1),
-                                   ref_stride, CONVERT_TO_BYTEPTR(temp),
-                                   MAX_SB_SIZE, kernel_x, 16, NULL, -1, width,
-                                   intermediate_height, bd);
-      aom_highbd_convolve8_vert_c(
-          CONVERT_TO_BYTEPTR(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1)),
-          MAX_SB_SIZE, CONVERT_TO_BYTEPTR(comp_pred), width, NULL, -1, kernel_y,
-          16, width, height, bd);
-    }
+    DECLARE_ALIGNED(16, uint16_t,
+                    temp[((MAX_SB_SIZE + 16) + 16) * MAX_SB_SIZE]);
+    const int16_t *const kernel_x =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+    const int16_t *const kernel_y =
+        av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+    const int intermediate_height =
+        (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
+    assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
+    aom_highbd_convolve8_horiz(ref8 - ref_stride * ((filter.taps >> 1) - 1),
+                               ref_stride, CONVERT_TO_BYTEPTR(temp),
+                               MAX_SB_SIZE, kernel_x, 16, NULL, -1, width,
+                               intermediate_height, bd);
+    aom_highbd_convolve8_vert(
+        CONVERT_TO_BYTEPTR(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1)),
+        MAX_SB_SIZE, CONVERT_TO_BYTEPTR(comp_pred), width, NULL, -1, kernel_y,
+        16, width, height, bd);
   }
 }
 
-void aom_highbd_comp_avg_upsampled_pred_c(uint16_t *comp_pred,
-                                          const uint8_t *pred8, int width,
-                                          int height, int subpel_x_q3,
-                                          int subpel_y_q3, const uint8_t *ref8,
-                                          int ref_stride, int bd) {
+void aom_highbd_comp_avg_upsampled_pred_c(
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
+    int ref_stride, int bd) {
   int i, j;
 
   const uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  aom_highbd_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3,
-                            ref8, ref_stride, bd);
+  aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width,
+                            height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
+                            bd);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       comp_pred[j] = ROUND_POWER_OF_TWO(pred[j] + comp_pred[j], 1);
@@ -904,16 +1070,18 @@ void aom_highbd_jnt_comp_avg_pred_c(uint16_t *comp_pred, const uint8_t *pred8,
 }
 
 void aom_highbd_jnt_comp_avg_upsampled_pred_c(
-    uint16_t *comp_pred, const uint8_t *pred8, int width, int height,
-    int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8, int ref_stride,
-    int bd, const JNT_COMP_PARAMS *jcp_param) {
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
+    int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param) {
   int i, j;
   const int fwd_offset = jcp_param->fwd_offset;
   const int bck_offset = jcp_param->bck_offset;
   const uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
 
-  aom_highbd_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3,
-                            ref8, ref_stride, bd);
+  aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width,
+                            height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
+                            bd);
 
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
@@ -947,14 +1115,16 @@ void aom_comp_mask_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
   }
 }
 
-void aom_comp_mask_upsampled_pred(uint8_t *comp_pred, const uint8_t *pred,
+void aom_comp_mask_upsampled_pred(MACROBLOCKD *xd, const AV1_COMMON *const cm,
+                                  int mi_row, int mi_col, const MV *const mv,
+                                  uint8_t *comp_pred, const uint8_t *pred,
                                   int width, int height, int subpel_x_q3,
                                   int subpel_y_q3, const uint8_t *ref,
                                   int ref_stride, const uint8_t *mask,
                                   int mask_stride, int invert_mask) {
   if (subpel_x_q3 | subpel_y_q3) {
-    aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
-                       ref_stride);
+    aom_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width, height,
+                       subpel_x_q3, subpel_y_q3, ref, ref_stride);
     ref = comp_pred;
     ref_stride = width;
   }
@@ -1027,14 +1197,17 @@ void aom_highbd_comp_mask_pred_c(uint16_t *comp_pred, const uint8_t *pred8,
 }
 
 void aom_highbd_comp_mask_upsampled_pred_c(
-    uint16_t *comp_pred, const uint8_t *pred8, int width, int height,
-    int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8, int ref_stride,
-    const uint8_t *mask, int mask_stride, int invert_mask, int bd) {
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
+    int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask,
+    int bd) {
   int i, j;
 
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  aom_highbd_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3,
-                            ref8, ref_stride, bd);
+  aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width,
+                            height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
+                            bd);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       if (!invert_mask)
