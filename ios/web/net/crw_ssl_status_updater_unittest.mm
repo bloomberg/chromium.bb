@@ -161,10 +161,12 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpItem) {
 
   // No certificate for http.
   EXPECT_FALSE(!!item->GetSSL().certificate);
+
+  // Always normal content for http.
+  EXPECT_EQ(web::SSLStatus::NORMAL_CONTENT, item->GetSSL().content_status);
+
   // Make sure that security style and content status did change.
   EXPECT_EQ(web::SECURITY_STYLE_UNAUTHENTICATED, item->GetSSL().security_style);
-  EXPECT_EQ(web::SSLStatus::DISPLAYED_INSECURE_CONTENT,
-            item->GetSSL().content_status);
 }
 
 // Tests that delegate callback is not called if no changes were made to http
