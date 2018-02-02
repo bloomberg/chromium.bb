@@ -23,6 +23,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -54,11 +55,9 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
     return nullptr;
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
-  if (options.IsKeyframeEffectOptions() &&
-      !EffectModel::StringToCompositeOperation(
-          options.GetAsKeyframeEffectOptions().composite(), composite,
-          &exception_state)) {
-    return nullptr;
+  if (options.IsKeyframeEffectOptions()) {
+    composite = EffectModel::ExtractCompositeOperation(
+        options.GetAsKeyframeEffectOptions());
   }
 
   KeyframeEffectModelBase* model = EffectInput::Convert(

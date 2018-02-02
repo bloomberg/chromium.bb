@@ -5,8 +5,25 @@
 #include "core/animation/EffectModel.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/animation/KeyframeEffectOptions.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
+EffectModel::CompositeOperation EffectModel::ExtractCompositeOperation(
+    const KeyframeEffectOptions& options) {
+  // We have to be careful to keep backwards compatible behavior here; no valid
+  // value of KeyframeEffectOptions should throw, even if it is unsupported in
+  // Chrome currently. Values we do not support should just be turned into
+  // kCompositeReplace.
+  //
+  // See http://crbug.com/806139.
+  if (RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled() &&
+      options.composite() == "add") {
+    return kCompositeAdd;
+  }
+  return kCompositeReplace;
+}
+
 bool EffectModel::StringToCompositeOperation(String composite_string,
                                              CompositeOperation& result,
                                              ExceptionState* exception_state) {

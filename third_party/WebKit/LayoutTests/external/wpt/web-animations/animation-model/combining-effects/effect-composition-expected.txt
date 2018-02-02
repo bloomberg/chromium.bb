@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 FAIL accumulate onto the base value Failed to execute 'animate' on 'Element': Invalid composite value: 'accumulate'
 FAIL accumulate onto an underlying animation value Failed to execute 'animate' on 'Element': Invalid composite value: 'accumulate'
 FAIL Composite when mixing accumulate and replace Failed to execute 'animate' on 'Element': Invalid composite value: 'accumulate'
-FAIL accumulate specified on a keyframe overrides the composite mode of the effect Failed to execute 'animate' on 'Element': Invalid composite value: 'accumulate'
+FAIL accumulate specified on a keyframe overrides the composite mode of the effect assert_equals: Animated style at 50% expected "20px" but got "15px"
 FAIL unspecified composite mode on a keyframe is overriden by setting accumulate of the effect assert_equals: Animated style at 50% expected "20px" but got "15px"
 PASS add onto the base value
 PASS add onto an underlying animation value

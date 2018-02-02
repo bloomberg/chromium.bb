@@ -27,11 +27,9 @@ Animation* ElementAnimation::animate(
     UnrestrictedDoubleOrKeyframeAnimationOptions options,
     ExceptionState& exception_state) {
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
-  if (options.IsKeyframeAnimationOptions() &&
-      !EffectModel::StringToCompositeOperation(
-          options.GetAsKeyframeAnimationOptions().composite(), composite,
-          &exception_state)) {
-    return nullptr;
+  if (options.IsKeyframeAnimationOptions()) {
+    composite = EffectModel::ExtractCompositeOperation(
+        options.GetAsKeyframeAnimationOptions());
   }
 
   KeyframeEffectModelBase* effect = EffectInput::Convert(

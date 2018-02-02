@@ -39,6 +39,7 @@
 #include "core/animation/TimingInput.h"
 #include "core/dom/Element.h"
 #include "core/frame/UseCounter.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -69,11 +70,9 @@ KeyframeEffect* KeyframeEffect::Create(
     return nullptr;
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
-  if (options.IsKeyframeEffectOptions() &&
-      !EffectModel::StringToCompositeOperation(
-          options.GetAsKeyframeEffectOptions().composite(), composite,
-          &exception_state)) {
-    return nullptr;
+  if (options.IsKeyframeEffectOptions()) {
+    composite = EffectModel::ExtractCompositeOperation(
+        options.GetAsKeyframeEffectOptions());
   }
 
   KeyframeEffectModelBase* model = EffectInput::Convert(

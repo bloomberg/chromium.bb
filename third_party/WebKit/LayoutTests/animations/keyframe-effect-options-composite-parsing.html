@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<title>Regression test for KeyframeEffectOptions composite value</title>
+
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id="tester"></div>
+
+<script>
+function disableFeatureForTest(t, featureName) {
+  const previousFeatureValue = internals.runtimeFlags[featureName];
+  internals.runtimeFlags[featureName] = false;
+  t.add_cleanup(() => {
+    internals.runtimeFlags[featureName] = previousFeatureValue;
+  });
+}
+
+// These are a set of regression tests to ensure that we don't break backwards
+// compatibility for parsing the composite value of KeyframeEffectOptions.
+// See http://crbug.com/806139.
+
+test(t => {
+  disableFeatureForTest(t, 'cssAdditiveAnimationsEnabled');
+  disableFeatureForTest(t, 'webAnimationsAPIEnabled');
+
+  const tester = document.getElementById('tester');
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'replace' });
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'add' });
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'accumulate' });
+
+  assert_throws(new TypeError(), function() {
+    tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'foo' });
+  });
+}, 'In stable Chrome, valid composite values should not throw');
+
+test(t => {
+  disableFeatureForTest(t, 'webAnimationsAPIEnabled');
+
+  const tester = document.getElementById('tester');
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'replace' });
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'add' });
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'accumulate' });
+
+  assert_throws(new TypeError(), function() {
+    tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'foo' });
+  });
+}, 'When just CSSAdditiveAnimations is enabled, valid composite values should not throw');
+
+test(t => {
+  disableFeatureForTest(t, 'cssAdditiveAnimationsEnabled');
+
+  const tester = document.getElementById('tester');
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'replace' });
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'add' });
+  tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'accumulate' });
+
+  assert_throws(new TypeError(), function() {
+    tester.animate({ backgroundColor: [ 'red', 'blue' ] }, { composite: 'foo' });
+  });
+}, 'When just WebAnimationsAPI is enabled, valid composite values should not throw');
+</script>
