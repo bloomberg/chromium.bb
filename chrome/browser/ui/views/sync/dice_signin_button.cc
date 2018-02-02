@@ -11,7 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -45,7 +45,9 @@ DiceSigninButton::DiceSigninButton(views::ButtonListener* button_listener)
 }
 
 DiceSigninButton::DiceSigninButton(const AccountInfo& account,
-                                   views::ButtonListener* button_listener)
+                                   const gfx::Image& account_icon,
+                                   views::ButtonListener* button_listener,
+                                   bool show_drop_down_arrow)
     : views::MdTextButton(button_listener, views::style::CONTEXT_BUTTON),
       account_(account) {
   // First create the child views.
@@ -55,22 +57,24 @@ DiceSigninButton::DiceSigninButton(const AccountInfo& account,
   subtitle_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(subtitle_);
 
-  divider_ = new views::View();
-  divider_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-  AddChildView(divider_);
+  if (show_drop_down_arrow) {
+    divider_ = new views::View();
+    divider_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+    AddChildView(divider_);
 
-  arrow_ = new views::ImageButton(button_listener);
-  arrow_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                            views::ImageButton ::ALIGN_MIDDLE);
-  arrow_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  arrow_->set_has_ink_drop_action_on_click(true);
-  arrow_->SetFocusForPlatform();
-  arrow_->SetFocusPainter(nullptr);
-  arrow_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kSigninButtonDropDownArrowIcon,
-                            kDropDownArrowIconSize, SK_ColorWHITE));
-  AddChildView(arrow_);
+    arrow_ = new views::ImageButton(button_listener);
+    arrow_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                              views::ImageButton ::ALIGN_MIDDLE);
+    arrow_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+    arrow_->set_has_ink_drop_action_on_click(true);
+    arrow_->SetFocusForPlatform();
+    arrow_->SetFocusPainter(nullptr);
+    arrow_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kSigninButtonDropDownArrowIcon,
+                              kDropDownArrowIconSize, SK_ColorWHITE));
+    AddChildView(arrow_);
+  }
 
   // Set the title text for main Sign-in button.
   base::string16 button_title =
@@ -86,9 +90,6 @@ DiceSigninButton::DiceSigninButton(const AccountInfo& account,
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Set the image
-  gfx::Image account_icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          profiles::GetPlaceholderAvatarIconResourceID());
   gfx::Image profile_photo_circular = profiles::GetSizedAvatarIcon(
       account_icon, true, 40, 40, profiles::SHAPE_CIRCLE);
   SetImage(views::Button::STATE_NORMAL, *profile_photo_circular.ToImageSkia());
@@ -98,7 +99,7 @@ DiceSigninButton::~DiceSigninButton() = default;
 
 gfx::Rect DiceSigninButton::GetChildAreaBounds() {
   gfx::Rect child_area = MdTextButton::GetChildAreaBounds();
-  if (!account_)
+  if (!arrow_)
     return child_area;
 
   // Make room on the right for the divider and the drop-down arrow.
@@ -120,11 +121,23 @@ int DiceSigninButton::GetHeightForWidth(int width) const {
 }
 
 gfx::Size DiceSigninButton::CalculatePreferredSize() const {
-  NOTREACHED() << "DiceSigninButton is only used in bubbles that place "
-                  " child views using |GetHeightForWidth|. This method is "
-                  " intentionally not implemented to avoid confusion about "
-                  " the way this button is being layed out.";
-  return MdTextButton::CalculatePreferredSize();
+  gfx::Size parent_pref_size = MdTextButton::CalculatePreferredSize();
+  if (!account_)
+    return parent_pref_size;
+
+  int pref_width = parent_pref_size.width();
+  if (arrow_) {
+    // Additional width is needed for the divider and the drop-down arrow.
+    pref_width += GetDividerAndArrowReservedWidth();
+  }
+
+  // Additional height is needed for the subtitle.
+  int pref_height_with_subtitle = label()->CalculatePreferredSize().height() +
+                                  subtitle_->CalculatePreferredSize().height() +
+                                  GetInsets().height();
+  int pref_height =
+      std::max(parent_pref_size.height(), pref_height_with_subtitle);
+  return gfx::Size(pref_width, pref_height);
 }
 
 void DiceSigninButton::Layout() {
@@ -132,7 +145,7 @@ void DiceSigninButton::Layout() {
   if (!account_)
     return;
 
-  // By default, |title| takes the entire height of the button. Shink |title|
+  // By default, |title| takes the entire height of the button. Shrink |title|
   // to make space for |subtitle_|.
   views::Label* title = label();
   gfx::Size initial_title_size = title->size();
@@ -148,6 +161,8 @@ void DiceSigninButton::Layout() {
   subtitle_->SetBounds(title_x, title->bounds().bottom(), subtitle_width,
                        subtitle_height);
 
+  if (!arrow_)
+    return;
   // Lay the divider and the arrow on the right.
   gfx::Rect bounds = GetLocalBounds();
   int divider_x = bounds.width() - GetDividerAndArrowReservedWidth() +
