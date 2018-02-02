@@ -2,6 +2,8 @@
 <head>
 <script>
 function handleLoad() {
+    console.error("Cross-process frame loaded");
+    console.error("Sending message to parent");
     window.parent.postMessage("frameReloaded", "*");
 }
 </script>

@@ -2,9 +2,11 @@
 <html>
 <head>
 <script>
+console.error("Page started loading");
 window.addEventListener("message", receiveMessage, false);
 
 function receiveMessage(event) {
+    console.error("Message received");
     testRunner.inspectSecondaryWindow();
 }
 </script>
