@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_TEST_TEST_APP_WINDOW_ICON_OBSERVER_H_
 #define CHROME_BROWSER_UI_TEST_TEST_APP_WINDOW_ICON_OBSERVER_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace content {
 class BrowserContext;
@@ -31,6 +34,8 @@ class TestAppWindowIconObserver
 
   int icon_updates() const { return icon_updates_; }
 
+  const gfx::ImageSkia& last_app_icon() const { return last_app_icon_; }
+
  private:
   // AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;
@@ -45,7 +50,9 @@ class TestAppWindowIconObserver
   int icon_updates_ = 0;
   int expected_icon_updates_ = 0;
   std::vector<aura::Window*> windows_;
+  std::map<aura::Window*, std::string> last_app_icon_hash_map_;
   base::OnceClosure icon_updated_callback_;
+  gfx::ImageSkia last_app_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppWindowIconObserver);
 };

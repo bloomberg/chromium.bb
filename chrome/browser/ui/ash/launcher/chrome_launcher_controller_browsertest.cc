@@ -776,8 +776,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
 }
 
 // Test that opening an app sets the correct icon
-// TODO(crbug.com/735842): Flaky on CrOS MSan.
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   TestAppWindowIconObserver test_observer(browser()->profile());
 
   // Enable experimental APIs to allow panel creation.
@@ -794,6 +793,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   ready_listener.Reset();
   // Default app icon + extension icon updates.
   test_observer.WaitForIconUpdates(2);
+  const gfx::ImageSkia app_item_image = test_observer.last_app_icon();
 
   // Set panel window icon.
   ready_listener.WaitUntilSatisfied();
@@ -801,6 +801,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   ready_listener.Reset();
   // Custom icon update.
   test_observer.WaitForIconUpdate();
+  const gfx::ImageSkia panel_item_image = test_observer.last_app_icon();
 
   // Create non-shelf window.
   ready_listener.WaitUntilSatisfied();
@@ -823,16 +824,22 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   // Custom icon update.
   test_observer.WaitForIconUpdate();
 
-  // This test creates one app window, one app window with custom icon and one
-  // panel window.
-  int shelf_item_count = shelf_model()->item_count();
-  ASSERT_EQ(base_shelf_item_count + 3, shelf_item_count);
+  // Create shelf window with custom icon on init.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("createShelfWindowWithCustomIcon");
+  ready_listener.Reset();
+  // Default app icon + extension icon + custom icon updates.
+  test_observer.WaitForIconUpdates(3);
+  const gfx::ImageSkia app_item_custom_image = test_observer.last_app_icon();
+
+  const int shelf_item_count = shelf_model()->item_count();
+  ASSERT_EQ(base_shelf_item_count + 4, shelf_item_count);
   // The Panel will be the last item, the app second-to-last.
-  const ash::ShelfItem& app_item = shelf_model()->items()[shelf_item_count - 3];
+
+  const ash::ShelfItem& app_item =
+      shelf_model()->items()[base_shelf_item_count];
   const ash::ShelfItem& app_custom_icon_item =
-      shelf_model()->items()[shelf_item_count - 2];
-  const ash::ShelfItem& panel_item =
-      shelf_model()->items()[shelf_item_count - 1];
+      shelf_model()->items()[base_shelf_item_count + 1];
 
   // Icons for Apps are set by the AppWindowLauncherController, so
   // image_set_by_controller() should be set.
@@ -847,14 +854,16 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   EXPECT_TRUE(app_custom_icon_item_delegate->image_set_by_controller());
 
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
-  EXPECT_EQ(ash::kShelfSize, app_item.image.height());
+  // Note, images are no longer available in ChromeLauncherController. They are
+  // are passed directly to the ShelfController.
+  EXPECT_EQ(ash::kShelfSize, app_item_image.height());
   EXPECT_EQ(extension_misc::EXTENSION_ICON_LARGE,
-            app_custom_icon_item.image.height());
-  EXPECT_EQ(64, panel_item.image.height());
+            app_item_custom_image.height());
+  EXPECT_EQ(64, panel_item_image.height());
 
   // No more icon updates.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(8, test_observer.icon_updates());
+  EXPECT_EQ(11, test_observer.icon_updates());
 
   // Exit.
   ready_listener.WaitUntilSatisfied();

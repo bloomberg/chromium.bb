@@ -505,6 +505,11 @@ class AppWindow : public content::WebContentsDelegate,
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
 
+  // Starts custom app icon download. To avoid race condition with loading app
+  // itself it is started in case |app_icon_url_| is set and app window is
+  // ready.
+  void StartAppIconDownload();
+
   // Callback from web_contents()->DownloadFavicon.
   void DidDownloadFavicon(int id,
                           int http_status_code,
@@ -523,7 +528,7 @@ class AppWindow : public content::WebContentsDelegate,
   std::string window_key_;
 
   const SessionID session_id_;
-  WindowType window_type_;
+  WindowType window_type_ = WINDOW_TYPE_DEFAULT;
 
   // Custom icon shown in the task bar or in Chrome OS shelf.
   gfx::Image custom_app_icon_;
@@ -541,10 +546,10 @@ class AppWindow : public content::WebContentsDelegate,
   GURL initial_url_;
 
   // Bit field of FullscreenType.
-  int fullscreen_types_;
+  int fullscreen_types_ = FULLSCREEN_TYPE_NONE;
 
   // Whether the window has been shown or not.
-  bool has_been_shown_;
+  bool has_been_shown_ = false;
 
   // Whether the window is hidden or not. Hidden in this context means actively
   // by the chrome.app.window API, not in an operating system context. For
@@ -552,26 +557,30 @@ class AppWindow : public content::WebContentsDelegate,
   // part of a hidden app on OS X are not hidden. Windows which were created
   // with the |hidden| flag set to true, or which have been programmatically
   // hidden, are considered hidden.
-  bool is_hidden_;
+  bool is_hidden_ = false;
 
   // Cache the desired value of the always-on-top property. When windows enter
   // fullscreen or overlap the Windows taskbar, this property will be
   // automatically and silently switched off for security reasons. It is
   // reinstated when the window exits fullscreen and moves away from the
   // taskbar.
-  bool cached_always_on_top_;
+  bool cached_always_on_top_ = false;
 
   // Whether |alpha_enabled| was set in the CreateParams.
-  bool requested_alpha_enabled_;
+  bool requested_alpha_enabled_ = false;
 
   // Whether |is_ime_window| was set in the CreateParams.
-  bool is_ime_window_;
+  bool is_ime_window_ = false;
 
   // Whether |show_on_lock_screen| was set in the CreateParams.
-  bool show_on_lock_screen_;
+  bool show_on_lock_screen_ = false;
 
   // Whether |show_in_shelf| was set in the CreateParams.
-  bool show_in_shelf_;
+  bool show_in_shelf_ = false;
+
+  // Whether the app window is loaded and ready. It is used to resolve the
+  // race condition of loading custom app icon and app content simultaneously.
+  bool window_ready_ = false;
 
   // PlzNavigate: this is called when the first navigation is ready to commit or
   // when the window is closed.
