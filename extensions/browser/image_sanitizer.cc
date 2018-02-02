@@ -22,7 +22,7 @@ const int kMaxImageCanvas = 4096 * 4096;  // 16MB
 // Reads the file in |path| and then deletes it.
 // Returns a tuple containing: the file content, whether the read was
 // successful, whether the delete was successful.
-std::tuple<std::vector<uint8_t>, bool, bool> ReadAndDeleteFile(
+std::tuple<std::vector<uint8_t>, bool, bool> ReadAndDeleteBinaryFile(
     const base::FilePath& path) {
   std::vector<uint8_t> contents;
   bool read_success = false;
@@ -120,7 +120,7 @@ void ImageSanitizer::Start(service_manager::Connector* connector,
     base::FilePath full_image_path = image_dir_.Append(path);
     base::PostTaskAndReplyWithResult(
         extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
-        base::BindOnce(&ReadAndDeleteFile, full_image_path),
+        base::BindOnce(&ReadAndDeleteBinaryFile, full_image_path),
         base::BindOnce(&ImageSanitizer::ImageFileRead,
                        weak_factory_.GetWeakPtr(), path));
   }
