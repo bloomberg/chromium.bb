@@ -63,6 +63,26 @@ class SpaceBuggy(page_module.Page):
         .contentDocument.getElementsByClassName('panel level-select')[0]
         .style.bottom == '-100px'""")
 
+class EpicZenGarden(page_module.Page):
+
+  def __init__(self, page_set):
+    url = 'https://s3.amazonaws.com/mozilla-games/ZenGarden/EpicZenGarden.html'
+    super(EpicZenGarden, self).__init__(
+        url=url,
+        page_set=page_set,
+        shared_page_state_class=(
+            webgl_supported_shared_state.WebGLSupportedSharedState),
+        name='WasmZenGarden')
+
+  @property
+  def skipped_gpus(self):
+    return ['arm', 'qualcomm']
+
+  def RunPageInteractions(self, action_runner):
+    # We wait for the fullscreen button to become visible
+    action_runner.WaitForJavaScriptCondition("""document
+        .getElementById('fullscreen_request').style.display ===
+        'inline-block'""")
 
 class WasmRealWorldPagesStorySet(story.StorySet):
   """Top apps, used to monitor web assembly apps."""
@@ -74,3 +94,4 @@ class WasmRealWorldPagesStorySet(story.StorySet):
 
     self.AddStory(Tanks(self))
     self.AddStory(SpaceBuggy(self))
+    self.AddStory(EpicZenGarden(self))
