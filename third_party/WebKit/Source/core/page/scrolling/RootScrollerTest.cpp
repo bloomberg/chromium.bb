@@ -762,12 +762,37 @@ TEST_P(RootScrollerTest, RemoteIFrame) {
   MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
 
   // Set the root scroller in the local main frame to the iframe (which is
-  // remote).
+  // remote). Make sure we don't promote a remote frame to the root scroller.
   {
     Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
     NonThrowableExceptionState non_throw;
     MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
     EXPECT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
+    EXPECT_EQ(MainFrame()->GetDocument(),
+              EffectiveRootScroller(MainFrame()->GetDocument()));
+    MainFrameView()->UpdateAllLifecyclePhases();
+  }
+}
+
+// Make sure that if an effective root scroller becomes a remote frame, it's
+// demoted.
+TEST_P(RootScrollerTest, IFrameSwapToRemote) {
+  Initialize("root-scroller-iframe.html");
+  Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
+
+  {
+    NonThrowableExceptionState non_throw;
+    MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
+    ASSERT_EQ(iframe, EffectiveRootScroller(MainFrame()->GetDocument()));
+    MainFrameView()->UpdateAllLifecyclePhases();
+  }
+
+  // Swap in a remote frame. Make sure we revert back to the document.
+  {
+    MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(MainFrame()->GetDocument(),
+              EffectiveRootScroller(MainFrame()->GetDocument()));
   }
 }
 

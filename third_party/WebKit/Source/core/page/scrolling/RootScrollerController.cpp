@@ -179,9 +179,20 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
       !element.IsFrameOwnerElement())
     return false;
 
-  if (element.IsFrameOwnerElement() &&
-      !ToHTMLFrameOwnerElement(&element)->OwnedEmbeddedContentView())
-    return false;
+  if (element.IsFrameOwnerElement()) {
+    const HTMLFrameOwnerElement* frame_owner =
+        ToHTMLFrameOwnerElement(&element);
+
+    if (!frame_owner)
+      return false;
+
+    if (!frame_owner->OwnedEmbeddedContentView())
+      return false;
+
+    // TODO(bokan): Make work with OOPIF. crbug.com/642378.
+    if (!frame_owner->OwnedEmbeddedContentView()->IsLocalFrameView())
+      return false;
+  }
 
   if (!FillsViewport(element))
     return false;
