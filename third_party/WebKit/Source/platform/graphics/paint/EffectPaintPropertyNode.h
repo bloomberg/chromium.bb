@@ -125,8 +125,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
            compositor_element_id_ == o.compositor_element_id_ &&
            paint_offset_ == o.paint_offset_;
   }
-
-  String ToTreeString() const;
 #endif
 
   std::unique_ptr<JSONObject> ToJSON() const;

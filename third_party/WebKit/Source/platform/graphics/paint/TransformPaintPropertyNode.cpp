@@ -4,8 +4,6 @@
 
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
-#include "platform/graphics/paint/PropertyTreeState.h"
-
 namespace blink {
 
 // The root of the transform tree. The root transform node references the root
@@ -57,14 +55,5 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
     json->SetString("scroll", String::Format("%p", scroll_.get()));
   return json;
 }
-
-#if DCHECK_IS_ON()
-
-String TransformPaintPropertyNode::ToTreeString() const {
-  return blink::PropertyTreeStatePrinter<blink::TransformPaintPropertyNode>()
-      .PathAsString(this);
-}
-
-#endif
 
 }  // namespace blink

@@ -80,7 +80,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
               ::testing::MatchesRegex("root .*\"scroll\".*"
                                       "  .*\"parent\".*"
                                       "    .*\"matrix\".*"
-                                      "       .*\"matrix\".*"));
+                                      "      .*\"matrix\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {

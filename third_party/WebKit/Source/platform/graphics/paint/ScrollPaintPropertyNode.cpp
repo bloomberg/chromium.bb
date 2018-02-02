@@ -4,8 +4,6 @@
 
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 
-#include "platform/graphics/paint/PropertyTreeState.h"
-
 namespace blink {
 
 ScrollPaintPropertyNode* ScrollPaintPropertyNode::Root() {
@@ -43,14 +41,5 @@ std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
   }
   return json;
 }
-
-#if DCHECK_IS_ON()
-
-String ScrollPaintPropertyNode::ToTreeString() const {
-  return blink::PropertyTreeStatePrinter<blink::ScrollPaintPropertyNode>()
-      .PathAsString(this);
-}
-
-#endif
 
 }  // namespace blink

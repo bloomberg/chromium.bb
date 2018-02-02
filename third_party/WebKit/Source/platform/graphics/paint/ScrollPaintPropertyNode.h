@@ -135,8 +135,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
            compositor_element_id_ == o.compositor_element_id_;
   }
-
-  String ToTreeString() const;
 #endif
 
   std::unique_ptr<JSONObject> ToJSON() const;

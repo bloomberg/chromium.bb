@@ -102,8 +102,6 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
            clip_rect_ == o.clip_rect_ && clip_path_ == o.clip_path_ &&
            direct_compositing_reasons_ == o.direct_compositing_reasons_;
   }
-
-  String ToTreeString() const;
 #endif
 
   std::unique_ptr<JSONObject> ToJSON() const;

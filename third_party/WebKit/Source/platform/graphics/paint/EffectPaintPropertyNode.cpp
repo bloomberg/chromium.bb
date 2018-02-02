@@ -4,8 +4,6 @@
 
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 
-#include "platform/graphics/paint/PropertyTreeState.h"
-
 namespace blink {
 
 EffectPaintPropertyNode* EffectPaintPropertyNode::Root() {
@@ -53,14 +51,5 @@ std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
     json->SetString("paintOffset", paint_offset_.ToString());
   return json;
 }
-
-#if DCHECK_IS_ON()
-
-String EffectPaintPropertyNode::ToTreeString() const {
-  return blink::PropertyTreeStatePrinter<blink::EffectPaintPropertyNode>()
-      .PathAsString(this);
-}
-
-#endif
 
 }  // namespace blink
