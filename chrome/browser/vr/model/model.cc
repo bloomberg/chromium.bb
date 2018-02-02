@@ -99,6 +99,10 @@ bool Model::omnibox_editing_enabled() const {
   return get_last_opaque_mode() == kModeEditingOmnibox;
 }
 
+bool Model::editing_enabled() const {
+  return editing_input || editing_web_input;
+}
+
 bool Model::fullscreen_enabled() const {
   return get_last_opaque_mode() == kModeFullscreen;
 }

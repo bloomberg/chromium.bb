@@ -62,6 +62,7 @@ struct EventHandlers {
   base::Callback<void(const gfx::PointF&)> hover_move;
   base::Callback<void()> button_down;
   base::Callback<void()> button_up;
+  base::RepeatingCallback<void(bool)> focus_change;
 };
 
 struct HitTestRequest {
@@ -216,6 +217,9 @@ class UiElement : public cc::AnimationTarget {
   virtual void OnFocusChanged(bool focused);
   virtual void OnInputEdited(const TextInputInfo& info);
   virtual void OnInputCommitted(const TextInputInfo& info);
+  virtual void RequestFocus();
+  virtual void RequestUnfocus();
+  virtual void UpdateInput(const TextInputInfo& info);
 
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
@@ -446,6 +450,8 @@ class UiElement : public cc::AnimationTarget {
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
+  EventHandlers event_handlers_;
+
  private:
   virtual void OnUpdatedWorldSpaceTransform();
 
@@ -563,8 +569,6 @@ class UiElement : public cc::AnimationTarget {
   std::vector<std::unique_ptr<BindingBase>> bindings_;
 
   UpdatePhase phase_ = kClean;
-
-  EventHandlers event_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

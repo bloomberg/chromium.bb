@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_VR_MODEL_TEXT_INPUT_INFO_H_
 
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace vr {
 
@@ -14,6 +16,8 @@ struct TextInputInfo {
  public:
   TextInputInfo();
   explicit TextInputInfo(base::string16 t);
+
+  static const int kDefaultCompositionIndex = -1;
 
   bool operator==(const TextInputInfo& other) const;
   bool operator!=(const TextInputInfo& other) const;
@@ -28,6 +32,18 @@ struct TextInputInfo {
   // The cursor position of the current selection end, or the caret position
   // if nothing is selected.
   int selection_end;
+
+  // The start position of the current composition, or -1 if there is none.
+  int composition_start;
+
+  // The end position of the current composition, or -1 if there is none.
+  int composition_end;
+
+  std::string ToString() const {
+    return base::StringPrintf(
+        "t(%s) s(%d, %d) c(%d, %d)", base::UTF16ToUTF8(text).c_str(),
+        selection_start, selection_end, composition_start, composition_end);
+  }
 };
 
 }  // namespace vr

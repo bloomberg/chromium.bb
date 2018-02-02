@@ -143,6 +143,7 @@ class VrShell : device::GvrGamepadDataProvider,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       int mode);
+  void OnWebInputEdited(vr::TextInputInfo info, bool commit);
 
   void ContentWebContentsDestroyed();
 

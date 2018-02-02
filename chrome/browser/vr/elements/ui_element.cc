@@ -201,6 +201,18 @@ void UiElement::OnInputCommitted(const TextInputInfo& info) {
   NOTREACHED();
 }
 
+void UiElement::RequestFocus() {
+  NOTREACHED();
+}
+
+void UiElement::RequestUnfocus() {
+  NOTREACHED();
+}
+
+void UiElement::UpdateInput(const TextInputInfo& info) {
+  NOTREACHED();
+}
+
 bool UiElement::PrepareToDraw() {
   return false;
 }

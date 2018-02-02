@@ -6,20 +6,30 @@
 
 namespace vr {
 
-TextInputInfo::TextInputInfo() : selection_start(0), selection_end(0) {}
+TextInputInfo::TextInputInfo()
+    : selection_start(0),
+      selection_end(0),
+      composition_start(kDefaultCompositionIndex),
+      composition_end(kDefaultCompositionIndex) {}
 TextInputInfo::TextInputInfo(base::string16 t)
-    : text(t), selection_start(t.length()), selection_end(t.length()) {}
+    : text(t),
+      selection_start(t.length()),
+      selection_end(t.length()),
+      composition_start(kDefaultCompositionIndex),
+      composition_end(kDefaultCompositionIndex) {}
 
 bool TextInputInfo::operator==(const TextInputInfo& other) const {
   return text == other.text && selection_start == other.selection_start &&
-         selection_end == other.selection_end;
+         selection_end == other.selection_end &&
+         composition_start == other.composition_start &&
+         composition_end == other.composition_end;
 }
 
 bool TextInputInfo::operator!=(const TextInputInfo& other) const {
   return !(*this == other);
 }
 
-static_assert(sizeof(base::string16) + 8 == sizeof(TextInputInfo),
+static_assert(sizeof(base::string16) + 16 == sizeof(TextInputInfo),
               "If new fields are added to TextInputInfo, we must explicitly "
               "bump this size and update operator==");
 
