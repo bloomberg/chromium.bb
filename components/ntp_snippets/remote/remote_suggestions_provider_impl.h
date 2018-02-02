@@ -163,6 +163,8 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
                            CallsSchedulerWhenSignedOut);
   FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderImplTest,
                            RestartsFetchWhenSignedInWhileFetching);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderImplTest,
+                           ShouldHandleCategoryDisabledBeforeTimeout);
   FRIEND_TEST_ALL_PREFIXES(
       RemoteSuggestionsProviderImplTest,
       ShouldNotSetExclusiveCategoryWhenFetchingSuggestions);

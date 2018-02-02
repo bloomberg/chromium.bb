@@ -4575,6 +4575,48 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldHandleCategoryDisabledBeforeTimeout) {
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  const FetchedCategoryBuilder articles_category_builder =
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://articles.com"));
+  fetched_categories.push_back(articles_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  ASSERT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(articles_category()));
+
+  // No need to finish the fetch, we ignore the response callback.
+  RefetchWhileDisplayingAndGetResponseCallback(provider.get());
+
+  FastForwardBy(
+      base::TimeDelta::FromSeconds(kTimeoutForRefetchWhileDisplayingSeconds) -
+      base::TimeDelta::FromMilliseconds(1));
+
+  // Before the timeout, the status is flipped to AVAILABLE_LOADING.
+  ASSERT_EQ(CategoryStatus::AVAILABLE_LOADING,
+            observer().StatusForCategory(articles_category()));
+
+  // Disable the provider; this will put the category into the
+  // CATEGORY_EXPLICITLY_DISABLED status.
+  provider->EnterState(RemoteSuggestionsProviderImpl::State::DISABLED);
+  ASSERT_EQ(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED,
+            observer().StatusForCategory(articles_category()));
+
+  // Trigger the timeout. The provider should gracefully handle(i.e. not crash
+  // because of) the category being disabled in the interim.
+  FastForwardBy(base::TimeDelta::FromMilliseconds(2));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotUpdateTimeoutIfRefetchWhileDisplayingCalledAgain) {
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
