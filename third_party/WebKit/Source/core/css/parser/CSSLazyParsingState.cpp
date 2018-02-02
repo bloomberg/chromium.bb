@@ -65,7 +65,8 @@ bool CSSLazyParsingState::ShouldLazilyParseProperties(
   //  list. This ensures we don't cause a collectFeatures() when we trigger
   //  parsing for attr() functions which would trigger expensive invalidation
   //  propagation.
-  for (const auto* s = selectors.First(); s; s = CSSSelectorList::Next(*s)) {
+  for (const auto* s = selectors.FirstForCSSOM(); s;
+       s = CSSSelectorList::Next(*s)) {
     for (const CSSSelector* current = s; current;
          current = current->TagHistory()) {
       const CSSSelector::PseudoType type(current->GetPseudoType());

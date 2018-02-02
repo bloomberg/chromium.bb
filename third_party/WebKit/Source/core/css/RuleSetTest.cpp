@@ -240,6 +240,49 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PlaceholderPseudo) {
   ASSERT_EQ(2u, rules->size());
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatches) {
+  CSSTestHelper helper;
+
+  helper.AddCSSRules(".a :matches(.b+.c, .d>:matches(.e, .f)) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  {
+    AtomicString str("c");
+    const TerminatedArray<RuleData>* rules = rule_set.ClassRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).Selector().Value());
+  }
+  {
+    AtomicString str("e");
+    const TerminatedArray<RuleData>* rules = rule_set.ClassRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).Selector().Value());
+  }
+  {
+    AtomicString str("f");
+    const TerminatedArray<RuleData>* rules = rule_set.ClassRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).Selector().Value());
+  }
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatchesTooLarge) {
+  // RuleData cannot support selectors at index 8192 or beyond so the expansion
+  // is limited to this size
+  CSSTestHelper helper;
+
+  helper.AddCSSRules(
+      ":matches(.a#a, .b#b, .c#c, .d#d) + "
+      ":matches(.e#e, .f#f, .g#g, .h#h) + "
+      ":matches(.i#i, .j#j, .k#k, .l#l) + "
+      ":matches(.m#m, .n#n, .o#o, .p#p) + "
+      ":matches(.q#q, .r#r, .s#s, .t#t) + "
+      ":matches(.u#u, .v#v, .w#w, .x#x) { }",
+      true);
+
+  RuleSet& rule_set = helper.GetRuleSet();
+  ASSERT_EQ(0u, rule_set.RuleCount());
+}
+
 TEST(RuleSetTest, SelectorIndexLimit) {
   StringBuilder builder;
 
