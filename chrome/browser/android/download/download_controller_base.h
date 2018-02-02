@@ -24,6 +24,13 @@ namespace content {
 class WebContents;
 }
 
+extern const char kOMADrmMessageMimeType[];
+extern const char kOMADrmContentMimeType[];
+extern const char kOMADrmRightsMimeType1[];
+extern const char kOMADrmRightsMimeType2[];
+
+content::WebContents* GetWebContents(int render_process_id, int render_view_id);
+
 // Used to store all the information about an Android download.
 struct DownloadInfo {
   explicit DownloadInfo(const net::URLRequest* request);

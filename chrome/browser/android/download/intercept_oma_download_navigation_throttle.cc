@@ -15,25 +15,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-static const char kOMADrmMessageMimeType[] = "application/vnd.oma.drm.message";
-static const char kOMADrmContentMimeType[] = "application/vnd.oma.drm.content";
-static const char kOMADrmRightsMimeType1[] =
-    "application/vnd.oma.drm.rights+xml";
-static const char kOMADrmRightsMimeType2[] =
-    "application/vnd.oma.drm.rights+wbxml";
-
-content::WebContents* GetWebContents(int render_process_id,
-                                     int render_view_id) {
-  content::RenderViewHost* render_view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-
-  return content::WebContents::FromRenderViewHost(render_view_host);
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<content::NavigationThrottle>
 InterceptOMADownloadNavigationThrottle::Create(

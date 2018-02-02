@@ -59,16 +59,6 @@ base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
 int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 
-WebContents* GetWebContents(int render_process_id, int render_view_id) {
-  content::RenderViewHost* render_view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-
-  if (!render_view_host)
-    return nullptr;
-
-  return WebContents::FromRenderViewHost(render_view_host);
-}
-
 void CreateContextMenuDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::ContextMenuParams& params,
