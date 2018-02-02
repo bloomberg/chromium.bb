@@ -107,6 +107,9 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
   DummyPageHolder& Page() const { return *dummy_page_holder_; }
   Document& GetDocument() const { return *document_; }
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
+  bool IsCanvasResourceHostSet(Canvas2DLayerBridge* bridge) {
+    return !!bridge->resource_host_;
+  }
   CanvasRenderingContext2D* Context2d() const {
     return static_cast<CanvasRenderingContext2D*>(
         CanvasElement().RenderingContext());
@@ -810,8 +813,11 @@ TEST_F(CanvasRenderingContext2DTest,
       .Times(1);
 
   EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_TRUE(IsCanvasResourceHostSet(CanvasElement().Canvas2DBuffer()));
+
   CanvasElement().DisableAcceleration(std::move(fake_deaccelerate_surface));
   EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_TRUE(IsCanvasResourceHostSet(CanvasElement().Canvas2DBuffer()));
 
   Mock::VerifyAndClearExpectations(surface_ptr);
 }
