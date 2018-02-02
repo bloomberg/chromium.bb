@@ -78,6 +78,8 @@ bool DirectLayerTreeFrameSink::BindToClient(
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, is_root,
       capabilities_.delegated_sync_points_required);
+  // TODO(riajiang): Check if viz hit-test is enabled and do setup work if it
+  // is turned on.
   begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());
 
@@ -129,7 +131,8 @@ void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
 void DirectLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {
-  // This notification is not relevant to our client outside of tests.
+  if (support_->GetHitTestAggregator())
+    support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId());
 }
 
 void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {

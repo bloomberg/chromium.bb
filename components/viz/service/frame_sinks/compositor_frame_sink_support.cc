@@ -58,6 +58,13 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   DCHECK(capture_clients_.empty());
 }
 
+void CompositorFrameSinkSupport::SetUpHitTest() {
+  DCHECK(is_root_);
+  hit_test_aggregator_ = std::make_unique<HitTestAggregator>(
+      frame_sink_manager_->hit_test_manager(), frame_sink_manager_,
+      frame_sink_id_);
+}
+
 void CompositorFrameSinkSupport::SetAggregatedDamageCallback(
     AggregatedDamageCallback callback) {
   aggregated_damage_callback_ = std::move(callback);
@@ -439,6 +446,11 @@ void CompositorFrameSinkSupport::RequestCopyOfSurface(
   ack.has_damage = true;
   if (current_surface->HasActiveFrame())
     surface_manager_->SurfaceModified(current_surface->surface_id(), ack);
+}
+
+HitTestAggregator* CompositorFrameSinkSupport::GetHitTestAggregator() {
+  DCHECK(is_root_);
+  return hit_test_aggregator_.get();
 }
 
 Surface* CompositorFrameSinkSupport::GetCurrentSurfaceForTesting() {
