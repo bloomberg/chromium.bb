@@ -60,7 +60,7 @@ void CalculateWindowStylesFromInitParams(
         *style |= WS_POPUP;
         break;
       }
-      // Else, no break. Fall through to TYPE_WINDOW.
+      FALLTHROUGH;
     case Widget::InitParams::TYPE_WINDOW: {
       // WS_OVERLAPPEDWINDOW is equivalent to:
       //   WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |

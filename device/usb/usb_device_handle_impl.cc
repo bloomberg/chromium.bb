@@ -496,7 +496,7 @@ void UsbDeviceHandleImpl::Transfer::ProcessCompletion() {
           buffer_ = resized_buffer;
         }
       }
-    // Fall through!
+      FALLTHROUGH;
 
     case UsbTransferType::BULK:
     case UsbTransferType::INTERRUPT:

@@ -122,6 +122,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
         return std::move(result);
       }
       // Fall through in order to accept lists encoded as JSON strings.
+      FALLTHROUGH;
     }
     case base::Value::Type::DICTIONARY: {
       // Dictionaries may be encoded as JSON strings.
@@ -274,6 +275,7 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
                              new base::Value(static_cast<int>(dword_value))));
           continue;
         }
+        FALLTHROUGH;
       case REG_NONE:
       case REG_LINK:
       case REG_MULTI_SZ:

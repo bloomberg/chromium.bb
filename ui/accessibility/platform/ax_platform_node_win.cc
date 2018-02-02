@@ -3374,6 +3374,7 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
     case ax::mojom::Role::kMenuListOption:
       if (data.HasState(ax::mojom::State::kSelectable))
         return true;
+      break;
 
     default:
       break;

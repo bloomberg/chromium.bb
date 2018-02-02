@@ -79,7 +79,7 @@ int GetAccessFlags(PageAccessibilityConfiguration page_accessibility) {
       return PAGE_EXECUTE_READWRITE;
     default:
       NOTREACHED();
-    // Fall through.
+      FALLTHROUGH;
     case PageInaccessible:
       return PAGE_NOACCESS;
   }

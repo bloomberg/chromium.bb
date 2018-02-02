@@ -585,7 +585,7 @@ void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
         ASSERT_TRUE(seen_pps_);
         seen_idr_ = true;
         keyframe = true;
-      // fallthrough
+        FALLTHROUGH;
       case H264NALU::kNonIDRSlice: {
         ASSERT_TRUE(seen_idr_);
         seen_sps_ = seen_pps_ = false;

@@ -119,7 +119,8 @@ StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
               profile->IsSupervised())) {
         tabs.emplace_back(GetWin10WelcomePageUrl(false), false);
         break;
-      }  // else fall through below.
+      }
+      FALLTHROUGH;
 #endif   // defined(OS_WIN)
     case StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard:
       if (CanShowWelcome(profile->IsSyncAllowed(), profile->IsSupervised(),
