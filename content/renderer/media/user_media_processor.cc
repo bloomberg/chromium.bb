@@ -17,9 +17,7 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/child_thread_impl.h"
 #include "content/common/media/media_stream_controls.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/local_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
@@ -38,7 +36,7 @@
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capture_types.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -328,8 +326,7 @@ UserMediaProcessor::UserMediaProcessor(
     : dependency_factory_(dependency_factory),
       media_stream_device_observer_(std::move(media_stream_device_observer)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
-      render_frame_id_(render_frame ? render_frame->GetRoutingID()
-                                    : MSG_ROUTING_NONE),
+      render_frame_(render_frame),
       weak_factory_(this) {
   DCHECK(dependency_factory_);
   DCHECK(media_stream_device_observer_.get());
@@ -567,7 +564,7 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo() {
 
   // The browser replies to this request by invoking OnStreamGenerated().
   GetMediaStreamDispatcherHost()->GenerateStream(
-      render_frame_id_, current_request_info_->request_id(),
+      current_request_info_->request_id(),
       *current_request_info_->stream_controls(),
       current_request_info_->is_processing_user_gesture(),
       base::BindOnce(&UserMediaProcessor::OnStreamGenerated,
@@ -636,15 +633,13 @@ void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
   // Only stop the device if the device is not used in another MediaStream.
   for (auto it = audio_devices.begin(); it != audio_devices.end(); ++it) {
     if (!FindLocalSource(*it)) {
-      GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_, it->id,
-                                                       it->session_id);
+      GetMediaStreamDispatcherHost()->StopStreamDevice(it->id, it->session_id);
     }
   }
 
   for (auto it = video_devices.begin(); it != video_devices.end(); ++it) {
     if (!FindLocalSource(*it)) {
-      GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_, it->id,
-                                                       it->session_id);
+      GetMediaStreamDispatcherHost()->StopStreamDevice(it->id, it->session_id);
     }
   }
 }
@@ -803,7 +798,7 @@ MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
           audio_processing_properties)) {
     *has_sw_echo_cancellation = false;
     return new LocalMediaStreamAudioSource(
-        render_frame_id_, device, stream_controls->hotword_enabled,
+        render_frame_->GetRoutingID(), device, stream_controls->hotword_enabled,
         stream_controls->disable_local_echo, source_ready);
   }
 
@@ -812,7 +807,7 @@ MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
   *has_sw_echo_cancellation =
       audio_processing_properties.enable_sw_echo_cancellation;
   return new ProcessedLocalAudioSource(
-      render_frame_id_, device, stream_controls->hotword_enabled,
+      render_frame_->GetRoutingID(), device, stream_controls->hotword_enabled,
       stream_controls->disable_local_echo, audio_processing_properties,
       source_ready, dependency_factory_);
 }
@@ -825,7 +820,7 @@ MediaStreamVideoSource* UserMediaProcessor::CreateVideoSource(
   DCHECK(current_request_info_->video_capture_settings().HasValue());
 
   return new MediaStreamVideoCapturerSource(
-      stop_callback, device,
+      render_frame_->GetRoutingID(), stop_callback, device,
       current_request_info_->video_capture_settings().capture_params());
 }
 
@@ -1134,7 +1129,7 @@ void UserMediaProcessor::StopAllProcessing() {
       if (current_request_info_->state() ==
           RequestInfo::State::SENT_FOR_GENERATION) {
         GetMediaStreamDispatcherHost()->CancelRequest(
-            render_frame_id_, current_request_info_->request_id());
+            current_request_info_->request_id());
       }
       LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_NOT_GENERATED);
     }
@@ -1162,8 +1157,7 @@ void UserMediaProcessor::OnLocalSourceStopped(
       static_cast<MediaStreamSource*>(source.GetExtraData());
   media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
   GetMediaStreamDispatcherHost()->StopStreamDevice(
-      render_frame_id_, source_impl->device().id,
-      source_impl->device().session_id);
+      source_impl->device().id, source_impl->device().session_id);
 }
 
 void UserMediaProcessor::StopLocalSource(
@@ -1177,8 +1171,7 @@ void UserMediaProcessor::StopLocalSource(
   if (notify_dispatcher) {
     media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
     GetMediaStreamDispatcherHost()->StopStreamDevice(
-        render_frame_id_, source_impl->device().id,
-        source_impl->device().session_id);
+        source_impl->device().id, source_impl->device().session_id);
   }
 
   source_impl->ResetSourceStoppedCallback();
@@ -1188,8 +1181,8 @@ void UserMediaProcessor::StopLocalSource(
 const mojom::MediaStreamDispatcherHostPtr&
 UserMediaProcessor::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, &dispatcher_host_);
+    render_frame_->GetRemoteInterfaces()->GetInterface(
+        mojo::MakeRequest(&dispatcher_host_));
   }
   return dispatcher_host_;
 }

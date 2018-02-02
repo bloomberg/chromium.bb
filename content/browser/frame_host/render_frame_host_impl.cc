@@ -66,6 +66,7 @@
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/audio_input_delegate_impl.h"
 #include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
+#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -106,7 +107,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
@@ -3227,6 +3227,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    GetRoutingID(),
                    base::Unretained(media_stream_manager)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+
+    registry_->AddInterface(
+        base::BindRepeating(
+            &RenderFrameHostImpl::CreateMediaStreamDispatcherHost,
+            base::Unretained(this), base::Unretained(media_stream_manager)),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 #endif
 
@@ -4363,6 +4369,19 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
       RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
           factory_context, GetRoutingID(), std::move(request));
 }
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+void RenderFrameHostImpl::CreateMediaStreamDispatcherHost(
+    MediaStreamManager* media_stream_manager,
+    mojom::MediaStreamDispatcherHostRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!media_stream_dispatcher_host_) {
+    media_stream_dispatcher_host_.reset(new MediaStreamDispatcherHost(
+        GetProcess()->GetID(), GetRoutingID(), media_stream_manager));
+  }
+  media_stream_dispatcher_host_->BindRequest(std::move(request));
+}
+#endif
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
     media::mojom::InterfaceFactoryRequest request) {
