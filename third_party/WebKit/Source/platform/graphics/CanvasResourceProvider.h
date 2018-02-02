@@ -7,9 +7,12 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/paint/decode_stashing_image_provider.h"
+#include "cc/raster/playback_image_provider.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -77,6 +80,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   scoped_refptr<StaticBitmapImage> Snapshot();
 
   cc::PaintCanvas* Canvas();
+  void ReleaseLockedImages();
   void FlushSkia() const;
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
@@ -122,6 +126,24 @@ class PLATFORM_EXPORT CanvasResourceProvider {
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
 
  private:
+  class CanvasImageProvider : public cc::ImageProvider {
+   public:
+    CanvasImageProvider(cc::ImageDecodeCache*,
+                        const gfx::ColorSpace& target_color_space);
+    ~CanvasImageProvider() override;
+
+    // cc::ImageProvider implementation.
+    ScopedDecodedDrawImage GetDecodedDrawImage(const cc::DrawImage&) override;
+
+    void ReleaseLockedImages();
+
+   private:
+    void CanUnlockImage(ScopedDecodedDrawImage);
+
+    std::vector<ScopedDecodedDrawImage> locked_images_;
+    cc::PlaybackImageProvider playback_image_provider_;
+  };
+
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
   cc::ImageDecodeCache* ImageDecodeCache();
@@ -130,6 +152,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   IntSize size_;
   CanvasColorParams color_params_;
+  Optional<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::PaintCanvas> canvas_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
   std::unique_ptr<SkCanvas> xform_canvas_;

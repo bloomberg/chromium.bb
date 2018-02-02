@@ -23,7 +23,8 @@ class CC_PAINT_EXPORT DecodeStashingImageProvider : public ImageProvider {
   ScopedDecodedDrawImage GetDecodedDrawImage(
       const DrawImage& draw_image) override;
 
-  // Releases all stashed images.
+  // Releases all stashed images. The caller must ensure that it is safe to
+  // unlock any images acquired before this.
   void Reset();
 
  private:

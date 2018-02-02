@@ -66,7 +66,8 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
 
   return ScopedDecodedDrawImage(
       decoded_draw_image,
-      base::BindOnce(&UnrefImageFromCache, std::move(adjusted_image), cache_));
+      base::BindOnce(&UnrefImageFromCache, std::move(adjusted_image), cache_,
+                     decoded_draw_image));
 }
 
 PlaybackImageProvider::Settings::Settings() = default;
