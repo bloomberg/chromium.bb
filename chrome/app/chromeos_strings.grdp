@@ -4223,12 +4223,50 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL" desc="Label for location tex box on the device naming screen in the enterprise enrollment dialog.">
     Device Location
   </message>
-  <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Label for machine name input field on the AD domain join screen. User should tell us the name of his machine.">
+  <!-- Administrator facing strings for Active Directory screens. -->
+  <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Admin-facing. Label for machine name input field on the AD domain join screen. User should tell us the name of his machine.">
     Chromebook machine name
   </message>
-  <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Welcome message on the AD domain join screen.">
+  <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Admin-facing. Welcome message on the AD domain join screen.">
     Join device to domain
   </message>
+  <message name="IDS_AD_MORE_OPTIONS_BUTTON" desc="Admin-facing. Text on the 'More options' button on the Active Directory domain join screen.">
+    More options
+  </message>
+  <message name="IDS_AD_ORG_UNIT_HINT" desc="Admin-facing. Hint for the Active Directory Organizational units input on the 'More options' dialog.">
+    Computer OU (e.g. OU=Chromebooks,DC=example,DC=com)
+  </message>
+  <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Admin-facing. Default error text on the Active Directory join screen">
+    Oops!  Something went wrong when trying to join the domain. Please try again.
+  </message>
+  <message name="IDS_AD_MACHINENAME_INVALID" desc="Admin-facing. Alert message about invalid machine name">
+    Invalid machine name
+  </message>
+  <message name="IDS_AD_MACHINENAME_TOO_LONG" desc="Admin-facing. Alert message about too long machine name">
+    Machine name too long
+  </message>
+  <message name="IDS_AD_USER_DENIED_TO_JOIN_MACHINE" desc="Admin-facing. Alert message user was denied to join machine to the domain">
+    Failed to join the machine to the domain. This might be due to insufficient privileges for your account on the server.
+  </message>
+  <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Admin-facing. Alert message that user can't add more machines to the domain">
+    Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
+  </message>
+  <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Admin-facing. Alert message that user joins the machine to non-existing organizational unit.">
+    Failed to join the machine to the domain. Organizational unit does not exist.
+  </message>
+  <message name="IDS_AD_OU_INVALID" desc="Admin-facing. Alert message that user joins the machine to invalid organizational unit.">
+    Failed to join the machine to the domain. Organizational unit is invalid.
+  </message>
+  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Admin-facing. Alert message that user does not have rights to join the machine to specified organizational unit.">
+    Failed to join the machine to the domain. This might be due to insufficient privileges for your account for the organizational unit.
+  </message>
+  <message name="IDS_AD_OU_SETTING_FAILED" desc="Admin-facing. Alert message that user could not join the machine to specified organizational unit due to unknown reason.">
+    Failed to join the machine to the domain. This might be due to issues with the organizational unit.
+  </message>
+  <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Admin-facing. Alert message that the Chromebook model is not supported for Active Directory">
+    Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.
+  </message>
+  <!-- User facing strings for Active Directory screens. -->
   <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the machine joined to.">
     Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
   </message>
@@ -4265,20 +4303,11 @@
   <message name="IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR" desc="Error message in case new password fields does not match on the Active Directory password change dialog.">
     Passwords do not match.
   </message>
-  <message name="IDS_AD_MORE_OPTIONS_BUTTON" desc="Text on the 'More options' button on the Active Directory domain join screen.">
-    More options
-  </message>
-  <message name="IDS_AD_ORG_UNIT_HINT" desc="Hint for the Active Directory Organizational units input on the 'More options' dialog.">
-    Computer OU (e.g. OU=Chromebooks,DC=example,DC=com)
-  </message>
   <message name="IDS_AD_CONFIRM_BUTTON" desc="Text on the 'Confirm' button on the 'More options' dialog.">
     Confirm
   </message>
   <message name="IDS_AD_CANCEL_BUTTON" desc="Text on the 'Cancel' button on the 'More options' dialog.">
     Cancel
-  </message>
-  <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Default error text on the Active Directory join screen">
-    Oops!  Something went wrong when trying to join the domain. Please try again.
   </message>
   <message name="IDS_AD_INVALID_USERNAME" desc="Alert message about invalid username on the Active Directory domain join screen.">
     Please enter a valid username
@@ -4289,39 +4318,13 @@
   <message name="IDS_AD_PASSWORD_EXPIRED" desc="Alert message about expired password in the Active Directory">
     Oops!  Looks like your password expired. Please renew it on another machine and try again.
   </message>
-  <message name="IDS_AD_MACHINENAME_INVALID" desc="Alert message about invalid machine name">
-    Invalid machine name
-  </message>
-  <message name="IDS_AD_MACHINENAME_TOO_LONG" desc="Alert message about too long machine name">
-    Machine name too long
-  </message>
-  <message name="IDS_AD_USER_DENIED_TO_JOIN_MACHINE" desc="Alert message user was denied to join machine to the domain">
-    Failed to join the machine to the domain. This might be due to insufficient privileges for your account on the server.
-  </message>
-  <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Alert message that user can't add more machines to the domain">
-    Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
-  </message>
-  <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Alert message that user joins the machine to non-existing organizational unit.">
-    Failed to join the machine to the domain. Organizational unit does not exist.
-  </message>
-  <message name="IDS_AD_OU_INVALID" desc="Alert message that user joins the machine to invalid organizational unit.">
-    Failed to join the machine to the domain. Organizational unit is invalid.
-  </message>
-  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Alert message that user does not have rights to join the machine to specified organizational unit.">
-    Failed to join the machine to the domain. This might be due to insufficient privileges for your account for the organizational unit.
-  </message>
-  <message name="IDS_AD_OU_SETTING_FAILED" desc="Alert message that user could not join the machine to specified organizational unit due to unknown reason.">
-    Failed to join the machine to the domain. This might be due to issues with the organizational unit.
-  </message>
-  <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Alert message that the Chromebook model is not supported for Active Directory">
-    Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.
-  </message>
   <message name="IDS_AD_AUTH_NETWORK_ERROR" desc="Error message to show when there is a problem contacting the logon server when authenticating for Active Directory enrollment.">
     Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
   </message>
   <message name="IDS_AD_AUTH_UNKNOWN_ERROR" desc="Error message to show that occurs something a user could not fix.">
     Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.
   </message>
+
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Optional — enter new or update existing information to be associated with this device.
   </message>
