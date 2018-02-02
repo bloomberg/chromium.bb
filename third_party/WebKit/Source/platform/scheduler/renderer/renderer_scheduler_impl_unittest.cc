@@ -328,10 +328,11 @@ class RendererSchedulerImplTest : public ::testing::Test {
   void RunUntilIdle() {
     // Only one of mock_task_runner_ or message_loop_ should be set.
     DCHECK(!mock_task_runner_.get() || !message_loop_.get());
-    if (mock_task_runner_.get())
+    if (mock_task_runner_.get()) {
       mock_task_runner_->RunUntilIdle();
-    else
+    } else {
       base::RunLoop().RunUntilIdle();
+    }
   }
 
   void DoMainFrame() {
@@ -3249,7 +3250,7 @@ TEST_F(RendererSchedulerImplTest, BlockedTimerNotification) {
   RunUntilIdle();
 
   EXPECT_EQ(0u, run_order.size());
-  EXPECT_EQ(1u, web_view_scheduler.Interventions().size());
+  ASSERT_EQ(1u, web_view_scheduler.Interventions().size());
   EXPECT_NE(std::string::npos,
             web_view_scheduler.Interventions()[0].find("crbug.com/574343"));
 }

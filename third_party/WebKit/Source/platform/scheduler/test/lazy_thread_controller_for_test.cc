@@ -30,8 +30,8 @@ void LazyThreadControllerForTest::EnsureMessageLoop() {
   DCHECK(message_loop_);
   task_runner_ = message_loop_->task_runner();
   if (pending_observer_) {
-    base::RunLoop::AddNestingObserverOnCurrentThread(pending_observer_);
-    pending_observer_ = nullptr;
+    base::RunLoop::AddNestingObserverOnCurrentThread(this);
+    pending_observer_ = false;
   }
   if (pending_default_task_runner_) {
     ThreadControllerImpl::SetDefaultTaskRunner(pending_default_task_runner_);
@@ -68,24 +68,26 @@ void LazyThreadControllerForTest::AddNestingObserver(
   //      it kicks in), resulting in it hitting:
   //      DCHECK_EQ(any_thread().is_nested, delegate_->IsNested()); (1 vs 0).
   // TODO(skyostil): fix this convolution as part of http://crbug.com/495659.
+  ThreadControllerImpl::nesting_observer_ = observer;
   if (!HasMessageLoop()) {
     DCHECK(!pending_observer_);
-    pending_observer_ = observer;
+    pending_observer_ = true;
     return;
   }
-  base::RunLoop::AddNestingObserverOnCurrentThread(observer);
+  base::RunLoop::AddNestingObserverOnCurrentThread(this);
 }
 
 void LazyThreadControllerForTest::RemoveNestingObserver(
     base::RunLoop::NestingObserver* observer) {
+  ThreadControllerImpl::nesting_observer_ = nullptr;
   if (!HasMessageLoop()) {
-    DCHECK_EQ(pending_observer_, observer);
-    pending_observer_ = nullptr;
+    DCHECK(pending_observer_);
+    pending_observer_ = false;
     return;
   }
   if (base::MessageLoop::current() != message_loop_)
     return;
-  base::RunLoop::RemoveNestingObserverOnCurrentThread(observer);
+  base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
 }
 
 bool LazyThreadControllerForTest::RunsTasksInCurrentSequence() {
@@ -97,14 +99,16 @@ void LazyThreadControllerForTest::ScheduleWork() {
   ThreadControllerImpl::ScheduleWork();
 }
 
-void LazyThreadControllerForTest::ScheduleDelayedWork(base::TimeDelta delay) {
+void LazyThreadControllerForTest::ScheduleDelayedWork(
+    base::TimeTicks now,
+    base::TimeTicks run_time) {
   EnsureMessageLoop();
-  ThreadControllerImpl::ScheduleDelayedWork(delay);
+  ThreadControllerImpl::ScheduleDelayedWork(now, run_time);
 }
 
-void LazyThreadControllerForTest::CancelDelayedWork() {
+void LazyThreadControllerForTest::CancelDelayedWork(base::TimeTicks run_time) {
   EnsureMessageLoop();
-  ThreadControllerImpl::CancelDelayedWork();
+  ThreadControllerImpl::CancelDelayedWork(run_time);
 }
 
 void LazyThreadControllerForTest::SetDefaultTaskRunner(

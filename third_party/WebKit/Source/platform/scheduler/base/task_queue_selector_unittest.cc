@@ -374,24 +374,24 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
   }
 }
 
-TEST_F(TaskQueueSelectorTest, EnabledWorkQueuesEmpty) {
-  EXPECT_TRUE(selector_.EnabledWorkQueuesEmpty());
+TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty) {
+  EXPECT_TRUE(selector_.AllEnabledWorkQueuesAreEmpty());
   size_t queue_order[] = {0, 1};
   PushTasks(queue_order, 2);
 
-  EXPECT_FALSE(selector_.EnabledWorkQueuesEmpty());
+  EXPECT_FALSE(selector_.AllEnabledWorkQueuesAreEmpty());
   PopTasks();
-  EXPECT_TRUE(selector_.EnabledWorkQueuesEmpty());
+  EXPECT_TRUE(selector_.AllEnabledWorkQueuesAreEmpty());
 }
 
-TEST_F(TaskQueueSelectorTest, EnabledWorkQueuesEmpty_ControlPriority) {
+TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty_ControlPriority) {
   size_t queue_order[] = {0};
   PushTasks(queue_order, 1);
 
   selector_.SetQueuePriority(task_queues_[0].get(),
                              TaskQueue::kControlPriority);
 
-  EXPECT_FALSE(selector_.EnabledWorkQueuesEmpty());
+  EXPECT_FALSE(selector_.AllEnabledWorkQueuesAreEmpty());
 }
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
