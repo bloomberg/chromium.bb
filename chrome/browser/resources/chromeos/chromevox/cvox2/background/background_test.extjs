@@ -1434,35 +1434,3 @@ TEST_F('BackgroundTest', 'TableColumnHeaders', function() {
         .replay();
   });
 });
-
-TEST_F('BackgroundTest', 'ActiveDescendantUpdates', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(function(root) {/*!
-    <div aria-label="container" tabindex=0 role="group" id="active"
-        aria-activedescendant="1">
-      <div id="1" role="treeitem"></div>
-      <div id="2" role="treeitem"></div>
-    <script>
-      var alt = false;
-      var active = document.getElementById('active');
-      var one = document.getElementById('1');
-      var two = document.getElementById('2');
-      active.addEventListener('click', function() {
-        var sel = alt ? one : two;
-        var unsel = alt ? two : one;
-        active.setAttribute('aria-activedescendant', sel.id);
-        sel.setAttribute('aria-selected', true);
-        unsel.setAttribute('aria-selected', false);
-        alt = !alt;
-      });
-      </script>
-  */}, function(root) {
-    var group = root.firstChild;
-    mockFeedback.call(group.focus.bind(group))
-        .call(group.doDefault.bind(group))
-        .expectSpeech('Tree item', 'Selected', ' 2 of 2 ')
-        .call(group.doDefault.bind(group))
-        .expectSpeech('Tree item', 'Selected', ' 1 of 2 ')
-        .replay();
-  });
-});
