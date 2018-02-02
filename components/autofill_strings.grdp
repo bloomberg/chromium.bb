@@ -322,12 +322,22 @@
     There was a problem confirming your card. Check your internet connection and try again.
   </message>
   <if expr="not is_ios">
-    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="Title for the credit card unmasking dialog.">
-      Enter the CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
-    </message>
-    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE" desc="Title for the credit card unmasking dialog when the credit card is expired.">
-      Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
-    </message>
+    <if expr="use_titlecase">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="In Title Case: Title for the credit card unmasking dialog.">
+        Enter the CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+      </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE" desc="In Title Case: Title for the credit card unmasking dialog when the credit card is expired.">
+        Enter the Expiration Date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+      </message>
+    </if>
+    <if expr="not use_titlecase">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="Title for the credit card unmasking dialog.">
+        Enter the CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+      </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE" desc="Title for the credit card unmasking dialog when the credit card is expired.">
+        Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+      </message>
+    </if>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
       After you confirm, card details from your Google Payments account will be shared with this site.
     </message>
