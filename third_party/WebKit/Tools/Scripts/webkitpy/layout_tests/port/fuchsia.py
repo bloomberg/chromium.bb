@@ -38,6 +38,7 @@ from webkitpy.common import exit_codes
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import factory
+from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import server_process
 
 
@@ -69,6 +70,10 @@ def _import_fuchsia_runner():
 # HTTP path prefix for the HTTP server.
 PERF_TEST_PATH_PREFIX = '/all-perf-tests'
 LAYOUT_TEST_PATH_PREFIX = '/all-tests'
+
+# Paths to the directory where the fonts are copied to. Must match the path in
+# content/shell/app/blink_test_platform_support_fuchsia.cc .
+FONTS_DEVICE_PATH = '/system/fonts'
 
 # Number of content_shell instances to run in parallel.
 MAX_WORKERS = 8
@@ -107,27 +112,25 @@ class SubprocessOutputLogger(object):
 
 
 class _TargetHost(object):
-    def __init__(self, build_path, ports_to_forward):
+    def __init__(self, build_path, ports_to_forward, fonts):
         try:
             self._target = None
             self._target = qemu_target.QemuTarget(
                 build_path, 'x64', ram_size_mb=8192)
             self._target.Start()
-            self._setup_target(build_path, ports_to_forward)
+            self._setup_target(build_path, ports_to_forward, fonts)
         except:
             self.cleanup()
             raise
 
-    def _setup_target(self, build_path, ports_to_forward):
+    def _setup_target(self, build_path, ports_to_forward, fonts):
         # Run a proxy to forward all server ports from the Fuchsia device to
         # the host.
         # TODO(sergeyu): Potentially this can be implemented using port
         # forwarding in SSH, but that feature is currently broken on Fuchsia,
         # see ZX-1555. Remove layout_test_proxy once that SSH bug is fixed.
         self._target.PutFile(
-            os.path.join(
-                build_path,
-                'gen/build/fuchsia/layout_test_proxy/layout_test_proxy/layout_test_proxy.far'),
+            os.path.join(build_path, 'package/layout_test_proxy.far'),
             '/tmp')
         command = ['run', '/tmp/layout_test_proxy.far',
                    '--remote-address=' + qemu_target.HOST_IP_ADDRESS,
@@ -138,12 +141,29 @@ class _TargetHost(object):
 
         # Copy content_shell package to the device.
         self._target.PutFile(
-            os.path.join(build_path, 'gen/content/shell/content_shell.far'), '/tmp')
+            os.path.join(build_path, 'package/content_shell.far'), '/tmp')
 
         # Currently dynamic library loading is not implemented for packaged
         # apps. Copy libosmesa.so to /system/lib as a workaround.
         self._target.PutFile(
             os.path.join(build_path, 'libosmesa.so'), '/system/lib')
+
+        # Copy fonts.
+        self._target.RunCommand(['mkdir', '/system/fonts'])
+
+        self._target.PutFile(
+            os.path.join(build_path,
+                         '../../content/shell/test_runner/resources/fonts',
+                         'android_main_fonts.xml'),
+            FONTS_DEVICE_PATH + '/fonts.xml')
+
+        self._target.PutFile(
+            os.path.join(build_path,
+                         '../../content/shell/test_runner/resources/fonts',
+                         'android_fallback_fonts.xml'),
+            FONTS_DEVICE_PATH + '/fonts_fallback.xml')
+
+        self._target.PutFiles(fonts, FONTS_DEVICE_PATH)
 
     def run_command(self, *args, **kvargs):
         return self._target.RunCommandPiped(*args,
@@ -165,7 +185,7 @@ class FuchsiaPort(base.Port):
 
     SUPPORTED_VERSIONS = ('sdk',)
 
-    FALLBACK_PATHS = {'sdk': ['fuchsia']}
+    FALLBACK_PATHS = {'sdk': ['fuchsia'] + linux.LinuxPort.latest_platform_fallback_path()}
 
     def __init__(self, host, port_name, **kwargs):
         _import_fuchsia_runner()
@@ -189,8 +209,7 @@ class FuchsiaPort(base.Port):
         return ChromiumFuchsiaDriver
 
     def _path_to_driver(self, target=None):
-        return self._build_path_with_target(target,
-                                            'gen/content/shell/content_shell.far')
+        return self._build_path_with_target(target, 'package/content_shell.far')
 
     def __del__(self):
         if self._zircon_logger:
@@ -199,8 +218,8 @@ class FuchsiaPort(base.Port):
     def setup_test_run(self):
         super(FuchsiaPort, self).setup_test_run()
         try:
-            self._target_host = \
-                _TargetHost(self._build_path(), self.SERVER_PORTS)
+            self._target_host = _TargetHost(
+                self._build_path(), self.SERVER_PORTS, self._get_font_files())
 
             if self.get_option('zircon_logging'):
                 self._zircon_logger = SubprocessOutputLogger(
@@ -225,6 +244,8 @@ class FuchsiaPort(base.Port):
         return min(MAX_WORKERS, requested_num_workers)
 
     def check_sys_deps(self, needs_http):
+        # _get_font_files() will throw if any of the required fonts is missing.
+        self._get_font_files()
         # TODO(sergeyu): Implement this.
         return exit_codes.OK_EXIT_STATUS
 
