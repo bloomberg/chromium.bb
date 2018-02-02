@@ -36,12 +36,12 @@
     <div id="container">
       <div id="label">[[label]]</div>
       <paper-input-container id="host" no-label-float>
-        <input is="iron-input" bind-value="{{value.Host}}"
+        <input is="iron-input" bind-value="{{value.Host}}" slot="input"
             disabled="[[!editable]]" on-change="onValueChange_">
       </paper-input-container>
       <div>[[i18n('networkProxyPort')]]</div>
       <paper-input-container id="port" no-label-float>
-        <input is="iron-input" bind-value="{{value.Port}}"
+        <input is="iron-input" bind-value="{{value.Port}}" slot="input"
             disabled="[[!editable]]" on-change="onValueChange_">
       </paper-input-container>
     </div>

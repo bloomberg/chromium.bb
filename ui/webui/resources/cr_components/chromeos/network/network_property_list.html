@@ -44,7 +44,7 @@
         <template is="dom-if" if="[[isEditable_(
             item, 'String', propertyDict, editFieldTypes)]]">
           <paper-input-container no-label-float>
-            <input id="[[item]]" is="iron-input"
+            <input id="[[item]]" is="iron-input" slot="input"
                 value="[[getPropertyValue_(item, prefix, propertyDict)]]"
                 on-change="onValueChange_">
           </paper-input-container>
@@ -53,7 +53,7 @@
         <template is="dom-if" if="[[isEditable_(
             item, 'Password', propertyDict, editFieldTypes)]]">
           <paper-input-container no-label-float>
-            <input id="[[item]]" is="iron-input" type="password"
+            <input id="[[item]]" is="iron-input" type="password" slot="input"
                 value="[[getPropertyValue_(item, prefix, propertyDict)]]"
                 on-change="onValueChange_">
           </paper-input-container>
