@@ -29,6 +29,7 @@ struct CORE_EXPORT NGInlineNodeData {
   }
 
   friend class NGInlineNode;
+  friend class NGInlineNodeLegacy;
   friend class NGInlineNodeForTest;
   friend class NGOffsetMappingTest;
 
