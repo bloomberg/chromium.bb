@@ -63,11 +63,14 @@ RuleSet& CSSTestHelper::GetRuleSet() {
   return rule_set;
 }
 
-void CSSTestHelper::AddCSSRules(const char* css_text) {
+void CSSTestHelper::AddCSSRules(const char* css_text, bool is_empty_sheet) {
   TextPosition position;
   unsigned sheet_length = style_sheet_->length();
   style_sheet_->Contents()->ParseStringAtPosition(css_text, position);
-  ASSERT_GT(style_sheet_->length(), sheet_length);
+  if (!is_empty_sheet)
+    ASSERT_GT(style_sheet_->length(), sheet_length);
+  else
+    ASSERT_EQ(style_sheet_->length(), sheet_length);
 }
 
 }  // namespace blink

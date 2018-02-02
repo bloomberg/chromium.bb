@@ -26,9 +26,10 @@
 #ifndef CSSSelectorList_h
 #define CSSSelectorList_h
 
+#include <memory>
+#include <vector>
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include <memory>
 
 namespace blink {
 
@@ -71,7 +72,16 @@ class CORE_EXPORT CSSSelectorList {
     o.selector_array_ = nullptr;
   }
 
+  static CSSSelectorList ConcatenatePseudoMatchesExpansion(
+      const CSSSelectorList& expanded,
+      const CSSSelectorList& original);
+
+  CSSSelectorList ExpandedFirstMatchesPseudo() const;
+  CSSSelectorList TransformForPseudoMatches();
+  bool HasPseudoMatches() const;
+
   CSSSelectorList& operator=(CSSSelectorList&& o) {
+    DCHECK(this != &o);
     DeleteSelectorsIfNeeded();
     selector_array_ = o.selector_array_;
     o.selector_array_ = nullptr;
@@ -86,7 +96,9 @@ class CORE_EXPORT CSSSelectorList {
 
   bool IsValid() const { return !!selector_array_; }
   const CSSSelector* First() const { return selector_array_; }
+  const CSSSelector* FirstForCSSOM() const;
   static const CSSSelector* Next(const CSSSelector&);
+  static const CSSSelector* NextInFullList(const CSSSelector&);
 
   // The CSS selector represents a single sequence of simple selectors.
   bool HasOneSelector() const {
@@ -131,6 +143,15 @@ class CORE_EXPORT CSSSelectorList {
 };
 
 inline const CSSSelector* CSSSelectorList::Next(const CSSSelector& current) {
+  // Skip subparts of compound selectors.
+  const CSSSelector* last = &current;
+  while (!last->IsLastInTagHistory())
+    last++;
+  return last->IsLastInOriginalList() ? nullptr : last + 1;
+}
+
+inline const CSSSelector* CSSSelectorList::NextInFullList(
+    const CSSSelector& current) {
   // Skip subparts of compound selectors.
   const CSSSelector* last = &current;
   while (!last->IsLastInTagHistory())

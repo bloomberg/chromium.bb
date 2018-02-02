@@ -46,7 +46,7 @@ WebString CanonicalizeSelector(WebString web_selector,
       web_selector);
 
   if (restriction == kWebSelectorTypeCompound) {
-    for (const CSSSelector* selector = selector_list.First(); selector;
+    for (const CSSSelector* selector = selector_list.FirstForCSSOM(); selector;
          selector = selector_list.Next(*selector)) {
       if (!selector->IsCompound())
         return WebString();

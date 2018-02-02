@@ -788,7 +788,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
     if (simple_selector->SelectorList()) {
       builder.Append('(');
       const CSSSelector* first_sub_selector =
-          simple_selector->SelectorList()->First();
+          simple_selector->SelectorList()->FirstForCSSOM();
       for (const CSSSelector* sub_selector = first_sub_selector; sub_selector;
            sub_selector = CSSSelectorList::Next(*sub_selector)) {
         if (sub_selector != first_sub_selector)
@@ -1054,6 +1054,14 @@ bool CSSSelector::NeedsUpdatedDistribution() const {
                selector.GetPseudoType() == CSSSelector::kPseudoHostContext;
       },
       *this);
+}
+
+bool CSSSelector::HasPseudoMatches() const {
+  for (const CSSSelector* s = this; s; s = s->TagHistory()) {
+    if (s->GetPseudoType() == CSSSelector::kPseudoMatches)
+      return true;
+  }
+  return false;
 }
 
 CSSSelector::RareData::RareData(const AtomicString& value)

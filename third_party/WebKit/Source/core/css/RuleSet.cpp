@@ -325,7 +325,9 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
 }
 
 void RuleSet::AddStyleRule(StyleRule* rule, AddRuleFlags add_rule_flags) {
-  for (size_t selector_index = 0; selector_index != kNotFound;
+  for (size_t selector_index =
+           rule->SelectorList().SelectorIndex(*rule->SelectorList().First());
+       selector_index != kNotFound;
        selector_index =
            rule->SelectorList().IndexOfNextSelectorAfter(selector_index))
     AddRule(rule, selector_index, add_rule_flags);

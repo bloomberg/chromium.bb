@@ -55,7 +55,7 @@ class CSSTestHelper {
 
   const Document& GetDocument() { return *document_; };
 
-  void AddCSSRules(const char* rule_text);
+  void AddCSSRules(const char* rule_text, bool is_empty_sheet = false);
   RuleSet& GetRuleSet();
   CSSRuleList* CssRules();
 

@@ -883,17 +883,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoMatches: {
       if (!RuntimeEnabledFeatures::CSSMatchesEnabled())
         return false;
-      UseCounter::Count(context.element->GetDocument(),
-                        WebFeature::kCSSSelectorPseudoMatches);
-      SelectorCheckingContext sub_context(context);
-      sub_context.is_sub_selector = true;
-      DCHECK(selector.SelectorList());
-      for (sub_context.selector = selector.SelectorList()->First();
-           sub_context.selector; sub_context.selector = CSSSelectorList::Next(
-                                     *sub_context.selector)) {
-        if (Match(sub_context))
-          return true;
-      }
+      NOTREACHED();
     } break;
     case CSSSelector::kPseudoAny: {
       SelectorCheckingContext sub_context(context);
