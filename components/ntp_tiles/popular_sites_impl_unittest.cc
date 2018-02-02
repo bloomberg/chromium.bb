@@ -24,6 +24,7 @@
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/pref_names.h"
+#include "components/ntp_tiles/switches.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -99,6 +100,8 @@ class PopularSitesTest : public ::testing::Test {
         },
         prefs_(new sync_preferences::TestingPrefServiceSyncable()),
         url_fetcher_factory_(nullptr) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableNTPPopularSites);
     PopularSitesImpl::RegisterProfilePrefs(prefs_->registry());
   }
 
