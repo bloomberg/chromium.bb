@@ -2146,14 +2146,24 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_DOWNLOADS_LINK" desc="Link to downloads section of content blocking management dialog, displayed in bubble when a page tries to download files automatically.">
         Manage download settings...
       </message>
-      <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="Title for the page action when an automatic download was blocked">
-        This site attempted to download multiple files automatically.
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="In Title Case: Title for the page action when automatic downloads were allowed">
+          This Site Downloaded Multiple Files Automatically
+        </message>
+        <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="In Title Case: Title for the page action when an automatic download was blocked">
+          This Site Attempted to Download Multiple Files Automatically
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="Title for the page action when automatic downloads were allowed">
+          This site downloaded multiple files automatically
+        </message>
+        <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="Title for the page action when an automatic download was blocked">
+          This site attempted to download multiple files automatically
+        </message>
+      </if>
       <message name="IDS_BLOCKED_DOWNLOADS_EXPLANATION" desc="Explanatory animated text that appears (and then disappears) in the address line when a download is blocked">
         Download blocked
-      </message>
-      <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="Title for the page action when automatic downloads were allowed">
-        This site downloaded multiple files automatically.
       </message>
       <message name="IDS_ALLOWED_DOWNLOAD_NO_ACTION" desc="Radio button to keep allowing automatic downloads">
         Continue allowing automatic downloads of multiple files
@@ -2163,10 +2173,10 @@ are declared in build/common.gypi.
       </message>
 
       <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Short title of the bubble showing that a page was blocked from using cookies.">
+        <message name="IDS_BLOCKED_COOKIES_TITLE" desc="In Title Case: Short title of the bubble showing that a page was blocked from using cookies.">
           Cookies Blocked
         </message>
-        <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Short title of the bubble showing that a page wrote cookies or other site data.">
+        <message name="IDS_ACCESSED_COOKIES_TITLE" desc="In Title Case: Short title of the bubble showing that a page wrote cookies or other site data.">
           Cookies Set
         </message>
       </if>
@@ -2191,7 +2201,7 @@ are declared in build/common.gypi.
         Show cookies and other site data...
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
+        <message name="IDS_BLOCKED_IMAGES_TITLE" desc="In Title Case: Tooltip and bubble info header text when a page is not allowed to display images.">
           Images Blocked
         </message>
       </if>
@@ -2228,7 +2238,7 @@ are declared in build/common.gypi.
         Pop-ups were blocked on this page.
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble title when a page is not allowed to display popups.">
+        <message name="IDS_BLOCKED_POPUPS_TITLE" desc="In Title Case: Bubble title when a page is not allowed to display popups.">
           Pop-ups Blocked
         </message>
       </if>
@@ -2301,7 +2311,7 @@ are declared in build/common.gypi.
         Plugin blocked
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Title for the bubble shown when a page is not allowed to run JavaScript.">
+        <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="In Title Case: Title for the bubble shown when a page is not allowed to run JavaScript.">
           JavaScript Blocked
         </message>
       </if>
@@ -2322,18 +2332,32 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
-        Flash was blocked on this page
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="In Title Case: Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
+          Flash Was Blocked on This Page
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
+          Flash was blocked on this page
+        </message>
+      </if>
       <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip on the icon when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
         Flash was blocked on this page.
       </message>
       <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins. 'Flash' is the name of a plugin and should not be translated.">
         Run Flash this time
       </message>
-      <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
-        Sound was muted on this page.
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
+          Sound Was Muted on This Page
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
+          Sound was muted on this page
+        </message>
+      </if>
       <message name="IDS_BLOCKED_SOUND_UNBLOCK" desc="Radio button choice to unblock a site from playing sound, displayed in bubble when a page tries to play sound.">
         Always allow sound on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
@@ -4994,10 +5018,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Deny
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was blocked.">
+        <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="In Title Case: Title for the page action when Pepper sandbox access was blocked.">
           Unsandboxed Plugin Blocked
         </message>
-        <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was allowed.">
+        <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="In Title Case: Title for the page action when Pepper sandbox access was allowed.">
           Unsandboxed Plugin Allowed
         </message>
       </if>
@@ -5033,7 +5057,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Blocked Displaying/Running Insecure Content bubble -->
       <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="Title of the bubble shown when a message has asked Chrome to display mixed content.">
+        <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="In Title Case: Title of the bubble shown when a message has asked Chrome to display mixed content.">
           Insecure Content Blocked
         </message>
       </if>
@@ -5327,9 +5351,22 @@ the Bookmarks menu.">
           <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to see text and images copied to the clipboard
         </message>
       </if>
-      <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a page has been allowed access to read the contents of the system clipboard.">
-        Clipboard read access allowed
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a page has been allowed access to read the contents of the system clipboard.">
+          Clipboard Read Access Allowed
+        </message>
+        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a page has been denied access to read the contents of the system clipboard.">
+          Clipboard Read Access Denied
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a page has been allowed access to read the contents of the system clipboard.">
+          Clipboard read access allowed
+        </message>
+        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a page has been denied access to read the contents of the system clipboard.">
+          Clipboard read access denied
+        </message>
+      </if>
       <message name="IDS_ALLOWED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a page has been allowed access to read the contents of the system clipboard.">
         This page can see text and images copied to the clipboard.
       </message>
@@ -5338,9 +5375,6 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_ALLOWED_CLIPBOARD_NO_ACTION" desc="Radio button to keep allowing read access to the system clipboard">
         Continue allowing this site to see the clipboard
-      </message>
-      <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a page has been denied access to read the contents of the system clipboard.">
-        Clipboard read access denied
       </message>
       <message name="IDS_BLOCKED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a page has been denied access to read the system clipboard.">
         This page has been blocked from seeing text and images copied to the clipboard
@@ -9187,24 +9221,46 @@ Please help our engineers fix this problem. Tell us what happened right before y
         This page has been blocked from accessing your camera.
       </message>
 
-      <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera and microphone.">
-        Camera and microphone allowed
-      </message>
-      <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera and microphone.">
-        Camera and microphone blocked
-      </message>
-      <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the microphone.">
-        Microphone allowed
-      </message>
-      <message name="IDS_CAMERA_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera.">
-        Camera allowed
-      </message>
-      <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the microphone.">
-        Microphone blocked
-      </message>
-      <message name="IDS_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera.">
-        Camera blocked
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="In Title Case: Title for the media status bubble when a page is allowed to use the camera and microphone.">
+          Camera and Microphone Allowed
+        </message>
+        <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="In Title Case: Title for the media status bubble when a page is blocked from using the camera and microphone.">
+          Camera and Microphone Blocked
+        </message>
+        <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="In Title Case: Title for the media status bubble when a page is allowed to use the microphone.">
+          Microphone Allowed
+        </message>
+        <message name="IDS_CAMERA_ACCESSED_TITLE" desc="In Title Case: Title for the media status bubble when a page is allowed to use the camera.">
+          Camera Allowed
+        </message>
+        <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="In Title Case: Title for the media status bubble when a page is blocked from using the microphone.">
+          Microphone Blocked
+        </message>
+        <message name="IDS_CAMERA_BLOCKED_TITLE" desc="In Title Case: Title for the media status bubble when a page is blocked from using the camera.">
+          Camera Blocked
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera and microphone.">
+          Camera and microphone allowed
+        </message>
+        <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera and microphone.">
+          Camera and microphone blocked
+        </message>
+        <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the microphone.">
+          Microphone allowed
+        </message>
+        <message name="IDS_CAMERA_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera.">
+          Camera allowed
+        </message>
+        <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the microphone.">
+          Microphone blocked
+        </message>
+        <message name="IDS_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera.">
+          Camera blocked
+        </message>
+      </if>
 
       <message name="IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE" desc="Message that is used to suggest reloading when media (camera, microphone) settings was changed by the user. These settings are immediately effective, but the web page might not know how to deal with the new settings.">
         This page may need to be reloaded before the new settings take effect.
@@ -9433,12 +9489,22 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME" desc="A more user friendly way of describing webcal: links.">
         web calendar
       </message>
-      <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-        Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links?
-      </message>
-      <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-        Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="In Title Case: The message to display when asking a user to confirm the registration of a protocol handler.">
+          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to Open All <ph name="PROTOCOL">$2<ex>search</ex></ph> Links?
+        </message>
+        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="In Title Case: The message to display when asking a user to confirm the registration of a protocol handler.">
+          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to Open All <ph name="PROTOCOL">$2<ex>search</ex></ph> Links Instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
+          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links?
+        </message>
+        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
+          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
+        </message>
+      </if>
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_FRAGMENT" desc="The permission fragment to display when asking a user to confirm the registration of a protocol handler in a permission bubble. Follows a prompt 'This site would like to:'.">
         Open <ph name="PROTOCOL">$1<ex>search</ex></ph> links
       </message>
@@ -10851,9 +10917,16 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     <message name="IDS_BLOCKED_ADS_INFOBAR_MESSAGE" desc="The mini infobar message shown to users on Android when Chrome has blocked ads on the site because the site tends to show intrusive ads. Will be presented as a sentence, next to a Details link to expand the infobar.">
       Ads blocked.
     </message>
-    <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="Title of the prompt shown to users in the omnibox or infobar when Chrome has blocked ads on the site because the site tends to show intrusive ads. The title will stand alone next to an icon so there is no need for a period." formatter_data="android_java">
-      Ads blocked
-    </message>
+    <if expr="use_titlecase">
+      <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="In Title Case: Title of the prompt shown to users in the omnibox or infobar when Chrome has blocked ads on the site because the site tends to show intrusive ads. The title will stand alone next to an icon so there is no need for a period." formatter_data="android_java">
+        Ads Blocked
+      </message>
+    </if>
+    <if expr="not use_titlecase">
+      <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="Title of the prompt shown to users in the omnibox or infobar when Chrome has blocked ads on the site because the site tends to show intrusive ads. The title will stand alone next to an icon so there is no need for a period." formatter_data="android_java">
+        Ads blocked
+      </message>
+    </if>
     <message name="IDS_BLOCKED_ADS_PROMPT_EXPLANATION" desc="Longer explanation that Chrome has blocked ads on the site. To be shown in an expanded infobar / bubble">
       Chrome blocked ads on this site because this site tends to show intrusive ads.
     </message>
@@ -10870,17 +10943,27 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     <!-- Framebust / Blocked Redirection intervention message -->
     <if expr="not is_android">
       <!-- Android strings are declared in android_chrome_strings.grd. -->
-      <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
-        Redirect blocked to site:
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="In Title Case: The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
+          Redirect Blocked to Site
+        </message>
+        <message name="IDS_REDIRECT_BLOCKED_GOT_IT" desc="In Title Case: The text of the OK button for the blocked redirect dialog.">
+          Got It
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
+          Redirect blocked to site
+        </message>
+        <message name="IDS_REDIRECT_BLOCKED_GOT_IT" desc="The text of the OK button for the blocked redirect dialog.">
+          Got it
+        </message>
+      </if>
       <message name="IDS_REDIRECT_BLOCKED_TITLE" desc="The short message stating that a redirect (noun) was blocked on this page. Same as IDS_REDIRECT_BLOCKED_SHORT_MESSAGE but without the period.">
          Redirect blocked
       </message>
       <message name="IDS_REDIRECT_BLOCKED_TOOLTIP" desc="Tooltip text that appears when the user hovers over the &quot;Redirect blocked&quot; icon in the address bar. It means that a redirect (noun) was blocked by Chrome on this page.">
          Redirect blocked on this page.
-      </message>
-      <message name="IDS_REDIRECT_BLOCKED_GOT_IT" desc="The text of the OK button for the blocked redirect dialog.">
-        Got it
       </message>
     </if>
 
