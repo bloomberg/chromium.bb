@@ -41,6 +41,8 @@ class CoordinationUnitBase {
   void RemoveObserver(CoordinationUnitGraphObserver* observer);
   bool GetProperty(const mojom::PropertyType property_type,
                    int64_t* result) const;
+  int64_t GetPropertyOrDefault(const mojom::PropertyType property_type,
+                               int64_t default_value) const;
 
   const CoordinationUnitID& id() const { return id_; }
   const base::ObserverList<CoordinationUnitGraphObserver>& observers() const {

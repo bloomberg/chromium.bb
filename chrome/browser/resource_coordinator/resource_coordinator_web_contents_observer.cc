@@ -62,6 +62,14 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
          resource_coordinator::IsResourceCoordinatorEnabled();
 }
 
+void ResourceCoordinatorWebContentsObserver::DidStartLoading() {
+  page_resource_coordinator_->SetIsLoading(true);
+}
+
+void ResourceCoordinatorWebContentsObserver::DidStopLoading() {
+  page_resource_coordinator_->SetIsLoading(false);
+}
+
 void ResourceCoordinatorWebContentsObserver::WasShown() {
   page_resource_coordinator_->SetVisibility(true);
 }
