@@ -261,8 +261,7 @@ deps = {
   },
 
   'src/ios_internal': {
-      # TODO(sdefresne): Leave "floating" until auto-roller is working.
-      'url': 'https://chrome-internal.googlesource.com/chrome/ios_internal.git' + '@' + 'refs/heads/master',
+      'url': 'https://chrome-internal.googlesource.com/chrome/ios_internal.git' + '@' + '671969ff8c01a14ef454a2ee9e0be1c020475990',
       'condition': 'checkout_ios and checkout_google_internal',
   },
 
