@@ -715,8 +715,7 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
               static_cast<uint32_t>(frame_length));
       return;
     }
-    parser->SetFrame(data, frame_length);
-    if (!parser->ParseUncompressedHeader())
+    if (!parser->ParseUncompressedHeader(data, frame_length))
       return;
     level_stats->AddFrame(*parser, time_ns);
 

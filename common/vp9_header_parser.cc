@@ -33,7 +33,10 @@ bool Vp9HeaderParser::SetFrame(const uint8_t* frame, size_t length) {
   return true;
 }
 
-bool Vp9HeaderParser::ParseUncompressedHeader() {
+bool Vp9HeaderParser::ParseUncompressedHeader(const uint8_t* frame,
+                                              size_t length) {
+  if (!SetFrame(frame, length))
+    return false;
   const int frame_marker = VpxReadLiteral(2);
   if (frame_marker != kVp9FrameMarker) {
     fprintf(stderr, "Invalid VP9 frame_marker:%d\n", frame_marker);
