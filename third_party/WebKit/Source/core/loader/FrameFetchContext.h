@@ -142,7 +142,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
 
   // Exposed for testing.
   void ModifyRequestForCSP(ResourceRequest&);
@@ -173,6 +172,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       ResourceLoadPriority) const override;
 
  private:
+  friend class FrameFetchContextTest;
+
   struct FrozenState;
 
   static ResourceFetcher* CreateFetcher(DocumentLoader*, Document*);
@@ -235,6 +236,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // the |ContentSettingsClient| with the list of client hints and the
   // persistence duration.
   void ParseAndPersistClientHints(const ResourceResponse&);
+  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
 
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;

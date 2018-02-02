@@ -119,6 +119,4 @@ void FetchContext::PopulateResourceRequest(
     const FetchParameters::ResourceWidth&,
     ResourceRequest&) {}
 
-void FetchContext::SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) {}
-
 }  // namespace blink

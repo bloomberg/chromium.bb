@@ -103,7 +103,6 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
   void Trace(blink::Visitor*) override;
@@ -111,6 +110,8 @@ class WorkerFetchContext final : public BaseFetchContext {
  private:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      std::unique_ptr<WebWorkerFetchContext>);
+
+  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
 
   Member<WorkerOrWorkletGlobalScope> global_scope_;
   std::unique_ptr<WebWorkerFetchContext> web_context_;

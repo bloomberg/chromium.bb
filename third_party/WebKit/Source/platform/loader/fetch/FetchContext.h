@@ -219,9 +219,6 @@ class PLATFORM_EXPORT FetchContext
                                        const ClientHintsPreferences&,
                                        const FetchParameters::ResourceWidth&,
                                        ResourceRequest&);
-  // Sets the first party for cookies and requestor origin using information
-  // stored in the FetchContext implementation.
-  virtual void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
 
   virtual MHTMLArchive* Archive() const { return nullptr; }
 

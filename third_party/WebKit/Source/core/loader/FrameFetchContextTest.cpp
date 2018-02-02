@@ -156,6 +156,12 @@ class FrameFetchContextTest : public ::testing::Test {
     return child_fetch_context;
   }
 
+  // Call the method for the actual test cases as only this fixture is specified
+  // as a friend class.
+  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest& request) {
+    fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
+  }
+
   std::unique_ptr<DummyPageHolder> dummy_page_holder;
   // We don't use the DocumentLoader directly in any tests, but need to keep it
   // around as long as the ResourceFetcher and Document live due to indirect
@@ -907,7 +913,7 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
     }
 
     // Compare the populated |requestorOrigin| against |test.serializedOrigin|
-    fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
+    SetFirstPartyCookieAndRequestorOrigin(request);
     if (strlen(test.serialized_origin) == 0) {
       EXPECT_TRUE(!request.RequestorOrigin());
     } else {
@@ -1455,7 +1461,7 @@ TEST_F(FrameFetchContextTest,
 
   dummy_page_holder = nullptr;
 
-  fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
+  SetFirstPartyCookieAndRequestorOrigin(request);
 
   EXPECT_EQ(document_url, request.SiteForCookies());
   EXPECT_EQ(origin, request.RequestorOrigin());
