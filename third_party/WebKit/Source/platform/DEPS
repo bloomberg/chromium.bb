@@ -12,6 +12,7 @@ include_rules = [
     "+base/location.h",
     "+base/logging.h",
     "+base/memory",
+    "+base/observer_list.h",
     "+base/message_loop/message_loop.h",
     "+base/metrics/histogram.h",
     "+base/metrics/histogram_base.h",
