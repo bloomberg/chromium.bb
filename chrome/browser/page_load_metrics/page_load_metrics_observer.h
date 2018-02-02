@@ -397,6 +397,9 @@ class PageLoadMetricsObserver {
   virtual void OnPageInteractive(const mojom::PageLoadTiming& timing,
                                  const PageLoadExtraInfo& extra_info) {}
 
+  virtual void OnFirstInputDelayInPage(const mojom::PageLoadTiming& timing,
+                                       const PageLoadExtraInfo& extra_info) {}
+
   // Invoked when there is a change in either the main_frame_metadata or the
   // subframe_metadata's loading behavior_flags.
   virtual void OnLoadingBehaviorObserved(const PageLoadExtraInfo& extra_info) {}

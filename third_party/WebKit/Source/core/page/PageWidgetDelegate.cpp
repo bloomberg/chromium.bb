@@ -33,9 +33,11 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
+#include "core/loader/InteractiveDetector.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/TransformRecorder.h"
@@ -129,6 +131,8 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     const WebCoalescedInputEvent& coalesced_event,
     LocalFrame* root) {
   const WebInputEvent& event = coalesced_event.Event();
+  ReportFirstInputDelay(event, root);
+
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&
       WebInputEvent::IsMouseEventType(event.GetType())) {
     WebMouseEvent mouse_event = TransformWebMouseEvent(
@@ -239,6 +243,31 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     default:
       return WebInputEventResult::kNotHandled;
   }
+}
+
+// This is called early enough in the pipeline that we don't need to worry about
+// javascript dispatching untrusted input events.
+void PageWidgetDelegate::ReportFirstInputDelay(const WebInputEvent& event,
+                                               LocalFrame* root) {
+  if (event.GetType() != WebInputEvent::kMouseDown &&
+      event.GetType() != WebInputEvent::kKeyDown &&
+      event.GetType() != WebInputEvent::kRawKeyDown &&
+      event.GetType() != WebInputEvent::kGestureTap)
+    return;
+
+  Document* document = root->GetDocument();
+  DCHECK(document);
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+
+  // interactive_detector is null in the OOPIF case.
+  // TODO(crbug.com/808089): report across OOPIFs.
+  if (!interactive_detector)
+    return;
+
+  interactive_detector->OnFirstInputDelay(TimeDelta::FromSecondsD(
+      CurrentTimeTicksInSeconds() - event.TimeStampSeconds()));
 }
 
 // ----------------------------------------------------------------

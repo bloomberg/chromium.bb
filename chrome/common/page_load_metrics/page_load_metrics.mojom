@@ -103,6 +103,9 @@ struct InteractiveTiming {
   // This is a page load metrics internal value and not generally intended for
   // consumption by observers.
   mojo.common.mojom.TimeDelta? first_invalidating_input;
+
+  // Queueing Time of the first click, tap or keypress event.
+  mojo.common.mojom.TimeDelta? first_input_delay;
 };
 
 

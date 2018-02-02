@@ -378,6 +378,15 @@ unsigned long long PerformanceTiming::FirstInputInvalidatingInteractive()
       interactive_detector->GetFirstInvalidatingInputTime());
 }
 
+unsigned long long PerformanceTiming::FirstInputDelay() const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return ToIntegerMilliseconds(
+      interactive_detector->GetFirstInputDelay().InSecondsF());
+}
+
 unsigned long long PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)

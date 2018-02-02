@@ -129,6 +129,10 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     timing->interactive_timing->first_invalidating_input =
         ClampDelta(perf.FirstInputInvalidatingInteractive(), start);
   }
+  if (perf.FirstInputDelay() > 0.0) {
+    timing->interactive_timing->first_input_delay =
+        base::TimeDelta::FromSecondsD(perf.FirstInputDelay());
+  }
   if (perf.ResponseStart() > 0.0)
     timing->response_start = ClampDelta(perf.ResponseStart(), start);
   if (perf.DomContentLoadedEventStart() > 0.0) {
