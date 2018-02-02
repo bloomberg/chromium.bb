@@ -12496,6 +12496,7 @@ Called by update_net_error_codes.py.-->
   <int value="413" label="EnableSymantecLegacyInfrastructure"/>
   <int value="414" label="WebDriverOverridesIncompatiblePolicies"/>
   <int value="415" label="DeviceKerberosEncryptionTypes"/>
+  <int value="416" label="DeviceUserPolicyLoopbackProcessingMode"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

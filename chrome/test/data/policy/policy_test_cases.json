@@ -3513,6 +3513,11 @@
     "note": "Chrome OS device policy used by authpolicyd only, not used in Chrome"
   },
 
+  "DeviceUserPolicyLoopbackProcessingMode": {
+    "os": ["chromeos"],
+    "note": "Chrome OS device policy used by authpolicyd only, not used in Chrome"
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
