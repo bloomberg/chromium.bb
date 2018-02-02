@@ -12,12 +12,8 @@
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/default_clock.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/sync_error_factory.h"
@@ -40,12 +36,20 @@ std::string MakePasswordSyncTag(const autofill::PasswordForm& password);
 namespace {
 
 // Returns true iff |password_specifics| and |password_specifics| are equal
-// in the fields which don't comprise the sync tag.
-bool AreLocalAndSyncPasswordsNonSyncTagEqual(
+// memberwise.
+bool AreLocalAndSyncPasswordsEqual(
     const sync_pb::PasswordSpecificsData& password_specifics,
     const autofill::PasswordForm& password_form) {
   return (password_form.scheme == password_specifics.scheme() &&
+          password_form.signon_realm == password_specifics.signon_realm() &&
+          password_form.origin.spec() == password_specifics.origin() &&
           password_form.action.spec() == password_specifics.action() &&
+          base::UTF16ToUTF8(password_form.username_element) ==
+              password_specifics.username_element() &&
+          base::UTF16ToUTF8(password_form.password_element) ==
+              password_specifics.password_element() &&
+          base::UTF16ToUTF8(password_form.username_value) ==
+              password_specifics.username_value() &&
           base::UTF16ToUTF8(password_form.password_value) ==
               password_specifics.password_value() &&
           password_form.preferred == password_specifics.preferred() &&
@@ -60,38 +64,6 @@ bool AreLocalAndSyncPasswordsNonSyncTagEqual(
           password_form.icon_url.spec() == password_specifics.avatar_url() &&
           url::Origin::Create(GURL(password_specifics.federation_url()))
                   .Serialize() == password_form.federation_origin.Serialize());
-}
-
-// Returns true iff |password_specifics| and |password_specifics| are equal
-// memberwise.
-bool AreLocalAndSyncPasswordsEqual(
-    const sync_pb::PasswordSpecificsData& password_specifics,
-    const autofill::PasswordForm& password_form) {
-  return (password_form.signon_realm == password_specifics.signon_realm() &&
-          password_form.origin.spec() == password_specifics.origin() &&
-          base::UTF16ToUTF8(password_form.username_element) ==
-              password_specifics.username_element() &&
-          base::UTF16ToUTF8(password_form.password_element) ==
-              password_specifics.password_element() &&
-          base::UTF16ToUTF8(password_form.username_value) ==
-              password_specifics.username_value() &&
-          AreLocalAndSyncPasswordsNonSyncTagEqual(password_specifics,
-                                                  password_form));
-}
-
-// Compares the fields which are not part of the sync tag.
-bool AreNonSyncTagFieldsEqual(const sync_pb::PasswordSpecificsData& left,
-                              const sync_pb::PasswordSpecificsData& right) {
-  return (left.scheme() == right.scheme() && left.action() == right.action() &&
-          left.password_value() == right.password_value() &&
-          left.preferred() == right.preferred() &&
-          left.date_created() == right.date_created() &&
-          left.blacklisted() == right.blacklisted() &&
-          left.type() == right.type() &&
-          left.times_used() == right.times_used() &&
-          left.display_name() == right.display_name() &&
-          left.avatar_url() == right.avatar_url() &&
-          left.federation_url() == right.federation_url());
 }
 
 syncer::SyncChange::SyncChangeType GetSyncChangeType(
@@ -117,190 +89,6 @@ void AppendPasswordFromSpecifics(
   entries->push_back(std::make_unique<autofill::PasswordForm>(
       PasswordFromSpecifics(specifics)));
   entries->back()->date_synced = sync_time;
-}
-
-// Android autofill saves credential in a different format without trailing '/'.
-std::string GetIncorrectAndroidSignonRealm(std::string android_autofill_realm) {
-  if (base::EndsWith(android_autofill_realm, "/", base::CompareCase::SENSITIVE))
-    android_autofill_realm.erase(android_autofill_realm.size() - 1);
-  return android_autofill_realm;
-}
-
-// The correct Android signon_realm should have a trailing '/'.
-std::string GetCorrectAndroidSignonRealm(std::string android_realm) {
-  if (!base::EndsWith(android_realm, "/", base::CompareCase::SENSITIVE))
-    android_realm += '/';
-  return android_realm;
-}
-
-// Android autofill saves credentials in a different format without trailing
-// '/'. Return a sync tag for the style used by Android Autofill in GMS Core
-// v12.
-std::string AndroidAutofillSyncTag(
-    const sync_pb::PasswordSpecificsData& password) {
-  // realm has the same value as the origin.
-  std::string origin = GetIncorrectAndroidSignonRealm(password.origin());
-  std::string signon_realm =
-      GetIncorrectAndroidSignonRealm(password.signon_realm());
-  return (net::EscapePath(origin) + "|" +
-          net::EscapePath(password.username_element()) + "|" +
-          net::EscapePath(password.username_value()) + "|" +
-          net::EscapePath(password.password_element()) + "|" +
-          net::EscapePath(signon_realm));
-}
-
-// Return a sync tag for the correct format used by Android.
-std::string AndroidCorrectSyncTag(
-    const sync_pb::PasswordSpecificsData& password) {
-  // realm has the same value as the origin.
-  std::string origin = GetCorrectAndroidSignonRealm(password.origin());
-  std::string signon_realm =
-      GetCorrectAndroidSignonRealm(password.signon_realm());
-  return (net::EscapePath(origin) + "|" +
-          net::EscapePath(password.username_element()) + "|" +
-          net::EscapePath(password.username_value()) + "|" +
-          net::EscapePath(password.password_element()) + "|" +
-          net::EscapePath(signon_realm));
-}
-
-void PasswordSpecificsFromPassword(
-    const autofill::PasswordForm& password_form,
-    sync_pb::PasswordSpecificsData* password_specifics) {
-#define CopyField(field) password_specifics->set_##field(password_form.field)
-#define CopyStringField(field) \
-  password_specifics->set_##field(base::UTF16ToUTF8(password_form.field))
-  CopyField(scheme);
-  CopyField(signon_realm);
-  password_specifics->set_origin(password_form.origin.spec());
-  password_specifics->set_action(password_form.action.spec());
-  CopyStringField(username_element);
-  CopyStringField(password_element);
-  CopyStringField(username_value);
-  CopyStringField(password_value);
-  CopyField(preferred);
-  password_specifics->set_date_created(
-      password_form.date_created.ToInternalValue());
-  password_specifics->set_blacklisted(password_form.blacklisted_by_user);
-  CopyField(type);
-  CopyField(times_used);
-  CopyStringField(display_name);
-  password_specifics->set_avatar_url(password_form.icon_url.spec());
-  password_specifics->set_federation_url(
-      password_form.federation_origin.unique()
-          ? std::string()
-          : password_form.federation_origin.Serialize());
-#undef CopyStringField
-#undef CopyField
-}
-
-struct AndroidMergeResult {
-  // New value for Android entry in the correct format.
-  base::Optional<syncer::SyncData> new_android_correct;
-  // New value for Android autofill entry.
-  base::Optional<syncer::SyncData> new_android_incorrect;
-  // New value for local entry in the correct format.
-  base::Optional<autofill::PasswordForm> new_local_correct;
-  // New value for local entry in the Android autofill format.
-  base::Optional<autofill::PasswordForm> new_local_incorrect;
-};
-
-// Perform deduplication of Android credentials saved in the wrong format. As
-// the result all the four entries should be created and have the same value.
-AndroidMergeResult Perform4WayMergeAndroidCredentials(
-    const sync_pb::PasswordSpecificsData* correct_android,
-    const sync_pb::PasswordSpecificsData* incorrect_android,
-    const autofill::PasswordForm* correct_local,
-    const autofill::PasswordForm* incorrect_local) {
-  AndroidMergeResult result;
-
-  base::Optional<sync_pb::PasswordSpecificsData> local_correct_ps;
-  if (correct_local) {
-    local_correct_ps = sync_pb::PasswordSpecificsData();
-    PasswordSpecificsFromPassword(*correct_local, &local_correct_ps.value());
-  }
-
-  base::Optional<sync_pb::PasswordSpecificsData> local_incorrect_ps;
-  if (incorrect_local) {
-    local_incorrect_ps = sync_pb::PasswordSpecificsData();
-    PasswordSpecificsFromPassword(*incorrect_local,
-                                  &local_incorrect_ps.value());
-  }
-
-  const sync_pb::PasswordSpecificsData* all_data[4] = {
-      correct_android, incorrect_android,
-      local_correct_ps ? &local_correct_ps.value() : nullptr,
-      local_incorrect_ps ? &local_incorrect_ps.value() : nullptr};
-
-  // |newest_data| will point to the newest entry out of all 4.
-  const sync_pb::PasswordSpecificsData* newest_data = nullptr;
-  for (int i = 0; i < 4; ++i) {
-    if (newest_data && all_data[i]) {
-      if (all_data[i]->date_created() > newest_data->date_created())
-        newest_data = all_data[i];
-    } else if (all_data[i]) {
-      newest_data = all_data[i];
-    }
-  }
-  DCHECK(newest_data);
-
-  const std::string correct_tag = AndroidCorrectSyncTag(*newest_data);
-  const std::string incorrect_tag = AndroidAutofillSyncTag(*newest_data);
-  const std::string correct_signon_realm =
-      GetCorrectAndroidSignonRealm(newest_data->signon_realm());
-  const std::string incorrect_signon_realm =
-      GetIncorrectAndroidSignonRealm(newest_data->signon_realm());
-  const std::string correct_origin =
-      GetCorrectAndroidSignonRealm(newest_data->origin());
-  const std::string incorrect_origin =
-      GetIncorrectAndroidSignonRealm(newest_data->origin());
-  DCHECK_EQ(GURL(incorrect_origin).spec(), incorrect_origin);
-
-  // Set the correct Sync entry if needed.
-  if (newest_data != correct_android &&
-      (!correct_android ||
-       !AreNonSyncTagFieldsEqual(*correct_android, *newest_data))) {
-    sync_pb::EntitySpecifics password_data;
-    sync_pb::PasswordSpecificsData* password_specifics =
-        password_data.mutable_password()->mutable_client_only_encrypted_data();
-    *password_specifics = *newest_data;
-    password_specifics->set_origin(correct_origin);
-    password_specifics->set_signon_realm(correct_signon_realm);
-    result.new_android_correct = syncer::SyncData::CreateLocalData(
-        correct_tag, correct_tag, password_data);
-  }
-
-  // Set the Andoroid Autofill Sync entry if needed.
-  if (newest_data != incorrect_android &&
-      (!incorrect_android ||
-       !AreNonSyncTagFieldsEqual(*incorrect_android, *newest_data))) {
-    sync_pb::EntitySpecifics password_data;
-    sync_pb::PasswordSpecificsData* password_specifics =
-        password_data.mutable_password()->mutable_client_only_encrypted_data();
-    *password_specifics = *newest_data;
-    password_specifics->set_origin(incorrect_origin);
-    password_specifics->set_signon_realm(incorrect_signon_realm);
-    result.new_android_incorrect = syncer::SyncData::CreateLocalData(
-        incorrect_tag, incorrect_tag, password_data);
-  }
-
-  // Set the correct local entry if needed.
-  if (!local_correct_ps ||
-      (newest_data != &local_correct_ps.value() &&
-       !AreNonSyncTagFieldsEqual(local_correct_ps.value(), *newest_data))) {
-    result.new_local_correct = PasswordFromSpecifics(*newest_data);
-    result.new_local_correct.value().origin = GURL(correct_origin);
-    result.new_local_correct.value().signon_realm = correct_signon_realm;
-  }
-
-  // Set the incorrect local entry if needed.
-  if (!local_incorrect_ps ||
-      (newest_data != &local_incorrect_ps.value() &&
-       !AreNonSyncTagFieldsEqual(local_incorrect_ps.value(), *newest_data))) {
-    result.new_local_incorrect = PasswordFromSpecifics(*newest_data);
-    result.new_local_incorrect.value().origin = GURL(incorrect_origin);
-    result.new_local_incorrect.value().signon_realm = incorrect_signon_realm;
-  }
-  return result;
 }
 
 }  // namespace
@@ -336,9 +124,8 @@ struct PasswordSyncableService::SyncEntries {
 
 PasswordSyncableService::PasswordSyncableService(
     PasswordStoreSync* password_store)
-    : password_store_(password_store),
-      clock_(new base::DefaultClock),
-      is_processing_sync_changes_(false) {}
+    : password_store_(password_store), is_processing_sync_changes_(false) {
+}
 
 PasswordSyncableService::~PasswordSyncableService() = default;
 
@@ -374,12 +161,17 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   }
   merge_result.set_num_items_before_association(new_local_entries.size());
 
-  // Changes from Sync to be applied locally.
   SyncEntries sync_entries;
   // Changes from password db that need to be propagated to sync.
   syncer::SyncChangeList updated_db_entries;
-  MergeSyncDataWithLocalData(initial_sync_data, &new_local_entries,
-                             &sync_entries, &updated_db_entries);
+  for (syncer::SyncDataList::const_iterator sync_iter =
+           initial_sync_data.begin();
+       sync_iter != initial_sync_data.end(); ++sync_iter) {
+    CreateOrUpdateEntry(*sync_iter,
+                        &new_local_entries,
+                        &sync_entries,
+                        &updated_db_entries);
+  }
 
   for (PasswordEntryMap::iterator it = new_local_entries.begin();
        it != new_local_entries.end(); ++it) {
@@ -443,7 +235,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);
   SyncEntries sync_entries;
-  base::Time time_now = clock_->Now();
+  base::Time time_now = base::Time::Now();
 
   for (syncer::SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
@@ -456,13 +248,6 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
     }
     AppendPasswordFromSpecifics(
         specifics.password().client_only_encrypted_data(), time_now, entries);
-    if (IsValidAndroidFacetURI(entries->back()->signon_realm)) {
-      // Fix the Android Autofill credentials if needed.
-      entries->back()->signon_realm =
-          GetCorrectAndroidSignonRealm(entries->back()->signon_realm);
-      entries->back()->origin =
-          GURL(GetCorrectAndroidSignonRealm(entries->back()->origin.spec()));
-    }
   }
 
   WriteToPasswordStore(sync_entries);
@@ -553,132 +338,21 @@ void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
   password_store_->NotifyLoginsChanged(changes);
 }
 
-void PasswordSyncableService::MergeSyncDataWithLocalData(
-    const syncer::SyncDataList& sync_data,
-    PasswordEntryMap* unmatched_data_from_password_db,
-    SyncEntries* sync_entries,
-    syncer::SyncChangeList* updated_db_entries) {
-  std::map<std::string, const sync_pb::PasswordSpecificsData*> sync_data_map;
-  for (const auto& data : sync_data) {
-    const sync_pb::EntitySpecifics& specifics = data.GetSpecifics();
-    const sync_pb::PasswordSpecificsData* password_specifics =
-        &specifics.password().client_only_encrypted_data();
-    sync_data_map[MakePasswordSyncTag(*password_specifics)] =
-        password_specifics;
-  }
-  DCHECK_EQ(sync_data_map.size(), sync_data.size());
-
-  for (auto it = sync_data_map.begin(); it != sync_data_map.end();) {
-    if (IsValidAndroidFacetURI(it->second->signon_realm())) {
-      // Perform deduplication of Android credentials saved in the wrong format.
-      // For each incorrect entry, a duplicate of it is created in the correct
-      // format, so Chrome can make use of it. The incorrect sync entries are
-      // not deleted for now.
-      std::string incorrect_tag = AndroidAutofillSyncTag(*it->second);
-      std::string correct_tag = AndroidCorrectSyncTag(*it->second);
-      auto it_sync_incorrect = sync_data_map.find(incorrect_tag);
-      auto it_sync_correct = sync_data_map.find(correct_tag);
-      auto it_local_data_correct =
-          unmatched_data_from_password_db->find(correct_tag);
-      auto it_local_data_incorrect =
-          unmatched_data_from_password_db->find(incorrect_tag);
-      if ((it != it_sync_incorrect && it != it_sync_correct) ||
-          (it_sync_incorrect == sync_data_map.end() &&
-           it_local_data_incorrect == unmatched_data_from_password_db->end())) {
-        // The current credential is in an unexpected format or incorrect
-        // credential don't exist. Just do what Sync would normally do.
-        CreateOrUpdateEntry(*it->second, unmatched_data_from_password_db,
-                            sync_entries, updated_db_entries);
-        ++it;
-      } else {
-        AndroidMergeResult result = Perform4WayMergeAndroidCredentials(
-            it_sync_correct == sync_data_map.end() ? nullptr
-                                                   : it_sync_correct->second,
-            it_sync_incorrect == sync_data_map.end()
-                ? nullptr
-                : it_sync_incorrect->second,
-            it_local_data_correct == unmatched_data_from_password_db->end()
-                ? nullptr
-                : it_local_data_correct->second,
-            it_local_data_incorrect == unmatched_data_from_password_db->end()
-                ? nullptr
-                : it_local_data_incorrect->second);
-        // Add or update the correct local entry.
-        if (result.new_local_correct) {
-          auto* local_changes = sync_entries->EntriesForChangeType(
-              it_local_data_correct == unmatched_data_from_password_db->end()
-                  ? syncer::SyncChange::ACTION_ADD
-                  : syncer::SyncChange::ACTION_UPDATE);
-          local_changes->push_back(std::make_unique<autofill::PasswordForm>(
-              result.new_local_correct.value()));
-          local_changes->back()->date_synced = clock_->Now();
-        }
-        // Add or update the incorrect local entry.
-        if (result.new_local_incorrect) {
-          auto* local_changes = sync_entries->EntriesForChangeType(
-              it_local_data_incorrect == unmatched_data_from_password_db->end()
-                  ? syncer::SyncChange::ACTION_ADD
-                  : syncer::SyncChange::ACTION_UPDATE);
-          local_changes->push_back(std::make_unique<autofill::PasswordForm>(
-              result.new_local_incorrect.value()));
-          local_changes->back()->date_synced = clock_->Now();
-        }
-        if (it_local_data_correct != unmatched_data_from_password_db->end())
-          unmatched_data_from_password_db->erase(it_local_data_correct);
-        if (it_local_data_incorrect != unmatched_data_from_password_db->end())
-          unmatched_data_from_password_db->erase(it_local_data_incorrect);
-        // Add or update the correct sync entry.
-        if (result.new_android_correct) {
-          updated_db_entries->push_back(
-              syncer::SyncChange(FROM_HERE,
-                                 it_sync_correct == sync_data_map.end()
-                                     ? syncer::SyncChange::ACTION_ADD
-                                     : syncer::SyncChange::ACTION_UPDATE,
-                                 result.new_android_correct.value()));
-        }
-        // Add or update the Android Autofill sync entry.
-        if (result.new_android_incorrect) {
-          updated_db_entries->push_back(
-              syncer::SyncChange(FROM_HERE,
-                                 it_sync_incorrect == sync_data_map.end()
-                                     ? syncer::SyncChange::ACTION_ADD
-                                     : syncer::SyncChange::ACTION_UPDATE,
-                                 result.new_android_incorrect.value()));
-        }
-        bool increment = true;
-        for (auto sync_data_it : {it_sync_incorrect, it_sync_correct}) {
-          if (sync_data_it != sync_data_map.end()) {
-            if (sync_data_it == it) {
-              it = sync_data_map.erase(it);
-              increment = false;
-            } else {
-              sync_data_map.erase(sync_data_it);
-            }
-          }
-        }
-        if (increment)
-          ++it;
-      }
-    } else {
-      // Not Android.
-      CreateOrUpdateEntry(*it->second, unmatched_data_from_password_db,
-                          sync_entries, updated_db_entries);
-      ++it;
-    }
-  }
-}
-
+// static
 void PasswordSyncableService::CreateOrUpdateEntry(
-    const sync_pb::PasswordSpecificsData& password_specifics,
+    const syncer::SyncData& data,
     PasswordEntryMap* unmatched_data_from_password_db,
     SyncEntries* sync_entries,
     syncer::SyncChangeList* updated_db_entries) {
+  const sync_pb::EntitySpecifics& specifics = data.GetSpecifics();
+  const sync_pb::PasswordSpecificsData& password_specifics(
+      specifics.password().client_only_encrypted_data());
   std::string tag = MakePasswordSyncTag(password_specifics);
 
   // Check whether the data from sync is already in the password store.
   PasswordEntryMap::iterator existing_local_entry_iter =
       unmatched_data_from_password_db->find(tag);
-  base::Time time_now = clock_->Now();
+  base::Time time_now = base::Time::Now();
   if (existing_local_entry_iter == unmatched_data_from_password_db->end()) {
       // The sync data is not in the password store, so we need to create it in
       // the password store. Add the entry to the new_entries list.
@@ -726,7 +400,31 @@ syncer::SyncData SyncDataFromPassword(
   sync_pb::EntitySpecifics password_data;
   sync_pb::PasswordSpecificsData* password_specifics =
       password_data.mutable_password()->mutable_client_only_encrypted_data();
-  PasswordSpecificsFromPassword(password_form, password_specifics);
+#define CopyField(field) password_specifics->set_##field(password_form.field)
+#define CopyStringField(field) \
+  password_specifics->set_##field(base::UTF16ToUTF8(password_form.field))
+  CopyField(scheme);
+  CopyField(signon_realm);
+  password_specifics->set_origin(password_form.origin.spec());
+  password_specifics->set_action(password_form.action.spec());
+  CopyStringField(username_element);
+  CopyStringField(password_element);
+  CopyStringField(username_value);
+  CopyStringField(password_value);
+  CopyField(preferred);
+  password_specifics->set_date_created(
+      password_form.date_created.ToInternalValue());
+  password_specifics->set_blacklisted(password_form.blacklisted_by_user);
+  CopyField(type);
+  CopyField(times_used);
+  CopyStringField(display_name);
+  password_specifics->set_avatar_url(password_form.icon_url.spec());
+  password_specifics->set_federation_url(
+      password_form.federation_origin.unique()
+          ? std::string()
+          : password_form.federation_origin.Serialize());
+#undef CopyStringField
+#undef CopyField
 
   std::string tag = MakePasswordSyncTag(*password_specifics);
   return syncer::SyncData::CreateLocalData(tag, tag, password_data);
