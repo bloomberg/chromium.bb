@@ -29,6 +29,7 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
+#include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -164,7 +165,7 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
   search_box_view_->ClearSearch();
 }
 
-void AppListMainView::QueryChanged(SearchBoxView* sender) {
+void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   base::string16 raw_query = search_model_->search_box()->text();
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);

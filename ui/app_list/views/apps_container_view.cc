@@ -21,6 +21,7 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/events/event.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -261,7 +262,7 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
 
   float y = 0;
   float peeking_final_y =
-      kSearchBoxPeekingTopPadding + kSearchBoxPreferredHeight +
+      kSearchBoxPeekingTopPadding + search_box::kSearchBoxPreferredHeight +
       kSearchBoxPeekingBottomPadding - kSearchBoxBottomPadding;
   if (drag_amount <= (kPeekingAppListHeight - kShelfSize)) {
     // App list is dragged from collapsed to peeking, which moved up at most
@@ -276,7 +277,8 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
     // App list is dragged from peeking to fullscreen, which moved up at most
     // |peeking_to_fullscreen_height|. The top padding of apps container view
     // changes from |peeking_final_y| to |final_y|.
-    float final_y = GetSearchBoxFinalTopPadding() + kSearchBoxPreferredHeight;
+    float final_y =
+        GetSearchBoxFinalTopPadding() + search_box::kSearchBoxPreferredHeight;
     float peeking_to_fullscreen_height =
         contents_view()->GetDisplayHeight() - kPeekingAppListHeight;
     y = std::ceil((final_y - peeking_final_y) *

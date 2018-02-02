@@ -10,9 +10,6 @@
 namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF2, 0xF2, 0xF2);
-const SkColor kSearchBoxBackgroundDefault = SK_ColorWHITE;
-
-const SkColor kSearchTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 
 const SkColor kLabelBackgroundColor = SK_ColorTRANSPARENT;
 
@@ -24,8 +21,6 @@ const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 
 // The mouse hover colour (3% black).
 const SkColor kHighlightedColor = SkColorSetARGB(8, 0, 0, 0);
-// The keyboard select colour (6% black).
-const SkColor kSelectedColor = SkColorSetARGB(15, 0, 0, 0);
 // The keyboard select color for grid views, which are on top of a black shield
 // view for new design (12% white).
 const SkColor kGridSelectedColor = SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
@@ -153,12 +148,6 @@ const int kSearchBoxPeekingBottomPadding = 12;
 // Bottom padding of search box.
 const int kSearchBoxBottomPadding = 24;
 
-// The background border corner radius of the search box.
-const int kSearchBoxBorderCornerRadius = 24;
-
-// Preferred height of search box.
-const int kSearchBoxPreferredHeight = 48;
-
 // The height of the peeking app list from the bottom of the screen.
 const int kPeekingAppListHeight = 320;
 
@@ -240,14 +229,6 @@ const char kSearchResultDistanceFromOrigin[] =
 
 // The height of tiles in search result.
 const int kSearchTileHeight = 90;
-
-// The size of the search icon in the search box.
-const int kSearchIconSize = 24;
-
-// Default color used when wallpaper customized color is not available for
-// searchbox, #000 at 87% opacity.
-const SkColor kDefaultSearchboxColor =
-    SkColorSetARGBMacro(0xDE, 0x00, 0x00, 0x00);
 
 gfx::ShadowValue GetShadowForZHeight(int z_height) {
   if (z_height <= 0)

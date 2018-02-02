@@ -401,9 +401,7 @@ void AppListView::InitContents(int initial_apps_page) {
   // This will be added to the |search_box_widget_| after the app list widget is
   // initialized.
   search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_, this);
-  search_box_view_->SetPaintToLayer();
-  search_box_view_->layer()->SetFillsBoundsOpaquely(false);
-  search_box_view_->layer()->SetMasksToBounds(true);
+  search_box_view_->Init();
 
   app_list_main_view_->Init(0, search_box_view_);
 }

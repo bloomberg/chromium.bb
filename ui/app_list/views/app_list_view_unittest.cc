@@ -45,6 +45,7 @@
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -1547,7 +1548,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   view_->OnGestureEvent(&update_event);
 
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_EQ(kSearchBoxBorderCornerRadius,
+  EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateApps));
 
@@ -1555,7 +1556,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // during drag.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(view_->is_in_drag());
-  EXPECT_EQ(kSearchBoxBorderCornerRadius,
+  EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateSearchResults));
 
@@ -1571,7 +1572,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
   // if launcher drag finished.
   EXPECT_FALSE(view_->is_in_drag());
-  EXPECT_EQ(kSearchBoxBorderCornerRadius,
+  EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateApps));
 }
