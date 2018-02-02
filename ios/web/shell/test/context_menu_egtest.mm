@@ -24,7 +24,7 @@
 #endif
 
 using testing::ButtonWithAccessibilityLabel;
-using testing::ElementToDismissContextMenu;
+using testing::ElementToDismissAlert;
 
 // Context menu test cases for the web shell.
 @interface ContextMenuTestCase : WebShellTestCase
@@ -62,7 +62,7 @@ using testing::ElementToDismissContextMenu;
       assertWithMatcher:grey_notNil()];
 
   // Dismiss the context menu.
-  [[EarlGrey selectElementWithMatcher:ElementToDismissContextMenu(@"Cancel")]
+  [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
       performAction:grey_tap()];
 
   // Context menu should go away after the tap.
@@ -103,7 +103,7 @@ using testing::ElementToDismissContextMenu;
       assertWithMatcher:grey_notNil()];
 
   // Dismiss the context menu.
-  [[EarlGrey selectElementWithMatcher:ElementToDismissContextMenu(@"Cancel")]
+  [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
       performAction:grey_tap()];
 
   // Context menu should go away after the tap.

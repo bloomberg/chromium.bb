@@ -15,13 +15,14 @@ namespace testing {
 // accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label);
 
-// Matcher for a UI element to tap to dismiss the the context menu, where
-// |cancel_text| is the localized text used for the action sheet cancel control.
-// On phones, where the context menu is an action sheet, this will be a matcher
-// for the menu item with |cancel_text| as its label.
-// On tablets, where the context menu is a popover, this will be a matcher for
-// some element outside of the popover.
-id<GREYMatcher> ElementToDismissContextMenu(NSString* cancel_text);
+// Matcher for a UI element to tap to dismiss an alert (e.g. context menu),
+// where |cancel_text| is the localized text used for the action sheet cancel
+// control.
+// On phones, where the alert is an action sheet, this will be a matcher for the
+// menu item with |cancel_text| as its label.
+// On tablets, where the alert is a popover, this will be a matcher for some
+// element outside of the popover.
+id<GREYMatcher> ElementToDismissAlert(NSString* cancel_text);
 
 }  // namespace testing
 
