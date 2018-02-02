@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -807,7 +808,8 @@ void ForEachMatchingFormFieldCommon(
         (!element->HasAttribute(kValue) ||
          element->GetAttribute(kValue) != element->Value()) &&
         (!element->HasAttribute(kPlaceholder) ||
-         element->GetAttribute(kPlaceholder) != element->Value()))
+         base::i18n::ToLower(element->GetAttribute(kPlaceholder).Utf16()) !=
+             base::i18n::ToLower(element->Value().Utf16())))
       continue;
 
     DCHECK(!g_prevent_layout || !(filters & FILTER_NON_FOCUSABLE_ELEMENTS))

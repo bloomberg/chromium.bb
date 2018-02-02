@@ -1353,6 +1353,123 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(5, input_element.SelectionEnd());
   }
 
+  void TestFillFormWithPlaceholderValues(const char* html,
+                                         const char* placeholder_firstname,
+                                         const char* placeholder_lastname,
+                                         const char* placeholder_email) {
+    LoadHTML(html);
+    WebLocalFrame* web_frame = GetMainFrame();
+    ASSERT_NE(nullptr, web_frame);
+
+    FormCache form_cache(web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
+    ASSERT_EQ(1U, forms.size());
+
+    // Get the input element we want to find.
+    WebInputElement input_element = GetInputElementById("firstname");
+    WebFormElement form_element = input_element.Form();
+    std::vector<WebFormControlElement> control_elements =
+        ExtractAutofillableElementsInForm(form_element);
+
+    ASSERT_EQ(3U, control_elements.size());
+    // We now modify the values.
+    // These will be ignored, because it's (case insensitively) equal to the
+    // placeholder.
+    control_elements[0].SetValue(
+        WebString::FromUTF16(base::char16(base::i18n::kLeftToRightMark) +
+                             ASCIIToUTF16("first name")));
+    control_elements[1].SetValue(
+        WebString::FromUTF16(ASCIIToUTF16("LAST NAME")));
+    // This will be considered.
+    control_elements[2].SetValue(
+        WebString::FromUTF16(ASCIIToUTF16("john@smith.com")));
+    // Find the form that contains the input element.
+    FormData form;
+    FormFieldData field;
+    EXPECT_TRUE(
+        FindFormAndFieldForFormControlElement(input_element, &form, &field));
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->GetDocument()),
+              form.origin);
+    EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+    EXPECT_EQ(GURL("http://abc.com"), form.action);
+
+    const std::vector<FormFieldData>& fields = form.fields;
+    ASSERT_EQ(3U, fields.size());
+
+    // Preview the form and verify that the cursor position has been updated.
+    form.fields[0].value = ASCIIToUTF16("Wyatt");
+    form.fields[1].value = ASCIIToUTF16("Earpagus");
+    form.fields[2].value = ASCIIToUTF16("susan@smith.com");
+    form.fields[0].is_autofilled = true;
+    form.fields[1].is_autofilled = true;
+    form.fields[2].is_autofilled = false;
+    PreviewForm(form, input_element);
+    // The selection should be set after the fifth character.
+    EXPECT_EQ(5, input_element.SelectionStart());
+    EXPECT_EQ(5, input_element.SelectionEnd());
+
+    // Fill the form.
+    FillForm(form, input_element);
+
+    // Find the newly-filled form that contains the input element.
+    FormData form2;
+    FormFieldData field2;
+    EXPECT_TRUE(
+        FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->GetDocument()),
+              form2.origin);
+    EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+    EXPECT_EQ(GURL("http://abc.com"), form2.action);
+
+    const std::vector<FormFieldData>& fields2 = form2.fields;
+    ASSERT_EQ(3U, fields2.size());
+
+    FormFieldData expected;
+    expected.form_control_type = "text";
+    expected.max_length = WebInputElement::DefaultMaxLength();
+
+    expected.name = ASCIIToUTF16("firstname");
+    expected.value = ASCIIToUTF16("Wyatt");
+    if (placeholder_firstname) {
+      expected.label = ASCIIToUTF16(placeholder_firstname);
+      expected.placeholder = ASCIIToUTF16(placeholder_firstname);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled = true;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
+
+    expected.name = ASCIIToUTF16("lastname");
+    expected.value = ASCIIToUTF16("Earpagus");
+    if (placeholder_lastname) {
+      expected.label = ASCIIToUTF16(placeholder_lastname);
+      expected.placeholder = ASCIIToUTF16(placeholder_lastname);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled = true;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
+
+    // The email field is not filled, because there is a value in it.
+    expected.name = ASCIIToUTF16("email");
+    expected.value = ASCIIToUTF16("john@smith.com");
+    if (placeholder_email) {
+      expected.label = ASCIIToUTF16(placeholder_email);
+      expected.placeholder = ASCIIToUTF16(placeholder_email);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled = false;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
+
+    // Verify that the cursor position has been updated.
+    EXPECT_EQ(5, input_element.SelectionStart());
+    EXPECT_EQ(5, input_element.SelectionEnd());
+  }
+
   void TestFillFormAndModifyInitiatingValue(const char* html,
                                             const char* placeholder_creditcard,
                                             const char* placeholder_expiration,
@@ -4441,6 +4558,19 @@ TEST_F(FormAutofillTest, FillFormNonEmptyFieldsWithPlaceholderValues) {
       "  <INPUT type='submit' value='Send'/>"
       "</FORM>",
       false, nullptr, nullptr, "First Name", "Last Name", "Email");
+}
+
+TEST_F(FormAutofillTest, FillFormWithPlaceholderValues) {
+  TestFillFormWithPlaceholderValues(
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
+      "  <INPUT type='text' id='firstname' placeholder='First Name' "
+      "value='First Name'/>"
+      "  <INPUT type='text' id='lastname' placeholder='Last Name'"
+      "Name'/>"
+      "  <INPUT type='text' id='email' placeholder='Email' value='Email'/>"
+      "  <INPUT type='submit' value='Send'/>"
+      "</FORM>",
+      "First Name", "Last Name", "Email");
 }
 
 TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
