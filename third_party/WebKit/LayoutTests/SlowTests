@@ -476,3 +476,5 @@ crbug.com/800359 external/wpt/mimesniff/mime-types/parsing.any.html [ Slow ]
 crbug.com/800359 external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Slow ]
 
 crbug.com/808185 [ Win Release ] http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Slow ]
+
+crbug.com/808153 fast/webgl/texImage-imageBitmap-from-blob-resize.html [ Slow ]
