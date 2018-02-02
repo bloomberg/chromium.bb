@@ -62,7 +62,8 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap,
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         var buf = new Uint8Array(width * height * 4);
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
-        pixelsBuffer.push({quality: testOptions.resizeQuality, buffer: buf});
+        pixelsBuffer.unshift({quality: testOptions.resizeQuality, flip: flipY,
+            premul: premultiplyAlpha, buffer: buf});
     }
 }
 
@@ -221,6 +222,12 @@ function prepareWebGLContext(testOptions) {
     gl.clearDepth(1);
 }
 
+function PrintTileInfoForDebug(x, y, quality, premul, flip) {
+    var tileLog = "x: " + x + ", y: " + y + ", quality: " + quality +
+        ", premul: " + premul + ", flip: " + flip;
+    console.log(tileLog);
+}
+
 function DrawResultsOnCanvas(testOptions) {
     var resultsCanvas = testOptions.resultsCanvas;
     var numTiles = Math.ceil(Math.sqrt(pixelsBuffer.length));
@@ -240,6 +247,8 @@ function DrawResultsOnCanvas(testOptions) {
                 var x = (tileCounter * testOptions.resizeWidth) % width;
                 var y = Math.floor(tileCounter / numTiles) *
                     testOptions.resizeHeight;
+                    PrintTileInfoForDebug(x, y, pixelsBuffer[j].quality,
+                        pixelsBuffer[j].premultiply, pixelsBuffer[j].flip);
                 tileCounter++;
                 var imageData = new ImageData(Uint8ClampedArray.from(buffer),
                     testOptions.resizeWidth, testOptions.resizeHeight);
