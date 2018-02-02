@@ -1388,14 +1388,14 @@ gfx::Size DXVAVideoDecodeAccelerator::GetMaxResolution(
     static const gfx::Size kCachedH264Resolution = GetMaxResolutionForGUIDs(
         kDefaultMax, {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
         {gfx::Size(2560, 1440), gfx::Size(3840, 2160), gfx::Size(4096, 2160),
-         gfx::Size(4096, 2304), gfx::Size(2160, 3840)});
+         gfx::Size(4096, 2304)});
     return kCachedH264Resolution;
   }
 
   // Despite the name this is the GUID for VP8/VP9.
   static const gfx::Size kCachedVPXResolution = GetMaxResolutionForGUIDs(
       gfx::Size(4096, 2160), {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
-      {gfx::Size(4096, 2304), gfx::Size(7680, 4320), gfx::Size(4320, 7680)});
+      {gfx::Size(4096, 2304), gfx::Size(7680, 4320)});
   return kCachedVPXResolution;
 }
 
