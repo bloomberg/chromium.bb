@@ -33,6 +33,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -161,6 +162,7 @@ public class WebVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @DisabledTest(message = "https://crbug.com/808524")
     public void testControllerClicksRegisteredOnDaydream() throws InterruptedException {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         mVrTestFramework.loadUrlAndAwaitInitialization(
