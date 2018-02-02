@@ -19,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link SigninPromoUtil}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SigninPromoUtilTest {
     private ChromePreferenceManager mPreferenceManager;

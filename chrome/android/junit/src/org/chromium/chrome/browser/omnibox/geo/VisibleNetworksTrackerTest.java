@@ -20,11 +20,11 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworksTrackerTest.ShadowPlatformNetworksManager;
 import org.chromium.testing.local.CustomShadowAsyncTask;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Robolectric tests for {@link VisibleNetworksTracker}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowPlatformNetworksManager.class, CustomShadowAsyncTask.class,
                 ShadowSystemClock.class})

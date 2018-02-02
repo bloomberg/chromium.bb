@@ -11,13 +11,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.util.PatternMatcher;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Test class for {@link PatternMatcher}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PatternMatcherTest {
     @Test

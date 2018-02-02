@@ -13,20 +13,19 @@ import android.os.Build;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link BackgroundTaskSchedulerPrefs}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BackgroundTaskSchedulerPrefsTest {
     /**
@@ -40,7 +39,6 @@ public class BackgroundTaskSchedulerPrefsTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         mTask1 = TaskInfo.createOneOffTask(
                                  TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
                          .build();

@@ -4,13 +4,6 @@
 
 package org.chromium.base.process_launcher;
 
-import android.content.ComponentName;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.os.RemoteException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -27,6 +20,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,10 +38,10 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /** Unit tests for ChildProcessConnection. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChildProcessConnectionTest {
     private static class ChildServiceConnectionMock

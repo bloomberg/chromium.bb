@@ -52,6 +52,7 @@ junit_binary("components_policy_junit_tests") {
     ":policy_java",
     ":policy_java_test_support",
     "//base:base_java",
+    "//base:base_junit_test_support",
     "//third_party/hamcrest:hamcrest_java",
   ]
 }

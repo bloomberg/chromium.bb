@@ -28,15 +28,15 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 
 /**
  * Robolectric tests for MediaImageManager.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class MediaImageManagerTest {
     private static final int TINY_IMAGE_SIZE_PX = 50;

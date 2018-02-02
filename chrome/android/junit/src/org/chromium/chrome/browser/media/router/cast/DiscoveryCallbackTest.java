@@ -22,10 +22,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouterTestBase;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Robolectric tests for DiscoveryCallback.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     protected DiscoveryDelegate mDiscoveryDelegate;

@@ -18,17 +18,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Set;
 
 /** Unit tests for {@link BackgroundTaskSchedulerUma}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BackgroundTaskSchedulerUmaTest {
     @Spy
@@ -37,7 +36,6 @@ public class BackgroundTaskSchedulerUmaTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerUma.setInstanceForTesting(mUmaSpy);
         doNothing().when(mUmaSpy).assertNativeIsLoaded();
     }

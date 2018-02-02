@@ -35,15 +35,15 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.Callable;
 
 /**
  * Unit tests for {@ThreadedInputConnectionFactory}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.LOLLIPOP)
 public class ThreadedInputConnectionFactoryTest {
     /**

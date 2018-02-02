@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * junit tests for {@link LogcatExtractionRunnable}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class LogcatExtractionRunnableUnitTest {
     private static final int MAX_LINES = 5;

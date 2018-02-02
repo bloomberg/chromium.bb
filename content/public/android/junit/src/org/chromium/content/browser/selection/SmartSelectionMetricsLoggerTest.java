@@ -23,16 +23,16 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.selection.SmartSelectionMetricsLogger.ActionType;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.text.BreakIterator;
 
 /**
  * Unit tests for the {@link SmartSelectionMetricsLogger}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SmartSelectionMetricsLoggerTest {
     // Char index (in 10s)         0         1         2         3         4

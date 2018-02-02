@@ -19,21 +19,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for ChromeHomeSurveyController.java.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChromeHomeSurveyControllerTest {
     private TestChromeHomeSurveyController mTestController;
@@ -54,7 +53,6 @@ public class ChromeHomeSurveyControllerTest {
         MockitoAnnotations.initMocks(this);
         RecordHistogram.setDisabledForTests(true);
 
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         mTestController = new TestChromeHomeSurveyController();
         mTestController.setTabModelSelector(mSelector);
         mSharedPreferences = ContextUtils.getAppSharedPreferences();

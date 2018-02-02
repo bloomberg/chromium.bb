@@ -22,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowBitmap;
@@ -30,8 +29,8 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -39,7 +38,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.CustomShadowAsyncTask;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
@@ -52,7 +50,7 @@ import java.util.Map;
 /**
  * Unit tests for WebApkUpdateManager.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class, ShadowUrlUtilities.class})
 public class WebApkUpdateManagerUnitTest {
     @Rule
@@ -363,7 +361,6 @@ public class WebApkUpdateManagerUnitTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         PathUtils.setPrivateDataDirectorySuffix("chrome");
         CommandLine.init(null);
 

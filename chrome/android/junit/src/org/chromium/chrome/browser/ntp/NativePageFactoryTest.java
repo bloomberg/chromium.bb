@@ -13,21 +13,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests public methods in NativePageFactory.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NativePageFactoryTest {
-
     private static class MockNativePage implements NativePage {
         public final NativePageType type;
         public int updateForUrlCalls;

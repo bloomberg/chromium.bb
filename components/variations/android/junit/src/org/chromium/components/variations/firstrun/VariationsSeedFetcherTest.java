@@ -24,13 +24,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,7 +38,7 @@ import java.net.HttpURLConnection;
 /**
  * Tests for VariationsSeedFetcher
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class VariationsSeedFetcherTest {
     private HttpURLConnection mConnection;
@@ -52,7 +51,6 @@ public class VariationsSeedFetcherTest {
 
     @Before
     public void setUp() throws IOException {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         // Pretend we are not on the UI thread, since the class we are testing is supposed to run
         // only on a background thread.
         ThreadUtils.setUiThread(mock(Looper.class));

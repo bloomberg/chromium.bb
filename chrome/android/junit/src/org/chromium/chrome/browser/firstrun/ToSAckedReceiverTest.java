@@ -19,15 +19,15 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ToSAckedReceiverTest {
     private static final String GOOGLE_ACCOUNT = "TestyMcTesterson@gmail.com";
@@ -36,7 +36,6 @@ public class ToSAckedReceiverTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.KITKAT);
         mReceiver = new ToSAckedReceiver();

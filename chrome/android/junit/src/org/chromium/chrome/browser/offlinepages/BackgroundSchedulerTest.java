@@ -23,18 +23,17 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for BackgroundScheduler.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BackgroundSchedulerTest {
     private TriggerConditions mConditions1 = new TriggerConditions(
@@ -50,7 +49,6 @@ public class BackgroundSchedulerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
         doReturn(true)
                 .when(mTaskScheduler)

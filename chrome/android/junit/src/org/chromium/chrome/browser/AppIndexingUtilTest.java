@@ -22,17 +22,17 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink.mojom.document_metadata.CopylessPaste;
 import org.chromium.blink.mojom.document_metadata.WebPage;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.url.mojom.Url;
 
 /**
  * Unit tests for {@link org.chromium.chrome.browser.AppIndexingUtil}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class AppIndexingUtilTest {
     @Rule

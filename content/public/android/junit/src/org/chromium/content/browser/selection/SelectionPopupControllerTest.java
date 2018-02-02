@@ -35,13 +35,13 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.content_public.browser.SelectionPopupController;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.touch_selection.SelectionEventType;
@@ -49,7 +49,7 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 /**
  * Unit tests for {@link SelectionPopupController}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SelectionPopupControllerTest {
     private SelectionPopupControllerImpl mController;

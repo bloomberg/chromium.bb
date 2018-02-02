@@ -11,13 +11,12 @@ import android.webkit.MimeTypeMap;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +24,7 @@ import java.util.Arrays;
 /**
  * Tests logic in the SelectFileDialog class.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SelectFileDialogTest {
     /**
@@ -133,7 +132,6 @@ public class SelectFileDialogTest {
 
     @Test
     public void testMultipleFileSelectorWithFileUris() throws Throwable {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         SelectFileDialog selectFileDialog = new SelectFileDialog(0);
         SelectFileDialog.GetDisplayNameTask task =
                 selectFileDialog.new GetDisplayNameTask(ContextUtils.getApplicationContext(), true);

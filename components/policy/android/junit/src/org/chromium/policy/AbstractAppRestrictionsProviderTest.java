@@ -16,8 +16,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,15 +24,17 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
+
 import java.util.concurrent.Executor;
 
 /**
  * Robolectric test for AbstractAppRestrictionsProvider.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class AbstractAppRestrictionsProviderTest {
-
     /*
      * Robolectric's AsyncTasks don't do anything to override the underlying executor,
      * which means that the don't reliably run within {@link Robolectric.RunBackgroundTasks()}.
@@ -77,7 +77,6 @@ public class AbstractAppRestrictionsProviderTest {
         Robolectric.getBackgroundThreadScheduler().pause();
 
         Context context = RuntimeEnvironment.application;
-        ContextUtils.initApplicationContextForTests(context);
 
         // Clear the preferences
         ContextUtils.getAppSharedPreferences().edit().clear();

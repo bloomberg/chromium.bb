@@ -13,15 +13,15 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.skia.mojom.Bitmap;
 import org.chromium.skia.mojom.ColorType;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Test suite for conversion-to-Frame utils.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BitmapUtilsTest {
     private static final int VALID_WIDTH = 1;

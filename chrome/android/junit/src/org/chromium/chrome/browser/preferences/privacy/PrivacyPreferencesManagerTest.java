@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,22 +12,18 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
  * junit tests for {@link PrivacyPreferencesManager}'s handling of "Usage and Crash reporting"
  * preferences.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PrivacyPreferencesManagerTest {
     // Parameters to simulate user- and network-permission state.
@@ -82,7 +79,6 @@ public class PrivacyPreferencesManagerTest {
                 .thenReturn(connectivityManager);
 
         // Perform other setup.
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         PrivacyPreferencesManager preferenceManager = new TestPrivacyPreferencesManager(context);
         preferenceManager.setUsageAndCrashReporting(isMetricsReportingEnabled);
 

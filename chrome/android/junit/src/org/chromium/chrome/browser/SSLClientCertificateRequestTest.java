@@ -11,23 +11,21 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import android.content.ActivityNotFoundException;
 import android.security.KeyChainAliasCallback;
 
-import org.chromium.chrome.browser.SSLClientCertificateRequest.CertSelectionFailureDialog;
-import org.chromium.chrome.browser.SSLClientCertificateRequest.KeyChainCertSelectionWrapper;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import org.robolectric.annotation.Config;
+
+import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.SSLClientCertificateRequest.CertSelectionFailureDialog;
+import org.chromium.chrome.browser.SSLClientCertificateRequest.KeyChainCertSelectionWrapper;
 
 /**
  * Unit tests for the SSLClientCertificateRequest class.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SSLClientCertificateRequestTest {
     @Mock private KeyChainCertSelectionWrapper mKeyChainMock;

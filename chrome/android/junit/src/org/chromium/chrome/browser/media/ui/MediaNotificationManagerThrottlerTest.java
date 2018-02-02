@@ -21,13 +21,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.BaseChromiumApplication;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
  * JUnit tests for checking {@link MediaNotificationManager} throttles notification updates
  * correctly.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315

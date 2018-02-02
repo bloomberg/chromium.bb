@@ -37,11 +37,11 @@ import org.robolectric.shadows.ShadowAccessibilityManager;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Log;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A robolectric test for {@link AutocompleteEditText} class.
  * TODO(changwan): switch to ParameterizedRobolectricTest once crbug.com/733324 is fixed.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class AutocompleteEditTextTest {
     private static final String TAG = "cr_AutocompleteTest";

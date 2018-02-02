@@ -23,14 +23,14 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotification;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.content_public.common.MediaMetadata;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * JUnit tests for checking MediaNotificationManager presents correct notification to Android
  * NotificationManager.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315

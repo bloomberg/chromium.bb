@@ -4,13 +4,6 @@
 
 package org.chromium.chrome.browser.compositor;
 
-import android.app.Activity;
-import android.graphics.PixelFormat;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.FrameLayout;
-
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,6 +13,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import android.app.Activity;
+import android.graphics.PixelFormat;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.FrameLayout;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,15 +35,15 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSurfaceView;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Set;
 
 /**
  * Unit tests for the CompositorSurfaceManagerImpl.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CompositorSurfaceManagerImplTest {
     @Mock

@@ -22,6 +22,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -36,14 +37,13 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ImageFetcher.DownloadThumbnailRequest;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.net.URI;
 import java.util.HashMap;
 /**
  * Unit tests for {@link ImageFetcher}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ImageFetcherTest {
     public static final int IMAGE_SIZE_PX = 100;

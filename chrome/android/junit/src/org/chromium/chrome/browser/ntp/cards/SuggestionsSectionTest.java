@@ -38,12 +38,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
@@ -62,7 +61,6 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +74,7 @@ import java.util.TreeSet;
 /**
  * Unit tests for {@link SuggestionsSection}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 // TODO(https://crbug.com/673092): Run as much as possible parameterized on ChromeHome state.
 @ChromeHome.Enable
@@ -108,7 +106,6 @@ public class SuggestionsSectionTest {
 
     public SuggestionsSectionTest() {
         // The ChromeHome.Processor rule needs an available context when it is applied.
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
     }
 
     @Before

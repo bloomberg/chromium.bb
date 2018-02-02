@@ -23,12 +23,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.testing.local.CustomShadowAsyncTask;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Ensure that the InstalledAppProvider returns the correct apps. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class InstalledAppProviderTest {
     private static final String ASSET_STATEMENTS_KEY =

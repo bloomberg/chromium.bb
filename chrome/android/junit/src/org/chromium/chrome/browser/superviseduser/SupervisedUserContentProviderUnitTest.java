@@ -28,12 +28,12 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.superviseduser.SupervisedUserContentProvider.SupervisedUserQueryReply;
@@ -42,13 +42,12 @@ import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider.WebRestrictionsResult;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests of SupervisedUserContentProvider. This is tested as a simple class, not as a content
  * provider. The content provider aspects are tested with WebRestrictionsContentProviderTest.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SupervisedUserContentProviderUnitTest {
     @Rule
@@ -89,7 +88,6 @@ public class SupervisedUserContentProviderUnitTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         // Ensure clean state (in particular not signed in).
         ContextUtils.getAppSharedPreferences().edit().clear().apply();

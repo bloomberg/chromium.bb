@@ -45,14 +45,13 @@ import org.mockito.exceptions.base.MockitoAssertionError;
 import org.mockito.internal.verification.Times;
 import org.mockito.internal.verification.api.VerificationDataInOrder;
 import org.mockito.verification.VerificationMode;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowResources;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -85,7 +84,6 @@ import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.testing.local.CustomShadowAsyncTask;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,7 +95,7 @@ import java.util.List;
  * Unit tests for {@link NewTabPageAdapter}. {@link AccountManagerFacade} uses AsyncTasks, thus
  * the need for {@link CustomShadowAsyncTask}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 @DisableFeatures({ChromeFeatureList.NTP_CONDENSED_LAYOUT, ChromeFeatureList.CHROME_HOME,
         ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD})
@@ -272,7 +270,6 @@ public class NewTabPageAdapterTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         // Ensure that NetworkChangeNotifier is initialized.
         if (!NetworkChangeNotifier.isInitialized()) {

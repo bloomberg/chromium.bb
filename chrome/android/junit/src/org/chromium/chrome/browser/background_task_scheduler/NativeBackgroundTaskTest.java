@@ -34,6 +34,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -41,13 +42,12 @@ import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link BackgroundTaskScheduler}. */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NativeBackgroundTaskTest {
     private enum InitializerSetup {
