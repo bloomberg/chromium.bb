@@ -10,6 +10,9 @@
 namespace web {
 namespace features {
 
+// Used to enable asynchronous DOM element fetching for context menu.
+extern const base::Feature kContextMenuElementPostMessage;
+
 // Used to enable the WKBackForwardList based navigation manager.
 extern const base::Feature kSlimNavigationManager;
 
