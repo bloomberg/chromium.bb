@@ -1,30 +1,32 @@
-CONSOLE MESSAGE: line 2: InspectorTest.IndexedDB_callback1
-CONSOLE MESSAGE: line 2: InspectorTest.IndexedDB_callback2
-CONSOLE MESSAGE: line 2: InspectorTest.IndexedDB_callback3
-CONSOLE MESSAGE: line 2: InspectorTest.IndexedDB_callback4
-CONSOLE MESSAGE: line 2: InspectorTest.IndexedDB_callback5
-CONSOLE MESSAGE: line 2: InspectorTest.IndexedDB_callback6
 Tests IndexedDB tree element on resources panel.
 
 Expanded IndexedDB tree element.
 Dumping IndexedDB tree:
     (empty)
+Creating database.
 Created database.
+Refreshing.
+Refreshed.
 Dumping IndexedDB tree:
     database: testDatabase - http://127.0.0.1:8000
         Object store: testObjectStore
             Index: testIndexName
+Navigating to another security origin.
 Navigated to another security origin.
-Page reloaded.
 Dumping IndexedDB tree:
     (empty)
+Navigating back.
 Navigated back.
-Page reloaded.
+Refreshing.
+Refreshed.
 Dumping IndexedDB tree:
     database: testDatabase - http://127.0.0.1:8000
         Object store: testObjectStore
             Index: testIndexName
+Deleting database.
 Deleted database.
+Refreshing.
+Refreshed.
 Dumping IndexedDB tree:
     (empty)
 
