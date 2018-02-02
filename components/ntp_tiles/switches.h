@@ -10,6 +10,9 @@ namespace switches {
 
 extern const char kEnableNTPSearchEngineCountryDetection[];
 
+extern const char kEnableNTPPopularSites[];
+extern const char kDisableNTPPopularSites[];
+
 }  // namespace switches
 }  // namespace ntp_tiles
 
