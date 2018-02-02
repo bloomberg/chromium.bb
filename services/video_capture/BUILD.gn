@@ -66,6 +66,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "device_media_to_mojo_adapter_unittest.cc",
     "test/device_factory_provider_connectortest.cc",
     "test/device_factory_provider_test.cc",
     "test/device_factory_provider_test.h",
@@ -76,6 +77,8 @@ source_set("tests") {
     "test/fake_device_test.cc",
     "test/fake_device_test.h",
     "test/fake_device_unittest.cc",
+    "test/mock_device.cc",
+    "test/mock_device.h",
     "test/mock_device_factory.cc",
     "test/mock_device_factory.h",
     "test/mock_device_test.cc",

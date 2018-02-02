@@ -47,8 +47,6 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   ReceiverMojoToMediaAdapter(mojom::ReceiverPtr receiver);
   ~ReceiverMojoToMediaAdapter() override;
 
-  void ResetConnectionErrorHandler();
-
   // media::VideoFrameReceiver implementation.
   void OnNewBufferHandle(
       int buffer_id,

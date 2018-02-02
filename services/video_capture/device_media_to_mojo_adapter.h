@@ -14,8 +14,6 @@
 
 namespace video_capture {
 
-class ReceiverMojoToMediaAdapter;
-
 // Implementation of mojom::Device backed by a given instance of
 // media::VideoCaptureDevice.
 class DeviceMediaToMojoAdapter : public mojom::Device {
@@ -52,8 +50,8 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   const std::unique_ptr<media::VideoCaptureDevice> device_;
   media::VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
   bool device_started_;
-  ReceiverMojoToMediaAdapter* receiver_adapter_ptr_ = nullptr;
   base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<DeviceMediaToMojoAdapter> weak_factory_;
 };
 
 }  // namespace video_capture

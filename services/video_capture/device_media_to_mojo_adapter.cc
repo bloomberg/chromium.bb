@@ -23,7 +23,8 @@ DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     : service_ref_(std::move(service_ref)),
       device_(std::move(device)),
       jpeg_decoder_factory_callback_(jpeg_decoder_factory_callback),
-      device_started_(false) {}
+      device_started_(false),
+      weak_factory_(this) {}
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -37,17 +38,10 @@ void DeviceMediaToMojoAdapter::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   receiver.set_connection_error_handler(
       base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 
   auto receiver_adapter =
       std::make_unique<ReceiverMojoToMediaAdapter>(std::move(receiver));
-  // We must hold on something that allows us to unsubscribe from
-  // receiver.set_connection_error_handler() when we stop the device. Otherwise,
-  // we may receive a corresponding callback after having been destroyed.
-  // This happens when the deletion of |receiver| is delayed (scheduled to a
-  // task runner) when we release |device_|, as is the case when using
-  // ReceiverOnTaskRunner.
-  receiver_adapter_ptr_ = receiver_adapter.get();
   auto media_receiver = std::make_unique<ReceiverOnTaskRunner>(
       std::move(receiver_adapter), base::ThreadTaskRunnerHandle::Get());
 
@@ -118,9 +112,7 @@ void DeviceMediaToMojoAdapter::Stop() {
   if (device_started_ == false)
     return;
   device_started_ = false;
-  // Unsubscribe from connection error callbacks.
-  receiver_adapter_ptr_->ResetConnectionErrorHandler();
-  receiver_adapter_ptr_ = nullptr;
+  weak_factory_.InvalidateWeakPtrs();
   device_->StopAndDeAllocate();
 }
 
