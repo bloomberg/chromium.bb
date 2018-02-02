@@ -115,7 +115,7 @@ def FetchCommitPosition(directory=None):
     for line in reversed(lines):
       if line.startswith('Cr-Commit-Position:'):
         pos = line.rsplit()[-1].strip()
-        return lastchange.VersionInfo('%s-%s' % (hsh, pos))
+        return lastchange.VersionInfo(hsh, '%s-%s' % (hsh, pos))
 
   raise Exception('Unable to fetch a Git Commit Position.')
 
