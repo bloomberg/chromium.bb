@@ -55,10 +55,8 @@ const DialProvider = class {
     /** @private @const {!ActivityRecords} */
     this.activityRecords_ = new ActivityRecords(this);
 
-    /** @private @const {!AppDiscoveryService} */
-    this.appDiscoveryService_ = appDiscoveryService ||
-        new AppDiscoveryService(this.sinkDiscoveryService_,
-                                this.activityRecords_);
+    /** @private {?AppDiscoveryService} */
+    this.appDiscoveryService_ = appDiscoveryService || null;
 
     /** @private @const {?Logger} */
     this.logger_ = Logger.getInstance('mr.DialProvider');
@@ -78,9 +76,21 @@ const DialProvider = class {
     const discoveryEnabled = config ? config.enable_dial_discovery : true;
     this.logger_.info('Dial Discovery enabled: ' + discoveryEnabled + '...');
 
+    const sinkQueryEnabled =
+        (config && config.enable_dial_sink_query == false) ? false : true;
+    this.logger_.info('Dial sink query enabled: ' + sinkQueryEnabled + '...');
+
     this.activityRecords_.init();
     this.sinkDiscoveryService_.init();
-    this.appDiscoveryService_.init();
+
+    if (sinkQueryEnabled) {
+      this.appDiscoveryService_ = this.appDiscoveryService_ ||
+          new AppDiscoveryService(this.sinkDiscoveryService_,
+                                  this.activityRecords_);
+      this.appDiscoveryService_.init();
+    } else {
+      this.appDiscoveryService_ = null;
+    }
 
     if (!discoveryEnabled) {
       // We need to call stop in order to remove event listeners that were
@@ -96,6 +106,11 @@ const DialProvider = class {
    * @override
    */
   getAvailableSinks(sourceUrn) {
+    // Prevent SinkDiscoveryService to return cached available sinks.
+    if (!this.appDiscoveryService_) {
+      return SinkList.EMPTY;
+    }
+
     this.logger_.fine('GetAvailableSinks for ' + sourceUrn);
     const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     return dialMediaSource ?
@@ -107,6 +122,10 @@ const DialProvider = class {
    * @override
    */
   startObservingMediaSinks(sourceUrn) {
+    if (!this.appDiscoveryService_) {
+      return;
+    }
+
     const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (dialMediaSource) {
       this.appDiscoveryService_.registerApp(dialMediaSource.appName);
@@ -118,6 +137,10 @@ const DialProvider = class {
    * @override
    */
   stopObservingMediaSinks(sourceUrn) {
+    if (!this.appDiscoveryService_) {
+      return;
+    }
+
     const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (dialMediaSource) {
       this.appDiscoveryService_.unregisterApp(dialMediaSource.appName);
@@ -143,6 +166,10 @@ const DialProvider = class {
    * @private
    */
   maybeStopAppDiscovery_() {
+    if (!this.appDiscoveryService_) {
+      return;
+    }
+
     if (this.sinkDiscoveryService_.getSinkCount() == 0 ||
         (this.appDiscoveryService_.getAppCount() == 0 &&
          this.activityRecords_.getActivityCount() == 0)) {
@@ -154,6 +181,10 @@ const DialProvider = class {
    * @private
    */
   maybeStartAppDiscovery_() {
+    if (!this.appDiscoveryService_) {
+      return;
+    }
+
     if (this.sinkDiscoveryService_.getSinkCount() > 0 &&
         (this.appDiscoveryService_.getAppCount() > 0 ||
          this.activityRecords_.getActivityCount() > 0)) {
@@ -267,8 +298,10 @@ const DialProvider = class {
   onSinkAdded(sink) {
     this.providerManagerCallbacks_.onSinkAvailabilityUpdated(
         this, SinkAvailability.PER_SOURCE);
-    this.maybeStartAppDiscovery_();
-    this.appDiscoveryService_.scanSink(sink);
+    if (this.appDiscoveryService_) {
+      this.maybeStartAppDiscovery_();
+      this.appDiscoveryService_.scanSink(sink);
+    }
     this.providerManagerCallbacks_.onSinksUpdated();
     SinkUtils.getInstance().recentDiscoveredDevice =
         new SinkUtils.DeviceData(sink.getModelName(), sink.getIpAddress());

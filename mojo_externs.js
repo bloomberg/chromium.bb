@@ -405,6 +405,10 @@ mojo.MediaRouteProviderConfig.prototype.enable_dial_discovery;
 
 
 /** @type {boolean} */
+mojo.MediaRouteProviderConfig.prototype.enable_dial_sink_query;
+
+
+/** @type {boolean} */
 mojo.MediaRouteProviderConfig.prototype.enable_cast_discovery;
 
 
