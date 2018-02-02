@@ -951,6 +951,18 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
   bool is_first_element = !saw_first_element_;
   saw_first_element_ = true;
 
+  Vector<Attribute> prefixed_attributes;
+  DummyExceptionStateForTesting exception_state;
+  HandleNamespaceAttributes(prefixed_attributes, libxml_namespaces,
+                            nb_namespaces, exception_state);
+  if (exception_state.HadException()) {
+    StopParsing();
+    return;
+  }
+
+  HandleElementAttributes(prefixed_attributes, libxml_attributes, nb_attributes,
+                          prefix_to_namespace_map_, exception_state);
+
   QualifiedName q_name(prefix, local_name, adjusted_uri);
   Element* new_element =
       current_node_->GetDocument().createElement(q_name, kCreatedByParser);
@@ -958,19 +970,17 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
     StopParsing();
     return;
   }
-
-  Vector<Attribute> prefixed_attributes;
-  DummyExceptionStateForTesting exception_state;
-  HandleNamespaceAttributes(prefixed_attributes, libxml_namespaces,
-                            nb_namespaces, exception_state);
-  if (exception_state.HadException()) {
-    SetAttributes(new_element, prefixed_attributes, GetParserContentPolicy());
-    StopParsing();
-    return;
+  for (const auto& attr : prefixed_attributes) {
+    if (attr.GetName() == isAttr) {
+      if (!V0CustomElement::IsValidName(local_name)) {
+        V0CustomElementRegistrationContext::SetTypeExtension(new_element,
+                                                             attr.Value());
+      }
+      break;
+    }
   }
+  // TODO(tkent): Support V1 custom built-in elements. crbug.com/808302
 
-  HandleElementAttributes(prefixed_attributes, libxml_attributes, nb_attributes,
-                          prefix_to_namespace_map_, exception_state);
   SetAttributes(new_element, prefixed_attributes, GetParserContentPolicy());
   if (exception_state.HadException()) {
     StopParsing();

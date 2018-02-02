@@ -148,7 +148,12 @@ Document& SVGScriptElement::GetDocument() const {
 }
 
 Element* SVGScriptElement::CloneElementWithoutAttributesAndChildren() {
-  return new SVGScriptElement(GetDocument(), false, loader_->AlreadyStarted());
+  auto* element =
+      new SVGScriptElement(GetDocument(), false, loader_->AlreadyStarted());
+  const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
+  if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
+    V0CustomElementRegistrationContext::SetTypeExtension(element, is);
+  return element;
 }
 
 void SVGScriptElement::DispatchLoadEvent() {

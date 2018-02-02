@@ -1291,6 +1291,11 @@ Node* Document::importNode(Node* imported_node,
       }
       Element* new_element =
           createElement(old_element->TagQName(), kCreatedByImportNode);
+      const AtomicString& is = old_element->FastGetAttribute(HTMLNames::isAttr);
+      if (!is.IsNull() &&
+          !V0CustomElement::IsValidName(new_element->localName()))
+        V0CustomElementRegistrationContext::SetTypeExtension(new_element, is);
+      // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
 
       new_element->CloneDataFromElement(*old_element);
 
