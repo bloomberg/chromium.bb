@@ -57,7 +57,7 @@ String CreateAccessControlRequestHeadersHeader(
     const WebHTTPHeaderMap& headers) {
   Vector<String> filtered_headers;
   for (const auto& header : headers.GetHTTPHeaderMap()) {
-    if (FetchUtils::IsCORSSafelistedHeader(header.key, header.value)) {
+    if (CORS::IsCORSSafelistedHeader(header.key, header.value)) {
       // Exclude CORS-safelisted headers.
       continue;
     }
@@ -295,11 +295,6 @@ bool IsOnAccessControlResponseHeaderWhitelist(const WebString& name) {
 
 WebString ListOfCORSEnabledURLSchemes() {
   return SchemeRegistry::ListOfCORSEnabledURLSchemes();
-}
-
-// https://fetch.spec.whatwg.org/#cors-safelisted-method
-bool IsCORSSafelistedMethod(const WebString& method) {
-  return FetchUtils::IsCORSSafelistedMethod(method);
 }
 
 bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(const WebHTTPHeaderMap& map) {

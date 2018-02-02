@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "net/base/mime_util.h"
+#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_util.h"
@@ -15,6 +17,27 @@ namespace {
 
 const char kAsterisk[] = "*";
 const char kLowerCaseTrue[] = "true";
+
+// TODO(toyoshim): Consider to move following const variables to
+// //net/http/http_request_headers.
+const char kHeadMethod[] = "HEAD";
+const char kPostMethod[] = "POST";
+
+// TODO(toyoshim): Consider to move the following method to
+// //net/base/mime_util, and expose to Blink platform/network in order to
+// replace the existing equivalent method in HTTPParser.
+// We may prefer to implement a strict RFC2616 media-type
+// (https://tools.ietf.org/html/rfc2616#section-3.7) parser.
+std::string ExtractMIMETypeFromMediaType(const std::string& media_type) {
+  std::string::size_type semicolon = media_type.find(';');
+  std::string top_level_type;
+  std::string subtype;
+  if (net::ParseMimeTypeWithoutParameter(media_type.substr(0, semicolon),
+                                         &top_level_type, &subtype)) {
+    return top_level_type + "/" + subtype;
+  }
+  return std::string();
+}
 
 }  // namespace
 
@@ -159,6 +182,51 @@ base::Optional<mojom::CORSError> CheckExternalPreflight(
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode) {
   return mode == mojom::FetchRequestMode::kCORS ||
          mode == mojom::FetchRequestMode::kCORSWithForcedPreflight;
+}
+
+bool IsCORSSafelistedMethod(const std::string& method) {
+  // https://fetch.spec.whatwg.org/#cors-safelisted-method
+  // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
+  static const std::set<std::string> safe_methods = {
+      net::HttpRequestHeaders::kGetMethod, kHeadMethod, kPostMethod};
+  return safe_methods.find(base::ToUpperASCII(method)) != safe_methods.end();
+}
+
+bool IsCORSSafelistedContentType(const std::string& media_type) {
+  static const std::set<std::string> safe_types = {
+      "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"};
+  std::string mime_type =
+      base::ToLowerASCII(ExtractMIMETypeFromMediaType(media_type));
+  return safe_types.find(mime_type) != safe_types.end();
+}
+
+bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
+  // https://fetch.spec.whatwg.org/#cors-safelisted-request-header
+  // "A CORS-safelisted header is a header whose name is either one of `Accept`,
+  // `Accept-Language`, and `Content-Language`, or whose name is
+  // `Content-Type` and value, once parsed, is one of
+  // `application/x-www-form-urlencoded`, `multipart/form-data`, and
+  // `text/plain`."
+  //
+  // Treat 'Save-Data' as a CORS-safelisted header, since it is added by Chrome
+  // when Data Saver feature is enabled. Treat inspector headers as a
+  // CORS-safelisted headers, since they are added by blink when the inspector
+  // is open.
+  //
+  // Treat 'Intervention' as a CORS-safelisted header, since it is added by
+  // Chrome when an intervention is (or may be) applied.
+  static const std::set<std::string> safe_names = {
+      "accept",           "accept-language",
+      "content-language", "x-devtools-emulate-network-conditions-client-id",
+      "save-data",        "intervention"};
+  std::string lower_name = base::ToLowerASCII(name);
+  if (safe_names.find(lower_name) != safe_names.end())
+    return true;
+
+  if (lower_name == "content-type")
+    return IsCORSSafelistedContentType(value);
+
+  return false;
 }
 
 }  // namespace cors

@@ -11,6 +11,7 @@
 #include "core/fetch/RequestInit.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/bindings/V8PrivateProperty.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -329,7 +330,7 @@ Request* Request::CreateRequestWithRequestOrString(
   if (r->GetRequest()->Mode() == network::mojom::FetchRequestMode::kNoCORS) {
     // "If |r|'s request's method is not a CORS-safelisted method, throw a
     // TypeError."
-    if (!FetchUtils::IsCORSSafelistedMethod(r->GetRequest()->Method())) {
+    if (!CORS::IsCORSSafelistedMethod(r->GetRequest()->Method())) {
       exception_state.ThrowTypeError("'" + r->GetRequest()->Method() +
                                      "' is unsupported in no-cors mode.");
       return nullptr;

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <utility>
-#include "platform/loader/fetch/FetchUtils.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -131,8 +131,7 @@ void FetchHeaderList::ClearList() {
 bool FetchHeaderList::ContainsNonCORSSafelistedHeader() const {
   return std::any_of(
       header_list_.cbegin(), header_list_.cend(), [](const Header& header) {
-        return !FetchUtils::IsCORSSafelistedHeader(AtomicString(header.first),
-                                                   AtomicString(header.second));
+        return !CORS::IsCORSSafelistedHeader(header.first, header.second);
       });
 }
 

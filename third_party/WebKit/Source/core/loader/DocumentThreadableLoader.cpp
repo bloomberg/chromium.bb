@@ -51,7 +51,6 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
@@ -497,7 +496,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
     // the user's input). For example, referrer. We need to accept them. For
     // security, we must reject forbidden headers/methods at the point we
     // accept user's input. Not here.
-    if (WebCORS::IsCORSSafelistedMethod(request.HttpMethod()) &&
+    if (CORS::IsCORSSafelistedMethod(request.HttpMethod()) &&
         WebCORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
             request.HttpHeaderFields())) {
       PrepareCrossOriginRequest(cross_origin_request);

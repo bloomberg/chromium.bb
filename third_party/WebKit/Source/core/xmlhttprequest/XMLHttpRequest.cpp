@@ -68,6 +68,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/feature_policy/FeaturePolicy.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -1064,7 +1065,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
       same_origin_request_ || upload_events ||
-      !FetchUtils::IsCORSSafelistedMethod(method_) ||
+      !CORS::IsCORSSafelistedMethod(method_) ||
       !FetchUtils::ContainsOnlyCORSSafelistedHeaders(request_headers_);
 
   ResourceRequest request(url_);
