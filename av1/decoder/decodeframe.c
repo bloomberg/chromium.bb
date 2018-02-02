@@ -2856,7 +2856,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
 #if CONFIG_OBU
       pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)
-                                     ? ~(1 << REF_FRAMES)
+                                     ? 0xFF
                                      : aom_rb_read_literal(rb, REF_FRAMES);
 #else
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
