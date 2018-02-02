@@ -101,3 +101,15 @@ proto_library("html_tree_proto") {
   ]
   testonly = true
 }
+
+fuzzer_test("signed_exchange_header_parser_fuzzer") {
+  sources = [
+    "signed_exchange_header_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":fuzzer_support",
+    "//content/browser:for_content_tests",
+  ]
+  seed_corpus =
+      "//content/test/data/fuzzer_corpus/signed_exchange_header_parser_data/"
+}

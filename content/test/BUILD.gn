@@ -1316,6 +1316,7 @@ test("content_unittests") {
     "../browser/loader/resource_buffer_unittest.cc",
     "../browser/loader/resource_dispatcher_host_unittest.cc",
     "../browser/loader/resource_loader_unittest.cc",
+    "../browser/loader/signed_exchange_header_parser_unittest.cc",
     "../browser/loader/temporary_file_stream_unittest.cc",
     "../browser/loader/test_resource_handler.cc",
     "../browser/loader/test_resource_handler.h",
