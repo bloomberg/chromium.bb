@@ -7,6 +7,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
+#include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -189,6 +190,42 @@ class UkmBrowserTest : public SyncTest {
     return g_browser_process->GetMetricsServicesManager()->GetUkmService();
   }
   base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(UkmBrowserTest);
+};
+
+// This tests if UKM service is enabled/disabled appropriately based on an
+// input bool param. The bool reflects if metrics reporting state is
+// enabled/disabled via prefs.
+class UkmConsentParamBrowserTest : public UkmBrowserTest,
+                                   public testing::WithParamInterface<bool> {
+ public:
+  UkmConsentParamBrowserTest() : UkmBrowserTest() {}
+
+  static bool IsMetricsAndCrashReportingEnabled() {
+    return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+        g_browser_process->local_state());
+  }
+
+  // InProcessBrowserTest overrides.
+  bool SetUpUserDataDirectory() override {
+    local_state_path_ = SetUpUserDataDirectoryForTesting(
+        is_metrics_reporting_enabled_initial_value());
+    return !local_state_path_.empty();
+  }
+
+  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
+    // IsMetricsReportingEnabled() in non-official builds always returns false.
+    // Enable the official build checks so that this test can work in both
+    // official and non-official builds.
+    ChromeMetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(
+        true);
+  }
+
+  bool is_metrics_reporting_enabled_initial_value() const { return GetParam(); }
+
+ private:
+  base::FilePath local_state_path_;
+  DISALLOW_COPY_AND_ASSIGN(UkmConsentParamBrowserTest);
 };
 
 class UkmEnabledChecker : public SingleClientStatusChangeChecker {
@@ -212,6 +249,7 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
  private:
   UkmBrowserTest* const test_;
   const bool want_enabled_;
+  DISALLOW_COPY_AND_ASSIGN(UkmEnabledChecker);
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
@@ -576,5 +614,27 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
 }
+
+IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
+  // Note we are not using the synthetic MetricsConsentOverride since we are
+  // testing directly from prefs.
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  // The input param controls whether we set the prefs related to group policy
+  // enabled or not. Based on its value, we should report the same value for
+  // both if reporting is enabled and if UKM service is enabled.
+  bool is_enabled = is_metrics_reporting_enabled_initial_value();
+  EXPECT_EQ(is_enabled,
+            UkmConsentParamBrowserTest::IsMetricsAndCrashReportingEnabled());
+  EXPECT_EQ(is_enabled, ukm_enabled());
+}
+
+// Verify UKM is enabled/disabled for both potential settings of group policy.
+INSTANTIATE_TEST_CASE_P(UkmConsentParamBrowserTests,
+                        UkmConsentParamBrowserTest,
+                        testing::Bool());
 
 }  // namespace metrics
