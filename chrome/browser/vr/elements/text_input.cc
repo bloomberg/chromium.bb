@@ -113,37 +113,41 @@ void TextInput::SetHintText(const base::string16& text) {
 }
 
 void TextInput::OnInputEdited(const TextInputInfo& info) {
-  input_edit_callback_.Run(info);
+  if (input_edit_callback_)
+    input_edit_callback_.Run(info);
 }
 
 void TextInput::OnInputCommitted(const TextInputInfo& info) {
-  input_commit_callback_.Run(info);
+  if (input_commit_callback_)
+    input_commit_callback_.Run(info);
 }
 
 void TextInput::SetTextColor(SkColor color) {
   text_element_->SetColor(color);
 }
 
-void TextInput::SetCursorColor(SkColor color) {
-  cursor_element_->SetColor(color);
-}
-
 void TextInput::SetHintColor(SkColor color) {
   hint_element_->SetColor(color);
+}
+
+void TextInput::SetSelectionColors(const TextSelectionColors& colors) {
+  cursor_element_->SetColor(colors.cursor);
+  text_element_->SetSelectionColors(colors);
 }
 
 void TextInput::UpdateInput(const TextInputInfo& info) {
   if (text_info_ == info)
     return;
 
-  DCHECK_EQ(info.selection_start, info.selection_end);
+  OnUpdateInput(info, text_info_);
+
   text_info_ = info;
 
   if (delegate_ && focused_)
     delegate_->UpdateInput(info);
 
   text_element_->SetText(info.text);
-  text_element_->SetCursorPosition(info.selection_end);
+  text_element_->SetSelectionIndices(info.selection_start, info.selection_end);
   hint_element_->SetVisible(info.text.empty());
 }
 
@@ -178,8 +182,8 @@ void TextInput::LayOutChildren() {
 
 bool TextInput::SetCursorBlinkState(const base::TimeTicks& time) {
   base::TimeDelta delta = time - cursor_blink_start_ticks_;
-  bool visible =
-      focused_ && (delta.InMilliseconds() / kCursorBlinkHalfPeriodMs + 1) % 2;
+  bool visible = focused_ && text_info_.SelectionSize() == 0 &&
+                 (delta.InMilliseconds() / kCursorBlinkHalfPeriodMs + 1) % 2;
   if (cursor_visible_ == visible)
     return false;
   cursor_visible_ = visible;
@@ -190,5 +194,8 @@ bool TextInput::SetCursorBlinkState(const base::TimeTicks& time) {
 void TextInput::ResetCursorBlinkCycle() {
   cursor_blink_start_ticks_ = base::TimeTicks::Now();
 }
+
+void TextInput::OnUpdateInput(const TextInputInfo& info,
+                              const TextInputInfo& previous_info) {}
 
 }  // namespace vr

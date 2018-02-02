@@ -48,6 +48,7 @@ class SurfaceTexture;
 namespace vr {
 class BrowserUiInterface;
 class ToolbarHelper;
+struct AutocompleteRequest;
 }  // namespace vr
 
 namespace vr_shell {
@@ -184,7 +185,7 @@ class VrShell : device::GvrGamepadDataProvider,
                             vr::ExitVrPromptChoice choice);
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds);
   void SetVoiceSearchActive(bool active);
-  void StartAutocomplete(const base::string16& string);
+  void StartAutocomplete(const vr::AutocompleteRequest& request);
   void StopAutocomplete();
   bool HasAudioPermission();
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/android/vr_shell/gvr_keyboard_delegate.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -28,7 +29,6 @@ namespace vr_shell {
 
 class VrShell;
 class VrShellGl;
-struct OmniboxSuggestions;
 
 class VrGLThread : public base::android::JavaHandlerThread,
                    public vr::ContentInputForwarder,
@@ -79,7 +79,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
                             vr::UiUnsupportedMode reason) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
   void SetVoiceSearchActive(bool active) override;
-  void StartAutocomplete(const base::string16& string) override;
+  void StartAutocomplete(const vr::AutocompleteRequest& request) override;
   void StopAutocomplete() override;
   void LoadAssets() override;
 

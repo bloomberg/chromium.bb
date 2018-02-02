@@ -83,15 +83,30 @@ bool TestKeyboardDelegate::HandleInput(ui::Event* e) {
       ui_interface_->OnInputCommitted(input_info_);
       break;
     case ui::VKEY_BACK:
-      input_info_.text.pop_back();
-      input_info_.selection_start--;
-      input_info_.selection_end--;
+      if (input_info_.selection_start != input_info_.selection_end) {
+        input_info_.text.erase(
+            input_info_.selection_start,
+            input_info_.selection_end - input_info_.selection_start);
+        input_info_.selection_end = input_info_.selection_start;
+      } else if (!input_info_.text.empty() && input_info_.selection_start > 0) {
+        input_info_.text.erase(input_info_.selection_start - 1, 1);
+        input_info_.selection_start--;
+        input_info_.selection_end--;
+      }
       ui_interface_->OnInputEdited(input_info_);
       break;
     default:
+      if (input_info_.selection_start != input_info_.selection_end) {
+        input_info_.text.erase(
+            input_info_.selection_start,
+            input_info_.selection_end - input_info_.selection_start);
+        input_info_.selection_end = input_info_.selection_start;
+      }
+
       std::string character;
       base::WriteUnicodeCharacter(event->GetText(), &character);
-      input_info_.text = input_info_.text.append(base::UTF8ToUTF16(character));
+      input_info_.text = input_info_.text.insert(input_info_.selection_start,
+                                                 base::UTF8ToUTF16(character));
       input_info_.selection_start++;
       input_info_.selection_end++;
       ui_interface_->OnInputEdited(input_info_);

@@ -10,16 +10,13 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "url/gurl.h"
 
 class AutocompleteController;
 class ChromeAutocompleteProviderClient;
 class Profile;
-
-namespace vr {
-struct OmniboxSuggestions;
-}
 
 namespace vr_shell {
 
@@ -32,7 +29,7 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   AutocompleteController();
   ~AutocompleteController() override;
 
-  void Start(const base::string16& text);
+  void Start(const vr::AutocompleteRequest& request);
   void Stop();
 
   // If |input| can be classified as URL, this function returns a GURL
@@ -49,6 +46,7 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   ChromeAutocompleteProviderClient* client_;
   std::unique_ptr<::AutocompleteController> autocomplete_controller_;
   SuggestionCallback suggestion_callback_;
+  vr::AutocompleteRequest last_request_;
 
   // This is used to throttle the rate at which new suggestions are presented to
   // the user. For example, if a suggestion comes in on frame 1 and frame 2, we

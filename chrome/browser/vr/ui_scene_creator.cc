@@ -1939,9 +1939,10 @@ void UiSceneCreator::CreateOmnibox() {
       },
       base::Unretained(model_), base::Unretained(browser_),
       base::Unretained(ui_)));
-  omnibox_text_field->AddBinding(VR_BIND(
-      TextInputInfo, Model, model_, model->omnibox_text_field_info,
-      UiBrowserInterface, browser_, view->StartAutocomplete(value.text)));
+  omnibox_text_field->AddBinding(
+      VR_BIND(TextInputInfo, Model, model_, model->omnibox_text_field_info,
+              UiBrowserInterface, browser_,
+              view->StartAutocomplete({value.text, 0, true})));
   omnibox_text_field->SetSize(width, 0);
   omnibox_text_field->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
@@ -1987,7 +1988,7 @@ void UiSceneCreator::CreateOmnibox() {
       VR_BIND_LAMBDA(
           [](UiBrowserInterface* browser, const AutocompleteStatus& r) {
             if (r.active) {
-              browser->StartAutocomplete(r.input);
+              browser->StartAutocomplete({r.input, 0, true});
             } else {
               browser->StopAutocomplete();
             }
@@ -1995,10 +1996,17 @@ void UiSceneCreator::CreateOmnibox() {
           base::Unretained(browser_))));
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_text,
                 &TextInput::SetTextColor);
-  VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::cursor,
-                &TextInput::SetCursorColor);
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_hint,
                 &TextInput::SetHintColor);
+  omnibox_text_field->AddBinding(std::make_unique<Binding<TextSelectionColors>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) { return m->color_scheme().omnibox_text_selection; },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](TextInput* e, const TextSelectionColors& colors) {
+            e->SetSelectionColors(colors);
+          },
+          base::Unretained(omnibox_text_field.get()))));
 
   auto mic_icon =
       Create<VectorIcon>(kOmniboxVoiceSearchButton, kPhaseForeground, 100);

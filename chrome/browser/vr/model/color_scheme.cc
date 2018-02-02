@@ -115,6 +115,9 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_icon = 0xA6000000;
   normal_scheme.omnibox_text = 0xFF595959;
   normal_scheme.omnibox_hint = 0xFF999999;
+  normal_scheme.omnibox_text_selection.cursor = 0xFF5595FE;
+  normal_scheme.omnibox_text_selection.background = 0xFFC6DAFC;
+  normal_scheme.omnibox_text_selection.foreground = normal_scheme.omnibox_text;
   normal_scheme.suggestion_text = 0xFF595959;
   normal_scheme.suggestion_dim_text = 0xFF999999;
   normal_scheme.suggestion_url_text = 0xFF5595FE;
@@ -131,7 +134,6 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_voice_search_button_colors.background_hover =
       0xFFFAFAFA;
   normal_scheme.omnibox_voice_search_button_colors.background_down = 0xFFFAFAFA;
-  normal_scheme.cursor = 0xFF5595FE;
 
   normal_scheme.snackbar_foreground = 0xFFEEEEEE;
   normal_scheme.snackbar_background = 0xDD212121;
@@ -240,6 +242,10 @@ void InitializeColorSchemes() {
   incognito_scheme.omnibox_icon = 0xCCFFFFFF;
   incognito_scheme.omnibox_text = 0xCCFFFFFF;
   incognito_scheme.omnibox_hint = 0x80FFFFFF;
+  incognito_scheme.omnibox_text_selection =
+      normal_scheme.omnibox_text_selection;
+  incognito_scheme.omnibox_text_selection.foreground =
+      incognito_scheme.omnibox_text;
   incognito_scheme.suggestion_text = 0xCCFFFFFF;
   incognito_scheme.suggestion_dim_text = 0x88FFFFFF;
   incognito_scheme.suggestion_url_text = 0xFF5595FE;
@@ -308,6 +314,15 @@ bool UrlBarColors::operator==(const UrlBarColors& other) const {
 }
 
 bool UrlBarColors::operator!=(const UrlBarColors& other) const {
+  return !(*this == other);
+}
+
+bool TextSelectionColors::operator==(const TextSelectionColors& other) const {
+  return cursor == other.cursor && background == other.background &&
+         foreground == other.foreground;
+}
+
+bool TextSelectionColors::operator!=(const TextSelectionColors& other) const {
   return !(*this == other);
 }
 

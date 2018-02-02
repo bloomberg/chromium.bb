@@ -927,10 +927,10 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
   EXPECT_EQ(container->children().size(), 0u);
   EXPECT_EQ(NumVisibleInTree(kOmniboxSuggestions), 1);
 
-  model_->omnibox_suggestions.emplace_back(
-      OmniboxSuggestion(base::string16(), base::string16(),
-                        ACMatchClassifications(), ACMatchClassifications(),
-                        AutocompleteMatch::Type::VOICE_SUGGEST, GURL()));
+  model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
+      base::string16(), base::string16(), ACMatchClassifications(),
+      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, GURL(),
+      base::string16(), base::string16()));
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 1u);
   EXPECT_GT(NumVisibleInTree(kOmniboxSuggestions), 1);
@@ -946,7 +946,8 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
   GURL gurl("http://test.com/");
   model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
       base::string16(), base::string16(), ACMatchClassifications(),
-      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl));
+      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl,
+      base::string16(), base::string16()));
   OnBeginFrame();
 
   UiElement* suggestions = scene_->GetUiElementByName(kOmniboxSuggestions);

@@ -34,15 +34,18 @@ AutocompleteController::AutocompleteController(
 
 AutocompleteController::~AutocompleteController() = default;
 
-void AutocompleteController::Start(const base::string16& text) {
+void AutocompleteController::Start(const vr::AutocompleteRequest& request) {
   metrics::OmniboxEventProto::PageClassification page_classification =
       metrics::OmniboxEventProto::OTHER;
 
-  AutocompleteInput input(text, page_classification,
+  AutocompleteInput input(request.text, request.cursor_position,
+                          page_classification,
                           ChromeAutocompleteSchemeClassifier(profile_));
-  input.set_prevent_inline_autocomplete(true);
+  input.set_prevent_inline_autocomplete(request.prevent_inline_autocomplete);
 
   autocomplete_controller_->Start(input);
+
+  last_request_ = request;
 }
 
 void AutocompleteController::Stop() {
@@ -71,7 +74,8 @@ void AutocompleteController::OnResultChanged(bool default_match_changed) {
   for (const auto& match : autocomplete_controller_->result()) {
     suggestions->suggestions.emplace_back(vr::OmniboxSuggestion(
         match.contents, match.description, match.contents_class,
-        match.description_class, match.type, match.destination_url));
+        match.description_class, match.type, match.destination_url,
+        last_request_.text, match.inline_autocompletion));
     if (match.swap_contents_and_description) {
       auto& suggestion = suggestions->suggestions.back();
       swap(suggestion.contents, suggestion.description);

@@ -29,6 +29,10 @@ bool TextInputInfo::operator!=(const TextInputInfo& other) const {
   return !(*this == other);
 }
 
+size_t TextInputInfo::SelectionSize() const {
+  return std::abs(selection_end - selection_start);
+}
+
 static_assert(sizeof(base::string16) + 16 == sizeof(TextInputInfo),
               "If new fields are added to TextInputInfo, we must explicitly "
               "bump this size and update operator==");

@@ -50,7 +50,7 @@ class VrTestContext : public vr::UiBrowserInterface {
                             vr::UiUnsupportedMode reason) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
   void SetVoiceSearchActive(bool active) override;
-  void StartAutocomplete(const base::string16& string) override;
+  void StartAutocomplete(const AutocompleteRequest& request) override;
   void StopAutocomplete() override;
   void Navigate(GURL gurl) override;
   void LoadAssets() override;
@@ -59,9 +59,7 @@ class VrTestContext : public vr::UiBrowserInterface {
 
  private:
   unsigned int CreateFakeContentTexture();
-  void CreateFakeOmniboxSuggestions();
   void CreateFakeVoiceSearchResult();
-  void CreateFakeTextInputOrCommit(bool commit);
   void CycleWebVrModes();
   void ToggleSplashScreen();
   void CycleOrigin();
