@@ -1020,13 +1020,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
       CreateQualifiedName(namespace_uri, qualified_name, exception_state));
   if (q_name == QualifiedName::Null())
     return nullptr;
-
-  if (CustomElement::ShouldCreateCustomElement(q_name))
-    return CustomElement::CreateCustomElementSync(*this, q_name);
-  else if (RegistrationContext() &&
-           V0CustomElement::IsValidName(q_name.LocalName()))
-    return RegistrationContext()->CreateCustomTagElement(*this, q_name);
-  return CreateRawElement(q_name, kCreatedByCreateElement);
+  return createElement(q_name, kCreatedByCreateElement);
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
@@ -1447,8 +1441,7 @@ Element* Document::createElement(const QualifiedName& q_name,
       // TODO(dominicc): When the HTML parser can pass an error
       // reporting ExceptionState, and "v0" custom elements have been
       // removed, consolidate custom element creation into one place.
-      if (flags != kCreatedByCreateElement &&
-          CustomElement::ShouldCreateCustomElement(local_name)) {
+      if (CustomElement::ShouldCreateCustomElement(local_name)) {
         if (flags & kAsynchronousCustomElements) {
           element =
               CustomElement::CreateCustomElementAsync(*this, q_name, flags);
