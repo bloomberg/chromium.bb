@@ -3527,14 +3527,21 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.
   if (num_planes < 3) {
-    const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
-
     YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;
+    const int val = 1 << (cm->bit_depth - 1);
 
     for (int buf_idx = 1; buf_idx <= 2; buf_idx++) {
       for (int row_idx = 0; row_idx < cur_buf->crop_heights[1]; row_idx++) {
-        memset(&cur_buf->buffers[buf_idx][row_idx * cur_buf->uv_stride], 1 << 7,
-               cur_buf->crop_widths[1] * bytes_per_sample);
+        if (cm->use_highbitdepth) {
+          // TODO(yaowu): replace this with aom_memset16() for speed
+          for (int col_idx = 0; col_idx < cur_buf->crop_widths[1]; col_idx++) {
+            uint16_t *base = CONVERT_TO_SHORTPTR(cur_buf->buffers[buf_idx]);
+            base[row_idx * cur_buf->uv_stride + col_idx] = val;
+          }
+        } else {
+          memset(&cur_buf->buffers[buf_idx][row_idx * cur_buf->uv_stride],
+                 1 << 7, cur_buf->crop_widths[1]);
+        }
       }
     }
   }
