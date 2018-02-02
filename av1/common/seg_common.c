@@ -20,12 +20,12 @@
 static const int seg_feature_data_signed[SEG_LVL_MAX] = { 1, 1, 1, 1, 1, 0, 0 };
 
 static const int seg_feature_data_max[SEG_LVL_MAX] = {
-  MAXQ, MAX_LOOP_FILTER, MAX_LOOP_FILTER, MAX_LOOP_FILTER, MAX_LOOP_FILTER, 3, 0
+  MAXQ, MAX_LOOP_FILTER, MAX_LOOP_FILTER, MAX_LOOP_FILTER, MAX_LOOP_FILTER, 7, 0
 };
 #else
 static const int seg_feature_data_signed[SEG_LVL_MAX] = { 1, 1, 0, 0 };
 
-static const int seg_feature_data_max[SEG_LVL_MAX] = { MAXQ, MAX_LOOP_FILTER, 3,
+static const int seg_feature_data_max[SEG_LVL_MAX] = { MAXQ, MAX_LOOP_FILTER, 7,
                                                        0 };
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
