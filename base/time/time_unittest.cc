@@ -1124,7 +1124,10 @@ TEST(TimeDelta, FromAndIn) {
   EXPECT_EQ(TimeDelta::FromMillisecondsD(13.3).InMilliseconds(), 13);
   EXPECT_EQ(TimeDelta::FromMillisecondsD(13.3).InMillisecondsF(), 13.3);
   EXPECT_EQ(TimeDelta::FromMicroseconds(13).InMicroseconds(), 13);
+  EXPECT_EQ(TimeDelta::FromMicrosecondsD(13.3).InMicroseconds(), 13);
   EXPECT_EQ(TimeDelta::FromMillisecondsD(3.45678).InMillisecondsF(), 3.456);
+  EXPECT_EQ(TimeDelta::FromNanoseconds(12345).InNanoseconds(), 12000);
+  EXPECT_EQ(TimeDelta::FromNanosecondsD(12345.678).InNanoseconds(), 12000);
 }
 
 #if defined(OS_POSIX)

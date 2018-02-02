@@ -116,9 +116,12 @@ class BASE_EXPORT TimeDelta {
   static constexpr TimeDelta FromMinutes(int minutes);
   static constexpr TimeDelta FromSeconds(int64_t secs);
   static constexpr TimeDelta FromMilliseconds(int64_t ms);
+  static constexpr TimeDelta FromMicroseconds(int64_t us);
+  static constexpr TimeDelta FromNanoseconds(int64_t ns);
   static constexpr TimeDelta FromSecondsD(double secs);
   static constexpr TimeDelta FromMillisecondsD(double ms);
-  static constexpr TimeDelta FromMicroseconds(int64_t us);
+  static constexpr TimeDelta FromMicrosecondsD(double us);
+  static constexpr TimeDelta FromNanosecondsD(double ns);
 #if defined(OS_POSIX)
   static TimeDelta FromTimeSpec(const timespec& ts);
 #endif
@@ -736,6 +739,16 @@ constexpr TimeDelta TimeDelta::FromMilliseconds(int64_t ms) {
 }
 
 // static
+constexpr TimeDelta TimeDelta::FromMicroseconds(int64_t us) {
+  return TimeDelta(us);
+}
+
+// static
+constexpr TimeDelta TimeDelta::FromNanoseconds(int64_t ns) {
+  return TimeDelta(ns / Time::kNanosecondsPerMicrosecond);
+}
+
+// static
 constexpr TimeDelta TimeDelta::FromSecondsD(double secs) {
   return FromDouble(secs * Time::kMicrosecondsPerSecond);
 }
@@ -746,8 +759,13 @@ constexpr TimeDelta TimeDelta::FromMillisecondsD(double ms) {
 }
 
 // static
-constexpr TimeDelta TimeDelta::FromMicroseconds(int64_t us) {
-  return TimeDelta(us);
+constexpr TimeDelta TimeDelta::FromMicrosecondsD(double us) {
+  return FromDouble(us);
+}
+
+// static
+constexpr TimeDelta TimeDelta::FromNanosecondsD(double ns) {
+  return FromDouble(ns / Time::kNanosecondsPerMicrosecond);
 }
 
 // static
