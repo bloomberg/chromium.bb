@@ -72,6 +72,38 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'IsWhitespace', function() {
   assertFalse(isWhitespace(' cats '));
 });
 
+TEST_F('SelectToSpeakParagraphUnitTest', 'GetStartCharIndexInParent',
+    function() {
+  let staticText = {role: 'staticText', name: 'My name is Bond, James Bond'};
+  let inline1 = {role: 'inlineTextBox', name: 'My name is ', indexInParent: 0,
+                 parent: staticText};
+  let inline2 = {role: 'inlineTextBox', name: 'Bond, ', indexInParent: 1,
+                 parent: staticText};
+  let inline3 = {role: 'inlineTextBox', name: 'James Bond', indexInParent: 2,
+                 parent: staticText};
+  staticText.children = [inline1, inline2, inline3];
+  assertEquals(getStartCharIndexInParent(inline1), 0);
+  assertEquals(getStartCharIndexInParent(inline2), 11);
+  assertEquals(getStartCharIndexInParent(inline3), 17);
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'FindInlineTextNodeByCharIndex',
+    function() {
+  let staticText = {role: 'staticText', name: 'My name is Bond, James Bond'};
+  let inline1 = {role: 'inlineTextBox', name: 'My name is '};
+  let inline2 = {role: 'inlineTextBox', name: 'Bond, '};
+  let inline3 = {role: 'inlineTextBox', name: 'James Bond'};
+  staticText.children = [inline1, inline2, inline3];
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 0), inline1);
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 10), inline1);
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 11), inline2);
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 16), inline2);
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 17), inline3);
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 50), inline3);
+  staticText.children = [];
+  assertEquals(findInlineTextNodeByCharacterIndex(staticText, 10), null);
+});
+
 TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtNewParagraph',
     function() {
   let root = {role: 'rootWebArea'};

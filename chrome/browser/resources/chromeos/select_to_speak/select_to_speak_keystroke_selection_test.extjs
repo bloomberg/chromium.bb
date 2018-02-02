@@ -176,7 +176,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
     });
   };
   setFocusCallback = this.newCallback(setFocusCallback);
-  this.runWithLoadedTree('data:text/html;charset=utf-8,<br/><p>Selected text</p></br>',
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' +
+                         '<br/><p>Selected text</p><br/>',
     function(desktop) {
       // Add an event listener that will start the user interaction
       // of the test once the selection is completed.

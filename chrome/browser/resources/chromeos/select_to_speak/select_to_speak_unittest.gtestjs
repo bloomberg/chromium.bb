@@ -17,6 +17,7 @@ SelectToSpeakUnitTest.prototype = {
   /** @override */
   extraLibraries: [
     'test_support.js',
+    'paragraph_utils.js',
     'select_to_speak.js'
   ]
 };
@@ -124,7 +125,9 @@ TEST_F('SelectToSpeakUnitTest', 'getNextWordEndWithoutWordEnds', function() {
 });
 
 TEST_F('SelectToSpeakUnitTest', 'getNextWordStart', function() {
-  let node = {node: {wordStarts: [0, 6]}, startChar: 0};
+  let inlineText = {wordStarts: [0, 6], name: 'kitty cat'};
+  let staticText = {children: [inlineText], name: 'kitty cat'};
+  let node = {node: staticText, startChar: 0, hasInlineText: true};
   assertEquals(0, getNextWordStart('kitty cat', 0, node));
   assertEquals(6, getNextWordStart('kitty cat', 5, node));
   assertEquals(6, getNextWordStart('kitty cat', 6, node));
@@ -132,17 +135,28 @@ TEST_F('SelectToSpeakUnitTest', 'getNextWordStart', function() {
   node.startChar = 10;
   assertEquals(10, getNextWordStart('once upon kitty cat', 9, node));
   assertEquals(16, getNextWordStart('once upon kitty cat', 15, node));
+
+  // Should return the default if the inlineText children are missing.
+  staticText.children = [];
+  assertEquals(10, getNextWordStart('once upon a kitty cat', 10, node));
 });
 
 TEST_F('SelectToSpeakUnitTest', 'getNextWordEnd', function() {
-  let node = {node: {wordEnds: [5, 9]}, startChar: 0};
+  let inlineText = {wordEnds: [5, 9], name: 'kitty cat'};
+  let staticText = {children: [inlineText], name: 'kitty cat'};
+  let node = {node: staticText, startChar: 0, hasInlineText: true};
   assertEquals(5, getNextWordEnd('kitty cat', 0, node));
-  assertEquals(5, getNextWordEnd('kitty cat', 5, node));
+  assertEquals(5, getNextWordEnd('kitty cat', 4, node));
+  assertEquals(9, getNextWordEnd('kitty cat', 5, node));
   assertEquals(9, getNextWordEnd('kitty cat', 6, node));
 
   node.startChar = 10;
   assertEquals(15, getNextWordEnd('once upon kitty cat', 9, node));
   assertEquals(19, getNextWordEnd('once upon kitty cat', 17, node));
+
+  // Should return the default if the inlineText children are missing.
+  staticText.children = [];
+  assertEquals(5, getNextWordEnd('kitty cat', 4, node));
 });
 
 TEST_F('SelectToSpeakUnitTest', 'findAllMatching', function() {
