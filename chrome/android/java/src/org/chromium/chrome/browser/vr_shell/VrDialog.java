@@ -24,6 +24,8 @@ public class VrDialog extends FrameLayout {
      */
     public VrDialog(Context context, VrDialogManager vrDialogManager) {
         super(context);
+        setLayoutParams(
+                new FrameLayout.LayoutParams(DIALOG_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
         mVrDialogManager = vrDialogManager;
     }
 
