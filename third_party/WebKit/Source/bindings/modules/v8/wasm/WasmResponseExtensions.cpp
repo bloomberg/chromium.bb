@@ -96,7 +96,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   // what they are.
   void AbortCompilation() {
     ScriptState::Scope scope(script_state_.get());
-    if (!ScriptForbiddenScope::IsScriptForbidden()) {
+    if (!ExecutionContext::From(script_state_.get())->IsContextDestroyed()) {
       builder_.Abort(V8ThrowException::CreateTypeError(
           script_state_->GetIsolate(), "Could not download wasm module"));
     } else {
