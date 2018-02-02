@@ -1,51 +1,35 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+const kNbsp = '\u00A0';
 
-function editingTest() {
-    underlineCommand();
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    typeCharacterCommand(' ');
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    insertParagraphCommand();
-    typeCharacterCommand(' ');
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    typeCharacterCommand(' ');
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    moveSelectionBackwardByWordCommand();
-    moveSelectionBackwardByWordCommand();
-    moveSelectionBackwardByWordCommand();
-    extendSelectionForwardByWordCommand();
-    extendSelectionForwardByWordCommand();
-    underlineCommand();
-}
+selection_test(
+  [
+    '<div contenteditable>',
+      `<u>012 ^345</u><div><u>${kNbsp}678 |90A</u></div>`,
+    '</div>',
+  ],
+  'underline',
+  [
+    '<div contenteditable>',
+      `<u>012 </u>^345<div>${kNbsp}678 |<u>90A</u></div>`,
+    '</div>',
+  ],
+  'Remove underline across paragrahp');
 
+selection_test(
+  [
+    '<div contenteditable>',
+      `<b><u>012 ^345</u></b><div><b><u>${kNbsp}678 |90A</u></b></div>`,
+    '</div>',
+  ],
+  'underline',
+  [
+    '<div contenteditable>',
+      `<b><u>012 </u>^345</b><div><b>${kNbsp}678 |<u>90A</u></b></div>`,
+    '</div>',
+  ],
+  'Remove underline across paragrahp in bold');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div contenteditable id="root" class="editing">
-<span id="test"></span>
-</div>
-
-<script>
-runDumpAsTextEditingTest();
-</script>
-
-</body>
-</html>
