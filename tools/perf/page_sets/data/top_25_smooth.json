@@ -86,6 +86,12 @@
         },
         "https://www.google.com/search?q=cats&tbm=isch": {
             "DEFAULT": "top_25_007.wprgo"
+        },
+        "overview:js_poster_circle": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "overview:yahoo_news": {
+            "DEFAULT": "top_25_013.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
