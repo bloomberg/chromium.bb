@@ -692,7 +692,8 @@ void RemoteSuggestionsProviderImpl::
   auto articles_it = category_contents_.find(articles_category_);
   DCHECK(articles_it != category_contents_.end());
   CategoryContent& content = articles_it->second;
-  DCHECK_EQ(content.status, CategoryStatus::AVAILABLE_LOADING);
+  DCHECK(content.status == CategoryStatus::AVAILABLE_LOADING ||
+         content.status == CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
   UpdateCategoryStatus(articles_it->first, CategoryStatus::AVAILABLE);
   // TODO(jkrcal): Technically, we have no new suggestions; we should not
   // notify. This is a work-around before crbug.com/768410 gets fixed.
