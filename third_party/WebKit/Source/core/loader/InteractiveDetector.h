@@ -17,6 +17,7 @@
 namespace blink {
 
 class Document;
+class WebInputEvent;
 
 // Detects when a page reaches First Idle and Time to Interactive. See
 // https://goo.gl/SYt55W for detailed description and motivation of First Idle
@@ -75,6 +76,8 @@ class CORE_EXPORT InteractiveDetector
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap or key press.
   TimeDelta GetFirstInputDelay() const;
+
+  void HandleForFirstInputDelay(const WebInputEvent&);
 
   virtual void Trace(Visitor*);
 
@@ -137,6 +140,11 @@ class CORE_EXPORT InteractiveDetector
 
   // LongTaskObserver implementation
   void OnLongTaskDetected(TimeTicks start_time, TimeTicks end_time) override;
+
+  // The duration between the hardware timestamp and when we received the event
+  // for the previous pointer down. Only non-zero if we've received a pointer
+  // down event, and haven't yet reported the first input delay.
+  base::TimeDelta pending_pointerdown_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(InteractiveDetector);
 };

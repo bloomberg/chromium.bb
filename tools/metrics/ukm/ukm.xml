@@ -1514,6 +1514,15 @@ be describing additional metrics about the same event.
       frame documents.
     </summary>
   </metric>
+  <metric name="InteractiveTiming.FirstInputDelay">
+    <summary>
+      Measures First Input Delay, the duration between the hardware timestamp
+      and the start of event processing on the main thread for the first
+      meaningful input per navigation. See
+      https://docs.google.com/document/d/1Tnobrn4I8ObzreIztfah_BYnDkbx3_ZfJV5gj2nrYnY/edit#
+      for a detailed explanation. In ms.
+    </summary>
+  </metric>
   <metric name="Navigation.PageTransition">
     <summary>
       The |ui::PageTransition| for the main frame navigation of this page load.

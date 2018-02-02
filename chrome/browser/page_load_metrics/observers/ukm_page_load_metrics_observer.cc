@@ -32,6 +32,7 @@ const char kUkmFirstContentfulPaintName[] =
 const char kUkmFirstMeaningfulPaintName[] =
     "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kUkmInteractiveName[] = "Experimental.NavigationToInteractive";
+const char kUkmFirstInputDelayName[] = "InteractiveTiming.FirstInputDelay";
 const char kUkmForegroundDurationName[] = "PageTiming.ForegroundDuration";
 const char kUkmFailedProvisionaLoadName[] =
     "PageTiming.NavigationToFailedProvisionalLoad";
@@ -203,6 +204,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       builder.SetExperimental_NavigationToInteractive(
           time_to_interactive.InMilliseconds());
     }
+  }
+  if (timing.interactive_timing->first_input_delay) {
+    base::TimeDelta first_input_delay =
+        timing.interactive_timing->first_input_delay.value();
+    builder.SetInteractiveTiming_FirstInputDelay(
+        first_input_delay.InMilliseconds());
   }
 
   // Use a bucket spacing factor of 1.3 for bytes.

@@ -39,6 +39,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/InteractiveDetector.h"
 #include "core/page/FrameTree.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
