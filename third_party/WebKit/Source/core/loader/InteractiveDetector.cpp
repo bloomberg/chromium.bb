@@ -215,7 +215,13 @@ void InteractiveDetector::OnInvalidatingInputEvent(
   if (!page_event_times_.first_invalidating_input.is_null())
     return;
 
-  page_event_times_.first_invalidating_input = invalidation_time;
+  // In some edge cases (e.g. inaccurate input timestamp provided through remote
+  // debugging protocol) we might receive an input timestamp that is earlier
+  // than navigation start. Since invalidating input timestamp before navigation
+  // start in non-sensical, we clamp it at navigation start.
+  page_event_times_.first_invalidating_input =
+      std::max(invalidation_time, page_event_times_.nav_start);
+
   if (GetSupplementable()->Loader())
     GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
