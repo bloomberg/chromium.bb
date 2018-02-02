@@ -314,6 +314,11 @@ void WebURLResponse::SetResponseTypeViaServiceWorker(
   resource_response_->SetResponseTypeViaServiceWorker(value);
 }
 
+network::mojom::FetchResponseType WebURLResponse::ResponseTypeViaServiceWorker()
+    const {
+  return resource_response_->ResponseTypeViaServiceWorker();
+}
+
 void WebURLResponse::SetURLListViaServiceWorker(
     const WebVector<WebURL>& url_list_via_service_worker) {
   Vector<KURL> url_list(url_list_via_service_worker.size());

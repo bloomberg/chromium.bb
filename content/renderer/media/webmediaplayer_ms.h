@@ -139,6 +139,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   blink::WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override;
 
+  bool DidGetOpaqueResponseFromServiceWorker() const override;
   bool HasSingleSecurityOrigin() const override;
   bool DidPassCORSAccessCheck() const override;
 

@@ -1107,6 +1107,12 @@ void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
       pipeline_metadata_.video_decoder_config.video_rotation(), context_3d);
 }
 
+bool WebMediaPlayerImpl::DidGetOpaqueResponseFromServiceWorker() const {
+  if (data_source_)
+    return data_source_->DidGetOpaqueResponseViaServiceWorker();
+  return false;
+}
+
 bool WebMediaPlayerImpl::HasSingleSecurityOrigin() const {
   if (data_source_)
     return data_source_->HasSingleOrigin();

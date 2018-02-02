@@ -644,6 +644,11 @@ void WebMediaPlayerMS::Paint(blink::WebCanvas* canvas,
                         context_3d);
 }
 
+bool WebMediaPlayerMS::DidGetOpaqueResponseFromServiceWorker() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return false;
+}
+
 bool WebMediaPlayerMS::HasSingleSecurityOrigin() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return true;
