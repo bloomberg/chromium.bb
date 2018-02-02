@@ -51,12 +51,9 @@ class Vp9HeaderParser {
         column_tiles_(0),
         frame_parallel_mode_(0) {}
 
-  // Set the compressed VP9 frame. This must be called before
-  // ParseUncompressedHeader.
-  bool SetFrame(const uint8_t* frame, size_t length);
-
-  // Parse the VP9 uncompressed header.
-  bool ParseUncompressedHeader();
+  // Parse the VP9 uncompressed header. The return values of the remaining
+  // functions are only valid on success.
+  bool ParseUncompressedHeader(const uint8_t* frame, size_t length);
 
   size_t frame_size() const { return frame_size_; }
   int profile() const { return profile_; }
@@ -73,6 +70,9 @@ class Vp9HeaderParser {
   int frame_parallel_mode() const { return frame_parallel_mode_; }
 
  private:
+  // Set the compressed VP9 frame.
+  bool SetFrame(const uint8_t* frame, size_t length);
+
   // Returns the next bit of the frame.
   int ReadBit();
 

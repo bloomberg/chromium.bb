@@ -107,8 +107,8 @@ class Vp9HeaderParserTests : public ::testing::Test {
               data_len = static_cast<size_t>(frame.len);
             }
             ASSERT_FALSE(frame.Read(&reader_, data));
-            parser_.SetFrame(data, data_len);
-            ASSERT_EQ(parser_.ParseUncompressedHeader(), !invalid_bitstream);
+            ASSERT_EQ(parser_.ParseUncompressedHeader(data, data_len),
+                      !invalid_bitstream);
           }
         }
 
@@ -163,6 +163,14 @@ TEST_F(Vp9HeaderParserTests, Invalid) {
     delete segment_;
     segment_ = NULL;
   }
+}
+
+TEST_F(Vp9HeaderParserTests, API) {
+  vp9_parser::Vp9HeaderParser parser;
+  uint8_t data;
+  EXPECT_FALSE(parser.ParseUncompressedHeader(NULL, 0));
+  EXPECT_FALSE(parser.ParseUncompressedHeader(NULL, 10));
+  EXPECT_FALSE(parser.ParseUncompressedHeader(&data, 0));
 }
 
 }  // namespace

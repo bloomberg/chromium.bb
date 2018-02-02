@@ -94,8 +94,7 @@ class Vp9LevelStatsTests : public ::testing::Test {
               data_len = static_cast<size_t>(frame.len);
             }
             ASSERT_FALSE(frame.Read(&reader_, &data[0]));
-            parser_.SetFrame(&data[0], data_len);
-            parser_.ParseUncompressedHeader();
+            parser_.ParseUncompressedHeader(&data[0], data_len);
             stats_.AddFrame(parser_, time_ns);
           }
         }
