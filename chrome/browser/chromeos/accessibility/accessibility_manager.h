@@ -39,7 +39,6 @@ namespace chromeos {
 
 class AccessibilityExtensionLoader;
 class AccessibilityHighlightManager;
-class ScopedKeyboardStateSetter;
 class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationType {
@@ -438,8 +437,6 @@ class AccessibilityManager
 
   std::unique_ptr<chromeos::SwitchAccessEventHandler>
       switch_access_event_handler_;
-
-  std::unique_ptr<ScopedKeyboardStateSetter> keyboard_state_setter_;
 
   // Ash's mojom::AccessibilityController used to SetDarkenScreen.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;

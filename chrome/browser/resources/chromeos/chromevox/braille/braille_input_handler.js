@@ -426,18 +426,18 @@ cvox.BrailleInputHandler.prototype = {
       if (!goog.isDef(numericCode))
         throw Error('Unknown key code in event: ' + JSON.stringify(event));
       var keyEvent = {
-        type: 'keydown',
+        type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
         keyCode: numericCode,
-        keyName: keyName,
-        charValue: cvox.BrailleKeyEvent.keyCodeToCharValue(keyName),
-        // See chrome/common/extensions/api/virtual_keyboard_private.json for
-        // these constants.
-        modifiers: (event.shiftKey ? 2 : 0) | (event.ctrlKey ? 4 : 0) |
-            (event.altKey ? 8 : 0)
+        modifiers: {
+          shift: !!event.shiftKey,
+          ctrl: !!event.ctrlKey,
+          alt: !!event.altKey
+        }
       };
-      chrome.virtualKeyboardPrivate.sendKeyEvent(keyEvent);
-      keyEvent.type = 'keyup';
-      chrome.virtualKeyboardPrivate.sendKeyEvent(keyEvent);
+      chrome.accessibilityPrivate.sendSyntheticKeyEvent(keyEvent);
+      keyEvent.type =
+          chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP;
+      chrome.accessibilityPrivate.sendSyntheticKeyEvent(keyEvent);
     });
   }
 };

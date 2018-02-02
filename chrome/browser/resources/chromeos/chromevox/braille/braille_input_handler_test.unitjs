@@ -11,6 +11,8 @@ GEN_INCLUDE(['../testing/fake_objects.js']);
 var chrome = {};
 /** Fake chrome.runtime object. */
 chrome.runtime = {};
+/** Fake chrome.accessibilityPrivate object. */
+chrome.accessibilityPrivate = {};
 /** Fake chrome.virtualKeyboardPrivate object. */
 chrome.virtualKeyboardPrivate = {};
 
@@ -498,8 +500,7 @@ CvoxBrailleInputHandlerUnitTest.prototype = {
   },
 
   storeKeyEvent: function(event, opt_callback) {
-    var storedCopy = {keyCode: event.keyCode, keyName: event.keyName,
-                      charValue: event.charValue};
+    var storedCopy = {keyCode: event.keyCode};
     if (event.type == 'keydown') {
       this.keyEvents.push(storedCopy);
     } else {
@@ -519,8 +520,11 @@ CvoxBrailleInputHandlerUnitTest.prototype = {
     chrome.virtualKeyboardPrivate.getKeyboardConfig = function(callback) {
       callback({ a11ymode: true });
     };
-    chrome.virtualKeyboardPrivate.sendKeyEvent =
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent =
         this.storeKeyEvent.bind(this);
+    chrome.accessibilityPrivate.SyntheticKeyboardEventType = {};
+    chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN = 'keydown';
+    chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP = 'keyup';
     this.translatorManager = new FakeTranslatorManager();
     this.inputHandler = new cvox.BrailleInputHandler(this.translatorManager);
     this.inputHandler.init();
@@ -686,7 +690,7 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'Backspace', function() {
   // Now, backspace should be handled as usual, synthetizing key events.
   assertEquals(0, this.keyEvents.length);
   this.sendKeyEvent('Backspace');
-  assertEqualsJSON([{keyCode: 8, keyName: 'Backspace', charValue: 8}],
+  assertEqualsJSON([{keyCode: 8}],
                    this.keyEvents);
 });
 
@@ -695,7 +699,7 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'KeysImeNotActive', function() {
   var editor = this.createEditor();
   this.sendKeyEvent('Enter');
   this.sendKeyEvent('ArrowUp');
-  assertEqualsJSON([{keyCode: 13, keyName: 'Enter', charValue: 0x0A},
-                    {keyCode: 38, keyName: 'ArrowUp', charValue: 0x41}],
+  assertEqualsJSON([{keyCode: 13},
+                    {keyCode: 38}],
                    this.keyEvents);
 });

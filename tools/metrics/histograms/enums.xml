@@ -14633,6 +14633,7 @@ Called by update_net_error_codes.py.-->
   <int value="1213" label="PASSWORDSPRIVATE_REQUESTEXPORTPROGRESSSTATUS"/>
   <int value="1214" label="WALLPAPERPRIVATE_GETCOLLECTIONSINFO"/>
   <int value="1215" label="WALLPAPERPRIVATE_GETIMAGESINFO"/>
+  <int value="1216" label="ACCESSIBILITY_PRIVATE_SENDSYNTHETICKEYEVENT"/>
 </enum>
 
 <enum name="ExtensionIconState">

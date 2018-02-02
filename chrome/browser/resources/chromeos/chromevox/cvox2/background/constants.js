@@ -36,14 +36,3 @@ constants.Point;
  * @const
  */
 constants.OBJECT_MAX_CHARCOUNT = 1500;
-
-/**
- * Modifier values used by Chrome.
- * See ui/events/event_constants.h
- */
-constants.ModifierFlag = {
-  SHIFT: 2,
-  CONTROL: 4,
-  ALT: 8,
-  SEARCH: 16
-};

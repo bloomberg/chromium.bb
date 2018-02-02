@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,45 @@ chrome.accessibilityPrivate.Gesture = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#type-SyntheticKeyboardEventType
+ */
+chrome.accessibilityPrivate.SyntheticKeyboardEventType = {
+  KEYUP: 'keyup',
+  KEYDOWN: 'keydown',
+};
+
+/**
+ * @typedef {{
+ *   ctrl: (boolean|undefined),
+ *   alt: (boolean|undefined),
+ *   search: (boolean|undefined),
+ *   shift: (boolean|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#type-SyntheticKeyboardModifiers
+ */
+chrome.accessibilityPrivate.SyntheticKeyboardModifiers;
+
+/**
+ * @typedef {{
+ *   type: !chrome.accessibilityPrivate.SyntheticKeyboardEventType,
+ *   keyCode: number,
+ *   modifiers: (!chrome.accessibilityPrivate.SyntheticKeyboardModifiers|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#type-SyntheticKeyboardEvent
+ */
+chrome.accessibilityPrivate.SyntheticKeyboardEvent;
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#type-KeyboardMode
+ */
+chrome.accessibilityPrivate.KeyboardMode = {
+  FULL_WIDTH: 'FULL_WIDTH',
+  FLOATING: 'FLOATING',
+};
+
+/**
  * Enables or disables native accessibility support. Once disabled, it is up to
  * the calling extension to provide accessibility for web contents.
  * @param {boolean} enabled True if native accessibility support should be
@@ -71,7 +110,7 @@ chrome.accessibilityPrivate.Gesture = {
 chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(enabled) {};
 
 /**
- * Set the bounds of the accessibility focus ring.
+ * Sets the bounds of the accessibility focus ring.
  * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects Array of
  *     rectangles to draw the accessibility focus ring around.
  * @param {string=} color CSS-style hex color string beginning with # like
@@ -81,10 +120,10 @@ chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(enabled) {}
 chrome.accessibilityPrivate.setFocusRing = function(rects, color) {};
 
 /**
- * Set the bounds of highlighted regions on the screen.
+ * Sets the bounds of the accessibility highlight.
  * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects Array of
- *     rectangles to draw the highlights on.
- * @param {string=} color CSS-style hex color string beginning with # like
+ *     rectangles to draw the highlight around.
+ * @param {string} color CSS-style hex color string beginning with # like
  *     #FF9982 or #EEE.
  * @see https://developer.chrome.com/extensions/accessibilityPrivate#method-setHighlights
  */
@@ -125,6 +164,14 @@ chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
  * @see https://developer.chrome.com/extensions/accessibilityPrivate#method-setNativeChromeVoxArcSupportForCurrentApp
  */
 chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp = function(enabled) {};
+
+/**
+ * Sends a fabricated key event.
+ * @param {!chrome.accessibilityPrivate.SyntheticKeyboardEvent} keyEvent The
+ *     event to send.
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#method-sendSyntheticKeyEvent
+ */
+chrome.accessibilityPrivate.sendSyntheticKeyEvent = function(keyEvent) {};
 
 /**
  * Fired whenever ChromeVox should output introduction.

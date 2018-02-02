@@ -31,8 +31,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/event_sink.h"
 
 using ash::AccessibilityFocusRingController;
 #endif
@@ -42,6 +45,7 @@ namespace accessibility_private = extensions::api::accessibility_private;
 namespace {
 
 const char kErrorNotSupported[] = "This API is not supported on this platform.";
+
 }  // namespace
 
 ExtensionFunction::ResponseAction
@@ -216,6 +220,42 @@ AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
     EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
     bridge->SetNativeChromeVoxArcSupport(enabled);
   }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
+  std::unique_ptr<accessibility_private::SendSyntheticKeyEvent::Params> params =
+      accessibility_private::SendSyntheticKeyEvent::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::SyntheticKeyboardEvent* key_data = &params->key_event;
+
+  int modifiers = 0;
+  if (key_data->modifiers.get()) {
+    if (key_data->modifiers->ctrl)
+      modifiers |= ui::EF_CONTROL_DOWN;
+    if (key_data->modifiers->alt)
+      modifiers |= ui::EF_ALT_DOWN;
+    if (key_data->modifiers->search)
+      modifiers |= ui::EF_COMMAND_DOWN;
+    if (key_data->modifiers->shift)
+      modifiers |= ui::EF_SHIFT_DOWN;
+  }
+
+  ui::KeyEvent synthetic_key_event(
+      key_data->type ==
+              accessibility_private::SYNTHETIC_KEYBOARD_EVENT_TYPE_KEYUP
+          ? ui::ET_KEY_RELEASED
+          : ui::ET_KEY_PRESSED,
+      static_cast<ui::KeyboardCode>(key_data->key_code),
+      static_cast<ui::DomCode>(0), modifiers);
+
+  // Only keyboard events, so dispatching to primary window suffices.
+  ui::EventSink* sink =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
+  if (sink->OnEventFromSource(&synthetic_key_event).dispatcher_destroyed)
+    return RespondNow(Error("Unable to dispatch key "));
+
   return RespondNow(NoArguments());
 }
 

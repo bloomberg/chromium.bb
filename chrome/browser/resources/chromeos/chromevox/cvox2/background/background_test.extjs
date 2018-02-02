@@ -51,9 +51,9 @@ BackgroundTest.prototype = {
     };
   },
 
-  press: function(keyCode, keyName, modifiers) {
+  press: function(keyCode, modifiers) {
     return function() {
-      BackgroundKeyboardHandler.sendKeyPress(keyCode, keyName, modifiers);
+      BackgroundKeyboardHandler.sendKeyPress(keyCode, modifiers);
     };
   },
 
@@ -1293,12 +1293,12 @@ TEST_F('BackgroundTest', 'NativeFind', function() {
     <a href="#">grape</a>
     <a href="#">pineapple</a>
   */}, function(root) {
-    mockFeedback.call(press(70, 'F', Mod.CONTROL))
+    mockFeedback.call(press(70, {ctrl: true}))
         .expectSpeech('Find', 'Edit text')
-        .call(press(71, 'G'))
+        .call(press(71))
         .expectSpeech('grape', 'Link')
-        .call(press(8, 'Backspace'))
-        .call(press(76, 'L'))
+        .call(press(8))
+        .call(press(76))
         .expectSpeech('pineapple', 'Link')
         .replay();
   });

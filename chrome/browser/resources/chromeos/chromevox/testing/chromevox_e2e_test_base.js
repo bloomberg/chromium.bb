@@ -39,15 +39,12 @@ ChromeVoxE2ETest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "ui/keyboard/keyboard_util.h"
     */ });
   },
 
   /** @override */
   testGenPreamble: function() {
     GEN_BLOCK(function() { /*!
-  keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
-  ash::Shell::Get()->CreateKeyboard();
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),

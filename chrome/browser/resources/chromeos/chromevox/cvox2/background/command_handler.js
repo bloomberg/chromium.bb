@@ -18,7 +18,6 @@ goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
-var Mod = constants.ModifierFlag;
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
@@ -929,44 +928,42 @@ CommandHandler.onEditCommand_ = function(command) {
   var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
     case 'previousCharacter':
-      BackgroundKeyboardHandler.sendKeyPress(36, 'Home', Mod.SHIFT);
+      BackgroundKeyboardHandler.sendKeyPress(36, {shift: true});
       break;
     case 'nextCharacter':
-      BackgroundKeyboardHandler.sendKeyPress(35, 'End', Mod.SHIFT);
+      BackgroundKeyboardHandler.sendKeyPress(35, {shift: true});
       break;
     case 'previousWord':
-      BackgroundKeyboardHandler.sendKeyPress(
-          36, 'Home', Mod.SHIFT | Mod.CONTROL);
+      BackgroundKeyboardHandler.sendKeyPress(36, {shift: true, ctrl: true});
       break;
     case 'nextWord':
-      BackgroundKeyboardHandler.sendKeyPress(
-          35, 'End', Mod.SHIFT | Mod.CONTROL);
+      BackgroundKeyboardHandler.sendKeyPress(35, {shift: true, ctrl: true});
       break;
     case 'previousObject':
       if (!isMultiline)
         return true;
-      BackgroundKeyboardHandler.sendKeyPress(36, 'Home');
+      BackgroundKeyboardHandler.sendKeyPress(36);
       break;
     case 'nextObject':
       if (!isMultiline)
         return true;
-      BackgroundKeyboardHandler.sendKeyPress(35, 'End');
+      BackgroundKeyboardHandler.sendKeyPress(35);
       break;
     case 'previousLine':
       if (!isMultiline)
         return true;
-      BackgroundKeyboardHandler.sendKeyPress(33, 'PageUp');
+      BackgroundKeyboardHandler.sendKeyPress(33);
       break;
     case 'nextLine':
       if (!isMultiline)
         return true;
-      BackgroundKeyboardHandler.sendKeyPress(34, 'PageDown');
+      BackgroundKeyboardHandler.sendKeyPress(34);
       break;
     case 'jumpToTop':
-      BackgroundKeyboardHandler.sendKeyPress(36, 'Home', Mod.CONTROL);
+      BackgroundKeyboardHandler.sendKeyPress(36, {ctrl: true});
       break;
     case 'jumpToBottom':
-      BackgroundKeyboardHandler.sendKeyPress(35, 'End', Mod.CONTROL);
+      BackgroundKeyboardHandler.sendKeyPress(35, {ctrl: true});
       break;
     default:
       return true;
