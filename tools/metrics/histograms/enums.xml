@@ -17534,7 +17534,7 @@ Called by update_net_error_codes.py.-->
   <int value="2144" label="WebkitBoxLineClampDoesSomething"/>
   <int value="2145" label="FeaturePolicyAllowAttributeDeprecatedSyntax"/>
   <int value="2146" label="SuppressHistoryEntryWithoutUserGesture"/>
-  <int value="2147" label="OBSOLETE_ImageInputTypeFormDataWithNonEmptyValue"/>
+  <int value="2147" label="ImageInputTypeFormDataWithNonEmptyValue"/>
   <int value="2148" label="WebAudioDezipperGainNodeGain"/>
   <int value="2149" label="WebAudioDezipperStereoPannerNodePan"/>
   <int value="2150" label="WebAudioDezipperDelayNodeDelayTime"/>

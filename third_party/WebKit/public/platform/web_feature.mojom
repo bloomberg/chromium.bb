@@ -1653,6 +1653,7 @@ enum WebFeature {
 
   kFeaturePolicyAllowAttributeDeprecatedSyntax = 2145,
   kSuppressHistoryEntryWithoutUserGesture = 2146,
+  kImageInputTypeFormDataWithNonEmptyValue = 2147,
   kWebAudioDezipperGainNodeGain = 2148,
   kWebAudioDezipperStereoPannerNodePan = 2149,
   kWebAudioDezipperDelayNodeDelayTime = 2150,
