@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/shell.h"
@@ -58,6 +59,9 @@ const char kNotifierScreenshot[] = "ash.screenshot";
 
 const char kNotificationOriginUrl[] = "chrome://screenshot";
 
+const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
+const char kImageClipboardFormatSuffix[] = "'>";
+
 // User is waiting for the screenshot-taken notification, hence USER_VISIBLE.
 constexpr base::TaskTraits kBlockingTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -65,10 +69,21 @@ constexpr base::TaskTraits kBlockingTaskTraits = {
 
 ChromeScreenshotGrabber* g_chrome_screenshot_grabber_instance = nullptr;
 
-void CopyScreenshotToClipboard(const SkBitmap& decoded_image) {
+void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data,
+                               const SkBitmap& decoded_image) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::string encoded;
+  base::Base64Encode(png_data->data(), &encoded);
   {
     ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+
+    // Send both HTML and and Image formats to clipboard. HTML format is needed
+    // by ARC, while Image is needed by Hangout.
+    std::string html(kImageClipboardFormatPrefix);
+    html += encoded;
+    html += kImageClipboardFormatSuffix;
+    scw.WriteHTML(base::UTF8ToUTF16(html), std::string());
     scw.WriteImage(decoded_image);
   }
   base::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
@@ -85,14 +100,14 @@ void DecodeFileAndCopyToClipboard(
       ->GetConnector()
       ->BindConnectorRequest(std::move(connector_request));
 
-  // Decode the image in sandboxed process becuase |png_data| comes from
+  // Decode the image in sandboxed process because |png_data| comes from
   // external storage.
   data_decoder::DecodeImage(
       connector.get(),
       std::vector<uint8_t>(png_data->data().begin(), png_data->data().end()),
       data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-      base::BindOnce(&CopyScreenshotToClipboard));
+      base::BindOnce(&CopyScreenshotToClipboard, png_data));
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
