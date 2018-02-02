@@ -1,7 +1,7 @@
 # luci-go
 
 Contains executable built out of
-https://github.com/luci/luci-go/tree/master/client/cmd/.
+https://chromium.googlesource.com/infra/luci/luci-go/+/master/client/cmd
 
 The binaries are retrieved from the following builders:
 
