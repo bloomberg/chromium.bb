@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/base/ime/ime_bridge_observer.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -62,6 +63,12 @@ class UI_BASE_IME_EXPORT IMEBridge {
   // This is called from InputMethodEngine.
   virtual const IMEEngineHandlerInterface::InputContext&
   GetCurrentInputContext() const = 0;
+
+  // Sets the observer that observes the switching engine event.
+  virtual void SetObserver(ui::IMEBridgeObserver* observer) = 0;
+
+  // Switches the engine handler upon top level window focus change.
+  virtual void MaybeSwitchEngine() = 0;
 
 #if defined(OS_CHROMEOS)
   // Returns current CandidateWindowHandler. This function returns NULL if

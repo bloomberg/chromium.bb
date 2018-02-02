@@ -345,10 +345,6 @@ void InputMethodEngineBase::Reset() {
   observer_->OnReset(active_component_id_);
 }
 
-void InputMethodEngineBase::MaybeSwitchEngine() {
-  observer_->OnRequestEngineSwitch();
-}
-
 bool InputMethodEngineBase::IsInterestedInKeyEvent() const {
   return observer_->IsInterestedInKeyEvent();
 }
