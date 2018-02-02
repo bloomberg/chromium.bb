@@ -60,6 +60,7 @@ extern const char kStabilitySavedSystemProfileHash[];
 extern const char kStabilitySessionEndCompleted[];
 extern const char kStabilityStatsBuildTime[];
 extern const char kStabilityStatsVersion[];
+extern const char kStabilitySystemCrashCount[];
 extern const char kStabilityVersionMismatchCount[];
 
 // Preferences for generating metrics at uninstall time.
