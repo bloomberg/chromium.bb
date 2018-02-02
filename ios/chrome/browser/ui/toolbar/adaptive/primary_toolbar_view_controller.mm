@@ -54,12 +54,14 @@
 
   self.view.backgroundColor =
       self.buttonFactory.toolbarConfiguration.NTPBackgroundColor;
+  self.view.blur.hidden = YES;
   self.view.locationBarContainer.hidden = YES;
 }
 
 - (void)resetAfterSideSwipeSnapshot {
   [super resetAfterSideSwipeSnapshot];
   self.view.backgroundColor = nil;
+  self.view.blur.hidden = NO;
   self.view.locationBarContainer.hidden = NO;
 }
 

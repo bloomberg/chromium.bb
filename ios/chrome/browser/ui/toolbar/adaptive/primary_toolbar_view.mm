@@ -101,6 +101,7 @@
 @synthesize cancelButton = _cancelButton;
 @synthesize focusedConstraints = _focusedConstraints;
 @synthesize unfocusedConstraints = _unfocusedConstraints;
+@synthesize blur = _blur;
 
 #pragma mark - Public
 
@@ -142,11 +143,10 @@
 // Sets the blur effect on the toolbar background.
 - (void)setUpBlurredBackground {
   UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
-  UIVisualEffectView* blur =
-      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-  [self addSubview:blur];
-  blur.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(blur, self);
+  self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  [self addSubview:self.blur];
+  self.blur.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self.blur, self);
 }
 
 // Sets the cancel button to stop editing the location bar.
