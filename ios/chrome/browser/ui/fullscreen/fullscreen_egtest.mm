@@ -77,8 +77,6 @@ void AssertURLIs(const GURL& expectedURL) {
 @implementation FullscreenTestCase
 
 - (void)setUp {
-  // TODO(crbug.com/799345): Remove scoped feature list.
-  _featureList.InitAndDisableFeature(fullscreen::features::kNewFullscreen);
   [super setUp];
 }
 
