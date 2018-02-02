@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -54,6 +55,13 @@ void ContentInputDelegate::OnContentUp(
     const gfx::PointF& normalized_hit_point) {
   SendGestureToContent(
       MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
+}
+
+void ContentInputDelegate::OnWebInputEdited(const TextInputInfo& info,
+                                            bool commit) {
+  if (!content_)
+    return;
+  content_->OnWebInputEdited(info, commit);
 }
 
 void ContentInputDelegate::OnContentFlingStart(

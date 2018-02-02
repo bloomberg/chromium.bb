@@ -103,6 +103,14 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   // have to worry about this, and if it were told to hide the splash screen
   // like other WebVR phases (e.g. OnWebVrFrameAvailable below).
   bool CanSendWebVrVSync();
+
+  void ShowSoftInput(bool show) override;
+  void UpdateWebInputSelectionIndices(int selection_start,
+                                      int selection_end) override;
+  void UpdateWebInputCompositionIndices(int composition_start,
+                                        int composition_end) override;
+  void UpdateWebInputText(const base::string16& text) override;
+
   bool ShouldRenderWebVr();
 
   void OnGlInitialized(

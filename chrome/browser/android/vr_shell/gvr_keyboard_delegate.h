@@ -41,7 +41,6 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
 
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
-
   // Called to update GVR keyboard with the given text input info.
   void UpdateInput(const vr::TextInputInfo& info);
 
@@ -50,6 +49,16 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
   void Init(gvr_keyboard_context* keyboard_context);
   void OnGvrKeyboardEvent(EventType);
   vr::TextInputInfo GetTextInfo();
+  // We pause updates from the keyboard until the previous update has been
+  // "acked" using GvrKeyboardDelegate::UpdateInput. This is to prevent weird
+  // behavior when editing web input fields. For example, say that the current
+  // text is "asdfg" and the user holds the backspace key. We get multiple
+  // backspace events from the keyboard, and if the second event comes before
+  // first event is acked (can happen because the ack comes from the Renderer),
+  // we'll override the keyboard state with the ack.
+  // TODO(ymalik): This is brittle, we should look for a better solution.
+  bool pause_keyboard_update_ = false;
+  vr::TextInputInfo cached_text_input_info_;
 
   vr::KeyboardUiInterface* ui_;
   gvr_keyboard_context* gvr_keyboard_ = nullptr;

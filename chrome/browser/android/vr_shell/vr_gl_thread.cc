@@ -126,6 +126,13 @@ void VrGLThread::ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                             base::Passed(std::move(event)), content_id));
 }
 
+void VrGLThread::OnWebInputEdited(const vr::TextInputInfo& info, bool commit) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VrShell::OnWebInputEdited, weak_vr_shell_, info, commit));
+}
+
 void VrGLThread::ForceExitVr() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
@@ -362,6 +369,39 @@ void VrGLThread::OnAssetsComponentReady() {
       FROM_HERE,
       base::BindRepeating(&vr::BrowserUiInterface::OnAssetsComponentReady,
                           browser_ui_));
+}
+
+void VrGLThread::ShowSoftInput(bool show) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindRepeating(&vr::BrowserUiInterface::ShowSoftInput,
+                                     browser_ui_, show));
+}
+
+void VrGLThread::UpdateWebInputSelectionIndices(int selection_start,
+                                                int selection_end) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindRepeating(
+                     &vr::BrowserUiInterface::UpdateWebInputSelectionIndices,
+                     browser_ui_, selection_start, selection_end));
+}
+
+void VrGLThread::UpdateWebInputCompositionIndices(int composition_start,
+                                                  int composition_end) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindRepeating(
+                     &vr::BrowserUiInterface::UpdateWebInputCompositionIndices,
+                     browser_ui_, composition_start, composition_end));
+}
+
+void VrGLThread::UpdateWebInputText(const base::string16& text) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindRepeating(&vr::BrowserUiInterface::UpdateWebInputText,
+                          browser_ui_, text));
 }
 
 bool VrGLThread::OnMainThread() const {

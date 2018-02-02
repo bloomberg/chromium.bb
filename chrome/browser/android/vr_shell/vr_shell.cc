@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics_helper.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
+#include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -620,6 +622,8 @@ void VrShell::LogUnsupportedModeUserMetric(JNIEnv* env,
                                            int mode) {
   LogUnsupportedModeUserMetric((vr::UiUnsupportedMode)mode);
 }
+
+void VrShell::OnWebInputEdited(const vr::TextInputInfo info, bool commit) {}
 
 void VrShell::LogUnsupportedModeUserMetric(vr::UiUnsupportedMode mode) {
   UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,

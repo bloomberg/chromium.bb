@@ -65,6 +65,7 @@ struct Model {
   bool default_browsing_enabled() const;
   bool voice_search_enabled() const;
   bool omnibox_editing_enabled() const;
+  bool editing_enabled() const;
   bool fullscreen_enabled() const;
   bool web_vr_enabled() const;
   bool web_vr_autopresentation_enabled() const;
@@ -72,7 +73,10 @@ struct Model {
 
   // Focused text state.
   bool editing_input = false;
+  bool editing_web_input = false;
+  // Editable text field state.
   TextInputInfo omnibox_text_field_info;
+  TextInputInfo web_input_text_field_info;
 
   // Controller state.
   ControllerModel controller;

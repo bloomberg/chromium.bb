@@ -206,6 +206,26 @@ bool Ui::CanSendWebVrVSync() {
          !model_->web_vr.awaiting_min_splash_screen_duration();
 }
 
+void Ui::ShowSoftInput(bool show) {
+  model_->editing_web_input = show;
+}
+
+void Ui::UpdateWebInputSelectionIndices(int selection_start,
+                                        int selection_end) {
+  model_->web_input_text_field_info.selection_start = selection_start;
+  model_->web_input_text_field_info.selection_end = selection_end;
+}
+
+void Ui::UpdateWebInputCompositionIndices(int composition_start,
+                                          int composition_end) {
+  model_->web_input_text_field_info.composition_start = composition_start;
+  model_->web_input_text_field_info.composition_end = composition_end;
+}
+
+void Ui::UpdateWebInputText(const base::string16& text) {
+  model_->web_input_text_field_info.text = text;
+}
+
 bool Ui::ShouldRenderWebVr() {
   return model_->web_vr.has_produced_frames();
 }

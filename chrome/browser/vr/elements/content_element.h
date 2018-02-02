@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 
 namespace vr {
@@ -40,15 +41,23 @@ class ContentElement : public UiElement {
 
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;
+  void OnFocusChanged(bool focused) override;
+  void OnInputEdited(const TextInputInfo& info) override;
+  void OnInputCommitted(const TextInputInfo& info) override;
+  void RequestFocus() override;
+  void RequestUnfocus() override;
+  void UpdateInput(const TextInputInfo& info) override;
 
   void SetTextureId(unsigned int texture_id);
   void SetTextureLocation(UiElementRenderer::TextureLocation location);
   void SetOverlayTextureId(unsigned int texture_id);
   void SetOverlayTextureLocation(UiElementRenderer::TextureLocation location);
   void SetProjectionMatrix(const gfx::Transform& matrix);
+  void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
 
  private:
   ContentInputDelegate* delegate_ = nullptr;
+  TextInputDelegate* text_input_delegate_ = nullptr;
   ScreenBoundsChangedCallback bounds_changed_callback_;
   unsigned int texture_id_ = 0;
   UiElementRenderer::TextureLocation texture_location_ =
@@ -59,6 +68,7 @@ class ContentElement : public UiElement {
   gfx::SizeF last_content_screen_bounds_;
   float last_content_aspect_ratio_ = 0.0f;
   gfx::Transform projection_matrix_;
+  bool focused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentElement);
 };

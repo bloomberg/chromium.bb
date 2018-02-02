@@ -41,6 +41,14 @@ class BrowserUiInterface {
       std::unique_ptr<OmniboxSuggestions> suggestions) = 0;
   virtual void OnAssetsComponentReady() = 0;
 
+  // Web contents text input related.
+  virtual void ShowSoftInput(bool show) = 0;
+  virtual void UpdateWebInputSelectionIndices(int selection_start,
+                                              int selection_end) = 0;
+  virtual void UpdateWebInputCompositionIndices(int composition_start,
+                                                int composition_end) = 0;
+  virtual void UpdateWebInputText(const base::string16& text) = 0;
+
   // Tab handling.
   virtual void AppendToTabList(bool incognito,
                                int id,

@@ -246,6 +246,7 @@ static_library("vr_common") {
 test("vr_common_unittests") {
   sources = [
     "animation_player_unittest.cc",
+    "content_element_unittest.cc",
     "databinding/binding_unittest.cc",
     "databinding/vector_binding_unittest.cc",
     "elements/button_unittest.cc",
@@ -356,8 +357,12 @@ source_set("vr_test_support") {
     "test/mock_browser_ui_interface.h",
     "test/mock_content_input_delegate.cc",
     "test/mock_content_input_delegate.h",
+    "test/mock_keyboard_delegate.cc",
+    "test/mock_keyboard_delegate.h",
     "test/mock_render_text.cc",
     "test/mock_render_text.h",
+    "test/mock_text_input_delegate.cc",
+    "test/mock_text_input_delegate.h",
     "test/mock_ui_browser_interface.cc",
     "test/mock_ui_browser_interface.h",
     "test/vr_test_suite.cc",

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/content_element.h"
 
+#include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vr_gl_util.h"
@@ -59,6 +60,20 @@ void ContentElement::Render(UiElementRenderer* renderer,
                                copy_rect, computed_opacity(), size(),
                                corner_radius());
   }
+}
+
+void ContentElement::OnFocusChanged(bool focused) {
+  focused_ = focused;
+  if (event_handlers_.focus_change)
+    event_handlers_.focus_change.Run(focused);
+}
+
+void ContentElement::OnInputEdited(const TextInputInfo& info) {
+  delegate_->OnWebInputEdited(info, false);
+}
+
+void ContentElement::OnInputCommitted(const TextInputInfo& info) {
+  delegate_->OnWebInputEdited(info, true);
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {
@@ -131,6 +146,30 @@ void ContentElement::SetOverlayTextureLocation(
 
 void ContentElement::SetProjectionMatrix(const gfx::Transform& matrix) {
   projection_matrix_ = matrix;
+}
+
+void ContentElement::SetTextInputDelegate(
+    TextInputDelegate* text_input_delegate) {
+  text_input_delegate_ = text_input_delegate;
+}
+
+void ContentElement::RequestFocus() {
+  if (!text_input_delegate_)
+    return;
+
+  text_input_delegate_->RequestFocus(id());
+}
+
+void ContentElement::RequestUnfocus() {
+  if (!text_input_delegate_)
+    return;
+
+  text_input_delegate_->RequestUnfocus(id());
+}
+
+void ContentElement::UpdateInput(const TextInputInfo& info) {
+  if (text_input_delegate_ && focused_)
+    text_input_delegate_->UpdateInput(info);
 }
 
 bool ContentElement::OnBeginFrame(const base::TimeTicks& time,

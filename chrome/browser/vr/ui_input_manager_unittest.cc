@@ -60,9 +60,7 @@ class MockRect : public Rect {
 class MockTextInput : public TextInput {
  public:
   MockTextInput()
-      : TextInput(1,
-                  base::RepeatingCallback<void(bool)>(),
-                  base::RepeatingCallback<void(const TextInputInfo&)>()) {}
+      : TextInput(1, base::RepeatingCallback<void(const TextInputInfo&)>()) {}
   ~MockTextInput() override = default;
 
   MOCK_METHOD1(OnFocusChanged, void(bool));
