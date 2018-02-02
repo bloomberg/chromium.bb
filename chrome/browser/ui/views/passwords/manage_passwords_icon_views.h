@@ -21,6 +21,8 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
   explicit ManagePasswordsIconViews(CommandUpdater* updater);
   ~ManagePasswordsIconViews() override;
 
+  void SetHighlighted();
+
   // ManagePasswordsIconView:
   void SetState(password_manager::ui::State state) override;
 
