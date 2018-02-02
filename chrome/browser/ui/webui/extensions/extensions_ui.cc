@@ -203,6 +203,10 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
                              IDS_MD_EXTENSIONS_DEPENDENT_ENTRY);
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemErrors", IDS_MD_EXTENSIONS_ITEM_ERRORS);
+  source->AddLocalizedString("accessibilityErrorLine",
+                             IDS_MD_EXTENSIONS_ACCESSIBILITY_ERROR_LINE);
+  source->AddLocalizedString("accessibilityErrorMultiLine",
+                             IDS_MD_EXTENSIONS_ACCESSIBILITY_ERROR_MULTI_LINE);
   source->AddLocalizedString("appIcon", IDS_MD_EXTENSIONS_APP_ICON);
   source->AddLocalizedString("extensionIcon", IDS_MD_EXTENSIONS_EXTENSION_ICON);
   source->AddLocalizedString("extensionA11yAssociation",
