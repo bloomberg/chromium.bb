@@ -224,7 +224,7 @@ content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
                     web_contents->GetMainFrame()->GetRoutingID());
 }
 
-void OnAcquireFileAccessPermissionDone(
+void OnOfflinePageAcquireFileAccessPermissionDone(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     bool granted) {
   if (!granted)
@@ -302,7 +302,8 @@ void JNI_OfflinePageDownloadBridge_StartDownload(
         GetWebContentsGetter(web_contents);
     DownloadControllerBase::Get()->AcquireFileAccessPermission(
         web_contents_getter,
-        base::Bind(&OnAcquireFileAccessPermissionDone, web_contents_getter));
+        base::Bind(&OnOfflinePageAcquireFileAccessPermissionDone,
+                   web_contents_getter));
     return;
   }
 
