@@ -55,18 +55,17 @@ class CachedMatchedProperties final
 // entries in the MatchedPropertiesCache.
 struct CachedMatchedPropertiesHashTraits
     : HashTraits<Member<CachedMatchedProperties>> {
-  static const WTF::WeakHandlingFlag kWeakHandlingFlag =
-      WTF::kWeakHandlingInCollections;
+  static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
 
   template <typename VisitorDispatcher>
   static bool TraceInCollection(
       VisitorDispatcher visitor,
       Member<CachedMatchedProperties>& cached_properties,
-      WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
+      WTF::WeakHandlingFlag weakness) {
     // Only honor the cache's weakness semantics if the collection is traced
     // with WeakPointersActWeak. Otherwise just trace the cachedProperties
     // strongly, ie. call trace on it.
-    if (cached_properties && strongify == WTF::kWeakPointersActWeak) {
+    if (cached_properties && weakness == WTF::kWeakHandling) {
       // A given cache entry is only kept alive if none of the MatchedProperties
       // in the CachedMatchedProperties value contain a dead "properties" field.
       // If there is a dead field the entire cache entry is removed.

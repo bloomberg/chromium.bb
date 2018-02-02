@@ -219,9 +219,9 @@ struct PairWithWeakHandling : public StrongWeakPair {
   // trace the strong pointer.
   template <typename VisitorDispatcher>
   bool TraceInCollection(VisitorDispatcher visitor,
-                         WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
+                         WTF::WeakHandlingFlag weakness) {
     HashTraits<WeakMember<IntWrapper>>::TraceInCollection(visitor, second,
-                                                          strongify);
+                                                          weakness);
     if (!ThreadHeap::IsHeapObjectAlive(second))
       return true;
     // FIXME: traceInCollection is also called from WeakProcessing to check if
@@ -244,8 +244,7 @@ template <typename T>
 struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<T> {
   // We want to treat the object as a weak object in the sense that it can
   // disappear from hash sets and hash maps.
-  static const WTF::WeakHandlingFlag kWeakHandlingFlag =
-      WTF::kWeakHandlingInCollections;
+  static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
   // Normally whether or not an object needs tracing is inferred
   // automatically from the presence of the trace method, but we don't
   // necessarily have a trace method, and we may not need one because T
@@ -264,11 +263,10 @@ struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<T> {
   // dead objects were found: In this case any strong pointers were not yet
   // traced and the entry should be removed from the collection.
   template <typename VisitorDispatcher>
-  static bool TraceInCollection(
-      VisitorDispatcher visitor,
-      T& t,
-      WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
-    return t.TraceInCollection(visitor, strongify);
+  static bool TraceInCollection(VisitorDispatcher visitor,
+                                T& t,
+                                WTF::WeakHandlingFlag weakness) {
+    return t.TraceInCollection(visitor, weakness);
   }
 };
 
@@ -5126,13 +5124,11 @@ typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
 
 // These special traits will remove a set from a map when the set is empty.
 struct EmptyClearingHashSetTraits : HashTraits<WeakSet> {
-  static const WTF::WeakHandlingFlag kWeakHandlingFlag =
-      WTF::kWeakHandlingInCollections;
+  static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
   template <typename VisitorDispatcher>
-  static bool TraceInCollection(
-      VisitorDispatcher visitor,
-      WeakSet& set,
-      WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
+  static bool TraceInCollection(VisitorDispatcher visitor,
+                                WeakSet& set,
+                                WTF::WeakHandlingFlag weakenss) {
     bool live_entries_found = false;
     WeakSet::iterator end = set.end();
     for (WeakSet::iterator it = set.begin(); it != end; ++it) {

@@ -171,10 +171,8 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename VisitorDispatcher, typename T, typename Traits>
   static void Trace(VisitorDispatcher visitor, T& t) {
-    TraceCollectionIfEnabled<WTF::IsTraceableInCollectionTrait<Traits>::value,
-                             Traits::kWeakHandlingFlag,
-                             WTF::kWeakPointersActWeak, T,
-                             Traits>::Trace(visitor, t);
+    TraceCollectionIfEnabled<Traits::kWeakHandlingFlag, T, Traits>::Trace(
+        visitor, t);
   }
 
   template <typename VisitorDispatcher>
@@ -246,11 +244,11 @@ class PLATFORM_EXPORT HeapAllocator {
       // eagerly trace non-managed objects.
       DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       TraceCollectionIfEnabled<
-          WTF::IsTraceableInCollectionTrait<Traits>::value,
           // No weak handling for write barriers. The weak references will be
           // updated in the atomic pause.
-          WTF::kNoWeakHandlingInCollections, WTF::kWeakPointersActWeak, T,
-          Traits>::Trace(thread_state->CurrentVisitor(), *object);
+          WTF::kNoWeakHandling, T, Traits>::Trace(thread_state
+                                                      ->CurrentVisitor(),
+                                                  *object);
     }
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
@@ -268,11 +266,11 @@ class PLATFORM_EXPORT HeapAllocator {
       DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       while (len-- > 0) {
         TraceCollectionIfEnabled<
-            WTF::IsTraceableInCollectionTrait<Traits>::value,
             // No weak handling for write barriers. The weak references will be
             // updated in the atomic pause.
-            WTF::kNoWeakHandlingInCollections, WTF::kWeakPointersActWeak, T,
-            Traits>::Trace(thread_state->CurrentVisitor(), *array);
+            WTF::kNoWeakHandling, T, Traits>::Trace(thread_state
+                                                        ->CurrentVisitor(),
+                                                    *array);
         array++;
       }
     }
@@ -317,10 +315,8 @@ static void TraceListHashSetValue(VisitorDispatcher visitor, Value& value) {
   // (there's an assert elsewhere), but we have to specify some value for the
   // strongify template argument, so we specify WTF::WeakPointersActWeak,
   // arbitrarily.
-  TraceCollectionIfEnabled<
-      WTF::IsTraceableInCollectionTrait<WTF::HashTraits<Value>>::value,
-      WTF::kNoWeakHandlingInCollections, WTF::kWeakPointersActWeak, Value,
-      WTF::HashTraits<Value>>::Trace(visitor, value);
+  TraceCollectionIfEnabled<WTF::kNoWeakHandling, Value,
+                           WTF::HashTraits<Value>>::Trace(visitor, value);
 }
 
 // The inline capacity is just a dummy template argument to match the off-heap
@@ -811,8 +807,8 @@ struct HashTraits<blink::WeakMember<T>>
   template <typename VisitorDispatcher>
   static bool TraceInCollection(VisitorDispatcher visitor,
                                 blink::WeakMember<T>& weak_member,
-                                ShouldWeakPointersBeMarkedStrongly strongify) {
-    if (strongify == kWeakPointersActStrong) {
+                                WeakHandlingFlag weakness) {
+    if (weakness == kNoWeakHandling) {
       visitor->Trace(weak_member.Get());  // Strongified visit.
       return false;
     }
