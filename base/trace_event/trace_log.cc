@@ -1346,8 +1346,10 @@ std::string TraceLog::EventToConsoleMessage(unsigned char phase,
   }
 
   std::string thread_name = thread_names_[thread_id];
-  if (thread_colors_.find(thread_name) == thread_colors_.end())
-    thread_colors_[thread_name] = (thread_colors_.size() % 6) + 1;
+  if (thread_colors_.find(thread_name) == thread_colors_.end()) {
+    size_t next_color = (thread_colors_.size() % 6) + 1;
+    thread_colors_[thread_name] = next_color;
+  }
 
   std::ostringstream log;
   log << base::StringPrintf("%s: \x1b[0;3%dm", thread_name.c_str(),
