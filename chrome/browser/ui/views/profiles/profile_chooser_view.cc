@@ -672,8 +672,12 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // Display a submenu listing the GAIA web accounts (without the first one).
     std::vector<AccountInfo> accounts(dice_sync_promo_accounts_.begin() + 1,
                                       dice_sync_promo_accounts_.end());
+    // Using base::Unretained(this) is safe here because |dice_accounts_menu_|
+    // is owned by |ProfileChooserView|, i.e. |this|.
     dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
-        accounts, GetImagesForAccounts(accounts, browser_->profile()));
+        accounts, GetImagesForAccounts(accounts, browser_->profile()),
+        base::BindOnce(&ProfileChooserView::EnableSync,
+                       base::Unretained(this)));
     dice_accounts_menu_->Show(sender);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
@@ -1419,4 +1423,13 @@ void ProfileChooserView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {
   ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
   gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
+}
+
+void ProfileChooserView::EnableSync(
+    const base::Optional<AccountInfo>& account) {
+  Hide();
+  if (account)
+    signin_ui_util::EnableSync(browser_, account.value(), access_point_);
+  else
+    ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
 }
