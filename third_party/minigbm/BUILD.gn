@@ -12,11 +12,15 @@ declare_args() {
   # system version, but when building on dev workstations or the Chrome
   # waterfall we bundle it because Ubuntu doesn't ship a usable version.
   use_system_minigbm = false
+  use_intel_minigbm = false
 }
 
 if (!use_system_minigbm) {
   config("minigbm_config") {
     include_dirs = [ "src" ]
+    if (use_intel_minigbm) {
+      defines = [ "DRV_I915" ]
+    }
   }
 
   shared_library("minigbm") {
