@@ -190,8 +190,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
                                                            bool is_bookmark) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   const bool is_touch_ui =
-      ui::MaterialDesignController::GetMode() ==
-      ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 
   if (is_bookmark)
     return is_touch_ui ? omnibox::kTouchableBookmarkIcon : omnibox::kStarIcon;
