@@ -500,6 +500,7 @@ class SimulatorTestRunner(TestRunner):
       env_vars=None,
       mac_toolchain='',
       retries=None,
+      shards=None,
       test_args=None,
       test_cases=None,
       xcode_path='',
@@ -557,6 +558,8 @@ class SimulatorTestRunner(TestRunner):
     self.platform = platform
     self.start_time = None
     self.version = version
+    # TODO(crbug.com/808267): Implement iOS test sharding.
+    self.shards = shards
 
   @staticmethod
   def kill_simulators():
