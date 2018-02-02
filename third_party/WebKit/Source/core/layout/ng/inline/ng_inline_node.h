@@ -28,6 +28,7 @@ using NGInlineItemsBuilder =
 struct NGInlineNodeData;
 class NGLayoutResult;
 class NGOffsetMapping;
+class NGInlineNodeLegacy;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -53,10 +54,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // opportunity, and max-content is when lines do not wrap at all.
   MinMaxSize ComputeMinMaxSize();
 
-  // Copy fragment data of all lines to LayoutBlockFlow.
-  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&,
-                                   const NGLayoutResult&);
-
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayout();
 
@@ -69,7 +66,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   const Vector<NGInlineItem>& Items(bool is_first_line = false) const;
   NGInlineItemRange Items(unsigned start_index, unsigned end_index);
 
-  void GetLayoutTextOffsets(Vector<unsigned, 32>*);
+  void GetLayoutTextOffsets(Vector<unsigned, 32>*) const;
 
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
@@ -105,6 +102,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   const NGInlineNodeData& EnsureData();
 
   friend class NGLineBreakerTest;
+  friend class NGInlineNodeLegacy;
 };
 
 inline void NGInlineNode::AssertOffset(unsigned index, unsigned offset) const {

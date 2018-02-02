@@ -10,6 +10,7 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_inline_node_legacy.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/legacy_layout_tree_walking.h"
@@ -186,10 +187,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     NGLayoutInputNode first_child = FirstChild();
     if (block_flow && first_child && first_child.IsInline()) {
       if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
-        // TODO(ikilpatrick): Move line-box creation logic from
-        // NGInlineNode::CopyFragmentDataToLayoutBox to NGBlockNode.
-        NGInlineNode node = ToNGInlineNode(first_child);
-        node.CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
+        NGInlineNodeLegacy(ToNGInlineNode(first_child))
+            .CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
       } else {
         CopyFragmentDataToLayoutBoxForInlineChildren(
             ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
