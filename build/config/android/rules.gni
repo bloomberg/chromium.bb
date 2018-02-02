@@ -3305,3 +3305,44 @@ if (enable_java_templates) {
     }
   }
 }
+
+# Compatibility wrapper to toggle android_deps usage for a dependency.
+#
+# This target creates a wrapper for a dependency allowing it to be loaded
+# either from //third_party/android_deps or from an existing //third_party
+# (or other) target.
+#
+# Variables
+#   fallback_target: Target to use when the android_deps repo is not enabled.
+#   android_deps_target_name: Name of the target from the android_deps repo to
+#     use when the repo is enabled. Is not set, the wrapper's target name will
+#     be used instead.
+#
+# Example
+#   prebuilt_wrapper("android_support_multidex_java") {
+#     android_deps_target_name = "com_android_support_multidex_java"
+#     fallback_target = "$android_support_library_package:$target_name"
+#   }
+template("prebuilt_wrapper") {
+  if (defined(invoker.android_deps_target_name)) {
+    _resolved_android_deps_target_name = invoker.android_deps_target_name
+  } else {
+    _resolved_android_deps_target_name = target_name
+  }
+
+  if (enable_android_deps_repository) {
+    _resolved_target =
+        "//third_party/android_deps:${_resolved_android_deps_target_name}"
+    assert(invoker.fallback_target != "")  # Mark as used.
+  } else {
+    _resolved_target = "${invoker.fallback_target}"
+    assert(_resolved_android_deps_target_name != "")  # Mark as used.
+  }
+
+  java_group(target_name) {
+    forward_variables_from(invoker, [ "testonly" ])
+    deps = [
+      _resolved_target,
+    ]
+  }
+}

@@ -46,35 +46,61 @@ support_lib_alias("android_gcm_java") {
 }
 support_lib_alias("emma_device_java") {
 }
-support_lib_alias("android_arch_lifecycle_common_java") {
+prebuilt_wrapper("android_arch_lifecycle_common_java") {
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_arch_lifecycle_runtime_java") {
+prebuilt_wrapper("android_arch_lifecycle_runtime_java") {
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_multidex_java") {
+prebuilt_wrapper("android_support_multidex_java") {
+  android_deps_target_name = "com_android_support_multidex_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_annotations_java") {
+prebuilt_wrapper("android_support_annotations_java") {
+  android_deps_target_name = "com_android_support_support_annotations_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_cardview_java") {
+prebuilt_wrapper("android_support_cardview_java") {
+  android_deps_target_name = "com_android_support_cardview_v7_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_compat_java") {
+prebuilt_wrapper("android_support_compat_java") {
+  android_deps_target_name = "com_android_support_support_compat_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_core_ui_java") {
+prebuilt_wrapper("android_support_core_ui_java") {
+  android_deps_target_name = "com_android_support_support_core_ui_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_core_utils_java") {
+prebuilt_wrapper("android_support_core_utils_java") {
+  android_deps_target_name = "com_android_support_support_core_utils_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_design_java") {
+prebuilt_wrapper("android_support_design_java") {
+  android_deps_target_name = "com_android_support_design_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_v4_java") {
+prebuilt_wrapper("android_support_v4_java") {
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_v7_appcompat_java") {
+prebuilt_wrapper("android_support_v7_appcompat_java") {
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_v7_gridlayout_java") {
+prebuilt_wrapper("android_support_v7_gridlayout_java") {
+  android_deps_target_name = "com_android_support_gridlayout_v7_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_v7_mediarouter_java") {
+prebuilt_wrapper("android_support_v7_mediarouter_java") {
+  android_deps_target_name = "com_android_support_mediarouter_v7_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_v7_recyclerview_java") {
+prebuilt_wrapper("android_support_v7_recyclerview_java") {
+  android_deps_target_name = "com_android_support_recyclerview_v7_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
-support_lib_alias("android_support_v13_java") {
+prebuilt_wrapper("android_support_v13_java") {
+  android_deps_target_name = "com_android_support_support_v13_java"
+  fallback_target = "$android_support_library_package:$target_name"
 }
 
 # TODO(dgn): Use the POM files instead of hardcoding the dependencies.
