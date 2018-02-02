@@ -11,6 +11,7 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -73,7 +74,18 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
 void FullscreenWebStateObserver::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  // Due to limitations in WKWebView's rendering, different MIME types must be
+  // inset using different techniques:
+  // - PDFs need to be inset using the scroll view's |contentInset| property or
+  //   the floating page indicator is laid out incorrectly.
+  // - For normal pages, using |contentInset| breaks the layout of fixed-
+  //   position DOM elements, so top padding must be accomplished by updating
+  //   the WKWebView's frame.
+  web_state->GetWebViewProxy().shouldUseInsetForTopPadding =
+      web_state->GetContentsMimeType() == "application/pdf";
+  // Reset the model so that the toolbar is visible for the new page.
   model_->ResetForNavigation();
+  // Disable fullscreen if there is a problem with the SSL status.
   SetDisableFullscreenForSSL(ShouldDisableFullscreenForWebStateSSL(web_state));
 }
 
