@@ -241,7 +241,7 @@ void CheckCanDownload(
 #if defined(OS_ANDROID)
 // TODOD(qinmin): reuse the similar function defined in
 // DownloadResourceThrottle.
-void OnAcquireFileAccessPermissionDone(
+void OnDownloadAcquireFileAccessPermissionDone(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
@@ -1081,8 +1081,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
 #if defined(OS_ANDROID)
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
-      base::Bind(&OnAcquireFileAccessPermissionDone, web_contents_getter, url,
-                 request_method, base::Passed(&cb)));
+      base::Bind(&OnDownloadAcquireFileAccessPermissionDone,
+                 web_contents_getter, url, request_method, base::Passed(&cb)));
 #else
   CheckCanDownload(web_contents_getter, url, request_method, std::move(cb));
 #endif
