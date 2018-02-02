@@ -1419,6 +1419,15 @@
       # Audio Linux" at all, since they're supposed to be compiled out for
       # Chromecast.
     ],
+    'modifications': {
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+          '-v',  # Useful for getting debug info and SCP throughput stats.
+        ],
+      },
+    },
   },
   'dbus_unittests': {
     'remove_from': [
@@ -2357,11 +2366,20 @@
           'hard_timeout': 120,
         },
       },
+
       # chromium.android.fyi
       'x64 Device Tester': {
         'swarming': {
           'hard_timeout': 0,
         },
+      },
+
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+          '-v',  # Useful for getting debug info and SCP throughput stats.
+        ],
       },
     },
   },
@@ -3184,6 +3202,15 @@
       'Cast Audio Linux',
       'Cast Linux',
     ],
+    'modifications': {
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+          '-v',  # Useful for getting debug info and SCP throughput stats.
+        ],
+      },
+    },
   },
   'snapshot_unittests': {
     'remove_from': [
@@ -3227,6 +3254,14 @@
         'swarming': {
           'hard_timeout': 60,
         },
+      },
+
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+          '-v',  # Useful for getting debug info and SCP throughput stats.
+        ],
       },
     },
   },

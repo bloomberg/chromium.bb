@@ -117,6 +117,7 @@ template("generate_runner_script") {
 
     data = [
       _generated_script,
+      _manifest_path,
       "//build/fuchsia/runner_v2/",
       "//build/util/lib/",
       "//third_party/fuchsia-sdk/",
