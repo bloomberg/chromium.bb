@@ -23,9 +23,9 @@ enum AuthenticatorStatus {
   UNKNOWN_ERROR,
 };
 
-// Credential information returned by both Authenticator::MakeCredential 
+// Credential information returned by both Authenticator::MakeCredential
 // and Authenticator::GetAssertion.
- struct CommonCredentialInfo {
+struct CommonCredentialInfo {
   // The base64url encoding of |raw_id|.
   string id;
 
@@ -115,6 +115,13 @@ struct PublicKeyCredentialRequestOptions {
   array<PublicKeyCredentialDescriptor> allow_credentials;
 };
 
+// See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
+enum AttestationConveyancePreference {
+  NONE,
+  INDIRECT,
+  DIRECT,
+};
+
 // Parameters passed into calls to MakeCredential.
 struct MakePublicKeyCredentialOptions {
   // Information about the relying party and user entities, respectively.
@@ -139,6 +146,10 @@ struct MakePublicKeyCredentialOptions {
   // authenticator has one of these credentials, it should not
   // create a new one.
   array<PublicKeyCredentialDescriptor> exclude_credentials;
+
+  // Specifies whether the RP wants attestation information for the created
+  // credential.
+  AttestationConveyancePreference attestation;
 
   // TODO(kpaulhamus): add AuthenticatorSelectionCriteria
 };

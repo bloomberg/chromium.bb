@@ -37,6 +37,15 @@ class RegisterResponseData : public ResponseData {
 
   ~RegisterResponseData();
 
+  // Replaces the attestation statement with a “none” attestation, as specified
+  // for step 20.3 in https://w3c.github.io/webauthn/#createCredential.  (This
+  // does not, currently, erase the AAGUID because it is already always zero
+  // for U2F devices. If CTAP2 is supported in the future, that will need to be
+  // taken into account.)
+  //
+  // TODO(https://crbug.com/780078): erase AAGUID when CTAP2 is supported.
+  void EraseAttestationStatement();
+
   std::vector<uint8_t> GetCBOREncodedAttestationObject() const;
 
  private:

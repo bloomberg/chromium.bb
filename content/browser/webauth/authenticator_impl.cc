@@ -246,6 +246,8 @@ void AuthenticatorImpl::MakeCredential(
               render_frame_host_->GetProcess()->GetBrowserContext(),
               options->relying_party->id);
 
+  attestation_preference_ = options->attestation;
+
   // TODO(kpaulhamus): Mock U2fRegister for unit tests.
   // http://crbug.com/785955.
   // Per fido-u2f-raw-message-formats:
@@ -334,6 +336,10 @@ void AuthenticatorImpl::OnRegisterResponse(
       break;
     case device::U2fReturnCode::SUCCESS:
       DCHECK(response_data.has_value());
+      if (attestation_preference_ ==
+          webauth::mojom::AttestationConveyancePreference::NONE) {
+        response_data->EraseAttestationStatement();
+      }
       std::move(make_credential_response_callback_)
           .Run(webauth::mojom::AuthenticatorStatus::SUCCESS,
                CreateMakeCredentialResponse(std::move(client_data_),

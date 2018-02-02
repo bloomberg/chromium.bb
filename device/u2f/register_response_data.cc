@@ -85,6 +85,10 @@ RegisterResponseData& RegisterResponseData::operator=(
 
 RegisterResponseData::~RegisterResponseData() = default;
 
+void RegisterResponseData::EraseAttestationStatement() {
+  attestation_object_->EraseAttestationStatement();
+}
+
 std::vector<uint8_t> RegisterResponseData::GetCBOREncodedAttestationObject()
     const {
   return attestation_object_->SerializeToCBOREncodedBytes();

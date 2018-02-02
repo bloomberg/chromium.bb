@@ -39,6 +39,20 @@ class AttestationStatement {
   DISALLOW_COPY_AND_ASSIGN(AttestationStatement);
 };
 
+// NoneAttestationStatement represents a “none” attestation, which is used when
+// attestation information will not be returned. See
+// https://w3c.github.io/webauthn/#none-attestation
+class NoneAttestationStatement : public AttestationStatement {
+ public:
+  NoneAttestationStatement();
+
+  ~NoneAttestationStatement() override;
+  cbor::CBORValue::MapValue GetAsCBORMap() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoneAttestationStatement);
+};
+
 }  // namespace device
 
 #endif  // DEVICE_U2F_ATTESTATION_STATEMENT_H_
