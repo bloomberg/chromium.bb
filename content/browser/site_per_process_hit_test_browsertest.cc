@@ -2366,9 +2366,8 @@ IN_PROC_BROWSER_TEST_F(
 }
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
 
-// Disabled for flakiness: https://crbug.com/802085.
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
-                       DISABLED_InputEventRouterTouchpadGestureTargetTest) {
+                       InputEventRouterTouchpadGestureTargetTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

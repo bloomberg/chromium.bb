@@ -720,34 +720,6 @@ void RenderWidgetHostViewChildFrame::PreProcessTouchEvent(
   }
 }
 
-void RenderWidgetHostViewChildFrame::ProcessGestureEvent(
-    const blink::WebGestureEvent& event,
-    const ui::LatencyInfo& latency) {
-  if (wheel_scroll_latching_enabled() && is_scroll_sequence_bubbling_ &&
-      (event.GetType() == blink::WebInputEvent::kGestureFlingStart) &&
-      frame_connector_) {
-    // For GestureFlingStarts, we send a GestureScrollEnd to the child in order
-    // to conclude the scrolling sequence but without allowing the child to
-    // actually fling if the child attempts to consume scroll.
-    // We bubble the fling to the target intended to consume it.
-    frame_connector_->BubbleScrollEvent(event);
-
-    blink::WebGestureEvent scroll_end(event);
-    scroll_end.SetType(blink::WebInputEvent::kGestureScrollEnd);
-    scroll_end.data.scroll_end.inertial_phase =
-        blink::WebGestureEvent::kUnknownMomentumPhase;
-    scroll_end.data.scroll_end.delta_units =
-        blink::WebGestureEvent::kPrecisePixels;
-    // Since we've just bubbled the fling, the |frame_connector_| knows that
-    // the sequence has ended, so it will just drop this synthesised GSE when
-    // we get the ack.
-    host_->ForwardGestureEvent(scroll_end);
-    return;
-  }
-
-  RenderWidgetHostViewBase::ProcessGestureEvent(event, latency);
-}
-
 viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
   return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
 }
