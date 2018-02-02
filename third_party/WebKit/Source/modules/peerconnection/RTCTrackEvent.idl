@@ -4,7 +4,8 @@
 
 // https://w3c.github.io/webrtc-pc/#rtctrackevent
 [
-    Constructor(DOMString type, RTCTrackEventInit eventInitDict)
+    Constructor(DOMString type, RTCTrackEventInit eventInitDict),
+    Exposed=Window
 ] interface RTCTrackEvent : Event {
     readonly attribute RTCRtpReceiver           receiver;
     readonly attribute MediaStreamTrack         track;

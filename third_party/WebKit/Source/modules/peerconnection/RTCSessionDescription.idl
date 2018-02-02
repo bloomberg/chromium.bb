@@ -39,7 +39,8 @@ enum RTCSdpType {
 
 [
     Constructor(optional RTCSessionDescriptionInit descriptionInitDict),
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ExecutionContext,
+    Exposed=Window
 ] interface RTCSessionDescription {
     // TODO(foolip): |type| and |sdp| should be readonly and not nullable.
     // https://crbug.com/662898

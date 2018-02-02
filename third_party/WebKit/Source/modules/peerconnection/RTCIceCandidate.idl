@@ -31,7 +31,8 @@
 [
     Constructor(RTCIceCandidateInit candidateInitDict),
     ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    Exposed=Window
 ] interface RTCIceCandidate {
     attribute DOMString candidate;
     attribute DOMString sdpMid;

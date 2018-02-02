@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/webrtc-pc/#rtcstatsreport-object
+[Exposed=Window]
 interface RTCStatsReport {
     readonly maplike<DOMString, object>;
 };
