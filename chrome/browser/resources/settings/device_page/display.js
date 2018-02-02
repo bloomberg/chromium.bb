@@ -699,25 +699,18 @@ Polymer({
     // Blur the control so that when the transition animation completes and the
     // UI is focused, the control does not receive focus. crbug.com/785070
     event.target.blur();
-    let id = '';
-    /** @type {!chrome.system.display.DisplayProperties} */
-    const properties = {};
-    if (this.isMirrored_(this.displays)) {
-      id = this.primaryDisplayId;
-      properties.mirroringSourceId = '';
-    } else {
-      // Set the mirroringSourceId of the secondary (first non-primary) display.
-      for (let i = 0; i < this.displays.length; ++i) {
-        const display = this.displays[i];
-        if (display.id != this.primaryDisplayId) {
-          id = display.id;
-          break;
-        }
-      }
-      properties.mirroringSourceId = this.primaryDisplayId;
-    }
-    settings.display.systemDisplayApi.setDisplayProperties(
-        id, properties, this.setPropertiesCallback_.bind(this));
+
+    /** @type {!chrome.system.display.MirrorModeInfo} */
+    let mirrorModeInfo = {
+      mode: this.isMirrored_(this.displays) ?
+          chrome.system.display.MirrorMode.OFF :
+          chrome.system.display.MirrorMode.NORMAL
+    };
+    settings.display.systemDisplayApi.setMirrorMode(mirrorModeInfo, () => {
+      let error = chrome.runtime.lastError;
+      if (error)
+        console.error('setMirrorMode Error: ' + error.message);
+    });
   },
 
   /** @private */
