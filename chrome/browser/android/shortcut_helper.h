@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_SHORTCUT_HELPER_H_
 #define CHROME_BROWSER_ANDROID_SHORTCUT_HELPER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,14 @@ class ShortcutHelper {
  public:
   using WebApkInfoCallback =
       base::Callback<void(const std::vector<WebApkInfo>&)>;
+
+  // Creates a ShortcutInfo struct suitable for adding a shortcut to the home
+  // screen.
+  static std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
+      const GURL& manifest_url,
+      const content::Manifest& manifest,
+      const GURL& primary_icon_url,
+      const GURL& badge_icon_url);
 
   // Adds a shortcut to the launcher using a SkBitmap. The type of shortcut
   // added depends on the properties in |info|.

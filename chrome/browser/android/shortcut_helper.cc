@@ -21,7 +21,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
+#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/manifest.h"
 #include "jni/ShortcutHelper_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/color_analysis.h"
@@ -29,7 +31,6 @@
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using content::Manifest;
 
 namespace {
 
@@ -132,6 +133,32 @@ void AddShortcutWithSkBitmap(const ShortcutInfo& info,
 }
 
 }  // anonymous namespace
+
+// static
+std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
+    const GURL& manifest_url,
+    const content::Manifest& manifest,
+    const GURL& primary_icon_url,
+    const GURL& badge_icon_url) {
+  auto shortcut_info = std::make_unique<ShortcutInfo>(GURL());
+  if (!manifest.IsEmpty()) {
+    shortcut_info->UpdateFromManifest(manifest);
+    shortcut_info->manifest_url = manifest_url;
+    shortcut_info->best_primary_icon_url = primary_icon_url;
+    shortcut_info->best_badge_icon_url = badge_icon_url;
+  }
+
+  shortcut_info->ideal_splash_image_size_in_px = GetIdealSplashImageSizeInPx();
+  shortcut_info->minimum_splash_image_size_in_px =
+      GetMinimumSplashImageSizeInPx();
+  shortcut_info->splash_image_url =
+      content::ManifestIconSelector::FindBestMatchingIcon(
+          manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
+          shortcut_info->minimum_splash_image_size_in_px,
+          content::Manifest::Icon::IconPurpose::ANY);
+
+  return shortcut_info;
+}
 
 // static
 void ShortcutHelper::AddToLauncherWithSkBitmap(

@@ -12,6 +12,7 @@ class WebContents;
 }
 
 enum class InstallTrigger {
+  AMBIENT_BADGE,
   API,
   AUTOMATIC_PROMPT,
   MENU,
@@ -69,6 +70,12 @@ enum class WebappInstallSource {
 
   // Extensions management API (not reported).
   MANAGEMENT_API = 7,
+
+  // PWA ambient badge in an Android Custom Tab.
+  AMBIENT_BADGE_BROWSER_TAB = 8,
+
+  // PWA ambient badge in browser Tab.
+  AMBIENT_BADGE_CUSTOM_TAB = 9,
 
   // Add any new values above this one.
   COUNT,

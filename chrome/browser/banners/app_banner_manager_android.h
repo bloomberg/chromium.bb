@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_ANDROID_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_ANDROID_H_
 
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
@@ -14,6 +15,8 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
+
+class PwaAmbientBadgeManagerAndroid;
 
 namespace banners {
 
@@ -84,6 +87,10 @@ class AppBannerManagerAndroid
   void ResetCurrentPageData() override;
   void ShowBannerUi(WebappInstallSource install_source) override;
 
+  // content::WebContentsObserver overrides.
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+
  private:
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;
 
@@ -103,6 +110,8 @@ class AppBannerManagerAndroid
   InstallableStatusCode QueryNativeApp(const std::string& platform,
                                        const GURL& url,
                                        const std::string& id);
+
+  std::unique_ptr<PwaAmbientBadgeManagerAndroid> ambient_badge_manager_;
 
   // The URL of the badge icon.
   GURL badge_icon_url_;

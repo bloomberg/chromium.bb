@@ -1909,6 +1909,12 @@ are declared in build/common.gypi.
         No, thanks
       </message>
 
+      <!-- Ambient badge -->
+      <if expr="is_android">
+        <message name="IDS_AMBIENT_BADGE" desc="String for the ambient badge promoting a progressive web app" formatter_data="android_java">
+          Add to Home screen
+        </message>
+      </if>
       <!-- Bookmark app bubble -->
       <if expr="chromeos">
         <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">

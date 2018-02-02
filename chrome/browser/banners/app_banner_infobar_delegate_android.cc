@@ -191,6 +191,11 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
       has_user_interaction_(false),
       is_webapk_(is_webapk),
       install_source_(install_source) {
+  if (is_webapk_)
+    shortcut_info_->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER_WEBAPK);
+  else
+    shortcut_info_->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
+
   CreateJavaDelegate();
 }
 

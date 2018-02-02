@@ -231,7 +231,9 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
          source == WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB ||
          source == WebappInstallSource::API_BROWSER_TAB ||
          source == WebappInstallSource::API_CUSTOM_TAB ||
-         source == WebappInstallSource::DEBUG;
+         source == WebappInstallSource::DEBUG ||
+         source == WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB ||
+         source == WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB;
 }
 
 // static
@@ -245,6 +247,9 @@ WebappInstallSource InstallableMetrics::GetInstallSource(
 #endif
 
   switch (trigger) {
+    case InstallTrigger::AMBIENT_BADGE:
+      return is_custom_tab ? WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB
+                           : WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB;
     case InstallTrigger::API:
       return is_custom_tab ? WebappInstallSource::API_CUSTOM_TAB
                            : WebappInstallSource::API_BROWSER_TAB;
