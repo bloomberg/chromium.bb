@@ -41,7 +41,7 @@ class MidiManagerWin final
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) override;
+                            base::TimeTicks timestamp) override;
 
   // base::SystemMonitor::DevicesChangedObserver overrides:
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;

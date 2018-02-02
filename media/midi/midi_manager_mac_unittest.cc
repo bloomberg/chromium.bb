@@ -68,7 +68,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   void ReceiveMidiData(uint32_t port_index,
                        const uint8_t* data,
                        size_t size,
-                       double timestamp) override {}
+                       base::TimeTicks timestamp) override {}
   void AccumulateMidiBytesSent(size_t size) override {}
   void Detach() override {}
 

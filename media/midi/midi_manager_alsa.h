@@ -36,7 +36,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) override;
+                            base::TimeTicks timestamp) override;
 
  private:
   friend class MidiManagerAlsaTest;
@@ -374,7 +374,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
                     const std::vector<uint8_t>& data);
 
   void EventLoop();
-  void ProcessSingleEvent(snd_seq_event_t* event, double timestamp);
+  void ProcessSingleEvent(snd_seq_event_t* event, base::TimeTicks timestamp);
   void ProcessClientStartEvent(int client_id);
   void ProcessPortStartEvent(const snd_seq_addr_t& addr);
   void ProcessClientExitEvent(const snd_seq_addr_t& addr);

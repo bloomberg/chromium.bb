@@ -31,6 +31,7 @@
 #ifndef MIDIAccessorClient_h
 #define MIDIAccessorClient_h
 
+#include "base/time/time.h"
 #include "media/midi/midi_service.mojom-blink.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "platform/wtf/Forward.h"
@@ -58,7 +59,7 @@ class MIDIAccessorClient {
   virtual void DidReceiveMIDIData(unsigned port_index,
                                   const unsigned char* data,
                                   size_t length,
-                                  double time_stamp) = 0;
+                                  base::TimeTicks time_stamp) = 0;
 };
 
 }  // namespace blink

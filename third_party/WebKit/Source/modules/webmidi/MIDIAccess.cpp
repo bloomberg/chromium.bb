@@ -185,7 +185,7 @@ void MIDIAccess::DidSetOutputPortState(unsigned port_index, PortState state) {
 void MIDIAccess::DidReceiveMIDIData(unsigned port_index,
                                     const unsigned char* data,
                                     size_t length,
-                                    double time_stamp) {
+                                    TimeTicks time_stamp) {
   DCHECK(IsMainThread());
   if (port_index >= inputs_.size())
     return;
@@ -196,32 +196,11 @@ void MIDIAccess::DidReceiveMIDIData(unsigned port_index,
 void MIDIAccess::SendMIDIData(unsigned port_index,
                               const unsigned char* data,
                               size_t length,
-                              double time_stamp_in_milliseconds) {
-  // Do not continue sending when document is going to be closed.
-  Document* document = ToDocument(GetExecutionContext());
-  DCHECK(document);
-  DocumentLoader* loader = document->Loader();
-  if (!loader)
+                              TimeTicks time_stamp) {
+  DCHECK(!time_stamp.is_null());
+  if (!GetExecutionContext() || !data || !length ||
+      port_index >= outputs_.size())
     return;
-
-  if (!data || !length || port_index >= outputs_.size())
-    return;
-
-  // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to
-  // the same time coordinate system as performance.now() into a time in seconds
-  // which is based on the time coordinate system of
-  // monotonicallyIncreasingTime().
-  double time_stamp;
-
-  if (!time_stamp_in_milliseconds) {
-    // We treat a value of 0 (which is the default value) as special, meaning
-    // "now".  We need to translate it exactly to 0 seconds.
-    time_stamp = 0;
-  } else {
-    double document_start_time =
-        TimeTicksInSeconds(loader->GetTiming().ReferenceMonotonicTime());
-    time_stamp = document_start_time + 0.001 * time_stamp_in_milliseconds;
-  }
 
   accessor_->SendMIDIData(port_index, data, length, time_stamp);
 }

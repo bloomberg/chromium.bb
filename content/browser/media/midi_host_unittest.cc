@@ -34,7 +34,7 @@ struct MidiEvent {
   MidiEvent(MidiEventType in_type,
             uint32_t in_port_index,
             const std::vector<uint8_t>& in_data,
-            double in_timestamp)
+            base::TimeTicks in_timestamp)
       : type(in_type),
         port_index(in_port_index),
         data(in_data),
@@ -43,7 +43,7 @@ struct MidiEvent {
   MidiEventType type;
   uint32_t port_index;
   std::vector<uint8_t> data;
-  double timestamp;
+  base::TimeTicks timestamp;
 };
 
 class FakeMidiManager : public midi::MidiManager {
@@ -59,7 +59,7 @@ class FakeMidiManager : public midi::MidiManager {
   void DispatchSendMidiData(midi::MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) override {
+                            base::TimeTicks timestamp) override {
     events_.push_back(MidiEvent(DISPATCH_SEND_MIDI_DATA,
                                 port_index,
                                 data,
@@ -148,7 +148,7 @@ class MidiHostTest : public testing::Test {
 
   void OnSendData(uint32_t port) {
     std::unique_ptr<IPC::Message> message(
-        new MidiHostMsg_SendData(port, data_, 0.0));
+        new MidiHostMsg_SendData(port, data_, base::TimeTicks()));
     host_->OnMessageReceived(*message.get());
   }
 
@@ -164,7 +164,7 @@ class MidiHostTest : public testing::Test {
     EXPECT_EQ(DISPATCH_SEND_MIDI_DATA, manager->events_[at].type);
     EXPECT_EQ(port, manager->events_[at].port_index);
     EXPECT_EQ(data_, manager->events_[at].data);
-    EXPECT_EQ(0.0, manager->events_[at].timestamp);
+    EXPECT_EQ(base::TimeTicks(), manager->events_[at].timestamp);
   }
 
   void RunLoopUntilIdle() {

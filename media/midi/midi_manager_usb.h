@@ -45,7 +45,7 @@ class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp) override;
+                            base::TimeTicks timestamp) override;
 
   // UsbMidiDeviceDelegate implementation.
   void ReceiveUsbMidiData(UsbMidiDevice* device,

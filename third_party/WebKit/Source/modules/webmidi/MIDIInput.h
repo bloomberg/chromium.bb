@@ -60,12 +60,10 @@ class MIDIInput final : public MIDIPort {
     return EventTargetNames::MIDIInput;
   }
 
-  // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of
-  // performance.now().
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           size_t length,
-                          double time_stamp);
+                          base::TimeTicks time_stamp);
 
   virtual void Trace(blink::Visitor*);
 

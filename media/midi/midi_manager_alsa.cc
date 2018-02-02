@@ -319,7 +319,7 @@ void MidiManagerAlsa::Finalize() {
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                                            uint32_t port_index,
                                            const std::vector<uint8_t>& data,
-                                           double timestamp) {
+                                           base::TimeTicks timestamp) {
   service()->task_service()->PostBoundDelayedTask(
       kSendTaskRunner,
       base::BindOnce(&MidiManagerAlsa::SendMidiData, base::Unretained(this),
@@ -884,8 +884,7 @@ void MidiManagerAlsa::EventLoop() {
     if (pfd[0].revents & POLLIN) {
       // Read available incoming MIDI data.
       int remaining;
-      double timestamp =
-          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+      base::TimeTicks timestamp = base::TimeTicks::Now();
       do {
         snd_seq_event_t* event;
         err = snd_seq_event_input(in_client_.get(), &event);
@@ -952,7 +951,7 @@ void MidiManagerAlsa::EventLoop() {
 }
 
 void MidiManagerAlsa::ProcessSingleEvent(snd_seq_event_t* event,
-                                         double timestamp) {
+                                         base::TimeTicks timestamp) {
   auto source_it =
       source_map_.find(AddrToInt(event->source.client, event->source.port));
   if (source_it != source_map_.end()) {

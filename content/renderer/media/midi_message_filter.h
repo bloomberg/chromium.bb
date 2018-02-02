@@ -47,7 +47,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   void SendMidiData(uint32_t port,
                     const uint8_t* data,
                     size_t length,
-                    double timestamp);
+                    base::TimeTicks timestamp);
 
   // IO task runner associated with this message filter.
   base::SingleThreadTaskRunner* io_task_runner() const {
@@ -62,7 +62,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   void SendMidiDataOnIOThread(uint32_t port,
                               const std::vector<uint8_t>& data,
-                              double timestamp);
+                              base::TimeTicks timestamp);
 
   void EndSessionOnIOThread();
 
@@ -97,7 +97,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   // more messages.
   void OnDataReceived(uint32_t port,
                       const std::vector<uint8_t>& data,
-                      double timestamp);
+                      base::TimeTicks timestamp);
 
   // From time-to-time, the browser incrementally informs us of how many bytes
   // it has successfully sent. This is part of our throttling process to avoid
@@ -114,7 +114,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   void HandleDataReceived(uint32_t port,
                           const std::vector<uint8_t>& data,
-                          double timestamp);
+                          base::TimeTicks timestamp);
 
   void HandleAckknowledgeSentData(size_t bytes_sent);
 

@@ -49,7 +49,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   void ReceiveMidiData(uint32_t port,
                        const uint8_t* data,
                        size_t length,
-                       double timestamp) override;
+                       base::TimeTicks timestamp) override;
   void AccumulateMidiBytesSent(size_t n) override;
   void Detach() override;
 
@@ -59,7 +59,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   // Data to be sent to a MIDI output port.
   void OnSendData(uint32_t port,
                   const std::vector<uint8_t>& data,
-                  double timestamp);
+                  base::TimeTicks timestamp);
 
   void OnEndSession();
 

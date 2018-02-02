@@ -91,7 +91,7 @@ void MidiManagerAndroid::Finalize() {
 void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
                                               uint32_t port_index,
                                               const std::vector<uint8_t>& data,
-                                              double timestamp) {
+                                              base::TimeTicks timestamp) {
   if (port_index >= all_output_ports_.size()) {
     // |port_index| is provided by a renderer so we can't believe that it is
     // in the valid range.

@@ -37,8 +37,8 @@ class MIDI_EXPORT MidiService final {
     DISALLOW_COPY_AND_ASSIGN(ManagerFactory);
   };
 
-  // Converts Web MIDI timestamp to base::TimeDelta dealy for PostDelayedTask.
-  static base::TimeDelta TimestampToTimeDeltaDelay(double timestamp);
+  // Converts Web MIDI timestamp to base::TimeDelta delay for PostDelayedTask.
+  static base::TimeDelta TimestampToTimeDeltaDelay(base::TimeTicks timestamp);
 
   MidiService();
   // Customized ManagerFactory can be specified in the constructor for testing.
@@ -60,7 +60,7 @@ class MIDI_EXPORT MidiService final {
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
-                            double timestamp);
+                            base::TimeTicks timestamp);
 
   // Returns a SingleThreadTaskRunner reference to serve MidiManager. Each
   // TaskRunner will be constructed on demand.

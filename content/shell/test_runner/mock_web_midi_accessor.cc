@@ -61,7 +61,7 @@ void MockWebMIDIAccessor::StartSession() {
 void MockWebMIDIAccessor::SendMIDIData(unsigned port_index,
                                        const unsigned char* data,
                                        size_t length,
-                                       double timestamp) {
+                                       base::TimeTicks timestamp) {
   // Emulate a loopback device for testing. Make sure if an input port that has
   // the same index exists.
   if (port_index < next_input_port_index_)

@@ -751,7 +751,7 @@ void MidiManagerWin::Finalize() {
 void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
                                           uint32_t port_index,
                                           const std::vector<uint8_t>& data,
-                                          double timestamp) {
+                                          base::TimeTicks timestamp) {
   PostDelayedTask(
       base::BindOnce(&MidiManagerWin::SendOnTaskRunner, base::Unretained(this),
                      client, port_index, data),

@@ -63,7 +63,7 @@ class WebMIDIAccessorClient {
   virtual void DidReceiveMIDIData(unsigned port_index,
                                   const unsigned char* data,
                                   size_t length,
-                                  double time_stamp) = 0;
+                                  base::TimeTicks time_stamp) = 0;
 
  protected:
   virtual ~WebMIDIAccessorClient() = default;

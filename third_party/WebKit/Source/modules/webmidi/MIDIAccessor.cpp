@@ -64,7 +64,7 @@ void MIDIAccessor::StartSession() {
 void MIDIAccessor::SendMIDIData(unsigned port_index,
                                 const unsigned char* data,
                                 size_t length,
-                                double time_stamp) {
+                                base::TimeTicks time_stamp) {
   accessor_->SendMIDIData(port_index, data, length, time_stamp);
 }
 
@@ -99,7 +99,7 @@ void MIDIAccessor::DidStartSession(Result result) {
 void MIDIAccessor::DidReceiveMIDIData(unsigned port_index,
                                       const unsigned char* data,
                                       size_t length,
-                                      double time_stamp) {
+                                      base::TimeTicks time_stamp) {
   client_->DidReceiveMIDIData(port_index, data, length, time_stamp);
 }
 

@@ -29,7 +29,7 @@ void RendererWebMIDIAccessorImpl::StartSession() {
 void RendererWebMIDIAccessorImpl::SendMIDIData(unsigned port_index,
                                                const unsigned char* data,
                                                size_t length,
-                                               double timestamp) {
+                                               base::TimeTicks timestamp) {
   midi_message_filter()->SendMidiData(
       port_index,
       data,
