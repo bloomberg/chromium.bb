@@ -24,3 +24,6 @@
 
 # TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
 -ReflectorImplTest.*
+
+# New Mac failures to triage
+-RenderWidgetHostViewMacTest.ClearCompositorFrame

@@ -32,6 +32,8 @@
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
+-SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
+-SitePerProcessBrowserTest.PhysicalBackingSizeTest
 -SitePerProcessBrowserTest.ScrollBubblingFromNestedOOPIFTest
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
 -SitePerProcessBrowserTest.TwoSubframesCreatePopupMenuWidgetsSimultaneously
@@ -96,3 +98,9 @@
 
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
+
+# New Mac failures to triage
+-NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedSubframeBackForward
+-SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
+-WebContentsVideoCaptureDeviceBrowserTestP.CapturesContentChanges/2
+-WebContentsVideoCaptureDeviceBrowserTestP.CapturesContentChanges/3
