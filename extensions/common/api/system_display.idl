@@ -197,7 +197,7 @@ namespace system.display {
     // other properties may not apply. This is has no effect if not provided.
     boolean? isUnified;
 
-    // Depracated. Please use SetMirrorMode() instead.
+    // Deprecated. Please use setMirrorMode() instead.
     // Chrome OS only. If set and not empty, enables mirroring for this display.
     // Otherwise disables mirroring for this display. This value should indicate
     // the id of the source display to mirror, which must not be the same as the

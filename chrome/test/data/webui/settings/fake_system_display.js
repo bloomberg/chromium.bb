@@ -102,6 +102,23 @@ cr.define('settings', function() {
     },
 
     /** @override */
+    setMirrorMode(info, callback) {
+      let mirroringSourceId = '';
+      if (info.mode == chrome.system.display.MirrorMode.NORMAL) {
+        // Select the primary display as the mirroring source.
+        for (let d of this.fakeDisplays) {
+          if (d.isPrimary) {
+            mirroringSourceId = d.id;
+            break;
+          }
+        }
+      }
+      for (let d of this.fakeDisplays)
+        d.mirroringSourceId = mirroringSourceId;
+      callback();
+    },
+
+    /** @override */
     onDisplayChanged: new FakeChromeEvent(),
 
     /** @private */

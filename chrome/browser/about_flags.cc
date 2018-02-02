@@ -3670,7 +3670,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
 
 #if defined(OS_CHROMEOS)
-    {"enable-multi-mirroring", flag_descriptions::kDisableMultiMirroringName,
+    {"disable-multi-mirroring", flag_descriptions::kDisableMultiMirroringName,
      flag_descriptions::kDisableMultiMirroringDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableMultiMirroring)},
 #endif  // defined(OS_CHROMEOS)
