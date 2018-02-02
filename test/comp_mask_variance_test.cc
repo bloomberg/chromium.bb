@@ -64,10 +64,10 @@ AV1CompMaskVarianceTest::~AV1CompMaskVarianceTest() { ; }
 void AV1CompMaskVarianceTest::SetUp() {
   rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
   av1_init_wedge_masks();
-  comp_pred1_ = (uint8_t *)aom_calloc(MAX_SB_SQUARE, 1);
-  comp_pred2_ = (uint8_t *)aom_calloc(MAX_SB_SQUARE, 1);
-  pred_ = (uint8_t *)aom_malloc(MAX_SB_SQUARE);
-  ref_buffer_ = (uint8_t *)aom_malloc(MAX_SB_SQUARE + (8 * MAX_SB_SIZE));
+  comp_pred1_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE);
+  comp_pred2_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE);
+  pred_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE);
+  ref_buffer_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE + (8 * MAX_SB_SIZE));
   ref_ = ref_buffer_ + (8 * MAX_SB_SIZE);
   for (int i = 0; i < MAX_SB_SQUARE; ++i) {
     pred_[i] = rnd_.Rand8();
