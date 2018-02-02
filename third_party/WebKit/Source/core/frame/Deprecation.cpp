@@ -623,6 +623,13 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           replacedWillBeRemoved("Expressing a position using 3 parts",
                                 "<position> syntax", M68, "5116559680864256")};
 
+    case WebFeature::kImageInputTypeFormDataWithNonEmptyValue:
+      return {"ImageInputTypeFormDataWithNonEmptyValue", M68,
+              willBeRemoved("Extra form data if value attribute "
+                            "is present with non-empty "
+                            "value for <input type='image'>",
+                            M68, "5672688152477696")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", Unknown, ""};
