@@ -12,7 +12,7 @@ partial interface HTMLVideoElement {
     [CallWith=ScriptState] Promise<void> requestPictureInPicture();
 
     // TODO(crbug.com/806249): Implement PiP video events.
-    //attribute EventHandler onenterpictureinpicture;
+    attribute EventHandler onenterpictureinpicture;
     //attribute EventHandler onleavepictureinpicture;
 
     [CEReactions, Reflect] attribute boolean disablePictureInPicture;

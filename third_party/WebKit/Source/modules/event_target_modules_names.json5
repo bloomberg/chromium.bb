@@ -30,6 +30,7 @@
     "modules/notifications/Notification",
     "modules/payments/PaymentRequest",
     "modules/permissions/PermissionStatus",
+    "modules/picture_in_picture/HTMLVideoElementPictureInPicture",
     "modules/presentation/PresentationAvailability",
     "modules/presentation/PresentationConnection",
     "modules/presentation/PresentationConnectionList",
