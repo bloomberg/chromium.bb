@@ -123,7 +123,8 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   // Updates all activity-related timestamps.
   void UpdateActivityData(ActivityType type);
 
-  base::TimeDelta idle_delay_ = base::TimeDelta::FromSeconds(10);
+  // An idle event is generated after an idle period of |idle_delay_|.
+  base::TimeDelta idle_delay_ = base::TimeDelta::FromSeconds(30);
 
   // It is base::DefaultClock, but will be set to a mock clock for tests.
   std::unique_ptr<base::Clock> clock_;
