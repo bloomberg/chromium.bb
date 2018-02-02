@@ -226,9 +226,8 @@ class ZeroconfPrinterDetectorImpl
     // Since we start the discoverers immediately, this must come last in the
     // constructor.
     for (const char* service : services) {
-      device_listers_.emplace_back(
-          std::make_unique<ServiceDiscoveryDeviceLister>(
-              this, discovery_client_.get(), service));
+      device_listers_.emplace_back(ServiceDiscoveryDeviceLister::Create(
+          this, discovery_client_.get(), service));
       device_listers_.back()->Start();
       device_listers_.back()->DiscoverNewDevices();
     }
@@ -250,7 +249,8 @@ class ZeroconfPrinterDetectorImpl
   }
 
   // ServiceDiscoveryDeviceLister::Delegate implementation
-  void OnDeviceChanged(bool added,
+  void OnDeviceChanged(const std::string& service_type,
+                       bool added,
                        const ServiceDescription& service_description) override {
     // We don't care if it was added or not; we generate an update either way.
     ParsedMetadata metadata(service_description);
@@ -270,7 +270,8 @@ class ZeroconfPrinterDetectorImpl
     }
   }
 
-  void OnDeviceRemoved(const std::string& service_name) override {
+  void OnDeviceRemoved(const std::string& service_type,
+                       const std::string& service_name) override {
     // Leverage ServiceDescription parsing to pull out the instance name.
     ServiceDescription service_description;
     service_description.service_name = service_name;
@@ -285,7 +286,7 @@ class ZeroconfPrinterDetectorImpl
   }
 
   // Don't need to do anything here.
-  void OnDeviceCacheFlushed() override {}
+  void OnDeviceCacheFlushed(const std::string& service_type) override {}
 
  private:
   // Requires that printers_lock_ be held.

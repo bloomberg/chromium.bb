@@ -9,60 +9,44 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 
+// ServiceDiscoveryDeviceLister provides a way to get and maintain a list of all
+// discoverable devices of a given service type (e.g. _ipp._tcp).
 class ServiceDiscoveryDeviceLister {
  public:
+  // Delegate interface to be implemented by recipients of list updates.
   class Delegate {
    public:
     virtual void OnDeviceChanged(
+        const std::string& service_type,
         bool added,
         const ServiceDescription& service_description) = 0;
     // Not guaranteed to be called after OnDeviceChanged.
-    virtual void OnDeviceRemoved(const std::string& service_name) = 0;
-    virtual void OnDeviceCacheFlushed() = 0;
+    virtual void OnDeviceRemoved(const std::string& service_type,
+                                 const std::string& service_name) = 0;
+    virtual void OnDeviceCacheFlushed(const std::string& service_type) = 0;
   };
 
-  ServiceDiscoveryDeviceLister(Delegate* delegate,
-                               ServiceDiscoveryClient* service_discovery_client,
-                               const std::string& service_type);
-  virtual ~ServiceDiscoveryDeviceLister();
+  virtual ~ServiceDiscoveryDeviceLister() = default;
 
-  void Start();
-  void DiscoverNewDevices();
+  virtual void Start() = 0;
+  virtual void DiscoverNewDevices() = 0;
 
-  const std::string& service_type() const { return service_type_; }
+  virtual const std::string& service_type() const = 0;
 
- private:
-  using ServiceResolverMap =
-      std::map<std::string, std::unique_ptr<ServiceResolver>>;
-
-  void OnServiceUpdated(ServiceWatcher::UpdateType update,
-                        const std::string& service_name);
-
-  void OnResolveComplete(
-      bool added,
-      std::string service_name,
-      ServiceResolver::RequestStatus status,
-      const ServiceDescription& description);
-
-  // Create or recreate the service watcher
-  void CreateServiceWatcher();
-
-  Delegate* const delegate_;
-  ServiceDiscoveryClient* const service_discovery_client_;
-  const std::string service_type_;
-
-  std::unique_ptr<ServiceWatcher> service_watcher_;
-  ServiceResolverMap resolvers_;
-
-  base::WeakPtrFactory<ServiceDiscoveryDeviceLister> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryDeviceLister);
+  // Factory function, create and return a default-implementation DeviceLister
+  // that lists devices of type |service_type|.  |delegate| will receive
+  // callbacks, and |service_discovery_client| will be used as the source of the
+  // the underlying discovery traffic.
+  //
+  // Typically, the ServiceDiscoverySharedClient is used as the client.
+  static std::unique_ptr<ServiceDiscoveryDeviceLister> Create(
+      Delegate* delegate,
+      ServiceDiscoveryClient* service_discovery_client,
+      const std::string& service_type);
 };
 
 }  // namespace local_discovery

@@ -52,7 +52,7 @@ TEST(CastDeviceProviderTest, ServiceDiscovery) {
   cast_service.metadata.push_back("md=" + cast_service_model);
   ASSERT_TRUE(cast_service.ip_address.AssignFromIPLiteral("192.168.1.101"));
 
-  device_provider_->OnDeviceChanged(true, cast_service);
+  device_provider_->OnDeviceChanged(cast_service_type, true, cast_service);
 
   BrowserInfo exp_browser_info;
   exp_browser_info.socket_name = "9222";
@@ -91,7 +91,7 @@ TEST(CastDeviceProviderTest, ServiceDiscovery) {
                                     base::Bind(&DummyCallback, &was_run));
   ASSERT_FALSE(was_run);
 
-  device_provider_->OnDeviceChanged(true, other_service);
+  device_provider_->OnDeviceChanged(cast_service_type, true, other_service);
 
   // Callback should not be run, since non-cast services are not discovered by
   // this device provider.
@@ -100,7 +100,8 @@ TEST(CastDeviceProviderTest, ServiceDiscovery) {
   ASSERT_FALSE(was_run);
 
   // Remove the cast service.
-  device_provider_->OnDeviceRemoved(cast_service.service_name);
+  device_provider_->OnDeviceRemoved(cast_service_type,
+                                    cast_service.service_name);
 
   // Callback should not be run, since the cast service has been removed.
   device_provider_->QueryDeviceInfo(cast_service.address.host(),
