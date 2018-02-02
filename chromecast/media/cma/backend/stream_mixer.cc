@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -436,7 +437,7 @@ void StreamMixer::AddInput(std::unique_ptr<InputQueue> input) {
         return;
       }
 
-    // Fallthrough intended
+      FALLTHROUGH;
     case kStateNormalPlayback: {
       bool found_filter_group = false;
       input->Initialize(output_->GetRenderingDelay());
