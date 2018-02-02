@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/ios/test/test_server.h"
+#include "components/cronet/test/test_server.h"
 
 #include <memory>
 #include <utility>
@@ -155,7 +155,8 @@ bool TestServer::Start() {
   DCHECK(!g_test_server.get());
   g_test_server = std::make_unique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTP);
-  g_test_server->RegisterRequestHandler(base::Bind(&CronetTestRequestHandler));
+  g_test_server->RegisterRequestHandler(
+      base::BindRepeating(&CronetTestRequestHandler));
   CHECK(g_test_server->Start());
   return true;
 }
@@ -190,7 +191,7 @@ std::string TestServer::EchoRequestBodyURL() {
   return g_test_server->GetURL(kEchoRequestBodyPath).spec();
 }
 
-std::string TestServer::PrepareBigDataURL(long data_size) {
+std::string TestServer::PrepareBigDataURL(size_t data_size) {
   DCHECK(g_test_server);
   DCHECK(g_big_data_body.Get().empty());
   // Response line with headers.

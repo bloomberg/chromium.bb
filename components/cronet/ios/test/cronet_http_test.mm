@@ -15,7 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
-#include "components/cronet/ios/test/test_server.h"
+#include "components/cronet/test/test_server.h"
 #include "components/grpc_support/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
