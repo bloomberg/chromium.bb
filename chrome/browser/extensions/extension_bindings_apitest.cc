@@ -427,6 +427,12 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, UseAPIsAfterContextRemoval) {
   EXPECT_TRUE(RunExtensionTest("bindings/invalidate_context")) << message_;
 }
 
+// TODO(devlin): Can this be combined with
+// ExtensionBindingsApiTest.UseAPIsAfterContextRemoval?
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, UseAppAPIAfterFrameRemoval) {
+  ASSERT_TRUE(RunExtensionTest("crazy_extension"));
+}
+
 // Run core bindings API tests with both native and JS-based bindings. This
 // ensures we have some minimum level of coverage while in the experimental
 // phase, when native bindings may be enabled on trunk but not at 100% stable.
