@@ -48,6 +48,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // Android app, and adds the infobar to the InfoBarManager for |web_contents|.
   static bool Create(
       content::WebContents* web_contents,
+      base::WeakPtr<AppBannerManager> weak_manager,
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const SkBitmap& icon,
@@ -88,6 +89,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   // Delegate for promoting an Android app.
   AppBannerInfoBarDelegateAndroid(
+      base::WeakPtr<AppBannerManager> weak_manager,
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const SkBitmap& icon,

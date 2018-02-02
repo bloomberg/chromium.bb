@@ -67,13 +67,15 @@ bool AppBannerInfoBarDelegateAndroid::Create(
 // static
 bool AppBannerInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents,
+    base::WeakPtr<AppBannerManager> weak_manager,
     const base::string16& app_title,
     const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
     const SkBitmap& icon,
     const std::string& native_app_package_name,
     const std::string& referrer) {
   auto infobar_delegate = base::WrapUnique(new AppBannerInfoBarDelegateAndroid(
-      app_title, native_app_data, icon, native_app_package_name, referrer));
+      weak_manager, app_title, native_app_data, icon, native_app_package_name,
+      referrer));
   return InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(base::MakeUnique<AppBannerInfoBarAndroid>(
           std::move(infobar_delegate), native_app_data));
@@ -200,12 +202,14 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
 }
 
 AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
+    base::WeakPtr<AppBannerManager> weak_manager,
     const base::string16& app_title,
     const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
     const SkBitmap& icon,
     const std::string& native_app_package_name,
     const std::string& referrer)
-    : app_title_(app_title),
+    : weak_manager_(weak_manager),
+      app_title_(app_title),
       native_app_data_(native_app_data),
       primary_icon_(icon),
       package_name_(native_app_package_name),
