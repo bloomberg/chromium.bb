@@ -341,6 +341,7 @@ NodeRareData& Node::EnsureRareData() {
   DCHECK(data_.rare_data_);
   SetFlag(kHasRareDataFlag);
   ScriptWrappableMarkingVisitor::WriteBarrier(RareData());
+  ThreadState::Current()->Heap().WriteBarrier(RareData());
   return *RareData();
 }
 
