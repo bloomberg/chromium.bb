@@ -1651,8 +1651,13 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   bool overflow_clip_rect_offset_changed =
       old_scrolling_layer_offset != scrolling_layer_->OffsetFromLayoutObject();
 
-  IntSize scroll_size(layout_box.PixelSnappedScrollWidth(),
-                      layout_box.PixelSnappedScrollHeight());
+  IntSize scroll_size =
+      PixelSnappedIntRect(
+          LayoutRect(
+              LayoutPoint(owning_layer_.SubpixelAccumulation()),
+              LayoutSize(layout_box.ScrollWidth(), layout_box.ScrollHeight())))
+          .Size();
+
   if (overflow_clip_rect_offset_changed)
     scrolling_contents_layer_->SetNeedsDisplay();
 
