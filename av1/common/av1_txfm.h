@@ -16,6 +16,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "./aom_config.h"
 #include "av1/common/enums.h"
 #include "av1/common/blockd.h"
 #include "aom/aom_integer.h"
@@ -90,6 +91,20 @@ static INLINE const int32_t *cospi_arr(int n) {
 
 static INLINE const int32_t *sinpi_arr(int n) {
   return sinpi_arr_data[n - cos_bit_min];
+}
+
+static INLINE int32_t range_check_value(int32_t value, int8_t bit) {
+#if CONFIG_COEFFICIENT_RANGE_CHECKING
+  const int64_t maxValue = (1LL << (bit - 1)) - 1;
+  const int64_t minValue = -(1LL << (bit - 1));
+  if (value < minValue || value > maxValue) {
+    fprintf(stderr, "coeff out of bit range, value: %d bit %d\n", value, bit);
+    assert(0);
+  }
+#else
+  (void)bit;
+#endif
+  return value;
 }
 
 static INLINE int32_t round_shift(int32_t value, int bit) {

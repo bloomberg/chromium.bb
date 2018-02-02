@@ -13,20 +13,6 @@
 #include "aom_dsp/inv_txfm.h"
 #include "av1/common/av1_inv_txfm1d.h"
 
-int32_t range_check_value(int32_t value, int8_t bit) {
-#if CONFIG_COEFFICIENT_RANGE_CHECKING
-  const int64_t maxValue = (1LL << (bit - 1)) - 1;
-  const int64_t minValue = -(1LL << (bit - 1));
-  if (value < minValue || value > maxValue) {
-    fprintf(stderr, "coeff out of bit range, value: %d bit %d\n", value, bit);
-    assert(0);
-  }
-#else
-  (void)bit;
-#endif
-  return value;
-}
-
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
 void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
                       int32_t size, int8_t bit) {
@@ -86,7 +72,7 @@ static INLINE void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
 }
 #endif
 
-int32_t clamp_value(int32_t value, int8_t bit) {
+static INLINE int32_t clamp_value(int32_t value, int8_t bit) {
   if (bit <= 16) {
     const int32_t maxValue = (1 << 15) - 1;
     const int32_t minValue = -(1 << 15);
