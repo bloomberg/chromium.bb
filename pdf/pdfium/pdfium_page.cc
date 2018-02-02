@@ -603,6 +603,7 @@ const PDFEngine::PageFeatures* PDFiumPage::GetPageFeatures() {
     FPDF_ANNOTATION annotation = FPDFPage_GetAnnot(page, i);
     FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annotation);
     page_features_.annotation_types.insert(subtype);
+    FPDFPage_CloseAnnot(annotation);
   }
 
   return &page_features_;
