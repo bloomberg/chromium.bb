@@ -412,6 +412,12 @@ void HTMLConstructionSite::InsertHTMLHtmlStartTagBeforeHTML(
     AtomicHTMLToken* token) {
   DCHECK(document_);
   HTMLHtmlElement* element = HTMLHtmlElement::Create(*document_);
+  if (const Attribute* is_attribute =
+          token->GetAttributeItem(HTMLNames::isAttr)) {
+    V0CustomElementRegistrationContext::SetTypeExtension(element,
+                                                         is_attribute->Value());
+  }
+  // TODO(tkent): Handle V1 custom built-in element. crbug.com/808311
   SetAttributes(element, token, parser_content_policy_);
   AttachLater(attachment_root_, element);
   open_elements_.PushHTMLHtmlElement(HTMLStackItem::Create(element, token));
@@ -736,6 +742,12 @@ void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
   HTMLScriptElement* element =
       HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), parser_inserted,
                                 already_started, created_during_document_write);
+  if (const Attribute* is_attribute =
+          token->GetAttributeItem(HTMLNames::isAttr)) {
+    V0CustomElementRegistrationContext::SetTypeExtension(element,
+                                                         is_attribute->Value());
+  }
+  // TODO(tkent): Handle V1 custom built-in element. crbug.com/808311
   SetAttributes(element, token, parser_content_policy_);
   if (ScriptingContentIsAllowed(parser_content_policy_))
     AttachLater(CurrentNode(), element);
@@ -837,7 +849,8 @@ inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
 // https://html.spec.whatwg.org/#look-up-a-custom-element-definition
 CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
     Document& document,
-    AtomicHTMLToken* token) {
+    AtomicHTMLToken* token,
+    const AtomicString& is) {
   // "2. If document does not have a browsing context, return null."
   LocalDOMWindow* window = document.ExecutingWindow();
   if (!window)
@@ -850,8 +863,7 @@ CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
     return nullptr;
 
   const AtomicString& local_name = token->GetName();
-  const Attribute* is_attribute = token->GetAttributeItem(HTMLNames::isAttr);
-  const AtomicString& name = is_attribute ? is_attribute->Value() : local_name;
+  const AtomicString& name = !is.IsNull() ? is : local_name;
   CustomElementDescriptor descriptor(name, local_name);
 
   // 4.-6.
@@ -869,8 +881,10 @@ Element* HTMLConstructionSite::CreateElement(
   // "2. Let local name be the tag name of the token."
   QualifiedName tag_name(g_null_atom, token->GetName(), namespace_uri);
   // "3. Let is be the value of the "is" attribute in the given token ..." etc.
+  const Attribute* is_attribute = token->GetAttributeItem(HTMLNames::isAttr);
+  const AtomicString& is = is_attribute ? is_attribute->Value() : g_null_atom;
   // "4. Let definition be the result of looking up a custom element ..." etc.
-  auto* definition = LookUpCustomElementDefinition(document, token);
+  auto* definition = LookUpCustomElementDefinition(document, token, is);
   // "5. If definition is non-null and the parser was not originally created
   // for the HTML fragment parsing algorithm, then let will execute script
   // be true."
@@ -914,6 +928,8 @@ Element* HTMLConstructionSite::CreateElement(
                                                GetCreateElementFlags());
     } else {
       element = document.createElement(tag_name, GetCreateElementFlags());
+      if (!is.IsNull() && !V0CustomElement::IsValidName(tag_name.LocalName()))
+        V0CustomElementRegistrationContext::SetTypeExtension(element, is);
     }
     // Definition for the created element does not exist here and it cannot be
     // custom or failed.

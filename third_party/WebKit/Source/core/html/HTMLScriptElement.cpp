@@ -225,8 +225,13 @@ void HTMLScriptElement::SetScriptElementForBinding(
 }
 
 Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
-  return new HTMLScriptElement(GetDocument(), false, loader_->AlreadyStarted(),
-                               false);
+  auto* element = new HTMLScriptElement(GetDocument(), false,
+                                        loader_->AlreadyStarted(), false);
+  const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
+  if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
+    V0CustomElementRegistrationContext::SetTypeExtension(element, is);
+  // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
+  return element;
 }
 
 void HTMLScriptElement::Trace(blink::Visitor* visitor) {

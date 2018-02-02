@@ -280,7 +280,12 @@ Element* Element::CloneElementWithoutChildren() {
 }
 
 Element* Element::CloneElementWithoutAttributesAndChildren() {
-  return GetDocument().createElement(TagQName(), kCreatedByCloneNode);
+  auto* element = GetDocument().createElement(TagQName(), kCreatedByCloneNode);
+  const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
+  if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
+    V0CustomElementRegistrationContext::SetTypeExtension(element, is);
+  // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
+  return element;
 }
 
 Attr* Element::DetachAttribute(size_t index) {
@@ -1501,12 +1506,11 @@ const QualifiedName& Element::SubResourceAttributeName() const {
   return QualifiedName::Null();
 }
 
+// TODO(tkent): Remove this function, and call AttributeChanged directly.
 inline void Element::AttributeChangedFromParserOrByCloning(
     const QualifiedName& name,
     const AtomicString& new_value,
     AttributeModificationReason reason) {
-  if (name == isAttr && !V0CustomElement::IsValidName(localName()))
-    V0CustomElementRegistrationContext::SetTypeExtension(this, new_value);
   AttributeChanged(
       AttributeModificationParams(name, g_null_atom, new_value, reason));
 }

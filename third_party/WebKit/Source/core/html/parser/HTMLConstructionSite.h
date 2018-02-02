@@ -262,8 +262,10 @@ class HTMLConstructionSite final {
   void ExecuteTask(HTMLConstructionSiteTask&);
   void QueueTask(const HTMLConstructionSiteTask&);
 
-  CustomElementDefinition* LookUpCustomElementDefinition(Document&,
-                                                         AtomicHTMLToken*);
+  CustomElementDefinition* LookUpCustomElementDefinition(
+      Document&,
+      AtomicHTMLToken*,
+      const AtomicString& is);
 
   HTMLParserReentryPermit* reentry_permit_;
   Member<Document> document_;
