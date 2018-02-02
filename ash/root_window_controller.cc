@@ -58,6 +58,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
@@ -634,20 +635,25 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 
 void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
+  // The wallpaper controller may not be set yet if the user clicked on the
+  // status area before the initial animation completion. See crbug.com/222218
+  if (!wallpaper_widget_controller())
+    return;
+
   const int64_t display_id = display::Screen::GetScreen()
                                  ->GetDisplayNearestWindow(GetRootWindow())
                                  .id();
   menu_model_ = std::make_unique<ShelfContextMenuModel>(
       std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
 
-  // The wallpaper controller may not be set yet if the user clicked on the
-  // status area before the initial animation completion. See crbug.com/222218
-  if (!wallpaper_widget_controller())
-    return;
+  menu_model_->set_histogram_name("Apps.ContextMenuExecuteCommand.NotFromApp");
+  UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Desktop", source_type,
+                            ui::MENU_SOURCE_TYPE_LAST);
 
   menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_.get(), views::MenuRunner::CONTEXT_MENU,
-      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this)));
+      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this),
+                 base::TimeTicks::Now()));
   menu_runner_->RunMenuAt(wallpaper_widget_controller()->widget(), nullptr,
                           gfx::Rect(location_in_screen, gfx::Size()),
                           views::MENU_ANCHOR_TOPLEFT, source_type);
@@ -1016,10 +1022,13 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
   }
 }
 
-void RootWindowController::OnMenuClosed() {
+void RootWindowController::OnMenuClosed(
+    const base::TimeTicks desktop_context_menu_show_time) {
   menu_runner_.reset();
   menu_model_.reset();
   shelf_->UpdateVisibilityState();
+  UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.Desktop",
+                      base::TimeTicks::Now() - desktop_context_menu_show_time);
 }
 
 }  // namespace ash
