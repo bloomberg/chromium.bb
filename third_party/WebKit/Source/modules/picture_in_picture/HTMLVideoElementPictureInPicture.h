@@ -6,6 +6,7 @@
 #define HTMLVideoElementPictureInPicture_h
 
 #include "core/dom/QualifiedName.h"
+#include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
@@ -26,6 +27,8 @@ class MODULES_EXPORT HTMLVideoElementPictureInPicture {
   static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLVideoElement&,
                                   bool);
+
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(enterpictureinpicture);
 };
 
 }  // namespace blink

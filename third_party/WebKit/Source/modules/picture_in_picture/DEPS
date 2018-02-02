@@ -1,5 +1,6 @@
 include_rules = [
     "-modules",
+    "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/picture_in_picture",
 ]

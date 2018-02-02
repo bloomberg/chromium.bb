@@ -5,6 +5,7 @@
 #include "modules/picture_in_picture/HTMLVideoElementPictureInPicture.h"
 
 #include "core/dom/DOMException.h"
+#include "core/dom/events/Event.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "modules/picture_in_picture/PictureInPictureController.h"
 #include "platform/feature_policy/FeaturePolicy.h"
@@ -63,10 +64,12 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   }
 
   // TODO(crbug.com/806249): Call element.enterPictureInPicture().
-  // TODO(crbug.com/806249): Trigger enterpictureinpicture event.
 
   PictureInPictureController::Ensure(document).SetPictureInPictureElement(
       element);
+
+  element.DispatchEvent(
+      Event::CreateBubble(EventTypeNames::enterpictureinpicture));
 
   return ScriptPromise::CastUndefined(script_state);
 }
