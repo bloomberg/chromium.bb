@@ -80,7 +80,24 @@ class AV1SelfguidedFilterTest
 
     av1_loop_restoration_precal();
 
-    std::clock_t start = std::clock();
+    aom_usec_timer ref_timer;
+    aom_usec_timer_start(&ref_timer);
+    for (i = 0; i < NUM_ITERS; ++i) {
+      for (k = 0; k < height; k += pu_height)
+        for (j = 0; j < width; j += pu_width) {
+          int w = AOMMIN(pu_width, width - j);
+          int h = AOMMIN(pu_height, height - k);
+          uint8_t *input_p = input + k * stride + j;
+          uint8_t *output_p = output + k * out_stride + j;
+          apply_selfguided_restoration_c(input_p, w, h, stride, eps, xqd,
+                                         output_p, out_stride, tmpbuf, 8, 0);
+        }
+    }
+    aom_usec_timer_mark(&ref_timer);
+    const int64_t ref_time = aom_usec_timer_elapsed(&ref_timer);
+
+    aom_usec_timer tst_timer;
+    aom_usec_timer_start(&tst_timer);
     for (i = 0; i < NUM_ITERS; ++i) {
       for (k = 0; k < height; k += pu_height)
         for (j = 0; j < width; j += pu_width) {
@@ -92,11 +109,16 @@ class AV1SelfguidedFilterTest
                    tmpbuf, 8, 0);
         }
     }
-    std::clock_t end = std::clock();
-    double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);
+    aom_usec_timer_mark(&tst_timer);
+    const int64_t tst_time = aom_usec_timer_elapsed(&tst_timer);
 
-    printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, width,
-           height, elapsed, elapsed * 1000000. / NUM_ITERS);
+    std::cout << "[          ] C time = " << ref_time / 1000
+              << " ms, SIMD time = " << tst_time / 1000 << " ms\n";
+
+    EXPECT_GT(ref_time, tst_time)
+        << "Error: AV1SelfguidedFilterTest.SpeedTest, SIMD slower than C.\n"
+        << "C time: " << ref_time << " us\n"
+        << "SIMD time: " << tst_time << " us\n";
 
     aom_free(input_);
     aom_free(output_);
@@ -238,8 +260,25 @@ class AV1HighbdSelfguidedFilterTest
 
     av1_loop_restoration_precal();
 
-    aom_usec_timer timer;
-    aom_usec_timer_start(&timer);
+    aom_usec_timer ref_timer;
+    aom_usec_timer_start(&ref_timer);
+    for (i = 0; i < NUM_ITERS; ++i) {
+      for (k = 0; k < height; k += pu_height)
+        for (j = 0; j < width; j += pu_width) {
+          int w = AOMMIN(pu_width, width - j);
+          int h = AOMMIN(pu_height, height - k);
+          uint16_t *input_p = input + k * stride + j;
+          uint16_t *output_p = output + k * out_stride + j;
+          apply_selfguided_restoration_c(
+              CONVERT_TO_BYTEPTR(input_p), w, h, stride, eps, xqd,
+              CONVERT_TO_BYTEPTR(output_p), out_stride, tmpbuf, bit_depth, 1);
+        }
+    }
+    aom_usec_timer_mark(&ref_timer);
+    const int64_t ref_time = aom_usec_timer_elapsed(&ref_timer);
+
+    aom_usec_timer tst_timer;
+    aom_usec_timer_start(&tst_timer);
     for (i = 0; i < NUM_ITERS; ++i) {
       for (k = 0; k < height; k += pu_height)
         for (j = 0; j < width; j += pu_width) {
@@ -252,11 +291,17 @@ class AV1HighbdSelfguidedFilterTest
                    1);
         }
     }
-    aom_usec_timer_mark(&timer);
-    double elapsed = static_cast<double>(aom_usec_timer_elapsed(&timer));
+    aom_usec_timer_mark(&tst_timer);
+    const int64_t tst_time = aom_usec_timer_elapsed(&tst_timer);
 
-    printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, width,
-           height, elapsed / 1000000, elapsed / NUM_ITERS);
+    std::cout << "[          ] C time = " << ref_time / 1000
+              << " ms, SIMD time = " << tst_time / 1000 << " ms\n";
+
+    EXPECT_GT(ref_time, tst_time)
+        << "Error: AV1HighbdSelfguidedFilterTest.SpeedTest, SIMD slower than "
+           "C.\n"
+        << "C time: " << ref_time << " us\n"
+        << "SIMD time: " << tst_time << " us\n";
 
     aom_free(input_);
     aom_free(output_);

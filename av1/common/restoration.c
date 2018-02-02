@@ -1275,9 +1275,11 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
                                             flt2, flt_stride, bit_depth,
                                             params->r2, params->e2);
 #elif CONFIG_FAST_SGR == 1
+  // r == 2 filter
   av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
                                            flt1, flt_stride, bit_depth,
                                            params->r1, params->e1);
+  // r == 1 filter
   av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt2,
                                       flt_stride, bit_depth, params->r2,
                                       params->e2);
@@ -1336,7 +1338,7 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
 
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, stripe_width - j);
-#if CONFIG_FAST_SGR
+#if CONFIG_FAST_SGR == 2
     apply_selfguided_restoration_c(src + j, w, stripe_height, src_stride,
                                    rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
                                    dst + j, dst_stride, tmpbuf, bit_depth, 0);
@@ -1344,7 +1346,7 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
     apply_selfguided_restoration(src + j, w, stripe_height, src_stride,
                                  rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
                                  dst + j, dst_stride, tmpbuf, bit_depth, 0);
-#endif  // CONFIG_FAST_SGR
+#endif  // CONFIG_FAST_SGR == 2
   }
 }
 
@@ -1380,7 +1382,7 @@ static void sgrproj_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                          int32_t *tmpbuf, int bit_depth) {
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, stripe_width - j);
-#if CONFIG_FAST_SGR
+#if CONFIG_FAST_SGR == 2
     apply_selfguided_restoration_c(src8 + j, w, stripe_height, src_stride,
                                    rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
                                    dst8 + j, dst_stride, tmpbuf, bit_depth, 1);
@@ -1388,7 +1390,7 @@ static void sgrproj_filter_stripe_highbd(const RestorationUnitInfo *rui,
     apply_selfguided_restoration(src8 + j, w, stripe_height, src_stride,
                                  rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
                                  dst8 + j, dst_stride, tmpbuf, bit_depth, 1);
-#endif  // CONFIG_FAST_SGR
+#endif  // CONFIG_FAST_SGR == 2
   }
 }
 
