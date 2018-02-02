@@ -2004,7 +2004,7 @@ void Document::SetupFontBuilder(ComputedStyle& document_style) {
   font_builder.CreateFontForDocument(selector, document_style);
 }
 
-void Document::PropagateStyleToViewport(StyleRecalcChange change) {
+void Document::PropagateStyleToViewport() {
   DCHECK(InStyleRecalc());
   DCHECK(documentElement());
 
@@ -2109,52 +2109,47 @@ void Document::PropagateStyleToViewport(StyleRecalcChange change) {
   Length scroll_padding_bottom = overflow_style->ScrollPaddingBottom();
   Length scroll_padding_left = overflow_style->ScrollPaddingLeft();
 
-  scoped_refptr<ComputedStyle> viewport_style;
-  if (change == kForce || !GetLayoutView()->Style()) {
-    viewport_style = StyleResolver::StyleForViewport(*this);
-  } else {
-    const ComputedStyle& old_style = GetLayoutView()->StyleRef();
-    if (old_style.GetWritingMode() == root_writing_mode &&
-        old_style.Direction() == root_direction &&
-        old_style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) ==
-            background_color &&
-        old_style.BackgroundLayers() == background_layers &&
-        old_style.ImageRendering() == image_rendering &&
-        old_style.OverflowAnchor() == overflow_anchor &&
-        old_style.OverflowX() == overflow_x &&
-        old_style.OverflowY() == overflow_y &&
-        old_style.ColumnGap() == column_gap &&
-        old_style.GetScrollSnapType() == snap_type &&
-        old_style.GetScrollBehavior() == scroll_behavior &&
-        old_style.OverscrollBehaviorX() == overscroll_behavior_x &&
-        old_style.OverscrollBehaviorY() == overscroll_behavior_y &&
-        old_style.ScrollPaddingTop() == scroll_padding_top &&
-        old_style.ScrollPaddingRight() == scroll_padding_right &&
-        old_style.ScrollPaddingBottom() == scroll_padding_bottom &&
-        old_style.ScrollPaddingLeft() == scroll_padding_left) {
-      return;
-    }
-    viewport_style = ComputedStyle::Clone(old_style);
+  scoped_refptr<ComputedStyle> viewport_style = GetLayoutView()->MutableStyle();
+  if (viewport_style->GetWritingMode() != root_writing_mode ||
+      viewport_style->Direction() != root_direction ||
+      viewport_style->VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
+          background_color ||
+      viewport_style->BackgroundLayers() != background_layers ||
+      viewport_style->ImageRendering() != image_rendering ||
+      viewport_style->OverflowAnchor() != overflow_anchor ||
+      viewport_style->OverflowX() != overflow_x ||
+      viewport_style->OverflowY() != overflow_y ||
+      viewport_style->ColumnGap() != column_gap ||
+      viewport_style->GetScrollSnapType() != snap_type ||
+      viewport_style->GetScrollBehavior() != scroll_behavior ||
+      viewport_style->OverscrollBehaviorX() != overscroll_behavior_x ||
+      viewport_style->OverscrollBehaviorY() != overscroll_behavior_y ||
+      viewport_style->ScrollPaddingTop() != scroll_padding_top ||
+      viewport_style->ScrollPaddingRight() != scroll_padding_right ||
+      viewport_style->ScrollPaddingBottom() != scroll_padding_bottom ||
+      viewport_style->ScrollPaddingLeft() != scroll_padding_left) {
+    scoped_refptr<ComputedStyle> new_style =
+        ComputedStyle::Clone(*viewport_style);
+    new_style->SetWritingMode(root_writing_mode);
+    new_style->SetDirection(root_direction);
+    new_style->SetBackgroundColor(background_color);
+    new_style->AccessBackgroundLayers() = background_layers;
+    new_style->SetImageRendering(image_rendering);
+    new_style->SetOverflowAnchor(overflow_anchor);
+    new_style->SetOverflowX(overflow_x);
+    new_style->SetOverflowY(overflow_y);
+    new_style->SetColumnGap(column_gap);
+    new_style->SetScrollSnapType(snap_type);
+    new_style->SetScrollBehavior(scroll_behavior);
+    new_style->SetOverscrollBehaviorX(overscroll_behavior_x);
+    new_style->SetOverscrollBehaviorY(overscroll_behavior_y);
+    new_style->SetScrollPaddingTop(scroll_padding_top);
+    new_style->SetScrollPaddingRight(scroll_padding_right);
+    new_style->SetScrollPaddingBottom(scroll_padding_bottom);
+    new_style->SetScrollPaddingLeft(scroll_padding_left);
+    GetLayoutView()->SetStyle(new_style);
+    SetupFontBuilder(*new_style);
   }
-  viewport_style->SetWritingMode(root_writing_mode);
-  viewport_style->SetDirection(root_direction);
-  viewport_style->SetBackgroundColor(background_color);
-  viewport_style->AccessBackgroundLayers() = background_layers;
-  viewport_style->SetImageRendering(image_rendering);
-  viewport_style->SetOverflowAnchor(overflow_anchor);
-  viewport_style->SetOverflowX(overflow_x);
-  viewport_style->SetOverflowY(overflow_y);
-  viewport_style->SetColumnGap(column_gap);
-  viewport_style->SetScrollSnapType(snap_type);
-  viewport_style->SetScrollBehavior(scroll_behavior);
-  viewport_style->SetOverscrollBehaviorX(overscroll_behavior_x);
-  viewport_style->SetOverscrollBehaviorY(overscroll_behavior_y);
-  viewport_style->SetScrollPaddingTop(scroll_padding_top);
-  viewport_style->SetScrollPaddingRight(scroll_padding_right);
-  viewport_style->SetScrollPaddingBottom(scroll_padding_bottom);
-  viewport_style->SetScrollPaddingLeft(scroll_padding_left);
-  GetLayoutView()->SetStyle(viewport_style);
-  SetupFontBuilder(*viewport_style);
 }
 
 #if DCHECK_IS_ON()
@@ -2287,12 +2282,27 @@ void Document::UpdateStyle() {
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   StyleRecalcChange change = kNoChange;
-  if (GetStyleChangeType() >= kSubtreeStyleChange) {
+  if (GetStyleChangeType() >= kSubtreeStyleChange)
     change = kForce;
-    has_nodes_with_placeholder_style_ = false;
-  }
 
   NthIndexCache nth_index_cache(*this);
+
+  // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver() before
+  // calling StyleForViewport() below because apparently the StyleResolver's
+  // constructor has side effects. We should fix it. See
+  // printing/setPrinting.html, printing/width-overflow.html though they only
+  // fail on mac when accessing the resolver by what appears to be a viewport
+  // size difference.
+
+  if (change == kForce) {
+    has_nodes_with_placeholder_style_ = false;
+    scoped_refptr<ComputedStyle> viewport_style =
+        StyleResolver::StyleForViewport(*this);
+    StyleRecalcChange local_change = ComputedStyle::StylePropagationDiff(
+        viewport_style.get(), GetLayoutView()->Style());
+    if (local_change != kNoChange)
+      GetLayoutView()->SetStyle(std::move(viewport_style));
+  }
 
   ClearNeedsStyleRecalc();
   ClearNeedsReattachLayoutTree();
@@ -2312,15 +2322,13 @@ void Document::UpdateStyle() {
         ViewportDefiningElementDidChange();
     }
     GetStyleEngine().MarkForWhitespaceReattachment();
-    PropagateStyleToViewport(change);
+    PropagateStyleToViewport();
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
       WhitespaceAttacher whitespace_attacher;
       document_element->RebuildLayoutTree(whitespace_attacher);
     }
-  } else if (change == kForce) {
-    GetLayoutView()->SetStyle(StyleResolver::StyleForViewport(*this));
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
 
