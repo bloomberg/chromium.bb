@@ -828,33 +828,6 @@ void RasterDecoderImpl::OnOutOfMemoryError() {
   NOTIMPLEMENTED();
 }
 
-error::Error RasterDecoderImpl::HandleTraceBeginCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::TraceBeginCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::TraceBeginCHROMIUM*>(cmd_data);
-  Bucket* category_bucket = GetBucket(c.category_bucket_id);
-  Bucket* name_bucket = GetBucket(c.name_bucket_id);
-  if (!category_bucket || category_bucket->size() == 0 || !name_bucket ||
-      name_bucket->size() == 0) {
-    return error::kInvalidArguments;
-  }
-
-  std::string category_name;
-  std::string trace_name;
-  if (!category_bucket->GetAsString(&category_name) ||
-      !name_bucket->GetAsString(&trace_name)) {
-    return error::kInvalidArguments;
-  }
-
-  debug_marker_manager_.PushGroup(trace_name);
-  return error::kNoError;
-}
-
-void RasterDecoderImpl::DoTraceEndCHROMIUM() {
-  debug_marker_manager_.PopGroup();
-}
-
 error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -881,41 +854,6 @@ error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
   sync_token.Set(namespace_id, command_buffer_id, release);
   return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
                                               : error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandleCompressedTexImage2D(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandleCompressedTexImage2DBucket(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandlePixelStorei(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandleTexImage2D(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandleTexSubImage2D(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
 }
 
 error::Error RasterDecoderImpl::HandleBeginQueryEXT(
