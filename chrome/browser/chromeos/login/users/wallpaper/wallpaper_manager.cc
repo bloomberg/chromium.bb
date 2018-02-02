@@ -95,27 +95,6 @@ bool HasNonDeviceLocalAccounts(const user_manager::UserList& users) {
   return false;
 }
 
-// A helper to set the wallpaper image for Classic Ash and Mash.
-void SetWallpaper(const gfx::ImageSkia& image, wallpaper::WallpaperInfo info) {
-  if (ash_util::IsRunningInMash()) {
-    // In mash, connect to the WallpaperController interface via mojo.
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    if (!connector)
-      return;
-
-    ash::mojom::WallpaperControllerPtr wallpaper_controller;
-    connector->BindInterface(ash::mojom::kServiceName, &wallpaper_controller);
-    // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
-    // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
-    wallpaper_controller->SetWallpaper(*image.bitmap(), info);
-  } else if (ash::Shell::HasInstance()) {
-    // Note: Wallpaper setting is skipped in unit tests without shell instances.
-    // In classic ash, interact with the WallpaperController class directly.
-    ash::Shell::Get()->wallpaper_controller()->SetWallpaperImage(image, info);
-  }
-}
-
 }  // namespace
 
 void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner) {
@@ -152,44 +131,6 @@ void WallpaperManager::Shutdown() {
   wallpaper_manager = nullptr;
 }
 
-void WallpaperManager::ShowUserWallpaper(const AccountId& account_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Some unit tests come here without a UserManager or without a pref system.
-  if (!user_manager::UserManager::IsInitialized() ||
-      !g_browser_process->local_state()) {
-    return;
-  }
-
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-
-  // User is unknown or there is no visible wallpaper in kiosk mode.
-  if (!user || user->GetType() == user_manager::USER_TYPE_KIOSK_APP ||
-      user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
-    return;
-  }
-
-  // For a enterprise managed user, set the device wallpaper if we're at the
-  // login screen.
-  // TODO(xdai): Replace these two functions ShouldSetDeviceWallpaper() and
-  // OnDeviceWallpaperChanged() with functions in WallpaperController.
-  std::string url;
-  std::string hash;
-  if (ShouldSetDeviceWallpaper(account_id, &url, &hash)) {
-    WallpaperControllerClient::Get()->OnDeviceWallpaperChanged();
-    return;
-  }
-
-  // TODO(crbug.com/776464): Move the above to
-  // |WallpaperController::ShowUserWallpaper| after
-  // |SetDeviceWallpaperIfApplicable| is migrated.
-  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
-}
-
-void WallpaperManager::ShowSigninWallpaper() {
-  WallpaperControllerClient::Get()->ShowSigninWallpaper();
-}
-
 void WallpaperManager::InitializeWallpaper() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -223,12 +164,13 @@ void WallpaperManager::InitializeWallpaper() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager->IsUserLoggedIn()) {
     if (!StartupUtils::IsDeviceRegistered())
-      ShowSigninWallpaper();
+      WallpaperControllerClient::Get()->ShowSigninWallpaper();
     else
       InitializeRegisteredDeviceWallpaper();
     return;
   }
-  ShowUserWallpaper(user_manager->GetActiveUser()->GetAccountId());
+  WallpaperControllerClient::Get()->ShowUserWallpaper(
+      user_manager->GetActiveUser()->GetAccountId());
 }
 
 void WallpaperManager::SetCustomizedDefaultWallpaperPaths(
@@ -271,20 +213,6 @@ WallpaperManager::WallpaperManager() : weak_factory_(this) {
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
 
-void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
-                                            const WallpaperInfo& info,
-                                            bool is_persistent) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    // Some unit tests come here without a Shell instance.
-    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
-    // work again after WallpaperManager is removed.
-    return;
-  }
-  ash::Shell::Get()->wallpaper_controller()->SetUserWallpaperInfo(
-      account_id, info, is_persistent);
-}
-
 base::CommandLine* WallpaperManager::GetCommandLine() {
   base::CommandLine* command_line =
       command_line_for_testing_ ? command_line_for_testing_
@@ -307,13 +235,14 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   if ((!show_users && public_session_user_index == -1) ||
       !HasNonDeviceLocalAccounts(users)) {
     // Boot into the sign in screen.
-    ShowSigninWallpaper();
+    WallpaperControllerClient::Get()->ShowSigninWallpaper();
     return;
   }
 
   // Normal boot, load user wallpaper.
   int index = public_session_user_index != -1 ? public_session_user_index : 0;
-  ShowUserWallpaper(users[index]->GetAccountId());
+  WallpaperControllerClient::Get()->ShowUserWallpaper(
+      users[index]->GetAccountId());
 }
 
 bool WallpaperManager::GetUserWallpaperInfo(const AccountId& account_id,
@@ -330,53 +259,6 @@ bool WallpaperManager::GetUserWallpaperInfo(const AccountId& account_id,
           account_id);
   return ash::Shell::Get()->wallpaper_controller()->GetUserWallpaperInfo(
       account_id, info, is_persistent);
-}
-
-bool WallpaperManager::ShouldSetDeviceWallpaper(const AccountId& account_id,
-                                                std::string* url,
-                                                std::string* hash) {
-  // Only allow the device wallpaper for enterprise managed devices.
-  if (!g_browser_process->platform_part()
-           ->browser_policy_connector_chromeos()
-           ->IsEnterpriseManaged()) {
-    return false;
-  }
-
-  const base::DictionaryValue* dict = nullptr;
-  if (!CrosSettings::Get()->GetDictionary(kDeviceWallpaperImage, &dict) ||
-      !dict->GetStringWithoutPathExpansion("url", url) ||
-      !dict->GetStringWithoutPathExpansion("hash", hash)) {
-    return false;
-  }
-
-  // Only set the device wallpaper if we're at the login screen.
-  if (user_manager::UserManager::Get()->IsUserLoggedIn())
-    return false;
-
-  return true;
-}
-
-void WallpaperManager::SetDefaultWallpaperImpl(const AccountId& account_id,
-                                               bool show_wallpaper) {
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    // Some unit tests come here without a Shell instance.
-    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
-    // work again after WallpaperManager is removed.
-    WallpaperInfo info("", wallpaper::WALLPAPER_LAYOUT_STRETCH,
-                       wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
-    SetWallpaper(ash::WallpaperController::CreateSolidColorWallpaper(), info);
-    return;
-  }
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  if (!user) {
-    LOG(ERROR) << "User of " << account_id
-               << " cannot be found. This should never happen"
-               << " within WallpaperManager::SetDefaultWallpaperImpl.";
-    return;
-  }
-  ash::Shell::Get()->wallpaper_controller()->SetDefaultWallpaperImpl(
-      account_id, user->GetType(), show_wallpaper);
 }
 
 }  // namespace chromeos

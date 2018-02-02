@@ -51,6 +51,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "components/wallpaper/wallpaper_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -245,6 +246,15 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
     }
   }
 
+  // Runs the loop until wallpaper has changed to the specified type.
+  void RunUntilWallpaperChangeType(wallpaper::WallpaperType type) {
+    while (ash::Shell::Get()->wallpaper_controller()->GetWallpaperType() !=
+           type) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
+  }
+
   std::string ConstructPolicy(const std::string& relative_path) const {
     std::string image_data;
     if (!base::ReadFileToString(test_data_dir_.Append(relative_path),
@@ -303,10 +313,10 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
     fake_session_manager_client_->OnPropertyChangeComplete(true /* success */);
   }
 
-  bool ShouldSetDeviceWallpaper(const AccountId& account_id) {
-    std::string url, hash;
-    return WallpaperManager::Get()->ShouldSetDeviceWallpaper(account_id, &url,
-                                                             &hash);
+  bool ShouldSetDeviceWallpaper() {
+    return ash::Shell::Get()
+        ->wallpaper_controller()
+        ->ShouldSetDevicePolicyWallpaper();
   }
 
   // Obtain WallpaperInfo for |user_number| from WallpaperManager.
@@ -421,24 +431,25 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, DevicePolicyTest) {
   // Set the device wallpaper policy. Test that the device policy controlled
   // wallpaper shows up in the login screen.
   InjectDevicePolicy(kRedImageFileName);
-  RunUntilWallpaperChangeCount(1);
-  EXPECT_TRUE(ShouldSetDeviceWallpaper(user_manager::SignInAccountId()));
+  RunUntilWallpaperChangeType(wallpaper::DEVICE);
+  EXPECT_TRUE(ShouldSetDeviceWallpaper());
   EXPECT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
-  // Log in a test user and set the user wallpaper policy. The user policy
-  // controlled wallpaper shows up in the user session.
+  // Log in a test user. The default wallpaper should be shown to replace the
+  // device policy wallpaper.
   LoginUser(testUsers_[0]);
-  RunUntilWallpaperChangeCount(2);
+  RunUntilWallpaperChangeType(wallpaper::DEFAULT);
 
+  // Now set the user wallpaper policy. The user policy controlled wallpaper
+  // should show up in the user session.
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeCount(3);
+  RunUntilWallpaperChangeType(wallpaper::POLICY);
   EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // Set the device wallpaper policy inside the user session. That that the
   // user wallpaper doesn't change.
   InjectDevicePolicy(kBlueImageFileName);
-  EXPECT_FALSE(ShouldSetDeviceWallpaper(
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
+  EXPECT_FALSE(ShouldSetDeviceWallpaper());
   EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 }
 
