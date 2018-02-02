@@ -56,6 +56,13 @@ PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckExternalPreflight(
 
 PLATFORM_EXPORT bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode);
 
+// Thin wrapper functions that will not be removed even after out-of-renderer
+// CORS is enabled.
+PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);
+PLATFORM_EXPORT bool IsCORSSafelistedContentType(const String&);
+PLATFORM_EXPORT bool IsCORSSafelistedHeader(const String& name,
+                                            const String& value);
+
 }  // namespace CORS
 
 }  // namespace blink

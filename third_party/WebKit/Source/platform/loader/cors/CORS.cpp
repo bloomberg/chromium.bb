@@ -237,6 +237,29 @@ bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {
   return network::cors::IsCORSEnabledRequestMode(request_mode);
 }
 
+bool IsCORSSafelistedMethod(const String& method) {
+  DCHECK(!method.IsNull());
+  CString utf8_method = method.Utf8();
+  return network::cors::IsCORSSafelistedMethod(
+      std::string(utf8_method.data(), utf8_method.length()));
+}
+
+bool IsCORSSafelistedContentType(const String& media_type) {
+  CString utf8_media_type = media_type.Utf8();
+  return network::cors::IsCORSSafelistedContentType(
+      std::string(utf8_media_type.data(), utf8_media_type.length()));
+}
+
+bool IsCORSSafelistedHeader(const String& name, const String& value) {
+  DCHECK(!name.IsNull());
+  DCHECK(!value.IsNull());
+  CString utf8_name = name.Utf8();
+  CString utf8_value = value.Utf8();
+  return network::cors::IsCORSSafelistedHeader(
+      std::string(utf8_name.data(), utf8_name.length()),
+      std::string(utf8_value.data(), utf8_value.length()));
+}
+
 }  // namespace CORS
 
 }  // namespace blink

@@ -69,6 +69,14 @@ base::Optional<mojom::CORSError> CheckExternalPreflight(
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode);
 
+// Checks safelisted request parameters.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsCORSSafelistedMethod(const std::string& method);
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsCORSSafelistedContentType(const std::string& name);
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsCORSSafelistedHeader(const std::string& name, const std::string& value);
+
 }  // namespace cors
 
 }  // namespace network

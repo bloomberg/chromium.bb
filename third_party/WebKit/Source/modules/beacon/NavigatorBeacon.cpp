@@ -16,7 +16,7 @@
 #include "core/loader/PingLoader.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/loader/fetch/FetchUtils.h"
+#include "platform/loader/cors/CORS.h"
 
 namespace blink {
 
@@ -91,7 +91,7 @@ bool NavigatorBeacon::SendBeaconImpl(
                                      data.GetAsArrayBufferView().View());
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
-    if (!FetchUtils::IsCORSSafelistedContentType(AtomicString(blob->type()))) {
+    if (!CORS::IsCORSSafelistedContentType(blob->type())) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::

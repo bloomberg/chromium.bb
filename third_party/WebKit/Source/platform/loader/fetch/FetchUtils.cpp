@@ -4,6 +4,7 @@
 
 #include "platform/loader/fetch/FetchUtils.h"
 
+#include "platform/loader/cors/CORS.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/http_names.h"
@@ -75,53 +76,6 @@ const ForbiddenHeaderNames& ForbiddenHeaderNames::Get() {
 
 }  // namespace
 
-bool FetchUtils::IsCORSSafelistedMethod(const String& method) {
-  // https://fetch.spec.whatwg.org/#cors-safelisted-method
-  // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
-  return method == HTTPNames::GET || method == HTTPNames::HEAD ||
-         method == HTTPNames::POST;
-}
-
-bool FetchUtils::IsCORSSafelistedHeader(const AtomicString& name,
-                                        const AtomicString& value) {
-  // https://fetch.spec.whatwg.org/#cors-safelisted-request-header
-  // "A CORS-safelisted header is a header whose name is either one of `Accept`,
-  // `Accept-Language`, and `Content-Language`, or whose name is
-  // `Content-Type` and value, once parsed, is one of
-  // `application/x-www-form-urlencoded`, `multipart/form-data`, and
-  // `text/plain`."
-  //
-  // Treat 'Save-Data' as a CORS-safelisted header, since it is added by Chrome
-  // when Data Saver feature is enabled. Treat inspector headers as a
-  // CORS-safelisted headers, since they are added by blink when the inspector
-  // is open.
-  //
-  // Treat 'Intervention' as a CORS-safelisted header, since it is added by
-  // Chrome when an intervention is (or may be) applied.
-
-  if (EqualIgnoringASCIICase(name, "accept") ||
-      EqualIgnoringASCIICase(name, "accept-language") ||
-      EqualIgnoringASCIICase(name, "content-language") ||
-      EqualIgnoringASCIICase(
-          name, HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id) ||
-      EqualIgnoringASCIICase(name, HTTPNames::Save_Data) ||
-      EqualIgnoringASCIICase(name, "intervention"))
-    return true;
-
-  if (EqualIgnoringASCIICase(name, "content-type"))
-    return IsCORSSafelistedContentType(value);
-
-  return false;
-}
-
-bool FetchUtils::IsCORSSafelistedContentType(const AtomicString& media_type) {
-  AtomicString mime_type = ExtractMIMETypeFromMediaType(media_type);
-  return EqualIgnoringASCIICase(mime_type,
-                                "application/x-www-form-urlencoded") ||
-         EqualIgnoringASCIICase(mime_type, "multipart/form-data") ||
-         EqualIgnoringASCIICase(mime_type, "text/plain");
-}
-
 bool FetchUtils::IsForbiddenMethod(const String& method) {
   // http://fetch.spec.whatwg.org/#forbidden-method
   // "A forbidden method is a method that is a byte case-insensitive match"
@@ -184,7 +138,7 @@ String FetchUtils::NormalizeHeaderValue(const String& value) {
 bool FetchUtils::ContainsOnlyCORSSafelistedHeaders(
     const HTTPHeaderMap& header_map) {
   for (const auto& header : header_map) {
-    if (!IsCORSSafelistedHeader(header.key, header.value))
+    if (!CORS::IsCORSSafelistedHeader(header.key, header.value))
       return false;
   }
   return true;
@@ -193,7 +147,7 @@ bool FetchUtils::ContainsOnlyCORSSafelistedHeaders(
 bool FetchUtils::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
     const HTTPHeaderMap& header_map) {
   for (const auto& header : header_map) {
-    if (!IsCORSSafelistedHeader(header.key, header.value) &&
+    if (!CORS::IsCORSSafelistedHeader(header.key, header.value) &&
         !IsForbiddenHeaderName(header.key))
       return false;
   }

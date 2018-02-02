@@ -80,8 +80,6 @@ BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(
 
 BLINK_PLATFORM_EXPORT WebString ListOfCORSEnabledURLSchemes();
 
-BLINK_PLATFORM_EXPORT bool IsCORSSafelistedMethod(const WebString&);
-
 BLINK_PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
     const WebHTTPHeaderMap&);
 

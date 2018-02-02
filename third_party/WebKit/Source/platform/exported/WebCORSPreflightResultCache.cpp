@@ -29,6 +29,7 @@
 #include <memory>
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/http_names.h"
@@ -170,7 +171,7 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
     const WebString& method,
     WebString& error_description) const {
   if (methods_.find(method.Ascii().data()) != methods_.end() ||
-      FetchUtils::IsCORSSafelistedMethod(method)) {
+      CORS::IsCORSSafelistedMethod(method)) {
     return true;
   }
 
@@ -193,7 +194,7 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
 
   for (const auto& header : request_headers.GetHTTPHeaderMap()) {
     if (headers_.find(header.key.Ascii().data()) == headers_.end() &&
-        !FetchUtils::IsCORSSafelistedHeader(header.key, header.value) &&
+        !CORS::IsCORSSafelistedHeader(header.key, header.value) &&
         !FetchUtils::IsForbiddenHeaderName(header.key)) {
       error_description = String::Format(
           "Request header field %s is not allowed by "

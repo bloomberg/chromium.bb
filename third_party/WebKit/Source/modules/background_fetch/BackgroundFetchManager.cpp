@@ -20,6 +20,7 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/KURL.h"
@@ -128,7 +129,7 @@ bool ShouldBlockCORSPreflight(ExecutionContext* execution_context,
   // Requests that are more involved than what is possible with HTML's form
   // element require a CORS-preflight request.
   // https://fetch.spec.whatwg.org/#main-fetch
-  if (!FetchUtils::IsCORSSafelistedMethod(web_request.Method()) ||
+  if (!CORS::IsCORSSafelistedMethod(web_request.Method()) ||
       !FetchUtils::ContainsOnlyCORSSafelistedHeaders(web_request.Headers())) {
     return true;
   }

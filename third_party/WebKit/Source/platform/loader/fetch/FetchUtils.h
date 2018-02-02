@@ -18,10 +18,6 @@ class PLATFORM_EXPORT FetchUtils {
   STATIC_ONLY(FetchUtils);
 
  public:
-  static bool IsCORSSafelistedMethod(const String& method);
-  static bool IsCORSSafelistedHeader(const AtomicString& name,
-                                     const AtomicString& value);
-  static bool IsCORSSafelistedContentType(const AtomicString& media_type);
   static bool IsForbiddenMethod(const String& method);
   static bool IsForbiddenHeaderName(const String& name);
   static bool IsForbiddenResponseHeaderName(const String& name);

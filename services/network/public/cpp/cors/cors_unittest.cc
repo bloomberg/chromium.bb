@@ -297,6 +297,40 @@ TEST_F(CORSTest, CheckPreflightDetectsErrors) {
   EXPECT_EQ(mojom::CORSError::kPreflightInvalidAllowExternal, *error3);
 }
 
+TEST_F(CORSTest, CheckCORSSafelist) {
+  // Method check should be case-insensitive.
+  EXPECT_TRUE(cors::IsCORSSafelistedMethod("get"));
+  EXPECT_TRUE(cors::IsCORSSafelistedMethod("Get"));
+  EXPECT_TRUE(cors::IsCORSSafelistedMethod("GET"));
+  EXPECT_TRUE(cors::IsCORSSafelistedMethod("HEAD"));
+  EXPECT_TRUE(cors::IsCORSSafelistedMethod("POST"));
+  EXPECT_FALSE(cors::IsCORSSafelistedMethod("OPTIONS"));
+
+  // Content-Type check should be case-insensitive, and should ignore spaces and
+  // parameters such as charset after a semicolon.
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedContentType("application/x-www-form-urlencoded"));
+  EXPECT_TRUE(cors::IsCORSSafelistedContentType("multipart/form-data"));
+  EXPECT_TRUE(cors::IsCORSSafelistedContentType("text/plain"));
+  EXPECT_TRUE(cors::IsCORSSafelistedContentType("TEXT/PLAIN"));
+  EXPECT_TRUE(cors::IsCORSSafelistedContentType("text/plain;charset=utf-8"));
+  EXPECT_TRUE(cors::IsCORSSafelistedContentType(" text/plain ;charset=utf-8"));
+  EXPECT_FALSE(cors::IsCORSSafelistedContentType("text/html"));
+
+  // Header check should be case-insensitive. Value must be considered only for
+  // Content-Type.
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("accept", "text/html"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Accept-Language", "en"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Language", "ja"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader(
+      "x-devtools-emulate-network-conditions-client-id", ""));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("SAVE-DATA", ""));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Intervention", ""));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("Cache-Control", ""));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Type", "text/plain"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("Content-Type", "image/png"));
+}
+
 }  // namespace
 
 }  // namespace network
