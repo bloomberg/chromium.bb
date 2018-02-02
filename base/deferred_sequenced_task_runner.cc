@@ -26,9 +26,13 @@ DeferredSequencedTaskRunner::DeferredTask::operator=(DeferredTask&& other) =
 
 DeferredSequencedTaskRunner::DeferredSequencedTaskRunner(
     scoped_refptr<SequencedTaskRunner> target_task_runner)
-    : started_(false), target_task_runner_(std::move(target_task_runner)) {}
+    : DeferredSequencedTaskRunner() {
+  DCHECK(target_task_runner);
+  target_task_runner_ = std::move(target_task_runner);
+}
 
-DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() = default;
+DeferredSequencedTaskRunner::DeferredSequencedTaskRunner()
+    : created_thread_id_(PlatformThread::CurrentId()) {}
 
 bool DeferredSequencedTaskRunner::PostDelayedTask(const Location& from_here,
                                                   OnceClosure task,
@@ -46,7 +50,11 @@ bool DeferredSequencedTaskRunner::PostDelayedTask(const Location& from_here,
 }
 
 bool DeferredSequencedTaskRunner::RunsTasksInCurrentSequence() const {
-  return target_task_runner_->RunsTasksInCurrentSequence();
+  AutoLock lock(lock_);
+  if (target_task_runner_)
+    return target_task_runner_->RunsTasksInCurrentSequence();
+
+  return created_thread_id_ == PlatformThread::CurrentId();
 }
 
 bool DeferredSequencedTaskRunner::PostNonNestableDelayedTask(
@@ -64,10 +72,28 @@ bool DeferredSequencedTaskRunner::PostNonNestableDelayedTask(
   return true;
 }
 
+void DeferredSequencedTaskRunner::Start() {
+  AutoLock lock(lock_);
+  StartImpl();
+}
+
+void DeferredSequencedTaskRunner::StartWithTaskRunner(
+    scoped_refptr<SequencedTaskRunner> target_task_runner) {
+  AutoLock lock(lock_);
+  DCHECK(!target_task_runner_);
+  DCHECK(target_task_runner);
+  target_task_runner_ = std::move(target_task_runner);
+  StartImpl();
+}
+
+DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() = default;
+
 void DeferredSequencedTaskRunner::QueueDeferredTask(const Location& from_here,
                                                     OnceClosure task,
                                                     TimeDelta delay,
                                                     bool is_non_nestable) {
+  lock_.AssertAcquired();
+
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task);
@@ -80,10 +106,11 @@ void DeferredSequencedTaskRunner::QueueDeferredTask(const Location& from_here,
   deferred_tasks_queue_.push_back(std::move(deferred_task));
 }
 
-void DeferredSequencedTaskRunner::Start() {
-  AutoLock lock(lock_);
+void DeferredSequencedTaskRunner::StartImpl() {
+  lock_.AssertAcquired();  // Callers should have grabbed the lock.
   DCHECK(!started_);
   started_ = true;
+  DCHECK(target_task_runner_);
   for (std::vector<DeferredTask>::iterator i = deferred_tasks_queue_.begin();
       i != deferred_tasks_queue_.end();
       ++i) {

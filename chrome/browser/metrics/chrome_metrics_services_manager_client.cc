@@ -151,17 +151,6 @@ ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
   DCHECK(local_state);
 }
 
-void ChromeMetricsServicesManagerClient::OnMetricsServiceManagerCreated(
-    metrics_services_manager::MetricsServicesManager* manager) {
-#if defined(OS_CHROMEOS)
-  cros_settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kStatsReportingPref,
-      base::Bind(&OnCrosMetricsReportingSettingChange, local_state_, manager));
-  // Invoke the callback once initially to set the metrics reporting state.
-  OnCrosMetricsReportingSettingChange(local_state_, manager);
-#endif
-}
-
 ChromeMetricsServicesManagerClient::~ChromeMetricsServicesManagerClient() {}
 
 // static
@@ -237,6 +226,18 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
 
   return true;
 }
+
+#if defined(OS_CHROMEOS)
+void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
+  metrics_services_manager::MetricsServicesManager* manager =
+      g_browser_process->GetMetricsServicesManager();
+  cros_settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kStatsReportingPref,
+      base::Bind(&OnCrosMetricsReportingSettingChange, local_state_, manager));
+  // Invoke the callback once initially to set the metrics reporting state.
+  OnCrosMetricsReportingSettingChange(local_state_, manager);
+}
+#endif
 
 std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -15,12 +16,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
 namespace {
 
 class DeferredSequencedTaskRunnerTest : public testing::Test {
  public:
-  class ExecuteTaskOnDestructor :
-      public base::RefCounted<ExecuteTaskOnDestructor> {
+  class ExecuteTaskOnDestructor : public RefCounted<ExecuteTaskOnDestructor> {
    public:
     ExecuteTaskOnDestructor(
         DeferredSequencedTaskRunnerTest* executor,
@@ -29,23 +30,21 @@ class DeferredSequencedTaskRunnerTest : public testing::Test {
           task_id_(task_id) {
     }
   private:
-    friend class base::RefCounted<ExecuteTaskOnDestructor>;
-    virtual ~ExecuteTaskOnDestructor() {
-      executor_->ExecuteTask(task_id_);
-    }
-    DeferredSequencedTaskRunnerTest* executor_;
-    int task_id_;
+   friend class RefCounted<ExecuteTaskOnDestructor>;
+   virtual ~ExecuteTaskOnDestructor() { executor_->ExecuteTask(task_id_); }
+   DeferredSequencedTaskRunnerTest* executor_;
+   int task_id_;
   };
 
   void ExecuteTask(int task_id) {
-    base::AutoLock lock(lock_);
+    AutoLock lock(lock_);
     executed_task_ids_.push_back(task_id);
   }
 
   void PostExecuteTask(int task_id) {
-    runner_->PostTask(
-        FROM_HERE, base::BindOnce(&DeferredSequencedTaskRunnerTest::ExecuteTask,
-                                  base::Unretained(this), task_id));
+    runner_->PostTask(FROM_HERE,
+                      BindOnce(&DeferredSequencedTaskRunnerTest::ExecuteTask,
+                               Unretained(this), task_id));
   }
 
   void StartRunner() {
@@ -58,24 +57,24 @@ class DeferredSequencedTaskRunnerTest : public testing::Test {
  protected:
   DeferredSequencedTaskRunnerTest()
       : loop_(),
-        runner_(new base::DeferredSequencedTaskRunner(loop_.task_runner())) {}
+        runner_(new DeferredSequencedTaskRunner(loop_.task_runner())) {}
 
-  base::MessageLoop loop_;
-  scoped_refptr<base::DeferredSequencedTaskRunner> runner_;
-  mutable base::Lock lock_;
+  MessageLoop loop_;
+  scoped_refptr<DeferredSequencedTaskRunner> runner_;
+  mutable Lock lock_;
   std::vector<int> executed_task_ids_;
 };
 
 TEST_F(DeferredSequencedTaskRunnerTest, Stopped) {
   PostExecuteTask(1);
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre());
 }
 
 TEST_F(DeferredSequencedTaskRunnerTest, Start) {
   StartRunner();
   PostExecuteTask(1);
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre(1));
 }
 
@@ -84,71 +83,68 @@ TEST_F(DeferredSequencedTaskRunnerTest, StartWithMultipleElements) {
   for (int i = 1; i < 5; ++i)
     PostExecuteTask(i);
 
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre(1, 2, 3, 4));
 }
 
 TEST_F(DeferredSequencedTaskRunnerTest, DeferredStart) {
   PostExecuteTask(1);
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre());
 
   StartRunner();
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre(1));
 
   PostExecuteTask(2);
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre(1, 2));
 }
 
 TEST_F(DeferredSequencedTaskRunnerTest, DeferredStartWithMultipleElements) {
   for (int i = 1; i < 5; ++i)
     PostExecuteTask(i);
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre());
 
   StartRunner();
   for (int i = 5; i < 9; ++i)
     PostExecuteTask(i);
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_, testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8));
 }
 
 TEST_F(DeferredSequencedTaskRunnerTest, DeferredStartWithMultipleThreads) {
   {
-    base::Thread thread1("DeferredSequencedTaskRunnerTestThread1");
-    base::Thread thread2("DeferredSequencedTaskRunnerTestThread2");
+    Thread thread1("DeferredSequencedTaskRunnerTestThread1");
+    Thread thread2("DeferredSequencedTaskRunnerTestThread2");
     thread1.Start();
     thread2.Start();
     for (int i = 0; i < 5; ++i) {
       thread1.task_runner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&DeferredSequencedTaskRunnerTest::PostExecuteTask,
-                         base::Unretained(this), 2 * i));
+          FROM_HERE, BindOnce(&DeferredSequencedTaskRunnerTest::PostExecuteTask,
+                              Unretained(this), 2 * i));
       thread2.task_runner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&DeferredSequencedTaskRunnerTest::PostExecuteTask,
-                         base::Unretained(this), 2 * i + 1));
+          FROM_HERE, BindOnce(&DeferredSequencedTaskRunnerTest::PostExecuteTask,
+                              Unretained(this), 2 * i + 1));
       if (i == 2) {
         thread1.task_runner()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&DeferredSequencedTaskRunnerTest::StartRunner,
-                           base::Unretained(this)));
+            FROM_HERE, BindOnce(&DeferredSequencedTaskRunnerTest::StartRunner,
+                                Unretained(this)));
       }
     }
   }
 
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_THAT(executed_task_ids_,
       testing::WhenSorted(testing::ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)));
 }
 
 TEST_F(DeferredSequencedTaskRunnerTest, ObjectDestructionOrder) {
   {
-    base::Thread thread("DeferredSequencedTaskRunnerTestThread");
+    Thread thread("DeferredSequencedTaskRunnerTestThread");
     thread.Start();
-    runner_ = new base::DeferredSequencedTaskRunner(thread.task_runner());
+    runner_ = new DeferredSequencedTaskRunner(thread.task_runner());
     for (int i = 0; i < 5; ++i) {
       {
         // Use a block to ensure that no reference to |short_lived_object|
@@ -157,9 +153,8 @@ TEST_F(DeferredSequencedTaskRunnerTest, ObjectDestructionOrder) {
             new ExecuteTaskOnDestructor(this, 2 * i);
         runner_->PostTask(
             FROM_HERE,
-            base::BindOnce(&DeferredSequencedTaskRunnerTest::DoNothing,
-                           base::Unretained(this),
-                           base::RetainedRef(short_lived_object)));
+            BindOnce(&DeferredSequencedTaskRunnerTest::DoNothing,
+                     Unretained(this), RetainedRef(short_lived_object)));
       }
       // |short_lived_object| with id |2 * i| should be destroyed before the
       // task |2 * i + 1| is executed.
@@ -174,4 +169,46 @@ TEST_F(DeferredSequencedTaskRunnerTest, ObjectDestructionOrder) {
               testing::ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
 }
 
+void GetRunsTasksInCurrentSequence(bool* result,
+                                   scoped_refptr<SequencedTaskRunner> runner,
+                                   OnceClosure quit) {
+  *result = runner->RunsTasksInCurrentSequence();
+  std::move(quit).Run();
+}
+
+TEST_F(DeferredSequencedTaskRunnerTest, RunsTasksInCurrentSequence) {
+  scoped_refptr<DeferredSequencedTaskRunner> runner =
+      MakeRefCounted<DeferredSequencedTaskRunner>();
+  EXPECT_TRUE(runner->RunsTasksInCurrentSequence());
+
+  Thread thread1("DeferredSequencedTaskRunnerTestThread1");
+  thread1.Start();
+  bool runs_task_in_current_thread = true;
+  base::RunLoop run_loop;
+  thread1.task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(&GetRunsTasksInCurrentSequence, &runs_task_in_current_thread,
+               runner, run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_FALSE(runs_task_in_current_thread);
+}
+
+TEST_F(DeferredSequencedTaskRunnerTest, StartWithTaskRunner) {
+  scoped_refptr<DeferredSequencedTaskRunner> runner =
+      MakeRefCounted<DeferredSequencedTaskRunner>();
+  bool run_called = false;
+  base::RunLoop run_loop;
+  runner->PostTask(FROM_HERE,
+                   BindOnce(
+                       [](bool* run_called, base::Closure quit_closure) {
+                         *run_called = true;
+                         std::move(quit_closure).Run();
+                       },
+                       &run_called, run_loop.QuitClosure()));
+  runner->StartWithTaskRunner(loop_.task_runner());
+  run_loop.Run();
+  EXPECT_TRUE(run_called);
+}
+
 }  // namespace
+}  // namespace base

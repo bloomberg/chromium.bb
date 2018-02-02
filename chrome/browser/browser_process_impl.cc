@@ -212,13 +212,27 @@ rappor::RapporService* GetBrowserRapporService() {
 
 BrowserProcessImpl::BrowserProcessImpl(
     base::SequencedTaskRunner* local_state_task_runner)
-    : download_status_updater_(std::make_unique<DownloadStatusUpdater>()),
-      local_state_task_runner_(local_state_task_runner),
+    : local_state_task_runner_(local_state_task_runner),
       pref_service_factory_(
           base::MakeUnique<prefs::InProcessPrefServiceFactory>()) {
   g_browser_process = this;
-  rappor::SetDefaultServiceAccessor(&GetBrowserRapporService);
   platform_part_ = base::MakeUnique<BrowserProcessPlatformPart>();
+  // Most work should be done in Init().
+}
+
+void BrowserProcessImpl::Init() {
+#if defined(OS_CHROMEOS)
+  // Forces creation of |metrics_services_manager_client_| if neccessary
+  // (typically this call is a no-op as MetricsServicesManager has already been
+  // created).
+  GetMetricsServicesManager();
+  DCHECK(metrics_services_manager_client_);
+  metrics_services_manager_client_->OnCrosSettingsCreated();
+#endif
+
+  download_status_updater_ = std::make_unique<DownloadStatusUpdater>();
+
+  rappor::SetDefaultServiceAccessor(&GetBrowserRapporService);
 
 #if BUILDFLAG(ENABLE_PRINTING)
   // Must be created after the NotificationService.
@@ -259,6 +273,30 @@ BrowserProcessImpl::BrowserProcessImpl(
   KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);
   KeepAliveRegistry::GetInstance()->AddObserver(this);
 #endif  // !defined(OS_ANDROID)
+
+  pref_change_registrar_.Init(local_state());
+
+  // Initialize the notification for the default browser setting policy.
+  pref_change_registrar_.Add(
+      prefs::kDefaultBrowserSettingEnabled,
+      base::Bind(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
+                 base::Unretained(this)));
+
+#if !defined(OS_ANDROID)
+  // This preference must be kept in sync with external values; update them
+  // whenever the preference or its controlling policy changes.
+  pref_change_registrar_.Add(
+      metrics::prefs::kMetricsReportingEnabled,
+      base::Bind(&BrowserProcessImpl::ApplyMetricsReportingPolicy,
+                 base::Unretained(this)));
+#endif
+
+  int max_per_proxy = local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
+  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
+      net::HttpNetworkSession::NORMAL_SOCKET_POOL,
+      std::max(std::min(max_per_proxy, 99),
+               net::ClientSocketPoolManager::max_sockets_per_group(
+                   net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -528,11 +566,10 @@ BrowserProcessImpl::GetMetricsServicesManager() {
   if (!metrics_services_manager_) {
     auto client =
         base::MakeUnique<ChromeMetricsServicesManagerClient>(local_state());
-    ChromeMetricsServicesManagerClient* client_ptr = client.get();
+    metrics_services_manager_client_ = client.get();
     metrics_services_manager_ =
         base::MakeUnique<metrics_services_manager::MetricsServicesManager>(
             std::move(client));
-    client_ptr->OnMetricsServiceManagerCreated(metrics_services_manager_.get());
   }
   return metrics_services_manager_.get();
 }
@@ -749,6 +786,8 @@ const std::string& BrowserProcessImpl::GetApplicationLocale() {
 }
 
 void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
+  // NOTE: this is called before any threads have been created in non-test
+  // environments.
   locale_ = locale;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_l10n_util::SetProcessLocale(locale);
@@ -1035,30 +1074,6 @@ void BrowserProcessImpl::CreateLocalState() {
       local_state_path, local_state_task_runner_.get(), policy_service(),
       pref_registry, false, std::move(delegate));
   DCHECK(local_state_);
-
-  pref_change_registrar_.Init(local_state_.get());
-
-  // Initialize the notification for the default browser setting policy.
-  pref_change_registrar_.Add(
-      prefs::kDefaultBrowserSettingEnabled,
-      base::Bind(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
-                 base::Unretained(this)));
-
-  // This preference must be kept in sync with external values; update them
-  // whenever the preference or its controlling policy changes.
-#if !defined(OS_ANDROID)
-  pref_change_registrar_.Add(
-      metrics::prefs::kMetricsReportingEnabled,
-      base::Bind(&BrowserProcessImpl::ApplyMetricsReportingPolicy,
-                 base::Unretained(this)));
-#endif
-
-  int max_per_proxy = local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
-  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
-      net::HttpNetworkSession::NORMAL_SOCKET_POOL,
-      std::max(std::min(max_per_proxy, 99),
-               net::ClientSocketPoolManager::max_sockets_per_group(
-                   net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 }
 
 void BrowserProcessImpl::PreCreateThreads(
