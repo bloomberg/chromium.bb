@@ -56,10 +56,12 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
 
   Node* FirstAssignedNode() const {
-    return assigned_nodes_.IsEmpty() ? nullptr : assigned_nodes_.front().Get();
+    auto& nodes = AssignedNodes();
+    return nodes.IsEmpty() ? nullptr : nodes.front().Get();
   }
   Node* LastAssignedNode() const {
-    return assigned_nodes_.IsEmpty() ? nullptr : assigned_nodes_.back().Get();
+    auto& nodes = AssignedNodes();
+    return nodes.IsEmpty() ? nullptr : nodes.back().Get();
   }
 
   Node* FirstDistributedNode() const {
