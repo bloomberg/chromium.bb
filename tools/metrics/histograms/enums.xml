@@ -43610,6 +43610,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="84212388" label="omnibox_suggest_deletion"/>
   <int value="84575287" label="background_performance_tracer"/>
   <int value="84889397" label="cryptauth_enrollment_flow_setup"/>
+  <int value="87558948" label="cast_message_handler"/>
   <int value="87775794" label="adb_client_socket"/>
   <int value="88754904" label="captive_portal_service"/>
   <int value="88863520" label="autofill_query"/>
@@ -43638,6 +43639,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="103133150" label="icon_cacher"/>
   <int value="104798869" label="autofill_upload"/>
   <int value="105330607" label="profile_resetter_upload"/>
+  <int value="106124561" label="ssl_hmac_channel_authenticator"/>
   <int value="106980485" label="safe_browsing_backup_request"/>
   <int value="107267424" label="open_search"/>
   <int value="108804096" label="domain_reliability_report_upload"/>

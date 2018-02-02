@@ -49,6 +49,34 @@ namespace protocol {
 
 namespace {
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("ssl_hmac_channel_authenticator",
+                                        R"(
+        semantics {
+          sender: "Ssl Hmac Channel Authenticator"
+          description:
+            "Performs the required authentication to start a Chrome Remote "
+            "Desktop connection."
+          trigger:
+            "Initiating a Chrome Remote Desktop connection."
+          data: "No user data."
+          destination: OTHER
+          destination_other:
+            "The Chrome Remote Desktop client/host that user is connecting to."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be stopped in settings, but will not be sent "
+            "if user does not use Chrome Remote Desktop."
+          policy_exception_justification:
+            "Not implemented. 'RemoteAccessHostClientDomainList' and "
+            "'RemoteAccessHostDomainList' policies can limit the domains to "
+            "which a connection can be made, but they cannot be used to block "
+            "the request to all domains. Please refer to help desk for other "
+            "approaches to manage this feature."
+        })");
+
 // A CertVerifier which rejects every certificate.
 class FailingCertVerifier : public net::CertVerifier {
  public:
@@ -364,12 +392,11 @@ void SslHmacChannelAuthenticator::OnConnected(int result) {
 void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
     bool* callback_called) {
   while (true) {
-    // TODO(crbug.com/656607): Add proper network traffic annotation.
     int result = socket_->Write(
         auth_write_buf_.get(), auth_write_buf_->BytesRemaining(),
         base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
                    base::Unretained(this)),
-        NO_TRAFFIC_ANNOTATION_BUG_656607);
+        kTrafficAnnotation);
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesWritten(result, callback_called))
