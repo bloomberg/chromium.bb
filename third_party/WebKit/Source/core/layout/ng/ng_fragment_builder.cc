@@ -31,7 +31,7 @@ NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
   if (layout_object->IsOutOfFlowPositioned())
     return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
   if (layout_object->IsAtomicInlineLevel())
-    return NGPhysicalFragment::NGBoxType::kInlineBlock;
+    return NGPhysicalFragment::NGBoxType::kAtomicInline;
   if (layout_object->IsInline())
     return NGPhysicalFragment::NGBoxType::kInlineBox;
   return NGPhysicalFragment::NGBoxType::kNormalBox;

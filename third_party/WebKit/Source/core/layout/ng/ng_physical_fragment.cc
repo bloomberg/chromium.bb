@@ -49,8 +49,8 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
     case NGPhysicalFragment::NGBoxType::kInlineBox:
       result.Append("inline");
       break;
-    case NGPhysicalFragment::NGBoxType::kInlineBlock:
-      result.Append("inline-block");
+    case NGPhysicalFragment::NGBoxType::kAtomicInline:
+      result.Append("atomic-inline");
       break;
     case NGPhysicalFragment::NGBoxType::kFloating:
       result.Append("floating");
