@@ -310,7 +310,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // Adjust the menu button's position.
   NSRect menuButtonFrame = [appMenuButton_ frame];
   if (isRTL) {
-    menuButtonFrame.origin.x = [ToolbarController appMenuPadding];
+    menuButtonFrame.origin.x =
+        [ToolbarController appMenuPadding] + kButtonInset;
   } else {
     CGFloat menuButtonFrameMaxX =
         NSMaxX(toolbarBounds) - [ToolbarController appMenuPadding];
@@ -353,7 +354,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   containerFrame.origin.y = locationBarFrame.origin.y + kContainerYOffset;
   containerFrame.size.height = toolbarButtonSize.height;
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
-    containerFrame.origin.x = NSMinX(locationBarFrame);
+    containerFrame.origin.x = NSMinX(locationBarFrame) - kButtonInset;
   [browserActionsContainerView_ setFrame:containerFrame];
   [browserActionsContainerView_ setAutoresizingMask:trailingButtonMask];
 
