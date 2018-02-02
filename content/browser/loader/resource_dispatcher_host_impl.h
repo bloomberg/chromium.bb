@@ -811,6 +811,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Task runner for the IO thead.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
+  static constexpr int kMaxKeepaliveConnections = 256;
+  static constexpr int kMaxKeepaliveConnectionsPerProcess = 20;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
 
