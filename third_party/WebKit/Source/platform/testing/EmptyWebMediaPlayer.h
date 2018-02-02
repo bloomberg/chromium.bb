@@ -40,6 +40,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
   WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override { return false; }
+  bool DidGetOpaqueResponseFromServiceWorker() const override { return false; }
   bool HasSingleSecurityOrigin() const override { return true; }
   bool DidPassCORSAccessCheck() const override { return true; }
   double MediaTimeForTimeValue(double time_value) const override {

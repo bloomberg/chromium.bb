@@ -1458,17 +1458,30 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
 
 bool HTMLMediaElement::IsMediaDataCORSSameOrigin(
     const SecurityOrigin* origin) const {
-  // hasSingleSecurityOrigin() tells us whether the origin in the src is
-  // the same as the actual request (i.e. after redirect).
-  // didPassCORSAccessCheck() means it was a successful CORS-enabled fetch
-  // (vs. non-CORS-enabled or failed).
-  // taintsCanvas() does checkAccess() on the URL plus allow data sources,
-  // to ensure that it is not a URL that requires CORS (basically same
-  // origin).
-  return HasSingleSecurityOrigin() &&
-         ((GetWebMediaPlayer() &&
-           GetWebMediaPlayer()->DidPassCORSAccessCheck()) ||
-          !origin->TaintsCanvas(currentSrc()));
+  // If a service worker handled the request, we don't know if the origin in the
+  // src is the same as the actual response URL so can't rely on URL checks
+  // alone. So detect an opaque response via
+  // DidGetOpaqueResponseFromServiceWorker().
+  if (GetWebMediaPlayer() &&
+      GetWebMediaPlayer()->DidGetOpaqueResponseFromServiceWorker()) {
+    return false;
+  }
+
+  // At this point, either a service worker was not used, or it didn't provide
+  // an opaque response, so continue with the normal checks.
+
+  // HasSingleSecurityOrigin() tells us whether the origin in the src
+  // is the same as the actual request (i.e. after redirects).
+  if (!HasSingleSecurityOrigin())
+    return false;
+
+  // DidPassCORSAccessCheck() means it was a successful CORS-enabled fetch (vs.
+  // non-CORS-enabled or failed). TaintsCanvas() does CheckAccess() on the URL
+  // plus allows data sources, to ensure that it is not a URL that requires
+  // CORS (basically same origin).
+  return (GetWebMediaPlayer() &&
+          GetWebMediaPlayer()->DidPassCORSAccessCheck()) ||
+         !origin->TaintsCanvas(currentSrc());
 }
 
 bool HTMLMediaElement::IsInCrossOriginFrame() const {

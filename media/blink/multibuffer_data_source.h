@@ -82,6 +82,10 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Returns true if the media resource passed a CORS access control check.
   bool DidPassCORSAccessCheck() const;
 
+  // Returns true if a service worker provided the media resource response,
+  // and the response was opaque.
+  bool DidGetOpaqueResponseViaServiceWorker() const;
+
   // Notifies changes in playback state for controlling media buffering
   // behavior.
   void MediaPlaybackRateChanged(double playback_rate);

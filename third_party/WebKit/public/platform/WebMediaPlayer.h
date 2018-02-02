@@ -177,6 +177,7 @@ class WebMediaPlayer {
 
   virtual bool DidLoadingProgress() = 0;
 
+  virtual bool DidGetOpaqueResponseFromServiceWorker() const = 0;
   virtual bool HasSingleSecurityOrigin() const = 0;
   virtual bool DidPassCORSAccessCheck() const = 0;
 

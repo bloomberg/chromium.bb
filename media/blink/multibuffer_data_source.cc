@@ -278,12 +278,20 @@ bool MultibufferDataSource::HasSingleOrigin() {
 bool MultibufferDataSource::DidPassCORSAccessCheck() const {
   if (url_data_->cors_mode() == UrlData::CORS_UNSPECIFIED)
     return false;
-  // If init_cb is set, we initialization is not finished yet.
+
+  // If init_cb is set, we know initialization is not finished yet.
   if (!init_cb_.is_null())
     return false;
   if (failed_)
     return false;
   return true;
+}
+
+bool MultibufferDataSource::DidGetOpaqueResponseViaServiceWorker() const {
+  return url_data_->has_opaque_data();
+
+  // TODO(falken): Do we need to do something about |init_cb_| like
+  // in DidPassCORSAccessCheck()?
 }
 
 void MultibufferDataSource::MediaPlaybackRateChanged(double playback_rate) {

@@ -35,6 +35,25 @@ using blink::WebURLResponse;
 
 namespace media {
 
+namespace {
+
+bool IsOpaqueData(network::mojom::FetchResponseType response_type) {
+  switch (response_type) {
+    case network::mojom::FetchResponseType::kBasic:
+    case network::mojom::FetchResponseType::kCORS:
+    case network::mojom::FetchResponseType::kDefault:
+      return false;
+    case network::mojom::FetchResponseType::kError:
+    case network::mojom::FetchResponseType::kOpaque:
+    case network::mojom::FetchResponseType::kOpaqueRedirect:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
+
 // The number of milliseconds to wait before retrying a failed load.
 const int kLoaderFailedRetryDelayMs = 250;
 
@@ -322,6 +341,11 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
     destination_url_data =
         url_data_->url_index()->TryInsert(destination_url_data);
   }
+
+  // This is vital for security! A service worker can respond with a response
+  // from a different origin, so this response type is needed to detect that.
+  destination_url_data->set_has_opaque_data(
+      IsOpaqueData(response.ResponseTypeViaServiceWorker()));
 
   if (destination_url_data != url_data_) {
     // At this point, we've encountered a redirect, or found a better url data
