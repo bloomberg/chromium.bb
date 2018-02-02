@@ -48,22 +48,28 @@ PaintPropertyTreeBuilderFragmentContext::
       ScrollPaintPropertyNode::Root();
 }
 
-static bool NeedsFrameContentClip(const LocalFrame& frame) {
+// Returns true if we are printing which was initiated by the frame. We should
+// ignore clipping and scroll transform on contents. WebLocalFrameImpl will
+// issue artificial page clip for each page, and always print from the origin
+// of the contents for which no scroll offset should be applied.
+static bool IsPrintingRootFrame(const LocalFrame& frame) {
   if (!frame.GetDocument()->Printing())
-    return true;
+    return false;
 
-  // Don't issue frame content clip the frame is the root frame of printing.
-  // WebLocalFrameImpl will issue artificial page clip for each page instead.
   const auto* parent_frame = frame.Tree().Parent();
   if (!parent_frame)
-    return false;
+    return true;
   // TODO(crbug.com/455764): The local frame may be not the root frame of
   // printing when it's printing under a remote frame.
   if (!parent_frame->IsLocalFrame())
-    return false;
+    return true;
 
   // If the parent frame is printing, this frame should clip normally.
-  return ToLocalFrame(parent_frame)->GetDocument()->Printing();
+  return !ToLocalFrame(parent_frame)->GetDocument()->Printing();
+}
+
+static bool IsPrintingRootLayoutView(const LayoutObject& object) {
+  return object.IsLayoutView() && IsPrintingRootFrame(*object.GetFrame());
 }
 
 // True if a new property was created, false if an existing one was updated.
@@ -210,15 +216,17 @@ void FrameViewPaintPropertyTreeBuilder::Update(
     bool property_added_or_removed = UpdatePreTranslation(
         frame_view, context.current.transform, frame_translate, FloatPoint3D());
 
+    bool is_printing_root = IsPrintingRootFrame(frame_view.GetFrame());
+
     FloatRoundedRect content_clip(
-        NeedsFrameContentClip(frame_view.GetFrame())
-            ? IntRect(IntPoint(), frame_view.VisibleContentSize())
-            : LayoutRect::InfiniteIntRect());
+        is_printing_root
+            ? LayoutRect::InfiniteIntRect()
+            : IntRect(IntPoint(), frame_view.VisibleContentSize()));
     property_added_or_removed |= UpdateContentClip(
         frame_view, context.current.clip, frame_view.PreTranslation(),
         content_clip, full_context.clip_changed);
 
-    if (frame_view.IsScrollable()) {
+    if (!is_printing_root && frame_view.IsScrollable()) {
       property_added_or_removed |= UpdateScroll(frame_view, context);
     } else if (frame_view.ScrollNode()) {
       // Ensure pre-existing properties are cleared if there is no scrolling.
@@ -229,7 +237,8 @@ void FrameViewPaintPropertyTreeBuilder::Update(
     // A scroll translation node is created for static offset (e.g., overflow
     // hidden with scroll offset) or cases that scroll and have a scroll node.
     ScrollOffset scroll_offset = frame_view.GetScrollOffset();
-    if (frame_view.IsScrollable() || !scroll_offset.IsZero()) {
+    if (!is_printing_root &&
+        (frame_view.IsScrollable() || !scroll_offset.IsZero())) {
       TransformationMatrix frame_scroll;
       frame_scroll.Translate(-scroll_offset.Width(), -scroll_offset.Height());
       property_added_or_removed |=
@@ -925,8 +934,7 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
     return true;
 
   return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow() &&
-         (!object.IsLayoutView() ||
-          NeedsFrameContentClip(*ToLayoutView(object).GetFrame()));
+         !IsPrintingRootLayoutView(object);
 }
 
 static bool NeedsOverflowControlsClip(const LayoutObject& object) {

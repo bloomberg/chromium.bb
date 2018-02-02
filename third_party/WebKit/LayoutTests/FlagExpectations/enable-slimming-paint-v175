@@ -97,8 +97,6 @@ crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/at
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
 # This will pass with --root-layer-scrolls.
 crbug.com/771643 scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
-# Others.
-crbug.com/771643 virtual/threaded/printing/fixed-positioned-scrolled.html [ Failure ]
 # Difficult ancestor clip mask issue.
 crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 
