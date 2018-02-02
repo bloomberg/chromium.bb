@@ -491,8 +491,13 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     // Check if the file including this function is part of Chrome build.
     const base::CommandLine::CharType* args[] = {
 #if defined(OS_WIN)
-      FILE_PATH_LITERAL("gn.bat"),
+      FILE_PATH_LITERAL("buildtools/win/gn.exe"),
+#elif defined(OS_MACOSX)
+      FILE_PATH_LITERAL("buildtools/mac/gn"),
+#elif defined(OS_LINUX)
+      FILE_PATH_LITERAL("buildtools/linux64/gn"),
 #else
+      // Fallback to using PATH to find gn.
       FILE_PATH_LITERAL("gn"),
 #endif
       FILE_PATH_LITERAL("refs"),
