@@ -264,6 +264,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // By default a View is owned by its parent unless specified otherwise here.
   void set_owned_by_client() { owned_by_client_ = true; }
+  bool owned_by_client() const { return owned_by_client_; }
 
   // Tree operations -----------------------------------------------------------
 

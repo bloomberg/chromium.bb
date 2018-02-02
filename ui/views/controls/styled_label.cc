@@ -6,12 +6,16 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <limits>
+#include <memory>
 #include <vector>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -65,6 +69,16 @@ std::unique_ptr<Label> CreateLabelRange(
   return result;
 }
 
+// Returns the horizontal offset to align views in a line.
+int HorizontalAdjustment(int used_width,
+                         int width,
+                         gfx::HorizontalAlignment alignment) {
+  const int space = width - used_width;
+  return alignment == gfx::ALIGN_LEFT
+             ? 0
+             : alignment == gfx::ALIGN_CENTER ? space / 2 : space;
+}
+
 }  // namespace
 
 // StyledLabel::RangeStyleInfo ------------------------------------------------
@@ -108,7 +122,9 @@ StyledLabel::StyledLabel(const base::string16& text,
       width_at_last_layout_(0),
       displayed_on_background_color_(SkColorSetRGB(0xFF, 0xFF, 0xFF)),
       displayed_on_background_color_set_(false),
-      auto_color_readability_enabled_(true) {
+      auto_color_readability_enabled_(true),
+      horizontal_alignment_(base::i18n::IsRTL() ? gfx::ALIGN_RIGHT
+                                                : gfx::ALIGN_LEFT) {
   base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
 }
 
@@ -137,6 +153,11 @@ void StyledLabel::AddStyleRange(const gfx::Range& range,
   style_ranges_.merge(new_range);
 
   PreferredSizeChanged();
+}
+
+void StyledLabel::AddCustomView(std::unique_ptr<View> custom_view) {
+  DCHECK(custom_view->owned_by_client());
+  custom_views_.insert(std::move(custom_view));
 }
 
 void StyledLabel::SetTextContext(int text_context) {
@@ -232,6 +253,17 @@ void StyledLabel::LinkClicked(Link* source, int event_flags) {
     listener_->StyledLabelLinkClicked(this, link_targets_[source], event_flags);
 }
 
+// TODO(wutao): support gfx::ALIGN_TO_HEAD alignment.
+void StyledLabel::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
+  DCHECK_NE(gfx::ALIGN_TO_HEAD, alignment);
+  alignment = gfx::MaybeFlipForRTL(alignment);
+
+  if (horizontal_alignment_ == alignment)
+    return;
+  horizontal_alignment_ = alignment;
+  SchedulePaint();
+}
+
 int StyledLabel::GetDefaultLineHeight() const {
   return specified_line_height_ > 0
              ? specified_line_height_
@@ -271,13 +303,13 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   if (width <= 0 || text_.empty())
     return gfx::Size();
 
-  const int line_height = GetDefaultLineHeight();
+  const int default_line_height = GetDefaultLineHeight();
 
   // The index of the line we're on.
   int line = 0;
-  // The x position (in pixels) of the line we're on, relative to content
-  // bounds.
-  int x = 0;
+  const gfx::Insets insets = GetInsets();
+  // The current child view's position, relative to content bounds, in pixels.
+  gfx::Point offset(0, insets.top());
   int total_height = 0;
   // The width that was actually used. Guaranteed to be no larger than |width|.
   int used_width = 0;
@@ -290,10 +322,16 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
   bool first_loop_iteration = true;
 
+  // Max height of the views in a line.
+  int max_line_height = default_line_height;
+
+  // Temporary references to the views in a line, used for alignment.
+  std::vector<View*> views_in_a_line;
+
   // Iterate over the text, creating a bunch of labels and links and laying them
   // out in the appropriate positions.
   while (!remaining_string.empty()) {
-    if (x == 0 && !first_loop_iteration) {
+    if (offset.x() == 0 && !first_loop_iteration) {
       if (remaining_string.front() == L'\n') {
         // Wrapped to the next line on \n, remove it. Other whitespace,
         // eg, spaces to indent next line, are preserved.
@@ -312,75 +350,104 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       range = current_range->range;
 
     const size_t position = text_.size() - remaining_string.size();
-
-    const gfx::Rect chunk_bounds(x, 0, width - x, 2 * line_height);
     std::vector<base::string16> substrings;
-    // If the start of the remaining text is inside a styled range, the font
-    // style may differ from the base font. The font specified by the range
-    // should be used when eliding text.
-    gfx::FontList text_font_list = position >= range.start()
-                                       ? GetFontListForRange(current_range)
-                                       : GetDefaultFontList();
-    int elide_result = gfx::ElideRectangleText(
-        remaining_string, text_font_list, chunk_bounds.width(),
-        chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
+    // If the current range is not a custom_view, then we use ElideRectangleText
+    // to determine the line wrapping. Note: if it is a custom_view, then the
+    // |position| should equal |range.start()| because the custom_view is
+    // treated as one unit.
+    if (position != range.start() || (current_range != style_ranges_.end() &&
+                                      !current_range->style_info.custom_view)) {
+      const gfx::Rect chunk_bounds(offset.x(), 0, width - offset.x(),
+                                   default_line_height);
+      // If the start of the remaining text is inside a styled range, the font
+      // style may differ from the base font. The font specified by the range
+      // should be used when eliding text.
+      gfx::FontList text_font_list = position >= range.start()
+                                         ? GetFontListForRange(current_range)
+                                         : GetDefaultFontList();
+      int elide_result = gfx::ElideRectangleText(
+          remaining_string, text_font_list, chunk_bounds.width(),
+          chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
 
-    if (substrings.empty()) {
-      // There is no room for anything; abort. Since wrapping is enabled, this
-      // should only occur if there is insufficient vertical space remaining.
-      // ElideRectangleText always adds a single character, even if there is no
-      // room horizontally.
-      DCHECK_NE(0, elide_result & gfx::INSUFFICIENT_SPACE_VERTICAL);
-      break;
-    }
-
-    // Views are aligned to integer coordinates, but typesetting is not. This
-    // means that it's possible for an ElideRectangleText on a prior iteration
-    // to fit a word on the current line, which does not fit after that word is
-    // wrapped in a View for its chunk at the end of the line. In most cases,
-    // this will just wrap more words on to the next line. However, if the
-    // remaining chunk width is insufficient for the very _first_ word, that
-    // word will be incorrectly split. In this case, start a new line instead.
-    bool truncated_chunk =
-        x != 0 && (elide_result & gfx::INSUFFICIENT_SPACE_FOR_FIRST_WORD) != 0;
-    if (substrings[0].empty() || truncated_chunk) {
-      // The entire line is \n, or nothing fits on this line. Start a new line.
-      // As for the first line, don't advance line number so that it will be
-      // handled again at the beginning of the loop.
-      if (x != 0 || line > 0) {
-        ++line;
+      if (substrings.empty()) {
+        // There is no room for anything; abort. Since wrapping is enabled, this
+        // should only occur if there is insufficient vertical space remaining.
+        // ElideRectangleText always adds a single character, even if there is
+        // no room horizontally.
+        DCHECK_NE(0, elide_result & gfx::INSUFFICIENT_SPACE_VERTICAL);
+        break;
       }
-      x = 0;
-      continue;
+
+      // Views are aligned to integer coordinates, but typesetting is not. This
+      // means that it's possible for an ElideRectangleText on a prior iteration
+      // to fit a word on the current line, which does not fit after that word
+      // is wrapped in a View for its chunk at the end of the line. In most
+      // cases, this will just wrap more words on to the next line. However, if
+      // the remaining chunk width is insufficient for the very _first_ word,
+      // that word will be incorrectly split. In this case, start a new line
+      // instead.
+      bool truncated_chunk =
+          offset.x() != 0 &&
+          (elide_result & gfx::INSUFFICIENT_SPACE_FOR_FIRST_WORD) != 0;
+      if (substrings[0].empty() || truncated_chunk) {
+        // The entire line is \n, or nothing fits on this line. Start a new
+        // line. As for the first line, don't advance line number so that it
+        // will be handled again at the beginning of the loop.
+        AdvanceOneLine(&line, &offset, &max_line_height, width,
+                       &views_in_a_line,
+                       offset.x() != 0 || line > 0 /* new_line */);
+        continue;
+      }
     }
 
-    base::string16 chunk = substrings[0];
-
+    base::string16 chunk;
+    View* custom_view = nullptr;
     std::unique_ptr<Label> label;
     if (position >= range.start()) {
       const RangeStyleInfo& style_info = current_range->style_info;
 
-      if (style_info.disable_line_wrapping && chunk.size() < range.length() &&
-          position == range.start() && x != 0) {
+      if (style_info.custom_view) {
+        custom_view = style_info.custom_view;
+        // Ownership of the custom view must be passed to StyledLabel.
+        DCHECK(
+            std::find_if(custom_views_.cbegin(), custom_views_.cend(),
+                         [custom_view](const std::unique_ptr<View>& view_ptr) {
+                           return view_ptr.get() == custom_view;
+                         }) != custom_views_.cend());
+        // Do not allow wrap in custom view.
+        DCHECK_EQ(position, range.start());
+        chunk = remaining_string.substr(0, range.end() - position);
+      } else {
+        chunk = substrings[0];
+      }
+
+      if (((custom_view &&
+            offset.x() + custom_view->GetPreferredSize().width() > width) ||
+           (style_info.disable_line_wrapping &&
+            chunk.size() < range.length())) &&
+          position == range.start() && offset.x() != 0) {
         // If the chunk should not be wrapped, try to fit it entirely on the
         // next line.
-        x = 0;
-        ++line;
+        AdvanceOneLine(&line, &offset, &max_line_height, width,
+                       &views_in_a_line);
         continue;
       }
 
       if (chunk.size() > range.end() - position)
         chunk = chunk.substr(0, range.end() - position);
 
-      label = CreateLabelRange(chunk, text_context_, default_text_style_,
-                               style_info, this);
-
-      if (style_info.IsLink() && !dry_run)
-        link_targets_[label.get()] = range;
+      if (!custom_view) {
+        label = CreateLabelRange(chunk, text_context_, default_text_style_,
+                                 style_info, this);
+        if (style_info.IsLink() && !dry_run)
+          link_targets_[label.get()] = range;
+      }
 
       if (position + chunk.size() >= range.end())
         ++current_range;
     } else {
+      chunk = substrings[0];
+
       // This chunk is normal text.
       if (position + chunk.size() > range.start())
         chunk = chunk.substr(0, range.start() - position);
@@ -388,53 +455,86 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
                                default_style, this);
     }
 
-    if (displayed_on_background_color_set_)
-      label->SetBackgroundColor(displayed_on_background_color_);
-    label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
+    if (label) {
+      if (displayed_on_background_color_set_)
+        label->SetBackgroundColor(displayed_on_background_color_);
+      label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
+    }
 
-    const gfx::Size view_size = label->GetPreferredSize();
-    const gfx::Insets insets = GetInsets();
-    gfx::Point view_origin(insets.left() + x,
-                           insets.top() + line * line_height);
-    if (Link::GetDefaultFocusStyle() == Link::FocusStyle::RING) {
+    View* child_view = custom_view ? custom_view : label.get();
+    gfx::Size view_size = child_view->GetPreferredSize();
+    // |offset.y()| already contains |insets.top()|.
+    gfx::Point view_origin(insets.left() + offset.x(), offset.y());
+    gfx::Insets focus_border_insets;
+    if (Link::GetDefaultFocusStyle() == Link::FocusStyle::RING && label) {
       // Calculate the size of the optional focus border, and overlap by that
       // amount. Otherwise, "<a>link</a>," will render as "link ,".
-      const gfx::Insets focus_border_insets = FocusBorderInsets(*label);
-      view_origin.Offset(-focus_border_insets.left(),
-                         -focus_border_insets.top());
-      label->SetBoundsRect(gfx::Rect(view_origin, view_size));
-      x += view_size.width() - focus_border_insets.width();
-      used_width = std::max(used_width, x);
-      total_height =
-          std::max(total_height, label->bounds().bottom() + insets.bottom() -
-                                     focus_border_insets.bottom());
-    } else {
-      label->SetBoundsRect(gfx::Rect(view_origin, view_size));
-      x += view_size.width();
-      total_height =
-          std::max(total_height, label->bounds().bottom() + insets.bottom());
+      focus_border_insets = FocusBorderInsets(*label);
     }
-    used_width = std::max(used_width, x);
+    view_origin.Offset(-focus_border_insets.left(), -focus_border_insets.top());
+    // The custom view could be wider than the available width; clamp as needed.
+    if (custom_view) {
+      view_size.set_width(std::min(
+          view_size.width(), width - offset.x() + focus_border_insets.width()));
+    }
+    child_view->SetBoundsRect(gfx::Rect(view_origin, view_size));
+    offset.set_x(offset.x() + view_size.width() - focus_border_insets.width());
+    total_height =
+        std::max(total_height, child_view->bounds().bottom() + insets.bottom() -
+                                   focus_border_insets.bottom());
+    used_width = std::max(used_width, offset.x());
+    max_line_height = std::max(
+        max_line_height, view_size.height() - focus_border_insets.height());
 
-    if (!dry_run)
-      AddChildView(label.release());
+    if (!dry_run) {
+      views_in_a_line.push_back(child_view);
+      if (label)
+        AddChildView(label.release());
+      else
+        AddChildView(child_view);
+    }
 
     // If |gfx::ElideRectangleText| returned more than one substring, that
     // means the whole text did not fit into remaining line width, with text
     // after |susbtring[0]| spilling into next line. If whole |substring[0]|
     // was added to the current line (this may not be the case if part of the
     // substring has different style), proceed to the next line.
-    if (substrings.size() > 1 && chunk.size() == substrings[0].size()) {
-      x = 0;
-      ++line;
+    if (!custom_view && substrings.size() > 1 &&
+        chunk.size() == substrings[0].size()) {
+      AdvanceOneLine(&line, &offset, &max_line_height, width, &views_in_a_line);
     }
 
     remaining_string = remaining_string.substr(chunk.size());
   }
-
+  AdvanceOneLine(&line, &offset, &max_line_height, width, &views_in_a_line,
+                 false);
   DCHECK_LE(used_width, width);
   calculated_size_ = gfx::Size(used_width + GetInsets().width(), total_height);
   return calculated_size_;
+}
+
+void StyledLabel::AdvanceOneLine(int* line_number,
+                                 gfx::Point* offset,
+                                 int* max_line_height,
+                                 int width,
+                                 std::vector<View*>* views_in_a_line,
+                                 bool new_line) {
+  const int x_delta =
+      HorizontalAdjustment(offset->x(), width, horizontal_alignment_);
+  for (auto* view : *views_in_a_line) {
+    gfx::Rect bounds = view->bounds();
+    bounds.set_x(bounds.x() + x_delta);
+    bounds.set_y(offset->y() + (*max_line_height - bounds.height()) / 2.0f);
+    view->SetBoundsRect(bounds);
+  }
+  views_in_a_line->clear();
+
+  if (new_line) {
+    ++(*line_number);
+    offset->set_y(offset->y() + *max_line_height);
+    *max_line_height = GetDefaultLineHeight();
+  }
+  offset->set_x(0);
 }
 
 }  // namespace views
