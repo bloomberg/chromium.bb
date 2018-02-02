@@ -13,6 +13,7 @@
 #include "base/cpu.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_flattener.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/histogram_snapshot_manager.h"
@@ -303,6 +304,18 @@ void MetricsLog::TruncateEvents() {
   if (uma_proto_.user_action_event_size() > internal::kUserActionEventLimit) {
     UMA_HISTOGRAM_COUNTS_100000("UMA.TruncatedEvents.UserAction",
                                 uma_proto_.user_action_event_size());
+    for (int i = internal::kUserActionEventLimit;
+         i < uma_proto_.user_action_event_size(); ++i) {
+      // No histograms.xml entry is added for this histogram because it uses an
+      // enum that is generated from actions.xml in our processing pipelines.
+      // Instead, a histogram description will also be produced in our
+      // pipelines.
+      base::UmaHistogramSparse(
+          "UMA.TruncatedEvents.UserAction.Type",
+          // Truncate the unsigned 64-bit hash to 31 bits, to make it a suitable
+          // histogram sample.
+          uma_proto_.user_action_event(i).name_hash() & 0x7fffffff);
+    }
     uma_proto_.mutable_user_action_event()->DeleteSubrange(
         internal::kUserActionEventLimit,
         uma_proto_.user_action_event_size() - internal::kUserActionEventLimit);
