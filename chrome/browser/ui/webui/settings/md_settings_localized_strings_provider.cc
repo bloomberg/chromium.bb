@@ -945,6 +945,11 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+  html_source->AddString(
+      "timeZoneSettingsLearnMoreURL",
+      base::ASCIIToUTF16(base::StringPrintf(
+          chrome::kTimeZoneSettingsLearnMoreURL,
+          g_browser_process->GetApplicationLocale().c_str())));
 }
 
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {

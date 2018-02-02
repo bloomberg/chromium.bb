@@ -311,4 +311,9 @@ const char kOutdatedPluginLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_outdated_plugin";
 #endif
 
+#if defined(OS_CHROMEOS)
+const char kTimeZoneSettingsLearnMoreURL[] =
+    "https://support.google.com/chromebook/answer/177871?hl=%s";
+#endif
+
 }  // namespace chrome
