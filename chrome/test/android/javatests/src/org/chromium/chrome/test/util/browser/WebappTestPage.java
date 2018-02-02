@@ -44,6 +44,19 @@ public class WebappTestPage {
     }
 
     /**
+     * Returns the URL of a native banner-eligible page with the specified web manifest URL and
+     * action query parameter.
+     */
+    public static String getNativeBannerUrlWithManifestAndAction(
+            EmbeddedTestServer testServer, String manifestUrl, String action) {
+        String url = testServer.getURL(NO_SERVICE_WORKER_APP_PATH);
+        Uri.Builder builder = Uri.parse(url).buildUpon();
+        builder.appendQueryParameter("manifest", manifestUrl);
+        builder.appendQueryParameter("action", action);
+        return builder.build().toString();
+    }
+
+    /**
      * Returns the URL of a banner-eligible page with the specified web manifest URL.
      */
     public static String getBannerUrlWithManifest(

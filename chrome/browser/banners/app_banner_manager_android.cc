@@ -212,8 +212,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
     }
   } else {
     if (AppBannerInfoBarDelegateAndroid::Create(
-            contents, native_app_title_, native_app_data_, primary_icon_,
-            native_app_package_, referrer_)) {
+            contents, GetWeakPtr(), native_app_title_, native_app_data_,
+            primary_icon_, native_app_package_, referrer_)) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
       ReportStatus(SHOWING_NATIVE_APP_BANNER);
