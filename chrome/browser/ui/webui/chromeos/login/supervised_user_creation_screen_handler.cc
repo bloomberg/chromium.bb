@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -300,7 +300,7 @@ void SupervisedUserCreationScreenHandler::HandleManagerSelected(
     const AccountId& manager_id) {
   if (!delegate_)
     return;
-  WallpaperManager::Get()->ShowUserWallpaper(manager_id);
+  WallpaperControllerClient::Get()->ShowUserWallpaper(manager_id);
 }
 
 void SupervisedUserCreationScreenHandler::HandleImportUserSelected(

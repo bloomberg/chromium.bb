@@ -464,6 +464,11 @@ class WallpaperControllerTest : public AshTestBase {
     return controller_->IsActiveUserWallpaperControlledByPolicyImpl();
   }
 
+  // Wrapper for private IsDevicePolicyWallpaper().
+  bool IsDevicePolicyWallpaper() {
+    return controller_->IsDevicePolicyWallpaper();
+  }
+
   int GetWallpaperCount() { return controller_->wallpaper_count_for_testing_; }
 
   void SetBypassDecode() { controller_->bypass_decode_for_testing_ = true; }
@@ -1613,6 +1618,41 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
   EXPECT_EQ(2, observer.wallpaper_blur_changed_count_);
 
   controller_->RemoveObserver(&observer);
+}
+
+TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
+  SetBypassDecode();
+
+  // Verify the device policy wallpaper is shown on login screen.
+  SetSessionState(SessionState::LOGIN_PRIMARY);
+  controller_->SetDeviceWallpaperPolicyEnforced(true);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_TRUE(IsDevicePolicyWallpaper());
+
+  // Verify the device policy wallpaper is replaced when session state is no
+  // longer LOGIN_PRIMARY.
+  SetSessionState(SessionState::LOGGED_IN_NOT_ACTIVE);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(2, GetWallpaperCount());
+  EXPECT_FALSE(IsDevicePolicyWallpaper());
+
+  // Verify the device policy wallpaper never shows up again when session
+  // state changes.
+  SetSessionState(SessionState::ACTIVE);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(2, GetWallpaperCount());
+  EXPECT_FALSE(IsDevicePolicyWallpaper());
+
+  SetSessionState(SessionState::LOCKED);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(2, GetWallpaperCount());
+  EXPECT_FALSE(IsDevicePolicyWallpaper());
+
+  SetSessionState(SessionState::LOGIN_SECONDARY);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(2, GetWallpaperCount());
+  EXPECT_FALSE(IsDevicePolicyWallpaper());
 }
 
 }  // namespace ash

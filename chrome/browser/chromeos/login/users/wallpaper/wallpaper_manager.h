@@ -57,18 +57,6 @@ class WallpaperManager {
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
 
-  // Shows |account_id|'s wallpaper, which is determined in the following order:
-  // 1) Use device policy wallpaper if it exists AND we are at the login screen.
-  // 2) Use user policy wallpaper if it exists.
-  // 3) Use the wallpaper set by the user (either by |SetOnlineWallpaper| or
-  //    |SetCustomWallpaper|), if any.
-  // 4) Use the default wallpaper of this user.
-  void ShowUserWallpaper(const AccountId& account_id);
-
-  // Used by the gaia-signin UI. Signin wallpaper is considered either as the
-  // device policy wallpaper or the default wallpaper.
-  void ShowSigninWallpaper();
-
   // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
   // in, uses a solid color wallpaper. If logged in as a stub user, uses an
   // empty wallpaper.
@@ -94,11 +82,6 @@ class WallpaperManager {
 
   WallpaperManager();
 
-  // A wrapper of |WallpaperController::SetUserWallpaperInfo|.
-  void SetUserWallpaperInfo(const AccountId& account_id,
-                            const wallpaper::WallpaperInfo& info,
-                            bool is_persistent);
-
   // Gets the CommandLine representing the current process's command line.
   base::CommandLine* GetCommandLine();
 
@@ -109,16 +92,6 @@ class WallpaperManager {
   // A wrapper of |WallpaperController::GetUserWallpaperInfo|.
   bool GetUserWallpaperInfo(const AccountId& account_id,
                             wallpaper::WallpaperInfo* info) const;
-
-  // Returns true if the device wallpaper should be set for the account.
-  // TODO(xdai): Remove this function after migrating ShowUserWallpaper().
-  bool ShouldSetDeviceWallpaper(const AccountId& account_id,
-                                std::string* url,
-                                std::string* hash);
-
-  // A wrapper of |WallpaperController::SetDefaultWallpaperImpl|.
-  void SetDefaultWallpaperImpl(const AccountId& account_id,
-                               bool show_wallpaper);
 
   // Returns the cached logged-in user wallpaper info, or a dummy value under
   // mash.
