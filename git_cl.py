@@ -1582,9 +1582,7 @@ class Changelist(object):
           rietveld_obj=self._codereview_impl.GetRietveldObjForPresubmit(),
           gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit())
     except presubmit_support.PresubmitFailure as e:
-      DieWithError(
-          ('%s\nMaybe your depot_tools is out of date?\n'
-           'If all fails, contact maruel@') % e)
+      DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
 
   def CMDPatchIssue(self, issue_arg, reject, nocommit, directory):
     """Fetches and applies the issue patch from codereview to local branch."""

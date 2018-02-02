@@ -1685,7 +1685,6 @@ def main(argv=None):
   except PresubmitFailure, e:
     print >> sys.stderr, e
     print >> sys.stderr, 'Maybe your depot_tools is out of date?'
-    print >> sys.stderr, 'If all fails, contact maruel@'
     return 2
 
 
