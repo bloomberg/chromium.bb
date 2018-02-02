@@ -24,9 +24,12 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -67,6 +70,7 @@ using content::PermissionType;
 namespace {
 
 static bool gIsFakeOfficialBuildForTest = false;
+const int kPriorCountCap = 10;
 
 std::string GetPermissionRequestString(PermissionRequestType type) {
   switch (type) {
@@ -198,7 +202,7 @@ void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
     // applicable in prompt UIs where revocations are not possible.
     RecordPermissionAction(permission, PermissionAction::REVOKED, source_ui,
                            PermissionRequestGestureType::UNKNOWN,
-                           revoked_origin, profile);
+                           revoked_origin, /*web_contents=*/nullptr, profile);
   }
 }
 
@@ -302,7 +306,7 @@ void PermissionUmaUtil::PermissionPromptResolved(
 
   for (PermissionRequest* request : requests) {
     ContentSettingsType permission = request->GetContentSettingsType();
-    // TODO(timloh): We only record ignore metrics for permissions which use
+    // TODO(timloh): We only record these metrics for permissions which use
     // PermissionRequestImpl as the other subclasses don't support
     // GetGestureType and GetContentSettingsType.
     if (permission == CONTENT_SETTINGS_TYPE_DEFAULT)
@@ -313,7 +317,7 @@ void PermissionUmaUtil::PermissionPromptResolved(
 
     RecordPermissionAction(permission, permission_action,
                            PermissionSourceUI::PROMPT, gesture_type,
-                           requesting_origin, profile);
+                           requesting_origin, web_contents, profile);
 
     std::string priorDismissPrefix =
         "Permissions.Prompt." + action_string + ".PriorDismissCount.";
@@ -415,16 +419,33 @@ void PermissionUmaUtil::RecordPermissionAction(
     PermissionSourceUI source_ui,
     PermissionRequestGestureType gesture_type,
     const GURL& requesting_origin,
+    const content::WebContents* web_contents,
     Profile* profile) {
+  PermissionDecisionAutoBlocker* autoblocker =
+      PermissionDecisionAutoBlocker::GetForProfile(profile);
+  int dismiss_count =
+      autoblocker->GetDismissCount(requesting_origin, permission);
+  int ignore_count = autoblocker->GetIgnoreCount(requesting_origin, permission);
+
   if (IsOptedIntoPermissionActionReporting(profile)) {
-    PermissionDecisionAutoBlocker* autoblocker =
-        PermissionDecisionAutoBlocker::GetForProfile(profile);
-    PermissionReportInfo report_info(
-        requesting_origin, permission, action, source_ui, gesture_type,
-        autoblocker->GetDismissCount(requesting_origin, permission),
-        autoblocker->GetIgnoreCount(requesting_origin, permission));
+    PermissionReportInfo report_info(requesting_origin, permission, action,
+                                     source_ui, gesture_type, dismiss_count,
+                                     ignore_count);
     g_browser_process->safe_browsing_service()
         ->ui_manager()->ReportPermissionAction(report_info);
+  }
+
+  if (web_contents) {
+    ukm::SourceId source_id =
+        ukm::GetSourceIdForWebContentsDocument(web_contents);
+    ukm::builders::Permission(source_id)
+        .SetAction(static_cast<int64_t>(action))
+        .SetGesture(static_cast<int64_t>(gesture_type))
+        .SetPermissionType(permission)
+        .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
+        .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
+        .SetSource(static_cast<int64_t>(source_ui))
+        .Record(ukm::UkmRecorder::Get());
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);
