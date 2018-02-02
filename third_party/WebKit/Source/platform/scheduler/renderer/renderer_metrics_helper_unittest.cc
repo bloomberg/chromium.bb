@@ -36,7 +36,8 @@ class RendererMetricsHelperTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_ = std::make_unique<RendererSchedulerImpl>(
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_));
+        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        base::nullopt);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }
 

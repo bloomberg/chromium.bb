@@ -41,7 +41,7 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
     if (!NextScheduledRunTime(&run_time))
       return base::Optional<base::TimeDelta>();
 
-    AdvanceTo(run_time);
+    AdvanceNowTo(run_time);
     return base::TimeDelta();  // Makes DoWork post an immediate continuation.
   }
 

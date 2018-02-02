@@ -37,9 +37,11 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ = scheduler_helper_->DefaultWorkerTaskQueue();
-    initial_time_ = clock_.NowTicks();
+    initial_time_ = base::Time::FromJsTime(100000.0);
+    initial_time_ticks_ = clock_.NowTicks();
     auto_advancing_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
-        initial_time_, scheduler_helper_.get()));
+        initial_time_, initial_time_ticks_, scheduler_helper_.get(),
+        AutoAdvancingVirtualTimeDomain::BaseTimeOverridePolicy::OVERRIDE));
     scheduler_helper_->RegisterTimeDomain(auto_advancing_time_domain_.get());
     task_queue_->SetTimeDomain(auto_advancing_time_domain_.get());
   }
@@ -49,7 +51,8 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
     scheduler_helper_->UnregisterTimeDomain(auto_advancing_time_domain_.get());
   }
 
-  base::TimeTicks initial_time_;
+  base::Time initial_time_;
+  base::TimeTicks initial_time_ticks_;
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
@@ -82,8 +85,8 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeAdvances) {
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced());
   mock_task_runner_->RunUntilIdle();
 
-  EXPECT_EQ(initial_time_, clock_.NowTicks());
-  EXPECT_EQ(initial_time_ + delay,
+  EXPECT_EQ(initial_time_ticks_, clock_.NowTicks());
+  EXPECT_EQ(initial_time_ticks_ + delay,
             auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_TRUE(task_run);
 
@@ -104,8 +107,9 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced()).Times(0);
   mock_task_runner_->RunUntilIdle();
 
-  EXPECT_EQ(initial_time_, clock_.NowTicks());
-  EXPECT_EQ(initial_time_, auto_advancing_time_domain_->CreateLazyNow().Now());
+  EXPECT_EQ(initial_time_ticks_, clock_.NowTicks());
+  EXPECT_EQ(initial_time_ticks_,
+            auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_FALSE(task_run);
 
   auto_advancing_time_domain_->SetObserver(nullptr);
@@ -189,6 +193,34 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, TaskStarvationCountResets) {
   EXPECT_EQ(1, auto_advancing_time_domain_->task_starvation_count());
   auto_advancing_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
   EXPECT_EQ(0, auto_advancing_time_domain_->task_starvation_count());
+}
+
+TEST_F(AutoAdvancingVirtualTimeDomainTest, BaseTimeOverriden) {
+  base::Time initial_time = base::Time::FromJsTime(100000.0);
+  EXPECT_EQ(base::Time::Now(), initial_time);
+
+  // Make time advance.
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  bool task_run = false;
+  task_queue_->PostDelayedTask(FROM_HERE, base::BindOnce(NopTask, &task_run),
+                               delay);
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(base::Time::Now(), initial_time + delay);
+}
+
+TEST_F(AutoAdvancingVirtualTimeDomainTest, BaseTimeTicksOverriden) {
+  base::TimeTicks initial_time = clock_.NowTicks();
+  EXPECT_EQ(base::TimeTicks::Now(), initial_time);
+
+  // Make time advance.
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(20);
+  bool task_run = false;
+  task_queue_->PostDelayedTask(FROM_HERE, base::BindOnce(NopTask, &task_run),
+                               delay);
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(base::TimeTicks::Now(), initial_time + delay);
 }
 
 }  // namespace auto_advancing_virtual_time_domain_unittest

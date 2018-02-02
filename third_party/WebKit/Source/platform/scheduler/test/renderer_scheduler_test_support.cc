@@ -57,7 +57,8 @@ class WebTaskRunnerProxy : public base::SingleThreadTaskRunner {
 std::unique_ptr<RendererScheduler> CreateRendererSchedulerForTests() {
   return std::make_unique<scheduler::RendererSchedulerImpl>(
       std::make_unique<TaskQueueManagerForRendererSchedulerTest>(
-          std::make_unique<LazyThreadControllerForTest>()));
+          std::make_unique<LazyThreadControllerForTest>()),
+      base::nullopt);
 }
 
 void RunIdleTasksForTesting(RendererScheduler* scheduler,

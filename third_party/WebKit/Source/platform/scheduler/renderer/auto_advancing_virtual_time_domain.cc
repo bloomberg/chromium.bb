@@ -4,25 +4,43 @@
 
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/time/time_override.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {
 
 AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
-    base::TimeTicks initial_time,
-    SchedulerHelper* helper)
-    : VirtualTimeDomain(initial_time),
+    base::Time initial_time,
+    base::TimeTicks initial_time_ticks,
+    SchedulerHelper* helper,
+    BaseTimeOverridePolicy policy)
+    : VirtualTimeDomain(initial_time_ticks),
       task_starvation_count_(0),
       max_task_starvation_count_(0),
       can_advance_virtual_time_(true),
       observer_(nullptr),
-      helper_(helper) {
+      helper_(helper),
+      initial_time_ticks_(initial_time_ticks),
+      initial_time_(initial_time),
+      previous_time_(initial_time),
+      time_overrides_(
+          policy == BaseTimeOverridePolicy::OVERRIDE
+              ? base::MakeUnique<base::subtle::ScopedTimeClockOverrides>(
+                    &AutoAdvancingVirtualTimeDomain::GetVirtualTime,
+                    &AutoAdvancingVirtualTimeDomain::GetVirtualTimeTicks,
+                    nullptr)
+              : nullptr) {
   helper_->AddTaskObserver(this);
+  DCHECK_EQ(AutoAdvancingVirtualTimeDomain::g_time_domain_, nullptr);
+  AutoAdvancingVirtualTimeDomain::g_time_domain_ = this;
 }
 
 AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
   helper_->RemoveTaskObserver(this);
+  DCHECK_EQ(AutoAdvancingVirtualTimeDomain::g_time_domain_, this);
+  AutoAdvancingVirtualTimeDomain::g_time_domain_ = nullptr;
 }
 
 base::Optional<base::TimeDelta>
@@ -91,7 +109,7 @@ bool AutoAdvancingVirtualTimeDomain::MaybeAdvanceVirtualTime(
   if (new_virtual_time <= Now())
     return false;
 
-  AdvanceTo(new_virtual_time);
+  AdvanceNowTo(new_virtual_time);
 
   if (observer_)
     observer_->OnVirtualTimeAdvanced();
@@ -118,6 +136,26 @@ void AutoAdvancingVirtualTimeDomain::DidProcessTask(
   base::TimeTicks run_time;
   if (NextScheduledRunTime(&run_time) && MaybeAdvanceVirtualTime(run_time))
     task_starvation_count_ = 0;
+}
+
+base::Time AutoAdvancingVirtualTimeDomain::Date() const {
+  base::TimeDelta offset = Now() - initial_time_ticks_;
+  return initial_time_ + offset;
+}
+
+AutoAdvancingVirtualTimeDomain* AutoAdvancingVirtualTimeDomain::g_time_domain_ =
+    nullptr;
+
+// static
+base::TimeTicks AutoAdvancingVirtualTimeDomain::GetVirtualTimeTicks() {
+  DCHECK(AutoAdvancingVirtualTimeDomain::g_time_domain_);
+  return AutoAdvancingVirtualTimeDomain::g_time_domain_->Now();
+}
+
+// static
+base::Time AutoAdvancingVirtualTimeDomain::GetVirtualTime() {
+  DCHECK(AutoAdvancingVirtualTimeDomain::g_time_domain_);
+  return AutoAdvancingVirtualTimeDomain::g_time_domain_->Date();
 }
 
 AutoAdvancingVirtualTimeDomain::Observer::Observer() = default;

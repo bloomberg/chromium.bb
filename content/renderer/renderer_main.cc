@@ -186,8 +186,17 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::android::RecordLibraryLoaderRendererHistograms();
 #endif
 
+  base::Optional<base::Time> initial_virtual_time;
+  if (command_line.HasSwitch(switches::kInitialVirtualTime)) {
+    double initial_time;
+    if (base::StringToDouble(
+            command_line.GetSwitchValueASCII(switches::kInitialVirtualTime),
+            &initial_time)) {
+      initial_virtual_time = base::Time::FromJsTime(initial_time);
+    }
+  }
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler(
-      blink::scheduler::RendererScheduler::Create());
+      blink::scheduler::RendererScheduler::Create(initial_virtual_time));
 
   // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();

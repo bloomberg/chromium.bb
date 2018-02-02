@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -260,6 +261,15 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
       HeadlessBrowserContextImpl* headless_browser_context_impl =
           HeadlessBrowserContextImpl::From(
               render_process_host->GetBrowserContext());
+
+      if (headless_browser_context_impl->options()->initial_virtual_time()) {
+        command_line->AppendSwitchASCII(
+            ::switches::kInitialVirtualTime,
+            base::NumberToString(headless_browser_context_impl->options()
+                                     ->initial_virtual_time()
+                                     ->ToJsTime()));
+      }
+
       std::vector<base::StringPiece> languages = base::SplitStringPiece(
           headless_browser_context_impl->options()->accept_language(), ",",
           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

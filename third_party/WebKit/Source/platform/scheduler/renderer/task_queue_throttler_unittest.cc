@@ -81,8 +81,9 @@ class TaskQueueThrottlerTest : public ::testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
-    scheduler_.reset(new RendererSchedulerImpl(CreateTaskQueueManagerForTest(
-        nullptr, mock_task_runner_, clock_.get())));
+    scheduler_.reset(new RendererSchedulerImpl(
+        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, clock_.get()),
+        base::nullopt));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameThrottleable);
@@ -560,7 +561,8 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        EnableVirtualTimeThenIncrement) {
   timer_queue_->PostTask(FROM_HERE, base::BindRepeating(&NopTask));
 
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(
+      RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
 
   EXPECT_FALSE(IsQueueBlocked(timer_queue_.get()));
@@ -577,7 +579,8 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
   EXPECT_TRUE(IsQueueBlocked(timer_queue_.get()));
 
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(
+      RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   EXPECT_FALSE(IsQueueBlocked(timer_queue_.get()));
   EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
 }

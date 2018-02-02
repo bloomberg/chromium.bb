@@ -121,6 +121,28 @@ void RendererMetricsHelper::OnRendererShutdown(base::TimeTicks now) {
   main_thread_load_tracker.RecordIdle(now);
 }
 
+void RendererMetricsHelper::ResetForTest(base::TimeTicks now) {
+  main_thread_load_tracker = ThreadLoadTracker(
+      now,
+      base::BindRepeating(&RendererMetricsHelper::RecordMainThreadTaskLoad,
+                          base::Unretained(this)),
+      kThreadLoadTrackerReportingInterval);
+
+  background_main_thread_load_tracker = ThreadLoadTracker(
+      now,
+      base::BindRepeating(
+          &RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad,
+          base::Unretained(this)),
+      kThreadLoadTrackerReportingInterval);
+
+  foreground_main_thread_load_tracker = ThreadLoadTracker(
+      now,
+      base::BindRepeating(
+          &RendererMetricsHelper::RecordForegroundMainThreadTaskLoad,
+          base::Unretained(this)),
+      kThreadLoadTrackerReportingInterval);
+}
+
 namespace {
 
 // Calculates the length of the intersection of two given time intervals.

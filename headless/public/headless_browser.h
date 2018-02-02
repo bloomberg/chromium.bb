@@ -16,6 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
@@ -174,6 +176,10 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Run a browser context in an incognito mode. Enabled by default.
   bool incognito_mode = true;
 
+  // If set the renderer will be constructed with virtual time enabled and
+  // base::Time::Now will be overridden to initially return this value.
+  base::Optional<base::Time> initial_virtual_time;
+
   // Whether cookies are allowed. Enabled by default.
   bool allow_cookies = true;
 
@@ -248,6 +254,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
   Builder& SetIncognitoMode(bool incognito_mode);
+  Builder& SetInitialVirtualTime(base::Time initial_virtual_time);
   Builder& SetAllowCookies(bool allow_cookies);
   Builder& SetOverrideWebPreferencesCallback(
       const base::Callback<void(WebPreferences*)>& callback);

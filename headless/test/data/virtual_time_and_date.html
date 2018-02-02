@@ -1,0 +1,26 @@
+<html>
+<script>
+// We set the initial time to 1000000 via the test harness.
+var expected_msec = 1000020;
+var minimum_time_delta_msec = 1;
+function test_time(expected_msec) {
+ for (var i = 0; i < 10; ++i) {
+   var d = Date.now();
+   if (d != expected_msec) {
+     console.log('Failed. '  + d + ' vs ' + expected_msec);
+   }
+   expected_msec = expected_msec + minimum_time_delta_msec;
+ }
+}
+
+test_time(1000020);
+
+// Current implementation re-synchronizes the JS time with virtual time
+// whenever possible so this timeout will fire at 1000msec after the start
+// time event though we have already stepped time forward a bit.
+setTimeout(function() {
+  test_time(1001020);
+  console.log('pass');
+}, 1000);
+</script>
+</html>

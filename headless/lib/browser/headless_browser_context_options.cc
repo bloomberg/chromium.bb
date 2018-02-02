@@ -74,6 +74,13 @@ bool HeadlessBrowserContextOptions::incognito_mode() const {
                                browser_options_->incognito_mode);
 }
 
+base::Optional<base::Time> HeadlessBrowserContextOptions::initial_virtual_time()
+    const {
+  if (initial_virtual_time_)
+    return initial_virtual_time_;
+  return browser_options_->initial_virtual_time;
+}
+
 bool HeadlessBrowserContextOptions::allow_cookies() const {
   return ReturnOverriddenValue(allow_cookies_, browser_options_->allow_cookies);
 }

@@ -163,6 +163,11 @@ Builder& Builder::SetIncognitoMode(bool incognito_mode) {
   return *this;
 }
 
+Builder& Builder::SetInitialVirtualTime(base::Time initial_virtual_time) {
+  options_.initial_virtual_time = initial_virtual_time;
+  return *this;
+}
+
 Builder& Builder::SetOverrideWebPreferencesCallback(
     const base::Callback<void(WebPreferences*)>& callback) {
   options_.override_web_preferences_callback = callback;

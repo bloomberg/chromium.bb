@@ -1812,11 +1812,11 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueueInNestedLoop) {
 TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   Initialize(2u);
 
-  base::TimeTicks start_time = manager_->NowTicks();
+  base::TimeTicks start_time_ticks = manager_->NowTicks();
   std::unique_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(start_time));
+      new VirtualTimeDomain(start_time_ticks));
   std::unique_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(start_time));
+      new VirtualTimeDomain(start_time_ticks));
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
   runners_[0]->SetTimeDomain(domain_a.get());
@@ -1843,13 +1843,15 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
                                base::BindRepeating(&TestTask, 6, &run_order),
                                base::TimeDelta::FromMilliseconds(30));
 
-  domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+  domain_b->AdvanceNowTo(start_time_ticks +
+                         base::TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4, 5, 6));
 
-  domain_a->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+  domain_a->AdvanceNowTo(start_time_ticks +
+                         base::TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   test_task_runner_->RunUntilIdle();
@@ -1865,9 +1867,9 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
 TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->NowTicks();
+  base::TimeTicks start_time_ticks = manager_->NowTicks();
   std::unique_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(start_time));
+      new VirtualTimeDomain(start_time_ticks));
   manager_->RegisterTimeDomain(domain_a.get());
   runners_[0]->SetTimeDomain(domain_a.get());
 
@@ -1885,17 +1887,19 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
                                base::BindRepeating(&TestTask, 4, &run_order),
                                base::TimeDelta::FromMilliseconds(40));
 
-  domain_a->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(20));
+  domain_a->AdvanceNowTo(start_time_ticks +
+                         base::TimeDelta::FromMilliseconds(20));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 
   std::unique_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(start_time));
+      new VirtualTimeDomain(start_time_ticks));
   manager_->RegisterTimeDomain(domain_b.get());
   runners_[0]->SetTimeDomain(domain_b.get());
 
-  domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+  domain_b->AdvanceNowTo(start_time_ticks +
+                         base::TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   test_task_runner_->RunUntilIdle();
@@ -1910,11 +1914,11 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
 TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->NowTicks();
+  base::TimeTicks start_time_ticks = manager_->NowTicks();
   std::unique_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(start_time));
+      new VirtualTimeDomain(start_time_ticks));
   std::unique_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(start_time));
+      new VirtualTimeDomain(start_time_ticks));
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
 

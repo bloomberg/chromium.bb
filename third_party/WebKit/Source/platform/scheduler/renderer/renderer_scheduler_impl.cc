@@ -205,7 +205,8 @@ bool IsUnconditionalHighPriorityInputEnabled() {
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
-    std::unique_ptr<TaskQueueManager> task_queue_manager)
+    std::unique_ptr<TaskQueueManager> task_queue_manager,
+    base::Optional<base::Time> initial_virtual_time)
     : helper_(std::move(task_queue_manager), this),
       idle_helper_(
           &helper_,
@@ -295,6 +296,16 @@ RendererSchedulerImpl::RendererSchedulerImpl(
 
   internal::ProcessState::Get()->is_process_backgrounded =
       main_thread_only().renderer_backgrounded;
+
+  if (initial_virtual_time) {
+    main_thread_only().initial_virtual_time = *initial_virtual_time;
+    // The real uptime of the machine is irrelevant if we're using virtual time
+    // we choose an arbitrary initial offset.
+    main_thread_only().initial_virtual_time_ticks =
+        base::TimeTicks() + base::TimeDelta::FromSeconds(10);
+    EnableVirtualTime(BaseTimeOverridePolicy::OVERRIDE);
+    SetVirtualTimePolicy(VirtualTimePolicy::kPause);
+  }
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
@@ -1779,14 +1790,19 @@ WakeUpBudgetPool* RendererSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
   return main_thread_only().wake_up_budget_pool;
 }
 
-base::TimeTicks RendererSchedulerImpl::EnableVirtualTime() {
+base::TimeTicks RendererSchedulerImpl::EnableVirtualTime(
+    BaseTimeOverridePolicy policy) {
   if (main_thread_only().use_virtual_time)
-    return main_thread_only().initial_virtual_time;
+    return main_thread_only().initial_virtual_time_ticks;
   main_thread_only().use_virtual_time = true;
   DCHECK(!virtual_time_domain_);
-  main_thread_only().initial_virtual_time = tick_clock()->NowTicks();
+  if (main_thread_only().initial_virtual_time.is_null())
+    main_thread_only().initial_virtual_time = base::Time::Now();
+  if (main_thread_only().initial_virtual_time_ticks.is_null())
+    main_thread_only().initial_virtual_time_ticks = tick_clock()->NowTicks();
   virtual_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
-      main_thread_only().initial_virtual_time, &helper_));
+      main_thread_only().initial_virtual_time,
+      main_thread_only().initial_virtual_time_ticks, &helper_, policy));
   RegisterTimeDomain(virtual_time_domain_.get());
   virtual_time_domain_->SetObserver(this);
 
@@ -1806,10 +1822,10 @@ base::TimeTicks RendererSchedulerImpl::EnableVirtualTime() {
 
   if (main_thread_only().virtual_time_stopped)
     VirtualTimePaused();
-  return main_thread_only().initial_virtual_time;
+  return main_thread_only().initial_virtual_time_ticks;
 }
 
-bool RendererSchedulerImpl::IsVirualTimeEnabled() const {
+bool RendererSchedulerImpl::IsVirtualTimeEnabled() const {
   return main_thread_only().use_virtual_time;
 }
 
@@ -1832,6 +1848,10 @@ void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
   virtual_time_domain_.reset();
   virtual_time_control_task_queue_ = nullptr;
   ApplyVirtualTimePolicy();
+
+  // Reset the MetricsHelper because it gets confused by time going backwards.
+  base::TimeTicks now = tick_clock()->NowTicks();
+  main_thread_only().metrics_helper.ResetForTest(now);
 }
 
 void RendererSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
@@ -1855,13 +1875,12 @@ void RendererSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
-      DCHECK(!pair.first->HasActiveFence());
       pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
     }
   }
   for (auto& observer : main_thread_only().virtual_time_observers) {
     observer.OnVirtualTimePaused(virtual_time_domain_->Now() -
-                                 main_thread_only().initial_virtual_time);
+                                 main_thread_only().initial_virtual_time_ticks);
   }
 }
 
@@ -1917,8 +1936,9 @@ void RendererSchedulerImpl::RemoveVirtualTimeObserver(
 
 void RendererSchedulerImpl::OnVirtualTimeAdvanced() {
   for (auto& observer : main_thread_only().virtual_time_observers) {
-    observer.OnVirtualTimeAdvanced(virtual_time_domain_->Now() -
-                                   main_thread_only().initial_virtual_time);
+    observer.OnVirtualTimeAdvanced(
+        virtual_time_domain_->Now() -
+        main_thread_only().initial_virtual_time_ticks);
   }
 }
 

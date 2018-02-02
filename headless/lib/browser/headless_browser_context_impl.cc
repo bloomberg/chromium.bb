@@ -481,6 +481,13 @@ HeadlessBrowserContext::Builder::SetIncognitoMode(bool incognito_mode) {
 }
 
 HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetInitialVirtualTime(
+    base::Time initial_virtual_time) {
+  options_->initial_virtual_time_ = initial_virtual_time;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetAllowCookies(bool allow_cookies) {
   options_->allow_cookies_ = allow_cookies;
   return *this;

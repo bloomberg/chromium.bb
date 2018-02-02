@@ -23,14 +23,15 @@ RendererScheduler::~RendererScheduler() = default;
 RendererScheduler::RAILModeObserver::~RAILModeObserver() = default;
 
 // static
-std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
+std::unique_ptr<RendererScheduler> RendererScheduler::Create(
+    base::Optional<base::Time> initial_virtual_time) {
   // Ensure categories appear as an option in chrome://tracing.
   WarmupTracingCategories();
   // Workers might be short-lived, so placing warmup here.
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
 
-  std::unique_ptr<RendererSchedulerImpl> scheduler(
-      new RendererSchedulerImpl(TaskQueueManager::TakeOverCurrentThread()));
+  std::unique_ptr<RendererSchedulerImpl> scheduler(new RendererSchedulerImpl(
+      TaskQueueManager::TakeOverCurrentThread(), initial_virtual_time));
   return base::WrapUnique<RendererScheduler>(scheduler.release());
 }
 

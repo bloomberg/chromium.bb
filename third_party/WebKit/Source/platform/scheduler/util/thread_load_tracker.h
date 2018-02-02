@@ -65,8 +65,6 @@ class PLATFORM_EXPORT ThreadLoadTracker {
   base::TimeDelta run_time_inside_window_;
 
   Callback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadLoadTracker);
 };
 
 }  // namespace scheduler
