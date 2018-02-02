@@ -3957,5 +3957,34 @@ TEST_F(SchedulerTest, SynchronousCompositorImplSideInvalidation) {
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
 }
 
+TEST_F(SchedulerTest, DontSkipMainFrameAfterClearingHistory) {
+  // Set up a fast estimate for the main frame and make it miss the deadline.
+  scheduler_settings_.main_frame_before_activation_enabled = true;
+  SetUpScheduler(EXTERNAL_BFS);
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+  client_->Reset();
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_SCOPED(AdvanceFrame());
+  task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
+  EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame",
+                 "ScheduledActionSendBeginMainFrame");
+
+  // Now commit during the second frame, since the main thread missed the last
+  // deadline but we have a fast estimate, we would want to skip the next main
+  // frame.
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  scheduler_->SetNeedsBeginMainFrame();
+  scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionCommit");
+
+  // But during the commit, the history is cleared. So the main frame should not
+  // be skipped.
+  client_->Reset();
+  scheduler_->ClearHistoryOnNavigation();
+  EXPECT_ACTIONS("ScheduledActionSendBeginMainFrame");
+}
+
 }  // namespace
 }  // namespace cc

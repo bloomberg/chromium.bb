@@ -333,7 +333,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // the |content_source_id_| on the sync tree.
   bool did_navigate = content_source_id_ != sync_tree->content_source_id();
   if (did_navigate) {
-    TRACE_EVENT0("cc", "LayerTreeHost::DidNavigate");
+    TRACE_EVENT0("cc,benchmark", "LayerTreeHost::DidNavigate");
     proxy_->ClearHistoryOnNavigation();
     host_impl->ClearImageCacheOnNavigation();
   }
