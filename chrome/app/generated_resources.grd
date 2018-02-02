@@ -5573,9 +5573,6 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_IMPORT_BUTTON" desc="The label of the button for importing passwords. The button appears next to the list of saved passwords in Chrome's settings.">
           Import
         </message>
-        <message name="IDS_PASSWORD_MANAGER_EXPORT_BUTTON" desc="The label of the button for exporting passwords. The button appears next to the list of saved passwords in Chrome's settings.">
-          Export
-        </message>
         <message name="IDS_PASSWORD_MANAGER_IMPORT_DIALOG_TITLE" desc="The title of the file selection dialog for importing passwords">
           Import Passwords To Chrome
         </message>
