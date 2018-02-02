@@ -275,6 +275,7 @@ int amdgpu_device_initialize(int fd,
 	max = MIN2(max, (start & ~0xffffffffULL) + 0x100000000ULL);
 	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
 			  dev->dev_info.virtual_address_alignment);
+	dev->address32_hi = start >> 32;
 
 	start = max;
 	if (dev->dev_info.high_va_offset && dev->dev_info.high_va_max)
@@ -311,4 +312,17 @@ int amdgpu_device_deinitialize(amdgpu_device_handle dev)
 const char *amdgpu_get_marketing_name(amdgpu_device_handle dev)
 {
 	return dev->marketing_name;
+}
+
+int amdgpu_query_sw_info(amdgpu_device_handle dev, enum amdgpu_sw_info info,
+			 void *value)
+{
+	uint32_t *val32 = (uint32_t*)value;
+
+	switch (info) {
+	case amdgpu_sw_info_address32_hi:
+		*val32 = dev->address32_hi;
+		return 0;
+	}
+	return -EINVAL;
 }

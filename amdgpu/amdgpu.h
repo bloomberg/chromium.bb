@@ -94,6 +94,10 @@ enum amdgpu_gpu_va_range
 	amdgpu_gpu_va_range_general = 0
 };
 
+enum amdgpu_sw_info {
+	amdgpu_sw_info_address32_hi = 0,
+};
+
 /*--------------------------------------------------------------------------*/
 /* -------------------------- Datatypes ----------------------------------- */
 /*--------------------------------------------------------------------------*/
@@ -1084,6 +1088,23 @@ int amdgpu_query_gpu_info(amdgpu_device_handle dev,
 */
 int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
 		      unsigned size, void *value);
+
+/**
+ * Query hardware or driver information.
+ *
+ * The return size is query-specific and depends on the "info_id" parameter.
+ * No more than "size" bytes is returned.
+ *
+ * \param   dev     - \c [in] Device handle. See #amdgpu_device_initialize()
+ * \param   info    - \c [in] amdgpu_sw_info_*
+ * \param   value   - \c [out] Pointer to the return value.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX error code
+ *
+*/
+int amdgpu_query_sw_info(amdgpu_device_handle dev, enum amdgpu_sw_info info,
+			 void *value);
 
 /**
  * Query information about GDS
