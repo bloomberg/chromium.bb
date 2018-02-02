@@ -194,6 +194,7 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -386,16 +387,38 @@ class ChromePrintContext : public PrintContext {
     context.ConcatCTM(transform);
     context.ClipRect(page_rect);
 
+    auto* frame_view = GetFrame()->View();
+    DCHECK(frame_view);
+    PropertyTreeState property_tree_state = PropertyTreeState::Root();
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+        property_tree_state = *frame_view->GetLayoutView()
+                                   ->FirstFragment()
+                                   .LocalBorderBoxProperties();
+      } else {
+        property_tree_state = frame_view->PreContentClipProperties();
+      }
+    }
+
     PaintRecordBuilder builder(&context.Canvas()->getMetaData(), &context);
-    GetFrame()->View()->PaintContents(builder.Context(),
-                                      kGlobalPaintNormalPhase, page_rect);
+
+    frame_view->PaintContents(builder.Context(), kGlobalPaintNormalPhase,
+                              page_rect);
     {
+      Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        scoped_paint_chunk_properties.emplace(
+            builder.Context().GetPaintController(), property_tree_state,
+            builder, DisplayItem::kPrintedContentDestinationLocations);
+      }
+
       DrawingRecorder line_boundary_recorder(
           builder.Context(), builder,
           DisplayItem::kPrintedContentDestinationLocations);
       OutputLinkedDestinations(builder.Context(), page_rect);
     }
-    context.DrawRecord(builder.EndRecording());
+
+    context.DrawRecord(builder.EndRecording(property_tree_state));
 
     context.Restore();
 
