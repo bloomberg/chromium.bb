@@ -32,8 +32,6 @@ namespace extensions {
 
 namespace {
 
-const int kIgnoreRoutingId = MSG_ROUTING_NONE;
-
 // Returns the routing id to use for matching filtered events.
 // Used for routing events to the correct RenderFrame. This doesn't apply to
 // Extension Service Worker events as there is no RenderFrame to target an event
@@ -41,7 +39,7 @@ const int kIgnoreRoutingId = MSG_ROUTING_NONE;
 // essentially ignoring routing id for worker events.
 int GetRoutingIDForFilteredEvents(ScriptContext* script_context) {
   return script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT
-             ? kIgnoreRoutingId
+             ? MSG_ROUTING_NONE
              : script_context->GetRenderFrame()->GetRoutingID();
 }
 
