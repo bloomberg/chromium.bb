@@ -279,6 +279,24 @@ TypeConverter<MakePublicKeyCredentialOptionsPtr,
       }
     }
   }
+
+  mojo_options->attestation =
+      webauth::mojom::AttestationConveyancePreference::NONE;
+  if (options.hasAttestation()) {
+    const auto& attestation = options.attestation();
+    if (attestation == "none") {
+      // Default value.
+    } else if (attestation == "indirect") {
+      mojo_options->attestation =
+          webauth::mojom::AttestationConveyancePreference::INDIRECT;
+    } else if (attestation == "direct") {
+      mojo_options->attestation =
+          webauth::mojom::AttestationConveyancePreference::DIRECT;
+    } else {
+      return nullptr;
+    }
+  }
+
   return mojo_options;
 }
 

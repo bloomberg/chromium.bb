@@ -30,6 +30,22 @@ AttestationObject& AttestationObject::operator=(AttestationObject&& other) =
 
 AttestationObject::~AttestationObject() = default;
 
+void AttestationObject::EraseAttestationStatement() {
+  attestation_statement_.reset(new NoneAttestationStatement);
+
+#if !defined(NDEBUG)
+  std::vector<uint8_t> auth_data = authenticator_data_.SerializeToByteArray();
+  // See diagram at https://w3c.github.io/webauthn/#sctn-attestation
+  constexpr size_t kAAGUIDOffset =
+      32 /* RP ID hash */ + 1 /* flags */ + 4 /* signature counter */;
+  constexpr size_t kAAGUIDSize = 16;
+  DCHECK(auth_data.size() >= kAAGUIDOffset + kAAGUIDSize);
+  DCHECK(std::all_of(&auth_data[kAAGUIDOffset],
+                     &auth_data[kAAGUIDOffset + kAAGUIDSize],
+                     [](uint8_t v) { return v == 0; }));
+#endif
+}
+
 std::vector<uint8_t> AttestationObject::SerializeToCBOREncodedBytes() const {
   cbor::CBORValue::MapValue map;
   map[cbor::CBORValue(kFormatKey)] =

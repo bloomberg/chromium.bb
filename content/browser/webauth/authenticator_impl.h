@@ -96,6 +96,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
 
   // Holds the client data to be returned to the caller.
   CollectedClientData client_data_;
+  webauth::mojom::AttestationConveyancePreference attestation_preference_;
   std::unique_ptr<base::OneShotTimer> timer_;
   RenderFrameHost* render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
