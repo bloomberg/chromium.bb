@@ -182,7 +182,8 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
       ->GetMinimumVersionPolicyHandler();
 }
 
-ExternalPrinters* GetExternalPrinters(const AccountId& account_id) {
+base::WeakPtr<ExternalPrinters> GetExternalPrinters(
+    const AccountId& account_id) {
   return ExternalPrintersFactory::Get()->GetForAccountId(account_id);
 }
 

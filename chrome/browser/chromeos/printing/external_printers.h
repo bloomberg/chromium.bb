@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -18,7 +19,8 @@ namespace chromeos {
 
 // Manages download and parsing of the external policy printer configuration and
 // enforces restrictions.
-class CHROMEOS_EXPORT ExternalPrinters {
+class CHROMEOS_EXPORT ExternalPrinters
+    : public base::SupportsWeakPtr<ExternalPrinters> {
  public:
   // Choose the policy for printer access.
   enum AccessMode {

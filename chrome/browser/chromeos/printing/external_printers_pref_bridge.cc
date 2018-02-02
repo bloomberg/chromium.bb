@@ -86,20 +86,23 @@ void ExternalPrintersPrefBridge::AccessModeUpdated() {
     return;
   }
 
-  auto* printers = ExternalPrintersFactory::Get()->GetForProfile(profile_);
+  base::WeakPtr<ExternalPrinters> printers =
+      ExternalPrintersFactory::Get()->GetForProfile(profile_);
   if (printers)
     printers->SetAccessMode(mode);
 }
 
 void ExternalPrintersPrefBridge::BlacklistUpdated() {
-  auto* printers = ExternalPrintersFactory::Get()->GetForProfile(profile_);
+  base::WeakPtr<ExternalPrinters> printers =
+      ExternalPrintersFactory::Get()->GetForProfile(profile_);
   if (printers)
     printers->SetBlacklist(
         FromPrefs(profile_->GetPrefs(), policies_.blacklist));
 }
 
 void ExternalPrintersPrefBridge::WhitelistUpdated() {
-  auto* printers = ExternalPrintersFactory::Get()->GetForProfile(profile_);
+  base::WeakPtr<ExternalPrinters> printers =
+      ExternalPrintersFactory::Get()->GetForProfile(profile_);
   if (printers)
     printers->SetWhitelist(
         FromPrefs(profile_->GetPrefs(), policies_.whitelist));

@@ -240,7 +240,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     DCHECK(new_ids);
     DCHECK(new_printers);
 
-    ExternalPrinters* external_printers =
+    base::WeakPtr<ExternalPrinters> external_printers =
         ExternalPrintersFactory::Get()->GetForProfile(profile_);
     if (!external_printers || !external_printers->IsPolicySet())
       return;
