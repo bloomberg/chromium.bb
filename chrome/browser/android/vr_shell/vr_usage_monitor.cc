@@ -107,6 +107,7 @@ void SendRapporEnteredMode(const GURL& origin, vr::Mode mode) {
     case vr::Mode::kVrBrowsingFullscreen:
       rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
                                               "VR.FullScreenMode", origin);
+      break;
     default:
       break;
   }
@@ -117,12 +118,15 @@ void SendRapporEnteredVideoMode(const GURL& origin, vr::Mode mode) {
     case vr::Mode::kVrBrowsingRegular:
       rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
                                               "VR.Video.Browser", origin);
+      break;
     case vr::Mode::kWebVr:
       rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
                                               "VR.Video.WebVR", origin);
+      break;
     case vr::Mode::kVrBrowsingFullscreen:
       rappor::SampleDomainAndRegistryFromGURL(
           rappor::GetDefaultService(), "VR.Video.FullScreenMode", origin);
+      break;
     default:
       break;
   }

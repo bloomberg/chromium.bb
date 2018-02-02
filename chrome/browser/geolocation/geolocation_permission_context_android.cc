@@ -310,7 +310,7 @@ void GeolocationPermissionContextAndroid::UpdateLocationSettingsBackOff(
       break;
     case LocationSettingsDialogBackOff::kOneMonth:
       backoff_level = LocationSettingsDialogBackOff::kThreeMonths;
-    // fall through
+      FALLTHROUGH;
     case LocationSettingsDialogBackOff::kThreeMonths:
       next_show += base::TimeDelta::FromDays(90);
       break;
