@@ -10,21 +10,28 @@
 
 namespace blink {
 namespace scheduler {
+class LazyNow;
+
 namespace internal {
 
 // This is temporary interface for ThreadController to be able to run tasks
 // from TaskQueueManager.
+// TODO(alexclarke): Rename to SequencedTaskSource.
 class Sequence {
  public:
+  // TODO(alexclarke): Move this enum elsewhere.
   enum class WorkType { kImmediate, kDelayed };
 
   // Take a next task to run from a sequence.
   // TODO(altimin): Do not pass |work_type| here.
-  virtual base::Optional<base::PendingTask> TakeTask(WorkType work_type) = 0;
+  virtual base::Optional<base::PendingTask> TakeTask() = 0;
 
   // Notify a sequence that a taken task has been completed.
-  // Returns true if sequence has more work to do.
-  virtual bool DidRunTask() = 0;
+  virtual void DidRunTask() = 0;
+
+  // Returns the delay till the next task, or base::TimeDelta::Max() if there
+  // isn't one.
+  virtual base::TimeDelta DelayTillNextTask(LazyNow* lazy_now) = 0;
 };
 
 }  // namespace internal

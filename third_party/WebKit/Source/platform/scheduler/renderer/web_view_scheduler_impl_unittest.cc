@@ -306,6 +306,7 @@ TEST_F(WebViewSchedulerImplTest,
        RepeatingTimer_PageInBackground_MeansNothingForVirtualTime) {
   web_view_scheduler_->EnableVirtualTime();
   web_view_scheduler_->SetPageVisible(false);
+  scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
   base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
 
   int run_count = 0;
