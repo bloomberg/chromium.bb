@@ -23,7 +23,10 @@
   }
 
   function logMessages() {
-    ConsoleTestRunner.waitForConsoleMessages(2, () => TestRunner.runTestSuite(testSuite));
+    ConsoleTestRunner.waitForConsoleMessages(2, async () => {
+      await ConsoleTestRunner.waitForPendingViewportUpdates();
+      TestRunner.runTestSuite(testSuite);
+    });
     ConsoleTestRunner.evaluateInConsole(
         '\'foo ' +
         '\n'.repeat(50) + 'bar\'');
