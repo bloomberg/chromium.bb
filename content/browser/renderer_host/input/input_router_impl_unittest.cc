@@ -2342,7 +2342,13 @@ TEST_F(InputRouterImplScaleGestureEventTest, GestureTwoFingerTap) {
   EXPECT_EQ(40, filter_event->data.two_finger_tap.first_finger_height);
 }
 
-TEST_F(InputRouterImplScaleGestureEventTest, GestureFlingStart) {
+// Thie test is flaky on Fuchsia. crbug.com/807803
+#if defined(OS_FUCHSIA)
+#define MAYBE_GestureFlingStart DISABLED_GestureFlingStart
+#else
+#define MAYBE_GestureFlingStart GestureFlingStart
+#endif
+TEST_F(InputRouterImplScaleGestureEventTest, MAYBE_GestureFlingStart) {
   // Simulate a GSB since touchscreen flings must happen inside scroll.
   SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollBegin(
       10.f, 20.f, blink::kWebGestureDeviceTouchscreen));
