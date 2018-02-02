@@ -80,9 +80,6 @@ crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.ht
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 crbug.com/702006 virtual/spv175/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Skip ]
 
-crbug.com/784909 [ Win7 ] fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
-crbug.com/784909 [ Win7 ] virtual/mouseevent_fractional/fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
-
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Pass Failure ]
 
 ########## Genuinely flaky ##########
