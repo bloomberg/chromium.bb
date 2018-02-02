@@ -269,13 +269,6 @@ group("gn_all") {
     deps += [ "//tools/xdisplaycheck" ]
   }
 
-  if (is_win) {
-    deps += [
-      "//chrome/installer/gcapi",
-      "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
-    ]
-  }
-
   if (is_mac) {
     deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
   }
@@ -389,12 +382,6 @@ group("gn_all") {
       "//rlz:rlz_lib",
       "//rlz:rlz_unittests",
     ]
-  }
-
-  # Accessibility API debugging tools.
-  if (is_win) {
-    deps += [ "//tools/accessibility/inspect:ax_dump_events" ]
-    deps += [ "//tools/accessibility/inspect:ax_dump_tree" ]
   }
 
   if (is_linux) {
@@ -569,7 +556,9 @@ group("gn_all") {
     deps += [
       "//base:pe_image_test",
       "//chrome/install_static:install_static_unittests",
+      "//chrome/installer/gcapi",
       "//chrome/installer/setup:setup_unittests",
+      "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
       "//chrome_elf:chrome_elf_import_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
@@ -584,6 +573,10 @@ group("gn_all") {
       "//sandbox/win:sbox_validation_tests",
       "//testing/gtest:gtest_main",
       "//third_party/tcmalloc:addr2line-pdb",
+
+      # The following two are accessibility API debugging tools.
+      "//tools/accessibility/inspect:ax_dump_events",
+      "//tools/accessibility/inspect:ax_dump_tree",
       "//tools/win/chromeexts:chromeexts",
     ]
 
