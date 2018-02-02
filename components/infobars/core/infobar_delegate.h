@@ -148,6 +148,7 @@ class InfoBarDelegate {
     FRAMEBUST_BLOCK_INFOBAR_ANDROID = 77,
     SURVEY_INFOBAR_ANDROID = 78,
     NEAR_OOM_INFOBAR_ANDROID = 79,
+    PWA_AMBIENT_BADGE_INFOBAR_DELEGATE_ANDROID = 80,
   };
 
   // Describes navigation events, used to decide whether infobars should be

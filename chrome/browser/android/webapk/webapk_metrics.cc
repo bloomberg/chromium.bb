@@ -35,6 +35,11 @@ void TrackInstallSource(WebappInstallSource event) {
     case WebappInstallSource::API_BROWSER_TAB:
     case WebappInstallSource::API_CUSTOM_TAB:
     case WebappInstallSource::DEBUG:
+
+    // Fall through for the ambient badge as this metric will be removed by the
+    // time the badge ships.
+    case WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
+    case WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
       source = InstallSource::INSTALL_SOURCE_BANNER;
       break;
     case WebappInstallSource::MENU_BROWSER_TAB:

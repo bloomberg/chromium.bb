@@ -4,11 +4,8 @@
 
 #include "chrome/browser/banners/app_banner_manager_android.h"
 
-#include <memory>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
@@ -16,8 +13,8 @@
 #include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/installable/pwa_ambient_badge_manager_android.h"
 #include "content/public/browser/manifest_icon_downloader.h"
-#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AppBannerManager_jni.h"
 #include "net/base/url_util.h"
@@ -30,46 +27,13 @@ using base::android::ScopedJavaLocalRef;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerAndroid);
 
-namespace {
-
-std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
-    const GURL& manifest_url,
-    const content::Manifest& manifest,
-    const GURL& primary_icon_url,
-    const GURL& badge_icon_url,
-    bool is_webapk) {
-  auto shortcut_info = base::MakeUnique<ShortcutInfo>(GURL());
-  if (!manifest.IsEmpty()) {
-    shortcut_info->UpdateFromManifest(manifest);
-    shortcut_info->manifest_url = manifest_url;
-    shortcut_info->best_primary_icon_url = primary_icon_url;
-    shortcut_info->best_badge_icon_url = badge_icon_url;
-    if (is_webapk)
-      shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER_WEBAPK);
-    else
-      shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
-  }
-
-  shortcut_info->ideal_splash_image_size_in_px =
-      ShortcutHelper::GetIdealSplashImageSizeInPx();
-  shortcut_info->minimum_splash_image_size_in_px =
-      ShortcutHelper::GetMinimumSplashImageSizeInPx();
-  shortcut_info->splash_image_url =
-      content::ManifestIconSelector::FindBestMatchingIcon(
-          manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
-          shortcut_info->minimum_splash_image_size_in_px,
-          content::Manifest::Icon::IconPurpose::ANY);
-
-  return shortcut_info;
-}
-
-}  // anonymous namespace
-
 namespace banners {
 
 AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents) {
+    : AppBannerManager(web_contents),
+      ambient_badge_manager_(
+          std::make_unique<PwaAmbientBadgeManagerAndroid>(web_contents)) {
   can_install_webapk_ = ChromeWebApkHost::CanInstallWebApk();
   CreateJavaBannerManager();
 }
@@ -237,8 +201,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   if (native_app_data_.is_null()) {
     if (AppBannerInfoBarDelegateAndroid::Create(
             contents, GetWeakPtr(),
-            CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
-                               badge_icon_url_, can_install_webapk_),
+            ShortcutHelper::CreateShortcutInfo(
+                manifest_url_, manifest_, primary_icon_url_, badge_icon_url_),
             primary_icon_, badge_icon_, install_source, can_install_webapk_)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
@@ -257,6 +221,14 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
       ReportStatus(FAILED_TO_CREATE_BANNER);
     }
   }
+}
+
+void AppBannerManagerAndroid::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (IsExperimentalAppBannersEnabled())
+    ambient_badge_manager_->MaybeShowBadge();
+  AppBannerManager::DidFinishLoad(render_frame_host, validated_url);
 }
 
 InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
