@@ -102,6 +102,7 @@ class DataUseAscriber {
   }
 
   // Methods called by DataUseNetworkDelegate to propagate data use information:
+  // OnBeforeUrlRequest may be called twice. e.g., in case of redirects.
   virtual void OnBeforeUrlRequest(net::URLRequest* request);
   virtual void OnNetworkBytesSent(net::URLRequest* request, int64_t bytes_sent);
   virtual void OnNetworkBytesReceived(net::URLRequest* request,

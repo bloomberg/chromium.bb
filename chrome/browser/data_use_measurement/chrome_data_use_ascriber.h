@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -63,6 +64,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
       net::URLRequest* request) override;
   ChromeDataUseRecorder* GetDataUseRecorder(
       const net::URLRequest& request) override;
+
+  void OnBeforeUrlRequest(net::URLRequest* request) override;
   void OnUrlRequestCompleted(net::URLRequest* request, bool started) override;
   void OnUrlRequestDestroyed(net::URLRequest* request) override;
   std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
@@ -165,7 +168,10 @@ class ChromeDataUseAscriber : public DataUseAscriber {
     DISALLOW_COPY_AND_ASSIGN(MainRenderFrameEntry);
   };
 
-  DataUseRecorderEntry GetDataUseRecorderEntry(net::URLRequest* request);
+  DataUseRecorderEntry GetDataUseRecorderEntry(const net::URLRequest* request);
+
+  // Validate and cleanup the URL requests that point to |entry|.
+  void ValidateAndCleanUp(DataUseRecorderEntry entry);
 
   DataUseRecorderEntry GetOrCreateDataUseRecorderEntry(
       net::URLRequest* request);
@@ -218,6 +224,9 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // True if the dtaa use ascriber should be disabled. The ascriber is enabled
   // by default.
   bool disable_ascriber_ = false;
+
+  // Set of requests that are currently in-flight.
+  std::unordered_set<const net::URLRequest*> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriber);
 };
