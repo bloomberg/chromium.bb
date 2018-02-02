@@ -63,8 +63,7 @@ struct VectorTraitsBase {
     static const bool value = IsTraceable<T>::value;
   };
   // We don't support weak handling in vectors.
-  static const WeakHandlingFlag kWeakHandlingFlag =
-      kNoWeakHandlingInCollections;
+  static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
 };
 
 template <typename T>
@@ -142,8 +141,7 @@ struct VectorTraits<std::pair<First, Second>> {
         IsTraceableInCollectionTrait<SecondTraits>::value;
   };
   // We don't support weak handling in vectors.
-  static const WeakHandlingFlag kWeakHandlingFlag =
-      kNoWeakHandlingInCollections;
+  static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
 };
 
 }  // namespace WTF

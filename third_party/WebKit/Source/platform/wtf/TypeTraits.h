@@ -42,8 +42,8 @@ struct IsWeak {
 };
 
 enum WeakHandlingFlag {
-  kNoWeakHandlingInCollections,
-  kWeakHandlingInCollections
+  kNoWeakHandling,
+  kWeakHandling,
 };
 
 template <typename T>

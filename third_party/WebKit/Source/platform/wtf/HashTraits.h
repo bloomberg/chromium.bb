@@ -43,11 +43,6 @@ struct EnumOrGenericHashTraits;
 template <typename T>
 struct HashTraits;
 
-enum ShouldWeakPointersBeMarkedStrongly {
-  kWeakPointersActStrong,
-  kWeakPointersActWeak
-};
-
 template <typename T>
 struct GenericHashTraitsBase<false, T> {
   // The emptyValueIsZero flag is used to optimize allocation of empty hash
@@ -89,8 +84,7 @@ struct GenericHashTraitsBase<false, T> {
   };
 
   static const WeakHandlingFlag kWeakHandlingFlag =
-      IsWeak<T>::value ? kWeakHandlingInCollections
-                       : kNoWeakHandlingInCollections;
+      IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
 };
 
 // Default integer traits disallow both 0 and -1 as keys (max value instead of
@@ -436,10 +430,10 @@ struct KeyValuePairHashTraits
   };
 
   static const WeakHandlingFlag kWeakHandlingFlag =
-      (KeyTraits::kWeakHandlingFlag == kWeakHandlingInCollections ||
-       ValueTraits::kWeakHandlingFlag == kWeakHandlingInCollections)
-          ? kWeakHandlingInCollections
-          : kNoWeakHandlingInCollections;
+      (KeyTraits::kWeakHandlingFlag == kWeakHandling ||
+       ValueTraits::kWeakHandlingFlag == kWeakHandling)
+          ? kWeakHandling
+          : kNoWeakHandling;
 
   static const unsigned kMinimumTableSize = KeyTraits::kMinimumTableSize;
 

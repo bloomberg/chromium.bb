@@ -94,16 +94,16 @@
 namespace WTF {
 
 // This is for tracing inside collections that have special support for weak
-// pointers. The trait has a trace method which returns true if there are weak
-// pointers to things that have not (yet) been marked live. Returning true
-// indicates that the entry in the collection may yet be removed by weak
-// handling. Default implementation for non-weak types is to use the regular
-// non-weak TraceTrait. Default implementation for types with weakness is to
-// call traceInCollection on the type's trait.
-template <WeakHandlingFlag weakHandlingFlag,
-          ShouldWeakPointersBeMarkedStrongly strongify,
-          typename T,
-          typename Traits>
+// pointers.
+//
+// Structure:
+// - |Trace|: Traces the contents and returns true if there are still unmarked
+//   objects left to process
+//
+// Default implementation for non-weak types is to use the regular non-weak
+// TraceTrait. Default implementation for types with weakness is to
+// call |TraceInCollection| on the type's trait.
+template <WeakHandlingFlag weakness, typename T, typename Traits>
 struct TraceInCollectionTrait;
 
 #if DUMP_HASHTABLE_STATS || DUMP_HASHTABLE_STATS_PER_TABLE
@@ -1312,8 +1312,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
   if (ShouldExpand()) {
     entry = Expand(entry);
-  } else if (Traits::kWeakHandlingFlag == kWeakHandlingInCollections &&
-             ShouldShrink()) {
+  } else if (Traits::kWeakHandlingFlag == kWeakHandling && ShouldShrink()) {
     // When weak hash tables are processed by the garbage collector,
     // elements with no other strong references to them will have their
     // table entries cleared. But no shrinking of the backing store is
@@ -1631,8 +1630,8 @@ void HashTable<Key,
   }
   // Notify if this is a weak table since immediately freeing a weak hash table
   // backing may cause a use-after-free when the weak callback is called.
-  Allocator::FreeHashTableBacking(
-      table, Traits::kWeakHandlingFlag == kWeakHandlingInCollections);
+  Allocator::FreeHashTableBacking(table,
+                                  Traits::kWeakHandlingFlag == kWeakHandling);
 }
 
 template <typename Key,
@@ -1983,7 +1982,7 @@ template <typename Key,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-struct WeakProcessingHashTableHelper<kNoWeakHandlingInCollections,
+struct WeakProcessingHashTableHelper<kNoWeakHandling,
                                      Key,
                                      Value,
                                      Extractor,
@@ -2006,7 +2005,7 @@ template <typename Key,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-struct WeakProcessingHashTableHelper<kWeakHandlingInCollections,
+struct WeakProcessingHashTableHelper<kWeakHandling,
                                      Key,
                                      Value,
                                      Extractor,
@@ -2042,9 +2041,8 @@ struct WeakProcessingHashTableHelper<kWeakHandlingInCollections,
         // FIXME: This should be rewritten so that this can check if the
         // element is dead without calling trace, which is semantically
         // not correct to be called in weak processing stage.
-        if (TraceInCollectionTrait<kWeakHandlingInCollections,
-                                   kWeakPointersActWeak, ValueType,
-                                   Traits>::Trace(visitor, *element)) {
+        if (TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::Trace(
+                visitor, *element)) {
           table->RegisterModification();
           HashTableType::DeleteBucket(*element);  // Also calls the destructor.
           table->deleted_count_++;
@@ -2069,9 +2067,10 @@ struct WeakProcessingHashTableHelper<kWeakHandlingInCollections,
     // pointers traced.
     for (ValueType* element = table->table_ + table->table_size_ - 1;
          element >= table->table_; element--) {
-      if (!HashTableType::IsEmptyOrDeletedBucket(*element))
-        TraceInCollectionTrait<kWeakHandlingInCollections, kWeakPointersActWeak,
-                               ValueType, Traits>::Trace(visitor, *element);
+      if (!HashTableType::IsEmptyOrDeletedBucket(*element)) {
+        TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::Trace(
+            visitor, *element);
+      }
     }
   }
 
@@ -2123,7 +2122,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   // place after we know if the backing is reachable from elsewhere. We also
   // register a weakProcessing callback which will perform weak processing if
   // needed.
-  if (Traits::kWeakHandlingFlag == kNoWeakHandlingInCollections) {
+  if (Traits::kWeakHandlingFlag == kNoWeakHandling) {
     Allocator::MarkNoTracing(visitor, table_);
   } else {
     Allocator::RegisterDelayedMarkNoTracing(visitor, table_);
@@ -2143,7 +2142,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   Allocator::RegisterBackingStoreReference(visitor, &table_);
   if (!IsTraceableInCollectionTrait<Traits>::value)
     return;
-  if (Traits::kWeakHandlingFlag == kWeakHandlingInCollections) {
+  if (Traits::kWeakHandlingFlag == kWeakHandling) {
     // If we have both strong and weak pointers in the collection then
     // we queue up the collection for fixed point iteration a la
     // Ephemerons:
