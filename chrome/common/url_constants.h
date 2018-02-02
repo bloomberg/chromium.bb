@@ -260,6 +260,11 @@ extern const char kBlockedPluginLearnMoreURL[];
 extern const char kOutdatedPluginLearnMoreURL[];
 #endif
 
+#if defined(OS_CHROMEOS)
+// The URL for the "Learn more" page for the time zone settings page.
+extern const char kTimeZoneSettingsLearnMoreURL[];
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_
