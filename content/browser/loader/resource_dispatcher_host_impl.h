@@ -40,6 +40,7 @@
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
 
@@ -335,6 +336,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner() const {
     return main_thread_task_runner_;
+  }
+
+  network::KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
+    return &keepalive_statistics_recorder_;
   }
 
  private:
@@ -794,6 +799,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Used to invoke an interceptor for the HTTP header.
   HeaderInterceptorMap http_header_interceptor_map_;
+
+  network::KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 
   // Points to the registered download handler intercept.
   CreateDownloadHandlerIntercept create_download_handler_intercept_;
