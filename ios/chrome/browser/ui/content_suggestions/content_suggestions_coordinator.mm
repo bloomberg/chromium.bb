@@ -32,6 +32,10 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_visibility_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -58,6 +62,13 @@
 @property(nonatomic, strong, readwrite)
     ContentSuggestionsHeaderViewController* headerController;
 
+// Toolbar to be embeded in header view.
+@property(nonatomic, strong)
+    PrimaryToolbarViewController* primaryToolbarViewController;
+
+// Mediator for updating the toolbar when the WebState changes.
+@property(nonatomic, strong) ToolbarMediator* primaryToolbarMediator;
+
 @end
 
 @implementation ContentSuggestionsCoordinator
@@ -75,6 +86,8 @@
 @synthesize delegate = _delegate;
 @synthesize metricsRecorder = _metricsRecorder;
 @synthesize NTPMediator = _NTPMediator;
+@synthesize primaryToolbarViewController = _primaryToolbarViewController;
+@synthesize primaryToolbarMediator = _primaryToolbarMediator;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -121,6 +134,27 @@
   self.headerController.delegate = self.NTPMediator;
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
+
+  if (IsUIRefreshPhase1Enabled()) {
+    ToolbarButtonFactory* buttonFactory =
+        [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
+    buttonFactory.dispatcher = self.dispatcher;
+    buttonFactory.visibilityConfiguration =
+        [[ToolbarButtonVisibilityConfiguration alloc] initWithType:PRIMARY];
+
+    self.primaryToolbarViewController =
+        [[PrimaryToolbarViewController alloc] init];
+    self.primaryToolbarViewController.buttonFactory = buttonFactory;
+    [self.primaryToolbarViewController updateForSideSwipeSnapshotOnNTP:YES];
+    self.headerController.toolbarViewController =
+        self.primaryToolbarViewController;
+
+    self.primaryToolbarMediator = [[ToolbarMediator alloc] init];
+    self.primaryToolbarMediator.voiceSearchProvider =
+        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
+    self.primaryToolbarMediator.consumer = self.primaryToolbarViewController;
+    self.primaryToolbarMediator.webStateList = self.webStateList;
+  }
 
   favicon::LargeIconService* largeIconService =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);

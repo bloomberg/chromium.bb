@@ -18,10 +18,11 @@
 @protocol ContentSuggestionsCollectionSynchronizing;
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
-@protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
-@protocol UrlLoader;
+@protocol OmniboxFocuser;
+@class PrimaryToolbarViewController;
 class ReadingListModel;
+@protocol UrlLoader;
 
 // Controller for the header containing the logo and the fake omnibox, handling
 // the interactions between the header and the collection, and the rest of the
@@ -62,6 +63,10 @@ class ReadingListModel;
 // |YES| if its view is visible.  When set to |NO| various UI updates are
 // ignored.
 @property(nonatomic, assign) BOOL isShowing;
+
+// Toolbar to be embedded in header view.
+@property(nonatomic, strong)
+    PrimaryToolbarViewController* toolbarViewController;
 
 // Return the toolbar view;
 - (UIView*)toolBarView;

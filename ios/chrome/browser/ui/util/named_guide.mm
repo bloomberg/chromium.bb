@@ -39,5 +39,6 @@ UILayoutGuide* AddNamedGuide(GuideName* name, UIView* view) {
 
 void ConstrainNamedGuideToView(GuideName* guideName, UIView* view) {
   UILayoutGuide* layoutGuide = FindNamedGuide(guideName, view);
+  DCHECK(layoutGuide);
   AddSameConstraints(view, layoutGuide);
 }

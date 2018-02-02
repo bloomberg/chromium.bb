@@ -29,6 +29,10 @@
 
 // Container for the location bar.
 @property(nonatomic, strong, readonly) UIView* locationBarContainer;
+
+// The blur visual effect view.
+@property(nonatomic, strong, readwrite) UIVisualEffectView* blur;
+
 // The height of the container for the location bar.
 @property(nonatomic, strong, readonly) NSLayoutConstraint* locationBarHeight;
 

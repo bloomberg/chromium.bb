@@ -14,10 +14,12 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -60,7 +62,7 @@ const CGFloat kHintLabelSidePadding = 12;
 // The number of tabs to show in the google landing fake toolbar.
 @property(nonatomic, assign) int tabCount;
 
-@property(nonatomic, strong) NewTabPageHeaderView* headerView;
+@property(nonatomic, strong) UIView<NTPHeaderViewAdapter>* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceTapTrailingConstraint;
@@ -101,6 +103,7 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize logoFetched = _logoFetched;
+@synthesize toolbarViewController = _toolbarViewController;
 
 #pragma mark - Public
 
@@ -178,7 +181,11 @@ const CGFloat kHintLabelSidePadding = 12;
 
 - (UIView*)headerForWidth:(CGFloat)width {
   if (!self.headerView) {
-    self.headerView = [[NewTabPageHeaderView alloc] init];
+    if (IsUIRefreshPhase1Enabled()) {
+      self.headerView = [[ContentSuggestionsHeaderView alloc] init];
+    } else {
+      self.headerView = [[NewTabPageHeaderView alloc] init];
+    }
     [self addFakeOmnibox];
 
     [self.headerView addSubview:self.logoVendor.view];
@@ -210,11 +217,21 @@ const CGFloat kHintLabelSidePadding = 12;
     if (!IsIPadIdiom()) {
       // iPhone header also contains a toolbar since the normal toolbar is
       // hidden.
-      [_headerView addToolbarWithReadingListModel:self.readingListModel
-                                       dispatcher:self.dispatcher];
-      [_headerView setToolbarTabCount:self.tabCount];
-      [_headerView setCanGoForward:self.canGoForward];
-      [_headerView setCanGoBack:self.canGoBack];
+      if (IsUIRefreshPhase1Enabled()) {
+        // This view controller's view is never actually used, so add to the
+        // parent view controller to avoid hierarchy inconsistencies.
+        [self.parentViewController
+            addChildViewController:self.toolbarViewController];
+        [_headerView addToolbarView:self.toolbarViewController.view];
+        [self.toolbarViewController
+            didMoveToParentViewController:self.parentViewController];
+      } else {
+        [_headerView addToolbarWithReadingListModel:self.readingListModel
+                                         dispatcher:self.dispatcher];
+        [_headerView setToolbarTabCount:self.tabCount];
+        [_headerView setCanGoForward:self.canGoForward];
+        [_headerView setCanGoBack:self.canGoBack];
+      }
     }
 
     [self.headerView addViewsToSearchField:self.fakeOmnibox];
