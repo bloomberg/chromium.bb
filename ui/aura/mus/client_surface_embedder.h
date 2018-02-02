@@ -9,14 +9,12 @@
 
 #include "base/macros.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "ui/aura/aura_export.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace gfx {
 class Insets;
-}
-
-namespace ui {
-class Layer;
 }
 
 namespace aura {
@@ -26,7 +24,7 @@ class Window;
 // Used by WindowPortMus when it is embedding a client. Responsible for setting
 // up layers containing content from the client, parenting them to the window's
 // layer, and updating them when the client submits new surfaces.
-class ClientSurfaceEmbedder {
+class AURA_EXPORT ClientSurfaceEmbedder {
  public:
   // TODO(fsamuel): Insets might differ when the window is maximized. We should
   // deal with that case as well.
@@ -50,6 +48,8 @@ class ClientSurfaceEmbedder {
   ui::Layer* RightGutterForTesting() { return right_gutter_.get(); }
 
   ui::Layer* BottomGutterForTesting() { return bottom_gutter_.get(); }
+
+  const viz::SurfaceId& GetPrimarySurfaceIdForTesting() const;
 
  private:
   // The window which embeds the client.

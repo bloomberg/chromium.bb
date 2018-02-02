@@ -7,6 +7,7 @@
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/local/layer_tree_frame_sink_local.h"
+#include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -53,6 +54,26 @@ TEST_F(WindowPortMusTest, LayerTreeFrameSinkGetsCorrectLocalSurfaceId) {
                 ->local_surface_id();
   EXPECT_TRUE(frame_sink_local_surface_id.is_valid());
   EXPECT_EQ(frame_sink_local_surface_id, local_surface_id);
+}
+
+TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
+  // If mus is not hosting viz, we don't have ClientSurfaceEmbedder.
+  if (!switches::IsMusHostingViz())
+    return;
+
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.SetBounds(gfx::Rect(300, 300));
+  window.set_embed_frame_sink_id(viz::FrameSinkId(0, 1));
+
+  // Allocate a new LocalSurfaceId. The ui::Layer should be updated.
+  window.AllocateLocalSurfaceId();
+
+  auto* window_mus = WindowPortMus::Get(&window);
+  viz::LocalSurfaceId local_surface_id = window.GetLocalSurfaceId();
+  viz::SurfaceId primary_surface_id =
+      window_mus->client_surface_embedder()->GetPrimarySurfaceIdForTesting();
+  EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
 }
 
 }  // namespace aura

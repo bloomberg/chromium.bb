@@ -94,4 +94,9 @@ void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
   window_->layer()->StackAtTop(surface_layer_.get());
 }
 
+const viz::SurfaceId& ClientSurfaceEmbedder::GetPrimarySurfaceIdForTesting()
+    const {
+  return *surface_layer_->GetPrimarySurfaceId();
+}
+
 }  // namespace aura

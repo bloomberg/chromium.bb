@@ -403,6 +403,7 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
 
 void WindowPortMus::AllocateLocalSurfaceId() {
   local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+  UpdatePrimarySurfaceId();
 }
 
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
