@@ -4,6 +4,8 @@
 
 #include "extensions/browser/test_extension_registry_observer.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "extensions/browser/extension_registry.h"
@@ -43,11 +45,12 @@ TestExtensionRegistryObserver::TestExtensionRegistryObserver(
 TestExtensionRegistryObserver::TestExtensionRegistryObserver(
     ExtensionRegistry* registry,
     const std::string& extension_id)
-    : will_be_installed_waiter_(new Waiter()),
-      uninstalled_waiter_(new Waiter()),
-      loaded_waiter_(new Waiter()),
-      ready_waiter_(new Waiter()),
-      unloaded_waiter_(new Waiter()),
+    : will_be_installed_waiter_(std::make_unique<Waiter>()),
+      installed_waiter_(std::make_unique<Waiter>()),
+      uninstalled_waiter_(std::make_unique<Waiter>()),
+      loaded_waiter_(std::make_unique<Waiter>()),
+      ready_waiter_(std::make_unique<Waiter>()),
+      unloaded_waiter_(std::make_unique<Waiter>()),
       extension_registry_observer_(this),
       extension_id_(extension_id) {
   extension_registry_observer_.Add(registry);
@@ -63,6 +66,10 @@ const Extension* TestExtensionRegistryObserver::WaitForExtensionUninstalled() {
 const Extension*
 TestExtensionRegistryObserver::WaitForExtensionWillBeInstalled() {
   return Wait(&will_be_installed_waiter_);
+}
+
+const Extension* TestExtensionRegistryObserver::WaitForExtensionInstalled() {
+  return Wait(&installed_waiter_);
 }
 
 const Extension* TestExtensionRegistryObserver::WaitForExtensionLoaded() {
@@ -84,6 +91,14 @@ void TestExtensionRegistryObserver::OnExtensionWillBeInstalled(
     const std::string& old_name) {
   if (extension_id_.empty() || extension->id() == extension_id_)
     will_be_installed_waiter_->OnObserved(extension);
+}
+
+void TestExtensionRegistryObserver::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update) {
+  if (extension_id_.empty() || extension->id() == extension_id_)
+    installed_waiter_->OnObserved(extension);
 }
 
 void TestExtensionRegistryObserver::OnExtensionUninstalled(
@@ -123,7 +138,7 @@ const Extension* TestExtensionRegistryObserver::Wait(
   // Reset the waiter for future uses.
   // We could have a Waiter::Reset method, but it would reset every field in the
   // class, so let's just reset the pointer.
-  waiter->reset(new Waiter());
+  *waiter = std::make_unique<Waiter>();
   return extension;
 }
 
