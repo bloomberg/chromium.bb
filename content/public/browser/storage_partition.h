@@ -204,6 +204,9 @@ class CONTENT_EXPORT StoragePartition {
   // use only.
   virtual void FlushNetworkInterfaceForTesting() = 0;
 
+  // Wait until all deletions tasks are finished. For test use only.
+  virtual void WaitForDeletionTasksForTesting() = 0;
+
  protected:
   virtual ~StoragePartition() {}
 };

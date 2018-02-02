@@ -216,6 +216,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   void TearDown() override {
     arc_test_.TearDown();
     ResetBuilder();
+    extensions::ExtensionServiceTestBase::TearDown();
   }
 
  protected:

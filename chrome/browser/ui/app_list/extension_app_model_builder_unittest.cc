@@ -87,7 +87,10 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
     CreateBuilder();
   }
 
-  void TearDown() override { ResetBuilder(); }
+  void TearDown() override {
+    ResetBuilder();
+    AppListTestBase::TearDown();
+  }
 
  protected:
   // Creates a new builder, destroying any existing one.
