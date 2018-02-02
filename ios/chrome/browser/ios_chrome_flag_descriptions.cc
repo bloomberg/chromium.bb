@@ -34,6 +34,13 @@ const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
 
+const char kContextMenuElementPostMessageName[] =
+    "Context Menu Element Post Message";
+const char kContextMenuElementPostMessageDescription[] =
+    "When enabled, the DOM element for the Context Menu is returned using a "
+    "webkit postMessage call instead of directly returned from the JavaScript "
+    "function.";
+
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 

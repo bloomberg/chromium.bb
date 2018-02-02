@@ -235,7 +235,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ui-refresh-phase-1", flag_descriptions::kUIRefreshPhase1Name,
      flag_descriptions::kUIRefreshPhase1Description, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIRefreshPhase1)},
-
+    {"context-menu-element-post-message",
+     flag_descriptions::kContextMenuElementPostMessageName,
+     flag_descriptions::kContextMenuElementPostMessageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kContextMenuElementPostMessage)},
 };
 
 // Add all switches from experimental flags to |command_line|.
