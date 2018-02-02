@@ -229,6 +229,7 @@ SharedMemoryHandle SharedMemory::handle() const {
 
 SharedMemoryHandle SharedMemory::TakeHandle() {
   SharedMemoryHandle dup = DuplicateHandle(handle());
+  Unmap();
   Close();
   return dup;
 }
