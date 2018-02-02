@@ -82,7 +82,7 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
   // The ID of this render frame, MSG_ROUTING_NONE for workers.
   const int render_frame_id_;
 
-  storage::QuotaManager* quota_manager_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;
 
   base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_;
