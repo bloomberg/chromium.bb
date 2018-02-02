@@ -41,10 +41,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
       return node.classList.contains('icon-expand-more');
     },
     'tabindex': function(nodeResult) {
-      // TODO(hcarmona): investigate why we need this exception.
-      // This fails when paper-input is updated, but tabindex is correct upon
-      // manual inspection. Filtering out the failure so we can continue Polymer
-      // migration.
+      // TODO(crbug.com/808276): remove this exception when bug is fixed.
       return nodeResult.element.getAttribute('tabindex') == '0';
     },
   },
