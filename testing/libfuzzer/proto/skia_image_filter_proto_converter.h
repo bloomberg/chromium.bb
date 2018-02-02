@@ -340,7 +340,6 @@ class Converter {
   template <typename T>
   void WriteUInt8(T num);
   void WriteUInt16(uint16_t num);
-  void WriteNum(const uint64_t num);
   void WriteNum(const char (&num_arr)[4]);
   // Write num as a number. Assumes num is four bytes or less.
   template <class T>

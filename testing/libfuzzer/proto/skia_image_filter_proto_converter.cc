@@ -757,16 +757,19 @@ size_t Converter::PopStartSize() {
 
 template <typename T>
 void Converter::WriteNum(const T num) {
-  CHECK_LE(sizeof(T), static_cast<size_t>(4));
+  if (sizeof(T) > 4) {
+    CHECK(num <= UINT32_MAX);
+    uint32_t four_byte_num = static_cast<uint32_t>(num);
+    char num_arr[sizeof(four_byte_num)];
+    memcpy(num_arr, &four_byte_num, sizeof(four_byte_num));
+    for (size_t idx = 0; idx < sizeof(four_byte_num); idx++)
+      output_.push_back(num_arr[idx]);
+    return;
+  }
   char num_arr[sizeof(T)];
   memcpy(num_arr, &num, sizeof(T));
   for (size_t idx = 0; idx < sizeof(T); idx++)
     output_.push_back(num_arr[idx]);
-}
-
-void Converter::WriteNum(const uint64_t num) {
-  CHECK_LE(num, UINT32_MAX);
-  WriteNum(static_cast<uint32_t>(num));
 }
 
 void Converter::InsertSize(const size_t size, const uint32_t position) {
