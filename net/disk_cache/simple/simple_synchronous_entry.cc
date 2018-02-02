@@ -1009,8 +1009,14 @@ bool SimpleSynchronousEntry::MaybeCreateFile(
 }
 
 bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
+  base::Time file_1_open_start;
+
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     File::Error error;
+
+    if (i == 1)
+      file_1_open_start = base::Time::Now();
+
     if (!MaybeOpenFile(i, &error)) {
       // TODO(morlovich): Remove one each of these triplets of histograms. We
       // can calculate the third as the sum or difference of the other two.
@@ -1037,7 +1043,8 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
 
   have_open_files_ = true;
 
-  base::TimeDelta entry_age = base::Time::Now() - base::Time::UnixEpoch();
+  base::Time after_open_files = base::Time::Now();
+  base::TimeDelta entry_age = after_open_files - base::Time::UnixEpoch();
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     if (empty_file_omitted_[i]) {
       out_entry_stat->set_data_size(i + 1, 0);
@@ -1061,7 +1068,7 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
       entry_age = stream_age;
 
     // Two things prevent from knowing the right values for |data_size|:
-    // 1) The key is not known, hence its length is unknown.
+    // 1) The key might not be known, hence its length might be unknown.
     // 2) Stream 0 and stream 1 are in the same file, and the exact size for
     // each will only be known when reading the EOF record for stream 0.
     //
@@ -1079,6 +1086,24 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
       return false;
     }
     out_entry_stat->set_data_size(i + 1, static_cast<int>(file_info.size));
+
+    // In case where we do know the key, report how long it took us to open
+    // file 1 (for stream 2), splitting the time between different size
+    // categories.
+    if (i == 1 && !key_.empty()) {
+      int32_t data_size = GetDataSizeFromFileSize(
+          key_.size(), static_cast<int>(file_info.size));
+      base::TimeDelta file_1_open_elapsed =
+          after_open_files - file_1_open_start;
+      if (data_size <= 32) {
+        SIMPLE_CACHE_UMA(TIMES, "DiskOpenStream2TinyLatency", cache_type_,
+                         file_1_open_elapsed);
+
+      } else {
+        SIMPLE_CACHE_UMA(TIMES, "DiskOpenStream2NonTinyLatency", cache_type_,
+                         file_1_open_elapsed);
+      }
+    }
   }
   SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
                    "SyncOpenEntryAge", cache_type_,
