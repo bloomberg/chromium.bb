@@ -309,7 +309,7 @@ class CORE_EXPORT LocalFrameView final
   void UpdateAllLifecyclePhases();
 
   // Everything except paint (the last phase).
-  void UpdateAllLifecyclePhasesExceptPaint();
+  bool UpdateAllLifecyclePhasesExceptPaint();
 
   // Printing needs everything up-to-date except paint (which will be done
   // specially). We may also print a detached frame or a descendant of a
@@ -319,23 +319,31 @@ class CORE_EXPORT LocalFrameView final
   // Computes the style, layout, compositing and pre-paint lifecycle stages
   // if needed.
   // After calling this method, all frames will be in a lifecycle
-  // state >= PrePaintClean
-  void UpdateLifecycleToPrePaintClean();
+  // state >= PrePaintClean, unless the frame was throttled or inactive.
+  // Returns whether the lifecycle was successfully updated to the
+  // desired state.
+  bool UpdateLifecycleToPrePaintClean();
 
   // After calling this method, all frames will be in a lifecycle
   // state >= CompositingClean, and scrolling has been updated (unless
-  // throttling is allowed).
-  void UpdateLifecycleToCompositingCleanPlusScrolling();
+  // throttling is allowed), unless the frame was throttled or inactive.
+  // Returns whether the lifecycle was successfully updated to the
+  // desired state.
+  bool UpdateLifecycleToCompositingCleanPlusScrolling();
 
   // Computes the style, layout, and compositing inputs lifecycle stages if
   // needed. After calling this method, all frames will be in a lifecycle state
-  // >= CompositingInputsClean (unless throttling is allowed).
-  void UpdateLifecycleToCompositingInputsClean();
+  // >= CompositingInputsClean, unless the frame was throttled or inactive.
+  // Returns whether the lifecycle was successfully updated to the
+  // desired state.
+  bool UpdateLifecycleToCompositingInputsClean();
 
   // Computes only the style and layout lifecycle stages.
   // After calling this method, all frames will be in a lifecycle
-  // state >= LayoutClean (unless throttling is allowed).
-  void UpdateLifecycleToLayoutClean();
+  // state >= LayoutClean, unless the frame was throttled or inactive.
+  // Returns whether the lifecycle was successfully updated to the
+  // desired state.
+  bool UpdateLifecycleToLayoutClean();
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -1044,7 +1052,9 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
-  void UpdateLifecyclePhasesInternal(
+  // Returns whethre the lifecycle was succesfully updated to the
+  // target state.
+  bool UpdateLifecyclePhasesInternal(
       DocumentLifecycle::LifecycleState target_state);
 
   void ScrollContentsIfNeededRecursive();

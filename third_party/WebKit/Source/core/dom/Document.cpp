@@ -2587,12 +2587,16 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
   // we need to also clean compositing inputs.
   if (View() && node->GetLayoutObject() &&
       node->GetLayoutObject()->StyleRef().SubtreeIsSticky()) {
+    bool success = false;
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       // In SPv2, compositing inputs are cleaned as part of PrePaint.
-      View()->UpdateAllLifecyclePhasesExceptPaint();
+      success = View()->UpdateAllLifecyclePhasesExceptPaint();
     } else {
-      View()->UpdateLifecycleToCompositingInputsClean();
+      success = View()->UpdateLifecycleToCompositingInputsClean();
     }
+    // The lifecycle update should always succeed, because forced lifecycles
+    // from script are never throttled.
+    DCHECK(success);
   }
 }
 

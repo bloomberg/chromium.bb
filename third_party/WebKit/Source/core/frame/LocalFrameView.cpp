@@ -2966,35 +2966,35 @@ void LocalFrameView::UpdateAllLifecyclePhases() {
       DocumentLifecycle::kPaintClean);
 }
 
-void LocalFrameView::UpdateLifecycleToPrePaintClean() {
+bool LocalFrameView::UpdateLifecycleToPrePaintClean() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    UpdateAllLifecyclePhasesExceptPaint();
+    return UpdateAllLifecyclePhasesExceptPaint();
   } else {
-    GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+    return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
         DocumentLifecycle::kPrePaintClean);
   }
 }
 
 // TODO(chrishtr): add a scrolling update lifecycle phase.
-void LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
+bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    UpdateAllLifecyclePhasesExceptPaint();
+    return UpdateAllLifecyclePhasesExceptPaint();
   } else {
-    GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+    return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
         DocumentLifecycle::kCompositingClean);
   }
 }
 
-void LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
+bool LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
   // When SPv2 is enabled, the standard compositing lifecycle steps do not
   // exist; compositing is done after paint instead.
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kCompositingInputsClean);
 }
 
-void LocalFrameView::UpdateAllLifecyclePhasesExceptPaint() {
-  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+bool LocalFrameView::UpdateAllLifecyclePhasesExceptPaint() {
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kPrePaintClean);
 }
 
@@ -3020,8 +3020,8 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
       DocumentLifecycle::kPrePaintClean);
 }
 
-void LocalFrameView::UpdateLifecycleToLayoutClean() {
-  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+bool LocalFrameView::UpdateLifecycleToLayoutClean() {
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kLayoutClean);
 }
 
@@ -3103,13 +3103,13 @@ void LocalFrameView::ClearPrintContext() {
 
 // TODO(leviw): We don't assert lifecycle information from documents in child
 // WebPluginContainerImpls.
-void LocalFrameView::UpdateLifecyclePhasesInternal(
+bool LocalFrameView::UpdateLifecyclePhasesInternal(
     DocumentLifecycle::LifecycleState target_state) {
   if (current_update_lifecycle_phases_target_state_ !=
       DocumentLifecycle::kUninitialized) {
     NOTREACHED()
         << "LocalFrameView::updateLifecyclePhasesInternal() reentrance";
-    return;
+    return false;
   }
 
   // This must be called from the root frame, or a detached frame for printing,
@@ -3125,7 +3125,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
          target_state == DocumentLifecycle::kPaintClean);
 
   if (!frame_->GetDocument()->IsActive())
-    return;
+    return Lifecycle().GetState() == target_state;
 
   AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
       &current_update_lifecycle_phases_target_state_, target_state);
@@ -3133,7 +3133,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   if (ShouldThrottleRendering()) {
     UpdateViewportIntersectionsForSubtree(
         std::min(target_state, DocumentLifecycle::kCompositingClean));
-    return;
+    return Lifecycle().GetState() == target_state;
   }
 
   if (RuntimeEnabledFeatures::PrintBrowserEnabled())
@@ -3146,7 +3146,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
   if (target_state == DocumentLifecycle::kLayoutClean) {
     UpdateViewportIntersectionsForSubtree(target_state);
-    return;
+    return Lifecycle().GetState() == target_state;
   }
 
   AutoReset<bool> past_layout_lifecycle_update(&past_layout_lifecycle_update_,
@@ -3156,7 +3156,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   // is clean and intersection observations can be calculated.
   if (ShouldThrottleRendering()) {
     UpdateViewportIntersectionsForSubtree(target_state);
-    return;
+    return Lifecycle().GetState() == target_state;
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -3247,6 +3247,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   }
 
   UpdateViewportIntersectionsForSubtree(target_state);
+  return Lifecycle().GetState() == target_state;
 }
 
 void LocalFrameView::EnqueueScrollAnchoringAdjustment(

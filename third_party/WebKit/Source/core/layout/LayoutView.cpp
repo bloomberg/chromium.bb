@@ -116,7 +116,8 @@ bool LayoutView::HitTest(HitTestResult& result) {
   // Note that if an iframe has its render pipeline throttled, it will not
   // update layout here, and it will also not propagate the hit test into the
   // iframe's inner document.
-  GetFrameView()->UpdateLifecycleToPrePaintClean();
+  if (!GetFrameView()->UpdateLifecycleToPrePaintClean())
+    return false;
   HitTestLatencyRecorder hit_test_latency_recorder(
       result.GetHitTestRequest().AllowsChildFrameContent());
   return HitTestNoLifecycleUpdate(result);
