@@ -299,13 +299,6 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
     }
   }
 
-  // The event target's relations, which may not be descendants, need to be
-  // picked up by the serializer as well. See https://crbug.com/808061.  below.
-  if (!obj.AriaActiveDescendant().IsDetached()) {
-    HandleAXEvent(obj.AriaActiveDescendant(),
-                  ax::mojom::Event::kChildrenChanged);
-  }
-
   // Add the accessibility object to our cache and ensure it's valid.
   AccessibilityHostMsg_EventParams acc_event;
   acc_event.id = obj.AxID();
