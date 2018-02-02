@@ -123,9 +123,9 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   void BindVideoEncodeAcceleratorProviderOnTaskRunner(
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   // Shared pointer to a shared context provider that should be accessed
   // and set only on the main thread.
@@ -137,7 +137,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   base::UnguessableToken channel_token_;
 
   // Whether gpu memory buffers should be used to hold video frames data.
-  bool enable_gpu_memory_buffer_video_frames_;
+  const bool enable_gpu_memory_buffer_video_frames_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
 

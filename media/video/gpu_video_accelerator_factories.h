@@ -55,9 +55,10 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
  public:
   class ScopedGLContextLock {
    public:
-    ScopedGLContextLock() {}
+    ScopedGLContextLock() = default;
+    virtual ~ScopedGLContextLock() = default;
+
     virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
-    virtual ~ScopedGLContextLock(){};
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ScopedGLContextLock);
@@ -144,7 +145,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
  protected:
   friend class base::RefCounted<GpuVideoAcceleratorFactories>;
-  virtual ~GpuVideoAcceleratorFactories() {}
+  virtual ~GpuVideoAcceleratorFactories() = default;
 };
 
 }  // namespace media

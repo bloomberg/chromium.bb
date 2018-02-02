@@ -271,10 +271,8 @@ GpuVideoAcceleratorFactoriesImpl::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
-      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          size, format, usage, gpu::kNullSurfaceHandle);
-  return buffer;
+  return gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
+      size, format, usage, gpu::kNullSurfaceHandle);
 }
 bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames()
     const {
