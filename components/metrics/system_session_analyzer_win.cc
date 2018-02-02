@@ -4,11 +4,6 @@
 
 #include "components/metrics/system_session_analyzer_win.h"
 
-#include <windows.h>
-#include <winevt.h>
-
-#include <utility>
-
 #include "base/macros.h"
 #include "base/time/time.h"
 
@@ -44,16 +39,6 @@ const wchar_t kEventTimePath[] = L"Event/System/TimeCreated/@SystemTime";
 // The timeout to use for calls to ::EvtNext.
 const uint32_t kTimeoutMs = 5000;
 
-struct EvtHandleCloser {
-  using pointer = EVT_HANDLE;
-  void operator()(EVT_HANDLE handle) const {
-    if (handle)
-      ::EvtClose(handle);
-  }
-};
-
-using EvtHandle = std::unique_ptr<EVT_HANDLE, EvtHandleCloser>;
-
 base::Time ULLFileTimeToTime(ULONGLONG time_ulonglong) {
   // Copy low / high parts as FILETIME is not always 64bit aligned.
   ULARGE_INTEGER time;
@@ -63,20 +48,6 @@ base::Time ULLFileTimeToTime(ULONGLONG time_ulonglong) {
   ft.dwHighDateTime = time.HighPart;
 
   return base::Time::FromFileTime(ft);
-}
-
-// Create a render context (i.e. specify attributes of interest).
-EvtHandle CreateRenderContext() {
-  LPCWSTR value_paths[] = {kEventIdPath, kEventTimePath};
-  const DWORD kValueCnt = arraysize(value_paths);
-
-  EVT_HANDLE context = NULL;
-  context =
-      ::EvtCreateRenderContext(kValueCnt, value_paths, EvtRenderContextValues);
-  if (!context)
-    DLOG(ERROR) << "Failed to create render context.";
-
-  return EvtHandle(context);
 }
 
 bool GetEventInfo(EVT_HANDLE context,
@@ -115,20 +86,28 @@ bool GetEventInfo(EVT_HANDLE context,
 
 }  // namespace
 
-SystemSessionAnalyzer::SystemSessionAnalyzer(uint32_t session_cnt)
-    : session_cnt_(session_cnt) {}
+SystemSessionAnalyzer::SystemSessionAnalyzer(uint32_t max_session_cnt)
+    : max_session_cnt_(max_session_cnt), sessions_queried_(0) {}
 
 SystemSessionAnalyzer::~SystemSessionAnalyzer() {}
 
 SystemSessionAnalyzer::Status SystemSessionAnalyzer::IsSessionUnclean(
     base::Time timestamp) {
-  if (!initialized_) {
-    DCHECK(!init_success_);
-    init_success_ = Initialize();
-    initialized_ = true;
-  }
-  if (!init_success_)
+  if (!EnsureInitialized())
     return FAILED;
+
+  while (timestamp < coverage_start_ && sessions_queried_ < max_session_cnt_) {
+    // Fetch the next session start and end events.
+    std::vector<EventInfo> events;
+    if (!FetchEvents(2U, &events) || events.size() != 2)
+      return FAILED;
+
+    if (!ProcessSession(events[0], events[1]))
+      return FAILED;
+
+    ++sessions_queried_;
+  }
+
   if (timestamp < coverage_start_)
     return OUTSIDE_RANGE;
 
@@ -144,26 +123,21 @@ SystemSessionAnalyzer::Status SystemSessionAnalyzer::IsSessionUnclean(
   return is_spanned ? UNCLEAN : CLEAN;
 }
 
-bool SystemSessionAnalyzer::FetchEvents(
-    std::vector<EventInfo>* event_infos) const {
+bool SystemSessionAnalyzer::FetchEvents(size_t requested_events,
+                                        std::vector<EventInfo>* event_infos) {
   DCHECK(event_infos);
 
-  // Query for the events. Note: requesting events from newest to oldest.
-  EVT_HANDLE query_raw =
-      ::EvtQuery(nullptr, kChannelName, kSessionEventsQuery,
-                 EvtQueryChannelPath | EvtQueryReverseDirection);
-  if (!query_raw) {
-    DLOG(ERROR) << "Event query failed.";
+  if (!EnsureHandlesOpened())
     return false;
-  }
-  EvtHandle query(query_raw);
+
+  DCHECK(query_handle_.get());
 
   // Retrieve events: 2 events per session, plus the current session's start.
-  DWORD desired_event_cnt = 2U * session_cnt_ + 1U;
+  DWORD desired_event_cnt = requested_events;
   std::vector<EVT_HANDLE> events_raw(desired_event_cnt, NULL);
   DWORD event_cnt = 0U;
-  BOOL success = ::EvtNext(query.get(), desired_event_cnt, events_raw.data(),
-                           kTimeoutMs, 0, &event_cnt);
+  BOOL success = ::EvtNext(query_handle_.get(), desired_event_cnt,
+                           events_raw.data(), kTimeoutMs, 0, &event_cnt);
 
   // Ensure handles get closed. The MSDN sample seems to imply handles may need
   // to be closed event in if EvtNext failed.
@@ -176,17 +150,12 @@ bool SystemSessionAnalyzer::FetchEvents(
     return false;
   }
 
-  // Extract information from the events.
-  EvtHandle render_context = CreateRenderContext();
-  if (!render_context.get())
-    return false;
-
   std::vector<EventInfo> event_infos_tmp;
   event_infos_tmp.reserve(event_cnt);
 
   EventInfo info = {};
   for (size_t i = 0; i < event_cnt; ++i) {
-    if (!GetEventInfo(render_context.get(), events[i].get(), &info))
+    if (!GetEventInfo(render_context_.get(), events[i].get(), &info))
       return false;
     event_infos_tmp.push_back(info);
   }
@@ -195,50 +164,100 @@ bool SystemSessionAnalyzer::FetchEvents(
   return true;
 }
 
-bool SystemSessionAnalyzer::Initialize() {
-  std::vector<SystemSessionAnalyzer::EventInfo> events;
-  if (!FetchEvents(&events))
-    return false;
+bool SystemSessionAnalyzer::EnsureInitialized() {
+  if (!initialized_) {
+    DCHECK(!init_success_);
+    init_success_ = Initialize();
+    initialized_ = true;
+  }
 
-  // Validate the number and ordering of events (newest to oldest). The
-  // expectation is a (start / [unclean]shutdown) pair of events for each
-  // session, as well as an additional event for the current session's start.
-  size_t event_cnt = events.size();
-  if ((event_cnt % 2) == 0)
-    return false;  // Even number is unexpected.
-  if (event_cnt < 3)
-    return false;  // Not enough data for a single session.
-  for (size_t i = 1; i < event_cnt; ++i) {
-    if (events[i - 1].event_time < events[i].event_time)
+  return init_success_;
+}
+
+bool SystemSessionAnalyzer::EnsureHandlesOpened() {
+  // Create the event query.
+  // Note: requesting events from newest to oldest.
+  if (!query_handle_.get()) {
+    query_handle_.reset(
+        ::EvtQuery(nullptr, kChannelName, kSessionEventsQuery,
+                   EvtQueryChannelPath | EvtQueryReverseDirection));
+    if (!query_handle_.get()) {
+      DLOG(ERROR) << "Event query failed.";
+      return false;
+    }
+  }
+
+  if (!render_context_.get()) {
+    // Create the render context for extracting information from the events.
+    render_context_ = CreateRenderContext();
+    if (!render_context_.get())
       return false;
   }
 
-  // Step through (start / shutdown) event pairs, validating the types of events
-  // and recording unclean sessions.
-  std::map<base::Time, base::TimeDelta> unclean_sessions;
-  size_t start = 2U;
-  size_t end = 1U;
-  for (; start < event_cnt && end < event_cnt; start += 2, end += 2) {
-    uint16_t start_id = events[start].event_id;
-    uint16_t end_id = events[end].event_id;
-    if (start_id != kIdSessionStart)
-      return false;  // Unexpected event type.
-    if (end_id != kIdSessionEnd && end_id != kIdSessionEndUnclean)
-      return false;  // Unexpected event type.
+  return true;
+}
 
-    if (end_id == kIdSessionEnd)
-      continue;  // This is a clean session.
+bool SystemSessionAnalyzer::Initialize() {
+  DCHECK(!initialized_);
 
-    unclean_sessions.insert(
-        std::make_pair(events[start].event_time,
-                       events[end].event_time - events[start].event_time));
-  }
+  // Fetch the first (current) session start event and the first session,
+  // comprising an end and a start event for a total of 3 events.
+  std::vector<EventInfo> events;
+  if (!FetchEvents(3U, &events))
+    return false;
 
-  unclean_sessions_.swap(unclean_sessions);
-  DCHECK_GT(event_cnt, 0U);
-  coverage_start_ = events[event_cnt - 1].event_time;
+  // Validate that the initial event is what we expect.
+  if (events.size() != 3 || events[0].event_id != kIdSessionStart)
+    return false;
+
+  // Initialize the coverage start to allow detecting event time inversion.
+  coverage_start_ = events[0].event_time;
+
+  if (!ProcessSession(events[1], events[2]))
+    return false;
+
+  sessions_queried_ = 1;
 
   return true;
+}
+
+bool SystemSessionAnalyzer::ProcessSession(const EventInfo& end,
+                                           const EventInfo& start) {
+  // Validate the ordering of events (newest to oldest). The  expectation is a
+  // (start / [unclean]shutdown) pair of events for each session.
+  if (coverage_start_ < end.event_time)
+    return false;
+  if (end.event_time < start.event_time)
+    return false;
+
+  // Process a (start / shutdown) event pair, validating the types of events
+  // and recording unclean sessions.
+  if (start.event_id != kIdSessionStart)
+    return false;  // Unexpected event type.
+  if (end.event_id != kIdSessionEnd && end.event_id != kIdSessionEndUnclean)
+    return false;  // Unexpected event type.
+
+  if (end.event_id == kIdSessionEndUnclean) {
+    unclean_sessions_.insert(
+        std::make_pair(start.event_time, end.event_time - start.event_time));
+  }
+
+  coverage_start_ = start.event_time;
+
+  return true;
+}
+
+SystemSessionAnalyzer::EvtHandle SystemSessionAnalyzer::CreateRenderContext() {
+  LPCWSTR value_paths[] = {kEventIdPath, kEventTimePath};
+  const DWORD kValueCnt = arraysize(value_paths);
+
+  EVT_HANDLE context = NULL;
+  context =
+      ::EvtCreateRenderContext(kValueCnt, value_paths, EvtRenderContextValues);
+  if (!context)
+    DLOG(ERROR) << "Failed to create render context.";
+
+  return EvtHandle(context);
 }
 
 }  // namespace metrics

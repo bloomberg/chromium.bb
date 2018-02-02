@@ -4,6 +4,7 @@
 
 #include "components/metrics/system_session_analyzer_win.h"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -22,13 +23,11 @@ const uint16_t kIdSessionEndUnclean = 6008U;
 }  // namespace
 
 // Ensure the fetcher retrieves events.
-// Note: this test fails if the host system doesn't have at least 1 prior
-// session.
 TEST(SystemSessionAnalyzerTest, FetchEvents) {
-  SystemSessionAnalyzer analyzer(1U);
+  SystemSessionAnalyzer analyzer(0);
   std::vector<SystemSessionAnalyzer::EventInfo> events;
-  ASSERT_TRUE(analyzer.FetchEvents(&events));
-  EXPECT_EQ(3U, events.size());
+  ASSERT_TRUE(analyzer.FetchEvents(1U, &events));
+  EXPECT_EQ(1U, events.size());
 }
 
 // Ensure the fetcher's retrieved events conform to our expectations.
@@ -43,11 +42,20 @@ TEST(SystemSessionAnalyzerTest, ValidateEvents) {
 // Stubs FetchEvents.
 class StubSystemSessionAnalyzer : public SystemSessionAnalyzer {
  public:
-  StubSystemSessionAnalyzer() : SystemSessionAnalyzer(10U) {}
+  StubSystemSessionAnalyzer(uint32_t max_session_cnt)
+      : SystemSessionAnalyzer(max_session_cnt) {}
 
-  bool FetchEvents(std::vector<EventInfo>* event_infos) const override {
+  bool FetchEvents(size_t requested_events,
+                   std::vector<EventInfo>* event_infos) override {
     DCHECK(event_infos);
-    *event_infos = events_;
+    size_t num_to_copy = std::min(requested_events, events_.size());
+    if (num_to_copy) {
+      event_infos->clear();
+      event_infos->insert(event_infos->begin(), events_.begin(),
+                          events_.begin() + num_to_copy);
+      events_.erase(events_.begin(), events_.begin() + num_to_copy);
+    }
+
     return true;
   }
 
@@ -58,7 +66,7 @@ class StubSystemSessionAnalyzer : public SystemSessionAnalyzer {
 };
 
 TEST(SystemSessionAnalyzerTest, StandardCase) {
-  StubSystemSessionAnalyzer analyzer;
+  StubSystemSessionAnalyzer analyzer(2U);
 
   base::Time time = base::Time::Now();
   analyzer.AddEvent({kIdSessionStart, time});
@@ -85,13 +93,13 @@ TEST(SystemSessionAnalyzerTest, StandardCase) {
 }
 
 TEST(SystemSessionAnalyzerTest, NoEvent) {
-  StubSystemSessionAnalyzer analyzer;
+  StubSystemSessionAnalyzer analyzer(0U);
   EXPECT_EQ(SystemSessionAnalyzer::FAILED,
             analyzer.IsSessionUnclean(base::Time::Now()));
 }
 
 TEST(SystemSessionAnalyzerTest, TimeInversion) {
-  StubSystemSessionAnalyzer analyzer;
+  StubSystemSessionAnalyzer analyzer(1U);
 
   base::Time time = base::Time::Now();
   analyzer.AddEvent({kIdSessionStart, time});
@@ -103,7 +111,7 @@ TEST(SystemSessionAnalyzerTest, TimeInversion) {
 }
 
 TEST(SystemSessionAnalyzerTest, IdInversion) {
-  StubSystemSessionAnalyzer analyzer;
+  StubSystemSessionAnalyzer analyzer(1U);
 
   base::Time time = base::Time::Now();
   analyzer.AddEvent({kIdSessionStart, time});
