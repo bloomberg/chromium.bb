@@ -951,6 +951,19 @@ message DeviceKerberosEncryptionTypesProto {
   optional Types types = 1 [default = ENC_TYPES_STRONG];
 }
 
+// Specifies how user policy from device GPOs interacts with user policy from
+// user GPOs. In 'MERGE' mode, device GPOs take preference in case of conflicts.
+message DeviceUserPolicyLoopbackProcessingModeProto {
+  enum Mode {
+    USER_POLICY_MODE_DEFAULT = 0;  // Only take user policy from user GPOs.
+    USER_POLICY_MODE_MERGE = 1;    // Merge device GPOs on top of user GPOs.
+    USER_POLICY_MODE_REPLACE = 2;  // Only take user policy from device GPOs.
+    // Next ID to use: 3
+  }
+
+  optional Mode mode = 1 [default = USER_POLICY_MODE_DEFAULT];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1031,4 +1044,6 @@ message ChromeDeviceSettingsProto {
   optional NetworkHostnameProto network_hostname = 64;
   optional DeviceKerberosEncryptionTypesProto device_kerberos_encryption_types =
       65;
+  optional DeviceUserPolicyLoopbackProcessingModeProto
+      device_user_policy_loopback_processing_mode_proto = 66;
 }
