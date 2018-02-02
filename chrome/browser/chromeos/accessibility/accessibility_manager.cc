@@ -89,7 +89,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
@@ -153,23 +152,6 @@ class ChromeVoxPanelWidgetObserver : public views::WidgetObserver {
   AccessibilityManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeVoxPanelWidgetObserver);
-};
-
-class ScopedKeyboardStateSetter {
- public:
-  ScopedKeyboardStateSetter() : is_enabled_(keyboard::IsKeyboardEnabled()) {
-    keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
-  }
-
-  ~ScopedKeyboardStateSetter() {
-    if (!is_enabled_)
-      keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_DISABLED);
-  }
-
- private:
-  bool is_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedKeyboardStateSetter);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1452,8 +1434,6 @@ void AccessibilityManager::PostLoadChromeVox() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableAudioFocus);
   }
-
-  keyboard_state_setter_.reset(new ScopedKeyboardStateSetter());
 }
 
 void AccessibilityManager::PostUnloadChromeVox() {
@@ -1472,8 +1452,6 @@ void AccessibilityManager::PostUnloadChromeVox() {
 
   // In case the user darkened the screen, undarken it now.
   SetDarkenScreen(false);
-
-  keyboard_state_setter_.reset();
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {

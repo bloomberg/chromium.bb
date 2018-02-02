@@ -79,6 +79,15 @@ class AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction
       "accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp",
       ACCESSIBILITY_PRIVATE_SETNATIVECHROMEVOXARCSUPPORTFORCURRENTAPP)
 };
+
+// API function that injects key events.
+class AccessibilityPrivateSendSyntheticKeyEventFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateSendSyntheticKeyEventFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.sendSyntheticKeyEvent",
+                             ACCESSIBILITY_PRIVATE_SENDSYNTHETICKEYEVENT)
+};
 #endif  // defined (OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
