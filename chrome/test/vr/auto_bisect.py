@@ -58,10 +58,14 @@ def ParseArgsAndAssertValid():
                       help='The perf metric being bisected')
   parser.add_argument('--story', required=True,
                       help='The perf story to check the affected metric in')
-  parser.add_argument('--good-value', required=True, type=float,
-                      help='The value of the metric at the good revision')
-  parser.add_argument('--bad-value', required=True, type=float,
-                      help='The value of the metric at the bad revision')
+  parser.add_argument('--good-value', type=float,
+                      help='The value of the metric at the good revision. If '
+                           'not defined, an extra test iteration will be run '
+                           'to determine the value')
+  parser.add_argument('--bad-value', type=float,
+                      help='The value of the metric at the bad revision. If '
+                           'not defined, an extra test iteration will be run '
+                           'to determine the value')
   parser.add_argument('--clank-revision',
                       help='The Clank revision to sync to during the bisect. '
                            'Only necessary if the revision on ToT is not '
@@ -132,8 +136,20 @@ def VerifyInput(args, unknown_args):
   print 'This will start a bisect for a for:'
   print 'Metric: %s' % args.metric
   print 'Story: %s' % args.story
-  print 'Changing from %f at %s to %f at %s' % (args.good_value,
-      args.good_revision, args.bad_value, args.bad_revision)
+  if args.good_value == None and args.bad_value == None:
+    print 'The good and bad values at %s and %s will be determined' % (
+        args.good_revision, args.bad_revision)
+  elif args.good_value == None:
+    print ('The good value at %s will be determined, and the bad value of %f '
+           'at %s will be used' % (args.good_revision, args.bad_value,
+            args.bad_revision))
+  elif args.bad_value == None:
+    print ('The good value of %f at %s will be used, and the bad value at %s '
+           'will be determined' % (args.good_value, args.good_revision,
+            args.bad_revision))
+  else:
+    print 'Changing from %f at %s to %f at %s' % (args.good_value,
+        args.good_revision, args.bad_value, args.bad_revision)
   print '======'
   print 'The test target %s will be built to %s' % (args.build_target,
                                                     args.build_output_dir)
@@ -226,15 +242,16 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
   subprocess.check_output(swarming_args)
 
 
-def CheckSwarmingResult(args, unknown_args, output_dir):
-  """Checks the perf results and determines whether they're good or bad.
-
-  Triggers another bisect step if the culprit CL has not yet been found.
+def GetSwarmingResult(args, unknown_args, output_dir):
+  """Extracts the value for the story/metric combo of interest from swarming.
 
   Args:
     args: The known args parsed from the argument parser
     unknown_args: The unknown args parsed from the argument parser
     output_dir: The directory where swarming results have been saved to
+
+  Returns:
+    The value for the story/metric combo that the last swarming run produced
   """
   with open(
       os.path.join(output_dir, '0', 'perftest-output.json'), 'r') as infile:
@@ -247,7 +264,21 @@ def CheckSwarmingResult(args, unknown_args, output_dir):
                          'Is there a typo in one of them?')
     result = all_results[0]
     print 'Got result %s' % str(result)
+  return result
 
+
+def RunBisectStep(args, unknown_args, revision, output_dir):
+  """Runs a bisect step for a revision.
+
+  This will run recursively until the culprit CL is found.
+
+  Args:
+    args: The known args parsed from the argument parser
+    unknown_args: The unknown args parsed from the argument parser
+    revision: The git revision to sync to and test
+    output_dir: The directory to save swarming results to
+  """
+  result = GetValueAtRevision(args, unknown_args, revision, output_dir)
   output = ""
   # Regression was an increased value
   if args.bad_value > args.good_value:
@@ -278,16 +309,13 @@ def CheckSwarmingResult(args, unknown_args, output_dir):
         output_dir)
 
 
-def RunBisectStep(args, unknown_args, revision, output_dir):
-  """Runs a bisect step for a revision.
-
-  This will run recursively until the culprit CL is found.
+def SyncAndBuild(args, unknown_args, revision):
+  """Syncs to the given revision and builds the test target.
 
   Args:
-    args: The known args parsed from the argument parser
-    unknown_args: The unknown args parsed from the argument parser
-    revision: The git revision to sync to and test
-    output_dir: The directory to save swarming results to
+    args: The known args parsed by the argument parser
+    unknown_args: The unknown args parsed by the argument parser
+    revision: The revision to sync to and build
   """
   print '=== Syncing to revision %s and building ===' % revision
   # Sometimes random files show up as unstaged changes (???), so make sure that
@@ -311,8 +339,6 @@ def RunBisectStep(args, unknown_args, revision, output_dir):
   subprocess.check_output(['ninja', '-C', args.build_output_dir,
                            '-j', str(args.parallel_jobs),
                            '-l', str(args.load_limit), args.build_target])
-  RunTestOnSwarming(args, unknown_args, output_dir)
-  CheckSwarmingResult(args, unknown_args, output_dir)
 
 
 def BisectRegression(args, unknown_args):
@@ -324,14 +350,37 @@ def BisectRegression(args, unknown_args):
     args: The known args parsed by the argument parser
     unknown_args: The unknown args parsed by the argument parser
   """
-
   with TempDir() as output_dir:
     try:
+      if args.good_value == None:
+        args.good_value = GetValueAtRevision(args, unknown_args,
+            args.good_revision, output_dir)
+        print '=== Got initial good value of %f ===' % args.good_value
+      if args.bad_value == None:
+        args.bad_value = GetValueAtRevision(args, unknown_args,
+            args.bad_revision, output_dir)
+        print '=== Got initial bad value of %f ===' % args.bad_value
       branch_name, revision = SetupBisect(args)
       RunBisectStep(args, unknown_args, revision, output_dir)
     finally:
       subprocess.check_output(['git', 'bisect', 'reset'])
 
+
+def GetValueAtRevision(args, unknown_args, revision, output_dir):
+  """Builds and runs the test at a particular revision.
+
+  Args:
+    args: The known args parsed by the argument parser
+    unknown_args: The unknown args parsed by the argument parser
+    revision: The revision to sync to and build
+    output_dir: The directory to store swarming results to
+
+  Returns:
+    The value of the story/metric combo at the given revision
+  """
+  SyncAndBuild(args, unknown_args, revision)
+  RunTestOnSwarming(args, unknown_args, output_dir)
+  return GetSwarmingResult(args, unknown_args, output_dir)
 
 def main():
   VerifyCwd()
