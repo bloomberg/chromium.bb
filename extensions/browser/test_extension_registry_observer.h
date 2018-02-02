@@ -28,6 +28,7 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
 
   // Waits for the notification, and returns the extension that caused it.
   const Extension* WaitForExtensionWillBeInstalled();
+  const Extension* WaitForExtensionInstalled();
   const Extension* WaitForExtensionUninstalled();
   const Extension* WaitForExtensionLoaded();
   const Extension* WaitForExtensionReady();
@@ -41,6 +42,9 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
                                   const Extension* extension,
                                   bool is_update,
                                   const std::string& old_name) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
@@ -55,6 +59,7 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   const Extension* Wait(std::unique_ptr<Waiter>* waiter);
 
   std::unique_ptr<Waiter> will_be_installed_waiter_;
+  std::unique_ptr<Waiter> installed_waiter_;
   std::unique_ptr<Waiter> uninstalled_waiter_;
   std::unique_ptr<Waiter> loaded_waiter_;
   std::unique_ptr<Waiter> ready_waiter_;

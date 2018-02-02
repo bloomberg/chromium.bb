@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -21,49 +20,13 @@
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/search_engines/template_url_service.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
 
 namespace {
-
-class ScopedExtensionLoadObserver : public ExtensionRegistryObserver {
- public:
-  ScopedExtensionLoadObserver(ExtensionRegistry* registry,
-                              const base::Closure& quit_closure);
-  ~ScopedExtensionLoadObserver() override;
-
- private:
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const Extension* extension,
-                            bool is_update) override;
-
-  ExtensionRegistry* registry_;
-  base::Closure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedExtensionLoadObserver);
-};
-
-ScopedExtensionLoadObserver::ScopedExtensionLoadObserver(
-    ExtensionRegistry* registry,
-    const base::Closure& quit_closure)
-    : registry_(registry),
-      quit_closure_(quit_closure) {
-  registry_->AddObserver(this);
-}
-
-ScopedExtensionLoadObserver::~ScopedExtensionLoadObserver() {
-  registry_->RemoveObserver(this);
-}
-
-void ScopedExtensionLoadObserver::OnExtensionInstalled(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    bool is_update) {
-  quit_closure_.Run();
-}
 
 class KeywordExtensionsDelegateImplTest : public ExtensionServiceTestBase {
  public:
@@ -98,15 +61,11 @@ void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
     path = path.AppendASCII("extensions").AppendASCII("good_unpacked");
 
-    base::RunLoop run_loop;
-    ScopedExtensionLoadObserver load_observer(registry(),
-                                              run_loop.QuitClosure());
-
+    TestExtensionRegistryObserver load_observer(registry());
     scoped_refptr<UnpackedInstaller> installer(
         UnpackedInstaller::Create(service()));
     installer->Load(path);
-
-    run_loop.Run();
+    EXPECT_TRUE(load_observer.WaitForExtensionInstalled());
   }
 
   ASSERT_EQ(1U, registry()->enabled_extensions().size());
@@ -123,13 +82,9 @@ void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {
 
   // Enable the extension in incognito mode, which requires a reload.
   {
-    base::RunLoop run_loop;
-    ScopedExtensionLoadObserver load_observer(registry(),
-                                              run_loop.QuitClosure());
-
+    TestExtensionRegistryObserver observer(registry());
     util::SetIsIncognitoEnabled(extension->id(), profile(), true);
-
-    run_loop.Run();
+    EXPECT_TRUE(observer.WaitForExtensionInstalled());
   }
 
   ASSERT_EQ(1U, registry()->enabled_extensions().size());
