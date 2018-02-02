@@ -125,6 +125,10 @@ public class TabModelMergingTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                // Load a URL in ChromeTabbedActivity2 so that its first tab isn't chrome://newtab.
+                // chrome://newtab may be skipped when reading tab state during cold start.
+                mActivity2.getActivityTab().loadUrl(new LoadUrlParams(TEST_URL_5));
+
                 // Create normal tabs.
                 mActivity1.getTabCreator(false).createNewTab(new LoadUrlParams(TEST_URL_0),
                         TabLaunchType.FROM_CHROME_UI, null);
