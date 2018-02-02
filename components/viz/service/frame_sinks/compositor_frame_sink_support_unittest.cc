@@ -656,19 +656,6 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
             surface_observer_.last_surface_info().size_in_pixels());
 }
 
-// Check that if a CompositorFrame is received with size zero, we don't create
-// a Surface for it.
-TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
-  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
-  auto frame =
-      CompositorFrameBuilder().AddRenderPass(gfx::Rect(), gfx::Rect()).Build();
-  bool success;
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame), nullptr,
-                                  &success);
-  EXPECT_FALSE(success);
-  EXPECT_FALSE(GetSurfaceForId(id));
-}
-
 // Check that if a CompositorFrame is received with device scale factor of 0, we
 // don't create a Surface for it.
 TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
