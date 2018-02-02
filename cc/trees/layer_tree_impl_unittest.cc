@@ -2222,10 +2222,11 @@ TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {
 TEST_F(LayerTreeImplTest, RasterColorSpaceDoesNotNeedDrawPropertiesUpdate) {
   host_impl().active_tree()->BuildPropertyTreesForTesting();
   host_impl().active_tree()->SetRasterColorSpace(
-      gfx::ColorSpace::CreateXYZD50());
+      1, gfx::ColorSpace::CreateXYZD50());
   host_impl().active_tree()->UpdateDrawProperties();
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
-  host_impl().active_tree()->SetRasterColorSpace(gfx::ColorSpace::CreateSRGB());
+  host_impl().active_tree()->SetRasterColorSpace(1,
+                                                 gfx::ColorSpace::CreateSRGB());
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
 }
 

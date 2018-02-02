@@ -9,6 +9,7 @@
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
 
+#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/display_item_list.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -137,13 +138,14 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   MOCK_METHOD1(LockDiscardableTextureCHROMIUM, bool(GLuint texture_id));
 
   // OOP-Raster
-  MOCK_METHOD6(BeginRasterCHROMIUM,
+  MOCK_METHOD7(BeginRasterCHROMIUM,
                void(GLuint texture_id,
                     GLuint sk_color,
                     GLuint msaa_sample_count,
                     GLboolean can_use_lcd_text,
                     GLboolean use_distance_field_text,
-                    GLint pixel_config));
+                    GLint pixel_config,
+                    GLuint color_space_id));
   MOCK_METHOD2(RasterCHROMIUM, void(GLsizeiptr size, const void* list));
   MOCK_METHOD1(MapRasterCHROMIUM, void*(GLsizeiptr size));
   MOCK_METHOD1(UnmapRasterCHROMIUM, void(GLsizeiptr written));
@@ -672,13 +674,16 @@ TEST_F(RasterImplementationGLESTest, BeginRasterCHROMIUM) {
   const GLboolean can_use_lcd_text = GL_TRUE;
   const GLboolean use_distance_field_text = GL_FALSE;
   const GLint pixel_config = kRGBA_8888_GrPixelConfig;
-  EXPECT_CALL(*gl_, BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                                        can_use_lcd_text,
-                                        use_distance_field_text, pixel_config))
+  const auto raster_color_space =
+      cc::RasterColorSpace(gfx::ColorSpace::CreateSRGB(), 2);
+  EXPECT_CALL(*gl_,
+              BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
+                                  can_use_lcd_text, use_distance_field_text,
+                                  pixel_config, 2))
       .Times(1);
   ri_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
                            can_use_lcd_text, use_distance_field_text,
-                           pixel_config);
+                           pixel_config, raster_color_space);
 }
 
 TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {

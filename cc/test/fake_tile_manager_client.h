@@ -27,7 +27,7 @@ class FakeTileManagerClient : public TileManagerClient {
   std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override {}
-  gfx::ColorSpace GetRasterColorSpace() const override;
+  RasterColorSpace GetRasterColorSpace() const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override {}
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;

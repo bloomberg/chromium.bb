@@ -3547,22 +3547,24 @@ void GLES2Implementation::SetEnableDCLayersCHROMIUM(GLboolean enabled) {
   CheckGLError();
 }
 
-void GLES2Implementation::BeginRasterCHROMIUM(GLuint texture_id,
-                                              GLuint sk_color,
-                                              GLuint msaa_sample_count,
-                                              GLboolean can_use_lcd_text,
-                                              GLboolean use_distance_field_text,
-                                              GLint pixel_config) {
+void GLES2Implementation::BeginRasterCHROMIUM(
+    GLuint texture_id,
+    GLuint sk_color,
+    GLuint msaa_sample_count,
+    GLboolean can_use_lcd_text,
+    GLboolean use_distance_field_text,
+    GLint pixel_config,
+    GLuint color_space_transfer_cache_id) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBeginRasterCHROMIUM("
-                     << texture_id << ", " << sk_color << ", "
-                     << msaa_sample_count << ", "
-                     << GLES2Util::GetStringBool(can_use_lcd_text) << ", "
-                     << GLES2Util::GetStringBool(use_distance_field_text)
-                     << ", " << pixel_config << ")");
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glBeginRasterCHROMIUM(" << texture_id << ", "
+          << sk_color << ", " << msaa_sample_count << ", "
+          << GLES2Util::GetStringBool(can_use_lcd_text) << ", "
+          << GLES2Util::GetStringBool(use_distance_field_text) << ", "
+          << pixel_config << ", " << color_space_transfer_cache_id << ")");
   helper_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
                                can_use_lcd_text, use_distance_field_text,
-                               pixel_config);
+                               pixel_config, color_space_transfer_cache_id);
   CheckGLError();
 }
 

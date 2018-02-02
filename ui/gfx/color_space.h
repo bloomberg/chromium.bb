@@ -152,6 +152,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   static ColorSpace CreateREC601();
   static ColorSpace CreateREC709();
 
+  // Generates a process global unique ID that can be used to key a color space.
+  static int GetNextId();
+
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
   bool operator<(const ColorSpace& other) const;

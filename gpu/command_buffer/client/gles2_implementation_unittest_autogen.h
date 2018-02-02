@@ -3087,9 +3087,9 @@ TEST_F(GLES2ImplementationTest, BeginRasterCHROMIUM) {
     cmds::BeginRasterCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, true, true, 6);
+  expected.cmd.Init(1, 2, 3, true, true, 6, 7);
 
-  gl_->BeginRasterCHROMIUM(1, 2, 3, true, true, 6);
+  gl_->BeginRasterCHROMIUM(1, 2, 3, true, true, 6, 7);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

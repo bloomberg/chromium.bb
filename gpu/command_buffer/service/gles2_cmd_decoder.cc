@@ -27,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
@@ -75,6 +76,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/angle/src/image_util/loadimage.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -1993,7 +1995,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
                              GLboolean use_distance_field_text,
-                             GLint pixel_config);
+                             GLint pixel_config,
+                             GLuint color_space_transfer_cache_id);
   void DoRasterCHROMIUM(GLsizeiptr size, const void* list);
   void DoEndRasterCHROMIUM();
 
@@ -2580,6 +2583,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Raster helpers.
   sk_sp<GrContext> gr_context_;
   sk_sp<SkSurface> sk_surface_;
+  std::unique_ptr<SkCanvas> raster_canvas_;
 
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_;
 
@@ -20315,12 +20319,33 @@ error::Error GLES2DecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoBeginRasterCHROMIUM(GLuint texture_id,
-                                             GLuint sk_color,
-                                             GLuint msaa_sample_count,
-                                             GLboolean can_use_lcd_text,
-                                             GLboolean use_distance_field_text,
-                                             GLint pixel_config) {
+class TransferCacheDeserializeHelperImpl
+    : public cc::TransferCacheDeserializeHelper {
+ public:
+  explicit TransferCacheDeserializeHelperImpl(
+      ServiceTransferCache* transfer_cache)
+      : transfer_cache_(transfer_cache) {
+    DCHECK(transfer_cache_);
+  }
+  ~TransferCacheDeserializeHelperImpl() override = default;
+
+ private:
+  cc::ServiceTransferCacheEntry* GetEntryInternal(
+      cc::TransferCacheEntryType entry_type,
+      uint32_t entry_id) override {
+    return transfer_cache_->GetEntry(entry_type, entry_id);
+  }
+  ServiceTransferCache* transfer_cache_;
+};
+
+void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
+    GLuint texture_id,
+    GLuint sk_color,
+    GLuint msaa_sample_count,
+    GLboolean can_use_lcd_text,
+    GLboolean use_distance_field_text,
+    GLint pixel_config,
+    GLuint color_space_transfer_cache_id) {
   if (!gr_context_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "chromium_raster_transport not enabled via attribs");
@@ -20332,6 +20357,7 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(GLuint texture_id,
     return;
   }
 
+  DCHECK(!raster_canvas_);
   gr_context_->resetContext();
 
   // This function should look identical to
@@ -20419,6 +20445,21 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(GLuint texture_id,
     return;
   }
 
+  TransferCacheDeserializeHelperImpl transfer_cache_deserializer(
+      transfer_cache_.get());
+  auto* color_space_entry =
+      transfer_cache_deserializer
+          .GetEntryAs<cc::ServiceColorSpaceTransferCacheEntry>(
+              color_space_transfer_cache_id);
+  if (!color_space_entry || !color_space_entry->color_space().IsValid()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "failed to find valid color space");
+    return;
+  }
+  raster_canvas_ = SkCreateColorSpaceXformCanvas(
+      sk_surface_->getCanvas(),
+      color_space_entry->color_space().ToSkColorSpace());
+
   // All or nothing clearing, as no way to validate the client's input on what
   // is the "used" part of the texture.
   if (texture->IsLevelCleared(texture->target(), 0))
@@ -20427,28 +20468,9 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(GLuint texture_id,
   // TODO(enne): this doesn't handle the case where the background color
   // changes and so any extra pixels outside the raster area that get
   // sampled may be incorrect.
-  sk_surface_->getCanvas()->drawColor(sk_color);
+  raster_canvas_->drawColor(sk_color);
   texture_manager()->SetLevelCleared(texture_ref, texture->target(), 0, true);
 }
-
-class TransferCacheDeserializeHelperImpl
-    : public cc::TransferCacheDeserializeHelper {
- public:
-  explicit TransferCacheDeserializeHelperImpl(
-      ServiceTransferCache* transfer_cache)
-      : transfer_cache_(transfer_cache) {
-    DCHECK(transfer_cache_);
-  }
-  ~TransferCacheDeserializeHelperImpl() override = default;
-
- private:
-  cc::ServiceTransferCacheEntry* GetEntryInternal(
-      cc::TransferCacheEntryType entry_type,
-      uint32_t entry_id) override {
-    return transfer_cache_->GetEntry(entry_type, entry_id);
-  }
-  ServiceTransferCache* transfer_cache_;
-};
 
 void GLES2DecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
   if (!sk_surface_) {
@@ -20462,7 +20484,7 @@ void GLES2DecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
       cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
   const char* buffer = static_cast<const char*>(list);
 
-  SkCanvas* canvas = sk_surface_->getCanvas();
+  SkCanvas* canvas = raster_canvas_.get();
   SkMatrix original_ctm;
   cc::PlaybackParams playback_params(nullptr, original_ctm);
   cc::PaintOp::DeserializeOptions options;
@@ -20497,6 +20519,7 @@ void GLES2DecoderImpl::DoEndRasterCHROMIUM() {
     return;
   }
 
+  raster_canvas_ = nullptr;
   sk_surface_->prepareForExternalIO();
   sk_surface_.reset();
 

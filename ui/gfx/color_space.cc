@@ -8,6 +8,7 @@
 #include <map>
 #include <sstream>
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
@@ -20,6 +21,8 @@
 namespace gfx {
 
 namespace {
+
+base::AtomicSequenceNumber g_color_space_id;
 
 // See comments in ToSkColorSpace about this cache. This cache may only be
 // accessed while holding g_sk_color_space_cache_lock.
@@ -181,6 +184,11 @@ ColorSpace ColorSpace::CreateREC601() {
 ColorSpace ColorSpace::CreateREC709() {
   return ColorSpace(PrimaryID::BT709, TransferID::BT709, MatrixID::BT709,
                     RangeID::LIMITED);
+}
+
+// static
+int ColorSpace::GetNextId() {
+  return g_color_space_id.GetNext();
 }
 
 bool ColorSpace::operator==(const ColorSpace& other) const {

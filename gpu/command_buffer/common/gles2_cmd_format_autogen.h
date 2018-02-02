@@ -16006,7 +16006,8 @@ struct BeginRasterCHROMIUM {
             GLuint _msaa_sample_count,
             GLboolean _can_use_lcd_text,
             GLboolean _use_distance_field_text,
-            GLint _pixel_config) {
+            GLint _pixel_config,
+            GLuint _color_space_transfer_cache_id) {
     SetHeader();
     texture_id = _texture_id;
     sk_color = _sk_color;
@@ -16014,6 +16015,7 @@ struct BeginRasterCHROMIUM {
     can_use_lcd_text = _can_use_lcd_text;
     use_distance_field_text = _use_distance_field_text;
     pixel_config = _pixel_config;
+    color_space_transfer_cache_id = _color_space_transfer_cache_id;
   }
 
   void* Set(void* cmd,
@@ -16022,10 +16024,12 @@ struct BeginRasterCHROMIUM {
             GLuint _msaa_sample_count,
             GLboolean _can_use_lcd_text,
             GLboolean _use_distance_field_text,
-            GLint _pixel_config) {
+            GLint _pixel_config,
+            GLuint _color_space_transfer_cache_id) {
     static_cast<ValueType*>(cmd)->Init(_texture_id, _sk_color,
                                        _msaa_sample_count, _can_use_lcd_text,
-                                       _use_distance_field_text, _pixel_config);
+                                       _use_distance_field_text, _pixel_config,
+                                       _color_space_transfer_cache_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -16036,10 +16040,11 @@ struct BeginRasterCHROMIUM {
   uint32_t can_use_lcd_text;
   uint32_t use_distance_field_text;
   int32_t pixel_config;
+  uint32_t color_space_transfer_cache_id;
 };
 
-static_assert(sizeof(BeginRasterCHROMIUM) == 28,
-              "size of BeginRasterCHROMIUM should be 28");
+static_assert(sizeof(BeginRasterCHROMIUM) == 32,
+              "size of BeginRasterCHROMIUM should be 32");
 static_assert(offsetof(BeginRasterCHROMIUM, header) == 0,
               "offset of BeginRasterCHROMIUM header should be 0");
 static_assert(offsetof(BeginRasterCHROMIUM, texture_id) == 4,
@@ -16055,6 +16060,9 @@ static_assert(
     "offset of BeginRasterCHROMIUM use_distance_field_text should be 20");
 static_assert(offsetof(BeginRasterCHROMIUM, pixel_config) == 24,
               "offset of BeginRasterCHROMIUM pixel_config should be 24");
+static_assert(
+    offsetof(BeginRasterCHROMIUM, color_space_transfer_cache_id) == 28,
+    "offset of BeginRasterCHROMIUM color_space_transfer_cache_id should be 28");
 
 struct RasterCHROMIUM {
   typedef RasterCHROMIUM ValueType;

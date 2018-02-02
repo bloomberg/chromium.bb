@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 
 #include "base/logging.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"  // nogncheck
 #include "cc/paint/paint_op_buffer_serializer.h"
@@ -386,10 +387,23 @@ void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
     GLboolean use_distance_field_text,
-    GLint pixel_config) {
+    GLint pixel_config,
+    const cc::RasterColorSpace& raster_color_space) {
+  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(support_);
+  if (!transfer_cache_serialize_helper.LockEntry(
+          cc::TransferCacheEntryType::kColorSpace,
+          raster_color_space.color_space_id)) {
+    transfer_cache_serialize_helper.CreateEntry(
+        cc::ClientColorSpaceTransferCacheEntry(raster_color_space));
+  }
+  transfer_cache_serialize_helper.AssertLocked(
+      cc::TransferCacheEntryType::kColorSpace,
+      raster_color_space.color_space_id);
+
   gl_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
                            can_use_lcd_text, use_distance_field_text,
-                           pixel_config);
+                           pixel_config, raster_color_space.color_space_id);
+  transfer_cache_serialize_helper.FlushEntries();
 };
 
 void RasterImplementationGLES::RasterCHROMIUM(
@@ -425,7 +439,6 @@ void RasterImplementationGLES::RasterCHROMIUM(
   // unrefing images until we have serialized dependent commands.
   cc::DecodeStashingImageProvider stashing_image_provider(provider);
 
-  // TODO(enne): need to implement alpha folding optimization from POB.
   // TODO(enne): don't access private members of DisplayItemList.
   TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(support_);
   PaintOpSerializer op_serializer(free_size, gl_, &stashing_image_provider,

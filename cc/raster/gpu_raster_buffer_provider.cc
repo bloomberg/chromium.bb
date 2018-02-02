@@ -51,9 +51,8 @@ static void RasterizeSourceOOP(
 
   ri->BeginRasterCHROMIUM(texture_id, raster_source->background_color(),
                           msaa_sample_count, playback_settings.use_lcd_text,
-                          use_distance_field_text,
-                          resource_lock->PixelConfig());
-  // TODO(enne): need to pass color space into this function as well.
+                          use_distance_field_text, resource_lock->PixelConfig(),
+                          playback_settings.raster_color_space);
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();
   ri->RasterCHROMIUM(raster_source->GetDisplayItemList().get(),

@@ -302,10 +302,12 @@ class CC_EXPORT LayerTreeImpl {
     return local_surface_id_;
   }
 
-  void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
+  void SetRasterColorSpace(int raster_color_space_id,
+                           const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
   }
+  int raster_color_space_id() const { return raster_color_space_id_; }
 
   SyncedElasticOverscroll* elastic_overscroll() {
     return elastic_overscroll_.get();
@@ -597,6 +599,7 @@ class CC_EXPORT LayerTreeImpl {
 
   float device_scale_factor_;
   float painted_device_scale_factor_;
+  int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;

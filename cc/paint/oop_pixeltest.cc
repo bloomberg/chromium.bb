@@ -115,6 +115,7 @@ class OopPixelTest : public testing::Test {
     gfx::Rect playback_rect;
     gfx::Vector2dF post_translate = {0.f, 0.f};
     float post_scale = 1.f;
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   };
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
@@ -126,7 +127,7 @@ class OopPixelTest : public testing::Test {
   }
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
-                  const RasterOptions& options) {
+                  RasterOptions& options) {
     gpu::gles2::GLES2Interface* gl = context_->GetImplementation();
     int width = options.bitmap_rect.width();
     int height = options.bitmap_rect.height();
@@ -144,10 +145,12 @@ class OopPixelTest : public testing::Test {
               static_cast<unsigned>(GL_NO_ERROR));
 
     // "Out of process" raster! \o/
+
     raster_implementation_->BeginRasterCHROMIUM(
         raster_texture_id, options.background_color, options.msaa_sample_count,
         options.use_lcd_text, options.use_distance_field_text,
-        options.pixel_config);
+        options.pixel_config,
+        RasterColorSpace(options.color_space, ++color_space_id_));
     raster_implementation_->RasterCHROMIUM(
         display_item_list.get(), &image_provider_,
         options.bitmap_rect.OffsetFromOrigin(), options.playback_rect,
@@ -263,9 +266,7 @@ class OopPixelTest : public testing::Test {
 
     gfx::AxisTransform2d raster_transform(options.post_scale,
                                           options.post_translate);
-    // TODO(enne): add a target colorspace to BeginRasterCHROMIUM etc.
-    gfx::ColorSpace target_color_space;
-    raster_source->PlaybackToCanvas(canvas, target_color_space,
+    raster_source->PlaybackToCanvas(canvas, options.color_space,
                                     options.bitmap_rect, options.playback_rect,
                                     raster_transform, settings);
     surface->prepareForExternalIO();
@@ -300,6 +301,7 @@ class OopPixelTest : public testing::Test {
   std::unique_ptr<gpu::raster::RasterImplementationGLES> raster_implementation_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   NoOpImageProvider image_provider_;
+  int color_space_id_ = 0;
 };
 
 TEST_F(OopPixelTest, DrawColor) {
@@ -452,6 +454,26 @@ TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
   options.background_color = SK_ColorGRAY;
   options.post_translate = {0.f, 0.f};
   options.post_scale = 2.f;
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, DrawRectColorSpace) {
+  RasterOptions options;
+  options.bitmap_rect = gfx::Rect(100, 100);
+  options.playback_rect = options.bitmap_rect;
+  options.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorGREEN);
+  display_item_list->push<DrawRectOp>(SkRect::MakeWH(100.f, 100.f), flags);
+  display_item_list->EndPaintOfUnpaired(options.bitmap_rect);
+  display_item_list->Finalize();
 
   auto actual = Raster(display_item_list, options);
   auto expected = RasterExpectedBitmap(display_item_list, options);

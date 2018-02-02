@@ -13559,11 +13559,12 @@ TEST_F(LayerTreeHostImplTest, RasterColorSpace) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   // The default raster color space should be sRGB.
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(), gfx::ColorSpace::CreateSRGB());
+  EXPECT_EQ(host_impl_->GetRasterColorSpace().color_space,
+            gfx::ColorSpace::CreateSRGB());
   // The raster color space should update with tree activation.
   host_impl_->active_tree()->SetRasterColorSpace(
-      gfx::ColorSpace::CreateDisplayP3D65());
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(),
+      2, gfx::ColorSpace::CreateDisplayP3D65());
+  EXPECT_EQ(host_impl_->GetRasterColorSpace().color_space,
             gfx::ColorSpace::CreateDisplayP3D65());
 }
 
@@ -13571,10 +13572,12 @@ TEST_F(LayerTreeHostImplTest, RasterColorSpaceSoftware) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, FakeLayerTreeFrameSink::CreateSoftware());
   // Software composited resources should always use sRGB as their color space.
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(), gfx::ColorSpace::CreateSRGB());
+  EXPECT_EQ(host_impl_->GetRasterColorSpace().color_space,
+            gfx::ColorSpace::CreateSRGB());
   host_impl_->active_tree()->SetRasterColorSpace(
-      gfx::ColorSpace::CreateDisplayP3D65());
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(), gfx::ColorSpace::CreateSRGB());
+      2, gfx::ColorSpace::CreateDisplayP3D65());
+  EXPECT_EQ(host_impl_->GetRasterColorSpace().color_space,
+            gfx::ColorSpace::CreateSRGB());
 }
 
 TEST_F(LayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {

@@ -132,12 +132,14 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   bool LockDiscardableTextureCHROMIUM(GLuint texture_id) override;
 
   // OOP-Raster
-  void BeginRasterCHROMIUM(GLuint texture_id,
-                           GLuint sk_color,
-                           GLuint msaa_sample_count,
-                           GLboolean can_use_lcd_text,
-                           GLboolean use_distance_field_text,
-                           GLint pixel_config) override;
+  void BeginRasterCHROMIUM(
+      GLuint texture_id,
+      GLuint sk_color,
+      GLuint msaa_sample_count,
+      GLboolean can_use_lcd_text,
+      GLboolean use_distance_field_text,
+      GLint pixel_config,
+      const cc::RasterColorSpace& raster_color_space) override;
   void RasterCHROMIUM(const cc::DisplayItemList* list,
                       cc::ImageProvider* provider,
                       const gfx::Vector2d& translate,
