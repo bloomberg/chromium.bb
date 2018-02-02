@@ -232,6 +232,11 @@ void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
 
+std::unique_ptr<TickClock> ScopedTaskEnvironment::GetMockTickClock() {
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->GetMockTickClock();
+}
+
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()
     : internal::TaskSchedulerImpl::TaskTrackerImpl("ScopedTaskEnvironment"),
       can_run_tasks_cv_(&lock_),
