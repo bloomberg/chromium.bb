@@ -1435,52 +1435,54 @@ bool Document::HasValidNamespaceForAttributes(const QualifiedName& q_name) {
 // FIXME: This should really be in a possible ElementFactory class
 Element* Document::createElement(const QualifiedName& q_name,
                                  CreateElementFlags flags) {
-  Element* e = nullptr;
+  Element* element = nullptr;
 
   // FIXME: Use registered namespaces and look up in a hash to find the right
   // factory.
   const AtomicString& local_name = q_name.LocalName();
   if (q_name.NamespaceURI() == xhtmlNamespaceURI) {
-    e = HTMLElementFactory::CreateRawHTMLElement(local_name, *this, flags);
-    if (!e) {
+    element =
+        HTMLElementFactory::CreateRawHTMLElement(local_name, *this, flags);
+    if (!element) {
       // TODO(dominicc): When the HTML parser can pass an error
       // reporting ExceptionState, and "v0" custom elements have been
       // removed, consolidate custom element creation into one place.
       if (flags != kCreatedByCreateElement &&
           CustomElement::ShouldCreateCustomElement(local_name)) {
-        if (flags & kAsynchronousCustomElements)
-          e = CustomElement::CreateCustomElementAsync(*this, q_name, flags);
-        else
-          e = CustomElement::CreateCustomElementSync(*this, q_name);
+        if (flags & kAsynchronousCustomElements) {
+          element =
+              CustomElement::CreateCustomElementAsync(*this, q_name, flags);
+        } else {
+          element = CustomElement::CreateCustomElementSync(*this, q_name);
+        }
       } else if (RegistrationContext() &&
                  V0CustomElement::IsValidName(local_name)) {
-        e = RegistrationContext()->CreateCustomTagElement(*this, q_name);
+        element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
       } else {
-        e = HTMLUnknownElement::Create(q_name, *this);
+        element = HTMLUnknownElement::Create(q_name, *this);
       }
     }
   } else if (q_name.NamespaceURI() == SVGNames::svgNamespaceURI) {
-    e = SVGElementFactory::CreateRawSVGElement(local_name, *this, flags);
-    if (!e) {
+    element = SVGElementFactory::CreateRawSVGElement(local_name, *this, flags);
+    if (!element) {
       if (RegistrationContext() && V0CustomElement::IsValidName(local_name)) {
-        e = RegistrationContext()->CreateCustomTagElement(*this, q_name);
+        element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
       } else {
-        e = SVGUnknownElement::Create(q_name, *this);
+        element = SVGUnknownElement::Create(q_name, *this);
       }
     }
   }
 
-  if (e)
+  if (element)
     saw_elements_in_known_namespaces_ = true;
   else
-    e = Element::Create(q_name, this);
+    element = Element::Create(q_name, this);
 
-  if (e->prefix() != q_name.Prefix())
-    e->SetTagNameForCreateElementNS(q_name);
+  if (element->prefix() != q_name.Prefix())
+    element->SetTagNameForCreateElementNS(q_name);
+  DCHECK_EQ(q_name, element->TagQName());
 
-  DCHECK(q_name == e->TagQName());
-
-  return e;
+  return element;
 }
 
 String Document::readyState() const {
