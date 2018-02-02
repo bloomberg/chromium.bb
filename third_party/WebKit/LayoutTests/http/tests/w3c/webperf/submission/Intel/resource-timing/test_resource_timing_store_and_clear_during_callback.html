@@ -1,38 +1,56 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <title>This test validates the behavior of read and clear operation in onresourcetimingbufferfull callback of resource timing.</title>
-        <script src="/w3c/webperf/resources/webperftestharnessextension.js"></script>
-        <script>
-            var context = new PerformanceContext(performance);
-            var resource_timing_buffer_size = 1;
-            var global_buffer = [];
-            function store_and_clear()
-            {
-                var entry_list = context.getEntriesByType('resource');
-                for (var i = 0; i < entry_list.length; ++i)
-                    global_buffer.push(entry_list[i]);
-                context.clearResourceTimings();
-            }
-            context.registerResourceTimingBufferFullCallback(store_and_clear);
-            context.setResourceTimingBufferSize(resource_timing_buffer_size);
-        </script>
-        <link rel="author" title="Intel" href="http://www.intel.com/" />
-        <link rel="help" href="http://www.w3.org/TR/resource-timing/#performanceresourcetiming"/>
-        <script src="/w3c/resources/testharness.js"></script>
-        <script src="/w3c/resources/testharnessreport.js"></script>
-        <script src="/w3c/webperf/resources/webperftestharness.js"></script>
-        <script>
-            setup({ explicit_done: true });                
-            function onload_test()
-            {
-                test_equals(context.getEntriesByType('resource').length, 0, "No entry should be stored in resource timing buffer since it's cleared once an item arrived!");
-                test_equals(global_buffer.length, 4, "4 resource timing entries should be moved to global buffer!");
-                done();
-            }
-        </script>
-    </head>
-    <body onload=onload_test()>
-    </body>
+<head onload>
+<meta charset="utf-8" />
+<title>This test validates the behavior of read and clear operation in onresourcetimingbufferfull callback of resource timing.</title>
+<link rel="author" title="Intel" href="http://www.intel.com/" />
+<link rel="help" href="http://www.w3.org/TR/resource-timing/#performanceresourcetiming"/>
+<script src="/w3c/resources/testharness.js"></script>
+<script src="/w3c/resources/testharnessreport.js"></script>
+<script src="/w3c/webperf/resources/webperftestharness.js"></script>
+<script src="/w3c/webperf/resources/webperftestharnessextension.js"></script>
+</head>
+<body onload=onload_test()>
+<script>
+    const context = new PerformanceContext(performance);
+    const resource_timing_buffer_size = 1;
+    let global_buffer = [];
+    function store_and_clear() {
+        const entryList = context.getEntriesByType('resource');
+        entryList.forEach(function (entry) {
+            global_buffer.push(entry);
+        });
+        context.clearResourceTimings();
+    }
+    context.registerResourceTimingBufferFullCallback(store_and_clear);
+    context.setResourceTimingBufferSize(resource_timing_buffer_size);
+    // Scripts appended in JS to ensure setResourceTimingBufferSize is called before.
+    function appendScript(src) {
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = src;
+        document.body.appendChild(script);
+    }
+    appendScript('/w3c/webperf/resources/empty.js');
+    appendScript('/w3c/webperf/resources/empty_script.js');
+    appendScript('/w3c/webperf/resources/resource_timing_test0.js');
+    setup({ explicit_done: true });
+    function onload_test() {
+        test_equals(context.getEntriesByType('resource').length, 0, 'No entry should be stored in resource timing buffer since its cleared once an item arrived.');
+        // The entry for empty.js must not be in the global buffer, but all others should be.
+        test_equals(global_buffer.length, 6, '6 resource timing entries should be moved to global buffer.');
+        const index = window.location.pathname.lastIndexOf('/w3c');
+        const pathname = window.location.pathname.substring(0, index);
+        let expected_entries = {};
+        expected_entries[pathname + '/w3c/resources/testharness.js'] = 'script';
+        expected_entries[pathname + '/w3c/resources/testharnessreport.js'] = 'script';
+        expected_entries[pathname + '/w3c/webperf/resources/webperftestharness.js'] = 'script';
+        expected_entries[pathname + '/w3c/webperf/resources/webperftestharnessextension.js'] = 'script';
+        expected_entries[pathname + '/w3c/webperf/resources/empty_script.js'] = 'script';
+        expected_entries[pathname + '/w3c/webperf/resources/resource_timing_test0.js'] = 'script';
+        test_resource_entries(global_buffer, expected_entries);
+        done();
+    }
+</script>
+</body>
 </html>
