@@ -10,11 +10,15 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/sync/dice_signin_button.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -43,8 +47,18 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
   title->SetMultiLine(true);
   AddChildView(title);
 
-  signin_button_ = accounts.empty() ? new DiceSigninButton(this)
-                                    : new DiceSigninButton(accounts[0], this);
+  if (accounts.empty()) {
+    signin_button_ = new DiceSigninButton(this);
+  } else {
+    gfx::Image account_icon =
+        AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountImage(
+            accounts[0].account_id);
+    if (account_icon.IsEmpty()) {
+      account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          profiles::GetPlaceholderAvatarIconResourceID());
+    }
+    signin_button_ = new DiceSigninButton(accounts[0], account_icon, this);
+  }
   AddChildView(signin_button_);
 }
 
