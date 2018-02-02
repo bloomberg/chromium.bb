@@ -9,12 +9,19 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_files_id.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -296,10 +303,21 @@ void WallpaperControllerClient::RemovePolicyWallpaper(
                                                GetFilesId(account_id).id());
 }
 
-void WallpaperControllerClient::OpenWallpaperPicker() {
-  // TODO(crbug.com/776464): Inline the implementation after WallpaperManager
-  // is removed.
-  chromeos::WallpaperManager::Get()->OpenWallpaperPicker();
+void WallpaperControllerClient::OpenWallpaperPickerIfAllowed() {
+  wallpaper_controller_->OpenWallpaperPickerIfAllowed();
+}
+
+void WallpaperControllerClient::IsActiveUserWallpaperControlledByPolicy(
+    ash::mojom::WallpaperController::
+        IsActiveUserWallpaperControlledByPolicyCallback callback) {
+  wallpaper_controller_->IsActiveUserWallpaperControlledByPolicy(
+      std::move(callback));
+}
+
+void WallpaperControllerClient::ShouldShowWallpaperSetting(
+    ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
+        callback) {
+  wallpaper_controller_->ShouldShowWallpaperSetting(std::move(callback));
 }
 
 void WallpaperControllerClient::OnDeviceWallpaperChanged() {
@@ -343,4 +361,22 @@ void WallpaperControllerClient::BindAndSetClient() {
       std::move(client), user_data_path, chromeos_wallpapers_path,
       chromeos_custom_wallpapers_path,
       policy_handler_.IsDeviceWallpaperPolicyEnforced());
+}
+
+void WallpaperControllerClient::OpenWallpaperPicker() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(profile);
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service)
+    return;
+
+  const extensions::Extension* extension = service->GetExtensionById(
+      extension_misc::kWallpaperManagerId, false /*include_disabled=*/);
+  if (!extension)
+    return;
+
+  OpenApplication(AppLaunchParams(
+      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }

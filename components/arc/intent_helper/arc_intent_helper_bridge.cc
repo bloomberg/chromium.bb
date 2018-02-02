@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "ash/new_window_controller.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +21,8 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/url_formatter/url_fixer.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/layout.h"
 #include "url/url_constants.h"
 
@@ -189,9 +192,11 @@ void ArcIntentHelperBridge::OnOpenChromePage(mojom::ChromePage page) {
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->wallpaper_controller()->OpenSetWallpaperPage();
+  ash::mojom::WallpaperControllerPtr wallpaper_controller_ptr;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &wallpaper_controller_ptr);
+  wallpaper_controller_ptr->OpenWallpaperPickerIfAllowed();
 }
 
 void ArcIntentHelperBridge::SetWallpaperDeprecated(

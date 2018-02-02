@@ -32,11 +32,6 @@ void WallpaperDelegateMus::InitializeWallpaper() {
   // No action required; ChromeBrowserMainPartsChromeos inits WallpaperManager.
 }
 
-bool WallpaperDelegateMus::CanOpenSetWallpaperPage() {
-  // TODO(msw): Restrict this during login, etc.
-  return true;
-}
-
 void WallpaperDelegateMus::OnWallpaperAnimationFinished() {}
 
 void WallpaperDelegateMus::OnWallpaperBootAnimationFinished() {}

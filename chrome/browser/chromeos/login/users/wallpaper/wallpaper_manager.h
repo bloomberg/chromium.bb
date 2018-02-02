@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -28,10 +27,7 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/wallpaper/wallpaper_export.h"
 #include "components/wallpaper/wallpaper_info.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/wm/public/activation_change_observer.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace base {
 class CommandLine;
@@ -47,10 +43,9 @@ void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner);
 // Name of wallpaper sequence token.
 extern const char kWallpaperSequenceTokenName[];
 
-class WallpaperManager : public wm::ActivationChangeObserver,
-                         public aura::WindowObserver {
+class WallpaperManager {
  public:
-  ~WallpaperManager() override;
+  ~WallpaperManager();
 
   // Expects there is no instance of WallpaperManager and create one.
   static void Initialize();
@@ -93,17 +88,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
 
   // A wrapper of |WallpaperController::IsPolicyControlled|.
   bool IsPolicyControlled(const AccountId& account_id) const;
-
-  // Opens the wallpaper picker window.
-  void OpenWallpaperPicker();
-
-  // wm::ActivationChangeObserver:
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   friend class WallpaperManagerPolicyTest;
@@ -154,10 +138,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   bool should_cache_wallpaper_ = false;
 
   bool retry_download_if_failed_ = true;
-
-  ScopedObserver<wm::ActivationClient, wm::ActivationChangeObserver>
-      activation_client_observer_;
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_;
 
   base::WeakPtrFactory<WallpaperManager> weak_factory_;
 

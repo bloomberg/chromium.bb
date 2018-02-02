@@ -179,6 +179,10 @@ interface WallpaperController {
   // |wallpaper_files_id|: The file id for user_info.account_id.
   RemovePolicyWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
 
+  // Opens the wallpaper picker if the active user is not controlled by policy
+  // and it's allowed to change wallpaper per the user type and the login state.
+  OpenWallpaperPickerIfAllowed();
+
   // TODO(crbug.com/776464): This is only used by WallpaperManager. Remove this
   // after WallpaperManager is removed.
   //
@@ -194,6 +198,15 @@ interface WallpaperController {
 
   // Runs to get wallpaper prominent colors.
   GetWallpaperColors() => (array<uint32> prominent_colors);
+
+  // Returns true if the wallpaper of the currently active user (if any) is
+  // controlled by policy (excluding device policy). If there's no active user,
+  // returns false.
+  IsActiveUserWallpaperControlledByPolicy() => (bool controlled);
+
+  // Returns true if the wallpaper setting (used to open the wallpaper picker)
+  // should be visible.
+  ShouldShowWallpaperSetting() => (bool show);
 };
 
 // Used by ash to control a Chrome client.

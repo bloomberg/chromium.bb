@@ -231,9 +231,12 @@ class ASH_EXPORT WallpaperController
   // no wallpaper.
   wallpaper::WallpaperType GetWallpaperType() const;
 
+  // Returns true if the active user is allowed to open the wallpaper picker.
+  bool CanOpenWallpaperPicker();
+
   // Sets the wallpaper and alerts observers of changes.
   void SetWallpaperImage(const gfx::ImageSkia& image,
-                         const wallpaper::WallpaperInfo& info);
+                         wallpaper::WallpaperInfo info);
 
   // Implementation of |SetDefaultWallpaper|. Sets wallpaper to default if
   // |show_wallpaper| is true. Otherwise just save the defaut wallpaper to
@@ -306,9 +309,6 @@ class ASH_EXPORT WallpaperController
   void set_wallpaper_reload_delay_for_test(int value) {
     wallpaper_reload_delay_ = value;
   }
-
-  // Opens the set wallpaper page in the browser.
-  void OpenSetWallpaperPage();
 
   // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
   bool ShouldApplyDimming() const;
@@ -400,10 +400,15 @@ class ASH_EXPORT WallpaperController
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
+  void OpenWallpaperPickerIfAllowed() override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
+  void IsActiveUserWallpaperControlledByPolicy(
+      IsActiveUserWallpaperControlledByPolicyCallback callback) override;
+  void ShouldShowWallpaperSetting(
+      ShouldShowWallpaperSettingCallback callback) override;
 
   // WallpaperResizerObserver:
   void OnWallpaperResized() override;
@@ -548,6 +553,12 @@ class ASH_EXPORT WallpaperController
 
   // Called when the device policy controlled wallpaper has been decoded.
   void OnDevicePolicyWallpaperDecoded(const gfx::ImageSkia& image);
+
+  // Implementation of |IsActiveUserWallpaperControlledByPolicy|.
+  bool IsActiveUserWallpaperControlledByPolicyImpl();
+
+  // Implementation of |ShouldShowWallpaperSetting|.
+  bool ShouldShowWallpaperSettingImpl();
 
   // When wallpaper resizes, we can check which displays will be affected. For
   // simplicity, we only lock the compositor for the internal display.

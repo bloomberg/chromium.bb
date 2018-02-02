@@ -722,15 +722,23 @@ void WallpaperController::SetCustomizedDefaultWallpaperPaths(
                           show_wallpaper);
 }
 
+bool WallpaperController::CanOpenWallpaperPicker() {
+  return ShouldShowWallpaperSettingImpl() &&
+         !IsActiveUserWallpaperControlledByPolicyImpl();
+}
+
 void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
-                                            const WallpaperInfo& info) {
-  wallpaper::WallpaperLayout layout = info.layout;
+                                            WallpaperInfo info) {
+  // 1x1 wallpaper should be stretched to fill the entire screen.
+  // (WALLPAPER_LAYOUT_TILE also serves this purpose.)
+  if (image.width() == 1 && image.height() == 1)
+    info.layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
 
   VLOG(1) << "SetWallpaper: image_id="
           << wallpaper::WallpaperResizer::GetImageId(image)
-          << " layout=" << layout;
+          << " layout=" << info.layout;
 
-  if (WallpaperIsAlreadyLoaded(image, true /*compare_layouts=*/, layout)) {
+  if (WallpaperIsAlreadyLoaded(image, true /*compare_layouts=*/, info.layout)) {
     VLOG(1) << "Wallpaper is already loaded";
     return;
   }
@@ -907,13 +915,6 @@ void WallpaperController::ReadAndDecodeWallpaper(
       base::Bind(&base::ReadFileToString, file_path, data),
       base::Bind(&OnWallpaperDataRead, callback,
                  base::Passed(base::WrapUnique(data))));
-}
-
-void WallpaperController::OpenSetWallpaperPage() {
-  if (wallpaper_controller_client_ &&
-      Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage()) {
-    wallpaper_controller_client_->OpenWallpaperPicker();
-  }
 }
 
 bool WallpaperController::ShouldApplyDimming() const {
@@ -1320,6 +1321,12 @@ void WallpaperController::RemovePolicyWallpaper(
   SetDefaultWallpaper(std::move(user_info), wallpaper_files_id, show_wallpaper);
 }
 
+void WallpaperController::OpenWallpaperPickerIfAllowed() {
+  if (wallpaper_controller_client_ && CanOpenWallpaperPicker()) {
+    wallpaper_controller_client_->OpenWallpaperPicker();
+  }
+}
+
 void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
                                        const WallpaperInfo& info) {
   if (wallpaper.isNull())
@@ -1338,6 +1345,16 @@ void WallpaperController::AddObserver(
 void WallpaperController::GetWallpaperColors(
     GetWallpaperColorsCallback callback) {
   std::move(callback).Run(prominent_colors_);
+}
+
+void WallpaperController::IsActiveUserWallpaperControlledByPolicy(
+    IsActiveUserWallpaperControlledByPolicyCallback callback) {
+  std::move(callback).Run(IsActiveUserWallpaperControlledByPolicyImpl());
+}
+
+void WallpaperController::ShouldShowWallpaperSetting(
+    ShouldShowWallpaperSettingCallback callback) {
+  std::move(callback).Run(ShouldShowWallpaperSettingImpl());
 }
 
 void WallpaperController::OnWallpaperResized() {
@@ -1598,11 +1615,6 @@ void WallpaperController::OnDefaultWallpaperDecoded(
   }
 
   if (show_wallpaper) {
-    // 1x1 wallpaper should be stretched.
-    if (cached_default_wallpaper_.image.width() == 1 &&
-        cached_default_wallpaper_.image.height() == 1) {
-      layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
-    }
     WallpaperInfo info(cached_default_wallpaper_.file_path.value(), layout,
                        wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
     SetWallpaperImage(cached_default_wallpaper_.image, info);
@@ -1833,6 +1845,31 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
                        wallpaper::DEVICE, base::Time::Now().LocalMidnight());
     SetWallpaperImage(image, info);
   }
+}
+
+bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() {
+  // The currently active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  if (!active_user_session)
+    return false;
+  return IsPolicyControlled(active_user_session->user_info->account_id,
+                            !active_user_session->user_info->is_ephemeral);
+}
+
+bool WallpaperController::ShouldShowWallpaperSettingImpl() {
+  // The currently active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  if (!active_user_session)
+    return false;
+
+  user_manager::UserType active_user_type =
+      active_user_session->user_info->type;
+  return active_user_type == user_manager::USER_TYPE_REGULAR ||
+         active_user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT ||
+         active_user_type == user_manager::USER_TYPE_SUPERVISED ||
+         active_user_type == user_manager::USER_TYPE_CHILD;
 }
 
 void WallpaperController::GetInternalDisplayCompositorLock() {

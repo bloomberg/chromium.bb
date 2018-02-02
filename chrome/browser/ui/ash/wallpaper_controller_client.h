@@ -59,9 +59,13 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void ShowSigninWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);
   void RemovePolicyWallpaper(const AccountId& account_id);
-
-  // ash::mojom::WallpaperControllerClient:
-  void OpenWallpaperPicker() override;
+  void OpenWallpaperPickerIfAllowed();
+  void IsActiveUserWallpaperControlledByPolicy(
+      ash::mojom::WallpaperController::
+          IsActiveUserWallpaperControlledByPolicyCallback callback);
+  void ShouldShowWallpaperSetting(
+      ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
+          callback);
 
   // chromeos::WallpaperPolicyHandler::Delegate:
   void OnDeviceWallpaperChanged() override;
@@ -73,6 +77,9 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
  private:
   // Binds this object to its mojo interface and sets it as the ash client.
   void BindAndSetClient();
+
+  // ash::mojom::WallpaperControllerClient:
+  void OpenWallpaperPicker() override;
 
   // WallpaperController interface in ash.
   ash::mojom::WallpaperControllerPtr wallpaper_controller_;

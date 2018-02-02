@@ -15,7 +15,6 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wallpaper/test_wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
@@ -246,8 +245,7 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
 
 class WallpaperControllerTest : public AshTestBase {
  public:
-  WallpaperControllerTest()
-      : controller_(nullptr), wallpaper_delegate_(nullptr) {}
+  WallpaperControllerTest() : controller_(nullptr) {}
   ~WallpaperControllerTest() override = default;
 
   void SetUp() override {
@@ -259,8 +257,6 @@ class WallpaperControllerTest : public AshTestBase {
     root_window_controller->SetWallpaperWidgetController(nullptr);
     root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
     controller_ = Shell::Get()->wallpaper_controller();
-    wallpaper_delegate_ =
-        static_cast<TestWallpaperDelegate*>(Shell::Get()->wallpaper_delegate());
     controller_->set_wallpaper_reload_delay_for_test(0);
     controller_->InitializePathsForTesting();
   }
@@ -463,6 +459,11 @@ class WallpaperControllerTest : public AshTestBase {
   // Wrapper for private ShouldCalculateColors().
   bool ShouldCalculateColors() { return controller_->ShouldCalculateColors(); }
 
+  // Wrapper for private IsActiveUserWallpaperControlledByPolicyImpl().
+  bool IsActiveUserWallpaperControlledByPolicy() {
+    return controller_->IsActiveUserWallpaperControlledByPolicyImpl();
+  }
+
   int GetWallpaperCount() { return controller_->wallpaper_count_for_testing_; }
 
   void SetBypassDecode() { controller_->bypass_decode_for_testing_ = true; }
@@ -485,8 +486,6 @@ class WallpaperControllerTest : public AshTestBase {
   }
 
   WallpaperController* controller_;  // Not owned.
-
-  TestWallpaperDelegate* wallpaper_delegate_;
 
   // Directory created by |CreateDefaultWallpapers| to store default wallpaper
   // images.
@@ -1481,6 +1480,32 @@ TEST_F(WallpaperControllerTest, RemoveUserWithDefaultWallpaper) {
 
   // Verify that the other user's wallpaper is not affected.
   EXPECT_TRUE(base::PathExists(small_wallpaper_path_1));
+}
+
+TEST_F(WallpaperControllerTest, IsActiveUserWallpaperControlledByPolicy) {
+  SetBypassDecode();
+  // Simulate the login screen. Verify that it returns false since there's no
+  // active user.
+  ClearLogin();
+  EXPECT_FALSE(IsActiveUserWallpaperControlledByPolicy());
+
+  SimulateUserLogin(user_1);
+  EXPECT_FALSE(IsActiveUserWallpaperControlledByPolicy());
+  // Set a policy wallpaper for the active user. Verify that the active user
+  // becomes policy controlled.
+  controller_->SetPolicyWallpaper(InitializeUser(account_id_1),
+                                  wallpaper_files_id_1,
+                                  std::string() /*data=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_TRUE(IsActiveUserWallpaperControlledByPolicy());
+
+  // Switch the active user. Verify the active user is not policy controlled.
+  SimulateUserLogin(user_2);
+  EXPECT_FALSE(IsActiveUserWallpaperControlledByPolicy());
+
+  // Logs out. Verify that it returns false since there's no active user.
+  ClearLogin();
+  EXPECT_FALSE(IsActiveUserWallpaperControlledByPolicy());
 }
 
 TEST_F(WallpaperControllerTest, WallpaperBlur) {

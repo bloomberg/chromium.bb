@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
-#include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -210,8 +209,13 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetBoolean("useNewWallpaperPicker",
                    base::CommandLine::ForCurrentProcess()->HasSwitch(
                        chromeos::switches::kNewWallpaperPicker));
-  dict->SetBoolean("showBackdropWallpapers",
-                   wallpaper_manager_util::ShouldShowBackdropWallpapers());
+
+  bool show_backdrop_wallpapers = false;
+#if defined(GOOGLE_CHROME_BUILD)
+  show_backdrop_wallpapers = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kNewWallpaperPicker);
+#endif
+  dict->SetBoolean("showBackdropWallpapers", show_backdrop_wallpapers);
 
   return RespondNow(OneArgument(std::move(dict)));
 }

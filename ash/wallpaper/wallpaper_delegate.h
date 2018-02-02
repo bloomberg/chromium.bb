@@ -32,9 +32,6 @@ class ASH_EXPORT WallpaperDelegate {
   // Initialize wallpaper.
   virtual void InitializeWallpaper() = 0;
 
-  // Returns true if user can open set wallpaper page.
-  virtual bool CanOpenSetWallpaperPage() = 0;
-
   // Notifies delegate that wallpaper animation has finished.
   virtual void OnWallpaperAnimationFinished() = 0;
 
