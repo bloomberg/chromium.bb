@@ -503,14 +503,11 @@ double ToRestrictedDouble(v8::Isolate* isolate,
   return number_value;
 }
 
+// http://heycam.github.io/webidl/#es-ByteString
 String ToByteString(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
                     ExceptionState& exception_state) {
   // Handle null default value.
-  if (value.IsEmpty())
-    return String();
-
-  // From the Web IDL spec: http://heycam.github.io/webidl/#es-ByteString
   if (value.IsEmpty())
     return String();
 
