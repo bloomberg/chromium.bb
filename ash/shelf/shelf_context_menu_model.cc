@@ -16,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
@@ -142,7 +141,7 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
     menu->push_back(std::move(alignment_menu));
   }
 
-  if (Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage()) {
+  if (Shell::Get()->wallpaper_controller()->CanOpenWallpaperPicker()) {
     mojom::MenuItemPtr wallpaper(mojom::MenuItem::New());
     wallpaper->command_id = ShelfContextMenuModel::MENU_CHANGE_WALLPAPER;
     wallpaper->label = GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER);
@@ -244,7 +243,7 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
       SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_BOTTOM);
       break;
     case MENU_CHANGE_WALLPAPER:
-      Shell::Get()->wallpaper_controller()->OpenSetWallpaperPage();
+      Shell::Get()->wallpaper_controller()->OpenWallpaperPickerIfAllowed();
       break;
     default:
       // Have the shelf item delegate execute the context menu command.

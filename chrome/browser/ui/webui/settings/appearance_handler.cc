@@ -13,17 +13,13 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chromeos/login/login_state.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 namespace settings {
 
 AppearanceHandler::AppearanceHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)) {
-}
+    : profile_(Profile::FromWebUI(webui)), weak_ptr_factory_(this) {}
 
 AppearanceHandler::~AppearanceHandler() {}
 
@@ -75,49 +71,28 @@ void AppearanceHandler::HandleUseSystemTheme(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
 void AppearanceHandler::IsWallpaperSettingVisible(const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  AllowJavascript();
-
-  bool is_wallpaper_visible = false;
-  const chromeos::LoginState* login_state = chromeos::LoginState::Get();
-  const chromeos::LoginState::LoggedInUserType user_type =
-      login_state->GetLoggedInUserType();
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->GetActiveUser();
-
-  // Only login, whitelist types and active users are allowed to change
-  // their wallpaper. Then show the wallpaper setting row for them.
-  if (login_state->IsUserLoggedIn() && user &&
-      (user_type == chromeos::LoginState::LOGGED_IN_USER_REGULAR ||
-       user_type == chromeos::LoginState::LOGGED_IN_USER_OWNER ||
-       user_type == chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT ||
-       user_type == chromeos::LoginState::LOGGED_IN_USER_SUPERVISED)) {
-    is_wallpaper_visible = true;
-  }
-
-  ResolveJavascriptCallback(*callback_id, base::Value(is_wallpaper_visible));
+  WallpaperControllerClient::Get()->ShouldShowWallpaperSetting(
+      base::Bind(&AppearanceHandler::ResolveCallback,
+                 weak_ptr_factory_.GetWeakPtr(), args->GetList()[0].Clone()));
 }
 
 void AppearanceHandler::IsWallpaperPolicyControlled(
     const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  AllowJavascript();
-
-  ResolveJavascriptCallback(
-      *callback_id,
-      base::Value(chromeos::WallpaperManager::Get()->IsPolicyControlled(
-          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId())));
+  WallpaperControllerClient::Get()->IsActiveUserWallpaperControlledByPolicy(
+      base::Bind(&AppearanceHandler::ResolveCallback,
+                 weak_ptr_factory_.GetWeakPtr(), args->GetList()[0].Clone()));
 }
 
 void AppearanceHandler::HandleOpenWallpaperManager(
-    const base::ListValue* /*args*/) {
-  if (!chromeos::WallpaperManager::Get()->IsPolicyControlled(
-          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId())) {
-    WallpaperControllerClient::Get()->OpenWallpaperPicker();
-  }
+    const base::ListValue* args) {
+  WallpaperControllerClient::Get()->OpenWallpaperPickerIfAllowed();
+}
+
+void AppearanceHandler::ResolveCallback(const base::Value& callback_id,
+                                        bool result) {
+  AllowJavascript();
+  ResolveJavascriptCallback(callback_id, base::Value(result));
 }
 #endif
 

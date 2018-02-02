@@ -99,6 +99,10 @@ void TestWallpaperController::RemovePolicyWallpaper(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::OpenWallpaperPickerIfAllowed() {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::SetWallpaper(
     const SkBitmap& wallpaper,
     const wallpaper::WallpaperInfo& wallpaper_info) {
@@ -112,5 +116,17 @@ void TestWallpaperController::AddObserver(
 
 void TestWallpaperController::GetWallpaperColors(
     GetWallpaperColorsCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void TestWallpaperController::IsActiveUserWallpaperControlledByPolicy(
+    ash::mojom::WallpaperController::
+        IsActiveUserWallpaperControlledByPolicyCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void TestWallpaperController::ShouldShowWallpaperSetting(
+    ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
+        callback) {
   NOTIMPLEMENTED();
 }

@@ -22,7 +22,6 @@ class WallpaperDelegateMus : public WallpaperDelegate {
   void SetAnimationDurationOverride(int animation_duration_in_ms) override;
   bool ShouldShowInitialAnimation() override;
   void InitializeWallpaper() override;
-  bool CanOpenSetWallpaperPage() override;
   void OnWallpaperAnimationFinished() override;
   void OnWallpaperBootAnimationFinished() override;
 

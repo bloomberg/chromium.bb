@@ -29,10 +29,6 @@ void DefaultWallpaperDelegate::InitializeWallpaper() {
   Shell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
 }
 
-bool DefaultWallpaperDelegate::CanOpenSetWallpaperPage() {
-  return false;
-}
-
 void DefaultWallpaperDelegate::OnWallpaperAnimationFinished() {}
 
 void DefaultWallpaperDelegate::OnWallpaperBootAnimationFinished() {}

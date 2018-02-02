@@ -9,10 +9,8 @@
 #include "ash/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -30,7 +28,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
-#include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -38,7 +35,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -266,51 +262,9 @@ bool WallpaperManager::IsPolicyControlled(const AccountId& account_id) const {
       account_id, is_persistent);
 }
 
-void WallpaperManager::OpenWallpaperPicker() {
-  if (wallpaper_manager_util::ShouldUseAndroidWallpapersApp(
-          ProfileHelper::Get()->GetProfileByUser(
-              user_manager::UserManager::Get()->GetActiveUser())) &&
-      !ash_util::IsRunningInMash()) {
-    // Window activation watch to minimize all inactive windows is only needed
-    // by Android Wallpaper app. Legacy Chrome OS Wallpaper Picker app does that
-    // via extension API.
-    activation_client_observer_.Add(ash::Shell::Get()->activation_client());
-  }
-  wallpaper_manager_util::OpenWallpaperManager();
-}
-
-void WallpaperManager::OnWindowActivated(ActivationReason reason,
-                                         aura::Window* gained_active,
-                                         aura::Window* lost_active) {
-  if (!gained_active)
-    return;
-
-  const std::string arc_wallpapers_app_id = ArcAppListPrefs::GetAppId(
-      wallpaper_manager_util::kAndroidWallpapersAppPackage,
-      wallpaper_manager_util::kAndroidWallpapersAppActivity);
-  ash::ShelfID shelf_id =
-      ash::ShelfID::Deserialize(gained_active->GetProperty(ash::kShelfIDKey));
-  if (shelf_id.app_id == arc_wallpapers_app_id) {
-    ash::WallpaperWindowStateManager::MinimizeInactiveWindows(
-        user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-    DCHECK(!ash_util::IsRunningInMash() && ash::Shell::Get());
-    activation_client_observer_.Remove(ash::Shell::Get()->activation_client());
-    window_observer_.Add(gained_active);
-  }
-}
-
-void WallpaperManager::OnWindowDestroying(aura::Window* window) {
-  window_observer_.Remove(window);
-  ash::WallpaperWindowStateManager::RestoreWindows(
-      user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-}
-
 // WallpaperManager, private: --------------------------------------------------
 
-WallpaperManager::WallpaperManager()
-    : activation_client_observer_(this),
-      window_observer_(this),
-      weak_factory_(this) {
+WallpaperManager::WallpaperManager() : weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,

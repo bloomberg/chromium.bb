@@ -67,11 +67,18 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
+  void OpenWallpaperPickerIfAllowed() override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(
       ash::mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
+  void IsActiveUserWallpaperControlledByPolicy(
+      ash::mojom::WallpaperController::
+          IsActiveUserWallpaperControlledByPolicyCallback callback) override;
+  void ShouldShowWallpaperSetting(
+      ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
+          callback) override;
 
  private:
   mojo::Binding<ash::mojom::WallpaperController> binding_;
