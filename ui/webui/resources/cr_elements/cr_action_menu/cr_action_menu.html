@@ -21,7 +21,7 @@
         background-color: transparent;
       }
 
-      :host ::content .dropdown-item {
+      :host ::slotted(.dropdown-item) {
         background: none;
         border: none;
         border-radius: 0;
@@ -35,20 +35,20 @@
         width: 100%;
       }
 
-      :host ::content .dropdown-item:not([hidden]) {
+      :host ::slotted(.dropdown-item:not([hidden])) {
         align-items: center;
         display: flex;
       }
 
-      :host ::content .dropdown-item[disabled] {
+      :host ::slotted(.dropdown-item[disabled]) {
         opacity: 0.65;
       }
 
-      :host ::content .dropdown-item:not([disabled]) {
-        @apply(--cr-actionable);
+      :host ::slotted(.dropdown-item:not([disabled])) {
+        @apply --cr-actionable;
       }
 
-      :host ::content .dropdown-item:focus {
+      :host ::slotted(.dropdown-item:focus) {
         background-color: var(--paper-grey-300);
         outline: none;
       }
@@ -58,7 +58,7 @@
       }
     </style>
     <div class="item-wrapper" tabindex="-1" role="menu">
-      <content select=".dropdown-item,hr" id="contentNode"></content>
+      <slot name="item" id="contentNode"></slot>
     </div>
   </template>
   <script src="cr_action_menu.js"></script>
