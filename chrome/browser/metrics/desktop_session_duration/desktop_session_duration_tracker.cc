@@ -16,8 +16,6 @@ namespace {
 DesktopSessionDurationTracker* g_desktop_session_duration_tracker_instance =
     nullptr;
 
-const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
-
 }  // namespace
 
 // static
@@ -101,7 +99,7 @@ void DesktopSessionDurationTracker::OnAudioEnd() {
   // last 5 minutes so the session can be terminated.
   if (!timer_.IsRunning()) {
     DVLOG(4) << "Ending session due to audio ending";
-    EndSession(kZeroTime);
+    EndSession(base::TimeDelta());
   }
 }
 
@@ -149,8 +147,8 @@ void DesktopSessionDurationTracker::EndSession(
   // Trim any timeouts from the session length and lower bound to a session of
   // length 0.
   delta -= time_to_discount;
-  if (delta < kZeroTime)
-    delta = kZeroTime;
+  if (delta < base::TimeDelta())
+    delta = base::TimeDelta();
 
   for (Observer& observer : observer_list_)
     observer.OnSessionEnded(delta);

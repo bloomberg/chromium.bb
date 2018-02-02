@@ -14,12 +14,6 @@
 
 namespace metrics {
 
-namespace {
-
-const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
-
-}  // namespace
-
 ChromeVisibilityObserver::ChromeVisibilityObserver() : weak_factory_(this) {
   BrowserList::AddObserver(this);
   InitVisibilityGapTimeout();
@@ -43,7 +37,7 @@ void ChromeVisibilityObserver::OnBrowserSetLastActive(Browser* browser) {
   if (weak_factory_.HasWeakPtrs())
     CancelVisibilityChange();
   else
-    SendVisibilityChangeEvent(true, kZeroTime);
+    SendVisibilityChangeEvent(true, base::TimeDelta());
 }
 
 void ChromeVisibilityObserver::OnBrowserNoLongerActive(Browser* browser) {
@@ -60,7 +54,7 @@ void ChromeVisibilityObserver::OnBrowserRemoved(Browser* browser) {
   // is not visible anymore immediately without waiting.
   if (BrowserList::GetInstance()->empty()) {
     CancelVisibilityChange();
-    SendVisibilityChangeEvent(false, kZeroTime);
+    SendVisibilityChangeEvent(false, base::TimeDelta());
   }
 }
 
