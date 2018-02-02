@@ -67,13 +67,14 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
     output_delay_ms_ = audio_delay_milliseconds;
   }
 
-  render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
-  int frames_per_10_ms = sample_rate / 100;
-  int bytes_per_sample = sizeof(render_buffer_[0]);
-  // Client should always ask for 10ms.
+  const int frames_per_10_ms = sample_rate / 100;
   DCHECK_EQ(audio_bus->frames(), frames_per_10_ms);
+  DCHECK_GE(audio_bus->channels(), 1);
+  DCHECK_LE(audio_bus->channels(), 2);
 
   // Get 10ms audio and copy result to temporary byte buffer.
+  render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
+  const int bytes_per_sample = sizeof(render_buffer_[0]);
   static const int kBitsPerByte = 8;
   int64_t elapsed_time_ms = -1;
   int64_t ntp_time_ms = -1;

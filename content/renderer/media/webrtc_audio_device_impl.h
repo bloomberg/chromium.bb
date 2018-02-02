@@ -50,6 +50,7 @@ class WebRtcAudioRenderer;
 class WebRtcAudioRendererSource {
  public:
   // Callback to get the rendered data.
+  // |audio_bus| must have buffer size |sample_rate/100| and 1-2 channels.
   virtual void RenderData(media::AudioBus* audio_bus,
                           int sample_rate,
                           int audio_delay_milliseconds,
@@ -77,6 +78,7 @@ class WebRtcPlayoutDataSource {
    public:
     // Callback to get the playout data.
     // Called on the audio render thread.
+    // |audio_bus| must have buffer size |sample_rate/100| and 1-2 channels.
     virtual void OnPlayoutData(media::AudioBus* audio_bus,
                                int sample_rate,
                                int audio_delay_milliseconds) = 0;

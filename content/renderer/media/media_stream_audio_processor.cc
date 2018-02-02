@@ -484,6 +484,17 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
 #else
   DCHECK(!audio_processing_->echo_control_mobile()->is_enabled());
 #endif
+  DCHECK_GE(audio_bus->channels(), 1);
+  DCHECK_LE(audio_bus->channels(), 2);
+  int frames_per_10_ms = sample_rate / 100;
+  if (audio_bus->frames() != frames_per_10_ms) {
+    if (unsupported_buffer_size_log_count_ < 10) {
+      LOG(ERROR) << "MSAP::OnPlayoutData: Unsupported audio buffer size "
+                 << audio_bus->frames() << ", expected " << frames_per_10_ms;
+      ++unsupported_buffer_size_log_count_;
+    }
+    return;
+  }
 
   TRACE_EVENT1("audio", "MediaStreamAudioProcessor::OnPlayoutData",
                "delay (ms)", audio_delay_milliseconds);
@@ -491,20 +502,20 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  InitializeRenderFifoIfNeeded(sample_rate, audio_bus->channels(),
-                               audio_bus->frames());
+  std::vector<const float*> channel_ptrs(audio_bus->channels());
+  for (int i = 0; i < audio_bus->channels(); ++i)
+    channel_ptrs[i] = audio_bus->channel(i);
 
-  render_fifo_->Push(
-      *audio_bus, base::TimeDelta::FromMilliseconds(audio_delay_milliseconds));
-  MediaStreamAudioBus* analysis_bus;
-  base::TimeDelta audio_delay;
-  while (render_fifo_->Consume(&analysis_bus, &audio_delay)) {
-    // TODO(ajm): Should AnalyzeReverseStream() account for the |audio_delay|?
-    audio_processing_->AnalyzeReverseStream(
-        analysis_bus->channel_ptrs(),
-        analysis_bus->bus()->frames(),
-        sample_rate,
-        ChannelsToLayout(audio_bus->channels()));
+  // TODO(ajm): Should AnalyzeReverseStream() account for the
+  // |audio_delay_milliseconds|?
+  const int apm_error = audio_processing_->AnalyzeReverseStream(
+      channel_ptrs.data(), audio_bus->frames(), sample_rate,
+      ChannelsToLayout(audio_bus->channels()));
+  if (apm_error != webrtc::AudioProcessing::kNoError &&
+      apm_playout_error_code_log_count_ < 10) {
+    LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="
+               << apm_error;
+    ++apm_playout_error_code_log_count_;
   }
 }
 
@@ -513,13 +524,11 @@ void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
   // There is no need to hold a lock here since the caller guarantees that
   // there is no more OnPlayoutData() callback on the render thread.
   render_thread_checker_.DetachFromThread();
-  render_fifo_.reset();
 }
 
 void MediaStreamAudioProcessor::OnRenderThreadChanged() {
   render_thread_checker_.DetachFromThread();
   DCHECK(render_thread_checker_.CalledOnValidThread());
-  render_fifo_->ReattachThreadChecker();
 }
 
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
@@ -736,33 +745,6 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
     output_bus_.reset(new MediaStreamAudioBus(output_format_.channels(),
                                               output_frames));
   }
-}
-
-void MediaStreamAudioProcessor::InitializeRenderFifoIfNeeded(
-    int sample_rate, int number_of_channels, int frames_per_buffer) {
-  DCHECK(render_thread_checker_.CalledOnValidThread());
-  if (render_fifo_.get() &&
-      render_format_.sample_rate() == sample_rate &&
-      render_format_.channels() == number_of_channels &&
-      render_format_.frames_per_buffer() == frames_per_buffer) {
-    // Do nothing if the |render_fifo_| has been setup properly.
-    return;
-  }
-
-  render_format_ = media::AudioParameters(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      media::GuessChannelLayout(number_of_channels),
-      sample_rate,
-      16,
-      frames_per_buffer);
-
-  const int analysis_frames = sample_rate / 100;  // 10 ms chunks.
-  render_fifo_.reset(
-      new MediaStreamAudioFifo(number_of_channels,
-                               number_of_channels,
-                               frames_per_buffer,
-                               analysis_frames,
-                               sample_rate));
 }
 
 int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
