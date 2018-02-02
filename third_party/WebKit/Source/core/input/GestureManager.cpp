@@ -179,8 +179,9 @@ WebInputEventResult GestureManager::HandleGestureTap(
   // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
-    if (main_frame.View())
-      main_frame.View()->UpdateLifecycleToPrePaintClean();
+    if (!main_frame.View() ||
+        !main_frame.View()->UpdateLifecycleToPrePaintClean())
+      return WebInputEventResult::kNotHandled;
     adjusted_point = frame_view->RootFrameToContents(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(

@@ -162,9 +162,9 @@ int WebAXObject::GenerateAXID() const {
 bool WebAXObject::UpdateLayoutAndCheckValidity() {
   if (!IsDetached()) {
     Document* document = private_->GetDocument();
-    if (!document || !document->View())
+    if (!document || !document->View() ||
+        !document->View()->UpdateLifecycleToCompositingCleanPlusScrolling())
       return false;
-    document->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   }
 
   // Doing a layout can cause this object to be invalid, so check again.

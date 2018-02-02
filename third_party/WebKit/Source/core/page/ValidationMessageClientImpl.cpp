@@ -91,8 +91,11 @@ void ValidationMessageClientImpl::ShowValidationMessage(
       sub_message_dir);
   overlay_delegate_ = delegate.get();
   overlay_ = PageOverlay::Create(target_frame, std::move(delegate));
-  target_frame->GetFrameView()
-      ->UpdateLifecycleToCompositingCleanPlusScrolling();
+  bool success = target_frame->GetFrameView()
+                     ->UpdateLifecycleToCompositingCleanPlusScrolling();
+  // The lifecycle update should always succeed, because this is not inside
+  // of a throttling scope.
+  DCHECK(success);
   LayoutOverlay();
 }
 

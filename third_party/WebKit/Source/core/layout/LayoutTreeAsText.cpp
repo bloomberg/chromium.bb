@@ -846,8 +846,10 @@ static String ExternalRepresentation(LayoutBox* layout_object,
 String ExternalRepresentation(LocalFrame* frame,
                               LayoutAsTextBehavior behavior,
                               const PaintLayer* marked_layer) {
-  if (!(behavior & kLayoutAsTextDontUpdateLayout))
-    frame->View()->UpdateLifecycleToPrePaintClean();
+  if (!(behavior & kLayoutAsTextDontUpdateLayout)) {
+    bool success = frame->View()->UpdateLifecycleToPrePaintClean();
+    DCHECK(success);
+  };
 
   LayoutObject* layout_object = frame->ContentLayoutObject();
   if (!layout_object || !layout_object->IsBox())
