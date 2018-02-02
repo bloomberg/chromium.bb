@@ -102,30 +102,33 @@ class CastDeviceProvider::DeviceListerDelegate
     if (device_lister_)
       return;
     service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
-    device_lister_.reset(new ServiceDiscoveryDeviceLister(
-        this, service_discovery_client_.get(), kCastServiceType));
+    device_lister_ = ServiceDiscoveryDeviceLister::Create(
+        this, service_discovery_client_.get(), kCastServiceType);
     device_lister_->Start();
     device_lister_->DiscoverNewDevices();
   }
 
   // ServiceDiscoveryDeviceLister::Delegate implementation:
-  void OnDeviceChanged(bool added,
+  void OnDeviceChanged(const std::string& service_type,
+                       bool added,
                        const ServiceDescription& service_description) override {
-    runner_->PostTask(FROM_HERE,
-                      base::BindOnce(&CastDeviceProvider::OnDeviceChanged,
-                                     provider_, added, service_description));
-  }
-
-  void OnDeviceRemoved(const std::string& service_name) override {
-    runner_->PostTask(FROM_HERE,
-                      base::BindOnce(&CastDeviceProvider::OnDeviceRemoved,
-                                     provider_, service_name));
-  }
-
-  void OnDeviceCacheFlushed() override {
     runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&CastDeviceProvider::OnDeviceCacheFlushed, provider_));
+        base::BindOnce(&CastDeviceProvider::OnDeviceChanged, provider_,
+                       service_type, added, service_description));
+  }
+
+  void OnDeviceRemoved(const std::string& service_type,
+                       const std::string& service_name) override {
+    runner_->PostTask(FROM_HERE,
+                      base::BindOnce(&CastDeviceProvider::OnDeviceRemoved,
+                                     provider_, service_type, service_name));
+  }
+
+  void OnDeviceCacheFlushed(const std::string& service_type) override {
+    runner_->PostTask(FROM_HERE,
+                      base::BindOnce(&CastDeviceProvider::OnDeviceCacheFlushed,
+                                     provider_, service_type));
   }
 
  private:
@@ -173,6 +176,7 @@ void CastDeviceProvider::OpenSocket(const std::string& serial,
 }
 
 void CastDeviceProvider::OnDeviceChanged(
+    const std::string& service_type,
     bool added,
     const ServiceDescription& service_description) {
   VLOG(1) << "Device " << (added ? "added: " : "changed: ")
@@ -190,7 +194,8 @@ void CastDeviceProvider::OnDeviceChanged(
   device_info_map_[host] = ServiceDescriptionToDeviceInfo(service_description);
 }
 
-void CastDeviceProvider::OnDeviceRemoved(const std::string& service_name) {
+void CastDeviceProvider::OnDeviceRemoved(const std::string& service_type,
+                                         const std::string& service_name) {
   VLOG(1) << "Device removed: " << service_name;
   auto it = service_hostname_map_.find(service_name);
   if (it == service_hostname_map_.end())
@@ -200,7 +205,7 @@ void CastDeviceProvider::OnDeviceRemoved(const std::string& service_name) {
   service_hostname_map_.erase(it);
 }
 
-void CastDeviceProvider::OnDeviceCacheFlushed() {
+void CastDeviceProvider::OnDeviceCacheFlushed(const std::string& service_type) {
   VLOG(1) << "Device cache flushed";
   service_hostname_map_.clear();
   device_info_map_.clear();
