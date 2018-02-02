@@ -1,13 +1,13 @@
 Name: libvpx
 URL: http://www.webmproject.org
-Version: v1.6.0
+Version: v1.7.0
 License: BSD
 License File: source/libvpx/LICENSE
 Security Critical: yes
 
-Date: Wednesday January 31 2018
+Date: Friday February 02 2018
 Branch: master
-Commit: efa786d4649cb39919170d745d4206309b463575
+Commit: ac54d233b6d7ba5674996353a86bae42417022ee
 
 Description:
 Contains the sources used to compile libvpx binaries used by Google Chrome and
