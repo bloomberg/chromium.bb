@@ -111,6 +111,8 @@ UsbTransferStatus ConvertTransferResult(int rc) {
   switch (rc) {
     case 0:
       return UsbTransferStatus::COMPLETED;
+    case EOVERFLOW:
+      return UsbTransferStatus::BABBLE;
     case EPIPE:
       return UsbTransferStatus::STALLED;
     default:
