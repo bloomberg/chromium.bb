@@ -227,16 +227,6 @@ var GetIntAttribute = natives.GetIntAttribute;
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @param {string} attr The name of an attribute.
- * @return {?Array.<number>} The ids of nodes who have a relationship pointing
- *     to |nodeID| (a reverse relationship).
- */
-var GetIntAttributeReverseRelations =
-    natives.GetIntAttributeReverseRelations;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an attribute.
  * @return {?number} The value of this attribute, or undefined if the tree,
  *     node, or attribute wasn't found.
  */
@@ -251,16 +241,6 @@ var GetFloatAttribute = natives.GetFloatAttribute;
  */
 var GetIntListAttribute =
     natives.GetIntListAttribute;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an attribute.
- * @return {?Array.<number>} The ids of nodes who have a relationship pointing
- *     to |nodeID| (a reverse relationship).
- */
-var GetIntListAttributeReverseRelations =
-    natives.GetIntListAttributeReverseRelations;
 
 /**
  * @param {number} axTreeID The id of the accessibility tree.
@@ -904,19 +884,16 @@ var intAttributes = [
     'textSelEnd',
     'textSelStart'];
 
-// Int attribute, relation property to expose, reverse relation to expose.
 var nodeRefAttributes = [
-    ['activedescendantId', 'activeDescendant', null],
-    ['detailsId', 'details', 'detailsFor'],
-    ['errorMessageId', 'errorMessage', 'errorMessageFor'],
-    ['inPageLinkTargetId', 'inPageLinkTarget', null],
-    ['nextFocusId', 'nextFocus', null],
-    ['nextOnLineId', 'nextOnLine', null],
-    ['previousFocusId', 'previousFocus', null],
-    ['previousOnLineId', 'previousOnLine', null],
-    ['tableColumnHeaderId', 'tableColumnHeader', null],
-    ['tableHeaderId', 'tableHeader', null],
-    ['tableRowHeaderId', 'tableRowHeader', null]];
+    ['activedescendantId', 'activeDescendant'],
+    ['inPageLinkTargetId', 'inPageLinkTarget'],
+    ['nextFocusId', 'nextFocus'],
+    ['nextOnLineId', 'nextOnLine'],
+    ['previousFocusId', 'previousFocus'],
+    ['previousOnLineId', 'previousOnLine'],
+    ['tableColumnHeaderId', 'tableColumnHeader'],
+    ['tableHeaderId', 'tableHeader'],
+    ['tableRowHeaderId', 'tableRowHeader']];
 
 var intListAttributes = [
     'lineBreaks',
@@ -926,12 +903,11 @@ var intListAttributes = [
     'wordEnds',
     'wordStarts'];
 
-// Intlist attribute, relation property to expose, reverse relation to expose.
 var nodeRefListAttributes = [
-    ['controlsIds', 'controls', 'controlledBy'],
-    ['describedbyIds', 'describedBy', 'descriptionFor'],
-    ['flowtoIds', 'flowTo', 'flowFrom'],
-    ['labelledbyIds', 'labelledBy', 'labelFor']];
+    ['controlsIds', 'controls'],
+    ['describedbyIds', 'describedBy'],
+    ['flowtoIds', 'flowTo'],
+    ['labelledbyIds', 'labelledBy']];
 
 var floatAttributes = [
     'valueForRange',
@@ -976,7 +952,6 @@ $Array.forEach(intAttributes, function(attributeName) {
 $Array.forEach(nodeRefAttributes, function(params) {
   var srcAttributeName = params[0];
   var dstAttributeName = params[1];
-  var dstReverseAttributeName = params[2];
   $Array.push(publicAttributes, dstAttributeName);
   $Object.defineProperty(AutomationNodeImpl.prototype, dstAttributeName, {
     __proto__: null,
@@ -988,26 +963,6 @@ $Array.forEach(nodeRefAttributes, function(params) {
         return undefined;
     }
   });
-  if (dstReverseAttributeName) {
-    $Array.push(publicAttributes, dstReverseAttributeName);
-    $Object.defineProperty(AutomationNodeImpl.prototype,
-                           dstReverseAttributeName, {
-      __proto__: null,
-      get: function() {
-        var ids = GetIntAttributeReverseRelations(
-            this.treeID, this.id, srcAttributeName);
-        if (!ids || !this.rootImpl)
-          return undefined;
-        var result = [];
-        for (var i = 0; i < ids.length; ++i) {
-          var node = this.rootImpl.get(ids[i]);
-          if (node)
-          $Array.push(result, node);
-        }
-        return result;
-      }
-    });
-  }
 });
 
 $Array.forEach(intListAttributes, function(attributeName) {
@@ -1023,7 +978,6 @@ $Array.forEach(intListAttributes, function(attributeName) {
 $Array.forEach(nodeRefListAttributes, function(params) {
   var srcAttributeName = params[0];
   var dstAttributeName = params[1];
-  var dstReverseAttributeName = params[2];
   $Array.push(publicAttributes, dstAttributeName);
   $Object.defineProperty(AutomationNodeImpl.prototype, dstAttributeName, {
     __proto__: null,
@@ -1040,26 +994,6 @@ $Array.forEach(nodeRefListAttributes, function(params) {
       return result;
     }
   });
-  if (dstReverseAttributeName) {
-    $Array.push(publicAttributes, dstReverseAttributeName);
-    $Object.defineProperty(AutomationNodeImpl.prototype,
-                           dstReverseAttributeName, {
-      __proto__: null,
-      get: function() {
-        var ids = GetIntListAttributeReverseRelations(
-            this.treeID, this.id, srcAttributeName);
-        if (!ids || !this.rootImpl)
-          return undefined;
-        var result = [];
-        for (var i = 0; i < ids.length; ++i) {
-          var node = this.rootImpl.get(ids[i]);
-          if (node)
-          $Array.push(result, node);
-        }
-        return result;
-      }
-    });
-  }
 });
 
 $Array.forEach(floatAttributes, function(attributeName) {
