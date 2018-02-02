@@ -766,14 +766,16 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
     return;
   }
 
+  assert(sinpi[1] + sinpi[2] == sinpi[4]);
+
   // stage 1
-  s0 = range_check_value(sinpi[1] * x0, stage_range[1]);
-  s1 = range_check_value(sinpi[2] * x0, stage_range[1]);
-  s2 = range_check_value(sinpi[3] * x1, stage_range[1]);
-  s3 = range_check_value(sinpi[4] * x2, stage_range[1]);
-  s4 = range_check_value(sinpi[1] * x2, stage_range[1]);
-  s5 = range_check_value(sinpi[2] * x3, stage_range[1]);
-  s6 = range_check_value(sinpi[4] * x3, stage_range[1]);
+  s0 = range_check_value(sinpi[1] * x0, stage_range[1] + bit);
+  s1 = range_check_value(sinpi[2] * x0, stage_range[1] + bit);
+  s2 = range_check_value(sinpi[3] * x1, stage_range[1] + bit);
+  s3 = range_check_value(sinpi[4] * x2, stage_range[1] + bit);
+  s4 = range_check_value(sinpi[1] * x2, stage_range[1] + bit);
+  s5 = range_check_value(sinpi[2] * x3, stage_range[1] + bit);
+  s6 = range_check_value(sinpi[4] * x3, stage_range[1] + bit);
   s7 = clamp_value(x0 - x2, stage_range[1]);
 
   // stage 2
