@@ -21,8 +21,6 @@ test("cronet_test") {
     "get_stream_engine.mm",
     "start_cronet.h",
     "start_cronet.mm",
-    "test_server.cc",
-    "test_server.h",
   ]
 
   deps = [
@@ -30,6 +28,7 @@ test("cronet_test") {
     "//base:i18n",
     "//components/cronet/ios:cronet_framework+link",
     "//components/cronet/native:cronet_native_tests",
+    "//components/cronet/test:test_support",
     "//components/grpc_support:bidirectional_stream_unittest",
     "//components/grpc_support/test:quic_test_server",
     "//net",

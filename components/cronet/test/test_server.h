@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_IOS_TEST_TEST_SERVER_H_
-#define COMPONENTS_CRONET_IOS_TEST_TEST_SERVER_H_
+#ifndef COMPONENTS_CRONET_TEST_TEST_SERVER_H_
+#define COMPONENTS_CRONET_TEST_TEST_SERVER_H_
 
 #include <string>
 
@@ -30,11 +30,11 @@ class TestServer {
   static std::string EchoRequestBodyURL();
   // Prepares response and returns URL which respond with |data_size| of bytes
   // in response body.
-  static std::string PrepareBigDataURL(long data_size);
+  static std::string PrepareBigDataURL(size_t data_size);
   // Releases response created by PrepareBigDataURL().
   static void ReleaseBigDataURL();
 };
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_IOS_TEST_TEST_SERVER_H_
+#endif  // COMPONENTS_CRONET_TEST_TEST_SERVER_H_

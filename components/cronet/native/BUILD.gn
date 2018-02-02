@@ -89,6 +89,7 @@ source_set("cronet_native_tests") {
     ":cronet_native_testutil",
     "//base",
     "//base/test:test_support",
+    "//components/cronet/test:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]
