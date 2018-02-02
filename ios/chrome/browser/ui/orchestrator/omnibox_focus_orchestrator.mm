@@ -38,12 +38,12 @@
 
   if (animated) {
     UIViewPropertyAnimator* slowAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration2
+        initWithDuration:ios::material::kDuration1
                    curve:UIViewAnimationCurveEaseInOut
               animations:expansion];
 
     UIViewPropertyAnimator* fastAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration1
+        initWithDuration:ios::material::kDuration2
                    curve:UIViewAnimationCurveEaseInOut
               animations:hideControls];
 
@@ -72,7 +72,7 @@
 
   if (animated) {
     UIViewPropertyAnimator* slowAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration2
+        initWithDuration:ios::material::kDuration1
                    curve:UIViewAnimationCurveEaseInOut
               animations:contraction];
     [slowAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {
@@ -80,7 +80,7 @@
     }];
 
     UIViewPropertyAnimator* fastAnimator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:ios::material::kDuration1
+        initWithDuration:ios::material::kDuration2
                    curve:UIViewAnimationCurveEaseInOut
               animations:showControls];
 

@@ -175,14 +175,12 @@
   [NSLayoutConstraint deactivateConstraints:self.view.unfocusedConstraints];
   [NSLayoutConstraint activateConstraints:self.view.focusedConstraints];
   [self.view layoutIfNeeded];
-  // TODO(crbug.com/804749): Change location bar constraints.
 }
 
 - (void)contractLocationBar {
   [NSLayoutConstraint deactivateConstraints:self.view.focusedConstraints];
   [NSLayoutConstraint activateConstraints:self.view.unfocusedConstraints];
   [self.view layoutIfNeeded];
-  // TODO(crbug.com/804749): Change location bar constraints.
 }
 
 - (void)showCancelButton {
@@ -194,11 +192,15 @@
 }
 
 - (void)showControlButtons {
-  // TODO(crbug.com/804751): Implement this.
+  for (ToolbarButton* button in self.view.allButtons) {
+    button.alpha = 1;
+  }
 }
 
 - (void)hideControlButtons {
-  // TODO(crbug.com/804751): Implement this.
+  for (ToolbarButton* button in self.view.allButtons) {
+    button.alpha = 0;
+  }
 }
 
 #pragma mark - Private
