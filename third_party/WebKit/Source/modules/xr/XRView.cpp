@@ -63,6 +63,32 @@ void XRView::UpdateProjectionMatrixFromFoV(float up_rad,
   out[15] = 0.0f;
 }
 
+void XRView::UpdateProjectionMatrixFromAspect(float fovy,
+                                              float aspect,
+                                              float near_depth,
+                                              float far_depth) {
+  float f = 1.0f / tanf(fovy / 2);
+  float inv_nf = 1.0f / (near_depth - far_depth);
+
+  float* out = projection_matrix_->Data();
+  out[0] = f / aspect;
+  out[1] = 0.0f;
+  out[2] = 0.0f;
+  out[3] = 0.0f;
+  out[4] = 0.0f;
+  out[5] = f;
+  out[6] = 0.0f;
+  out[7] = 0.0f;
+  out[8] = 0.0f;
+  out[9] = 0.0f;
+  out[10] = (far_depth + near_depth) * inv_nf;
+  out[11] = -1.0f;
+  out[12] = 0.0f;
+  out[13] = 0.0f;
+  out[14] = (2.0f * far_depth * near_depth) * inv_nf;
+  out[15] = 0.0f;
+}
+
 void XRView::UpdateOffset(float x, float y, float z) {
   offset_.Set(x, y, z);
 }

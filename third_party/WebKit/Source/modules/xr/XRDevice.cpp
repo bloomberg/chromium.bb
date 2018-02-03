@@ -23,8 +23,8 @@ const char kActiveExclusiveSession[] =
 const char kExclusiveNotSupported[] =
     "XRDevice does not support the creation of exclusive sessions.";
 
-const char kNonExclusiveNotSupported[] =
-    "XRDevice does not support the creation of non-exclusive sessions.";
+const char kNoOutputContext[] =
+    "Non-exclusive sessions must be created with an outputContext.";
 
 const char kRequestNotInUserGesture[] =
     "Exclusive sessions can only be requested during a user gesture.";
@@ -61,8 +61,9 @@ const char* XRDevice::checkSessionSupport(
     }
   } else {
     // Validation for non-exclusive sessions.
-    // TODO: Add support for non-exclusive sessions in a follow up CL.
-    return kNonExclusiveNotSupported;
+    if (!options.hasOutputContext()) {
+      return kNoOutputContext;
+    }
   }
 
   return nullptr;
@@ -121,7 +122,12 @@ ScriptPromise XRDevice::requestSession(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  XRSession* session = new XRSession(this, options.exclusive());
+  XRPresentationContext* output_context = nullptr;
+  if (options.hasOutputContext()) {
+    output_context = options.outputContext();
+  }
+
+  XRSession* session = new XRSession(this, options.exclusive(), output_context);
 
   if (options.exclusive()) {
     frameProvider()->BeginExclusiveSession(session, resolver);
@@ -152,6 +158,8 @@ XRFrameProvider* XRDevice::frameProvider() {
 
 void XRDevice::Dispose() {
   display_client_binding_.Close();
+  if (frame_provider_)
+    frame_provider_->Dispose();
 }
 
 void XRDevice::SetXRDisplayInfo(

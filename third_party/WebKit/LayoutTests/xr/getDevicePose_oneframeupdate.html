@@ -15,6 +15,8 @@ xr_session_promise_test( (session) =>  {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
+  setPose(null);
+
   return session.requestFrameOfReference("eyeLevel")
     .then((frameOfRef) => new Promise((resolve, reject) => {
       let expected_pose = VALID_POSE;
@@ -48,7 +50,10 @@ xr_session_promise_test( (session) =>  {
 
       session.requestAnimationFrame(onFrame);
     }));
-}, fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
+}, fakeDevices["FakeGooglePixelPhone"], [
+      { exclusive: true },
+      { outputContext: getOutputContext() }
+  ],
 "XRPresentationFrame getDevicePose updates on the next frame");
 
 </script>

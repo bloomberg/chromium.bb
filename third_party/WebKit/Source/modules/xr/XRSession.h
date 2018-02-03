@@ -16,20 +16,25 @@
 
 namespace blink {
 
+class Element;
+class ResizeObserver;
 class V8XRFrameRequestCallback;
 class XRDevice;
 class XRFrameOfReferenceOptions;
 class XRLayer;
+class XRPresentationContext;
 class XRView;
 
 class XRSession final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRSession(XRDevice*, bool exclusive);
+  XRSession(XRDevice*, bool exclusive, XRPresentationContext* output_context);
+  ~XRSession() override = default;
 
   XRDevice* device() const { return device_; }
   bool exclusive() const { return exclusive_; }
+  XRPresentationContext* outputContext() const { return output_context_; }
 
   // Near and far depths are used when computing projection matrices for this
   // Session's views. Changes will propegate to the appropriate matrices on the
@@ -86,10 +91,16 @@ class XRSession final : public EventTargetWithInlineData {
   virtual void TraceWrappers(const blink::ScriptWrappableVisitor*) const;
 
  private:
+  class XRSessionResizeObserverDelegate;
+
+  void UpdateCanvasDimensions(Element*);
+
   const Member<XRDevice> device_;
   const bool exclusive_;
+  const Member<XRPresentationContext> output_context_;
   Member<XRLayer> base_layer_;
   HeapVector<Member<XRView>> views_;
+  Member<ResizeObserver> resize_observer_;
 
   XRFrameRequestCallbackCollection callback_collection_;
 
@@ -100,6 +111,10 @@ class XRSession final : public EventTargetWithInlineData {
   bool pending_frame_ = false;
   bool resolving_frame_ = false;
   bool views_dirty_ = true;
+
+  // Dimensions of the output canvas.
+  int output_width_ = 1;
+  int output_height_ = 1;
 };
 
 }  // namespace blink

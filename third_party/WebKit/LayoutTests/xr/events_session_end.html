@@ -26,7 +26,10 @@ xr_session_promise_test( (session, t) => {
   session.end();
 
   return eventPromise;
-}, fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
+}, fakeDevices["FakeGooglePixelPhone"], [
+      { exclusive: true },
+      { outputContext: getOutputContext() }
+  ],
 "Test end fires when session ends");
 
 </script>

@@ -39,6 +39,11 @@ class XRView final : public ScriptWrappable {
                                      float near_depth,
                                      float far_depth);
 
+  void UpdateProjectionMatrixFromAspect(float fovy,
+                                        float aspect,
+                                        float near_depth,
+                                        float far_depth);
+
   // TODO(bajones): Should eventually represent this as a full transform.
   const FloatPoint3D& offset() const { return offset_; }
   void UpdateOffset(float x, float y, float z);

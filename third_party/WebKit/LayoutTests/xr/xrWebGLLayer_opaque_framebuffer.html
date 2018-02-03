@@ -98,7 +98,10 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
     resolve();
   });
 
-}), fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
+}), fakeDevices["FakeGooglePixelPhone"], [
+    { exclusive: true },
+    { outputContext: getOutputContext() }
+],
 "Ensure that the framebuffer given by the WebGL layer is opaque");
 
 </script>
