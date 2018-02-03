@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "pdf/pdf.h"
 #include "printing/emf_win.h"
@@ -41,11 +42,10 @@ void OnConvertedClientDisconnected() {
   // We have no direct way of tracking which PdfToEmfConverterClientPtr got
   // disconnected as it is a movable type, short of using a wrapper.
   // Just traverse the list of clients and remove the ones that are not bound.
-  std::remove_if(g_converter_clients.Get().begin(),
-                 g_converter_clients.Get().end(),
-                 [](const mojom::PdfToEmfConverterClientPtr& client) {
-                   return !client.is_bound();
-                 });
+  base::EraseIf(g_converter_clients.Get(),
+                [](const mojom::PdfToEmfConverterClientPtr& client) {
+                  return !client.is_bound();
+                });
 }
 
 void RegisterConverterClient(mojom::PdfToEmfConverterClientPtr client) {
