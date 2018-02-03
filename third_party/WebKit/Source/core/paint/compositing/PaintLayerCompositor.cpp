@@ -44,6 +44,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/ObjectPaintInvalidator.h"
@@ -535,6 +536,14 @@ void PaintLayerCompositor::UpdateIfNeeded(
   bool is_root_scroller_ancestor = IsRootScrollerAncestor();
   if (scroll_layer_)
     scroll_layer_->SetIsResizedByBrowserControls(is_root_scroller_ancestor);
+
+  if (scroll_layer_) {
+    if (SnapCoordinator* snap_coordinator =
+            layout_view_.GetDocument().GetSnapCoordinator()) {
+      scroll_layer_->SetSnapContainerData(
+          snap_coordinator->GetSnapContainerData(layout_view_));
+    }
+  }
 
   // Clip a frame's overflow controls layer only if it's not an ancestor of
   // the root scroller. If it is an ancestor, then it's guaranteed to be

@@ -11,6 +11,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
@@ -393,6 +394,61 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
+TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculationOnViewport) {
+  SetHTML(R"HTML(
+    <style>
+    body {
+      margin: 0px;
+      scroll-snap-type: both mandatory;
+      overflow: scroll;
+    }
+    #container {
+      width: 1000px;
+      height: 1000px;
+    }
+    #area {
+      position: relative;
+      top: 200px;
+      left: 200px;
+      width: 100px;
+      height: 100px;
+    }
+    </style>
+    <div id='container'>
+    <div id="area"></div>
+    </div>
+    )HTML");
+  GetDocument().UpdateStyleAndLayout();
+
+  Element* body = GetDocument().body();
+  EXPECT_EQ(body, GetDocument().ViewportDefiningElement());
+  ScrollableArea* scrollable_area =
+      GetDocument().View()->LayoutViewportScrollableArea();
+  body->scrollBy(20, 20);
+  EXPECT_EQ(FloatPoint(20, 20), scrollable_area->ScrollPosition());
+  Element* area_element = GetDocument().getElementById("area");
+  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
+  GetDocument().UpdateStyleAndLayout();
+  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
+  Optional<SnapContainerData> data =
+      snap_coordinator->GetSnapContainerData(*GetDocument().GetLayoutView());
+  EXPECT_TRUE(data.has_value());
+  SnapContainerData actual_container = data.value();
+
+  FloatPoint max_position = ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+
+  SnapContainerData expected_container(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
+      gfx::ScrollOffset(max_position.X(), max_position.Y()));
+  SnapAreaData expected_area(SnapAxis::kBoth, gfx::ScrollOffset(200, 200),
+                             false);
+  expected_container.AddSnapAreaData(expected_area);
+
+  EXPECT_EQ_CONTAINER(expected_container, actual_container);
+  EXPECT_EQ_AREA(expected_area, actual_container.at(0));
+}
+
 TEST_P(SnapCoordinatorTest, StartAlignmentCalculationWithBoxModel) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
@@ -743,6 +799,8 @@ TEST_P(SnapCoordinatorTest, VerticalRlStartAlignmentCalculation) {
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
+
+// TODO(sunyunjia): Also add a test for vertical and rtl page.
 
 TEST_P(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
   SetUpSingleSnapArea();

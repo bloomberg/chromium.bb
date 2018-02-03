@@ -294,8 +294,12 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
                                kUseTransforms | kTraverseDocumentBoundaries)
           .BoundingBox());
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
-  if (scrollable_area)
-    area.MoveBy(LayoutPoint(scrollable_area->ScrollPosition()));
+  if (scrollable_area) {
+    if (snap_container.IsLayoutView())
+      area = snap_container.GetFrameView()->AbsoluteToDocument(area);
+    else
+      area.MoveBy(LayoutPoint(scrollable_area->ScrollPosition()));
+  }
 
   LayoutRectOutsets container_padding(
       // The percentage of scroll-padding is different from that of normal

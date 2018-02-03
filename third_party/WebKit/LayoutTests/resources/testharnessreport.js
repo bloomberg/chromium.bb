@@ -112,7 +112,8 @@
             pathAndBase.startsWith('/html/') ||
             pathAndBase.startsWith('/input-events/') ||
             pathAndBase.startsWith('/css/selectors/') ||
-            pathAndBase.startsWith('/css/cssom-view/')) {
+            pathAndBase.startsWith('/css/cssom-view/') ||
+            pathAndBase.startsWith('/css/css-scroll-snap/')) {
             // Per-test automation scripts.
             src = automationPath + pathAndBase + '-automation.js';
         } else {
