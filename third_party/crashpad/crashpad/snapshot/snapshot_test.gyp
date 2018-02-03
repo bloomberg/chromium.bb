@@ -52,6 +52,8 @@
       'target_name': 'crashpad_snapshot_test',
       'type': 'executable',
       'dependencies': [
+        'crashpad_snapshot_test_both_dt_hash_styles',
+        'crashpad_snapshot_test_lib',
         'crashpad_snapshot_test_module',
         'crashpad_snapshot_test_module_large',
         'crashpad_snapshot_test_module_small',
@@ -71,7 +73,10 @@
       'sources': [
         'api/module_annotations_win_test.cc',
         'cpu_context_test.cc',
+        'memory_snapshot_test.cc',
         'crashpad_info_client_options_test.cc',
+        'crashpad_types/crashpad_info_reader_test.cc',
+        'crashpad_types/image_annotation_reader_test.cc',
         'elf/elf_image_reader_test.cc',
         'elf/elf_image_reader_test_note.S',
         'linux/debug_rendezvous_test.cc',
@@ -139,6 +144,7 @@
         }, {  # else: OS!="linux" and OS!="android"
           'sources/': [
             ['exclude', '^elf/'],
+            ['exclude', '^crashpad_types/'],
           ],
         }],
       ],
@@ -188,6 +194,18 @@
       ],
       'sources': [
         'crashpad_info_size_test_module.cc',
+      ],
+    },
+    {
+      'target_name': 'crashpad_snapshot_test_both_dt_hash_styles',
+      'type': 'executable',
+      'sources': [
+        'hash_types_test.cc',
+      ],
+
+      'ldflags': [
+        # This makes `ld` emit both .hash and .gnu.hash sections.
+        '-Wl,--hash-style=both',
       ],
     },
   ],
