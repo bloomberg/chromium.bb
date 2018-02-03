@@ -3049,6 +3049,10 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       base::Bind(&rappor::RapporRecorderImpl::Create,
                  g_browser_process->rappor_service()),
       ui_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&metrics::CallStackProfileCollector::Create,
+                          metrics::CallStackProfileParams::RENDERER_PROCESS));
+
   if (NetBenchmarking::CheckBenchmarkingEnabled()) {
     Profile* profile =
         Profile::FromBrowserContext(render_process_host->GetBrowserContext());

@@ -15,9 +15,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -38,6 +40,7 @@
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
+#include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -77,6 +80,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
+#include "components/metrics/child_call_stack_profile_collector.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
@@ -224,6 +228,35 @@ const char kFlashYouTubeRewriteUMA[] = "Plugin.Flash.YouTubeRewrite";
 }  // namespace internal
 
 namespace {
+
+base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
+    g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
+
+// The profiler object is stored in a SequenceLocalStorageSlot on the compositor
+// thread so that it will be destroyed when the compositor thread stops.
+base::LazyInstance<base::SequenceLocalStorageSlot<
+    std::unique_ptr<base::StackSamplingProfiler>>>::Leaky
+    g_compositor_thread_sampling_profiler = LAZY_INSTANCE_INITIALIZER;
+
+// Starts to profile the compositor thread.
+void StartCompositorThreadProfiling() {
+  StackSamplingConfiguration* config = StackSamplingConfiguration::Get();
+  if (!config->IsProfilerEnabledForCurrentProcess())
+    return;
+
+  auto profiler_callback =
+      g_call_stack_profile_collector.Get().GetProfilerCallback(
+          metrics::CallStackProfileParams(
+              metrics::CallStackProfileParams::RENDERER_PROCESS,
+              metrics::CallStackProfileParams::COMPOSITOR_THREAD,
+              metrics::CallStackProfileParams::PROCESS_STARTUP,
+              metrics::CallStackProfileParams::MAY_SHUFFLE));
+  auto profiler = std::make_unique<base::StackSamplingProfiler>(
+      base::PlatformThread::CurrentId(),
+      config->GetSamplingParamsForCurrentProcess(), profiler_callback);
+  profiler->Start();
+  g_compositor_thread_sampling_profiler.Get().Set(std::move(profiler));
+}
 
 void RecordYouTubeRewriteUMA(internal::YouTubeRewriteStatus status) {
   UMA_HISTOGRAM_ENUMERATION(internal::kFlashYouTubeRewriteUMA, status,
@@ -1209,6 +1242,21 @@ void ChromeContentRendererClient::PrepareErrorPageInternal(
     *error_description = error_page::LocalizedError::GetErrorDetails(
         error.domain(), error.reason(), is_post);
   }
+}
+
+void ChromeContentRendererClient::PostCompositorThreadCreated(
+    base::SingleThreadTaskRunner* compositor_thread_task_runner) {
+  // Do not start the profiler for extension processes.
+  if (IsStandaloneExtensionProcess())
+    return;
+  metrics::mojom::CallStackProfileCollectorPtr browser_interface;
+  content::ChildThread::Get()->GetConnector()->BindInterface(
+      content::mojom::kBrowserServiceName, &browser_interface);
+  g_call_stack_profile_collector.Get().SetParentProfileCollector(
+      std::move(browser_interface));
+
+  compositor_thread_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&StartCompositorThreadProfiling));
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

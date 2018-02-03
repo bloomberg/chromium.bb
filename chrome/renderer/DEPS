@@ -15,6 +15,7 @@ include_rules = [
   "+components/dom_distiller/core",
   "+components/grit",
   "+components/guest_view/renderer",
+  "+components/metrics/child_call_stack_profile_collector.h",
   "+components/metrics/leak_detector",
   "+components/nacl/common",
   "+components/nacl/renderer",

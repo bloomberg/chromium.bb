@@ -89,6 +89,9 @@ ContentRendererClient::OverrideSpeechSynthesizer(
   return nullptr;
 }
 
+void ContentRendererClient::PostCompositorThreadCreated(
+    base::SingleThreadTaskRunner* compositor_thread_task_runner) {}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }

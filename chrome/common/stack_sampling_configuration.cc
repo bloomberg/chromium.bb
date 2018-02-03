@@ -47,6 +47,11 @@ bool IsBrowserProcess() {
   return process_type.empty();
 }
 
+bool ShouldEnableProfilerForNextRendererProcess() {
+  // Enable for every N-th renderer process, where N = 5.
+  return base::RandInt(0, 4) == 0;
+}
+
 }  // namespace
 
 StackSamplingConfiguration::StackSamplingConfiguration()
@@ -122,8 +127,13 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
 
   bool enable =
       configuration_ == PROFILE_ENABLED || configuration_ == PROFILE_CONTROL;
-  if (enable && process_type == switches::kGpuProcess)
+  if (!enable)
+    return;
+  if (process_type == switches::kGpuProcess ||
+      (process_type == switches::kRendererProcess &&
+       ShouldEnableProfilerForNextRendererProcess())) {
     command_line->AppendSwitch(switches::kStartStackProfiler);
+  }
 }
 
 // static

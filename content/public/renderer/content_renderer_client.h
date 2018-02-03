@@ -179,6 +179,11 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual std::unique_ptr<blink::WebSpeechSynthesizer>
   OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
 
+  // Called on the main-thread immediately after the compositor thread is
+  // created.
+  virtual void PostCompositorThreadCreated(
+      base::SingleThreadTaskRunner* compositor_thread_task_runner);
+
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.
   virtual bool RunIdleHandlerWhenWidgetsHidden();

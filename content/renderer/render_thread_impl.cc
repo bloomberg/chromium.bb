@@ -1192,6 +1192,8 @@ void RenderThreadImpl::InitializeCompositorThread() {
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
                      false));
+  GetContentClient()->renderer()->PostCompositorThreadCreated(
+      compositor_task_runner_.get());
 #if defined(OS_LINUX)
   render_message_filter()->SetThreadPriority(compositor_thread_->ThreadId(),
                                              base::ThreadPriority::DISPLAY);
