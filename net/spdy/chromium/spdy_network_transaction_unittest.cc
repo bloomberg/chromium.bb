@@ -394,7 +394,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     HttpNetworkSession* session = helper.session();
     base::WeakPtr<SpdySession> spdy_session =
         session->spdy_session_pool()->FindAvailableSession(
-            key, /* enable_ip_based_pooling = */ true, log_);
+            key, /* enable_ip_based_pooling = */ true,
+            /* is_websocket = */ false, log_);
     ASSERT_TRUE(spdy_session);
     EXPECT_EQ(0u, num_active_streams(spdy_session));
     EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session));
@@ -3219,7 +3220,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsPush) {
                      PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true, log_);
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
   EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
 
   // Create request matching pushed stream.
@@ -3331,7 +3333,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
                       PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session1 =
       spdy_session_pool->FindAvailableSession(
-          key1, /* enable_ip_based_pooling = */ true, log_);
+          key1, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
   EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session1));
 
   // While cross-origin push for kUrl2 is allowed on spdy_session1,
@@ -3340,7 +3343,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   SpdySessionKey key2(HostPortPair::FromURL(GURL(kUrl2)), ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
   EXPECT_FALSE(spdy_session_pool->FindAvailableSession(
-      key2, /* enable_ip_based_pooling = */ true, log_));
+      key2, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ false, log_));
 
   // Create request matching pushed stream.
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
@@ -4360,7 +4364,8 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
                      PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true, log_);
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
   EXPECT_TRUE(spdy_session);
 
   // Start second transaction.
@@ -4391,7 +4396,8 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
 
   // Graceful GOAWAY was received, SpdySession should be unavailable.
   spdy_session = spdy_session_pool->FindAvailableSession(
-      key, /* enable_ip_based_pooling = */ true, log_);
+      key, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ false, log_);
   EXPECT_FALSE(spdy_session);
 
   helper.VerifyDataConsumed();
@@ -5336,7 +5342,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
                      PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true, log_);
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
 
   EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
   EXPECT_TRUE(
@@ -5476,7 +5483,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
                       PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session0 =
       spdy_session_pool->FindAvailableSession(
-          key0, /* enable_ip_based_pooling = */ true, log_);
+          key0, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
 
   EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session0));
 
@@ -5485,7 +5493,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
                       PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session1 =
       spdy_session_pool->FindAvailableSession(
-          key1, /* enable_ip_based_pooling = */ true, log_);
+          key1, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
 
   EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session1));
   EXPECT_TRUE(
@@ -6979,7 +6988,8 @@ TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
   HttpNetworkSession* session = helper.session();
   base::WeakPtr<SpdySession> spdy_session =
       session->spdy_session_pool()->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true, log_);
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
 
   // Verify that there is one unclaimed push stream.
   EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
@@ -7085,8 +7095,10 @@ TEST_F(SpdyNetworkTransactionTest, WebsocketOpensNewConnection) {
                      PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true, log_);
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
   ASSERT_TRUE(spdy_session);
+  EXPECT_FALSE(spdy_session->support_websocket());
 
   HttpRequestInfo request2;
   request2.method = "GET";

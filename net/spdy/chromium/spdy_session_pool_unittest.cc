@@ -405,7 +405,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
           test_hosts[1].key, /* enable_ip_based_pooling = */ false,
-          NetLogWithSource());
+          /* is_websocket = */ false, NetLogWithSource());
   EXPECT_FALSE(session1);
 
   // Verify that the second host, through a proxy, won't share the IP.
@@ -437,7 +437,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // we got with host 0, and that is a different from host 2's session.
   session1 = spdy_session_pool_->FindAvailableSession(
       test_hosts[1].key, /* enable_ip_based_pooling = */ true,
-      NetLogWithSource());
+      /* is_websocket = */ false, NetLogWithSource());
   EXPECT_EQ(session.get(), session1.get());
   EXPECT_NE(session2.get(), session1.get());
 
@@ -580,7 +580,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
   base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
           test_hosts[1].key, /* enable_ip_based_pooling = */ true,
-          net_log.bound());
+          /* is_websocket = */ false, net_log.bound());
   EXPECT_EQ(session0.get(), session1.get());
 
   ASSERT_EQ(1u, net_log.GetSize());
@@ -588,7 +588,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
 
   // A request to the second host should still pool to the existing connection.
   session1 = spdy_session_pool_->FindAvailableSession(
-      test_hosts[1].key, /* enable_ip_based_pooling = */ true, net_log.bound());
+      test_hosts[1].key, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ false, net_log.bound());
   EXPECT_EQ(session0.get(), session1.get());
 
   ASSERT_EQ(2u, net_log.GetSize());
@@ -663,14 +664,14 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
   base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
           test_hosts[1].key, /* enable_ip_based_pooling = */ true,
-          NetLogWithSource());
+          /* is_websocket = */ false, NetLogWithSource());
   EXPECT_EQ(session0.get(), session1.get());
 
   // A request to the second host should not pool to the existing connection if
   // IP based pooling is disabled.
   session1 = spdy_session_pool_->FindAvailableSession(
       test_hosts[1].key, /* enable_ip_based_pooling = */ false,
-      NetLogWithSource());
+      /* is_websocket = */ false, NetLogWithSource());
   EXPECT_FALSE(session1);
 
   // It should be possible to open a new SpdySession, even if a previous call to
@@ -974,4 +975,118 @@ TEST_P(SpdySessionMemoryDumpTest, DumpMemoryStats) {
   spdy_session_pool_->CloseCurrentSessions(ERR_ABORTED);
 }
 
+TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
+  // Define two hosts with identical IP address.
+  const int kTestPort = 443;
+  struct TestHosts {
+    SpdyString name;
+    SpdyString iplist;
+    SpdySessionKey key;
+    AddressList addresses;
+    std::unique_ptr<HostResolver::Request> request;
+  } test_hosts[] = {
+      {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
+  };
+
+  // Populate the HostResolver cache.
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+    session_deps_.host_resolver->rules()->AddIPLiteralRule(
+        test_hosts[i].name, test_hosts[i].iplist, SpdyString());
+
+    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
+    session_deps_.host_resolver->Resolve(
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
+        &test_hosts[i].request, NetLogWithSource());
+
+    test_hosts[i].key = SpdySessionKey(
+        HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
+        PRIVACY_MODE_DISABLED, SocketTag());
+  }
+
+  SpdyTestUtil spdy_util;
+
+  SpdySerializedFrame req(
+      spdy_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame settings_ack(spdy_util.ConstructSpdySettingsAck());
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(settings_ack, 2)};
+
+  SettingsMap settings;
+  settings[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  SpdySerializedFrame settings_frame(spdy_util.ConstructSpdySettings(settings));
+  SpdySerializedFrame resp(spdy_util.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body(spdy_util.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {CreateMockRead(settings_frame, 1),
+                      CreateMockRead(resp, 3), CreateMockRead(body, 4),
+                      MockRead(ASYNC, ERR_IO_PENDING, 5),
+                      MockRead(ASYNC, 0, 6)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+  CreateNetworkSession();
+
+  // Create a connection to the first host.
+  base::WeakPtr<SpdySession> session = CreateSpdySession(
+      http_session_.get(), test_hosts[0].key, NetLogWithSource());
+
+  // SpdySession does not support Websocket before SETTINGS frame is read.
+  EXPECT_FALSE(session->support_websocket());
+  BoundTestNetLog net_log;
+  // FindAvailableSession should not find |session| for either SpdySessionKeys
+  // if |is_websocket| argument is set.
+  base::WeakPtr<SpdySession> result = spdy_session_pool_->FindAvailableSession(
+      test_hosts[0].key, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ true, net_log.bound());
+  EXPECT_FALSE(result.get());
+  result = spdy_session_pool_->FindAvailableSession(
+      test_hosts[1].key, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ true, net_log.bound());
+  EXPECT_FALSE(result.get());
+
+  // Start request that triggers reading the SETTINGS frame.
+  const GURL url(kDefaultUrl);
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, NetLogWithSource());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Now SpdySession has read the SETTINGS frame and thus supports Websocket.
+  EXPECT_TRUE(session->support_websocket());
+
+  // FindAvailableSession() should return |session| for either SpdySessionKeys
+  // when IP based pooling is enabled.
+  result = spdy_session_pool_->FindAvailableSession(
+      test_hosts[0].key, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ true, net_log.bound());
+  EXPECT_EQ(session.get(), result.get());
+  result = spdy_session_pool_->FindAvailableSession(
+      test_hosts[1].key, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ true, net_log.bound());
+  EXPECT_EQ(session.get(), result.get());
+
+  // FindAvailableSession() should only return |session| for the first
+  // SpdySessionKey when IP based pooling is disabled.
+  result = spdy_session_pool_->FindAvailableSession(
+      test_hosts[0].key, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ true, net_log.bound());
+  EXPECT_EQ(session.get(), result.get());
+  result = spdy_session_pool_->FindAvailableSession(
+      test_hosts[1].key, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ true, net_log.bound());
+  EXPECT_FALSE(result);
+
+  // Read EOF.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+}
 }  // namespace net

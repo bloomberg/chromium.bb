@@ -97,6 +97,7 @@ class NET_EXPORT SpdySessionPool
   base::WeakPtr<SpdySession> FindAvailableSession(
       const SpdySessionKey& key,
       bool enable_ip_based_pooling,
+      bool is_websocket,
       const NetLogWithSource& net_log);
 
   // Remove all mappings and aliases for the given session, which must
