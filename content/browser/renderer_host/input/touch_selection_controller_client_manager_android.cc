@@ -139,6 +139,11 @@ void TouchSelectionControllerClientManagerAndroid::OnSelectionEvent(
   rwhv_->OnSelectionEvent(event);
 }
 
+void TouchSelectionControllerClientManagerAndroid::OnDragUpdate(
+    const gfx::PointF& position) {
+  rwhv_->OnDragUpdate(position);
+}
+
 std::unique_ptr<ui::TouchHandleDrawable>
 TouchSelectionControllerClientManagerAndroid::CreateDrawable() {
   return rwhv_->CreateDrawable();

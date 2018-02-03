@@ -420,6 +420,14 @@ void TouchSelectionControllerClientAura::InternalClient::OnSelectionEvent(
   NOTREACHED();
 }
 
+void TouchSelectionControllerClientAura::OnDragUpdate(
+    const gfx::PointF& position) {}
+
+void TouchSelectionControllerClientAura::InternalClient::OnDragUpdate(
+    const gfx::PointF& position) {
+  NOTREACHED();
+}
+
 std::unique_ptr<ui::TouchHandleDrawable>
 TouchSelectionControllerClientAura::CreateDrawable() {
   // This function is purely related to the top-level view's window, so it

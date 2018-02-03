@@ -142,6 +142,11 @@ void TouchSelectionControllerClientChildFrame::OnSelectionEvent(
   NOTREACHED();
 }
 
+void TouchSelectionControllerClientChildFrame::OnDragUpdate(
+    const gfx::PointF& position) {
+  NOTREACHED();
+}
+
 std::unique_ptr<ui::TouchHandleDrawable>
 TouchSelectionControllerClientChildFrame::CreateDrawable() {
   NOTREACHED();

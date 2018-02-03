@@ -100,7 +100,10 @@ class TouchSelectionControllerTest : public testing::Test,
     last_event_start_ = controller_->GetStartPosition();
     last_event_end_ = controller_->GetEndPosition();
     last_event_bounds_rect_ = controller_->GetRectBetweenBounds();
-    last_event_handle_bound_middle_ = controller_->GetActiveHandleBoundPoint();
+  }
+
+  void OnDragUpdate(const gfx::PointF& position) override {
+    last_drag_update_position_ = position;
   }
 
   std::unique_ptr<TouchHandleDrawable> CreateDrawable() override {
@@ -216,8 +219,8 @@ class TouchSelectionControllerTest : public testing::Test,
   const gfx::RectF& GetLastEventBoundsRect() const {
     return last_event_bounds_rect_;
   }
-  const gfx::PointF& GetLastEventHandleBoundMiddle() const {
-    return last_event_handle_bound_middle_;
+  const gfx::PointF& GetLastDragUpdatePosition() const {
+    return last_drag_update_position_;
   }
 
   std::vector<SelectionEventType> GetAndResetEvents() {
@@ -246,7 +249,7 @@ class TouchSelectionControllerTest : public testing::Test,
   gfx::PointF selection_start_;
   gfx::PointF selection_end_;
   gfx::RectF last_event_bounds_rect_;
-  gfx::PointF last_event_handle_bound_middle_;
+  gfx::PointF last_drag_update_position_;
   std::vector<SelectionEventType> events_;
   bool caret_moved_;
   bool selection_moved_;
@@ -1356,7 +1359,7 @@ TEST_F(TouchSelectionControllerTest, VerticalTextSelectionHandleSwap) {
             TouchHandleOrientation::LEFT);
 }
 
-TEST_F(TouchSelectionControllerTest, InsertionActiveBoundMiddlePoint) {
+TEST_F(TouchSelectionControllerTest, InsertionUpdateDragPosition) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   float line_height = 10.f;
   gfx::RectF insertion_rect(10, 0, 0, line_height);
@@ -1365,38 +1368,43 @@ TEST_F(TouchSelectionControllerTest, InsertionActiveBoundMiddlePoint) {
   OnTapEvent();
   ChangeInsertion(insertion_rect, visible);
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_SHOWN));
-  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastEventHandleBoundMiddle());
+  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastDragUpdatePosition());
 
   SetDraggingEnabled(true);
-  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
+  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 10, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STARTED));
-  EXPECT_EQ(gfx::PointF(10.f, 5.f), GetLastEventHandleBoundMiddle());
+  EXPECT_EQ(gfx::PointF(10.f, 5.f), GetLastDragUpdatePosition());
 
   insertion_rect.Offset(1, 0);
   ChangeInsertion(insertion_rect, visible);
-  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 1, 0);
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 12, 6);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_MOVED));
-  EXPECT_EQ(gfx::PointF(11.f, 5.f), GetLastEventHandleBoundMiddle());
+  // Don't follow the y-coordinate change but only x-coordinate change.
+  EXPECT_EQ(gfx::PointF(12.f, 5.f), GetLastDragUpdatePosition());
 
   insertion_rect.Offset(0, 1);
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 11, 6);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   ChangeInsertion(insertion_rect, visible);
-  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 0, 1);
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 11, 7);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_MOVED));
-  EXPECT_EQ(gfx::PointF(11.f, 6.f), GetLastEventHandleBoundMiddle());
+  // Don't follow the y-coordinate change.
+  EXPECT_EQ(gfx::PointF(11.f, 6.f), GetLastDragUpdatePosition());
 
   event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STOPPED));
-  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastEventHandleBoundMiddle());
 
   SetDraggingEnabled(false);
 }
 
-TEST_F(TouchSelectionControllerTest, SelectionActiveBoundMiddlePoint) {
+TEST_F(TouchSelectionControllerTest, SelectionUpdateDragPosition) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   float line_height = 10.f;
   gfx::RectF start_rect(10, 0, 0, line_height);
@@ -1406,46 +1414,49 @@ TEST_F(TouchSelectionControllerTest, SelectionActiveBoundMiddlePoint) {
 
   ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_SHOWN));
-  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastEventHandleBoundMiddle());
+  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastDragUpdatePosition());
 
   // Left handle.
   SetDraggingEnabled(true);
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 10, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STARTED));
-  EXPECT_EQ(gfx::PointF(10.f, 5.f), GetLastEventHandleBoundMiddle());
+  EXPECT_EQ(gfx::PointF(10.f, 5.f), GetLastDragUpdatePosition());
 
-  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 15, 5);
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 16, 6);
   start_rect.Offset(5, 0);
   ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
-  EXPECT_EQ(gfx::PointF(15.f, 5.f), GetLastEventHandleBoundMiddle());
+  // Don't follow the y-coordinate change but only x-coordinate change.
+  EXPECT_EQ(gfx::PointF(16.f, 5.f), GetLastDragUpdatePosition());
 
   event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 15, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
-  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastEventHandleBoundMiddle());
 
   // Right handle.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 50, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 50, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STARTED));
-  EXPECT_EQ(gfx::PointF(50.f, 5.f), GetLastEventHandleBoundMiddle());
+  EXPECT_EQ(gfx::PointF(50.f, 5.f), GetLastDragUpdatePosition());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 45, 5);
   end_rect.Offset(-5, 0);
   ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
-  EXPECT_EQ(gfx::PointF(45.f, 5.f), GetLastEventHandleBoundMiddle());
+  EXPECT_EQ(gfx::PointF(45.f, 5.f), GetLastDragUpdatePosition());
 
   event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 45, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
-  EXPECT_EQ(gfx::PointF(0.f, 0.f), GetLastEventHandleBoundMiddle());
 }
 
 }  // namespace ui

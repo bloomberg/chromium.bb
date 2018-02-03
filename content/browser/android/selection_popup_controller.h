@@ -34,8 +34,8 @@ class SelectionPopupController : public RenderWidgetHostConnector {
 
   // Called from native -> java
   void OnSelectionEvent(ui::SelectionEventType event,
-                        const gfx::RectF& selection_rect,
-                        const gfx::PointF& bound_middle_point);
+                        const gfx::RectF& selection_rect);
+  void OnDragUpdate(const gfx::PointF& position);
   void OnSelectionChanged(const std::string& text);
   bool ShowSelectionMenu(const ContextMenuParams& params, int handle_height);
   // |x| and |y| are in physical pixel scale.

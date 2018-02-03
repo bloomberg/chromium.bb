@@ -279,7 +279,7 @@ gfx::RectF TouchSelectionController::GetEndHandleRect() const {
   return gfx::RectF();
 }
 
-gfx::PointF TouchSelectionController::GetActiveHandleBoundPoint() const {
+float TouchSelectionController::GetActiveHandleMiddleY() const {
   const gfx::SelectionBound* bound = nullptr;
   if (active_status_ == INSERTION_ACTIVE && insertion_handle_->IsActive())
     bound = &start_;
@@ -291,11 +291,8 @@ gfx::PointF TouchSelectionController::GetActiveHandleBoundPoint() const {
   }
 
   if (!bound)
-    return gfx::PointF(0.f, 0.f);
-
-  float x = (bound->edge_top().x() + bound->edge_bottom().x()) / 2.f;
-  float y = (bound->edge_top().y() + bound->edge_bottom().y()) / 2.f;
-  return gfx::PointF(x, y);
+    return 0.f;
+  return (bound->edge_top().y() + bound->edge_bottom().y()) / 2.f;
 }
 
 const gfx::PointF& TouchSelectionController::GetStartPosition() const {
@@ -391,6 +388,13 @@ void TouchSelectionController::OnDragUpdate(
     client_->MoveCaret(line_position);
   else
     client_->MoveRangeSelectionExtent(line_position);
+
+  // We use the bound middle point to restrict the ability to move up and down,
+  // but let user move it more freely in horizontal direction.
+  if (&draggable != &longpress_drag_selector_) {
+    float y = GetActiveHandleMiddleY();
+    client_->OnDragUpdate(gfx::PointF(drag_position.x(), y));
+  }
 }
 
 void TouchSelectionController::OnDragEnd(
