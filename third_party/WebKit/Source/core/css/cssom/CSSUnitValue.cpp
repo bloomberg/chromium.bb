@@ -144,8 +144,11 @@ CSSNumericValue* CSSUnitValue::Negate() {
 }
 
 CSSNumericValue* CSSUnitValue::Invert() {
-  if (unit_ == CSSPrimitiveValue::UnitType::kNumber)
+  if (unit_ == CSSPrimitiveValue::UnitType::kNumber) {
+    if (value_ == 0)
+      return nullptr;
     return CSSUnitValue::Create(1.0 / value_, unit_);
+  }
   return CSSMathInvert::Create(this);
 }
 
