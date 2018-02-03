@@ -108,9 +108,9 @@ Tree link: https://github.com/PolymerElements/iron-location/tree/v2.0.3
 
 Name: iron-media-query
 Repository: https://github.com/PolymerElements/iron-media-query.git
-Tree: v1.0.8
-Revision: 3f916be171af7a3e03eb019acdfea71055d3c744
-Tree link: https://github.com/PolymerElements/iron-media-query/tree/v1.0.8
+Tree: v2.0.0
+Revision: 05355eb5dfbaf0f35ec26a85baf63e7928e076c5
+Tree link: https://github.com/PolymerElements/iron-media-query/tree/v2.0.0
 
 Name: iron-menu-behavior
 Repository: https://github.com/PolymerElements/iron-menu-behavior.git
