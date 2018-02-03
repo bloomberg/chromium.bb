@@ -58,6 +58,11 @@ static INLINE ConvolveParams get_conv_params(int ref, int do_average,
   conv_params.round = CONVOLVE_OPT_ROUND;
   conv_params.plane = plane;
   conv_params.do_post_rounding = 0;
+  conv_params.round_0 = 5;
+  conv_params.round_1 = 0;
+  conv_params.is_compound = 0;
+  conv_params.dst = NULL;
+  conv_params.dst_stride = 0;
   return conv_params;
 }
 

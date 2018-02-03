@@ -189,8 +189,14 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
 #if CONFIG_JNT_COMP
   // subpel_x_q4 == 0 && subpel_y_q4 == 0
   sf->convolve[0][0][1] = av1_jnt_convolve_2d_copy;
-  // subpel_x_q4 == 0
+// subpel_x_q4 == 0
+#if CONFIG_LOWPRECISION_BLEND
+  // NOTE: The av1_jnt_convolve_y() function is incorrect currently.
+  // So default to the 2d version.
+  sf->convolve[0][1][1] = av1_jnt_convolve_2d;
+#else
   sf->convolve[0][1][1] = av1_jnt_convolve_y;
+#endif  // CONFIG_LOWPRECISION_BLEND
   // subpel_y_q4 == 0
   sf->convolve[1][0][1] = av1_jnt_convolve_x;
   // subpel_x_q4 != 0 && subpel_y_q4 != 0
@@ -198,8 +204,14 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
 #else
   // subpel_x_q4 == 0 && subpel_y_q4 == 0
   sf->convolve[0][0][1] = av1_convolve_2d_copy;
-  // subpel_x_q4 == 0
+// subpel_x_q4 == 0
+#if CONFIG_LOWPRECISION_BLEND
+  // NOTE: The av1_convolve_y() function is incorrect currently.
+  // So default to the 2d versions.
+  sf->convolve[0][1][1] = av1_convolve_2d;
+#else
   sf->convolve[0][1][1] = av1_convolve_y;
+#endif  // CONFIG_LOWPRECISION_BLEND
   // subpel_y_q4 == 0
   sf->convolve[1][0][1] = av1_convolve_x;
   // subpel_x_q4 != 0 && subpel_y_q4 != 0

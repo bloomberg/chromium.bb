@@ -456,7 +456,14 @@ void av1_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
+#if CONFIG_LOWPRECISION_BLEND
+      if (bits >= 0)
+        res *= (1 << bits);
+      else
+        res = ROUND_POWER_OF_TWO(res, bits);
+#else
       res *= (1 << bits);
+#endif  // CONFIG_LOWPRECISION_BLEND
       if (conv_params->do_average)
         dst[y * dst_stride + x] += res;
       else
@@ -740,7 +747,14 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
+#if CONFIG_LOWPRECISION_BLEND
+      if (bits >= 0)
+        res *= (1 << bits);
+      else
+        res = ROUND_POWER_OF_TWO(res, bits);
+#else
       res *= (1 << bits);
+#endif  // CONFIG_LOWPRECISION_BLEND
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;

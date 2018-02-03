@@ -26,6 +26,10 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/obmc.h"
 
+#if CONFIG_LOWPRECISION_BLEND
+#define LOWPRECISION_BLEND_BITS 4  // reduction in precision bits
+#endif                             // CONFIG_LOWPRECISION_BLEND
+
 // This function will determine whether or not to create a warped
 // prediction.
 static INLINE int allow_warp(const MODE_INFO *const mi,
@@ -86,16 +90,14 @@ static INLINE void av1_make_inter_predictor(
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
                    pd->subsampling_x, pd->subsampling_y, conv_params);
-    return;
-  }
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
                            sf, w, h, conv_params, interp_filters, xs, ys,
                            xd->bd);
-    return;
+  } else {
+    inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
+                    h, conv_params, interp_filters, xs, ys);
   }
-  inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
-                  h, conv_params, interp_filters, xs, ys);
 }
 
 #define NSMOOTHERS 1
@@ -993,6 +995,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         assert(w <= 8 && h <= 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, 0, plane, tmp_dst, tmp_dst_stride, is_compound);
+#if CONFIG_LOWPRECISION_BLEND
+        if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
+          conv_params.round_1 = LOWPRECISION_BLEND_BITS;
+#endif  // CONFIG_LOWPRECISION_BLEND
 #if CONFIG_JNT_COMP
         conv_params.use_jnt_comp_avg = 0;
 #endif  // CONFIG_JNT_COMP
@@ -1191,6 +1197,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     ConvolveParams conv_params = get_conv_params_no_round(
         ref, ref, plane, tmp_dst, MAX_SB_SIZE, is_compound);
+#if CONFIG_LOWPRECISION_BLEND
+    if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
+      conv_params.round_1 = LOWPRECISION_BLEND_BITS;
+#endif  // CONFIG_LOWPRECISION_BLEND
 #if CONFIG_JNT_COMP
     av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
