@@ -32,6 +32,7 @@ static_library("snapshot") {
     "exception_snapshot.h",
     "handle_snapshot.cc",
     "handle_snapshot.h",
+    "memory_snapshot.cc",
     "memory_snapshot.h",
     "minidump/minidump_annotation_reader.cc",
     "minidump/minidump_annotation_reader.h",
@@ -98,14 +99,10 @@ static_library("snapshot") {
     ]
   }
 
-  if (crashpad_is_linux) {
+  if (crashpad_is_linux || crashpad_is_android) {
     sources += [
-      "elf/elf_dynamic_array_reader.cc",
-      "elf/elf_dynamic_array_reader.h",
-      "elf/elf_image_reader.cc",
-      "elf/elf_image_reader.h",
-      "elf/elf_symbol_table_reader.cc",
-      "elf/elf_symbol_table_reader.h",
+      "crashpad_types/image_annotation_reader.cc",
+      "crashpad_types/image_annotation_reader.h",
       "linux/cpu_context_linux.cc",
       "linux/cpu_context_linux.h",
       "linux/debug_rendezvous.cc",
@@ -114,6 +111,8 @@ static_library("snapshot") {
       "linux/exception_snapshot_linux.h",
       "linux/memory_snapshot_linux.cc",
       "linux/memory_snapshot_linux.h",
+      "linux/module_snapshot_linux.cc",
+      "linux/module_snapshot_linux.h",
       "linux/process_reader.cc",
       "linux/process_reader.h",
       "linux/process_snapshot_linux.cc",
@@ -123,6 +122,19 @@ static_library("snapshot") {
       "linux/system_snapshot_linux.h",
       "linux/thread_snapshot_linux.cc",
       "linux/thread_snapshot_linux.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      "crashpad_types/crashpad_info_reader.cc",
+      "crashpad_types/crashpad_info_reader.h",
+      "elf/elf_dynamic_array_reader.cc",
+      "elf/elf_dynamic_array_reader.h",
+      "elf/elf_image_reader.cc",
+      "elf/elf_image_reader.h",
+      "elf/elf_symbol_table_reader.cc",
+      "elf/elf_symbol_table_reader.h",
     ]
   }
 
@@ -252,7 +264,7 @@ static_library("test_support") {
 
 config("snapshot_test_link") {
   visibility = [ ":*" ]
-  if (crashpad_is_linux) {
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
     # There’s no way to make the link depend on this file. “inputs” doesn’t have
     # the intended effect in a config. https://crbug.com/781858,
     # https://crbug.com/796187.
@@ -268,6 +280,7 @@ source_set("snapshot_test") {
 
   sources = [
     "cpu_context_test.cc",
+    "memory_snapshot_test.cc",
     "minidump/process_snapshot_minidump_test.cc",
   ]
 
@@ -283,11 +296,9 @@ source_set("snapshot_test") {
     ]
   }
 
-  if (crashpad_is_linux) {
+  if (crashpad_is_linux || crashpad_is_android) {
     sources += [
-      "elf/elf_image_reader_test.cc",
-      "elf/elf_image_reader_test_note.S",
-      "elf/test_exported_symbols.sym",
+      "crashpad_types/image_annotation_reader_test.cc",
       "linux/debug_rendezvous_test.cc",
       "linux/exception_snapshot_linux_test.cc",
       "linux/process_reader_test.cc",
@@ -295,6 +306,15 @@ source_set("snapshot_test") {
     ]
   } else {
     sources += [ "crashpad_info_client_options_test.cc" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      "crashpad_types/crashpad_info_reader_test.cc",
+      "elf/elf_image_reader_test.cc",
+      "elf/elf_image_reader_test_note.S",
+      "elf/test_exported_symbols.sym",
+    ]
   }
 
   if (crashpad_is_win) {
@@ -345,8 +365,12 @@ source_set("snapshot_test") {
     ]
   }
 
-  if (crashpad_is_linux) {
+  if (crashpad_is_linux || crashpad_is_android) {
     libs = [ "dl" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    data_deps += [ ":crashpad_snapshot_test_both_dt_hash_styles" ]
   }
 
   if (crashpad_is_win) {
@@ -394,6 +418,18 @@ loadable_module("crashpad_snapshot_test_module_small") {
   deps = [
     "../third_party/mini_chromium:base",
   ]
+}
+
+if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+  loadable_module("crashpad_snapshot_test_both_dt_hash_styles") {
+    testonly = true
+    sources = [
+      "hash_types_test.cc",
+    ]
+
+    # This makes `ld` emit both .hash and .gnu.hash sections.
+    ldflags = [ "-Wl,--hash-style=both" ]
+  }
 }
 
 if (crashpad_is_mac) {

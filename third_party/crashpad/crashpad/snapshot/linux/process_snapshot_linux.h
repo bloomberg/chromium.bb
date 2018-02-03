@@ -24,7 +24,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "snapshot/crashpad_info_client_options.h"
 #include "snapshot/linux/exception_snapshot_linux.h"
+#include "snapshot/linux/module_snapshot_linux.h"
 #include "snapshot/linux/process_reader.h"
 #include "snapshot/linux/system_snapshot_linux.h"
 #include "snapshot/linux/thread_snapshot_linux.h"
@@ -86,6 +88,13 @@ class ProcessSnapshotLinux final : public ProcessSnapshot {
     annotations_simple_map_ = annotations_simple_map;
   }
 
+  //! \brief Returns options from CrashpadInfo structures found in modules in
+  //!     the process.
+  //!
+  //! \param[out] options Options set in CrashpadInfo structures in modules in
+  //!     the process.
+  void GetCrashpadOptions(CrashpadInfoClientOptions* options);
+
   // ProcessSnapshot:
 
   pid_t ProcessID() const override;
@@ -108,12 +117,14 @@ class ProcessSnapshotLinux final : public ProcessSnapshot {
 
  private:
   void InitializeThreads();
+  void InitializeModules();
 
   std::map<std::string, std::string> annotations_simple_map_;
   timeval snapshot_time_;
   UUID report_id_;
   UUID client_id_;
   std::vector<std::unique_ptr<internal::ThreadSnapshotLinux>> threads_;
+  std::vector<std::unique_ptr<internal::ModuleSnapshotLinux>> modules_;
   std::unique_ptr<internal::ExceptionSnapshotLinux> exception_;
   internal::SystemSnapshotLinux system_;
   ProcessReader process_reader_;

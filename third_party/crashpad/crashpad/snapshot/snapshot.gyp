@@ -39,6 +39,10 @@
         'cpu_context.h',
         'crashpad_info_client_options.cc',
         'crashpad_info_client_options.h',
+        'crashpad_types/crashpad_info_reader.cc',
+        'crashpad_types/crashpad_info_reader.h',
+        'crashpad_types/image_annotation_reader.cc',
+        'crashpad_types/image_annotation_reader.h',
         'elf/elf_dynamic_array_reader.cc',
         'elf/elf_dynamic_array_reader.h',
         'elf/elf_image_reader.cc',
@@ -56,6 +60,8 @@
         'linux/exception_snapshot_linux.h',
         'linux/memory_snapshot_linux.cc',
         'linux/memory_snapshot_linux.h',
+        'linux/module_snapshot_linux.cc',
+        'linux/module_snapshot_linux.h',
         'linux/process_reader.cc',
         'linux/process_reader.h',
         'linux/process_snapshot_linux.cc',
@@ -102,6 +108,7 @@
         'mac/system_snapshot_mac.h',
         'mac/thread_snapshot_mac.cc',
         'mac/thread_snapshot_mac.h',
+        'memory_snapshot.cc',
         'memory_snapshot.h',
         'minidump/minidump_annotation_reader.cc',
         'minidump/minidump_annotation_reader.h',
@@ -171,6 +178,7 @@
         }, {  # else: OS!="linux" and OS!="android"
           'sources/': [
             ['exclude', '^elf/'],
+            ['exclude', '^crashpad_types/'],
           ],
         }],
         ['target_arch!="ia32" and target_arch!="x64"', {
