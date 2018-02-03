@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "ui/gfx/gpu_fence.h"
@@ -28,7 +30,7 @@ bool GpuFenceManager::CreateGpuFence(uint32_t client_id) {
   if (it != gpu_fence_entries_.end())
     return false;
 
-  auto entry = base::MakeUnique<GpuFenceEntry>();
+  auto entry = std::make_unique<GpuFenceEntry>();
   entry->gl_fence_ = gl::GLFence::CreateForGpuFence();
   if (!entry->gl_fence_)
     return false;
@@ -51,7 +53,7 @@ bool GpuFenceManager::CreateGpuFenceFromHandle(
     return false;
 
   gfx::GpuFence gpu_fence(handle);
-  auto entry = base::MakeUnique<GpuFenceEntry>();
+  auto entry = std::make_unique<GpuFenceEntry>();
   entry->gl_fence_ = gl::GLFence::CreateFromGpuFence(gpu_fence);
   if (!entry->gl_fence_)
     return false;

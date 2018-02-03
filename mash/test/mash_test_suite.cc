@@ -4,11 +4,12 @@
 
 #include "mash/test/mash_test_suite.h"
 
+#include <memory>
+
 #include "ash/public/cpp/config.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
@@ -52,7 +53,7 @@ void MashTestSuite::Initialize() {
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
 
-  context_factory_ = base::MakeUnique<ui::FakeContextFactory>();
+  context_factory_ = std::make_unique<ui::FakeContextFactory>();
   env_->set_context_factory(context_factory_.get());
   env_->set_context_factory_private(nullptr);
 }

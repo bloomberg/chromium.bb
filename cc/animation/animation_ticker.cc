@@ -4,6 +4,8 @@
 
 #include "cc/animation/animation_ticker.h"
 
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"

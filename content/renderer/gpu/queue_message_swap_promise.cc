@@ -4,6 +4,8 @@
 
 #include "content/renderer/gpu/queue_message_swap_promise.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -58,7 +60,7 @@ void QueueMessageSwapPromise::WillSwap(
     std::vector<std::unique_ptr<IPC::Message>> messages;
     message_queue_->DrainMessages(&messages);
 
-    messages.push_back(base::MakeUnique<ViewHostMsg_OnRenderFrameSubmitted>(
+    messages.push_back(std::make_unique<ViewHostMsg_OnRenderFrameSubmitted>(
         message_queue_->routing_id(), *render_frame_metadata));
 
     std::vector<IPC::Message> messages_to_send;

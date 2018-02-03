@@ -4,9 +4,10 @@
 
 #include "content/browser/loader/navigation_url_loader_network_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -306,7 +307,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
     default_loader_used_ = true;
     if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
-      handlers_.push_back(base::MakeUnique<WebPackageRequestHandler>());
+      handlers_.push_back(std::make_unique<WebPackageRequestHandler>());
     }
 
     // The ResourceDispatcherHostImpl can be null in unit tests.
@@ -433,7 +434,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     }
 
     if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
-      handlers_.push_back(base::MakeUnique<WebPackageRequestHandler>());
+      handlers_.push_back(std::make_unique<WebPackageRequestHandler>());
     }
 
     Restart();

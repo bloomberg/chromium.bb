@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/allocator/features.h"
@@ -16,7 +17,6 @@
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/debug/thread_heap_usage_tracker.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -747,7 +747,7 @@ void MemoryDumpManager::FinishAsyncProcessDump(
   // profiler.
   const auto& args = pmd_async_state->req_args;
   if (!pmd_async_state->process_memory_dump->heap_dumps().empty()) {
-    std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
+    std::unique_ptr<TracedValue> traced_value = std::make_unique<TracedValue>();
     pmd_async_state->process_memory_dump->SerializeHeapProfilerDumpsInto(
         traced_value.get());
 

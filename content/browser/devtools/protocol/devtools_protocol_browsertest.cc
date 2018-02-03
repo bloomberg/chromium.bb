@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -13,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -2189,7 +2189,7 @@ class DevToolsProtocolDeviceEmulationTest : public DevToolsProtocolTest {
   ~DevToolsProtocolDeviceEmulationTest() override {}
 
   void EmulateDeviceSize(gfx::Size size) {
-    auto params = base::MakeUnique<base::DictionaryValue>();
+    auto params = std::make_unique<base::DictionaryValue>();
     params->SetInteger("width", size.width());
     params->SetInteger("height", size.height());
     params->SetDouble("deviceScaleFactor", 0);

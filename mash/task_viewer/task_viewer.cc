@@ -7,9 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -215,7 +216,7 @@ class TaskViewerContents
   }
 
   void InsertInstance(const service_manager::Identity& identity, uint32_t pid) {
-    instances_.push_back(base::MakeUnique<InstanceInfo>(identity, pid));
+    instances_.push_back(std::make_unique<InstanceInfo>(identity, pid));
   }
 
   void OnGotCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries) {
