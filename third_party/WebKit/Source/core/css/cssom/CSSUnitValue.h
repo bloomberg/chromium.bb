@@ -31,7 +31,6 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   // Setters and getters for attributes defined in the IDL.
   void setValue(double new_value) { value_ = new_value; }
   double value() const { return value_; }
-  void setUnit(const String& new_unit, ExceptionState&);
   String unit() const;
 
   // Internal methods.

@@ -1,76 +1,39 @@
 This is a testharness.js-based test.
-Found 72 tests; 62 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Constructing CSSUnitValue with an empty string as the unit throws a TypeError
 PASS Constructing CSSUnitValue with an invalid unit as the unit throws a TypeError
-PASS Updating CSSUnitValue.unit with an empty string throws a TypeError
-PASS Updating CSSUnitValue.unit with an invalid unit throws a TypeError
 PASS CSSUnitValue can be constructed with number
-PASS CSSUnitValue.unit can be updated to number
 PASS CSSUnitValue can be constructed with percent
-PASS CSSUnitValue.unit can be updated to percent
 PASS CSSUnitValue can be constructed with em
-PASS CSSUnitValue.unit can be updated to em
 PASS CSSUnitValue can be constructed with ex
-PASS CSSUnitValue.unit can be updated to ex
 PASS CSSUnitValue can be constructed with ch
-PASS CSSUnitValue.unit can be updated to ch
 FAIL CSSUnitValue can be constructed with ic Failed to construct 'CSSUnitValue': Invalid unit: ic
-FAIL CSSUnitValue.unit can be updated to ic Failed to set the 'unit' property on 'CSSUnitValue': Invalid unit: ic
 PASS CSSUnitValue can be constructed with rem
-PASS CSSUnitValue.unit can be updated to rem
 FAIL CSSUnitValue can be constructed with lh Failed to construct 'CSSUnitValue': Invalid unit: lh
-FAIL CSSUnitValue.unit can be updated to lh Failed to set the 'unit' property on 'CSSUnitValue': Invalid unit: lh
 FAIL CSSUnitValue can be constructed with rlh Failed to construct 'CSSUnitValue': Invalid unit: rlh
-FAIL CSSUnitValue.unit can be updated to rlh Failed to set the 'unit' property on 'CSSUnitValue': Invalid unit: rlh
 PASS CSSUnitValue can be constructed with vw
-PASS CSSUnitValue.unit can be updated to vw
 PASS CSSUnitValue can be constructed with vh
-PASS CSSUnitValue.unit can be updated to vh
 FAIL CSSUnitValue can be constructed with vi Failed to construct 'CSSUnitValue': Invalid unit: vi
-FAIL CSSUnitValue.unit can be updated to vi Failed to set the 'unit' property on 'CSSUnitValue': Invalid unit: vi
 FAIL CSSUnitValue can be constructed with vb Failed to construct 'CSSUnitValue': Invalid unit: vb
-FAIL CSSUnitValue.unit can be updated to vb Failed to set the 'unit' property on 'CSSUnitValue': Invalid unit: vb
 PASS CSSUnitValue can be constructed with vmin
-PASS CSSUnitValue.unit can be updated to vmin
 PASS CSSUnitValue can be constructed with vmax
-PASS CSSUnitValue.unit can be updated to vmax
 PASS CSSUnitValue can be constructed with cm
-PASS CSSUnitValue.unit can be updated to cm
 PASS CSSUnitValue can be constructed with mm
-PASS CSSUnitValue.unit can be updated to mm
 PASS CSSUnitValue can be constructed with Q
-PASS CSSUnitValue.unit can be updated to Q
 PASS CSSUnitValue can be constructed with in
-PASS CSSUnitValue.unit can be updated to in
 PASS CSSUnitValue can be constructed with pt
-PASS CSSUnitValue.unit can be updated to pt
 PASS CSSUnitValue can be constructed with pc
-PASS CSSUnitValue.unit can be updated to pc
 PASS CSSUnitValue can be constructed with px
-PASS CSSUnitValue.unit can be updated to px
 PASS CSSUnitValue can be constructed with deg
-PASS CSSUnitValue.unit can be updated to deg
 PASS CSSUnitValue can be constructed with grad
-PASS CSSUnitValue.unit can be updated to grad
 PASS CSSUnitValue can be constructed with rad
-PASS CSSUnitValue.unit can be updated to rad
 PASS CSSUnitValue can be constructed with turn
-PASS CSSUnitValue.unit can be updated to turn
 PASS CSSUnitValue can be constructed with s
-PASS CSSUnitValue.unit can be updated to s
 PASS CSSUnitValue can be constructed with ms
-PASS CSSUnitValue.unit can be updated to ms
 PASS CSSUnitValue can be constructed with Hz
-PASS CSSUnitValue.unit can be updated to Hz
 PASS CSSUnitValue can be constructed with kHz
-PASS CSSUnitValue.unit can be updated to kHz
 PASS CSSUnitValue can be constructed with dpi
-PASS CSSUnitValue.unit can be updated to dpi
 PASS CSSUnitValue can be constructed with dpcm
-PASS CSSUnitValue.unit can be updated to dpcm
 PASS CSSUnitValue can be constructed with dppx
-PASS CSSUnitValue.unit can be updated to dppx
 PASS CSSUnitValue can be constructed with fr
-PASS CSSUnitValue.unit can be updated to fr
 Harness: the test ran to completion.
 
