@@ -184,7 +184,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     const auto& descriptor = descriptors[params_.device_index_to_use];
     MediaStreamDevice media_stream_device(
         MEDIA_DEVICE_VIDEO_CAPTURE, descriptor.device_id,
-        descriptor.display_name, descriptor.facing);
+        descriptor.display_name(), descriptor.facing);
     session_id_ = video_capture_manager_->Open(media_stream_device);
     media::VideoCaptureParams capture_params;
     capture_params.requested_format = media::VideoCaptureFormat(

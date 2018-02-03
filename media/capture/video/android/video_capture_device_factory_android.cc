@@ -127,7 +127,7 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
         Java_VideoCaptureFactory_getCaptureFormatFramerate(env, format),
         pixel_format);
     capture_formats->push_back(capture_format);
-    DVLOG(1) << device.display_name << " "
+    DVLOG(1) << device.display_name() << " "
              << VideoCaptureFormat::ToString(capture_format);
   }
 }

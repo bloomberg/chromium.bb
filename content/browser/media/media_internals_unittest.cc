@@ -180,7 +180,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   formats.push_back(format_hd);
   media::VideoCaptureDeviceDescriptor descriptor;
   descriptor.device_id = "dummy";
-  descriptor.display_name = "dummy";
+  descriptor.set_display_name("dummy");
 #if defined(OS_MACOSX)
   descriptor.capture_api = media::VideoCaptureApi::MACOSX_AVFOUNDATION;
 #elif defined(OS_WIN)

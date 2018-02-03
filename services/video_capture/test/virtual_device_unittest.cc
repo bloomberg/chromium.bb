@@ -38,7 +38,7 @@ class VirtualDeviceTest : public ::testing::Test {
 
   void SetUp() override {
     device_info_.descriptor.device_id = kTestDeviceId;
-    device_info_.descriptor.display_name = kTestDeviceName;
+    device_info_.descriptor.set_display_name(kTestDeviceName);
     mojom::ProducerPtr producer_proxy;
     producer_ =
         std::make_unique<MockProducer>(mojo::MakeRequest(&producer_proxy));
@@ -101,7 +101,7 @@ class VirtualDeviceTest : public ::testing::Test {
 TEST_F(VirtualDeviceTest, VerifyDeviceInfo) {
   EXPECT_EQ(kTestDeviceId, device_adapter_->device_info().descriptor.device_id);
   EXPECT_EQ(kTestDeviceName,
-            device_adapter_->device_info().descriptor.display_name);
+            device_adapter_->device_info().descriptor.display_name());
 }
 
 TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithoutReceiver) {

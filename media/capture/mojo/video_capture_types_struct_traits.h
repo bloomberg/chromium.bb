@@ -137,7 +137,7 @@ struct StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
                     media::VideoCaptureDeviceDescriptor> {
   static const std::string& display_name(
       const media::VideoCaptureDeviceDescriptor& input) {
-    return input.display_name;
+    return input.display_name();
   }
 
   static const std::string& device_id(

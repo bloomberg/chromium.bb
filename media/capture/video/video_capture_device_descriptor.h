@@ -41,6 +41,11 @@ enum class VideoCaptureTransportType {
 // |device_id| represents a unique id of a physical device. Since the same
 // physical device may be accessible through different APIs |capture_api|
 // disambiguates the API.
+// TODO(tommi): Given that this struct has become more complex with private
+// members, methods that are not just direct getters/setters
+// (e.g., GetNameAndModel), let's turn it into a class in order to properly
+// conform with the style guide and protect the integrity of the data that the
+// class owns.
 struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
  public:
   VideoCaptureDeviceDescriptor();
@@ -73,7 +78,10 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
   // Friendly name of a device, plus the model identifier in parentheses.
   std::string GetNameAndModel() const;
 
-  std::string display_name;  // Name that is intended for display in the UI
+  // Name that is intended for display in the UI.
+  const std::string& display_name() const { return display_name_; }
+  void set_display_name(const std::string& name);
+
   std::string device_id;
   // A unique hardware identifier of the capture device.
   // It is of the form "[vid]:[pid]" when a USB device is detected, and empty
@@ -99,6 +107,9 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
   };
 
   base::Optional<CameraCalibration> camera_calibration;
+
+ private:
+  std::string display_name_;  // Name that is intended for display in the UI
 };
 
 using VideoCaptureDeviceDescriptors = std::vector<VideoCaptureDeviceDescriptor>;

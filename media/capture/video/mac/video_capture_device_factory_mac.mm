@@ -36,7 +36,7 @@ static bool IsDeviceBlacklisted(
                        base::CompareCase::INSENSITIVE_ASCII);
   }
   DVLOG_IF(2, is_device_blacklisted)
-      << "Blacklisted camera: " << descriptor.display_name
+      << "Blacklisted camera: " << descriptor.display_name()
       << ", id: " << descriptor.device_id;
   return is_device_blacklisted;
 }
@@ -111,7 +111,7 @@ void VideoCaptureDeviceFactoryMac::GetSupportedFormats(
       break;
     case VideoCaptureApi::MACOSX_DECKLINK:
       DVLOG(1) << "Enumerating video capture capabilities "
-               << device.display_name;
+               << device.display_name();
       VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
           device, supported_formats);
       break;
