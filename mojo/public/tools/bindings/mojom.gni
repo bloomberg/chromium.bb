@@ -88,9 +88,6 @@ if (enable_scrambled_message_ids) {
   }
 }
 
-generate_export_header_script =
-    "$mojom_generator_root/generate_export_header.py"
-
 if (enable_mojom_typemapping) {
   if (!is_ios) {
     _bindings_configuration_files = [
@@ -227,10 +224,11 @@ if (enable_mojom_typemapping) {
 #       This specifies a macro prefix to use for component export macros and
 #       should therefore be globally unique in the project. For example if this
 #       is "FOO_BAR", then the generated C++ sources will be built with
-#       FOO_BAR_IMPL defined, and the generated public headers will affix
-#       FOO_BAR_EXPORT to all public symbol definitions; the meaning of the
-#       EXPORT macro depends on whether the corresponding IMPL macro is defined,
-#       per standard practice with Chromium component exports.
+#       IS_FOO_BAR_{suffix}_IMPL defined, and the generated public headers will
+#       annotate public symbol definitions with
+#       COMPONENT_EXPORT(FOO_BAR_{suffix}). "suffix" in this case depends on
+#       which internal subtarget is generating the code (e.g. "SHARED", or a
+#       variant name like "BLINK").
 #
 #   enabled_features (optional)
 #       Definitions in a mojom file can be guarded by an EnableIf attribute. If
@@ -434,9 +432,9 @@ template("mojom") {
 
     if (defined(invoker.component_macro_prefix)) {
       shared_component_export_macro =
-          "${invoker.component_macro_prefix}_SHARED_EXPORT"
+          "COMPONENT_EXPORT(${invoker.component_macro_prefix}_SHARED)"
       shared_component_impl_macro =
-          "${invoker.component_macro_prefix}_SHARED_IMPL"
+          "IS_${invoker.component_macro_prefix}_SHARED_IMPL"
       shared_component_output_name = "${invoker.component_output_prefix}_shared"
     } else if (defined(invoker.export_class_attribute_shared) ||
                defined(invoker.export_class_attribute)) {
@@ -448,11 +446,11 @@ template("mojom") {
         assert(!defined(invoker.export_header_shared))
 
         # If no explicit shared attribute/define was provided by the invoker,
-        # we derive some reasonable settings frorm the default variant. A new
-        # export header will be generated for these and used by shared code.
-        shared_component_export_macro =
-            "MOJOM_SHARED_" + invoker.export_class_attribute
-        shared_component_impl_macro = "MOJOM_SHARED_" + invoker.export_define
+        # we derive some reasonable settings frorm the default variant.
+        shared_component_export_macro = "COMPONENT_EXPORT(MOJOM_SHARED_" +
+                                        invoker.export_class_attribute + ")"
+        shared_component_impl_macro =
+            "IS_MOJOM_SHARED_" + invoker.export_class_attribute + "_IMPL"
       }
 
       if (defined(invoker.component_output_prefix)) {
@@ -461,16 +459,6 @@ template("mojom") {
       } else {
         shared_component_output_name = "${target_name}_shared"
       }
-    }
-
-    if (defined(shared_component_export_macro) &&
-        !defined(invoker.export_header_shared)) {
-      generated_shared_export_header =
-          rebase_path("${target_name}_shared_export.h", "", target_gen_dir)
-      shared_export_header =
-          rebase_path(generated_shared_export_header, root_gen_dir)
-    } else if (defined(invoker.export_header_shared)) {
-      shared_export_header = invoker.export_header_shared
     }
 
     generator_shared_cpp_outputs = [
@@ -500,30 +488,9 @@ template("mojom") {
           "--export_attribute",
           shared_component_export_macro,
           "--export_header",
-          shared_export_header,
+          "base/component_export.h",
         ]
       }
-    }
-  }
-
-  if (defined(generated_shared_export_header)) {
-    shared_export_generator_target_name =
-        "${target_name}__generate_shared_export_header"
-    action(shared_export_generator_target_name) {
-      script = generate_export_header_script
-      outputs = [
-        get_path_info(generated_shared_export_header, "abspath"),
-      ]
-      args = [
-        "--export_macro",
-        shared_component_export_macro,
-        "--impl_macro",
-        shared_component_impl_macro,
-        "--output_file",
-        rebase_path(generated_shared_export_header, root_build_dir),
-        "--relative_path",
-        rebase_path(generated_shared_export_header, root_gen_dir),
-      ]
     }
   }
 
@@ -556,10 +523,6 @@ template("mojom") {
     }
     if (defined(shared_component_impl_macro)) {
       defines = [ shared_component_impl_macro ]
-    }
-    if (defined(generated_shared_export_header)) {
-      sources += [ get_path_info(generated_shared_export_header, "abspath") ]
-      public_deps += [ ":$shared_export_generator_target_name" ]
     }
   }
 
@@ -674,31 +637,6 @@ template("mojom") {
         }
       }
 
-      if (defined(invoker.component_macro_prefix)) {
-        export_header_generator_target_name =
-            "${target_name}${variant_suffix}__generate_export_header"
-        generated_export_header =
-            rebase_path("${target_name}${variant_suffix}_export.h",
-                        "",
-                        target_gen_dir)
-        action(export_header_generator_target_name) {
-          script = generate_export_header_script
-          outputs = [
-            get_path_info(generated_export_header, "abspath"),
-          ]
-          args = [
-            "--export_macro",
-            "${invoker.component_macro_prefix}${bindings_configuration.component_macro_suffix}_EXPORT",
-            "--impl_macro",
-            "${invoker.component_macro_prefix}${bindings_configuration.component_macro_suffix}_IMPL",
-            "--output_file",
-            rebase_path(generated_export_header, root_build_dir),
-            "--relative_path",
-            rebase_path(generated_export_header, root_gen_dir),
-          ]
-        }
-      }
-
       if (!cpp_only) {
         generator_java_outputs =
             [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
@@ -743,9 +681,10 @@ template("mojom") {
         if (defined(invoker.component_macro_prefix)) {
           args += [
             "--export_attribute",
-            "${invoker.component_macro_prefix}${bindings_configuration.component_macro_suffix}_EXPORT",
+            "COMPONENT_EXPORT(${invoker.component_macro_prefix}" +
+                "${bindings_configuration.component_macro_suffix})",
             "--export_header",
-            rebase_path(generated_export_header, root_gen_dir),
+            "base/component_export.h",
           ]
         }
 
@@ -894,9 +833,8 @@ template("mojom") {
       }
       if (defined(invoker.component_macro_prefix)) {
         output_name = "${invoker.component_output_prefix}${variant_suffix}"
-        defines += [ "${invoker.component_macro_prefix}${bindings_configuration.component_macro_suffix}_IMPL" ]
-        sources += [ get_path_info(generated_export_header, "abspath") ]
-        deps += [ ":$export_header_generator_target_name" ]
+        defines += [ "IS_${invoker.component_macro_prefix}" +
+                     "${bindings_configuration.component_macro_suffix}_IMPL" ]
       }
       foreach(d, all_deps) {
         # Resolve the name, so that a target //mojo/something becomes

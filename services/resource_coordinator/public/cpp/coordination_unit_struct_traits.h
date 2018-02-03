@@ -5,14 +5,14 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_STRUCT_TRAITS_H_
 #define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_STRUCT_TRAITS_H_
 
+#include "base/component_export.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/interfaces/interfaces_export.h"
 
 namespace mojo {
 
 template <>
-struct RESOURCE_COORDINATOR_PUBLIC_INTERFACES_EXPORT
+struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_INTERFACES)
     EnumTraits<resource_coordinator::mojom::CoordinationUnitType,
                resource_coordinator::CoordinationUnitType> {
   static resource_coordinator::mojom::CoordinationUnitType ToMojom(
@@ -22,7 +22,7 @@ struct RESOURCE_COORDINATOR_PUBLIC_INTERFACES_EXPORT
 };
 
 template <>
-struct RESOURCE_COORDINATOR_PUBLIC_INTERFACES_EXPORT
+struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_INTERFACES)
     StructTraits<resource_coordinator::mojom::CoordinationUnitIDDataView,
                  resource_coordinator::CoordinationUnitID> {
   static uint64_t id(const resource_coordinator::CoordinationUnitID& id) {
