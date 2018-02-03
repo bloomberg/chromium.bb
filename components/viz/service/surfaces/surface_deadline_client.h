@@ -10,7 +10,7 @@ namespace viz {
 class SurfaceDeadlineClient {
  public:
   // Called when a deadline passes for a set of dependencies.
-  virtual void OnDeadline() = 0;
+  virtual void OnDeadline(base::TimeDelta duration) = 0;
 };
 
 }  // namespace viz

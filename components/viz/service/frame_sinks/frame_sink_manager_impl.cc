@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
@@ -100,8 +101,22 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
   if (video_detector_)
     video_detector_->OnFrameSinkIdInvalidated(frame_sink_id);
 
+  synchronization_event_labels_.erase(frame_sink_id);
+
   // Destroy the [Root]CompositorFrameSinkImpl if there is one.
   sink_map_.erase(frame_sink_id);
+}
+
+void FrameSinkManagerImpl::EnableSynchronizationReporting(
+    const FrameSinkId& frame_sink_id,
+    const std::string& reporting_label) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(fsamuel): We should move FrameSink labels over to
+  // FrameSinkManagerImpl and unify them with synchronization event labels
+  // and other metadata about FrameSinks.
+  DCHECK_GT(surface_manager_.valid_frame_sink_labels().count(frame_sink_id),
+            0u);
+  synchronization_event_labels_.emplace(frame_sink_id, reporting_label);
 }
 
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
@@ -262,7 +277,23 @@ void FrameSinkManagerImpl::OnFirstSurfaceActivation(
     client_->OnFirstSurfaceActivation(surface_info);
 }
 
-void FrameSinkManagerImpl::OnSurfaceActivated(const SurfaceId& surface_id) {}
+void FrameSinkManagerImpl::OnSurfaceActivated(
+    const SurfaceId& surface_id,
+    base::Optional<base::TimeDelta> duration) {
+  if (!duration || !client_)
+    return;
+
+  // If |duration| is populated then there was a synchronization event prior
+  // to this activation.
+  auto it = synchronization_event_labels_.find(surface_id.frame_sink_id());
+  if (it != synchronization_event_labels_.end()) {
+    TRACE_EVENT_INSTANT2(
+        "viz", "SurfaceSynchronizationEvent", TRACE_EVENT_SCOPE_THREAD,
+        "duration_ms", duration->InMilliseconds(), "client_label", it->second);
+    base::UmaHistogramCustomCounts(it->second, duration->InMilliseconds(), 1,
+                                   10000, 50);
+  }
+}
 
 bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
                                             const BeginFrameAck& ack) {

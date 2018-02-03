@@ -138,7 +138,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
-  void ActivatePendingFrameForDeadline();
+  void ActivatePendingFrameForDeadline(
+      base::Optional<base::TimeDelta> duration);
 
   using CopyRequestsMap =
       std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>;
@@ -193,7 +194,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   }
 
   // SurfaceDeadlineClient implementation:
-  void OnDeadline() override;
+  void OnDeadline(base::TimeDelta duration) override;
 
  private:
   struct SequenceNumbers {
@@ -226,9 +227,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // surface. Once a Surface is closed, it cannot accept CompositorFrames again.
   void Close();
 
-  void ActivatePendingFrame();
+  void ActivatePendingFrame(base::Optional<base::TimeDelta> duration);
+
   // Called when all of the surface's dependencies have been resolved.
-  void ActivateFrame(FrameData frame_data);
+  void ActivateFrame(FrameData frame_data,
+                     base::Optional<base::TimeDelta> duration);
 
   // Updates the set of unresolved activation dependenices of the
   // |current_frame|. If the deadline requested by the frame is 0 then no

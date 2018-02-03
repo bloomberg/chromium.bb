@@ -80,7 +80,9 @@ void HitTestManager::OnSurfaceDiscarded(const SurfaceId& surface_id) {
   hit_test_region_lists_.erase(surface_id);
 }
 
-void HitTestManager::OnSurfaceActivated(const SurfaceId& surface_id) {
+void HitTestManager::OnSurfaceActivated(
+    const SurfaceId& surface_id,
+    base::Optional<base::TimeDelta> duration) {
   // When a Surface is activated we can confidently remove all
   // associated HitTestRegionList objects with an older frame_index.
   auto search = hit_test_region_lists_.find(surface_id);
