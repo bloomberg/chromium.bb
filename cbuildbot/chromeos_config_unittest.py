@@ -1119,7 +1119,7 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
     new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], [
         config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                test_suite='smoke'),
+                                test_suite='smoke', retry=True),
         config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
         config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)])
 

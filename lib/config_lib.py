@@ -395,15 +395,21 @@ class VMTestConfig(object):
     test_suite: Test suite to be run in VMTest.
     timeout: Number of seconds to wait before timing out waiting for
              results.
+    retry: Whether we should retry tests that fail in a suite run.
+    max_retries: Integer, maximum job retries allowed at suite level.
+                 None for no max.
   """
   DEFAULT_TEST_TIMEOUT = 60 * 60
 
   def __init__(self, test_type, test_suite=None,
-               timeout=DEFAULT_TEST_TIMEOUT):
+               timeout=DEFAULT_TEST_TIMEOUT, retry=False,
+               max_retries=constants.VM_TEST_MAX_RETRIES):
     """Constructor -- see members above."""
     self.test_type = test_type
     self.test_suite = test_suite
     self.timeout = timeout
+    self.retry = retry
+    self.max_retries = max_retries
 
 
   def __eq__(self, other):

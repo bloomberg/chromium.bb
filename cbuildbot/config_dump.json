@@ -123,8 +123,8 @@
         "vm_test_report_to_dashboards": false,
         "vm_test_runs": 1,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -209,7 +209,7 @@
             ],
             "profile": "asan",
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "chrome_perf": {
@@ -271,7 +271,7 @@
                 "chrome_internal"
             ],
             "vm_tests": [
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "chrome_pfq_informational": {
@@ -298,7 +298,7 @@
                 "chrome_internal"
             ],
             "vm_tests": [
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "chromium_pfq": {
@@ -326,7 +326,7 @@
             "unittests": false,
             "uprev": false,
             "vm_tests": [
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "chromium_pfq_informational": {
@@ -346,7 +346,7 @@
             "unittests": false,
             "uprev": false,
             "vm_tests": [
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "compile_only_pre_cq": {
@@ -553,7 +553,7 @@
             "profile": "fuzzer",
             "uprev": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "incremental": {
@@ -768,12 +768,12 @@
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "payloads": {
@@ -822,7 +822,7 @@
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "pre_flight_branch": {
@@ -845,9 +845,9 @@
             ],
             "vm_tests": [],
             "vm_tests_override": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release": {
@@ -910,14 +910,14 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release_afdo_generate": {
@@ -965,14 +965,14 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release_afdo_use": {
@@ -1028,14 +1028,14 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "telemetry": {
@@ -1052,7 +1052,7 @@
             ],
             "uprev": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"telemetry_unit_server\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 7200\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"telemetry_unit_server\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 7200\n}"
             ]
         },
         "test_ap": {
@@ -1136,7 +1136,7 @@
             "profile": "asan",
             "uprev": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "unittest_stress": {
@@ -1178,7 +1178,7 @@
             "unittests": false,
             "upload_standalone_images": false,
             "vm_tests": [
-                "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
         }
     },
@@ -1217,6 +1217,9 @@
         ],
         "important": false,
         "profile": "asan",
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "amd64-generic-asan-paladin-tryjob": {
@@ -1242,6 +1245,9 @@
         "hw_tests_override": null,
         "important": false,
         "profile": "asan",
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "amd64-generic-cheets-chrome-pfq": {
@@ -2239,9 +2245,9 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -2270,9 +2276,9 @@
         ],
         "hw_tests_override": null,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -2292,7 +2298,7 @@
         "description": "Telemetry Builds",
         "hw_tests_override": null,
         "vm_tests": [
-            "{\n    \"test_suite\": \"telemetry_unit_server\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 7200\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"telemetry_unit_server\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 7200\n}"
         ]
     },
     "amd64-generic-telemetry": {
@@ -6536,8 +6542,8 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-arc64-nyc-android-pfq-tryjob": {
@@ -6565,8 +6571,8 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-arc64-paladin": {
@@ -6584,6 +6590,15 @@
         "prebuilts": "private",
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-arc64-paladin-tryjob": {
@@ -6613,9 +6628,10 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -6853,6 +6869,9 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "betty-asan-paladin-tryjob": {
@@ -6884,6 +6903,9 @@
         "profile": "asan",
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -7024,11 +7046,11 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "vm_tests": [
-            "{\n    \"test_suite\": \"vmtest-informational1\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"vmtest-informational2\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"vmtest-informational3\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"vmtest-informational4\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"arc-gts\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational1\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational2\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational3\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational4\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"arc-gts\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}"
         ]
     },
     "betty-llvm-next-toolchain": {
@@ -7091,8 +7113,8 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-nyc-android-pfq-tryjob": {
@@ -7120,8 +7142,8 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-paladin": {
@@ -7168,9 +7190,9 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -7411,11 +7433,11 @@
         "overlays": "both",
         "vm_test_report_to_dashboards": true,
         "vm_tests": [
-            "{\n    \"test_suite\": \"vmtest-informational1\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"vmtest-informational2\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"vmtest-informational3\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"vmtest-informational4\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"test_suite\": \"arc-gts\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational1\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational2\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational3\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational4\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"arc-gts\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}"
         ]
     },
     "binhost-pre-cq": {
@@ -30030,7 +30052,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-gpu-llvm-next-toolchain": {
@@ -30150,6 +30172,9 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "lakitu-gpu-paladin-tryjob": {
@@ -30181,6 +30206,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30252,7 +30280,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30297,7 +30325,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30350,7 +30378,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-llvm-next-toolchain": {
@@ -30609,6 +30637,9 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "lakitu-nc-paladin-tryjob": {
@@ -30641,6 +30672,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30703,7 +30737,7 @@
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30742,7 +30776,7 @@
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30812,6 +30846,9 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "lakitu-paladin-tryjob": {
@@ -30843,6 +30880,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30914,7 +30954,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -30959,7 +30999,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -31061,7 +31101,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-st-llvm-next-toolchain": {
@@ -31181,6 +31221,9 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "lakitu-st-paladin-tryjob": {
@@ -31212,6 +31255,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -31283,7 +31329,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -31328,7 +31374,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -31468,7 +31514,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu_next-llvm-next-toolchain": {
@@ -31588,6 +31634,9 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "lakitu_next-paladin-tryjob": {
@@ -31620,6 +31669,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -31688,7 +31740,7 @@
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -31730,7 +31782,7 @@
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -35571,9 +35623,9 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -38620,9 +38672,9 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -39458,9 +39510,9 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -39871,9 +39923,9 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "{\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },

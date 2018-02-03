@@ -727,6 +727,9 @@ JOB_KEYVAL_DATASTORE_PARENT_KEY = 'datastore_parent_key'
 JOB_KEYVAL_CIDB_BUILD_ID = 'cidb_build_id'
 JOB_KEYVAL_CIDB_BUILD_STAGE_ID = 'cidb_build_stage_id'
 
+
+# How many total test retries should be done for a suite.
+VM_TEST_MAX_RETRIES = 5
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'
