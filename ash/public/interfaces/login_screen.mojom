@@ -8,7 +8,7 @@ import "ash/public/interfaces/login_user_info.mojom";
 import "components/password_manager/public/interfaces/sync_password_data.mojom";
 import "components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
 // screens.
@@ -55,7 +55,7 @@ interface LoginScreen {
   // |initial_value|: A message shown in the password field of the user pod.
   SetAuthType(signin.mojom.AccountId account_id,
               proximity_auth.mojom.AuthType auth_type,
-              mojo.common.mojom.String16 initial_value);
+              mojo_base.mojom.String16 initial_value);
 
   // Requests to load users in the lock screen.
   // |users|:      A list of users who can unlock the device.

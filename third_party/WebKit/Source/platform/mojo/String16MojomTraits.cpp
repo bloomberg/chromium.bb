@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mojo/CommonCustomTypesStructTraits.h"
+#include "platform/mojo/String16MojomTraits.h"
 
 #include <cstring>
 
@@ -13,8 +13,8 @@
 namespace mojo {
 
 // static
-void* StructTraits<common::mojom::String16DataView, WTF::String>::SetUpContext(
-    const WTF::String& input) {
+void* StructTraits<mojo_base::mojom::String16DataView,
+                   WTF::String>::SetUpContext(const WTF::String& input) {
   // If it is null (i.e., StructTraits<>::IsNull() returns true), this method is
   // guaranteed not to be called.
   DCHECK(!input.IsNull());
@@ -27,7 +27,7 @@ void* StructTraits<common::mojom::String16DataView, WTF::String>::SetUpContext(
 }
 
 // static
-void StructTraits<common::mojom::String16DataView,
+void StructTraits<mojo_base::mojom::String16DataView,
                   WTF::String>::TearDownContext(const WTF::String& input,
                                                 void* context) {
   delete static_cast<base::string16*>(context);
@@ -35,7 +35,7 @@ void StructTraits<common::mojom::String16DataView,
 
 // static
 base::span<const uint16_t>
-StructTraits<common::mojom::String16DataView, WTF::String>::data(
+StructTraits<mojo_base::mojom::String16DataView, WTF::String>::data(
     const WTF::String& input,
     void* context) {
   auto contextObject = static_cast<base::string16*>(context);
@@ -52,8 +52,8 @@ StructTraits<common::mojom::String16DataView, WTF::String>::data(
 }
 
 // static
-bool StructTraits<common::mojom::String16DataView, WTF::String>::Read(
-    common::mojom::String16DataView data,
+bool StructTraits<mojo_base::mojom::String16DataView, WTF::String>::Read(
+    mojo_base::mojom::String16DataView data,
     WTF::String* out) {
   ArrayDataView<uint16_t> view;
   data.GetDataDataView(&view);
@@ -62,7 +62,7 @@ bool StructTraits<common::mojom::String16DataView, WTF::String>::Read(
 }
 
 // static
-mojo_base::BigBuffer StructTraits<common::mojom::BigString16DataView,
+mojo_base::BigBuffer StructTraits<mojo_base::mojom::BigString16DataView,
                                   WTF::String>::data(const WTF::String& input) {
   if (input.Is8Bit()) {
     base::string16 input16(input.Characters8(),
@@ -78,8 +78,8 @@ mojo_base::BigBuffer StructTraits<common::mojom::BigString16DataView,
 }
 
 // static
-bool StructTraits<common::mojom::BigString16DataView, WTF::String>::Read(
-    common::mojom::BigString16DataView data,
+bool StructTraits<mojo_base::mojom::BigString16DataView, WTF::String>::Read(
+    mojo_base::mojom::BigString16DataView data,
     WTF::String* out) {
   mojo_base::BigBuffer buffer;
   if (!data.ReadData(&buffer))

@@ -8,7 +8,7 @@ import "content/common/native_types.mojom";
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker_event_dispatcher.mojom";
 import "content/common/service_worker/service_worker_provider.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
@@ -128,11 +128,11 @@ interface EmbeddedWorkerInstanceHost {
   // This is called after OnScriptEvaluated.
   OnStarted(EmbeddedWorkerStartTiming start_timing);
   // Reports that an uncaught exception occurred in the worker.
-  OnReportException(mojo.common.mojom.String16 error_message, int32 line_number,
+  OnReportException(mojo_base.mojom.String16 error_message, int32 line_number,
                     int32 column_number, url.mojom.Url source_url);
   // Reports that a console message was emitted to the worker's console.
   OnReportConsoleMessage(int32 source_identifier, int32 message_level,
-                         mojo.common.mojom.String16 message, int32 line_number,
+                         mojo_base.mojom.String16 message, int32 line_number,
                          url.mojom.Url source_url);
   // Indicates that the worker has stopped.
   OnStopped();

@@ -5,7 +5,7 @@
 module autofill.mojom;
 
 import "components/autofill/content/common/autofill_types.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/text_direction.mojom";
 import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -65,8 +65,8 @@ interface AutofillDriver {
   DidEndTextFieldEditing();
 
   // Informs browser of data list values for the current field.
-  SetDataList(array<mojo.common.mojom.String16> values,
-              array<mojo.common.mojom.String16> labels);
+  SetDataList(array<mojo_base.mojom.String16> values,
+              array<mojo_base.mojom.String16> labels);
 };
 
 // There is one instance of this interface per render frame host in the browser
@@ -112,7 +112,7 @@ interface PasswordManagerDriver {
   // text.
   ShowPasswordSuggestions(int32 key,
                           mojo.common.mojom.TextDirection text_direction,
-                          mojo.common.mojom.String16 typed_username,
+                          mojo_base.mojom.String16 typed_username,
                           int32 options, gfx.mojom.RectF bounds);
 
   // Instructs the browser to show a popup with a warning that the form
@@ -139,7 +139,7 @@ interface PasswordManagerDriver {
   // Sends the outcome of HTML parsing based form classifier that detects the
   // forms where password generation should be available.
   SaveGenerationFieldDetectedByClassifier(
-      PasswordForm password_form, mojo.common.mojom.String16 generation_field);
+      PasswordForm password_form, mojo_base.mojom.String16 generation_field);
 
   // Checks the safe browsing reputation of the website where the focused
   // username/password field is on.
@@ -164,7 +164,7 @@ interface PasswordManagerClient {
   // triggered generation.
   ShowPasswordGenerationPopup(
       gfx.mojom.RectF bounds, int32 max_length,
-      mojo.common.mojom.String16 generation_element, bool is_manually_triggered,
+      mojo_base.mojom.String16 generation_element, bool is_manually_triggered,
       PasswordForm password_form);
 
   // Instructs the browser to show the popup for editing a generated password.

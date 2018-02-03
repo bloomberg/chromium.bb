@@ -8,7 +8,7 @@
 module chrome.mojom;
 
 import "mojo/common/file_path.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 interface ShellUtilWin {
   // Returns the pinned state of the current executable.
@@ -51,7 +51,7 @@ interface ShellUtilWin {
                       uint32 one_based_filter_index,
                       mojo.common.mojom.FilePath initial_directory,
                       mojo.common.mojom.FilePath suggested_filename,
-                      mojo.common.mojom.String16 default_extension) =>
+                      mojo_base.mojom.String16 default_extension) =>
       (mojo.common.mojom.FilePath path,
        uint32 filter_index);
 };

@@ -5,7 +5,7 @@
 module spellcheck.mojom;
 
 import "mojo/common/file.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // Render process interface exposed to the browser for receiving process-
 // wide spellcheck control and updates from the browser process.
@@ -40,13 +40,13 @@ interface SpellCheckHost {
 
   // Tracks spell checking occurrences to collect histograms, where |word|
   // was checked, and |misspelled| is true if |word| was misspelt.
-  NotifyChecked(mojo.common.mojom.String16 word, bool misspelled);
+  NotifyChecked(mojo_base.mojom.String16 word, bool misspelled);
 
   // Asks the host to spellcheck the |text| using a remote Spelling server
   // to do the spellchecking. If the remote Spelling server is available,
   // returns |success| true, and the spellchecked |results|. Note this API
   // requires a !BUILDFLAG(USE_BROWSER_SPELLCHECKER) build.
-  CallSpellingService(mojo.common.mojom.String16 text) =>
+  CallSpellingService(mojo_base.mojom.String16 text) =>
       (bool success, array<SpellCheckResult> results);
 };
 

@@ -5,7 +5,7 @@
 module chrome.mojom;
 
 import "components/autofill/content/common/autofill_types.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/values.mojom";
 import "url/mojom/url.mojom";
 
@@ -52,7 +52,7 @@ interface ProfileImportObserver {
       int32 visit_source);
   OnHomePageImportReady(url.mojom.Url home_page);
   OnBookmarksImportStart(
-      mojo.common.mojom.String16 first_folder_name,
+      mojo_base.mojom.String16 first_folder_name,
       uint32 total_bookmarks_count);
   OnBookmarksImportGroup(array<ImportedBookmarkEntry> bookmarks_group);
   OnFaviconsImportStart(uint32 total_favicons_count);

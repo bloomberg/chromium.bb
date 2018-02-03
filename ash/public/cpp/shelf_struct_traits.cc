@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/shelf_struct_traits.h"
 
-#include "mojo/common/string16_struct_traits.h"
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/gfx/image/mojo/image_skia_struct_traits.h"
 
 namespace mojo {

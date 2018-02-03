@@ -5,7 +5,7 @@
 module printing.mojom;
 
 import "chrome/services/printing/public/interfaces/pdf_render_settings.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // This set of interfaces is used to convert PDF files to EMF.
 // Usage:
@@ -18,7 +18,7 @@ import "mojo/common/string16.mojom";
 interface PdfToEmfConverterClient {
   [Sync]
   PreCacheFontCharacters(array<uint8> logfont,
-                         mojo.common.mojom.String16 characters) => ();
+                         mojo_base.mojom.String16 characters) => ();
 };
 
 interface PdfToEmfConverter {

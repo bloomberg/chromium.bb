@@ -46,6 +46,7 @@ source_set("tests") {
   sources = [
     "big_buffer_unittest.cc",
     "big_string_unittest.cc",
+    "string16_unittest.cc",
   ]
 
   public_deps = [

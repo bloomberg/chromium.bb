@@ -7,7 +7,7 @@
 module arc.mojom;
 
 import "gfx.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // Represents view structure to be passed to ARC. The view
 // structure is synthesized from the AXStructure, which
@@ -20,7 +20,7 @@ struct VoiceInteractionStructure {
   Rect rect;
 
   // Text of the view.
-  mojo.common.mojom.String16 text;
+  mojo_base.mojom.String16 text;
 
   // Text properties
   float text_size;

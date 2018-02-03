@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
@@ -30,16 +30,16 @@ enum MediaSessionPlaybackState {
 // Spec: https://wicg.github.io/mediasession/
 struct MediaImage {
   url.mojom.Url src;
-  mojo.common.mojom.String16 type;
+  mojo_base.mojom.String16 type;
   array<gfx.mojom.Size> sizes;
 };
 
 // MediaMetadata
 // Spec: https://wicg.github.io/mediasession/
 struct MediaMetadata {
-  mojo.common.mojom.String16 title;
-  mojo.common.mojom.String16 artist;
-  mojo.common.mojom.String16 album;
+  mojo_base.mojom.String16 title;
+  mojo_base.mojom.String16 artist;
+  mojo_base.mojom.String16 album;
   array<MediaImage> artwork;
 };
 

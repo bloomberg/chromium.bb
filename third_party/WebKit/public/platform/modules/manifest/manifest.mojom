@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "services/device/public/interfaces/screen_orientation_lock_types.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "third_party/WebKit/public/platform/display_mode.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -15,9 +15,9 @@ import "url/mojom/url.mojom";
 // described in the "Manifest for Web Application" document:
 // http://w3c.github.io/manifest/
 struct Manifest {
-  mojo.common.mojom.String16? name;
+  mojo_base.mojom.String16? name;
 
-  mojo.common.mojom.String16? short_name;
+  mojo_base.mojom.String16? short_name;
 
   url.mojom.Url? start_url;
 
@@ -49,7 +49,7 @@ struct Manifest {
   // A URL of the HTML splash screen.
   url.mojom.Url? splash_screen_url;
 
-  mojo.common.mojom.String16? gcm_sender_id;
+  mojo_base.mojom.String16? gcm_sender_id;
 
   url.mojom.Url? scope;
 };
@@ -69,7 +69,7 @@ struct ManifestIcon {
   // The type can be any string and doesn't have to be a valid image MIME type
   // at this point. It is up to the consumer of the object to check if the type
   // matches a supported type.
-  mojo.common.mojom.String16? type;
+  mojo_base.mojom.String16? type;
 
   // The special value "any" is represented by gfx::Size(0, 0).
   array<gfx.mojom.Size> sizes;
@@ -83,7 +83,7 @@ struct ManifestIcon {
 struct ManifestRelatedApplication {
   // The platform on which the application can be found. This can be any
   // string, and is interpreted by the consumer of the object.
-  mojo.common.mojom.String16? platform;
+  mojo_base.mojom.String16? platform;
 
   // URL at which the application can be found. One of |url| or |id| must be
   // present.
@@ -91,14 +91,14 @@ struct ManifestRelatedApplication {
 
   // An id which is used to represent the application on the platform. One of
   // |url| or |id| must be present.
-  mojo.common.mojom.String16? id;
+  mojo_base.mojom.String16? id;
 };
 
 // Structure representing how a Web Share target handles an incoming share.
 struct ManifestShareTarget {
   // The URL template that contains placeholders to be replaced with shared
   // data. Null if the parsing failed.
-  mojo.common.mojom.String16? url_template;
+  mojo_base.mojom.String16? url_template;
 };
 
 // Debug information for a parsed manifest.

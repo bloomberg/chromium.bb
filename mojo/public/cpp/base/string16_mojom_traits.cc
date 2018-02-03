@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/string16_struct_traits.h"
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
 
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 
 namespace mojo {
 
 // static
-bool StructTraits<common::mojom::String16DataView, base::string16>::Read(
-    common::mojom::String16DataView data,
+bool StructTraits<mojo_base::mojom::String16DataView, base::string16>::Read(
+    mojo_base::mojom::String16DataView data,
     base::string16* out) {
   ArrayDataView<uint16_t> view;
   data.GetDataDataView(&view);
@@ -20,7 +20,7 @@ bool StructTraits<common::mojom::String16DataView, base::string16>::Read(
 
 // static
 mojo_base::BigBuffer
-StructTraits<common::mojom::BigString16DataView, base::string16>::data(
+StructTraits<mojo_base::mojom::BigString16DataView, base::string16>::data(
     const base::string16& str) {
   const auto* bytes = reinterpret_cast<const uint8_t*>(str.data());
   return mojo_base::BigBuffer(
@@ -28,8 +28,8 @@ StructTraits<common::mojom::BigString16DataView, base::string16>::data(
 }
 
 // static
-bool StructTraits<common::mojom::BigString16DataView, base::string16>::Read(
-    common::mojom::BigString16DataView data,
+bool StructTraits<mojo_base::mojom::BigString16DataView, base::string16>::Read(
+    mojo_base::mojom::BigString16DataView data,
     base::string16* out) {
   mojo_base::BigBuffer buffer;
   if (!data.ReadData(&buffer))

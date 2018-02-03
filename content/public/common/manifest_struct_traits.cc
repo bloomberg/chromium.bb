@@ -4,7 +4,7 @@
 
 #include "content/public/common/manifest_struct_traits.h"
 
-#include "mojo/common/string16_struct_traits.h"
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "third_party/WebKit/public/platform/WebDisplayModeStructTraits.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationEnumTraits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
@@ -28,10 +28,10 @@ struct TruncatedString16 {
 }  // namespace
 
 template <>
-struct StructTraits<common::mojom::String16DataView, TruncatedString16> {
+struct StructTraits<mojo_base::mojom::String16DataView, TruncatedString16> {
   static void SetToNull(TruncatedString16* output) { output->string.reset(); }
 
-  static bool Read(common::mojom::String16DataView input,
+  static bool Read(mojo_base::mojom::String16DataView input,
                    TruncatedString16* output) {
     if (input.is_null()) {
       output->string.reset();
@@ -43,8 +43,8 @@ struct StructTraits<common::mojom::String16DataView, TruncatedString16> {
       return false;
 
     output->string.emplace();
-    return StructTraits<common::mojom::String16DataView, base::string16>::Read(
-        input, &output->string.value());
+    return StructTraits<mojo_base::mojom::String16DataView,
+                        base::string16>::Read(input, &output->string.value());
   }
 };
 
