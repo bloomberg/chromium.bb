@@ -233,7 +233,7 @@ void SurfacelessGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
         if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
           LOG(FATAL) << "Failed to recreate buffer";
       }
-    // Fall through since we want to render a new frame anyways.
+      FALLTHROUGH;  // We want to render a new frame anyways.
     case gfx::SwapResult::SWAP_ACK:
       GlRenderer::PostRenderFrameTask(result);
       break;
