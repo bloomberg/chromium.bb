@@ -93,6 +93,11 @@
   OnlineWallpaperThumbnailUrlSuffix: '_thumbnail.png',
 
   /**
+   * The default layout of each wallpaper thumbnail.
+   */
+  WallpaperThumbnailDefaultLayout: 'CENTER_CROPPED',
+
+  /**
    * Wallpaper directory enum.
    */
   WallpaperDirNameEnum: {ORIGINAL: 'original', THUMBNAIL: 'thumbnail'},
