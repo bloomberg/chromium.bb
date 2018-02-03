@@ -6,7 +6,7 @@ module pdf.mojom;
 
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface PdfListener {
   // Sets the current caret position.

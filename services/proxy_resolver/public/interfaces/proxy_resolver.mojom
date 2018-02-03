@@ -9,7 +9,7 @@ module proxy_resolver.mojom;
 
 import "net/interfaces/address_family.mojom";
 import "net/interfaces/host_resolver_service.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 const string kProxyResolverServiceName = "proxy_resolver";
 

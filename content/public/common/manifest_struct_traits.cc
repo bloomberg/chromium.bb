@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/platform/WebDisplayModeStructTraits.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationEnumTraits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
-#include "url/mojo/url_gurl_struct_traits.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
 namespace {

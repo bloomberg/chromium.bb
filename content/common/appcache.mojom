@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "content/public/common/appcache_info.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 import "services/network/public/interfaces/url_loader_factory.mojom";
 
 enum AppCacheEventID {

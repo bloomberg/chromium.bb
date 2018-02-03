@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//url/mojo/origin.typemap",
-  "//url/mojo/gurl.typemap",
+  "//url/mojom/origin.typemap",
+  "//url/mojom/gurl.typemap",
 ]

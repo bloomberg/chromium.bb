@@ -13,7 +13,7 @@ import "url_loader_factory.mojom";
 import "restricted_cookie_manager.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 import "services/network/public/interfaces/udp_socket.mojom";
 import "services/proxy_resolver/public/interfaces/proxy_resolver.mojom";
 

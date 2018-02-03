@@ -8,7 +8,7 @@ import "services/device/public/interfaces/screen_orientation_lock_types.mojom";
 import "mojo/common/string16.mojom";
 import "third_party/WebKit/public/platform/display_mode.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 
 // The Manifest structure is an internal representation of the Manifest file

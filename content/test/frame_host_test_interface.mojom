@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Test interface used in RenderFrame and RenderFrameHost tests to exercise
 // requesting document-scoped interfaces from the RenderFrameHost through

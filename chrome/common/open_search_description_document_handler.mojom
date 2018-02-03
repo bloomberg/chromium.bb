@@ -4,7 +4,7 @@
 
 module chrome.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface OpenSearchDescriptionDocumentHandler {
   // Notification that the page has an OpenSearch description document

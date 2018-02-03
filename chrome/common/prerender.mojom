@@ -4,7 +4,7 @@
 
 module chrome.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface PrerenderCanceler {
   // Message sent from the renderer to the browser to notify it of a

@@ -23,7 +23,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
-#include "url/mojo/url_gurl_struct_traits.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojom = content::history::mojom;
 

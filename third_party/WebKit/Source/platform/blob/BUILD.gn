@@ -14,10 +14,10 @@ import("//third_party/WebKit/Source/platform/platform.gni")
 jumbo_source_set("generator") {
   public_deps = [
     "//third_party/WebKit/common:mojo_platform_bindings_blink__generator",
-    "//url/mojo:url_mojom_gurl_blink__generator",
-    "//url/mojo:url_mojom_gurl_shared__generator",
-    "//url/mojo:url_mojom_origin_blink__generator",
-    "//url/mojo:url_mojom_origin_shared__generator",
+    "//url/mojom:url_mojom_gurl_blink__generator",
+    "//url/mojom:url_mojom_gurl_shared__generator",
+    "//url/mojom:url_mojom_origin_blink__generator",
+    "//url/mojom:url_mojom_origin_shared__generator",
   ]
 }
 

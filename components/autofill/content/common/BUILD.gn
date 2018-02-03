@@ -14,7 +14,7 @@ mojom("mojo_interfaces") {
     ":mojo_types",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 
@@ -25,8 +25,8 @@ mojom("mojo_types") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 }
 

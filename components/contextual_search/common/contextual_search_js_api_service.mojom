@@ -4,7 +4,7 @@
 
 module contextual_search.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // This service is implemented by the browser process and is used by the
 // renderer when a Contextual Search JavaScript API function is called.

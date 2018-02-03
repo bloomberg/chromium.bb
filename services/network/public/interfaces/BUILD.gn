@@ -78,7 +78,7 @@ mojom("interfaces") {
     ":udp_socket_interface",
     "//mojo/common:common_custom_types",
     "//services/proxy_resolver/public/interfaces",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 
   # TODO(crbug/598073): When moving the service implementation to

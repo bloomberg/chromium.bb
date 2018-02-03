@@ -5,7 +5,7 @@ module blink.mojom;
 
 import "services/network/public/interfaces/url_loader_factory.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // This interface is implemented by the browser to give renderers the ability to
 // create and revoke blob URLs. BlobRegistry exposes a method get a instance of

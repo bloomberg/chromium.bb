@@ -609,8 +609,8 @@ mojom("mojo_bindings") {
     "//ui/base/mojo:mojo_bindings",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   overridden_deps = [ "//third_party/WebKit/common:mojo_platform_bindings" ]

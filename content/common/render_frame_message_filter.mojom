@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface RenderFrameMessageFilter {
   // Sets a cookie. Returns after the cookie write request has been scheduled on

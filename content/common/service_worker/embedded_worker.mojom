@@ -17,7 +17,7 @@ import "third_party/WebKit/common/service_worker/service_worker_installed_script
 import "third_party/WebKit/public/web/console_message.mojom";
 import "third_party/WebKit/public/web/devtools_agent.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Parameters to launch a service worker. This is passed from the browser to the
 // renderer at mojom::EmbeddedWorkerInstanceClient::StartWorker().

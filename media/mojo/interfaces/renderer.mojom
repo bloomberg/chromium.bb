@@ -9,7 +9,7 @@ import "media/mojo/interfaces/media_types.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface Renderer {
   // Initializes the Renderer with either one or more audio / video |streams|,
