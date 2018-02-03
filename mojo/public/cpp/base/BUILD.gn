@@ -10,10 +10,9 @@ component("base") {
   sources = [
     "big_buffer.cc",
     "big_buffer.h",
-    "mojo_base_export.h",
   ]
 
-  defines = [ "MOJO_BASE_IMPLEMENTATION" ]
+  defines = [ "IS_MOJO_BASE_IMPL" ]
 
   public_deps = [
     "//base",
@@ -29,27 +28,15 @@ component("shared_typemap_traits") {
   output_name = "mojo_base_shared_typemap_traits"
 
   sources = [
-    "big_buffer_struct_traits.cc",
-    "big_buffer_struct_traits.h",
+    "big_buffer_mojom_traits.cc",
+    "big_buffer_mojom_traits.h",
   ]
 
-  defines = [ "MOJO_BASE_TRAITS_IMPLEMENTATION" ]
+  defines = [ "IS_MOJO_BASE_SHARED_TRAITS_IMPL" ]
 
   public_deps = [
     ":base",
     "//mojo/public/mojom/base:base_shared",
-  ]
-}
-
-source_set("mojom_traits") {
-  sources = [
-    "big_string_mojom_traits.cc",
-    "big_string_mojom_traits.h",
-  ]
-  deps = [
-    ":base",
-    ":shared_typemap_traits",
-    "//mojo/public/mojom/base",
   ]
 }
 
@@ -63,7 +50,6 @@ source_set("tests") {
 
   public_deps = [
     ":base",
-    ":mojom_traits",
     ":shared_typemap_traits",
     "//base",
     "//mojo/public/cpp/test_support:test_utils",

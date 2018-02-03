@@ -8,7 +8,7 @@
 
 #include "base/containers/span.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/base/big_buffer_struct_traits.h"
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 
 namespace mojo {

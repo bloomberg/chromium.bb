@@ -8,10 +8,10 @@
 #include <cstdint>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/base/mojo_base_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/system/buffer.h"
 
@@ -22,7 +22,7 @@ class BigBuffer;
 namespace internal {
 
 // Internal helper used by BigBuffer when backed by shared memory.
-class MOJO_BASE_EXPORT BigBufferSharedMemoryRegion {
+class COMPONENT_EXPORT(MOJO_BASE) BigBufferSharedMemoryRegion {
  public:
   BigBufferSharedMemoryRegion();
   BigBufferSharedMemoryRegion(mojo::ScopedSharedBufferHandle buffer_handle,
@@ -60,7 +60,7 @@ class MOJO_BASE_EXPORT BigBufferSharedMemoryRegion {
 // exposes simple |data()| and |size()| accessors akin to what common container
 // types provide. Users do not need to be concerned with the actual backing
 // storage used to implement this interface.
-class MOJO_BASE_EXPORT BigBuffer {
+class COMPONENT_EXPORT(MOJO_BASE) BigBuffer {
  public:
   static constexpr size_t kMaxInlineBytes = 64 * 1024;
 

@@ -261,7 +261,6 @@ jumbo_source_set("common_sources") {
     "//ipc",
     "//media/capture:capture_base",
     "//mojo/edk/system",
-    "//mojo/public/cpp/base:mojom_traits",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network:network_service",

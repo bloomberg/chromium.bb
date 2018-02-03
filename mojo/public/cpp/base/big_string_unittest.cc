@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/rand_util.h"
-#include "mojo/public/cpp/base/big_buffer_struct_traits.h"
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/base/big_string_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/mojom/base/big_string.mojom.h"

@@ -9,7 +9,7 @@
 #include "base/rand_util.h"
 #include "mojo/common/string16.mojom-blink.h"
 #include "mojo/common/test_common_custom_types.mojom-blink.h"
-#include "mojo/public/cpp/base/big_buffer_struct_traits.h"
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "platform/wtf/text/WTFString.h"
