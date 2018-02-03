@@ -30,11 +30,11 @@ SUPPORTED_DEBIAN_RELEASES = {
 SUPPORTED_UBUNTU_RELEASES = {
     'Ubuntu 14.04 (Trusty)': 'trusty',
     'Ubuntu 16.04 (Xenial)': 'xenial',
-    'Ubuntu 17.04 (Zesty)': 'zesty',
     'Ubuntu 17.10 (Artful)': 'artful',
 }
 
 PACKAGE_FILTER = set([
+    "libappindicator3-1",
     "libasound2",
     "libatk1.0-0",
     "libatk-bridge2.0-0",

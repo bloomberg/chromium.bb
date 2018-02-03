@@ -26,6 +26,7 @@ PACKAGE_FILTER = [
     "libXrender.so",
     "libXss.so",
     "libXtst.so",
+    "libappindicator3.so",
     "libasound.so",
     "libatk-1.0.so",
     "libatk-bridge-2.0.so",

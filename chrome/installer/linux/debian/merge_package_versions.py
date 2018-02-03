@@ -18,6 +18,9 @@ input_filenames = sys.argv[2:]
 package_interval_sets = []
 for input_filename in input_filenames:
   for line in open(input_filename):
+    # Ignore blank lines
+    if not line.strip():
+      continue
     # Allow comments starting with '#'
     if line.startswith('#'):
       continue
