@@ -315,7 +315,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   client_ = std::move(client);
   if (device_descriptor_.capture_api == VideoCaptureApi::MACOSX_AVFOUNDATION)
     LogMessage("Using AVFoundation for device: " +
-               device_descriptor_.display_name);
+               device_descriptor_.display_name());
 
   NSString* deviceId =
       [NSString stringWithUTF8String:device_descriptor_.device_id.c_str()];

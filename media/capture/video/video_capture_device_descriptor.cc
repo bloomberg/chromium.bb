@@ -5,8 +5,17 @@
 #include "media/capture/video/video_capture_device_descriptor.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 namespace media {
+namespace {
+std::string TrimDisplayName(const std::string& display_name) {
+  std::string trimmed_name;
+  base::TrimWhitespaceASCII(display_name, base::TrimPositions::TRIM_TRAILING,
+                            &trimmed_name);
+  return trimmed_name;
+}
+}  // namespace
 
 VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor()
     : facing(VideoFacingMode::MEDIA_VIDEO_FACING_NONE),
@@ -18,11 +27,11 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const std::string& device_id,
     VideoCaptureApi capture_api,
     VideoCaptureTransportType transport_type)
-    : display_name(display_name),
-      device_id(device_id),
+    : device_id(device_id),
       facing(VideoFacingMode::MEDIA_VIDEO_FACING_NONE),
       capture_api(capture_api),
-      transport_type(transport_type) {}
+      transport_type(transport_type),
+      display_name_(TrimDisplayName(display_name)) {}
 
 VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const std::string& display_name,
@@ -31,12 +40,12 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     VideoCaptureApi capture_api,
     VideoCaptureTransportType transport_type,
     VideoFacingMode facing)
-    : display_name(display_name),
-      device_id(device_id),
+    : device_id(device_id),
       model_id(model_id),
       facing(facing),
       capture_api(capture_api),
-      transport_type(transport_type) {}
+      transport_type(transport_type),
+      display_name_(TrimDisplayName(display_name)) {}
 
 VideoCaptureDeviceDescriptor::~VideoCaptureDeviceDescriptor() = default;
 
@@ -90,8 +99,12 @@ const char* VideoCaptureDeviceDescriptor::GetCaptureApiTypeString() const {
 
 std::string VideoCaptureDeviceDescriptor::GetNameAndModel() const {
   if (model_id.empty())
-    return display_name;
-  return display_name + " (" + model_id + ")";
+    return display_name_;
+  return display_name_ + " (" + model_id + ')';
+}
+
+void VideoCaptureDeviceDescriptor::set_display_name(const std::string& name) {
+  display_name_ = TrimDisplayName(name);
 }
 
 }  // namespace media

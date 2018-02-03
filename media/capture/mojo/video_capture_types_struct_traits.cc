@@ -254,8 +254,10 @@ bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
                   media::VideoCaptureDeviceDescriptor>::
     Read(media::mojom::VideoCaptureDeviceDescriptorDataView data,
          media::VideoCaptureDeviceDescriptor* output) {
-  if (!data.ReadDisplayName(&(output->display_name)))
+  std::string display_name;
+  if (!data.ReadDisplayName(&display_name))
     return false;
+  output->set_display_name(display_name);
   if (!data.ReadDeviceId(&(output->device_id)))
     return false;
   if (!data.ReadModelId(&(output->model_id)))

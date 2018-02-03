@@ -386,14 +386,15 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDevices(
       CFStringRef format_name = NULL;
       if (display_mode->GetName(&format_name) == S_OK) {
         VideoCaptureDeviceDescriptor descriptor;
-        descriptor.display_name =
-            JoinDeviceNameAndFormat(device_display_name, format_name);
+        descriptor.set_display_name(
+            JoinDeviceNameAndFormat(device_display_name, format_name));
         descriptor.device_id =
             JoinDeviceNameAndFormat(device_model_name, format_name);
         descriptor.capture_api = VideoCaptureApi::MACOSX_DECKLINK;
         descriptor.transport_type = VideoCaptureTransportType::OTHER_TRANSPORT;
         device_descriptors->push_back(descriptor);
-        DVLOG(1) << "Blackmagic camera enumerated: " << descriptor.display_name;
+        DVLOG(1) << "Blackmagic camera enumerated: "
+                 << descriptor.display_name();
       }
       display_mode.Release();
     }
@@ -448,7 +449,7 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
           gfx::Size(display_mode->GetWidth(), display_mode->GetHeight()),
           GetDisplayModeFrameRate(display_mode), PIXEL_FORMAT_UNKNOWN);
       supported_formats->push_back(format);
-      DVLOG(2) << device.display_name << " "
+      DVLOG(2) << device.display_name() << " "
                << VideoCaptureFormat::ToString(format);
       display_mode.Release();
     }

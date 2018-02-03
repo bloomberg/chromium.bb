@@ -177,15 +177,15 @@ void CameraHalDelegate::GetDeviceDescriptors(
     switch (camera_info->facing) {
       case arc::mojom::CameraFacing::CAMERA_FACING_BACK:
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
-        desc.display_name = std::string("Back Camera");
+        desc.set_display_name("Back Camera");
         break;
       case arc::mojom::CameraFacing::CAMERA_FACING_FRONT:
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_USER;
-        desc.display_name = std::string("Front Camera");
+        desc.set_display_name("Front Camera");
         break;
       case arc::mojom::CameraFacing::CAMERA_FACING_EXTERNAL:
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
-        desc.display_name = std::string("External Camera");
+        desc.set_display_name("External Camera");
         break;
         // Mojo validates the input parameters for us so we don't need to worry
         // about malformed values.

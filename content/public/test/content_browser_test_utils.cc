@@ -130,9 +130,9 @@ void LookupAndLogNameAndIdOfFirstCamera() {
                         LOG(WARNING) << "No camera found";
                         return;
                       }
-                      LOG(INFO)
-                          << "Using camera " << descriptors.front().display_name
-                          << " (" << descriptors.front().model_id << ")";
+                      LOG(INFO) << "Using camera "
+                                << descriptors.front().display_name() << " ("
+                                << descriptors.front().model_id << ")";
                       quit_closure.Run();
                     },
                     quit_closure));

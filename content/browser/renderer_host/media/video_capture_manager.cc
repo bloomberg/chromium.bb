@@ -683,7 +683,7 @@ void VideoCaptureManager::OnDeviceInfosReceived(
   for (const auto& entry : device_infos) {
     string_stream << std::endl
                   << "device_id: " << entry.descriptor.device_id
-                  << ", display_name: " << entry.descriptor.display_name;
+                  << ", display_name: " << entry.descriptor.display_name();
   }
   EmitLogMessage(string_stream.str(), 1);
 

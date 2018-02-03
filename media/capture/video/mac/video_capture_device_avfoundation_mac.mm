@@ -190,7 +190,7 @@ void ExtractBaseAddressAndLength(char** base_address,
           gfx::Size(dimensions.width, dimensions.height),
           frameRate.maxFrameRate, pixelFormat);
       formats->push_back(format);
-      DVLOG(2) << descriptor.display_name << " "
+      DVLOG(2) << descriptor.display_name() << " "
                << media::VideoCaptureFormat::ToString(format);
     }
   }
