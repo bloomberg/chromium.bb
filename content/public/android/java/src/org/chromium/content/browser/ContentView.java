@@ -21,8 +21,9 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
-import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.SmartClipProvider;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.EventForwarder;
 
@@ -198,8 +199,8 @@ public class ContentView extends FrameLayout
         return mContentViewCore.onGenericMotionEvent(event);
     }
 
-    private WebContentsImpl getWebContents() {
-        return (WebContentsImpl) mContentViewCore.getWebContents();
+    private WebContents getWebContents() {
+        return mContentViewCore.getWebContents();
     }
 
     private EventForwarder getEventForwarder() {

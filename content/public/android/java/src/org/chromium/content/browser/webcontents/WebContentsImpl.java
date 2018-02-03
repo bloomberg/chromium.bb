@@ -34,7 +34,6 @@ import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.content_public.browser.SmartClipCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -117,15 +116,14 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     // the same life time as native MediaSession.
     private MediaSessionImpl mMediaSession;
 
-    class SmartClipCallbackImpl implements SmartClipCallback {
-        public SmartClipCallbackImpl(final Handler smartClipHandler) {
+    private class SmartClipCallback {
+        public SmartClipCallback(final Handler smartClipHandler) {
             mHandler = smartClipHandler;
         }
         public void storeRequestRect(Rect rect) {
             mRect = rect;
         }
 
-        @Override
         public void onSmartClipDataExtracted(String text, String html) {
             Bundle bundle = new Bundle();
             bundle.putString("url", getVisibleUrl());
@@ -142,7 +140,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         Rect mRect;
         final Handler mHandler;
     }
-    private SmartClipCallbackImpl mSmartClipCallback;
+    private SmartClipCallback mSmartClipCallback;
 
     private EventForwarder mEventForwarder;
 
@@ -520,7 +518,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
             mSmartClipCallback = null;
             return;
         }
-        mSmartClipCallback = new SmartClipCallbackImpl(smartClipHandler);
+        mSmartClipCallback = new SmartClipCallback(smartClipHandler);
     }
 
     @CalledByNative

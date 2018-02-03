@@ -62,8 +62,8 @@ import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.content_public.browser.SmartClipProvider;
 
 import java.io.BufferedWriter;
 import java.io.File;
