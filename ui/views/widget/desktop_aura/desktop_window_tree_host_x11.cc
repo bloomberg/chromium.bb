@@ -2001,9 +2001,9 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       }
       break;
     }
-    case FocusIn:
-    case FocusOut:
-      OnFocusEvent(xev->type == FocusIn, event->xfocus.mode,
+    case x11::FocusIn:
+    case x11::FocusOut:
+      OnFocusEvent(xev->type == x11::FocusIn, event->xfocus.mode,
                    event->xfocus.detail);
       break;
     case ConfigureNotify: {

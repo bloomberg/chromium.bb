@@ -127,7 +127,7 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
     }
 
     case Expose:
-    case FocusOut:
+    case x11::FocusOut:
     case ConfigureNotify:
     case ClientMessage: {
       ProcessXWindowEvent(xev);
