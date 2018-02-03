@@ -216,7 +216,7 @@ void TopDocumentRootScrollerController::DidDisposeScrollableArea(
 
   RootFrameViewport* rfv = frame_view->GetRootFrameViewport();
 
-  if (&area == &rfv->LayoutViewport()) {
+  if (rfv && &area == &rfv->LayoutViewport()) {
     DCHECK(frame_view->LayoutViewportScrollableArea());
     rfv->SetLayoutViewport(*frame_view->LayoutViewportScrollableArea());
   }
