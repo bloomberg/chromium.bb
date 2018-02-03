@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -206,7 +205,7 @@ class PlatformAppPathLauncher
       return;
 
     std::unique_ptr<app_runtime::LaunchData> launch_data =
-        base::MakeUnique<app_runtime::LaunchData>();
+        std::make_unique<app_runtime::LaunchData>();
     launch_data->action_data = std::move(action_data_);
 
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(
@@ -407,7 +406,7 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
   if (args.empty() || (command_line.HasSwitch(switches::kTestType) &&
                        args[0] == about_blank_url)) {
     std::unique_ptr<app_runtime::LaunchData> launch_data =
-        base::MakeUnique<app_runtime::LaunchData>();
+        std::make_unique<app_runtime::LaunchData>();
     if (play_store_status != PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN)
       launch_data->play_store_status = play_store_status;
     if (!launch_id.empty())

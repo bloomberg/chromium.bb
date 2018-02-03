@@ -7,13 +7,13 @@
 #import <Foundation/Foundation.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -337,7 +337,7 @@ void MessagePumpCFRunLoopBase::SetModeMask(int mode_mask) {
     bool enable = mode_mask & (0x1 << i);
     if (enable == !enabled_modes_[i]) {
       enabled_modes_[i] =
-          enable ? base::MakeUnique<ScopedModeEnabler>(this, i) : nullptr;
+          enable ? std::make_unique<ScopedModeEnabler>(this, i) : nullptr;
     }
   }
 }

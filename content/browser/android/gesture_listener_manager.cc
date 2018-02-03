@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -94,7 +96,7 @@ void JNI_GestureListenerManagerImpl_Init(
   WebContentsViewAndroid* view = static_cast<WebContentsViewAndroid*>(
       static_cast<WebContentsImpl*>(web_contents)->GetView());
   view->SetGestureListenerManager(
-      base::MakeUnique<GestureListenerManager>(env, obj, web_contents));
+      std::make_unique<GestureListenerManager>(env, obj, web_contents));
 }
 
 }  // namespace content

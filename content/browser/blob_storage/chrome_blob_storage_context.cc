@@ -4,6 +4,7 @@
 
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,7 +13,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
@@ -72,7 +72,7 @@ class BlobHandleImpl : public BlobHandle {
   blink::mojom::BlobPtr PassBlob() override {
     blink::mojom::BlobPtr result;
     storage::BlobImpl::Create(
-        base::MakeUnique<storage::BlobDataHandle>(*handle_),
+        std::make_unique<storage::BlobDataHandle>(*handle_),
         MakeRequest(&result));
     return result;
   }

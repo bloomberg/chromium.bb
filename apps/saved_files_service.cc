@@ -8,11 +8,11 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
 #include "apps/saved_files_service_factory.h"
-#include "base/memory/ptr_util.h"
 #include "base/value_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
@@ -66,7 +66,7 @@ void AddSavedFileEntry(ExtensionPrefs* prefs,
   DCHECK(!file_entries->GetDictionaryWithoutPathExpansion(file_entry.id, NULL));
 
   std::unique_ptr<base::DictionaryValue> file_entry_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   file_entry_dict->Set(kFileEntryPath, CreateFilePathValue(file_entry.path));
   file_entry_dict->SetBoolean(kFileEntryIsDirectory, file_entry.is_directory);
   file_entry_dict->SetInteger(kFileEntrySequenceNumber,
@@ -298,7 +298,7 @@ void SavedFilesService::SavedFiles::RegisterFileEntry(
     return;
 
   registered_file_entries_[id] =
-      base::MakeUnique<SavedFileEntry>(id, file_path, is_directory, 0);
+      std::make_unique<SavedFileEntry>(id, file_path, is_directory, 0);
 }
 
 void SavedFilesService::SavedFiles::EnqueueFileEntry(const std::string& id) {

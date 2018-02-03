@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -667,7 +667,7 @@ void CommandBufferProxyImpl::OnGetGpuFenceHandleComplete(
     uint32_t gpu_fence_id,
     const gfx::GpuFenceHandle& handle) {
   // Always consume the provided handle to avoid leaks on error.
-  auto gpu_fence = base::MakeUnique<gfx::GpuFence>(handle);
+  auto gpu_fence = std::make_unique<gfx::GpuFence>(handle);
 
   GetGpuFenceTaskMap::iterator it = get_gpu_fence_tasks_.find(gpu_fence_id);
   if (it == get_gpu_fence_tasks_.end()) {
