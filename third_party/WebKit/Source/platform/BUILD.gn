@@ -277,8 +277,8 @@ jumbo_component("platform") {
     "//components/pdf/common:interfaces_blink",
     "//services/device/public/interfaces:interfaces_blink",
     "//third_party/WebKit/*",
-    "//url/mojo:url_mojom_origin_blink",
-    "//url/mojo:url_mojom_gurl_blink",
+    "//url/mojom:url_mojom_origin_blink",
+    "//url/mojom:url_mojom_gurl_blink",
   ]
   output_name = "blink_platform"
 
@@ -1990,7 +1990,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo:test_interfaces_blink",
     "//url",
-    "//url/mojo:test_url_mojom_gurl_blink",
+    "//url/mojom:test_url_mojom_gurl_blink",
   ]
 
   data_deps = [

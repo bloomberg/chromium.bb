@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // This file contains definition of objects and interfaces required to
 // implement the Presentation API. For more information on the API, please see:

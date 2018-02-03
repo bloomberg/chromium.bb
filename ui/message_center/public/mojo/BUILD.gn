@@ -13,7 +13,7 @@ mojom("mojo") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//ui/gfx/image/mojo:interfaces",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 
@@ -44,6 +44,6 @@ source_set("struct_traits") {
     "//ui/gfx",
     "//ui/gfx/image/mojo:struct_traits",
     "//ui/message_center/public/cpp",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }

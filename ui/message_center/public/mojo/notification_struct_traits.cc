@@ -6,7 +6,7 @@
 
 #include "mojo/common/string16_struct_traits.h"
 #include "ui/gfx/image/mojo/image_skia_struct_traits.h"
-#include "url/mojo/url_gurl_struct_traits.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
 

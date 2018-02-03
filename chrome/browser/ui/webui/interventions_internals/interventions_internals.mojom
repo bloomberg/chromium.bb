@@ -4,7 +4,7 @@
 
 module mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 struct PreviewsStatus {
   // The human readable description of the status that will be displayed on

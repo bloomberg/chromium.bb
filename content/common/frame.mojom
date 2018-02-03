@@ -17,7 +17,7 @@ import "third_party/WebKit/common/feature_policy/feature_policy.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/window_features.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the

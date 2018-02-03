@@ -9,15 +9,14 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/mojo/url_test.mojom.h"
+#include "url/mojom/url_test.mojom.h"
 
 namespace url {
 
 class UrlTestImpl : public mojom::UrlTest {
  public:
   explicit UrlTestImpl(mojo::InterfaceRequest<mojom::UrlTest> request)
-      : binding_(this, std::move(request)) {
-  }
+      : binding_(this, std::move(request)) {}
 
   // UrlTest:
   void BounceUrl(const GURL& in, BounceUrlCallback callback) override {
@@ -40,8 +39,7 @@ TEST(MojoGURLStructTraitsTest, Basic) {
   UrlTestImpl impl(MakeRequest(&proxy));
 
   const char* serialize_cases[] = {
-    "http://www.google.com/",
-    "http://user:pass@host.com:888/foo;bar?baz#nop",
+      "http://www.google.com/", "http://user:pass@host.com:888/foo;bar?baz#nop",
   };
 
   for (size_t i = 0; i < arraysize(serialize_cases); i++) {
@@ -65,8 +63,8 @@ TEST(MojoGURLStructTraitsTest, Basic) {
 
   // Test an excessively long GURL.
   {
-    const std::string url = std::string("http://example.org/").append(
-        kMaxURLChars + 1, 'a');
+    const std::string url =
+        std::string("http://example.org/").append(kMaxURLChars + 1, 'a');
     GURL input(url.c_str());
     GURL output;
     EXPECT_TRUE(proxy->BounceUrl(input, &output));

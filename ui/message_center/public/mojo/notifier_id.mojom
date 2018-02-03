@@ -5,7 +5,7 @@
 module message_center.mojom;
 
 import "mojo/common/string16.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Equivalent to message_center::NotifierId::NotifierType. Used in UMA, so it
 // should not be reordered.

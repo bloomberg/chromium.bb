@@ -1,5 +1,5 @@
 importScripts('/gen/layout_test_data/mojo/public/js/mojo_bindings.js');
-importScripts('/gen/url/mojo/origin.mojom.js');
+importScripts('/gen/url/mojom/origin.mojom.js');
 importScripts('/gen/third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.js');
 importScripts('../budget-service-mock.js');
 

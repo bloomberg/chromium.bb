@@ -8,7 +8,7 @@ import "components/payments/mojom/payment_request_data.mojom";
 import "mojo/common/time.mojom";
 import "third_party/WebKit/public/platform/modules/manifest/manifest.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_request.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 enum PaymentHandlerStatus {
   SUCCESS,

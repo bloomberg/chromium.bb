@@ -6,8 +6,8 @@ module autofill.mojom;
 
 import "mojo/common/text_direction.mojom";
 import "mojo/common/time.mojom";
-import "url/mojo/origin.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/origin.mojom";
+import "url/mojom/url.mojom";
 
 // autofill::FormFieldData::CheckStatus
 enum CheckStatus {

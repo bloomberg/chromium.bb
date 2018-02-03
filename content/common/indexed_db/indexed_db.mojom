@@ -12,7 +12,7 @@ import "mojo/common/file_path.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 enum CursorDirection {
   Next,

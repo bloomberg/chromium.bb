@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef URL_MOJO_ORIGIN_STRUCT_TRAITS_H_
-#define URL_MOJO_ORIGIN_STRUCT_TRAITS_H_
+#ifndef URL_MOJO_ORIGIN_MOJOM_TRAITS_H_
+#define URL_MOJO_ORIGIN_MOJOM_TRAITS_H_
 
 #include "base/strings/string_piece.h"
-#include "url/mojo/origin.mojom.h"
+#include "url/mojom/origin.mojom.h"
 #include "url/origin.h"
 
 namespace mojo {
@@ -15,15 +15,11 @@ template <>
 struct StructTraits<url::mojom::OriginDataView, url::Origin> {
   static const std::string& scheme(const url::Origin& r) { return r.scheme(); }
   static const std::string& host(const url::Origin& r) { return r.host(); }
-  static uint16_t port(const url::Origin& r) {
-    return r.port();
-  }
+  static uint16_t port(const url::Origin& r) { return r.port(); }
   static const std::string& suborigin(const url::Origin& r) {
     return r.suborigin();
   }
-  static bool unique(const url::Origin& r) {
-    return r.unique();
-  }
+  static bool unique(const url::Origin& r) { return r.unique(); }
   static bool Read(url::mojom::OriginDataView data, url::Origin* out) {
     if (data.unique()) {
       *out = url::Origin();
@@ -47,6 +43,6 @@ struct StructTraits<url::mojom::OriginDataView, url::Origin> {
   }
 };
 
-}
+}  // namespace mojo
 
-#endif  // URL_MOJO_ORIGIN_STRUCT_TRAITS_H_
+#endif  // URL_MOJO_ORIGIN_MOJOM_TRAITS_H_

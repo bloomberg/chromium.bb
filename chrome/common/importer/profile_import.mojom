@@ -7,7 +7,7 @@ module chrome.mojom;
 import "components/autofill/content/common/autofill_types.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/values.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 const string kProfileImportServiceName = "profile_import";
 

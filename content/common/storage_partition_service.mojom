@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "content/common/leveldb_wrapper.mojom";
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 // Returns services related to the current storage partition.
 interface StoragePartitionService {

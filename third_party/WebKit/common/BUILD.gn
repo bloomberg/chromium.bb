@@ -138,8 +138,8 @@ mojom("mojo_platform_bindings") {
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces",
     "//ui/gfx/geometry/mojo",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"

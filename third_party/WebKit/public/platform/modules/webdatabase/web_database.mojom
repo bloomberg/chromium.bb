@@ -6,7 +6,7 @@ module blink.mojom;
 
 import "mojo/common/file.mojom";
 import "mojo/common/string16.mojom";
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 // WebDatabase messages sent from the browser to the renderer.
 interface WebDatabase {

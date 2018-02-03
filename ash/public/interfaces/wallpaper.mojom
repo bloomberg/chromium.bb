@@ -9,7 +9,7 @@ import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
 import "skia/public/interfaces/bitmap.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // These values match wallpaper::WallpaperLayout.
 enum WallpaperLayout {

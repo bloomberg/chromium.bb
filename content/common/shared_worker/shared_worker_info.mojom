@@ -6,7 +6,7 @@ module content.mojom;
 
 import "third_party/WebKit/common/net/ip_address_space.mojom";
 import "third_party/WebKit/public/platform/content_security_policy.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Meta data that is necessary to create a new shared worker context. This
 // structure gets populated when a new SharedWorker object is created in the

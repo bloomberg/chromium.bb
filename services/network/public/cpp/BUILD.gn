@@ -74,7 +74,7 @@ component("cpp_base") {
   public_deps = [
     "//services/network/public/interfaces:data_pipe_interface",
     "//url/ipc:url_ipc",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
   deps = [
     "//base",

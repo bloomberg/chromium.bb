@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "third_party/WebKit/public/platform/modules/manifest/manifest.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface ManifestManager {
   // Requests the manifest URL and the Manifest of the frame's document. |url|

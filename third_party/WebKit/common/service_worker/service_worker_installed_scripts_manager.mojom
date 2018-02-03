@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // This is sent from the browser to the renderer on starting worker.
 // Contains information about the scripts of an installed service worker.

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//url/mojo/origin.mojom"
+mojom = "//url/mojom/origin.mojom"
 public_headers =
     [ "//third_party/WebKit/Source/platform/weborigin/SecurityOrigin.h" ]
 traits_headers =

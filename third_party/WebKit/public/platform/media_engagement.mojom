@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 interface MediaEngagementClient {
   // The browser tells the renderer that an origin has a high media engagement.

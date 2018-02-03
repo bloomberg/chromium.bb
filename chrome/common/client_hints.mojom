@@ -6,7 +6,7 @@ module client_hints.mojom;
 
 import "mojo/common/time.mojom";
 import "third_party/WebKit/public/platform/web_client_hints_types.mojom";
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 // Sent from renderer to browser process when the lifetime of the client hints
 // for |primary_origin| has changed. |client_hints| is the list of client hints
