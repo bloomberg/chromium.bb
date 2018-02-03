@@ -3392,15 +3392,25 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_DISABLED_ERROR_LABEL" desc="Text displayed when an extension was disabled due to a new upgrade requiring an explicit permission check from the user.">
         To re-enable it, accept the new permissions:
       </message>
-      <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
-        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is disabled
-      </message>
       <message name="IDS_EXTENSION_IS_BLACKLISTED" desc="Text displayed in an infobar when an extension is blacklisted and prevented from being installed.">
         Google has flagged "<ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>" as malicious and installation has been prevented
       </message>
-      <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
-        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> was added remotely
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="In Title Case: Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
+          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> Was Added Remotely
+        </message>
+        <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="In Title Case: Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
+          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is Disabled
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
+          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> was added remotely
+        </message>
+        <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
+          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is disabled
+        </message>
+      </if>
 
       <if expr="enable_extensions">
         <!-- Extension blocked action bubble -->
@@ -4474,9 +4484,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME" desc="The wrench menu item indicating that a new external extension was installed.">
         New theme added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="The title for the bubble that alerts the user that a new external extension was installed.">
-        "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="In Title Case: The title for the bubble that alerts the user that a new external extension was installed.">
+          "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" Added
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="The title for the bubble that alerts the user that a new external extension was installed.">
+          "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
+        </message>
+      </if>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_APP" desc="The heading text (below the title) for the bubble that alerts the user that a new external app was installed.">
         Another program on your computer added an app that may change the way Chrome works.
       </message>
@@ -8191,9 +8208,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SIGNIN_ERROR_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification.">
         Sign In
       </message>
-      <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
-        Sign-in Error
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="In Title Case: Title in the sign-in error bubble view/notification.">
+          Sign-in Error
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
+          Sign-in error
+        </message>
+      </if>
       <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view/notification.">
         Sync Error
       </message>
