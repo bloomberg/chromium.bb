@@ -25,12 +25,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -383,9 +383,9 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       case content::DownloadItem::CANCELLED:
         // Confirms that a download is cancelled by user action.
         DCHECK(item_->GetLastReason() ==
-                   content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
+                   download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
                item_->GetLastReason() ==
-                   content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
+                   download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
 
         CloseNotification();
         return;  // Skips the remaining since the notification has closed.
@@ -769,8 +769,8 @@ base::string16 DownloadItemNotification::GetSubStatusString() const {
       // "Cancelled"
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
     case content::DownloadItem::INTERRUPTED: {
-      content::DownloadInterruptReason reason = item_->GetLastReason();
-      if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+      download::DownloadInterruptReason reason = item_->GetLastReason();
+      if (reason != download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
         // "Failed - <REASON>"
         base::string16 interrupt_reason = model.GetInterruptReasonText();
         DCHECK(!interrupt_reason.empty());

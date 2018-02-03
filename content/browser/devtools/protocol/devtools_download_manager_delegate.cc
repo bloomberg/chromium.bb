@@ -101,7 +101,7 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
     callback.Run(empty_path,
                  content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, empty_path,
-                 content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+                 download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return true;
   }
 
@@ -179,7 +179,7 @@ void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(
                content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
                suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
-               content::DOWNLOAD_INTERRUPT_REASON_NONE);
+               download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 }  // namespace protocol

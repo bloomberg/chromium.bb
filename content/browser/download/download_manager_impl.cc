@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache_impl.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_create_info.h"
@@ -44,7 +45,6 @@
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_service.h"
@@ -103,7 +103,7 @@ bool CanRequestURLFromRenderer(int render_process_id, GURL url) {
 
 void CreateInterruptedDownload(
     DownloadUrlParameters* params,
-    DownloadInterruptReason reason,
+    download::DownloadInterruptReason reason,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<DownloadCreateInfo> failed_created_info(
@@ -154,12 +154,13 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
   // ResourceDispatcherHostImpl which will in turn pass it along to the
   // ResourceLoader.
   if (params->render_process_host_id() >= 0) {
-    DownloadInterruptReason reason = DownloadManagerImpl::BeginDownloadRequest(
-        std::move(url_request), resource_context, params.get());
+    download::DownloadInterruptReason reason =
+        DownloadManagerImpl::BeginDownloadRequest(
+            std::move(url_request), resource_context, params.get());
 
     // If the download was accepted, the DownloadResourceHandler is now
     // responsible for driving the request to completion.
-    if (reason == DOWNLOAD_INTERRUPT_REASON_NONE)
+    if (reason == download::DOWNLOAD_INTERRUPT_REASON_NONE)
       return nullptr;
 
     // Otherwise, create an interrupted download.
@@ -188,9 +189,10 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
   if (params->render_process_host_id() >= 0 &&
       !CanRequestURLFromRenderer(params->render_process_host_id(),
                                  params->url())) {
-    CreateInterruptedDownload(params.get(),
-                              DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
-                              download_manager);
+    CreateInterruptedDownload(
+        params.get(),
+        download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+        download_manager);
     return nullptr;
   }
 
@@ -236,7 +238,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const std::string& hash,
       DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
+      download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
@@ -380,7 +382,7 @@ void DownloadManagerImpl::DetermineDownloadTarget(
     // TODO(asanka): Determine a useful path if |target_path| is empty.
     callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
-                 DOWNLOAD_INTERRUPT_REASON_NONE);
+                 download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 }
 
@@ -482,11 +484,12 @@ void DownloadManagerImpl::StartDownload(
   DCHECK(info);
 
   // |stream| is only non-nil if the download request was successful.
-  DCHECK(
-      (info->result == DOWNLOAD_INTERRUPT_REASON_NONE && !stream->IsEmpty()) ||
-      (info->result != DOWNLOAD_INTERRUPT_REASON_NONE && stream->IsEmpty()));
-  DVLOG(20) << __func__
-            << "() result=" << DownloadInterruptReasonToString(info->result);
+  DCHECK((info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
+          !stream->IsEmpty()) ||
+         (info->result != download::DOWNLOAD_INTERRUPT_REASON_NONE &&
+          stream->IsEmpty()));
+  DVLOG(20) << __func__ << "() result="
+            << download::DownloadInterruptReasonToString(info->result);
   uint32_t download_id = info->download_id;
   const bool new_download = (download_id == content::DownloadItem::kInvalidId);
   if (new_download)
@@ -522,9 +525,10 @@ void DownloadManagerImpl::StartDownloadWithId(
       // while resuming, then also ignore the request.
       info->request_handle->CancelRequest(true);
       if (!on_started.is_null())
-        on_started.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+        on_started.Run(nullptr,
+                       download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
       // The ByteStreamReader lives and dies on the download sequence.
-      if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE)
+      if (info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
         GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
       return;
     }
@@ -570,7 +574,7 @@ void DownloadManagerImpl::StartDownloadWithId(
 
   std::unique_ptr<DownloadFile> download_file;
 
-  if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(stream.get());
     download_file.reset(file_factory_->CreateFile(
         std::move(info->save_info), default_download_directory,
@@ -594,7 +598,7 @@ void DownloadManagerImpl::StartDownloadWithId(
   }
 
   if (!on_started.is_null())
-    on_started.Run(download, DOWNLOAD_INTERRUPT_REASON_NONE);
+    on_started.Run(download, download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
@@ -727,12 +731,12 @@ void DownloadManagerImpl::AddUrlDownloadHandler(
 }
 
 // static
-DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
+download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
     std::unique_ptr<net::URLRequest> url_request,
     ResourceContext* resource_context,
     DownloadUrlParameters* params) {
   if (ResourceDispatcherHostImpl::Get()->is_shutdown())
-    return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
+    return download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   // The URLRequest needs to be initialized with the referrer and other
   // information prior to issuing it.
@@ -755,13 +759,13 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 
   // Check if the renderer is permitted to request the requested URL.
   if (!CanRequestURLFromRenderer(params->render_process_host_id(), url))
-    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
+    return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
 
   const net::URLRequestContext* request_context = url_request->context();
   if (!request_context->job_factory()->IsHandledProtocol(url.scheme())) {
     DVLOG(1) << "Download request for unsupported protocol: "
              << url.possibly_invalid_spec();
-    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
+    return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
   }
 
   // From this point forward, the |DownloadResourceHandler| is responsible for
@@ -776,7 +780,7 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
       std::move(url_request), std::move(handler), true,  // download
       params->content_initiated(), params->do_not_prompt_for_login(),
       resource_context);
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void DownloadManagerImpl::InterceptNavigation(
@@ -873,7 +877,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     const std::string& hash,
     DownloadItem::DownloadState state,
     download::DownloadDangerType danger_type,
-    DownloadInterruptReason interrupt_reason,
+    download::DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
     bool transient,

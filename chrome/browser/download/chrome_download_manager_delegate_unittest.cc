@@ -27,9 +27,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
@@ -104,13 +104,13 @@ struct DetermineDownloadTargetResult {
   content::DownloadItem::TargetDisposition disposition;
   download::DownloadDangerType danger_type;
   base::FilePath intermediate_path;
-  content::DownloadInterruptReason interrupt_reason;
+  download::DownloadInterruptReason interrupt_reason;
 };
 
 DetermineDownloadTargetResult::DetermineDownloadTargetResult()
     : disposition(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
       danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
-      interrupt_reason(content::DOWNLOAD_INTERRUPT_REASON_NONE) {}
+      interrupt_reason(download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
 // Subclass of the ChromeDownloadManagerDelegate that replaces a few interaction
 // points for ease of testing.
@@ -302,7 +302,7 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
   ON_CALL(*item, GetId())
       .WillByDefault(Return(id));
   ON_CALL(*item, GetLastReason())
-      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
+      .WillByDefault(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
   ON_CALL(*item, GetReferrerUrl())
       .WillByDefault(ReturnRefOfCopy(GURL()));
   ON_CALL(*item, GetState())
@@ -344,7 +344,7 @@ void StoreDownloadTargetInfo(
     DownloadItem::TargetDisposition target_disposition,
     download::DownloadDangerType danger_type,
     const base::FilePath& intermediate_path,
-    content::DownloadInterruptReason interrupt_reason) {
+    download::DownloadInterruptReason interrupt_reason) {
   result->target_path = target_path;
   result->disposition = target_disposition;
   result->danger_type = danger_type;
@@ -614,7 +614,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {
       static_cast<int>(DownloadPrefs::DownloadRestriction::ALL_FILES));
 
   DetermineDownloadTarget(download_item.get(), &result);
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
             result.interrupt_reason);
 
   VerifyAndClearExpectations();
@@ -889,11 +889,12 @@ TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing, CheckClientDownload) {
                       // Specifying a dangerous type here would take precendence
                       // over the blocking of the file.
                       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                      content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED));
+                      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED));
     } else {
-      EXPECT_CALL(*download_item, OnContentCheckCompleted(
-                                      kParameters.expected_danger_type,
-                                      content::DOWNLOAD_INTERRUPT_REASON_NONE));
+      EXPECT_CALL(
+          *download_item,
+          OnContentCheckCompleted(kParameters.expected_danger_type,
+                                  download::DOWNLOAD_INTERRUPT_REASON_NONE));
     }
   } else {
     EXPECT_CALL(*download_item, OnContentCheckCompleted(_, _)).Times(0);

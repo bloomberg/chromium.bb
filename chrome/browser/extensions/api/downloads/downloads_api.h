@@ -101,7 +101,7 @@ class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
                  extensions::api::downloads::FilenameConflictAction
                      creator_conflict_action,
                  content::DownloadItem* item,
-                 content::DownloadInterruptReason interrupt_reason);
+                 download::DownloadInterruptReason interrupt_reason);
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };

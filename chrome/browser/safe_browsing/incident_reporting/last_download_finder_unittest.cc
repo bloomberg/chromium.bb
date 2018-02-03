@@ -261,7 +261,7 @@ class LastDownloadFinderTest : public testing::Test {
     row.state = history::DownloadState::COMPLETE;
     row.danger_type = history::DownloadDangerType::NOT_DANGEROUS;
     row.interrupt_reason = history::ToHistoryDownloadInterruptReason(
-        content::DOWNLOAD_INTERRUPT_REASON_NONE);
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
     row.id = download_id_++;
     row.guid = base::GenerateGUID();
     row.opened = false;

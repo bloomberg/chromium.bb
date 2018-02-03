@@ -81,7 +81,7 @@ void DownloadJob::Start(DownloadFile* download_file_,
 
 void DownloadJob::OnDownloadFileInitialized(
     const DownloadFile::InitializeCallback& callback,
-    DownloadInterruptReason result) {
+    download::DownloadInterruptReason result) {
   callback.Run(result);
 }
 

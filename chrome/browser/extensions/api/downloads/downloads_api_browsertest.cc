@@ -356,10 +356,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
         current_browser()->profile(), event_name, json_args);
   }
 
-  bool WaitForInterruption(
-      DownloadItem* item,
-      content::DownloadInterruptReason expected_error,
-      const std::string& on_created_event) {
+  bool WaitForInterruption(DownloadItem* item,
+                           download::DownloadInterruptReason expected_error,
+                           const std::string& on_created_event) {
     if (!WaitFor(downloads::OnCreated::kEventName, on_created_event))
       return false;
     // Now, onCreated is always fired before interruption.
@@ -372,7 +371,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
             "    \"previous\": \"in_progress\","
             "    \"current\": \"interrupted\"}}]",
             item->GetId(),
-            content::DownloadInterruptReasonToString(expected_error).c_str()));
+            download::DownloadInterruptReasonToString(expected_error).c_str()));
   }
 
   void ClearEvents() {
@@ -443,8 +442,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
           history_info[i].state,  // state
           history_info[i].danger_type,
           (history_info[i].state != content::DownloadItem::CANCELLED
-               ? content::DOWNLOAD_INTERRUPT_REASON_NONE
-               : content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
+               ? download::DOWNLOAD_INTERRUPT_REASON_NONE
+               : download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
           false,    // opened
           current,  // last_access_time
           false, std::vector<DownloadItem::ReceivedSlice>());
@@ -789,30 +788,30 @@ bool ItemIsInterrupted(DownloadItem* item) {
   return item->GetState() == DownloadItem::INTERRUPTED;
 }
 
-content::DownloadInterruptReason InterruptReasonExtensionToContent(
+download::DownloadInterruptReason InterruptReasonExtensionToComponent(
     downloads::InterruptReason error) {
   switch (error) {
     case downloads::INTERRUPT_REASON_NONE:
-      return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+      return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 #define INTERRUPT_REASON(name, value)      \
   case downloads::INTERRUPT_REASON_##name: \
-    return content::DOWNLOAD_INTERRUPT_REASON_##name;
-#include "content/public/browser/download_interrupt_reason_values.h"
+    return download::DOWNLOAD_INTERRUPT_REASON_##name;
+#include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
   }
   NOTREACHED();
-  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 downloads::InterruptReason InterruptReasonContentToExtension(
-    content::DownloadInterruptReason error) {
+    download::DownloadInterruptReason error) {
   switch (error) {
-    case content::DOWNLOAD_INTERRUPT_REASON_NONE:
+    case download::DOWNLOAD_INTERRUPT_REASON_NONE:
       return downloads::INTERRUPT_REASON_NONE;
-#define INTERRUPT_REASON(name, value)             \
-  case content::DOWNLOAD_INTERRUPT_REASON_##name: \
+#define INTERRUPT_REASON(name, value)              \
+  case download::DOWNLOAD_INTERRUPT_REASON_##name: \
     return downloads::INTERRUPT_REASON_##name;
-#include "content/public/browser/download_interrupt_reason_values.h"
+#include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
   }
   NOTREACHED();
@@ -1752,7 +1751,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_EQ(GetExtensionURL(), item->GetSiteUrl().spec());
 
   item->SimulateErrorForTesting(
-      content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
   embedded_test_server_io_runner->PostTask(FROM_HERE, complete_callback);
 
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
@@ -1976,7 +1975,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitForInterruption(
-      item, content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+      item, download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
       "[{\"state\": \"in_progress\","
       "  \"url\": \"javascript:document.write(\\\"hello\\\");\"}]"));
 
@@ -1988,7 +1987,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitForInterruption(
-      item, content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+      item, download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
       "[{\"state\": \"in_progress\","
       "  \"url\": \"javascript:return false;\"}]"));
 
@@ -2000,7 +1999,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitForInterruption(
-      item, content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      item, download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
       "[{\"state\": \"in_progress\","
       "  \"url\": \"ftp://example.com/example.txt\"}]"));
 }
@@ -2259,8 +2258,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
   ASSERT_TRUE(WaitForInterruption(
-      item,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
+      item, download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
                          "  \"paused\": false,"
@@ -2352,8 +2350,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
   ASSERT_TRUE(WaitForInterruption(
-      item,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      item, download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
                          "  \"bytesReceived\": 0.0,"
@@ -2494,16 +2491,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
   ASSERT_TRUE(WaitForInterruption(
-      item,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      item, download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
                          "  \"mime\": \"\","
                          "  \"paused\": false,"
                          "  \"id\": %d,"
                          "  \"url\": \"%s\"}]",
-                         result_id,
-                         download_url.c_str())));
+                         result_id, download_url.c_str())));
 }
 
 // Test that downloadPostSuccess would fail if the resource requires the POST
@@ -2537,16 +2532,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
   ASSERT_TRUE(WaitForInterruption(
-      item,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      item, download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
                          "  \"mime\": \"\","
                          "  \"paused\": false,"
                          "  \"id\": %d,"
                          "  \"url\": \"%s\"}]",
-                         result_id,
-                         download_url.c_str())));
+                         result_id, download_url.c_str())));
 }
 
 // Test that cancel()ing an in-progress download causes its state to transition
@@ -4300,14 +4293,14 @@ IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
 
 TEST(DownloadInterruptReasonEnumsSynced,
      DownloadInterruptReasonEnumsSynced) {
-#define INTERRUPT_REASON(name, value)                                        \
-  EXPECT_EQ(InterruptReasonContentToExtension(                               \
-                content::DOWNLOAD_INTERRUPT_REASON_##name),                  \
-            downloads::INTERRUPT_REASON_##name);                             \
-  EXPECT_EQ(                                                                 \
-      InterruptReasonExtensionToContent(downloads::INTERRUPT_REASON_##name), \
-      content::DOWNLOAD_INTERRUPT_REASON_##name);
-#include "content/public/browser/download_interrupt_reason_values.h"  // NOLINT
+#define INTERRUPT_REASON(name, value)                                          \
+  EXPECT_EQ(InterruptReasonContentToExtension(                                 \
+                download::DOWNLOAD_INTERRUPT_REASON_##name),                   \
+            downloads::INTERRUPT_REASON_##name);                               \
+  EXPECT_EQ(                                                                   \
+      InterruptReasonExtensionToComponent(downloads::INTERRUPT_REASON_##name), \
+      download::DOWNLOAD_INTERRUPT_REASON_##name);
+#include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 }
 

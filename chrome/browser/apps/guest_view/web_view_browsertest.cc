@@ -2938,7 +2938,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
 
   content::TestFileErrorInjector::FileErrorInfo error_info(
       content::TestFileErrorInjector::FILE_OPERATION_STREAM_COMPLETE, 0,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
   error_info.stream_offset = 0;
   error_injector->InjectError(error_info);
 
@@ -2978,7 +2978,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
 
   for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
     download->Resume();
   }
@@ -3034,7 +3034,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 
   content::TestFileErrorInjector::FileErrorInfo error_info(
       content::TestFileErrorInjector::FILE_OPERATION_STREAM_COMPLETE, 0,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
   error_info.stream_offset = 0;
   error_injector->InjectError(error_info);
 
@@ -3122,7 +3122,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
     ASSERT_TRUE(temporary_download_dir.GetPath().IsParent(
         download->GetTargetFilePath()));
     ASSERT_TRUE(download->GetFullPath().empty());
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
     download->Resume();
   }
@@ -3149,7 +3149,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
   EXPECT_STREQ("cookie=first", content.c_str());
 
   ASSERT_EQ(content::DownloadItem::INTERRUPTED, failed_download->GetState());
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
             failed_download->GetLastReason());
 }
 

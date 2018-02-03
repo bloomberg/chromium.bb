@@ -17,11 +17,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/resume_mode.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
@@ -173,7 +173,7 @@ class CONTENT_EXPORT DownloadItemImpl
       const std::string& hash,
       DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
+      download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
@@ -213,7 +213,7 @@ class CONTENT_EXPORT DownloadItemImpl
   uint32_t GetId() const override;
   const std::string& GetGuid() const override;
   DownloadState GetState() const override;
-  DownloadInterruptReason GetLastReason() const override;
+  download::DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
   bool IsTemporary() const override;
   bool CanResume() const override;
@@ -267,14 +267,16 @@ class CONTENT_EXPORT DownloadItemImpl
   bool IsTransient() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
-  void OnContentCheckCompleted(download::DownloadDangerType danger_type,
-                               DownloadInterruptReason reason) override;
+  void OnContentCheckCompleted(
+      download::DownloadDangerType danger_type,
+      download::DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
   void SetLastAccessTime(base::Time last_access_time) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
-  void SimulateErrorForTesting(DownloadInterruptReason reason) override;
+  void SimulateErrorForTesting(
+      download::DownloadInterruptReason reason) override;
 
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
@@ -324,7 +326,7 @@ class CONTENT_EXPORT DownloadItemImpl
       int64_t bytes_per_sec,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
   void DestinationError(
-      DownloadInterruptReason reason,
+      download::DownloadInterruptReason reason,
       int64_t bytes_so_far,
       std::unique_ptr<crypto::SecureHash> hash_state) override;
   void DestinationCompleted(
@@ -497,7 +499,7 @@ class CONTENT_EXPORT DownloadItemImpl
   void Init(bool active, DownloadItem::DownloadType download_type);
 
   // Callback from file thread when we initialize the DownloadFile.
-  void OnDownloadFileInitialized(DownloadInterruptReason result);
+  void OnDownloadFileInitialized(download::DownloadInterruptReason result);
 
   // Called to determine the target path. Will cause OnDownloadTargetDetermined
   // to be called when the target information is available.
@@ -513,10 +515,11 @@ class CONTENT_EXPORT DownloadItemImpl
       TargetDisposition disposition,
       download::DownloadDangerType danger_type,
       const base::FilePath& intermediate_path,
-      DownloadInterruptReason interrupt_reason);
+      download::DownloadInterruptReason interrupt_reason);
 
   void OnDownloadRenamedToIntermediateName(
-      DownloadInterruptReason reason, const base::FilePath& full_path);
+      download::DownloadInterruptReason reason,
+      const base::FilePath& full_path);
 
   void OnTargetResolved();
 
@@ -530,7 +533,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // DownloadItem::Completed().
   void OnDownloadCompleting();
 
-  void OnDownloadRenamedToFinalName(DownloadInterruptReason reason,
+  void OnDownloadRenamedToFinalName(download::DownloadInterruptReason reason,
                                     const base::FilePath& full_path);
 
   // Called if the embedder took over opening a download, to indicate that
@@ -546,7 +549,8 @@ class CONTENT_EXPORT DownloadItemImpl
   // Indicate that an error has occurred on the download. Discards partial
   // state. The interrupted download will not be considered continuable, but may
   // be restarted.
-  void InterruptAndDiscardPartialState(DownloadInterruptReason reason);
+  void InterruptAndDiscardPartialState(
+      download::DownloadInterruptReason reason);
 
   // Indiates that an error has occurred on the download. The |bytes_so_far| and
   // |hash_state| should correspond to the state of the DownloadFile. If the
@@ -554,7 +558,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // interrupted download upon resumption.
   void InterruptWithPartialState(int64_t bytes_so_far,
                                  std::unique_ptr<crypto::SecureHash> hash_state,
-                                 DownloadInterruptReason reason);
+                                 download::DownloadInterruptReason reason);
 
   void UpdateProgress(int64_t bytes_so_far, int64_t bytes_per_sec);
 
@@ -650,7 +654,8 @@ class CONTENT_EXPORT DownloadItemImpl
   int64_t total_bytes_ = 0;
 
   // Last reason.
-  DownloadInterruptReason last_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason last_reason_ =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Start time for recording statistics.
   base::TimeTicks start_tick_;
@@ -700,8 +705,8 @@ class CONTENT_EXPORT DownloadItemImpl
   // Error return from DestinationError or received at Start().  Stored
   // separately from last_reason_ so that we can avoid handling destination
   // errors until after file name determination has occurred.
-  DownloadInterruptReason deferred_interrupt_reason_ =
-      DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason deferred_interrupt_reason_ =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // The following fields describe the current state of the download file.
 

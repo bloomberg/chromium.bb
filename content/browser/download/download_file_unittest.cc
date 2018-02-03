@@ -18,12 +18,12 @@
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -86,7 +86,7 @@ class MockDownloadDestinationObserver : public DownloadDestinationObserver {
   MOCK_METHOD3(DestinationUpdate, void(
       int64_t, int64_t, const std::vector<DownloadItem::ReceivedSlice>&));
   void DestinationError(
-      DownloadInterruptReason reason,
+      download::DownloadInterruptReason reason,
       int64_t bytes_so_far,
       std::unique_ptr<crypto::SecureHash> hash_state) override {
     MockDestinationError(
@@ -100,7 +100,9 @@ class MockDownloadDestinationObserver : public DownloadDestinationObserver {
   }
 
   MOCK_METHOD3(MockDestinationError,
-               void(DownloadInterruptReason, int64_t, const std::string&));
+               void(download::DownloadInterruptReason,
+                    int64_t,
+                    const std::string&));
   MOCK_METHOD2(MockDestinationCompleted, void(int64_t, const std::string&));
 
   // Doesn't override any methods in the base class.  Used to make sure
@@ -137,8 +139,9 @@ class TestDownloadFileImpl : public DownloadFileImpl {
   // On Posix, we don't encounter transient errors during renames, except
   // possibly EAGAIN, which is difficult to replicate reliably. So we resort to
   // simulating a transient error using ACCESS_DENIED instead.
-  bool ShouldRetryFailedRename(DownloadInterruptReason reason) override {
-    return reason == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+  bool ShouldRetryFailedRename(
+      download::DownloadInterruptReason reason) override {
+    return reason == download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
   }
 #endif
 };
@@ -195,8 +198,8 @@ class DownloadFileTest : public testing::Test {
   }
 
   void SetInterruptReasonCallback(const base::Closure& closure,
-                                  DownloadInterruptReason* reason_p,
-                                  DownloadInterruptReason reason) {
+                                  download::DownloadInterruptReason* reason_p,
+                                  download::DownloadInterruptReason reason) {
     *reason_p = reason;
     closure.Run();
   }
@@ -237,7 +240,8 @@ class DownloadFileTest : public testing::Test {
         .RetiresOnSaturation();
 
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
-    DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
+    download::DownloadInterruptReason result =
+        download::DOWNLOAD_INTERRUPT_REASON_NONE;
     base::RunLoop loop_runner;
     download_file_->Initialize(
         base::Bind(&DownloadFileTest::SetInterruptReasonCallback,
@@ -247,7 +251,7 @@ class DownloadFileTest : public testing::Test {
     loop_runner.Run();
 
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);
-    return result == DOWNLOAD_INTERRUPT_REASON_NONE;
+    return result == download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   void DestroyDownloadFile(int offset, bool compare_disk_data = true) {
@@ -320,7 +324,7 @@ class DownloadFileTest : public testing::Test {
     VerifyStreamAndSize();
   }
 
-  void SetupFinishStream(DownloadInterruptReason interrupt_reason,
+  void SetupFinishStream(download::DownloadInterruptReason interrupt_reason,
                          MockByteStreamReader* stream_reader,
                          ::testing::Sequence s) {
     EXPECT_CALL(*stream_reader, Read(_, _))
@@ -334,7 +338,7 @@ class DownloadFileTest : public testing::Test {
     EXPECT_CALL(*stream_reader, RegisterCallback(_)).RetiresOnSaturation();
   }
 
-  void FinishStream(DownloadInterruptReason interrupt_reason,
+  void FinishStream(download::DownloadInterruptReason interrupt_reason,
                     bool check_observer,
                     const std::string& expected_hash) {
     ::testing::Sequence s1;
@@ -353,23 +357,24 @@ class DownloadFileTest : public testing::Test {
     }
   }
 
-  DownloadInterruptReason RenameAndUniquify(
+  download::DownloadInterruptReason RenameAndUniquify(
       const base::FilePath& full_path,
       base::FilePath* result_path_p) {
     return InvokeRenameMethodAndWaitForCallback(
         RENAME_AND_UNIQUIFY, full_path, result_path_p);
   }
 
-  DownloadInterruptReason RenameAndAnnotate(
+  download::DownloadInterruptReason RenameAndAnnotate(
       const base::FilePath& full_path,
       base::FilePath* result_path_p) {
     return InvokeRenameMethodAndWaitForCallback(
         RENAME_AND_ANNOTATE, full_path, result_path_p);
   }
 
-  void ExpectPermissionError(DownloadInterruptReason err) {
-    EXPECT_TRUE(err == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR ||
-                err == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED)
+  void ExpectPermissionError(download::DownloadInterruptReason err) {
+    EXPECT_TRUE(err ==
+                    download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR ||
+                err == download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED)
         << "Interrupt reason = " << err;
   }
 
@@ -394,11 +399,12 @@ class DownloadFileTest : public testing::Test {
     }
   }
 
-  DownloadInterruptReason InvokeRenameMethodAndWaitForCallback(
+  download::DownloadInterruptReason InvokeRenameMethodAndWaitForCallback(
       DownloadFileRenameMethodType method,
       const base::FilePath& full_path,
       base::FilePath* result_path_p) {
-    DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
+    download::DownloadInterruptReason result_reason(
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
     base::FilePath result_path;
     base::RunLoop loop_runner;
     DownloadFile::RenameCompletionCallback completion_callback =
@@ -433,7 +439,7 @@ class DownloadFileTest : public testing::Test {
     Sequence seq;
     SetupDataAppend(buffers, num_buffer, *stream, seq, offset);
     if (will_finish)
-      SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, *stream, seq);
+      SetupFinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, *stream, seq);
   }
 
   void VerifySourceStreamsStates(const SourceStreamTestData& data) {
@@ -480,9 +486,9 @@ class DownloadFileTest : public testing::Test {
 
  private:
   void SetRenameResult(const base::Closure& closure,
-                       DownloadInterruptReason* reason_p,
+                       download::DownloadInterruptReason* reason_p,
                        base::FilePath* result_path_p,
-                       DownloadInterruptReason reason,
+                       download::DownloadInterruptReason reason,
                        const base::FilePath& result_path) {
     if (reason_p)
       *reason_p = reason;
@@ -506,7 +512,7 @@ class DownloadFileTestWithRename
     : public DownloadFileTest,
       public ::testing::WithParamInterface<DownloadFileRenameMethodType> {
  protected:
-  DownloadInterruptReason InvokeSelectedRenameMethod(
+  download::DownloadInterruptReason InvokeSelectedRenameMethod(
       const base::FilePath& full_path,
       base::FilePath* result_path_p) {
     return InvokeRenameMethodAndWaitForCallback(
@@ -557,7 +563,7 @@ TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   base::FilePath output_path;
 
   // Rename the file before downloading any data.
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             InvokeSelectedRenameMethod(path_1, &output_path));
   base::FilePath renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_1, renamed_path);
@@ -572,7 +578,7 @@ TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   AppendDataToFile(chunks1, 2);
 
   // Rename the file after downloading some data.
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             InvokeSelectedRenameMethod(path_2, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_2, renamed_path);
@@ -586,7 +592,7 @@ TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   AppendDataToFile(chunks2, 1);
 
   // Rename the file after downloading all the data.
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             InvokeSelectedRenameMethod(path_3, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_3, renamed_path);
@@ -596,11 +602,11 @@ TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   EXPECT_FALSE(base::PathExists(path_2));
   EXPECT_TRUE(base::PathExists(path_3));
 
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kDataHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kDataHash);
   base::RunLoop().RunUntilIdle();
 
   // Rename the file after downloading all the data and closing the file.
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             InvokeSelectedRenameMethod(path_4, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_4, renamed_path);
@@ -629,7 +635,7 @@ TEST_F(DownloadFileTest, RenameOverwrites) {
   ASSERT_TRUE(base::PathExists(path_1));
 
   base::FilePath new_path;
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             RenameAndAnnotate(path_1, &new_path));
   EXPECT_EQ(path_1.value(), new_path.value());
 
@@ -637,7 +643,7 @@ TEST_F(DownloadFileTest, RenameOverwrites) {
   ASSERT_TRUE(base::ReadFileToString(new_path, &file_contents));
   EXPECT_NE(std::string(file_data), file_contents);
 
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
   base::RunLoop().RunUntilIdle();
   DestroyDownloadFile(0);
 }
@@ -659,10 +665,11 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
             base::WriteFile(path_1, file_data, sizeof(file_data)));
   ASSERT_TRUE(base::PathExists(path_1));
 
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, RenameAndUniquify(path_1, nullptr));
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
+            RenameAndUniquify(path_1, nullptr));
   EXPECT_TRUE(base::PathExists(path_1_suffixed));
 
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
   base::RunLoop().RunUntilIdle();
   DestroyDownloadFile(0);
 }
@@ -675,11 +682,11 @@ TEST_F(DownloadFileTest, RenameRecognizesSelfConflict) {
   EXPECT_TRUE(base::PathExists(initial_path));
 
   base::FilePath new_path;
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             RenameAndUniquify(initial_path, &new_path));
   EXPECT_TRUE(base::PathExists(initial_path));
 
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
   base::RunLoop().RunUntilIdle();
   DestroyDownloadFile(0);
   EXPECT_EQ(initial_path.value(), new_path.value());
@@ -714,18 +721,19 @@ TEST_P(DownloadFileTestWithRename, RenameError) {
     EXPECT_FALSE(base::PathExists(target_path_suffixed));
   }
 
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
   base::RunLoop().RunUntilIdle();
   DestroyDownloadFile(0);
 }
 
 namespace {
 
-void TestRenameCompletionCallback(const base::Closure& closure,
-                                  bool* did_run_callback,
-                                  DownloadInterruptReason interrupt_reason,
-                                  const base::FilePath& new_path) {
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+void TestRenameCompletionCallback(
+    const base::Closure& closure,
+    bool* did_run_callback,
+    download::DownloadInterruptReason interrupt_reason,
+    const base::FilePath& new_path) {
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
   *did_run_callback = true;
   closure.Run();
 }
@@ -807,7 +815,7 @@ TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
   succeeding_run.Run();
   EXPECT_TRUE(did_run_callback);
 
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
   base::RunLoop().RunUntilIdle();
   DestroyDownloadFile(0);
 }
@@ -823,7 +831,7 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
   AppendDataToFile(nullptr, 0);
 
   // Finish the download this way and make sure we see it on the observer.
-  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
   base::RunLoop().RunUntilIdle();
 
   DestroyDownloadFile(0);
@@ -836,10 +844,10 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
 
   // Finish the download in error and make sure we see it on the
   // observer.
-  EXPECT_CALL(
-      *(observer_.get()),
-      MockDestinationError(
-          DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, 0, kEmptyHash))
+  EXPECT_CALL(*(observer_.get()),
+              MockDestinationError(
+                  download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, 0,
+                  kEmptyHash))
       .WillOnce(InvokeWithoutArgs(
           this, &DownloadFileTest::ConfirmUpdateDownloadInfo));
 
@@ -850,8 +858,8 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
   // same time.
   EXPECT_CALL(*(observer_.get()), CurrentUpdateStatus(0, _));
 
-  FinishStream(
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, false, kEmptyHash);
+  FinishStream(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, false,
+               kEmptyHash);
 
   base::RunLoop().RunUntilIdle();
 
@@ -866,7 +874,8 @@ TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
   const char* chunks1[] = { kTestData1, kTestData2 };
   ::testing::Sequence s1;
   SetupDataAppend(chunks1, 2, input_stream_, s1);
-  SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_, s1);
+  SetupFinishStream(download::DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_,
+                    s1);
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
   sink_callback_.Run();
   VerifyStreamAndSize();
@@ -882,12 +891,13 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
   const char* chunks1[] = { kTestData1, kTestData2 };
   ::testing::Sequence s1;
   SetupDataAppend(chunks1, 2, input_stream_, s1);
-  SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
+  SetupFinishStream(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
                     input_stream_, s1);
 
-  EXPECT_CALL(*(observer_.get()),
-              MockDestinationError(
-                  DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, _, _))
+  EXPECT_CALL(
+      *(observer_.get()),
+      MockDestinationError(
+          download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, _, _))
       .WillOnce(InvokeWithoutArgs(
           this, &DownloadFileTest::ConfirmUpdateDownloadInfo));
 

@@ -8,11 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 
 namespace content {
 
@@ -63,7 +63,7 @@ class CONTENT_EXPORT DownloadJob {
   // Callback from file thread when we initialize the DownloadFile.
   virtual void OnDownloadFileInitialized(
       const DownloadFile::InitializeCallback& callback,
-      DownloadInterruptReason result);
+      download::DownloadInterruptReason result);
 
   // Add an input stream to the download sink. Return false if we start to
   // destroy download file.

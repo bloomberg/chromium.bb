@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_danger_type.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 
 struct DownloadTargetInfo {
@@ -76,7 +76,7 @@ struct DownloadTargetInfo {
   bool is_filetype_handled_safely;
 
   // Result of the download target determination.
-  content::DownloadInterruptReason result;
+  download::DownloadInterruptReason result;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_INFO_H_

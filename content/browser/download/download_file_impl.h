@@ -62,7 +62,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
                       int64_t offset,
                       int64_t length) override;
   void OnResponseCompleted(int64_t offset,
-                           DownloadInterruptReason status) override;
+                           download::DownloadInterruptReason status) override;
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
@@ -99,7 +99,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     void OnStreamCompleted(mojom::NetworkRequestStatus status) override;
 
     // Called when response is completed.
-    void OnResponseCompleted(DownloadInterruptReason reason);
+    void OnResponseCompleted(download::DownloadInterruptReason reason);
 
     // Called after successfully writing a buffer to disk.
     void OnWriteBytesToDisk(int64_t bytes_write);
@@ -123,7 +123,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // DownloadManager pass the status code to DownloadItem or DownloadFile.
     // However, a DownloadFile can have multiple SourceStreams, so we have to
     // maintain a map between data pipe and DownloadItem/DownloadFile somewhere.
-    DownloadInterruptReason GetCompletionStatus() const;
+    download::DownloadInterruptReason GetCompletionStatus() const;
 
     using CompletionCallback = base::OnceCallback<void(SourceStream*)>;
     // Register an callback to be called when download completes.
@@ -170,7 +170,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     std::unique_ptr<ByteStreamReader> stream_reader_;
 
     // Status when the response completes, used by data pipe.
-    DownloadInterruptReason completion_status_;
+    download::DownloadInterruptReason completion_status_;
 
     // Whether the producer has completed handling the response.
     bool is_response_completed_;
@@ -189,15 +189,16 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // For test class overrides.
   // Write data from the offset to the file.
   // On OS level, it will seek to the |offset| and write from there.
-  virtual DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                                  const char* data,
-                                                  size_t data_len);
+  virtual download::DownloadInterruptReason WriteDataToFile(int64_t offset,
+                                                            const char* data,
+                                                            size_t data_len);
 
   virtual base::TimeDelta GetRetryDelayForFailedRename(int attempt_number);
 
-  virtual bool ShouldRetryFailedRename(DownloadInterruptReason reason);
+  virtual bool ShouldRetryFailedRename(
+      download::DownloadInterruptReason reason);
 
-  virtual DownloadInterruptReason HandleStreamCompletionStatus(
+  virtual download::DownloadInterruptReason HandleStreamCompletionStatus(
       SourceStream* source_stream);
 
  private:
@@ -271,7 +272,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Notify |observer_| about the download status.
   void NotifyObserver(SourceStream* source_stream,
-                      DownloadInterruptReason reason,
+                      download::DownloadInterruptReason reason,
                       SourceStream::StreamState stream_state,
                       bool should_terminate);
 
@@ -290,7 +291,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Helper method to handle stream error
   void HandleStreamError(SourceStream* source_stream,
-                         DownloadInterruptReason reason);
+                         download::DownloadInterruptReason reason);
 
   // Check whether this file is potentially sparse.
   bool IsSparseFile() const;

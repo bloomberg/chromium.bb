@@ -122,15 +122,16 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   }
 
   void OnDownloadStarted(DownloadItem* item,
-                         DownloadInterruptReason interrupt_reason) {
+                         download::DownloadInterruptReason interrupt_reason) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!item || item->GetState() != DownloadItem::IN_PROGRESS) {
-      DCHECK(!item || item->GetLastReason() != DOWNLOAD_INTERRUPT_REASON_NONE);
+      DCHECK(!item ||
+             item->GetLastReason() != download::DOWNLOAD_INTERRUPT_REASON_NONE);
       on_completed_task_runner_->PostTask(FROM_HERE,
                                           base::BindOnce(on_completed_, false));
       return;
     }
-    DCHECK_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+    DCHECK_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     download_item_ = item;
     download_item_->AddObserver(this);
   }

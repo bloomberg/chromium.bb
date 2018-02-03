@@ -24,11 +24,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "net/base/filename_util.h"
@@ -103,7 +103,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
       is_filetype_handled_safely_(false),
       download_(download),
       is_resumption_(download_->GetLastReason() !=
-                         content::DOWNLOAD_INTERRUPT_REASON_NONE &&
+                         download::DOWNLOAD_INTERRUPT_REASON_NONE &&
                      !initial_virtual_path.empty()),
       download_prefs_(download_prefs),
       delegate_(delegate),
@@ -174,7 +174,7 @@ void DownloadTargetDeterminer::DoLoop() {
   // determination and delete |this|.
 
   if (result == COMPLETE)
-    ScheduleCallbackAndDeleteSelf(content::DOWNLOAD_INTERRUPT_REASON_NONE);
+    ScheduleCallbackAndDeleteSelf(download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 DownloadTargetDeterminer::Result
@@ -202,7 +202,7 @@ DownloadTargetDeterminer::Result
       RecordDownloadPathGeneration(DownloadPathGenerationEvent::NO_VALID_PATH,
                                    true);
       ScheduleCallbackAndDeleteSelf(
-          content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+          download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
       return QUIT_DOLOOP;
     }
 
@@ -358,7 +358,7 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
       case PathValidationResult::NAME_TOO_LONG:
       case PathValidationResult::CONFLICT:
         ScheduleCallbackAndDeleteSelf(
-            content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+            download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
         return;
       case PathValidationResult::SUCCESS:
       case PathValidationResult::SAME_AS_SOURCE:
@@ -426,7 +426,7 @@ void DownloadTargetDeterminer::RequestConfirmationDone(
   DVLOG(20) << "User selected path:" << virtual_path.AsUTF8Unsafe();
   if (result == DownloadConfirmationResult::CANCELED) {
     ScheduleCallbackAndDeleteSelf(
-        content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
     return;
   }
   DCHECK(!virtual_path.empty());
@@ -469,7 +469,7 @@ void DownloadTargetDeterminer::DetermineLocalPathDone(
     // cache file). We are going to return a generic error here since a more
     // specific one is unlikely to be helpful to the user.
     ScheduleCallbackAndDeleteSelf(
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     return;
   }
   DCHECK_EQ(STATE_DETERMINE_MIME_TYPE, next_state_);
@@ -819,7 +819,7 @@ DownloadTargetDeterminer::Result
 }
 
 void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
-    content::DownloadInterruptReason result) {
+    download::DownloadInterruptReason result) {
   DCHECK(download_);
   DVLOG(20) << "Scheduling callback. Virtual:" << virtual_path_.AsUTF8Unsafe()
             << " Local:" << local_path_.AsUTF8Unsafe()
@@ -866,13 +866,13 @@ DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
     // prompting, the user has already been prompted. Try to respect the user's
     // selection, unless we've discovered that the target path cannot be used
     // for some reason.
-    content::DownloadInterruptReason reason = download_->GetLastReason();
+    download::DownloadInterruptReason reason = download_->GetLastReason();
     switch (reason) {
-      case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+      case download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
         return DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE;
 
-      case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
-      case content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+      case download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+      case download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
         return DownloadConfirmationReason::TARGET_NO_SPACE;
 
       default:
@@ -983,7 +983,7 @@ void DownloadTargetDeterminer::OnDownloadDestroyed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(download_, download);
   ScheduleCallbackAndDeleteSelf(
-      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+      download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
 // static

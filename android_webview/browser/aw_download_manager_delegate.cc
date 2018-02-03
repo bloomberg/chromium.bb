@@ -21,7 +21,7 @@ bool AwDownloadManagerDelegate::DetermineDownloadTarget(
   callback.Run(base::FilePath() /* Empty file path for cancel */,
                content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
-               content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+               download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   return true;
 }
 

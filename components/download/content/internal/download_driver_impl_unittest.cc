@@ -144,7 +144,7 @@ TEST_F(DownloadDriverImplTest, RemoveBeforeCreated) {
 // Ensures download updates from download items are propagated correctly.
 TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   using DownloadState = content::DownloadItem::DownloadState;
-  using DownloadInterruptReason = content::DownloadInterruptReason;
+  using DownloadInterruptReason = download::DownloadInterruptReason;
 
   EXPECT_CALL(mock_manager_, IsManagerInitialized())
       .Times(1)

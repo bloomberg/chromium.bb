@@ -56,8 +56,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/downloads.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_details.h"
@@ -277,13 +277,12 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
   json->SetBoolean(kIncognitoKey, browser_context->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
-    json->SetString(kErrorKey,
-                    content::DownloadInterruptReasonToString(
-                        download_item->GetLastReason()));
+    json->SetString(kErrorKey, download::DownloadInterruptReasonToString(
+                                   download_item->GetLastReason()));
   } else if (download_item->GetState() == DownloadItem::CANCELLED) {
     json->SetString(kErrorKey,
-                    content::DownloadInterruptReasonToString(
-                        content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
+                    download::DownloadInterruptReasonToString(
+                        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
   }
   if (!download_item->GetEndTime().is_null())
     json->SetString(kEndTimeKey, TimeToISO8601(download_item->GetEndTime()));
@@ -1101,11 +1100,11 @@ void DownloadsDownloadFunction::OnStarted(
     const base::FilePath& creator_suggested_filename,
     downloads::FilenameConflictAction creator_conflict_action,
     DownloadItem* item,
-    content::DownloadInterruptReason interrupt_reason) {
+    download::DownloadInterruptReason interrupt_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << __func__ << " " << item << " " << interrupt_reason;
   if (item) {
-    DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+    DCHECK_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     SetResult(std::make_unique<base::Value>(static_cast<int>(item->GetId())));
     if (!creator_suggested_filename.empty() ||
         (creator_conflict_action !=
@@ -1123,8 +1122,8 @@ void DownloadsDownloadFunction::OnStarted(
     new DownloadedByExtension(item, extension()->id(), extension()->name());
     item->UpdateObservers();
   } else {
-    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-    error_ = content::DownloadInterruptReasonToString(interrupt_reason);
+    DCHECK_NE(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+    error_ = download::DownloadInterruptReasonToString(interrupt_reason);
   }
   SendResponse(error_.empty());
 }

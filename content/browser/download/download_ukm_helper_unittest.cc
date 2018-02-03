@@ -68,8 +68,8 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
 
   // RecordDownloadInterrupted, has change in file size.
   int change_in_file_size = 1000;
-  DownloadInterruptReason reason =
-      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason reason =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   int resulting_file_size = 2000;
   int time_since_start = 250;
   DownloadUkmHelper::RecordDownloadInterrupted(

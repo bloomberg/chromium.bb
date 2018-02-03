@@ -18,8 +18,8 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -223,7 +223,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   // DownloadManager::DownloadUrl callback.
   void OnDownloadStarted(const std::string& extension_id,
                          content::DownloadItem* item,
-                         content::DownloadInterruptReason interrupt_reason);
+                         download::DownloadInterruptReason interrupt_reason);
 
   // DownloadItem::Observer implementation:
   void OnDownloadUpdated(content::DownloadItem* download) override;

@@ -277,7 +277,7 @@ class DownloadTargetDeterminer
   // this object. The determined target info will be passed into the callback
   // if |interrupt_reason| is NONE. Otherwise, only the interrupt reason will be
   // passed on.
-  void ScheduleCallbackAndDeleteSelf(content::DownloadInterruptReason result);
+  void ScheduleCallbackAndDeleteSelf(download::DownloadInterruptReason result);
 
   Profile* GetProfile() const;
 

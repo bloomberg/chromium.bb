@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "crypto/secure_hash.h"
 
@@ -34,7 +34,7 @@ class DownloadDestinationObserver {
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
   virtual void DestinationError(
-      DownloadInterruptReason reason,
+      download::DownloadInterruptReason reason,
       int64_t bytes_so_far,
       std::unique_ptr<crypto::SecureHash> hash_state) = 0;
 

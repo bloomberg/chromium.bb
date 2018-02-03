@@ -9,11 +9,11 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -115,7 +115,7 @@ void UrlDownloader::OnReceivedRedirect(net::URLRequest* request,
   // is no security policy being applied here, it's safer to block redirects and
   // revisit if some previously unknown legitimate use case arises for redirects
   // while resuming.
-  core_.OnWillAbort(DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE);
+  core_.OnWillAbort(download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE);
   request_->CancelWithError(net::ERR_UNSAFE_REDIRECT);
 }
 

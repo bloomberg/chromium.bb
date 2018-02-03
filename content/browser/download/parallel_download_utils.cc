@@ -123,7 +123,7 @@ bool CanRecoverFromError(
     if (preceding_neighbor->length() ==
             download::DownloadSaveInfo::kLengthFullContent &&
         preceding_neighbor->GetCompletionStatus() ==
-            DOWNLOAD_INTERRUPT_REASON_NONE) {
+            download::DOWNLOAD_INTERRUPT_REASON_NONE) {
       return true;
     }
 

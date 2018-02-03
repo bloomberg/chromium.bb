@@ -10,16 +10,10 @@
 #include "base/bind_helpers.h"
 #include "base/process/process.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/web_contents.h"
-
-using content::DownloadItem;
 
 PluginInstaller::PluginInstaller() : strong_observer_count_(0) {}
 

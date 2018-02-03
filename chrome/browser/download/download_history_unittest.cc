@@ -349,7 +349,7 @@ class DownloadHistoryTest : public testing::Test {
     info->danger_type = history::ToHistoryDownloadDangerType(
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
     info->interrupt_reason = history::ToHistoryDownloadInterruptReason(
-        content::DOWNLOAD_INTERRUPT_REASON_NONE);
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
     info->id =
         history::ToHistoryDownloadId(static_cast<uint32_t>(items_.size() + 1));
     info->guid = base::GenerateGUID();
@@ -400,7 +400,7 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(item(index), GetDangerType())
         .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     EXPECT_CALL(item(index), GetLastReason())
-        .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
+        .WillRepeatedly(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
     EXPECT_CALL(item(index), GetOpened()).WillRepeatedly(Return(info->opened));
     EXPECT_CALL(item(index), GetLastAccessTime())
         .WillRepeatedly(Return(info->last_access_time));
@@ -712,9 +712,10 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
 
   // interrupt_reason
   EXPECT_CALL(item(0), GetLastReason())
-      .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED));
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED));
   info.interrupt_reason = history::ToHistoryDownloadInterruptReason(
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info, false);
 

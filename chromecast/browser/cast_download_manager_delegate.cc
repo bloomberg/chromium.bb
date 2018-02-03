@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "components/download/public/common/download_danger_type.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 
 namespace chromecast {
@@ -32,7 +32,7 @@ bool CastDownloadManagerDelegate::DetermineDownloadTarget(
   base::FilePath empty;
   callback.Run(empty, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, empty,
-               content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+               download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   return true;
 }
 

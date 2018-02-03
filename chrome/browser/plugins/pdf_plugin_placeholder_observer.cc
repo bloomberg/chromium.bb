@@ -24,8 +24,8 @@ namespace {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 void OnDownloadStarted(content::DownloadItem* item,
-                       content::DownloadInterruptReason interrupt_reason) {
-  if (item && interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NONE)
+                       download::DownloadInterruptReason interrupt_reason) {
+  if (item && interrupt_reason == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     item->SetOpenWhenComplete(true);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)

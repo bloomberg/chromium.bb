@@ -36,7 +36,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/download_stream.mojom.h"
@@ -166,7 +166,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       const std::string& hash,
       DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
+      download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,

@@ -7,10 +7,10 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
 
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
 #include "content/browser/download/download_content.h"
 #include "content/browser/download/resume_mode.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -33,7 +33,7 @@ class CONTENT_EXPORT DownloadUkmHelper {
   static void RecordDownloadInterrupted(
       int download_id,
       base::Optional<int> change_in_file_size,
-      DownloadInterruptReason reason,
+      download::DownloadInterruptReason reason,
       int resulting_file_size,
       const base::TimeDelta& time_since_start);
 

@@ -282,8 +282,9 @@ DownloadsListTracker::CreateDownloadItemValue(
       // GetStatusText() as a temporary measure until the layout is fixed to
       // accommodate the longer string. http://crbug.com/609255
       last_reason_text = download_model.GetStatusText();
-      if (content::DOWNLOAD_INTERRUPT_REASON_CRASH ==
-          download_item->GetLastReason() && !download_item->CanResume()) {
+      if (download::DOWNLOAD_INTERRUPT_REASON_CRASH ==
+              download_item->GetLastReason() &&
+          !download_item->CanResume()) {
         retry = true;
       }
       break;

@@ -15,12 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_source.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
@@ -97,7 +97,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // If the download is initially created in an interrupted state (because the
   // response was in error), then |result| would be something other than
   // INTERRUPT_REASON_NONE.
-  DownloadInterruptReason result;
+  download::DownloadInterruptReason result;
 
   // The download file save info.
   std::unique_ptr<download::DownloadSaveInfo> save_info;

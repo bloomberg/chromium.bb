@@ -424,10 +424,9 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
 
 DownloadTestItemCreationObserver::DownloadTestItemCreationObserver()
     : download_id_(DownloadItem::kInvalidId),
-      interrupt_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      interrupt_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE),
       called_back_count_(0),
-      waiting_(false) {
-}
+      waiting_(false) {}
 
 DownloadTestItemCreationObserver::~DownloadTestItemCreationObserver() {
 }
@@ -444,7 +443,7 @@ void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
 
 void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
     DownloadItem* item,
-    DownloadInterruptReason interrupt_reason) {
+    download::DownloadInterruptReason interrupt_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (item)

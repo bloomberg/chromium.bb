@@ -6,7 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/filename_util.h"
@@ -70,16 +70,15 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
                                       << " Referrer: " << test_case.referrer);
 
     BaseFile base_file(DownloadItem::kInvalidId);
-    ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              base_file.Initialize(base::FilePath(), target_directory.GetPath(),
-                                   base::File(), 0, std::string(),
-                                   std::unique_ptr<crypto::SecureHash>(),
-                                   false));
+    ASSERT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
+              base_file.Initialize(
+                  base::FilePath(), target_directory.GetPath(), base::File(), 0,
+                  std::string(), std::unique_ptr<crypto::SecureHash>(), false));
     ASSERT_FALSE(base_file.full_path().empty());
-    ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+    ASSERT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
               base_file.Rename(
                   target_directory.GetPath().AppendASCII("test_file.doc")));
-    ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+    ASSERT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
               base_file.AnnotateWithSourceInformation(
                   "7B2CEE7C-DC81-4160-86F1-9C968597118F", url, referrer));
     base_file.Detach();

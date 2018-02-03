@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_source.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/common/referrer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -57,7 +57,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // are not created when a resource throttle or a resource handler blocks the
   // download request. I.e. the download triggered a warning of some sort and
   // the user chose to not to proceed with the download as a result.
-  typedef base::Callback<void(DownloadItem*, DownloadInterruptReason)>
+  typedef base::Callback<void(DownloadItem*, download::DownloadInterruptReason)>
       OnStartedCallback;
 
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;

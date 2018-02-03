@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
-#include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
 class PluginInstallerObserver;

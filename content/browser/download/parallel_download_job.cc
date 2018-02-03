@@ -39,9 +39,9 @@ ParallelDownloadJob::~ParallelDownloadJob() = default;
 
 void ParallelDownloadJob::OnDownloadFileInitialized(
     const DownloadFile::InitializeCallback& callback,
-    DownloadInterruptReason result) {
+    download::DownloadInterruptReason result) {
   DownloadJobImpl::OnDownloadFileInitialized(callback, result);
-  if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
+  if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     BuildParallelRequestAfterDelay();
 }
 

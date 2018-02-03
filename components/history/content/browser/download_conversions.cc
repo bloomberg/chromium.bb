@@ -104,13 +104,13 @@ DownloadDangerType ToHistoryDownloadDangerType(
   }
 }
 
-content::DownloadInterruptReason ToContentDownloadInterruptReason(
+download::DownloadInterruptReason ToContentDownloadInterruptReason(
     DownloadInterruptReason interrupt_reason) {
-  return static_cast<content::DownloadInterruptReason>(interrupt_reason);
+  return static_cast<download::DownloadInterruptReason>(interrupt_reason);
 }
 
 DownloadInterruptReason ToHistoryDownloadInterruptReason(
-    content::DownloadInterruptReason interrupt_reason) {
+    download::DownloadInterruptReason interrupt_reason) {
   return static_cast<DownloadInterruptReason>(interrupt_reason);
 }
 

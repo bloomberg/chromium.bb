@@ -26,18 +26,19 @@ SaveFile::~SaveFile() {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 }
 
-DownloadInterruptReason SaveFile::Initialize() {
+download::DownloadInterruptReason SaveFile::Initialize() {
   return file_.Initialize(base::FilePath(), base::FilePath(), base::File(), 0,
                           std::string(), std::unique_ptr<crypto::SecureHash>(),
                           false);
 }
 
-DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
-                                                   size_t data_len) {
+download::DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
+                                                             size_t data_len) {
   return file_.AppendDataToFile(data, data_len);
 }
 
-DownloadInterruptReason SaveFile::Rename(const base::FilePath& full_path) {
+download::DownloadInterruptReason SaveFile::Rename(
+    const base::FilePath& full_path) {
   return file_.Rename(full_path);
 }
 

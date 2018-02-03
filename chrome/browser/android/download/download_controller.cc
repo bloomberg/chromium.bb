@@ -298,7 +298,7 @@ void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
   // validators so we know whether the resumption causes a restart.
   if (download_item->GetState() == DownloadItem::IN_PROGRESS ||
       download_item->GetLastReason() ==
-          content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+          download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     return;
   }
   if (download_item->GetETag().empty() &&
@@ -493,11 +493,11 @@ bool DownloadController::IsInterruptedDownloadAutoResumable(
   }
 
   int interrupt_reason = download_item->GetLastReason();
-  DCHECK_NE(interrupt_reason, content::DOWNLOAD_INTERRUPT_REASON_NONE);
+  DCHECK_NE(interrupt_reason, download::DOWNLOAD_INTERRUPT_REASON_NONE);
   return interrupt_reason ==
-             content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT ||
+             download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT ||
          interrupt_reason ==
-             content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED ||
+             download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED ||
          interrupt_reason ==
-             content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
+             download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
 }

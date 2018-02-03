@@ -48,7 +48,7 @@ class MockDownloadDestinationObserver : public DownloadDestinationObserver {
                     int64_t,
                     const std::vector<DownloadItem::ReceivedSlice>&));
   void DestinationError(
-      DownloadInterruptReason reason,
+      download::DownloadInterruptReason reason,
       int64_t bytes_so_far,
       std::unique_ptr<crypto::SecureHash> hash_state) override {}
   void DestinationCompleted(
@@ -95,7 +95,7 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
   ParallelDownloadJob::WorkerMap& workers() { return workers_; }
 
   void MakeFileInitialized(const DownloadFile::InitializeCallback& callback,
-                           DownloadInterruptReason result) {
+                           download::DownloadInterruptReason result) {
     ParallelDownloadJob::OnDownloadFileInitialized(callback, result);
   }
 
@@ -192,7 +192,7 @@ class ParallelDownloadJobTest : public testing::Test {
     EXPECT_EQ(length, job_->workers_[offset]->length());
   }
 
-  void OnFileInitialized(DownloadInterruptReason result) {
+  void OnFileInitialized(download::DownloadInterruptReason result) {
     file_initialized_ = true;
   }
 
@@ -483,7 +483,8 @@ TEST_F(ParallelDownloadJobTest, InterruptOnStartup) {
   // Start to build the requests without any error.
   base::MockCallback<DownloadFile::InitializeCallback> callback;
   EXPECT_CALL(callback, Run(_)).Times(1);
-  job_->MakeFileInitialized(callback.Get(), DOWNLOAD_INTERRUPT_REASON_NONE);
+  job_->MakeFileInitialized(callback.Get(),
+                            download::DOWNLOAD_INTERRUPT_REASON_NONE);
 
   // Simulate and inject an error from IO thread after file initialized.
   EXPECT_CALL(*download_item_.get(), GetState())

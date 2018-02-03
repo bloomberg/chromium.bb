@@ -49,10 +49,10 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/downloader/in_progress/in_progress_cache_impl.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
@@ -445,11 +445,11 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
             // Specifying a dangerous type here would take precendence over the
             // blocking of the file.
             download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-            content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+            download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
       } else {
         item->OnContentCheckCompleted(
             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-            content::DOWNLOAD_INTERRUPT_REASON_NONE);
+            download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
       UMA_HISTOGRAM_ENUMERATION("Download.DangerousFile.Reason",
                                 SB_NOT_AVAILABLE, DANGEROUS_FILE_REASON_MAX);
@@ -935,10 +935,10 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
             // Specifying a dangerous type here would take precendence over the
             // blocking of the file.
             download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-            content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+            download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
       } else {
         item->OnContentCheckCompleted(danger_type,
-                                      content::DOWNLOAD_INTERRUPT_REASON_NONE);
+                                      download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
     }
   }
@@ -988,7 +988,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
     DownloadItemModel(item).SetDangerLevel(target_info->danger_level);
   }
   if (ShouldBlockFile(target_info->danger_type)) {
-    target_info->result = content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
+    target_info->result = download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
     // A dangerous type would take precendence over the blocking of the file.
     target_info->danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
   }

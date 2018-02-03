@@ -290,6 +290,7 @@ static_library("test_support") {
     "//cc:test_support",
     "//cc/blink",
     "//cc/ipc",
+    "//components/download/public/common:public",
     "//components/leveldb/public/interfaces",
     "//components/viz/host",
     "//components/viz/service",

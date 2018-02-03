@@ -30,9 +30,10 @@ class SaveFile {
   virtual ~SaveFile();
 
   // BaseFile delegated functions.
-  DownloadInterruptReason Initialize();
-  DownloadInterruptReason AppendDataToFile(const char* data, size_t data_len);
-  DownloadInterruptReason Rename(const base::FilePath& full_path);
+  download::DownloadInterruptReason Initialize();
+  download::DownloadInterruptReason AppendDataToFile(const char* data,
+                                                     size_t data_len);
+  download::DownloadInterruptReason Rename(const base::FilePath& full_path);
   void Detach();
   void Cancel();
   void Finish();

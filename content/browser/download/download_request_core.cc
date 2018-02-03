@@ -19,7 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
@@ -29,7 +29,6 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_request_utils.h"
@@ -157,7 +156,7 @@ DownloadRequestCore::DownloadRequestCore(
       was_deferred_(false),
       is_partial_request_(false),
       started_(false),
-      abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      abort_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE),
       download_source_(download_source) {
   DCHECK(request_);
   DCHECK(delegate_);
@@ -210,13 +209,14 @@ DownloadRequestCore::~DownloadRequestCore() {
 }
 
 std::unique_ptr<DownloadCreateInfo>
-DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
+DownloadRequestCore::CreateDownloadCreateInfo(
+    download::DownloadInterruptReason result) {
   DCHECK(!started_);
   started_ = true;
   std::unique_ptr<DownloadCreateInfo> create_info(
       new DownloadCreateInfo(base::Time::Now(), std::move(save_info_)));
 
-  if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
+  if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     create_info->remote_address = request()->GetSocketAddress().host();
   create_info->method = request()->method();
   create_info->connection_info = request()->response_info().connection_info;
@@ -239,11 +239,11 @@ bool DownloadRequestCore::OnResponseStarted(
   DVLOG(20) << __func__ << "() " << DebugString();
   download_start_time_ = base::TimeTicks::Now();
 
-  DownloadInterruptReason result =
+  download::DownloadInterruptReason result =
       request()->response_headers()
           ? HandleSuccessfulServerResponse(*request()->response_headers(),
                                            save_info_.get(), fetch_error_body_)
-          : DOWNLOAD_INTERRUPT_REASON_NONE;
+          : download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (request()->response_headers()) {
     RecordDownloadHttpResponseCode(
@@ -252,7 +252,7 @@ bool DownloadRequestCore::OnResponseStarted(
 
   std::unique_ptr<DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(result);
-  if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     delegate_->OnStart(std::move(create_info),
                        std::unique_ptr<ByteStreamReader>(),
                        base::ResetAndReturn(&on_started_callback_));
@@ -316,7 +316,7 @@ bool DownloadRequestCore::OnRequestRedirected() {
     // A redirect while attempting a partial resumption indicates a potential
     // middle box. Trigger another interruption so that the DownloadItem can
     // retry.
-    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
+    abort_reason_ = download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
     return false;
   }
   return true;
@@ -362,7 +362,8 @@ bool DownloadRequestCore::OnReadCompleted(int bytes_read, bool* defer) {
   return true;
 }
 
-void DownloadRequestCore::OnWillAbort(DownloadInterruptReason reason) {
+void DownloadRequestCore::OnWillAbort(
+    download::DownloadInterruptReason reason) {
   DVLOG(20) << __func__ << "() reason=" << reason << " " << DebugString();
   DCHECK(!started_);
   abort_reason_ = reason;
@@ -390,7 +391,7 @@ void DownloadRequestCore::OnResponseCompleted(
     if (error_code == net::OK)
       error_code = net::ERR_FAILED;
   }
-  DownloadInterruptReason reason = HandleRequestCompletionStatus(
+  download::DownloadInterruptReason reason = HandleRequestCompletionStatus(
       error_code, has_strong_validators, request()->ssl_info().cert_status,
       abort_reason_);
 
@@ -410,7 +411,7 @@ void DownloadRequestCore::OnResponseCompleted(
 
   // If the error mapped to something unknown, record it so that
   // we can drill down.
-  if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
+  if (reason == download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
     base::UmaHistogramSparse("Download.MapErrorNetworkFailed",
                              std::abs(status.error()));
   }
@@ -423,7 +424,7 @@ void DownloadRequestCore::OnResponseCompleted(
 
   // OnResponseCompleted() called without OnResponseStarted(). This should only
   // happen when the request was aborted.
-  DCHECK_NE(reason, DOWNLOAD_INTERRUPT_REASON_NONE);
+  DCHECK_NE(reason, download::DOWNLOAD_INTERRUPT_REASON_NONE);
   std::unique_ptr<DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(reason);
   std::unique_ptr<ByteStreamReader> empty_byte_stream;

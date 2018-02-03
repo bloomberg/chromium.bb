@@ -41,12 +41,14 @@ class MockDownloadFile : public DownloadFile {
                void(DownloadManager::InputStream* input_stream,
                     int64_t offset,
                     int64_t length));
-  MOCK_METHOD2(OnResponseCompleted, void(int64_t offset,
-                                   DownloadInterruptReason status));
-  MOCK_METHOD2(AppendDataToFile, DownloadInterruptReason(
-      const char* data, size_t data_len));
-  MOCK_METHOD1(Rename, DownloadInterruptReason(
-      const base::FilePath& full_path));
+  MOCK_METHOD2(OnResponseCompleted,
+               void(int64_t offset, download::DownloadInterruptReason status));
+  MOCK_METHOD2(AppendDataToFile,
+               download::DownloadInterruptReason(const char* data,
+                                                 size_t data_len));
+  MOCK_METHOD1(
+      Rename,
+      download::DownloadInterruptReason(const base::FilePath& full_path));
   MOCK_METHOD2(RenameAndUniquify,
                void(const base::FilePath& full_path,
                     const RenameCompletionCallback& callback));
