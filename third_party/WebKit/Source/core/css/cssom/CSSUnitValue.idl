@@ -12,5 +12,5 @@
   RuntimeEnabled=CSSTypedOM
 ] interface CSSUnitValue : CSSNumericValue {
   [EnforceRange] attribute double value;
-  [RaisesException=Setter] attribute DOMString unit;
+  readonly attribute DOMString unit;
 };

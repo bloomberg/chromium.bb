@@ -857,7 +857,6 @@ interface CSSUnitValue : CSSNumericValue
     getter unit
     getter value
     method constructor
-    setter unit
     setter value
 interface CSSUnparsedValue : CSSStyleValue
     attribute @@toStringTag

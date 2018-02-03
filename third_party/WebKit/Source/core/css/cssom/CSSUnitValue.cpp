@@ -61,17 +61,6 @@ CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
   return new CSSUnitValue(value.GetDoubleValue(), unit);
 }
 
-void CSSUnitValue::setUnit(const String& unit_name,
-                           ExceptionState& exception_state) {
-  CSSPrimitiveValue::UnitType unit = UnitFromName(unit_name);
-  if (!IsValidUnit(unit)) {
-    exception_state.ThrowTypeError("Invalid unit: " + unit_name);
-    return;
-  }
-
-  unit_ = unit;
-}
-
 String CSSUnitValue::unit() const {
   if (unit_ == CSSPrimitiveValue::UnitType::kNumber)
     return "number";
