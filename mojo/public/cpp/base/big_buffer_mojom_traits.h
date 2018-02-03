@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BASE_BIG_BUFFER_STRUCT_TRAITS_H_
-#define MOJO_PUBLIC_CPP_BASE_BIG_BUFFER_STRUCT_TRAITS_H_
+#ifndef MOJO_PUBLIC_CPP_BASE_BIG_BUFFER_MOJOM_TRAITS_H_
+#define MOJO_PUBLIC_CPP_BASE_BIG_BUFFER_MOJOM_TRAITS_H_
 
 #include <cstdint>
 #include <vector>
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/base/mojo_base_traits_export.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/mojom/base/big_buffer.mojom-shared.h"
@@ -17,7 +17,7 @@
 namespace mojo {
 
 template <>
-struct MOJO_BASE_TRAITS_EXPORT
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     StructTraits<mojo_base::mojom::BigBufferSharedMemoryRegionDataView,
                  mojo_base::internal::BigBufferSharedMemoryRegion> {
   static uint32_t size(
@@ -30,7 +30,7 @@ struct MOJO_BASE_TRAITS_EXPORT
 };
 
 template <>
-struct MOJO_BASE_TRAITS_EXPORT
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     UnionTraits<mojo_base::mojom::BigBufferDataView, mojo_base::BigBuffer> {
   static mojo_base::mojom::BigBufferDataView::Tag GetTag(
       const mojo_base::BigBuffer& buffer);
@@ -45,4 +45,4 @@ struct MOJO_BASE_TRAITS_EXPORT
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BASE_BIG_BUFFER_STRUCT_TRAITS_H_
+#endif  // MOJO_PUBLIC_CPP_BASE_BIG_BUFFER_MOJOM_TRAITS_H_

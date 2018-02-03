@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/string16.mojom.h"
 #include "mojo/common/string16_struct_traits.h"
-#include "mojo/public/cpp/base/big_buffer_struct_traits.h"
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

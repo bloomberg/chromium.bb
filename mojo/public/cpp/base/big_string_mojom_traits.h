@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/mojom/base/big_string.mojom-shared.h"
@@ -14,7 +15,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<mojo_base::mojom::BigStringDataView, std::string> {
+struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+    StructTraits<mojo_base::mojom::BigStringDataView, std::string> {
   static mojo_base::BigBuffer data(const std::string& str);
 
   static bool Read(mojo_base::mojom::BigStringDataView data, std::string* out);
