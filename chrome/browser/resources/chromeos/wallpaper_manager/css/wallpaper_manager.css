@@ -397,6 +397,11 @@ body.v2 {
 
 .v2 #categories-list {
   display: block;
+  height: 100%;
+}
+
+.v2 #categories-list > li {
+  height: 100%;
 }
 
 .v2 #categories-list > li[selected] > div {

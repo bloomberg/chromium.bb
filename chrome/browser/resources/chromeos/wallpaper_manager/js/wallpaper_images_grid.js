@@ -32,6 +32,8 @@ cr.define('wallpapers', function() {
     el.dataModelId_ = dataModelId;
     el.thumbnail_ = thumbnail;
     el.callback_ = callback;
+    el.useNewWallpaperPicker_ =
+        loadTimeData.getBoolean('useNewWallpaperPicker');
     return el;
   }
 
@@ -133,11 +135,10 @@ cr.define('wallpapers', function() {
                     self.dataItem.source ==
                     Constants.WallpaperSourceEnum.Online) {
                   var xhr = new XMLHttpRequest();
-                  xhr.open(
-                      'GET',
-                      self.dataItem.baseURL +
-                          Constants.OnlineWallpaperThumbnailUrlSuffix,
-                      true);
+                  var urlSuffix = self.useNewWallpaperPicker_ ?
+                      '' :
+                      Constants.OnlineWallpaperThumbnailUrlSuffix;
+                  xhr.open('GET', self.dataItem.baseURL + urlSuffix, true);
                   xhr.responseType = 'arraybuffer';
                   xhr.send(null);
                   xhr.addEventListener('load', function(e) {

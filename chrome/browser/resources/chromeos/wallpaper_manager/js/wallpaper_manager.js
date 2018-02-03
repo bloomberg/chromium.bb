@@ -25,15 +25,35 @@ function WallpaperManager(dialogDom) {
   this.currentWallpaper_ = null;
   this.wallpaperRequest_ = null;
   this.wallpaperDirs_ = WallpaperDirectories.getInstance();
-  this.preManifestDomInit_();
+  this.useNewWallpaperPicker_ =
+      loadTimeData.getBoolean('useNewWallpaperPicker');
+  this.preDownloadDomInit_();
+
   // Uses the redesigned wallpaper picker if |useNewWallpaperPicker| is true.
-  this.document_.body.classList.toggle(
-      'v2', loadTimeData.getBoolean('useNewWallpaperPicker'));
+  //
+  // The old wallpaper picker fetches the manifest file once, and parse the info
+  // (such as image url) from the file every time when the images need to be
+  // displayed.
+  // The new wallpaper picker has two steps: it first fetches a list of
+  // collection names (ie. categories such as Art, Landscape etc.) via extension
+  // API, and then use 'lazy loading': it fetches the info specific to each
+  // collection only after user clicks on that collection.
+  // After the url and relevant info of the images are fetched, the two share
+  // the same path, ie. pass the info to |WallpaperThumbnailsGridItem| for
+  // actual image rendering.
+  this.document_.body.classList.toggle('v2', this.useNewWallpaperPicker_);
 
   if (loadTimeData.getBoolean('showBackdropWallpapers')) {
-    // The list of collections (ie. categories such as Art, Landscape etc.).
-    // Each collection contains the display name and the id.
+    // |collectionsInfo_| represents the list of wallpaper collections. Each
+    // collection contains the display name and a unique id.
     this.collectionsInfo_ = null;
+    // |imagesInfoMap_| caches the mapping between each collection id and the
+    // images that belong to this collection. Each image is represented by a set
+    // of info including the image url, author name, layout etc. Such info will
+    // be used by |WallpaperThumbnailsGridItem| to display the images.
+    this.imagesInfoMap_ = {};
+    // The total count of images whose info has been fetched.
+    this.imagesInfoCount_ = 0;
     this.getCollectionsInfo_();
   } else {
     this.fetchManifest_();
@@ -115,7 +135,7 @@ WallpaperManager.initStrings = function(callback) {
 WallpaperManager.prototype.fetchManifest_ = function() {
   var locale = navigator.language;
   if (!this.enableOnlineWallpaper_) {
-    this.postManifestDomInit_();
+    this.postDownloadDomInit_();
     return;
   }
 
@@ -209,11 +229,8 @@ WallpaperManager.prototype.onGetCollectionsInfoSucceeded_ = function(
     // place, in this case do nothing.
     return;
   }
-  // TODO(crbug.com/800945): Initialize the category list and show the
-  // names.
-
-  // The images belonging to the first collection should be shown by default.
-  this.showCollection_(this.collectionsInfo_[0]['collectionId']);
+  // Initialize the category list and show the collection names.
+  this.postDownloadDomInit_();
 };
 
 /**
@@ -226,14 +243,19 @@ WallpaperManager.prototype.onGetCollectionsInfoFailed_ = function() {
 
 /**
  * Fetches info for the images belonging to the specific wallpaper collection
- * and displays the images.
+ * and pass the info to |WallpaperThumbnailsGrid| to display the images.
  * @param {string} collectionId The id of the collection.
  * @private
  */
 WallpaperManager.prototype.showCollection_ = function(collectionId) {
-  // TODO(crbug.com/800945): Check if the info for this collection has already
-  // been fetched. If so, directly show the images.
-  chrome.wallpaperPrivate.getImagesInfo(collectionId, function(imagesInfo) {
+  // Check if the info for this collection has already been fetched. If so,
+  // directly show the images.
+  if (collectionId in this.imagesInfoMap_) {
+    this.wallpaperGrid_.dataModel = this.imagesInfoMap_[collectionId];
+    return;
+  }
+
+  chrome.wallpaperPrivate.getImagesInfo(collectionId, imagesInfo => {
     if (chrome.runtime.lastError) {
       // TODO(crbug.com/800945): Show error message.
       return;
@@ -243,8 +265,26 @@ WallpaperManager.prototype.showCollection_ = function(collectionId) {
       // fetch succeeds but the images info list turns out to be empty.
       return;
     }
-    // TODO(crbug.com/800945): Initialize the image grid for this collection
-    // based on the info and show the images.
+
+    var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
+    for (var i = 0; i < imagesInfo.length; ++i) {
+      var wallpaperInfo = {
+        // Use the next available unique id.
+        wallpaperId: this.imagesInfoCount_,
+        baseURL: imagesInfo[i]['imageUrl'],
+        layout: Constants.WallpaperThumbnailDefaultLayout,
+        source: Constants.WallpaperSourceEnum.Online,
+        availableOffline: false,
+        author: imagesInfo[i]['displayText'][0],
+        authorWebsite: imagesInfo[i]['actionUrl']
+      };
+      wallpapersDataModel.push(wallpaperInfo);
+      this.imagesInfoCount_++;
+    }
+    // Displays the images.
+    this.wallpaperGrid_.dataModel = wallpapersDataModel;
+    // Caches the info.
+    this.imagesInfoMap_[collectionId] = wallpapersDataModel;
   });
 };
 
@@ -266,7 +306,7 @@ WallpaperManager.prototype.showError_ = function(errorMessage) {
 WallpaperManager.prototype.onLoadManifestSuccess_ = function(manifest) {
   this.manifest_ = manifest;
   WallpaperUtil.saveToLocalStorage(Constants.AccessLocalManifestKey, manifest);
-  this.postManifestDomInit_();
+  this.postDownloadDomInit_();
 };
 
 // Sets manifest to previously saved object if any and shows connection error.
@@ -277,7 +317,7 @@ WallpaperManager.prototype.onLoadManifestFailed_ = function() {
   Constants.WallpaperLocalStorage.get(accessManifestKey, function(items) {
     self.manifest_ = items[accessManifestKey] ? items[accessManifestKey] : null;
     self.showError_(str('connectionFailed'));
-    self.postManifestDomInit_();
+    self.postDownloadDomInit_();
     $('wallpaper-grid').classList.add('image-picker-offline');
   });
 };
@@ -331,11 +371,11 @@ WallpaperManager.prototype.toggleSurpriseMe_ = function() {
 };
 
 /**
- * One-time initialization of various DOM nodes. Fetching manifest may take a
- * long time due to slow connection. Dom nodes that do not depend on manifest
- * should be initialized here to unblock from manifest fetching.
+ * One-time initialization of various DOM nodes. Fetching manifest or the
+ * collection info may take a long time due to slow connection. Dom nodes that
+ * do not depend on the download should be initialized here.
  */
-WallpaperManager.prototype.preManifestDomInit_ = function() {
+WallpaperManager.prototype.preDownloadDomInit_ = function() {
   $('window-close-button').addEventListener('click', function() {
     window.close();
   });
@@ -355,9 +395,9 @@ WallpaperManager.prototype.preManifestDomInit_ = function() {
 
 /**
  * One-time initialization of various DOM nodes. Dom nodes that do depend on
- * manifest should be initialized here.
+ * the download should be initialized here.
  */
-WallpaperManager.prototype.postManifestDomInit_ = function() {
+WallpaperManager.prototype.postDownloadDomInit_ = function() {
   i18nTemplate.process(this.document_, loadTimeData);
   this.initCategoriesList_();
   this.initThumbnailsGrid_();
@@ -825,7 +865,8 @@ WallpaperManager.prototype.onSelectedItemChanged_ = function() {
       var key = this.selectedItem_.baseURL;
       var self = this;
       Constants.WallpaperLocalStorage.get(key, function(items) {
-        self.selectedItem_.layout = items[key] ? items[key] : 'CENTER_CROPPED';
+        self.selectedItem_.layout =
+            items[key] ? items[key] : Constants.WallpaperThumbnailDefaultLayout;
         self.setSelectedWallpaper_(self.selectedItem_);
       });
     } else {
@@ -859,7 +900,7 @@ WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
   $('author-website').textContent = $('author-website').href =
       selectedItem.authorWebsite;
   chrome.wallpaperPrivate.getThumbnail(
-      selectedItem.baseURL, selectedItem.source, function(data) {
+      selectedItem.baseURL, selectedItem.source, data => {
         var img = $('attribute-image');
         if (data) {
           var blob = new Blob([new Int8Array(data)], {'type': 'image\/png'});
@@ -874,11 +915,10 @@ WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
           // operation within |WallpaperThumbnailsGridItem.decorate| hasn't
           // completed. See http://crbug.com/792829.
           var xhr = new XMLHttpRequest();
-          xhr.open(
-              'GET',
-              selectedItem.baseURL +
-                  Constants.OnlineWallpaperThumbnailUrlSuffix,
-              true);
+          var urlSuffix = this.useNewWallpaperPicker_ ?
+              '' :
+              Constants.OnlineWallpaperThumbnailUrlSuffix;
+          xhr.open('GET', self.dataItem.baseURL + urlSuffix, true);
           xhr.responseType = 'arraybuffer';
           xhr.send(null);
           xhr.addEventListener('load', function(e) {
@@ -936,7 +976,10 @@ WallpaperManager.prototype.initCategoriesList_ = function() {
   this.categoriesList_.selectionModel.addEventListener(
       'change', this.onCategoriesChange_.bind(this));
 
-  if (this.enableOnlineWallpaper_ && this.manifest_) {
+  if (this.useNewWallpaperPicker_ && this.collectionsInfo_) {
+    for (var colletionInfo of this.collectionsInfo_)
+      this.categoriesList_.dataModel.push(colletionInfo['collectionName']);
+  } else if (this.enableOnlineWallpaper_ && this.manifest_) {
     // Adds all category as first category.
     this.categoriesList_.dataModel.push(str('allCategoryLabel'));
     for (var key in this.manifest_.categories) {
@@ -1139,10 +1182,10 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
           baseURL: entry.name,
           // The layout will be replaced by the actual value saved in
           // local storage when requested later. Layout is not important
-          // for constructing thumbnails grid, we use CENTER_CROPPED here
+          // for constructing thumbnails grid, we use the default here
           // to speed up the process of constructing. So we do not need to
           // wait for fetching correct layout.
-          layout: 'CENTER_CROPPED',
+          layout: Constants.WallpaperThumbnailDefaultLayout,
           source: Constants.WallpaperSourceEnum.Custom,
           availableOffline: true
         };
@@ -1152,7 +1195,7 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
         var oemDefaultWallpaperElement = {
           wallpaperId: null,
           baseURL: 'OemDefaultWallpaper',
-          layout: 'CENTER_CROPPED',
+          layout: Constants.WallpaperThumbnailDefaultLayout,
           source: Constants.WallpaperSourceEnum.OEM,
           availableOffline: true
         };
@@ -1201,6 +1244,15 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
         Constants.WallpaperDirNameEnum.ORIGINAL, success, errorHandler);
   } else {
     this.document_.body.removeAttribute('custom');
+
+    // If the new wallpaper picker is enabled, initiate the fetch of the
+    // images info that belong to this collection.
+    if (this.useNewWallpaperPicker_ && this.collectionsInfo_) {
+      this.showCollection_(
+          this.collectionsInfo_[selectedIndex]['collectionId']);
+      return;
+    }
+
     // Need this check for test purpose.
     var numOnlineWallpaper = (this.enableOnlineWallpaper_ && this.manifest_) ?
         this.manifest_.wallpaper_list.length :
