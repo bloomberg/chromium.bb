@@ -276,7 +276,7 @@ void X11WindowBase::ProcessXWindowEvent(XEvent* xev) {
       break;
     }
 
-    case FocusOut:
+    case x11::FocusOut:
       if (xev->xfocus.mode != NotifyGrab)
         delegate_->OnLostCapture();
       break;
