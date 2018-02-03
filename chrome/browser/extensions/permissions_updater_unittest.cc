@@ -187,41 +187,45 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   apis.insert(APIPermission::kNotifications);
   URLPatternSet hosts;
   AddPattern(&hosts, "http://*.c.com/*");
+  URLPatternSet scriptable_hosts;
+  AddPattern(&scriptable_hosts, "http://*.example.com/*");
 
   {
     PermissionSet delta(apis, empty_manifest_permissions, hosts,
-                        URLPatternSet());
+                        scriptable_hosts);
 
-  PermissionsUpdaterListener listener;
-  PermissionsUpdater(profile_.get()).AddPermissions(extension.get(), delta);
+    PermissionsUpdaterListener listener;
+    PermissionsUpdater(profile_.get()).AddPermissions(extension.get(), delta);
 
-  listener.Wait();
+    listener.Wait();
 
-  // Verify that the permission notification was sent correctly.
-  ASSERT_TRUE(listener.received_notification());
-  ASSERT_EQ(extension.get(), listener.extension());
-  ASSERT_EQ(UpdatedExtensionPermissionsInfo::ADDED, listener.reason());
-  ASSERT_EQ(delta, *listener.permissions());
+    // Verify that the permission notification was sent correctly.
+    ASSERT_TRUE(listener.received_notification());
+    ASSERT_EQ(extension.get(), listener.extension());
+    ASSERT_EQ(UpdatedExtensionPermissionsInfo::ADDED, listener.reason());
+    ASSERT_EQ(delta, *listener.permissions());
 
-  // Make sure the extension's active permissions reflect the change.
-  active_permissions = PermissionSet::CreateUnion(default_permissions, delta);
-  ASSERT_EQ(*active_permissions,
-            extension->permissions_data()->active_permissions());
+    // Make sure the extension's active permissions reflect the change.
+    active_permissions = PermissionSet::CreateUnion(default_permissions, delta);
+    ASSERT_EQ(*active_permissions,
+              extension->permissions_data()->active_permissions());
 
-  // Verify that the new granted and active permissions were also stored
-  // in the extension preferences. In this case, the granted permissions should
-  // be equal to the active permissions.
-  ASSERT_EQ(*active_permissions, *prefs->GetActivePermissions(extension->id()));
-  granted_permissions = active_permissions->Clone();
-  ASSERT_EQ(*granted_permissions,
-            *prefs->GetGrantedPermissions(extension->id()));
+    // Verify that the new granted and active permissions were also stored
+    // in the extension preferences. In this case, the granted permissions
+    // should be equal to the active permissions.
+    ASSERT_EQ(*active_permissions,
+              *prefs->GetActivePermissions(extension->id()));
+    granted_permissions = active_permissions->Clone();
+    ASSERT_EQ(*granted_permissions,
+              *prefs->GetGrantedPermissions(extension->id()));
   }
 
   {
   // In the second part of the test, we'll remove the permissions that we
   // just added except for 'notifications'.
   apis.erase(APIPermission::kNotifications);
-  PermissionSet delta(apis, empty_manifest_permissions, hosts, URLPatternSet());
+  PermissionSet delta(apis, empty_manifest_permissions, hosts,
+                      scriptable_hosts);
 
   PermissionsUpdaterListener listener;
   PermissionsUpdater(profile_.get())

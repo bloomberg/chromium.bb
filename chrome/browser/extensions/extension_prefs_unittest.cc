@@ -340,6 +340,12 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
     EXPECT_EQ(active_perms_->explicit_hosts(), active->explicit_hosts());
     EXPECT_EQ(active_perms_->scriptable_hosts(), active->scriptable_hosts());
     EXPECT_EQ(*active_perms_, *active);
+
+    // Reset the active permissions.
+    active_perms_ = std::make_unique<PermissionSet>();
+    prefs()->SetActivePermissions(extension_id_, *active_perms_);
+    active = prefs()->GetActivePermissions(extension_id_);
+    EXPECT_EQ(*active_perms_, *active);
   }
 
   void Verify() override {
