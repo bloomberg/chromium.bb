@@ -540,8 +540,10 @@ bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
 void ExtensionPrefs::SetExtensionPrefURLPatternSet(
     const std::string& extension_id,
     base::StringPiece pref_key,
-    const URLPatternSet& new_value) {
-  UpdateExtensionPref(extension_id, pref_key, new_value.ToValue());
+    const URLPatternSet& set) {
+  // Clear the |pref_key| in case |set| is empty.
+  std::unique_ptr<base::Value> value = set.is_empty() ? nullptr : set.ToValue();
+  UpdateExtensionPref(extension_id, pref_key, std::move(value));
 }
 
 bool ExtensionPrefs::ReadPrefAsBooleanAndReturn(
@@ -636,18 +638,14 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
                       CreatePermissionList(new_value.manifest_permissions()));
 
   // Set the explicit host permissions.
-  if (!new_value.explicit_hosts().is_empty()) {
-    SetExtensionPrefURLPatternSet(extension_id,
-                                  JoinPrefs(pref_key, kPrefExplicitHosts),
-                                  new_value.explicit_hosts());
-  }
+  SetExtensionPrefURLPatternSet(extension_id,
+                                JoinPrefs(pref_key, kPrefExplicitHosts),
+                                new_value.explicit_hosts());
 
   // Set the scriptable host permissions.
-  if (!new_value.scriptable_hosts().is_empty()) {
-    SetExtensionPrefURLPatternSet(extension_id,
-                                  JoinPrefs(pref_key, kPrefScriptableHosts),
-                                  new_value.scriptable_hosts());
-  }
+  SetExtensionPrefURLPatternSet(extension_id,
+                                JoinPrefs(pref_key, kPrefScriptableHosts),
+                                new_value.scriptable_hosts());
 }
 
 int ExtensionPrefs::IncrementAcknowledgePromptCount(

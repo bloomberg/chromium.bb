@@ -610,11 +610,12 @@ class ExtensionPrefs : public KeyedService {
   void SetExtensionBlacklisted(const std::string& extension_id,
                                bool is_blacklisted);
 
-  // Converts |new_value| to a list of strings and sets the |pref_key| pref
-  // belonging to |extension_id|.
+  // Converts |set| to a list of strings and sets the |pref_key| pref belonging
+  // to |extension_id|. If |set| is empty, the preference for |pref_key| is
+  // cleared.
   void SetExtensionPrefURLPatternSet(const std::string& extension_id,
                                      base::StringPiece pref_key,
-                                     const URLPatternSet& new_value);
+                                     const URLPatternSet& set);
 
   // Read the boolean preference entry and return true if the preference exists
   // and the preference's value is true; false otherwise.
