@@ -1079,10 +1079,12 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.chromium_image_xr30 = base::mac::IsAtLeastOS10_13();
 #elif !defined(OS_WIN)
   // TODO(mcasas): connect in Windows, https://crbug.com/803451
-  // XR30 support was introduced in GLES 3.0/ OpenGL 4.2, before that it was
+  // XR30 support was introduced in GLES 3.0/ OpenGL 3.3, before that it was
   // signalled via a specific extension.
+  // TODO(mcasas): add GLES3 .0 when swiftshader supports GL_BGRA_EXT
+  // https://crbug.com/swiftshader/95.
   feature_flags_.chromium_image_xr30 =
-      gl_version_info_->is_es3 || gl_version_info_->IsAtLeastGL(4, 2) ||
+      gl_version_info_->IsAtLeastGL(3, 3) ||
       gl::HasExtension(extensions, "GL_EXT_texture_type_2_10_10_10_REV");
 #endif
   if (feature_flags_.chromium_image_xr30){
