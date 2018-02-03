@@ -145,7 +145,7 @@ typedef struct {
   uint8_t entropy_context;
 #endif
   uint8_t valid;
-  uint8_t fast;
+  uint8_t fast;  // This is not being used now.
 } TX_SIZE_RD_INFO;
 
 #define TX_SIZE_RD_RECORD_BUFFER_LEN 256
