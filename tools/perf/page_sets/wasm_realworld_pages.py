@@ -21,7 +21,7 @@ class Tanks(page_module.Page):
   @property
   def skipped_gpus(self):
     # Unity WebGL is not supported on mobile
-    return ['arm']
+    return ['arm', 'qualcomm']
 
   def RunPageInteractions(self, action_runner):
     action_runner.WaitForJavaScriptCondition(
