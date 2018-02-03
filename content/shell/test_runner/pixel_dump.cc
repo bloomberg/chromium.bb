@@ -75,9 +75,10 @@ void DrawSelectionRect(
 void CapturePixelsForPrinting(
     blink::WebLocalFrame* web_frame,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  web_frame->FrameWidget()->UpdateAllLifecyclePhases();
+  auto* frame_widget = web_frame->LocalRoot()->FrameWidget();
+  frame_widget->UpdateAllLifecyclePhases();
 
-  blink::WebSize page_size_in_pixels = web_frame->FrameWidget()->Size();
+  blink::WebSize page_size_in_pixels = frame_widget->Size();
 
   int page_count = web_frame->PrintBegin(page_size_in_pixels);
   int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;

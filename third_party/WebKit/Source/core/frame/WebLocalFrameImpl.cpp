@@ -339,10 +339,10 @@ class ChromePrintContext : public PrintContext {
       // Draw a line for a page boundary if this isn't the first page.
       if (page_index > 0) {
         context.Save();
+        context.SetStrokeThickness(1);
         context.SetStrokeColor(Color(0, 0, 255));
-        context.SetFillColor(Color(0, 0, 255));
-        context.DrawLine(IntPoint(0, current_height),
-                         IntPoint(page_width, current_height));
+        context.DrawLine(IntPoint(0, current_height - 1),
+                         IntPoint(page_width, current_height - 1));
         context.Restore();
       }
 

@@ -425,6 +425,7 @@ class TestRunner : public WebTestRunner {
 
   // Causes layout to happen as if targetted to printed pages.
   void SetPrinting();
+  void SetPrintingForFrame(const std::string& frame_name);
 
   // Clears the state from SetPrinting().
   void ClearPrinting();
