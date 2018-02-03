@@ -25,14 +25,10 @@
         padding-bottom: 8px;
       }
 
-      :host .title {
+      :host :-webkit-any(.title, .action-link, .total) {
         -webkit-padding-end: 8px;
         -webkit-padding-start: 4px;
         display: inline;
-        vertical-align: middle;
-      }
-
-      :host .action-link {
         vertical-align: middle;
       }
 
@@ -53,15 +49,6 @@
         color: #999;
         padding-bottom: 8px;
         padding-top: 8px;
-      }
-
-      :host .total {
-        color: #777;
-      }
-
-      :host > footer {
-        -webkit-padding-start: 18px;
-        padding-top: 6px;
       }
 
       :host .list-item {
@@ -88,6 +75,9 @@
     </style>
     <header>
       <h4 class="title">[[title]]</h4>
+      <span class="total" hidden$="[[!showDestinationsTotal_]]">
+        [[i18n('destinationCount', matchingDestinationsCount_)]]
+      </span>
       <a is="action-link" class="action-link" hidden$="[[!hasActionLink]]"
           on-tap="onActionLinkTap_">
         $i18n{manage}
@@ -96,23 +86,15 @@
         <div class="throbber"></div>
       </div>
     </header>
-    <template is="dom-repeat" items="[[destinations]]" notify-dom-change
-        filter="[[computeFilter_(searchQuery, showAll_, destinations)]]">
+    <template is="dom-repeat" items="[[destinations]]">
       <print-preview-destination-list-item class="list-item"
-          on-tap="onDestinationSelected_" destination="[[item]]">
+          search-query="[[searchQuery]]" destination="[[item]]"
+          on-tap="onDestinationSelected_">
       </print-preview-destination-list-item>
     </template>
     <div class="no-destinations-message" hidden$="[[hasDestinations_]]">
       $i18n{noDestinationsMessage}
     </div>
-    <footer hidden$="[[footerHidden_]]">
-      <button class="show-all-button" on-tap="onShowAllTap_">
-        $i18n{showAllButtonText}
-      </button>
-      <span class="total">
-        [[i18n('destinationCount', matchingDestinationsCount_)]]
-      </span>
-    </footer>
   </template>
   <script src="destination_list.js"></script>
 </dom-module>

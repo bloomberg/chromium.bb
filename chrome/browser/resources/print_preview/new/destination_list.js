@@ -5,11 +5,6 @@
 (function() {
 'use strict';
 
-// TODO (rbpotter): Adjust the short list size based on the dialog height
-// instead of always using this constant.
-/** @type {number} */
-const SHORT_DESTINATION_LIST_SIZE = 4;
-
 Polymer({
   is: 'print-preview-destination-list',
 
@@ -17,7 +12,10 @@ Polymer({
 
   properties: {
     /** @type {Array<!print_preview.Destination>} */
-    destinations: Array,
+    destinations: {
+      type: Array,
+      observer: 'destinationsChanged_',
+    },
 
     /** @type {boolean} */
     hasActionLink: {
@@ -32,27 +30,18 @@ Polymer({
     },
 
     /** @type {?RegExp} */
-    searchQuery: Object,
+    searchQuery: {
+      type: Object,
+      observer: 'update_',
+    },
 
     /** @type {boolean} */
     title: String,
 
-    /** @private {boolean} */
-    showAll_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private {number} */
     matchingDestinationsCount_: {
       type: Number,
-      computed: 'computeMatchingDestinationsCount_(destinations, searchQuery)',
-    },
-
-    /** @type {boolean} */
-    footerHidden_: {
-      type: Boolean,
-      computed: 'computeFooterHidden_(matchingDestinationsCount_, showAll_)',
+      value: 0,
     },
 
     /** @private {boolean} */
@@ -60,57 +49,47 @@ Polymer({
       type: Boolean,
       computed: 'computeHasDestinations_(matchingDestinationsCount_)',
     },
+
+    /** @private {boolean} */
+    showDestinationsTotal_: {
+      type: Boolean,
+      computed: 'computeShowDestinationsTotal_(matchingDestinationsCount_)',
+    },
   },
 
-  listeners: {
-    'dom-change': 'updateListItems_',
+  /**
+   * @param {!Array<!print_preview.Destination>} current
+   * @param {?Array<!print_preview.Destination>} previous
+   * @private
+   */
+  destinationsChanged_: function(current, previous) {
+    if (previous == undefined) {
+      this.matchingDestinationsCount_ = this.destinations.length;
+    } else {
+      this.update_();
+    }
   },
-
-  /** @private {number} */
-  shownCount_: 0,
 
   /** @private */
-  updateListItems_: function() {
-    this.shadowRoot
-        .querySelectorAll('print-preview-destination-list-item:not([hidden])')
-        .forEach(item => item.update(this.searchQuery));
-  },
+  update_: function() {
+    if (!this.destinations)
+      return;
 
-  /**
-   * @return {Function}
-   * @private
-   */
-  computeFilter_: function() {
-    this.shownCount_ = 0;
-    return destination => {
-      const isShown =
-          (!this.searchQuery || destination.matches(this.searchQuery)) &&
-          (this.shownCount_ < SHORT_DESTINATION_LIST_SIZE || this.showAll_);
-      if (isShown)
-        this.shownCount_++;
-      return isShown;
-    };
-  },
+    const listItems =
+        this.shadowRoot.querySelectorAll('print-preview-destination-list-item');
 
-  /**
-   * @return {number}
-   * @private
-   */
-  computeMatchingDestinationsCount_: function() {
-    return this.destinations
-        .filter(destination => {
-          return !this.searchQuery || destination.matches(this.searchQuery);
-        })
-        .length;
-  },
+    let matchCount = 0;
+    listItems.forEach(item => {
+      item.hidden =
+          !!this.searchQuery && !item.destination.matches(this.searchQuery);
+      if (!item.hidden) {
+        matchCount++;
+        item.update();
+      }
+    });
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeFooterHidden_: function() {
-    return this.matchingDestinationsCount_ < SHORT_DESTINATION_LIST_SIZE ||
-        this.showAll_;
+    this.matchingDestinationsCount_ =
+        !this.searchQuery ? listItems.length : matchCount;
   },
 
   /**
@@ -118,17 +97,20 @@ Polymer({
    * @private
    */
   computeHasDestinations_: function() {
-    return this.matchingDestinationsCount_ > 0;
+    return !this.destinations || this.matchingDestinationsCount_ > 0;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowDestinationsTotal_: function() {
+    return this.matchingDestinationsCount_ > 4;
   },
 
   /** @private */
   onActionLinkTap_: function() {
     print_preview.NativeLayer.getInstance().managePrinters();
-  },
-
-  /** @private */
-  onShowAllTap_: function() {
-    this.showAll_ = true;
   },
 
   /**
@@ -137,11 +119,9 @@ Polymer({
    */
   onDestinationSelected_: function(e) {
     this.fire(
-        'destination-selected', /** @type {!{model: Object}} */ (e).model.item);
-  },
-
-  reset: function() {
-    this.showAll_ = false;
+        'destination-selected',
+        /** @type {PrintPreviewDestinationListItemElement} */
+        (e.target).destination);
   },
 });
 })();

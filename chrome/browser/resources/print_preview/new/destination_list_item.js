@@ -9,18 +9,17 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    /** @private {string} */
-    searchHint_: {
-      type: String,
-      notify: true,
-    },
+    /** @type {?RegExp} */
+    searchQuery: Object,
 
-    /** @type {boolean} */
-    stale: {
+    /** @private */
+    stale_: {
       type: Boolean,
-      notify: true,
       reflectToAttribute: true,
     },
+
+    /** @private {string} */
+    searchHint_: String,
   },
 
   observers: [
@@ -34,40 +33,31 @@ Polymer({
   /** @private */
   onDestinationPropertiesChange_: function() {
     this.title = this.destination.displayName;
-    this.stale = this.destination.isOfflineOrInvalid;
+    this.stale_ = this.destination.isOfflineOrInvalid;
   },
 
-  /** @param {?RegExp} searchQuery The search query to update for. */
-  update: function(searchQuery) {
-    this.updateSearchHint_(searchQuery);
-    this.updateHighlighting_(searchQuery);
+  update: function() {
+    this.updateSearchHint_();
+    this.updateHighlighting_();
   },
 
-  /**
-   * @param {?RegExp} searchQuery The search query to update the hint for.
-   * @private
-   */
-  updateSearchHint_: function(searchQuery) {
-    if (!searchQuery) {
-      this.searchHint_ = '';
-      return;
-    }
-    this.searchHint_ = this.destination.extraPropertiesToMatch
-                           .filter(p => p.match(searchQuery))
-                           .join(' ');
+  /** @private */
+  updateSearchHint_: function() {
+    this.searchHint_ = !this.searchQuery ?
+        '' :
+        this.destination.extraPropertiesToMatch
+            .filter(p => p.match(this.searchQuery))
+            .join(' ');
   },
 
-  /**
-   * @param {?RegExp} searchQuery The search query to update the hint for.
-   * @private
-   */
-  updateHighlighting_: function(searchQuery) {
+  /** @private */
+  updateHighlighting_: function() {
     if (this.highlighted_) {
       cr.search_highlight_utils.findAndRemoveHighlights(this);
       this.highlighted_ = false;
     }
 
-    if (!searchQuery)
+    if (!this.searchQuery)
       return;
 
     this.shadowRoot.querySelectorAll('.searchable').forEach(element => {
@@ -79,7 +69,7 @@ Polymer({
         if (textContent.length == 0)
           return;
 
-        if (searchQuery.test(textContent)) {
+        if (this.searchQuery.test(textContent)) {
           // Don't highlight <select> nodes, yellow rectangles can't be
           // displayed within an <option>.
           // TODO(rbpotter): solve issue below before adding advanced
@@ -88,7 +78,7 @@ Polymer({
           // instead.
           if (node.parentNode.nodeName != 'OPTION') {
             cr.search_highlight_utils.highlight(
-                node, textContent.split(searchQuery));
+                node, textContent.split(this.searchQuery));
             this.highlighted_ = true;
           }
         }
