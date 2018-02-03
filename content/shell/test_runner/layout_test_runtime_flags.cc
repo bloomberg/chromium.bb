@@ -22,6 +22,7 @@ void LayoutTestRuntimeFlags::Reset() {
   set_dump_child_frame_scroll_positions(false);
 
   set_is_printing(false);
+  set_printing_frame("");
 
   set_policy_delegate_enabled(false);
   set_policy_delegate_is_permissive(false);

@@ -75,6 +75,10 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, layout is to target printed pages.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(is_printing)
 
+  // If this is non-empty and is_printing is true, pixel dump will be for the
+  // named frame printed.
+  DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(printing_frame)
+
   // If true, don't dump output until notifyDone is called.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(wait_until_done)
 
