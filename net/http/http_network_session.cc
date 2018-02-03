@@ -140,7 +140,7 @@ HttpNetworkSession::Params::Params()
       enable_token_binding(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_41);
+  quic_supported_versions.push_back(QUIC_VERSION_39);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
