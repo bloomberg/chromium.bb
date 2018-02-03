@@ -33,7 +33,10 @@ xr_session_promise_test( (session, t) => {
           "stage frameOfRef is not correct type.");
       })
   ]));
-}, fakeDevices["FakeGooglePixelPhone"], { exclusive: true },
+}, fakeDevices["FakeGooglePixelPhone"], [
+    { exclusive: true },
+    { outputContext: getOutputContext() }
+],
 "requestFrameOfReference returns the expected objects");
 
 </script>

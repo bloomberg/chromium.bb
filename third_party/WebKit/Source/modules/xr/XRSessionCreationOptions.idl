@@ -7,4 +7,5 @@
     SecureContext
 ] dictionary XRSessionCreationOptions {
   boolean exclusive = false;
+  XRPresentationContext outputContext;
 };

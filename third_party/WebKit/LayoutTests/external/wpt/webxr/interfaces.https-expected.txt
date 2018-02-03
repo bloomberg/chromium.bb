@@ -24,7 +24,7 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's "constructor" property
 PASS XRSession interface: attribute device
 PASS XRSession interface: attribute exclusive
-FAIL XRSession interface: attribute outputContext assert_true: The prototype object must have a property "outputContext" expected true got false
+PASS XRSession interface: attribute outputContext
 PASS XRSession interface: attribute depthNear
 PASS XRSession interface: attribute depthFar
 PASS XRSession interface: attribute baseLayer

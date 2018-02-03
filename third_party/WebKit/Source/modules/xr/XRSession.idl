@@ -9,6 +9,7 @@
 ] interface XRSession : EventTarget {
   readonly attribute XRDevice device;
   readonly attribute boolean exclusive;
+  readonly attribute XRPresentationContext outputContext;
 
   attribute double depthNear;
   attribute double depthFar;

@@ -12,6 +12,7 @@
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "modules/xr/XRDevice.h"
 #include "modules/xr/XRFrameProvider.h"
+#include "modules/xr/XRPresentationContext.h"
 #include "modules/xr/XRSession.h"
 #include "modules/xr/XRView.h"
 #include "modules/xr/XRViewport.h"
@@ -193,6 +194,10 @@ void XRWebGLLayer::OnFrameEnd() {
   // Submit the frame to the XR compositor.
   if (session()->exclusive()) {
     session()->device()->frameProvider()->SubmitWebGLLayer(this);
+  } else if (session()->outputContext()) {
+    ImageBitmap* image_bitmap =
+        ImageBitmap::Create(TransferToStaticBitmapImage());
+    session()->outputContext()->SetImage(image_bitmap);
   }
 }
 
