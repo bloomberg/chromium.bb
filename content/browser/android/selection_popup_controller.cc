@@ -99,8 +99,7 @@ void SelectionPopupController::UpdateRenderProcessConnection(
 
 void SelectionPopupController::OnSelectionEvent(
     ui::SelectionEventType event,
-    const gfx::RectF& selection_rect,
-    const gfx::PointF& bound_middle_point) {
+    const gfx::RectF& selection_rect) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
   if (obj.is_null())
@@ -108,8 +107,17 @@ void SelectionPopupController::OnSelectionEvent(
 
   Java_SelectionPopupControllerImpl_onSelectionEvent(
       env, obj, event, selection_rect.x(), selection_rect.y(),
-      selection_rect.right(), selection_rect.bottom(), bound_middle_point.x(),
-      bound_middle_point.y());
+      selection_rect.right(), selection_rect.bottom());
+}
+
+void SelectionPopupController::OnDragUpdate(const gfx::PointF& position) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_SelectionPopupControllerImpl_onDragUpdate(env, obj, position.x(),
+                                                 position.y());
 }
 
 void SelectionPopupController::OnSelectionChanged(const std::string& text) {
