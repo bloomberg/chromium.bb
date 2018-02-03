@@ -371,12 +371,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 // Tells the render view that it is no longer hidden (see WasHidden), and the
 // render view is expected to respond with a full repaint if needs_repainting
 // is true. If needs_repainting is false, then this message does not trigger a
-// message in response. If any resizes happen while the widget was hidden, the
-// new ResizeParams will be provided in this message.
-IPC_MESSAGE_ROUTED3(ViewMsg_WasShown,
+// message in response.
+IPC_MESSAGE_ROUTED2(ViewMsg_WasShown,
                     bool /* needs_repainting */,
-                    ui::LatencyInfo /* latency_info */,
-                    base::Optional<content::ResizeParams> /* resize_params */)
+                    ui::LatencyInfo /* latency_info */)
 
 // Tells the renderer to focus the first (last if reverse is true) focusable
 // node.

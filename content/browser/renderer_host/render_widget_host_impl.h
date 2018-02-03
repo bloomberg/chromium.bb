@@ -819,17 +819,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const RenderWidgetSurfaceProperties& first,
       const RenderWidgetSurfaceProperties& second) const;
 
-  // Determines whether the next ResizeParams can be sent to the renderer. We
-  // may not be able to send the ResizeParams if, for example, the widget is
-  // hidden, or the previous resize is not acked.
-  bool CanResize();
-
-  // Called when the ResizeParams received from GetResizeParams() has been sent
-  // to the renderer. The given ResizeParams will be stored as
-  // |old_resize_params_| and will be used to detect when another ResizeParams
-  // needs to be sent to the renderer.
-  void DidSendResizeParams(const ResizeParams& resize_params);
-
 #if defined(OS_MACOSX)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -879,7 +868,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   gfx::Size current_size_;
 
   // Resize information that was previously sent to the renderer.
-  base::Optional<ResizeParams> old_resize_params_;
+  std::unique_ptr<ResizeParams> old_resize_params_;
 
   // The next auto resize to send.
   gfx::Size new_auto_size_;

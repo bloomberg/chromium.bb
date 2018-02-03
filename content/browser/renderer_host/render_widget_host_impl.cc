@@ -683,24 +683,10 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   SendScreenRects();
   RestartHangMonitorTimeoutIfNecessary();
 
-  base::Optional<ResizeParams> resize_params;
-
-  // If there is a pending resize, send it along with the WasShown message.
-  if (CanResize()) {
-    ResizeParams params;
-    if (GetResizeParams(&params))
-      resize_params = params;
-  }
-
   // Always repaint on restore.
-  constexpr bool needs_repainting = true;
+  bool needs_repainting = true;
   needs_repainting_on_restore_ = false;
-
-  bool success = Send(new ViewMsg_WasShown(routing_id_, needs_repainting,
-                                           latency_info, resize_params));
-
-  if (success && resize_params)
-    DidSendResizeParams(*resize_params);
+  Send(new ViewMsg_WasShown(routing_id_, needs_repainting, latency_info));
 
   process_->WidgetRestored();
 
@@ -709,6 +695,23 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
       NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(this),
       Details<bool>(&is_visible));
+
+  // It's possible for our size to be out of sync with the renderer. The
+  // following is one case that leads to this:
+  // 1. WasResized -> Send ViewMsg_Resize to render
+  // 2. WasResized -> do nothing as resize_ack_pending_ is true
+  // 3. WasHidden
+  // 4. OnResizeOrRepaintACK from (1) processed. Does NOT invoke WasResized as
+  //    view is hidden. Now renderer/browser out of sync with what they think
+  //    size is.
+  // By invoking WasResized the renderer is updated as necessary. WasResized
+  // does nothing if the sizes are already in sync.
+  //
+  // TODO: ideally ViewMsg_WasShown would take a size. This way, the renderer
+  // could handle both the restore and resize at once. This isn't that big a
+  // deal as RenderWidget::WasShown delays updating, so that the resize from
+  // WasResized is usually processed before the renderer is painted.
+  WasResized();
 }
 
 #if defined(OS_ANDROID)
@@ -814,7 +817,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
 void RenderWidgetHostImpl::SetInitialRenderSizeParams(
     const ResizeParams& resize_params) {
   resize_ack_pending_ = resize_params.needs_resize_ack;
-  old_resize_params_ = resize_params;
+
+  old_resize_params_ = std::make_unique<ResizeParams>(resize_params);
 }
 
 void RenderWidgetHostImpl::WasResized() {
@@ -822,16 +826,29 @@ void RenderWidgetHostImpl::WasResized() {
 }
 
 void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
-  if (!CanResize())
+  // Skip if the |delegate_| has already been detached because
+  // it's web contents is being deleted.
+  if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
+      !renderer_initialized_ || auto_resize_enabled_ || !delegate_) {
     return;
+  }
 
-  ResizeParams params;
-  if (!GetResizeParams(&params))
+  std::unique_ptr<ResizeParams> params(new ResizeParams);
+  if (!GetResizeParams(params.get()))
     return;
-  params.scroll_focused_node_into_view = scroll_focused_node_into_view;
+  params->scroll_focused_node_into_view = scroll_focused_node_into_view;
 
-  if (Send(new ViewMsg_Resize(routing_id_, params)))
-    DidSendResizeParams(params);
+  bool width_changed =
+      !old_resize_params_ ||
+      old_resize_params_->new_size.width() != params->new_size.width();
+  if (Send(new ViewMsg_Resize(routing_id_, *params))) {
+    resize_ack_pending_ = params->needs_resize_ack;
+    next_resize_needs_resize_ack_ = false;
+    old_resize_params_.swap(params);
+  }
+
+  if (delegate_)
+    delegate_->RenderWidgetWasResized(this, width_changed);
 }
 
 void RenderWidgetHostImpl::GotFocus() {
@@ -2990,26 +3007,6 @@ bool RenderWidgetHostImpl::SurfacePropertiesMismatch(
   // For non-Android or when surface synchronization is not enabled, just use a
   // basic comparison.
   return first != second;
-}
-
-bool RenderWidgetHostImpl::CanResize() {
-  // Don't resize if the |delegate_| has already been detached because its
-  // WebContents is being deleted.
-  return !resize_ack_pending_ && process_->HasConnection() && view_ &&
-         renderer_initialized_ && !auto_resize_enabled_ && delegate_ &&
-         !is_hidden_;
-}
-
-void RenderWidgetHostImpl::DidSendResizeParams(
-    const ResizeParams& resize_params) {
-  resize_ack_pending_ = resize_params.needs_resize_ack;
-  next_resize_needs_resize_ack_ = false;
-  bool width_changed =
-      !old_resize_params_ ||
-      old_resize_params_->new_size.width() != resize_params.new_size.width();
-  old_resize_params_ = resize_params;
-  if (delegate_)
-    delegate_->RenderWidgetWasResized(this, width_changed);
 }
 
 }  // namespace content

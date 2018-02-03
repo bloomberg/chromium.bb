@@ -1044,25 +1044,6 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
-
-  // If the host is hidden, don't send WasResized messages.
-  process_->sink().ClearMessages();
-  host_->WasHidden();
-  view_->SetBounds(gfx::Rect(100, 100, 200, 300));
-  host_->WasResized();
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
-
-  // When the host is visible again, any pending resize has to be sent in
-  // ViewMsg_WasShown, not ViewMsg_Resize.
-  process_->sink().ClearMessages();
-  host_->WasShown(ui::LatencyInfo());
-  const IPC::Message* message =
-      process_->sink().GetUniqueMessageMatching(ViewMsg_WasShown::ID);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
-  ViewMsg_WasShown::Param was_shown_params;
-  ViewMsg_WasShown::Read(message, &was_shown_params);
-  base::Optional<ResizeParams> resize_params = std::get<2>(was_shown_params);
-  EXPECT_TRUE(resize_params.has_value());
 }
 
 // Test that a resize event is sent if WasResized() is called after a
@@ -1192,7 +1173,7 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   const IPC::Message* restored = process_->sink().GetUniqueMessageMatching(
       ViewMsg_WasShown::ID);
   ASSERT_TRUE(restored);
-  std::tuple<bool, ui::LatencyInfo, base::Optional<ResizeParams>> needs_repaint;
+  std::tuple<bool, ui::LatencyInfo> needs_repaint;
   ViewMsg_WasShown::Read(restored, &needs_repaint);
   EXPECT_TRUE(std::get<0>(needs_repaint));
 }
