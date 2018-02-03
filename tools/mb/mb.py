@@ -91,9 +91,11 @@ class MetaBuildWrapper(object):
                         help='path to config file '
                              '(default is %(default)s)')
       subp.add_argument('-i', '--isolate-map-file', metavar='PATH',
-                        default=self.default_isolate_map,
                         help='path to isolate map file '
-                             '(default is %(default)s)')
+                             '(default is %(default)s)',
+                        default=[],
+                        action='append',
+                        dest='isolate_map_files')
       subp.add_argument('-g', '--goma-dir',
                         help='path to goma directory')
       subp.add_argument('--android-version-code',
@@ -581,14 +583,26 @@ class MetaBuildWrapper(object):
     self.mixins = contents['mixins']
 
   def ReadIsolateMap(self):
-    if not self.Exists(self.args.isolate_map_file):
-      raise MBErr('isolate map file not found at %s' %
-                  self.args.isolate_map_file)
-    try:
-      return ast.literal_eval(self.ReadFile(self.args.isolate_map_file))
-    except SyntaxError as e:
-      raise MBErr('Failed to parse isolate map file "%s": %s' %
-                  (self.args.isolate_map_file, e))
+    if not self.args.isolate_map_files:
+      self.args.isolate_map_files = [self.default_isolate_map]
+
+    for f in self.args.isolate_map_files:
+      if not self.Exists(f):
+        raise MBErr('isolate map file not found at %s' % f)
+    isolate_maps = {}
+    for isolate_map in self.args.isolate_map_files:
+      try:
+        isolate_map = ast.literal_eval(self.ReadFile(isolate_map))
+        duplicates = set(isolate_map).intersection(isolate_maps)
+        if duplicates:
+          raise MBErr(
+              'Duplicate targets in isolate map files: %s.' %
+              ', '.join(duplicates))
+        isolate_maps.update(isolate_map)
+      except SyntaxError as e:
+        raise MBErr(
+            'Failed to parse isolate map file "%s": %s' % (isolate_map, e))
+    return isolate_maps
 
   def ConfigFromArgs(self):
     if self.args.config:
