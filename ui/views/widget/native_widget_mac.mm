@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/crash/core/common/crash_key.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
@@ -635,11 +636,28 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
-  // Create a copy of [NSApp windows] to increase every window's retain count.
-  // -[NSWindow dealloc] won't be invoked on any windows until this array goes
-  // out of scope.
-  base::scoped_nsobject<NSArray> starting_windows([[NSApp windows] copy]);
-  for (NSWindow* window in starting_windows.get()) {
+  NSArray* starting_windows = [NSApp windows];  // Creates an autoreleased copy.
+  for (NSWindow* window in starting_windows) {
+    // Crash keys for http://crbug.com/788271 and http://crbug.com/808318.
+    // Crashes suggest the window delegate may have become invalid, so record
+    // a separate key before sending messages to the delegate.
+    // TODO(tapted): Remove the delegate key. The window info key is probably
+    // useful to keep to help diagnose leaked observers crashing in Widget code.
+    static crash_reporter::CrashKeyString<256> window_info_key("windowInfo");
+    static crash_reporter::CrashKeyString<256> window_delegate_info_key(
+        "windowDelegateInfo");
+    std::string value = base::SysNSStringToUTF8(
+        [NSString stringWithFormat:@"Closing %@ (%@)", [window title],
+                                   [window className]]);
+    crash_reporter::ScopedCrashKeyString scopedWindowKey(&window_info_key,
+                                                         value);
+
+    NSObject* delegate = [window delegate];
+    value = base::SysNSStringToUTF8([NSString
+        stringWithFormat:@"NSWindow delegate class: %@", [delegate className]]);
+    crash_reporter::ScopedCrashKeyString scopedDelegateKey(
+        &window_delegate_info_key, value);
+
     Widget* widget = GetWidgetForNativeWindow(window);
     if (widget && widget->is_secondary_widget())
       [window close];

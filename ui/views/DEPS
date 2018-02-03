@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/paint",
+  "+components/crash/core/common/crash_key.h",
   "+components/vector_icons",
   "+services/ui/public/interfaces",
   "+skia/ext",
