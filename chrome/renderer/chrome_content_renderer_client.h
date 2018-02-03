@@ -149,6 +149,8 @@ class ChromeContentRendererClient
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
                       const base::Closure& closure) override;
+  void PostCompositorThreadCreated(
+      base::SingleThreadTaskRunner* compositor_thread_task_runner) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
   bool AllowStoppingWhenProcessBackgrounded() override;
   bool AllowPopup() override;
