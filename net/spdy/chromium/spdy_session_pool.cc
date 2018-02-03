@@ -138,9 +138,11 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
 base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const SpdySessionKey& key,
     bool enable_ip_based_pooling,
+    bool is_websocket,
     const NetLogWithSource& net_log) {
   AvailableSessionMap::iterator it = LookupAvailableSessionByKey(key);
-  if (it != available_sessions_.end()) {
+  if (it != available_sessions_.end() &&
+      (!is_websocket || it->second->support_websocket())) {
     if (key == it->second->spdy_session_key()) {
       UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING,
                                 SPDY_SESSION_GET_MAX);
@@ -195,8 +197,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     // settings and socket tag match.
     if (!(alias_key.proxy_server() == key.proxy_server()) ||
         !(alias_key.privacy_mode() == key.privacy_mode()) ||
-        !(alias_key.socket_tag() == key.socket_tag()))
+        !(alias_key.socket_tag() == key.socket_tag())) {
       continue;
+    }
 
     AvailableSessionMap::iterator available_session_it =
         LookupAvailableSessionByKey(alias_key);
@@ -208,6 +211,10 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const base::WeakPtr<SpdySession>& available_session =
         available_session_it->second;
     DCHECK(base::ContainsKey(sessions_, available_session.get()));
+
+    if (is_websocket && !available_session->support_websocket())
+      continue;
+
     // If the session is a secure one, we need to verify that the
     // server is authenticated to serve traffic for |host_port_proxy_pair| too.
     if (!available_session->VerifyDomainAuthentication(

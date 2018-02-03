@@ -551,7 +551,8 @@ int HttpStreamFactoryImpl::Job::OnHostResolution(
   // ClientSocketPoolManager will be destroyed in the same callback that
   // destroys the SpdySessionPool.
   return spdy_session_pool->FindAvailableSession(
-             spdy_session_key, enable_ip_based_pooling, net_log)
+             spdy_session_key, enable_ip_based_pooling,
+             false /* is_websocket */, net_log)
              ? ERR_SPDY_SESSION_ALREADY_EXISTS
              : OK;
 }
@@ -923,7 +924,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
           session_->spdy_session_pool()->FindAvailableSession(
-              spdy_session_key_, enable_ip_based_pooling_, net_log_);
+              spdy_session_key_, enable_ip_based_pooling_,
+              false /* is_websocket */, net_log_);
     }
     if (existing_spdy_session_) {
       // If we're preconnecting, but we already have a SpdySession, we don't
@@ -1007,7 +1009,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     // probably an IP pooled connection.
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, enable_ip_based_pooling_, net_log_);
+            spdy_session_key_, enable_ip_based_pooling_,
+            false /* is_websocket */, net_log_);
     if (existing_spdy_session_) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
@@ -1211,7 +1214,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
           session_->spdy_session_pool()->FindAvailableSession(
-              spdy_session_key_, enable_ip_based_pooling_, net_log_);
+              spdy_session_key_, enable_ip_based_pooling_,
+              false /* is_websocket */, net_log_);
     }
   }
   if (existing_spdy_session_) {

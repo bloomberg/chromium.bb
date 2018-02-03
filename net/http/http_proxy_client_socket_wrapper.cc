@@ -476,7 +476,8 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                        initial_socket_tag_);
     if (spdy_session_pool_->FindAvailableSession(
-            key, /* enable_ip_based_pooling = */ true, net_log_)) {
+            key, /* enable_ip_based_pooling = */ true,
+            /* is_websocket = */ false, net_log_)) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
       return OK;
@@ -590,7 +591,8 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
       ProxyServer::Direct(), PRIVACY_MODE_DISABLED, initial_socket_tag_);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool_->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true, net_log_);
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, net_log_);
   // It's possible that a session to the proxy has recently been created
   if (spdy_session) {
     if (transport_socket_handle_.get()) {
