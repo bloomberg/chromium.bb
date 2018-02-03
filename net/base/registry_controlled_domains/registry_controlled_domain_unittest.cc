@@ -61,6 +61,11 @@ size_t GetRegistryLengthFromURLIncludingPrivate(
                            INCLUDE_PRIVATE_REGISTRIES);
 }
 
+bool IsRegistry(base::StringPiece url_str) {
+  return net::registry_controlled_domains::IsRegistry(
+      GURL(url_str), EXCLUDE_PRIVATE_REGISTRIES);
+}
+
 size_t PermissiveGetHostRegistryLength(base::StringPiece host) {
   return PermissiveGetHostRegistryLength(host, EXCLUDE_UNKNOWN_REGISTRIES,
                                          EXCLUDE_PRIVATE_REGISTRIES);
@@ -311,6 +316,15 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   // IDN case.
   EXPECT_EQ(10U, GetCanonicalHostRegistryLength("foo.xn--fiqs8s",
                                                 EXCLUDE_UNKNOWN_REGISTRIES));
+}
+
+TEST_F(RegistryControlledDomainTest, TestIsRegistry) {
+  UseDomainData(test1::kDafsa);
+
+  EXPECT_TRUE(IsRegistry("http://ac.jp"));
+  EXPECT_FALSE(IsRegistry("http://foo.jp"));
+  EXPECT_TRUE(IsRegistry("http://jp"));
+  EXPECT_FALSE(IsRegistry("http://foo"));
 }
 
 TEST_F(RegistryControlledDomainTest, HostHasRegistryControlledDomain) {
