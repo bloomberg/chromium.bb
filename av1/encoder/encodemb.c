@@ -453,6 +453,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const int is_inter = is_inter_block(mbmi);
 #endif
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -574,8 +575,11 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
 #if CONFIG_TXK_SEL
-  uint8_t disable_txk_check =
-      args->enable_optimize_b || args->cpi->oxcf.aq_mode != NO_AQ;
+  if (args->cpi->oxcf.aq_mode != NO_AQ && p->eobs[block] == 0 && plane == 0)
+    xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
+        DCT_DCT;
+
+  uint8_t disable_txk_check = args->enable_optimize_b;
 
   if (plane == 0 && p->eobs[block] == 0) {
     if (disable_txk_check) {
@@ -893,6 +897,12 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
         cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
         USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
   }
+
+#if CONFIG_TXK_SEL
+  if (args->cpi->oxcf.aq_mode != NO_AQ && !*eob && plane == 0)
+    xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
+        DCT_DCT;
+#endif
 
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                               dst_stride, *eob, cm->reduced_tx_set_used);
