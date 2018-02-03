@@ -379,8 +379,9 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
                  << (value_name ? value_name : L"(Default)")
                  << " error: " << result;
       delete_result = DELETE_FAILED;
+    } else {
+      delete_result = DELETED;
     }
-    delete_result = DELETED;
   }
   return delete_result;
 }
