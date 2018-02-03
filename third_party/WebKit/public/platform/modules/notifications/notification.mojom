@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "url/mojom/url.mojom";
 
@@ -36,13 +36,13 @@ struct NotificationAction {
   url.mojom.Url icon;
 
   // Placeholder to display for text-based actions in absence of user input.
-  mojo.common.mojom.String16? placeholder;
+  mojo_base.mojom.String16? placeholder;
 };
 
 // Structure representing the information associated with a Web Notification.
 struct NotificationData {
   // Title to be displayed with the Web Notification.
-  mojo.common.mojom.String16 title;
+  mojo_base.mojom.String16 title;
 
   // Hint to determine the directionality of the displayed notification.
   NotificationDirection direction;
@@ -51,7 +51,7 @@ struct NotificationData {
   string? lang;
 
   // Contents of the notification.
-  mojo.common.mojom.String16 body;
+  mojo_base.mojom.String16 body;
 
   // Tag of the notification. Notifications sharing both their origin and their
   // tag will replace the first displayed notification.

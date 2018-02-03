@@ -6,7 +6,7 @@ module chrome.mojom;
 
 import "content/public/common/webplugininfo.mojom";
 import "mojo/common/file_path.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -34,7 +34,7 @@ interface PluginHost {
 interface PluginAuthHost {
   // Notifies when a plugin couldn't be loaded because it requires
   // user authorization.
-  BlockedUnauthorizedPlugin(mojo.common.mojom.String16 name, string group_id);
+  BlockedUnauthorizedPlugin(mojo_base.mojom.String16 name, string group_id);
 };
 
 // These are only used internally, so the order does not matter.
@@ -64,12 +64,12 @@ struct PluginInfo {
   content.mojom.WebPluginInfo plugin;
   string actual_mime_type;
   string group_identifier;
-  mojo.common.mojom.String16 group_name;
+  mojo_base.mojom.String16 group_name;
 };
 
 struct PluginParam {
-  mojo.common.mojom.String16 name;
-  mojo.common.mojom.String16 value;
+  mojo_base.mojom.String16 name;
+  mojo_base.mojom.String16 value;
 };
 
 interface PluginInfoHost {

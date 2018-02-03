@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
 
 // The renderer uses this interface to ask the browser process about content
@@ -16,7 +16,7 @@ interface WorkerContentSettingsProxy {
 
   // Returns whether the worker is allowed access to IndexedDB.
   [Sync]
-  AllowIndexedDB(mojo.common.mojom.String16 name) => (bool result);
+  AllowIndexedDB(mojo_base.mojom.String16 name) => (bool result);
 
   // Returns whether the worker is allowed access to the file system.
   [Sync]

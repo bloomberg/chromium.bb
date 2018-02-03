@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CommonCustomTypesStructTraits_h
-#define CommonCustomTypesStructTraits_h
+#ifndef String16MojomTraits_h
+#define String16MojomTraits_h
 
 #include "base/containers/span.h"
 #include "base/strings/string16.h"
-#include "mojo/common/string16.mojom-blink.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "mojo/public/mojom/base/string16.mojom-blink.h"
 #include "platform/PlatformExport.h"
 
 namespace mojo_base {
@@ -19,7 +19,7 @@ namespace mojo {
 
 template <>
 struct PLATFORM_EXPORT
-    StructTraits<common::mojom::String16DataView, WTF::String> {
+    StructTraits<mojo_base::mojom::String16DataView, WTF::String> {
   static bool IsNull(const WTF::String& input) { return input.IsNull(); }
   static void SetToNull(WTF::String* output) { *output = WTF::String(); }
 
@@ -28,19 +28,19 @@ struct PLATFORM_EXPORT
 
   static base::span<const uint16_t> data(const WTF::String& input,
                                          void* context);
-  static bool Read(common::mojom::String16DataView, WTF::String* out);
+  static bool Read(mojo_base::mojom::String16DataView, WTF::String* out);
 };
 
 template <>
 struct PLATFORM_EXPORT
-    StructTraits<common::mojom::BigString16DataView, WTF::String> {
+    StructTraits<mojo_base::mojom::BigString16DataView, WTF::String> {
   static bool IsNull(const WTF::String& input) { return input.IsNull(); }
   static void SetToNull(WTF::String* output) { *output = WTF::String(); }
 
   static mojo_base::BigBuffer data(const WTF::String& input);
-  static bool Read(common::mojom::BigString16DataView, WTF::String* out);
+  static bool Read(mojo_base::mojom::BigString16DataView, WTF::String* out);
 };
 
 }  // namespace mojo
 
-#endif  // CommonCustomTypesStructTraits_h
+#endif  // String16MojomTraits_h

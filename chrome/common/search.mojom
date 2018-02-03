@@ -4,7 +4,7 @@
 
 module chrome.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/time.mojom";
 import "url/mojom/url.mojom";
 
@@ -62,13 +62,13 @@ interface EmbeddedSearch {
   // the clipboard contents will be pasted. This causes the omnibox dropdown to
   // open.
   PasteAndOpenDropdown(int32 page_seq_no,
-                       mojo.common.mojom.String16 text_to_be_pasted);
+                       mojo_base.mojom.String16 text_to_be_pasted);
 
   // The Instant page asks whether the user syncs its history.
   HistorySyncCheck(int32 page_seq_no) => (bool sync_history);
 
   // The Instant page asks for Chrome identity check against |identity|.
-  ChromeIdentityCheck(int32 page_seq_no, mojo.common.mojom.String16 identity)
+  ChromeIdentityCheck(int32 page_seq_no, mojo_base.mojom.String16 identity)
       => (bool identity_match);
 };
 

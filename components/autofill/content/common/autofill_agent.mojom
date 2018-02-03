@@ -5,7 +5,7 @@
 module autofill.mojom;
 
 import "components/autofill/content/common/autofill_types.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // There is one instance of this interface per render frame in the render
 // process. All methods are called by browser on renderer.
@@ -28,23 +28,23 @@ interface AutofillAgent {
   ClearPreviewedForm();
 
   // Sets the currently selected node's value.
-  FillFieldWithValue(mojo.common.mojom.String16 value);
+  FillFieldWithValue(mojo_base.mojom.String16 value);
 
   // Sets the suggested value for the currently previewed node.
-  PreviewFieldWithValue(mojo.common.mojom.String16 value);
+  PreviewFieldWithValue(mojo_base.mojom.String16 value);
 
   // Sets the currently selected node's value to be the given data list value.
-  AcceptDataListSuggestion(mojo.common.mojom.String16 value);
+  AcceptDataListSuggestion(mojo_base.mojom.String16 value);
 
   // Tells the renderer to fill the username and password with with given
   // values.
-  FillPasswordSuggestion(mojo.common.mojom.String16 username,
-                         mojo.common.mojom.String16 password);
+  FillPasswordSuggestion(mojo_base.mojom.String16 username,
+                         mojo_base.mojom.String16 password);
 
   // Tells the renderer to preview the username and password with the given
   // values.
-  PreviewPasswordSuggestion(mojo.common.mojom.String16 username,
-                            mojo.common.mojom.String16 password);
+  PreviewPasswordSuggestion(mojo_base.mojom.String16 username,
+                            mojo_base.mojom.String16 password);
 
   // Sent when a password form is initially detected and suggestions should be
   // shown. Used by the fill-on-select experiment.
@@ -106,7 +106,7 @@ interface PasswordAutofillAgent {
 interface PasswordGenerationAgent {
   // Tells the renderer to populate the correct password fields with this
   // generated password.
-  GeneratedPasswordAccepted(mojo.common.mojom.String16 generated_password);
+  GeneratedPasswordAccepted(mojo_base.mojom.String16 generated_password);
 
   // Tells the renderer to find a focused element, and if it is a password field
   // eligible for generation then to trigger generation by responding to the

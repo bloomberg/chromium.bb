@@ -9,7 +9,7 @@
 module indexed_db.mojom;
 
 import "mojo/common/file_path.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/time.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
 import "url/mojom/origin.mojom";
@@ -38,7 +38,7 @@ enum DatalessKeyType {
 union KeyData {
   array<Key> key_array;
   array<uint8> binary;
-  mojo.common.mojom.String16 string;
+  mojo_base.mojom.String16 string;
   double date;
   double number;
   DatalessKeyType other;
@@ -51,8 +51,8 @@ struct Key {
 
 // Represents WebIDBKeyPathTypeString and WebIDBKeyPathTypeArray in a key path.
 union KeyPathData {
-  mojo.common.mojom.String16 string;
-  array<mojo.common.mojom.String16> string_array;
+  mojo_base.mojom.String16 string;
+  array<mojo_base.mojom.String16> string_array;
 };
 
 struct KeyPath {
@@ -102,7 +102,7 @@ enum Status {
 
 struct IndexMetadata {
   int64 id;
-  mojo.common.mojom.String16 name;
+  mojo_base.mojom.String16 name;
   KeyPath key_path;
   bool unique;
   bool multi_entry;
@@ -110,7 +110,7 @@ struct IndexMetadata {
 
 struct ObjectStoreMetadata {
   int64 id;
-  mojo.common.mojom.String16 name;
+  mojo_base.mojom.String16 name;
   KeyPath key_path;
   bool auto_increment;
   int64 max_index_id;
@@ -119,7 +119,7 @@ struct ObjectStoreMetadata {
 
 struct DatabaseMetadata {
   int64 id;
-  mojo.common.mojom.String16 name;
+  mojo_base.mojom.String16 name;
   int64 version;
   int64 max_object_store_id;
   array<ObjectStoreMetadata> object_stores;
@@ -132,14 +132,14 @@ struct IndexKeys {
 
 struct FileInfo {
   mojo.common.mojom.FilePath path;
-  mojo.common.mojom.String16 name;
+  mojo_base.mojom.String16 name;
   mojo.common.mojom.Time last_modified;
 };
 
 struct BlobInfo {
   blink.mojom.Blob blob;
   string uuid;
-  mojo.common.mojom.String16 mime_type;
+  mojo_base.mojom.String16 mime_type;
   int64 size;
   FileInfo? file;
 };
@@ -180,10 +180,10 @@ struct ObserverChanges {
 // TODO(https://crbug.com/627484): Many of these could be replaced with
 // replies associated with particular messages.
 interface Callbacks {
-  Error(int32 code, mojo.common.mojom.String16 message);
+  Error(int32 code, mojo_base.mojom.String16 message);
 
   // Factory::GetDatabaseNames
-  SuccessStringList(array<mojo.common.mojom.String16> value);
+  SuccessStringList(array<mojo_base.mojom.String16> value);
 
   // Factory::Open / DeleteDatabase
   Blocked(int64 existing_version);
@@ -232,7 +232,7 @@ interface DatabaseCallbacks {
   ForcedClose();
   VersionChange(int64 old_version, int64 new_version);
   Abort(int64 transaction_id, int32 code,
-        mojo.common.mojom.String16 message);
+        mojo_base.mojom.String16 message);
   Complete(int64 transaction_id);
   Changes(ObserverChanges changes);
 };
@@ -247,14 +247,14 @@ interface Cursor {
 interface Database {
   CreateObjectStore(int64 transaction_id,
                     int64 object_store_id,
-                    mojo.common.mojom.String16 name,
+                    mojo_base.mojom.String16 name,
                     KeyPath key_path,
                     bool auto_increment);
   DeleteObjectStore(int64 transaction_id,
                     int64 object_store_id);
   RenameObjectStore(int64 transaction_id,
                     int64 object_store_id,
-                    mojo.common.mojom.String16 new_name);
+                    mojo_base.mojom.String16 new_name);
   CreateTransaction(int64 transaction_id,
                     array<int64> object_store_ids,
                     TransactionMode mode);
@@ -317,7 +317,7 @@ interface Database {
   CreateIndex(int64 transaction_id,
               int64 object_store_id,
               int64 index_id,
-              mojo.common.mojom.String16 name,
+              mojo_base.mojom.String16 name,
               KeyPath key_path,
               bool unique,
               bool multi_entry);
@@ -327,7 +327,7 @@ interface Database {
   RenameIndex(int64 transaction_id,
               int64 object_store_id,
               int64 index_id,
-              mojo.common.mojom.String16 new_name);
+              mojo_base.mojom.String16 new_name);
   Abort(int64 transaction_id);
   Commit(int64 transaction_id);
 };
@@ -336,9 +336,9 @@ interface Factory {
   GetDatabaseNames(associated Callbacks callbacks, url.mojom.Origin origin);
   Open(associated Callbacks callbacks,
        associated DatabaseCallbacks database_callbacks, url.mojom.Origin origin,
-       mojo.common.mojom.String16 name, int64 version, int64 transaction_id);
+       mojo_base.mojom.String16 name, int64 version, int64 transaction_id);
   DeleteDatabase(associated Callbacks callbacks, url.mojom.Origin origin,
-                 mojo.common.mojom.String16 name, bool force_close);
+                 mojo_base.mojom.String16 name, bool force_close);
   AbortTransactionsAndCompactDatabase(url.mojom.Origin origin) => (Status status);
   AbortTransactionsForDatabase(url.mojom.Origin origin) => (Status status);
 };

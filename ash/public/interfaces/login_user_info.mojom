@@ -6,7 +6,7 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "components/proximity_auth/public/interfaces/auth_type.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // Supported multi-profile user behavior values.
 // Keep in sync with the enum in md_user_pod_row.js and user_pod_row.js
@@ -45,7 +45,7 @@ struct EasyUnlockIconOptions {
   // |autoshow_tooltip| is true. The user can always see the tooltip if they
   // hover over the icon. The tooltip should be used for the accessibility label
   // if it is present.
-  mojo.common.mojom.String16 tooltip;
+  mojo_base.mojom.String16 tooltip;
   // If true, the tooltip should be displayed (even if the user is not currently
   // hovering over the icon, ie, this makes |tooltip| act like a little like a
   // notification).
@@ -53,7 +53,7 @@ struct EasyUnlockIconOptions {
   // Accessibility label. Only used if |tooltip| is empty.
   // TODO(jdufault): Always populate and use |aria_label|, even if |tooltip| is
   // non-empty.
-  mojo.common.mojom.String16 aria_label;
+  mojo_base.mojom.String16 aria_label;
   // If true, clicking the easy unlock icon should fire a hardlock event which
   // will disable easy unlock. The hardlock event will request a new icon
   // display via a separate EasyUnlockIconsOption update. See

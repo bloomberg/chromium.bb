@@ -7,7 +7,7 @@ module ash.mojom;
 import "ui/gfx/image/mojo/image.mojom";
 import "ui/message_center/public/mojo/notification.mojom";
 import "ui/message_center/public/mojo/notifier_id.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // A struct that contains information for presenting a notifier in a settings
 // panel.
@@ -16,7 +16,7 @@ struct NotifierUiData {
   message_center.mojom.NotifierId notifier_id;
 
   // The user-visible name of the notifier (e.g. an extension's name).
-  mojo.common.mojom.String16 name;
+  mojo_base.mojom.String16 name;
 
   // True if notifications from the notifier are presently enabled.
   bool enabled;

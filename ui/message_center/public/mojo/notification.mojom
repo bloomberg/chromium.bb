@@ -4,7 +4,7 @@
 
 module message_center.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 import "url/mojom/url.mojom";
 
@@ -23,11 +23,11 @@ enum NotificationType {
 // TODO(estade): Add the rest of the fields for RichNotificationData.
 struct RichNotificationData {
   int32 progress;
-  mojo.common.mojom.String16 progress_status;
+  mojo_base.mojom.String16 progress_status;
   bool should_make_spoken_feedback_for_popup_updates;
   bool clickable;
   bool pinned;
-  mojo.common.mojom.String16 accessible_name;
+  mojo_base.mojom.String16 accessible_name;
   uint32 accent_color;
 };
 
@@ -39,10 +39,10 @@ struct Notification {
   // collide with ids from different clients
   string id;
 
-  mojo.common.mojom.String16 title;
-  mojo.common.mojom.String16 message;
+  mojo_base.mojom.String16 title;
+  mojo_base.mojom.String16 message;
   gfx.mojom.ImageSkia? icon;
-  mojo.common.mojom.String16 display_source;
+  mojo_base.mojom.String16 display_source;
   url.mojom.Url origin_url;
 
   RichNotificationData optional_fields;

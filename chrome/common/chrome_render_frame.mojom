@@ -4,7 +4,7 @@
 
 module chrome.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "third_party/WebKit/public/web/window_features.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -43,7 +43,7 @@ interface ChromeRenderFrame {
   // For WebUI testing, this message requests JavaScript to be executed at a
   // time which is late enough to not be thrown out, and early enough to be
   // before onload events are fired.
-  ExecuteWebUIJavaScript(mojo.common.mojom.String16 javascript);
+  ExecuteWebUIJavaScript(mojo_base.mojom.String16 javascript);
 
   // Sent when the profile changes the kSafeBrowsingEnabled preference.
   SetClientSidePhishingDetection(bool enable_phishing_detection);

@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // Metadata about an installed input method.
 struct ImeInfo {
@@ -15,15 +15,15 @@ struct ImeInfo {
   string id;
 
   // Long name of the IME, which is used as the user-visible name.
-  mojo.common.mojom.String16 name;
+  mojo_base.mojom.String16 name;
 
   // Medium name of the IME, which is the same as the short name in most cases.
-  mojo.common.mojom.String16 medium_name;
+  mojo_base.mojom.String16 medium_name;
 
   // UI indicator for the IME (e.g., "US"). If the IME has no indicator, uses
   // the first two characters in its preferred keyboard layout or language code
   // (e.g., "ko", "ja", "en-US").
-  mojo.common.mojom.String16 short_name;
+  mojo_base.mojom.String16 short_name;
 };
 
 // A menu item that sets an IME configuration property.
@@ -36,5 +36,5 @@ struct ImeMenuItem {
   string key;
 
   // The item label, e.g. "Switch to full punctuation mode" or "Hiragana".
-  mojo.common.mojom.String16 label;
+  mojo_base.mojom.String16 label;
 };

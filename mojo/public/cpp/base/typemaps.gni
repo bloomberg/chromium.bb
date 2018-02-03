@@ -5,4 +5,5 @@
 typemaps = [
   "//mojo/public/cpp/base/big_buffer.typemap",
   "//mojo/public/cpp/base/big_string.typemap",
+  "//mojo/public/cpp/base/string16.typemap",
 ]

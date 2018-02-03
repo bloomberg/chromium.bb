@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 
@@ -137,7 +137,7 @@ interface ShelfItemDelegate {
 struct MenuItem {
   MenuItemType type;                 // The type of the menu item.
   int64 command_id;                  // The client's arbitrary item command id.
-  mojo.common.mojom.String16 label;  // The string label, may be empty.
+  mojo_base.mojom.String16 label;    // The string label, may be empty.
   gfx.mojom.ImageSkia? image;        // The image icon, may be null.
   array<MenuItem>? submenu;          // The optional nested submenu item list.
   bool enabled;                      // The enabled state.
@@ -162,7 +162,7 @@ struct ShelfItem {
                                // with no icon change, null for ShelfObservers.
   ShelfItemStatus status;      // The running/closed/etc. status of the item.
   ShelfID shelf_id;            // The id for the shelf item and its windows.
-  mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
+  mojo_base.mojom.String16 title;  // The title to display for tooltips, etc.
   bool shows_tooltip;          // Whether the tooltip should be shown on hover.
   bool pinned_by_policy;       // Whether the item is pinned by policy prefs,
                                // the user cannot un-pin these items.

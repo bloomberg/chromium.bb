@@ -10,7 +10,7 @@ import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/resource_type.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/common/unguessable_token.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "services/network/public/interfaces/url_loader.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/common/feature_policy/feature_policy.mojom";
@@ -33,7 +33,7 @@ interface Frame {
   // Extracts the data at the given rect.
   // TODO(crbug.com/676224): Only enable for OS_ANDROID.
   ExtractSmartClipData(gfx.mojom.Rect rect)
-      => (mojo.common.mojom.String16 text, mojo.common.mojom.String16 html);
+      => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html);
 };
 
 // See src/content/common/navigation_params.h

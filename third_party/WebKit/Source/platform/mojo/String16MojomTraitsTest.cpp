@@ -7,26 +7,26 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
-#include "mojo/common/string16.mojom-blink.h"
 #include "mojo/common/test_common_custom_types.mojom-blink.h"
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "mojo/public/mojom/base/string16.mojom-blink.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/platform/mojo/CommonCustomTypesStructTraits.h"
+#include "third_party/WebKit/Source/platform/mojo/String16MojomTraits.h"
 #include "third_party/WebKit/Source/platform/wtf/Vector.h"
 #include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-TEST(CommonCustomTypesStructTraitsTest, String16) {
+TEST(String16MojomTraitsTest, String16) {
   // |str| is 8-bit.
   String str = String::FromUTF8("hello world");
   String output;
 
   ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojo::common::mojom::blink::String16>(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::String16>(
           &str, &output));
   ASSERT_EQ(str, output);
 
@@ -35,57 +35,61 @@ TEST(CommonCustomTypesStructTraitsTest, String16) {
   str = String::FromUTF8("hell\xC3\xB3 w\xC3\xB3rld");
 
   ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojo::common::mojom::blink::String16>(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::String16>(
           &str, &output));
   ASSERT_EQ(str, output);
 }
 
-TEST(CommonCustomTypesStructTraitsTest, EmptyString16) {
+TEST(String16MojomTraitsTest, EmptyString16) {
   String str = String::FromUTF8("");
   String output;
 
   ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojo::common::mojom::blink::String16>(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::String16>(
           &str, &output));
   ASSERT_EQ(str, output);
 }
 
-TEST(CommonCustomTypesStructTraitsTest, BigString16_Empty) {
+TEST(String16MojomTraitsTest, BigString16_Empty) {
   String str = String::FromUTF8("");
   String output;
 
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
-              mojo::common::mojom::blink::BigString16>(&str, &output));
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::BigString16>(
+          &str, &output));
   ASSERT_EQ(str, output);
 }
 
-TEST(CommonCustomTypesStructTraitsTest, BigString16_Short) {
+TEST(String16MojomTraitsTest, BigString16_Short) {
   String str = String::FromUTF8("hello world");
   ASSERT_TRUE(str.Is8Bit());
   String output;
 
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
-              mojo::common::mojom::blink::BigString16>(&str, &output));
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::BigString16>(
+          &str, &output));
   ASSERT_EQ(str, output);
 
   // Replace the "o"s in "hello world" with "o"s with acute, so that |str| is
   // 16-bit.
   str = String::FromUTF8("hell\xC3\xB3 w\xC3\xB3rld");
 
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
-              mojo::common::mojom::blink::BigString16>(&str, &output));
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::BigString16>(
+          &str, &output));
   ASSERT_EQ(str, output);
 }
 
-TEST(CommonCustomTypesStructTraitsTest, BigString16_Long) {
+TEST(String16MojomTraitsTest, BigString16_Long) {
   WTF::Vector<char> random_latin1_string(1024 * 1024);
   base::RandBytes(random_latin1_string.data(), random_latin1_string.size());
 
   String str(random_latin1_string.data(), random_latin1_string.size());
   String output;
 
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
-              mojo::common::mojom::blink::BigString16>(&str, &output));
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojo_base::mojom::blink::BigString16>(
+          &str, &output));
   ASSERT_EQ(str, output);
 }
 

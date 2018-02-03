@@ -19,7 +19,6 @@ mojom("common_custom_types") {
     "file_path.mojom",
     "memory_allocator_dump_cross_process_uid.mojom",
     "process_id.mojom",
-    "string16.mojom",
     "text_direction.mojom",
     "thread_priority.mojom",
     "time.mojom",
@@ -90,7 +89,6 @@ test("mojo_common_unittests") {
 
   sources = [
     "common_custom_types_unittest.cc",
-    "string16_unittest.cc",
     "struct_traits_unittest.cc",
   ]
 }

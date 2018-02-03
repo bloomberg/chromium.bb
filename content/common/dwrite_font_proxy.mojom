@@ -6,11 +6,11 @@ module content.mojom;
 
 import "mojo/common/file.mojom";
 import "mojo/common/file_path.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 struct DWriteStringPair {
-  mojo.common.mojom.String16 first;
-  mojo.common.mojom.String16 second;
+  mojo_base.mojom.String16 first;
+  mojo_base.mojom.String16 second;
 };
 
 struct DWriteFontStyle {
@@ -21,7 +21,7 @@ struct DWriteFontStyle {
 
 struct MapCharactersResult {
   uint32 family_index;
-  mojo.common.mojom.String16 family_name;
+  mojo_base.mojom.String16 family_name;
   uint32 mapped_length;
   float scale;
   DWriteFontStyle font_style;
@@ -31,7 +31,7 @@ interface DWriteFontProxy {
   // Locates the index of the specified font family within the system
   // collection.
   [Sync]
-  FindFamily(mojo.common.mojom.String16 family_name) => (uint32 out_index);
+  FindFamily(mojo_base.mojom.String16 family_name) => (uint32 out_index);
 
   // Returns the number of font families in the system collection.
   [Sync]
@@ -58,10 +58,10 @@ interface DWriteFontProxy {
   // be UINT32_MAX and mapped_length will indicate how many characters cannot be
   // rendered by any installed font.
   [Sync]
-  MapCharacters(mojo.common.mojom.String16 text,
+  MapCharacters(mojo_base.mojom.String16 text,
                 DWriteFontStyle font_style,
-                mojo.common.mojom.String16 locale_name,
+                mojo_base.mojom.String16 locale_name,
                 uint32 reading_direction,
-                mojo.common.mojom.String16 base_family_name)
+                mojo_base.mojom.String16 base_family_name)
       => (MapCharactersResult out);
 };

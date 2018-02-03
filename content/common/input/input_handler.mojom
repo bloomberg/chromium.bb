@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "content/common/native_types.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "services/ui/public/interfaces/ime/ime.mojom";
 import "third_party/WebKit/public/web/selection_menu_behavior.mojom";
 import "ui/events/mojo/event.mojom";
@@ -30,8 +30,8 @@ struct KeyData {
   int32 native_key_code;
   bool is_system_key;
   bool is_browser_shortcut;
-  mojo.common.mojom.String16 text;
-  mojo.common.mojom.String16 unmodified_text;
+  mojo_base.mojom.String16 text;
+  mojo_base.mojom.String16 unmodified_text;
 };
 
 struct PointerData {
@@ -212,13 +212,13 @@ interface WidgetInputHandler {
   CursorVisibilityChanged(bool visible);
 
   // This message sends a string being composed with an input method.
-  ImeSetComposition(mojo.common.mojom.String16 text,
+  ImeSetComposition(mojo_base.mojom.String16 text,
                     array<ui.mojom.ImeTextSpan> ime_text_spans,
                     gfx.mojom.Range range, int32 start, int32 end);
 
   // This message deletes the current composition, inserts specified text, and
   // moves the cursor.
-  ImeCommitText(mojo.common.mojom.String16 text,
+  ImeCommitText(mojo_base.mojom.String16 text,
                 array<ui.mojom.ImeTextSpan> ime_text_spans,
                 gfx.mojom.Range range, int32 relative_cursor_position);
 
@@ -283,7 +283,7 @@ interface FrameInputHandler {
   SetEditableSelectionOffsets(int32 start, int32 end);
 
   // Message payload is the name/value of a WebCore edit command to execute.
-  ExecuteEditCommand(string command, mojo.common.mojom.String16? value);
+  ExecuteEditCommand(string command, mojo_base.mojom.String16? value);
 
   // These messages are typically generated from context menus and request the
   // renderer to apply the specified operation to the current selection.
@@ -300,10 +300,10 @@ interface FrameInputHandler {
 
   // Replaces the selected region or a word around the cursor with the
   // specified string.
-  Replace(mojo.common.mojom.String16 word);
+  Replace(mojo_base.mojom.String16 word);
 
   // Replaces the misspelling in the selected region with the specified string.
-  ReplaceMisspelling(mojo.common.mojom.String16 word);
+  ReplaceMisspelling(mojo_base.mojom.String16 word);
 
   // Requests the renderer to select the region between two points.
   // Expects a SelectRange_ACK message when finished.

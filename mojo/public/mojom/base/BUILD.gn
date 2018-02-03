@@ -8,6 +8,7 @@ mojom_component("base") {
   sources = [
     "big_buffer.mojom",
     "big_string.mojom",
+    "string16.mojom",
   ]
 
   output_prefix = "mojo_base_mojom"

@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
-import "mojo/common/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/time.mojom";
 import "services/network/public/interfaces/url_loader.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
@@ -44,7 +44,7 @@ struct FetchEventPreloadHandle {
 };
 
 struct ExtendableMessageEvent {
-  mojo.common.mojom.String16 message;
+  mojo_base.mojom.String16 message;
   url.mojom.Origin source_origin;
   array<handle<message_pipe>> message_ports;
   // Exactly one of |source_info_for_client| and
@@ -121,7 +121,7 @@ interface ServiceWorkerEventDispatcher {
   DispatchNotificationClickEvent(string notification_id,
                                  PlatformNotificationData notification_data,
                                  int32 action_index,
-                                 mojo.common.mojom.String16? reply)
+                                 mojo_base.mojom.String16? reply)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchNotificationCloseEvent(string notification_id,
