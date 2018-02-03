@@ -753,7 +753,6 @@ by a child template that "extends" this file.
         </activity>
 
         <!-- Activities for Browser Actions -->
-        {% if channel in ['dev', 'canary', 'default'] %}
         <activity android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
             android:theme="@style/FullscreenTransparentActivityTheme"
             android:exported="true"
@@ -769,7 +768,6 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.browseractions.BrowserActionsService"
             android:exported="false">
         </service>
-        {% endif %}
 
         <!-- Service for Broadcasting a Physical Web URL -->
         <service
