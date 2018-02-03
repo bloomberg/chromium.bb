@@ -235,6 +235,10 @@ NET_EXPORT size_t GetRegistryLength(const GURL& gurl,
                                     UnknownRegistryFilter unknown_filter,
                                     PrivateRegistryFilter private_filter);
 
+// Returns whether the entire host is a registry. (See "co.uk" above.)
+NET_EXPORT bool IsRegistry(const GURL& gurl,
+                           PrivateRegistryFilter private_filter);
+
 // Returns true if the given host name has a registry-controlled domain. The
 // host name will be internally canonicalized. Also returns true for invalid
 // host names like "*.google.com" as long as it has a valid registry-controlled

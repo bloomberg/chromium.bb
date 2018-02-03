@@ -200,6 +200,22 @@ TEST(AutocompleteInputTest, InputType) {
   }
 }
 
+TEST(AutocompleteInputTest, CanonicalizedURL) {
+  struct test_data {
+    const char* input;
+    const std::string url;
+  } test_cases[] = {
+      {"foo.com", "http://foo.com/"}, {"foobar", "http://foobar/"}, {"com", ""},
+  };
+  for (const auto& test : test_cases) {
+    SCOPED_TRACE(test.input);
+    AutocompleteInput input(ASCIIToUTF16(test.input),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    EXPECT_EQ(test.url, input.canonicalized_url().spec());
+  }
+}
+
 TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   struct test_data {
     const base::string16 input;
