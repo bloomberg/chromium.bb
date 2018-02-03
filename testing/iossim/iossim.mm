@@ -14,13 +14,15 @@ void PrintUsage() {
       "  where <app_path> is the path to the .app directory and <xctest_path> "
       "is the path to an optional xctest bundle.\n"
       "Options:\n"
+      "  -u  Specifies the device udid to use. Will use -d, -s values to get "
+      "devices if not specified.\n"
       "  -d  Specifies the device (must be one of the values from the iOS "
       "Simulator's Hardware -> Device menu. Defaults to 'iPhone 6s'.\n"
       "  -w  Wipe the device's contents and settings before running the "
       "test.\n"
       "  -e  Specifies an environment key=value pair that will be"
       " set in the simulated application's environment.\n"
-      "  -t  Specifies a test or test suite that should be included in the"
+      "  -t  Specifies a test or test suite that should be included in the "
       "test run. All other tests will be excluded from this run.\n"
       "  -c  Specifies command line flags to pass to application.\n"
       "  -p  Print the device's home directory, does not run a test.\n"
@@ -196,6 +198,19 @@ NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
   return nil;
 }
 
+bool FindDeviceByUDID(NSDictionary* simctl_list, NSString* udid) {
+  NSDictionary* devices_table = simctl_list[@"devices"];
+  for (id runtimes in devices_table) {
+    NSArray* devices = devices_table[runtimes];
+    for (NSDictionary* device in devices) {
+      if ([device[@"udid"] isEqualToString:udid]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Prints the HOME environment variable for a device.  Used by the bots to
 // package up all the test data.
 void PrintDeviceHome(NSString* udid) {
@@ -332,6 +347,7 @@ int main(int argc, char* const argv[]) {
 
   NSString* app_path = nil;
   NSString* xctest_path = nil;
+  NSString* udid = nil;
   NSString* device_name = @"iPhone 6s";
   bool wants_wipe = false;
   bool wants_print_home = false;
@@ -353,6 +369,9 @@ int main(int argc, char* const argv[]) {
         break;
       case 'd':
         device_name = [NSString stringWithUTF8String:optarg];
+        break;
+      case 'u':
+        udid = [NSString stringWithUTF8String:optarg];
         break;
       case 'w':
         wants_wipe = true;
@@ -394,12 +413,22 @@ int main(int argc, char* const argv[]) {
     }
   }
 
-  NSString* udid = GetDeviceBySDKAndName(simctl_list, device_name, sdk_version);
   if (udid == nil) {
-    LogError(@"Unable to find a device %@ with SDK %@.", device_name,
-             sdk_version);
-    PrintSupportedDevices(simctl_list);
-    exit(kExitInvalidArguments);
+    udid = GetDeviceBySDKAndName(simctl_list, device_name, sdk_version);
+    if (udid == nil) {
+      LogError(@"Unable to find a device %@ with SDK %@.", device_name,
+               sdk_version);
+      PrintSupportedDevices(simctl_list);
+      exit(kExitInvalidArguments);
+    }
+  } else {
+    if (!FindDeviceByUDID(simctl_list, udid)) {
+      LogError(
+          @"Unable to find a device with udid %@. Use 'xcrun simctl list' to "
+          @"see valid device udids.",
+          udid);
+      exit(kExitInvalidArguments);
+    }
   }
 
   if (wants_print_home) {
