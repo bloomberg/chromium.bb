@@ -42,6 +42,7 @@ void InputInjectorEvdev::InjectMouseButton(EventFlags button, bool down) {
       break;
     case EF_MIDDLE_MOUSE_BUTTON:
       code = BTN_MIDDLE;
+      break;
     default:
       LOG(WARNING) << "Invalid flag: " << button << " for the button parameter";
       return;

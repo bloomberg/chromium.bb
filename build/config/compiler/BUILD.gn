@@ -1430,7 +1430,7 @@ config("chromium_code") {
   # For intentional fallthrough, use FALLTHROUGH; from base/compiler_specific.h
   # TODO(thakis): Enable for all platforms, https://crbug.com/177475
   if (is_clang &&
-      (is_android || is_fuchsia || (is_linux && !use_ozone) || is_win)) {
+      (is_android || is_fuchsia || (is_linux && !is_chromeos) || is_win)) {
     cflags += [ "-Wimplicit-fallthrough" ]
   }
 
