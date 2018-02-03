@@ -15,13 +15,12 @@ focus, that the presenting frame still receives input.
     <script>
       var t = async_test("Focus is locked to presentation");
       var rafCount = 0;
-
-      function stepSetupFocusLoss() {
+      window.addEventListener("vrdisplaypresentchange", () => {
         onPresentingAnimationFrameCallback = null;
         setTimeout(function() {
           document.getElementById('externalframe').contentWindow.focus();
         }, 1000);
-      }
+      }, false);
 
       window.onblur = function() {
         onPresentingAnimationFrameCallback = function() {
