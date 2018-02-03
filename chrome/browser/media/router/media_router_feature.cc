@@ -20,6 +20,10 @@
 namespace media_router {
 
 #if !defined(OS_ANDROID)
+// Controls if browser side DIAL sink query is enabled.
+const base::Feature kEnableDialSinkQuery{"EnableDialSinkQuery",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls if browser side Cast device discovery is enabled.
 const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -58,6 +62,11 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
 }
 
 #if !defined(OS_ANDROID)
+// Returns true if browser side DIAL sink query is enabled.
+bool DialSinkQueryEnabled() {
+  return base::FeatureList::IsEnabled(kEnableDialSinkQuery);
+}
+
 // Returns true if browser side Cast discovery is enabled.
 bool CastDiscoveryEnabled() {
   return base::FeatureList::IsEnabled(kEnableCastDiscovery);

@@ -88,10 +88,12 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   auto config = mojom::MediaRouteProviderConfig::New();
-  // Enabling browser side discovery means disabling extension side discovery.
-  // We are migrating discovery from the external Media Route Provider to the
-  // Media Router (crbug.com/687383), so we need to disable it in the provider.
+  // Enabling browser side discovery / sink query means disabling extension side
+  // discovery / sink query. We are migrating discovery from the external Media
+  // Route Provider to the Media Router (https://crbug.com/687383), so we need
+  // to disable it in the provider.
   config->enable_cast_discovery = !media_router::CastDiscoveryEnabled();
+  config->enable_dial_sink_query = !media_router::DialSinkQueryEnabled();
   std::move(callback).Run(instance_id(), std::move(config));
 
   SyncStateToMediaRouteProvider(provider_id);

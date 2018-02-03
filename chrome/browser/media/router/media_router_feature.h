@@ -18,12 +18,12 @@ bool MediaRouterEnabled(content::BrowserContext* context);
 
 #if !defined(OS_ANDROID)
 
-extern const base::Feature kEnableDialLocalDiscovery;
+extern const base::Feature kEnableDialSinkQuery;
 extern const base::Feature kEnableCastDiscovery;
 extern const base::Feature kEnableCastLocalMedia;
 
-// Returns true if browser side DIAL discovery is enabled.
-bool DialLocalDiscoveryEnabled();
+// Returns true if browser side DIAL sink query is enabled.
+bool DialSinkQueryEnabled();
 
 // Returns true if browser side Cast discovery is enabled.
 bool CastDiscoveryEnabled();
