@@ -23,6 +23,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -91,6 +92,16 @@ std::unique_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
 
   return cache;
 }
+
+#if defined(OS_FUCHSIA)
+// Load tests with large numbers of file descriptors perform poorly on
+// virtualized test execution environments.
+// TODO(807882): Remove this workaround when virtualized test performance
+// improves.
+const int kLargeNumEntries = 100;
+#else
+const int kLargeNumEntries = 512;
+#endif
 
 }  // namespace
 
@@ -432,7 +443,7 @@ void DiskCacheBackendTest::BackendKeying() {
   EXPECT_TRUE(entry1 == entry2);
   entry2->Close();
 
-  base::strlcpy(buffer + 3,  kName1, arraysize(buffer) - 3);
+  base::strlcpy(buffer + 3, kName1, arraysize(buffer) - 3);
   ASSERT_THAT(OpenEntry(buffer + 3, &entry2), IsOk());
   EXPECT_TRUE(entry1 == entry2);
   entry2->Close();
@@ -488,9 +499,9 @@ TEST_F(DiskCacheTest, CreateBackend) {
     cache.reset();
 
     // Now test the public API.
-    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                        net::CACHE_BACKEND_DEFAULT, cache_path_,
-                                        0, false, NULL, &cache, cb.callback());
+    int rv = disk_cache::CreateCacheBackend(
+        net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path_, 0, false,
+        NULL, &cache, cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     ASSERT_TRUE(cache.get());
     cache.reset();
@@ -889,7 +900,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingCreate(bool fast) {
     ASSERT_TRUE(CleanupCacheDir());
 
     disk_cache::BackendFlags flags =
-      fast ? disk_cache::kNone : disk_cache::kNoRandom;
+        fast ? disk_cache::kNone : disk_cache::kNoRandom;
     CreateBackend(flags);
 
     disk_cache::Entry* entry;
@@ -1043,24 +1054,22 @@ void DiskCacheBackendTest::BackendLoad() {
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
 
-  const int kNumEntries = 512;
-
-  disk_cache::Entry* entries[kNumEntries];
-  for (int i = 0; i < kNumEntries; i++) {
+  disk_cache::Entry* entries[kLargeNumEntries];
+  for (int i = 0; i < kLargeNumEntries; i++) {
     std::string key = GenerateKey(true);
     ASSERT_THAT(CreateEntry(key, &entries[i]), IsOk());
   }
-  EXPECT_EQ(kNumEntries, cache_->GetEntryCount());
+  EXPECT_EQ(kLargeNumEntries, cache_->GetEntryCount());
 
-  for (int i = 0; i < kNumEntries; i++) {
-    int source1 = rand() % kNumEntries;
-    int source2 = rand() % kNumEntries;
+  for (int i = 0; i < kLargeNumEntries; i++) {
+    int source1 = rand() % kLargeNumEntries;
+    int source2 = rand() % kLargeNumEntries;
     disk_cache::Entry* temp = entries[source1];
     entries[source1] = entries[source2];
     entries[source2] = temp;
   }
 
-  for (int i = 0; i < kNumEntries; i++) {
+  for (int i = 0; i < kLargeNumEntries; i++) {
     disk_cache::Entry* entry;
     ASSERT_THAT(OpenEntry(entries[i]->GetKey(), &entry), IsOk());
     EXPECT_TRUE(entry == entries[i]);
@@ -1111,7 +1120,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheLoad) {
 
 // Tests the chaining of an entry to the current head.
 void DiskCacheBackendTest::BackendChain() {
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   InitCache();
 
@@ -1845,7 +1854,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionFixEnumerators) {
 void DiskCacheBackendTest::BackendDoomRecent() {
   InitCache();
 
-  disk_cache::Entry *entry;
+  disk_cache::Entry* entry;
   ASSERT_THAT(CreateEntry("first", &entry), IsOk());
   entry->Close();
   ASSERT_THAT(CreateEntry("second", &entry), IsOk());
@@ -1923,7 +1932,7 @@ TEST_F(DiskCacheBackendTest, DoomAllSparse) {
 void DiskCacheBackendTest::BackendDoomBetween() {
   InitCache();
 
-  disk_cache::Entry *entry;
+  disk_cache::Entry* entry;
   ASSERT_THAT(CreateEntry("first", &entry), IsOk());
   entry->Close();
   FlushQueueForTest();
@@ -2144,7 +2153,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheCalculateSizeOfEntriesBetween) {
 }
 
 void DiskCacheBackendTest::BackendTransaction(const std::string& name,
-                                              int num_entries, bool load) {
+                                              int num_entries,
+                                              bool load) {
   success_ = false;
   ASSERT_TRUE(CopyTestCache(name));
   DisableFirstCleanup();
@@ -2329,14 +2339,9 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
                                          "ExperimentControl");
   net::TestCompletionCallback cb;
   std::unique_ptr<disk_cache::Backend> base_cache;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                          net::CACHE_BACKEND_BLOCKFILE,
-                                          cache_path_,
-                                          0,
-                                          true,
-                                          NULL,
-                                          &base_cache,
-                                          cb.callback());
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE, cache_path_, 0, true, NULL,
+      &base_cache, cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
   EXPECT_EQ(0, base_cache->GetEntryCount());
 }
@@ -2426,13 +2431,8 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
   base::FilePath path(cache_path_);
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                          net::CACHE_BACKEND_BLOCKFILE,
-                                          path,
-                                          0,
-                                          true,
-                                          NULL,
-                                          &cache_,
-                                          cb.callback());
+                                          net::CACHE_BACKEND_BLOCKFILE, path, 0,
+                                          true, NULL, &cache_, cb.callback());
   path.clear();  // Make sure path was captured by the previous call.
   ASSERT_THAT(cb.GetResult(rv), IsOk());
   base::ThreadRestrictions::SetIOAllowed(prev);
@@ -2468,7 +2468,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidEntry2) {
 
 // Tests that we don't crash or hang when enumerating this cache.
 void DiskCacheBackendTest::BackendInvalidEntry3() {
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   DisableFirstCleanup();
   InitCache();
@@ -2496,7 +2496,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidEntry3) {
 // the same key, and with hash collisions.
 TEST_F(DiskCacheBackendTest, InvalidEntry4) {
   ASSERT_TRUE(CopyTestCache("dirty_entry3"));
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   DisableFirstCleanup();
   InitCache();
@@ -2509,7 +2509,7 @@ TEST_F(DiskCacheBackendTest, InvalidEntry4) {
 TEST_F(DiskCacheBackendTest, InvalidEntry5) {
   ASSERT_TRUE(CopyTestCache("dirty_entry4"));
   SetNewEviction();
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   DisableFirstCleanup();
   InitCache();
@@ -2519,7 +2519,7 @@ TEST_F(DiskCacheBackendTest, InvalidEntry5) {
 
 TEST_F(DiskCacheBackendTest, InvalidEntry6) {
   ASSERT_TRUE(CopyTestCache("dirty_entry5"));
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   DisableFirstCleanup();
   InitCache();
@@ -2536,7 +2536,7 @@ TEST_F(DiskCacheBackendTest, InvalidEntry6) {
 // The test cache could be a result of bug 69135.
 TEST_F(DiskCacheBackendTest, BadNextEntry1) {
   ASSERT_TRUE(CopyTestCache("list_loop2"));
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   DisableFirstCleanup();
   InitCache();
@@ -2559,7 +2559,7 @@ TEST_F(DiskCacheBackendTest, BadNextEntry1) {
 // The test cache could be a result of bug 69135.
 TEST_F(DiskCacheBackendTest, BadNextEntry2) {
   ASSERT_TRUE(CopyTestCache("list_loop3"));
-  SetMask(0x1);  // 2-entry table.
+  SetMask(0x1);        // 2-entry table.
   SetMaxSize(0x3000);  // 12 kB.
   DisableFirstCleanup();
   InitCache();
@@ -3188,7 +3188,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess4) {
 void DiskCacheBackendTest::BackendDisabledAPI() {
   cache_impl_->SetUnitTestMode();  // Simulate failure restarting the cache.
 
-  disk_cache::Entry* entry1, *entry2;
+  disk_cache::Entry *entry1, *entry2;
   std::unique_ptr<TestIterator> iter = CreateIterator();
   EXPECT_EQ(2, cache_->GetEntryCount());
   ASSERT_THAT(iter->OpenNextEntry(&entry1), IsOk());
@@ -3562,8 +3562,7 @@ TEST_F(DiskCacheTest, AutomaticMaxSize) {
             disk_cache::PreferredCacheSize(large_size * 10 - 1));
 
   // Region 3: expected = available * 0.1
-  EXPECT_EQ(kDefaultCacheSize,
-            disk_cache::PreferredCacheSize(large_size * 10));
+  EXPECT_EQ(kDefaultCacheSize, disk_cache::PreferredCacheSize(large_size * 10));
   EXPECT_EQ((kDefaultCacheSize * 25 - 1) / 10,
             disk_cache::PreferredCacheSize(large_size * 25 - 1));
 
@@ -3585,10 +3584,8 @@ TEST_F(DiskCacheTest, AutomaticMaxSize) {
             disk_cache::PreferredCacheSize(largest_size * 100 - 1));
 
   // Region 6: expected = largest possible size
-  EXPECT_EQ(largest_size,
-            disk_cache::PreferredCacheSize(largest_size * 100));
-  EXPECT_EQ(largest_size,
-            disk_cache::PreferredCacheSize(largest_size * 10000));
+  EXPECT_EQ(largest_size, disk_cache::PreferredCacheSize(largest_size * 100));
+  EXPECT_EQ(largest_size, disk_cache::PreferredCacheSize(largest_size * 10000));
 }
 
 // Tests that we can "migrate" a running instance from one experiment group to
@@ -3974,14 +3971,11 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationBasics) {
   count = 0;
   disk_cache::Entry* entry_opened_before;
   ASSERT_THAT(OpenEntry(*(key_pool.begin()), &entry_opened_before), IsOk());
-  ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size()/2,
-                                    iter.get(),
-                                    &keys_to_match,
-                                    &count));
+  ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size() / 2, iter.get(),
+                                    &keys_to_match, &count));
 
   disk_cache::Entry* entry_opened_middle;
-  ASSERT_EQ(net::OK,
-            OpenEntry(*(keys_to_match.begin()), &entry_opened_middle));
+  ASSERT_EQ(net::OK, OpenEntry(*(keys_to_match.begin()), &entry_opened_middle));
   ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
   iter.reset();
   entry_opened_before->Close();
@@ -4003,10 +3997,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
   std::set<std::string> keys_to_match(key_pool);
   std::unique_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
-  ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size()/2,
-                                    iter.get(),
-                                    &keys_to_match,
-                                    &count));
+  ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size() / 2, iter.get(),
+                                    &keys_to_match, &count));
 
   std::string key_to_delete = *(keys_to_match.begin());
   DoomEntry(key_to_delete);
@@ -4042,8 +4034,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   std::set<std::string> key_pool;
   ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
 
-  EXPECT_TRUE(disk_cache::simple_util::CreateCorruptFileForTests(
-      key, cache_path_));
+  EXPECT_TRUE(
+      disk_cache::simple_util::CreateCorruptFileForTests(key, cache_path_));
   EXPECT_EQ(key_pool.size() + 1, static_cast<size_t>(cache_->GetEntryCount()));
 
   // Check that enumeration returns all entries but the corrupt one.
@@ -4219,18 +4211,18 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
   // created.
   SetCacheType(net::APP_CACHE);
   InitCache();
-  const int kNumEntries = 512;
 
-  disk_cache::Entry* entries[kNumEntries];
-  std::string keys[kNumEntries];
-  for (int i = 0; i < kNumEntries; ++i) {
+  disk_cache::Entry* entries[kLargeNumEntries];
+  std::string keys[kLargeNumEntries];
+  for (int i = 0; i < kLargeNumEntries; ++i) {
     keys[i] = GenerateKey(true);
     ASSERT_THAT(CreateEntry(keys[i], &entries[i]), IsOk());
   }
 
   // Note the fixture sets the file limit to 64.
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_CLOSE_FILE, 512 - 64);
+                                     disk_cache::FD_LIMIT_CLOSE_FILE,
+                                     kLargeNumEntries - 64);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_REOPEN_FILE, 0);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
@@ -4252,27 +4244,29 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
   // One more file closure here to accomodate for alt_entry.
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_CLOSE_FILE,
-                                     512 - 64 + 1);
+                                     kLargeNumEntries - 64 + 1);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_REOPEN_FILE, 0);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 
-  // Do some writes in [1...511] range, both testing bring those in and kicking
-  // out [0] and [alt_entry]. These have to be to stream != 0 to actually need
-  // files.
-  for (int i = 1; i < kNumEntries; ++i) {
+  // Do some writes in [1...kLargeNumEntries) range, both testing bring those in
+  // and kicking out [0] and [alt_entry]. These have to be to stream != 0 to
+  // actually need files.
+  for (int i = 1; i < kLargeNumEntries; ++i) {
     EXPECT_EQ(kSize, WriteData(entries[i], 1, 0, buf1.get(), kSize, true));
     scoped_refptr<net::IOBuffer> read_buf(new net::IOBuffer(kSize));
     ASSERT_EQ(kSize, ReadData(entries[i], 1, 0, read_buf.get(), kSize));
     EXPECT_EQ(0, memcmp(read_buf->data(), buf1->data(), kSize));
   }
 
+  histogram_tester.ExpectBucketCount(
+      "SimpleCache.FileDescriptorLimiterAction",
+      disk_cache::FD_LIMIT_CLOSE_FILE,
+      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_CLOSE_FILE,
-                                     512 - 64 + 1 + 511);
-  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_REOPEN_FILE, 511);
+                                     disk_cache::FD_LIMIT_REOPEN_FILE,
+                                     kLargeNumEntries - 1);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
   EXPECT_EQ(kSize, WriteData(entries[0], 1, 0, buf1.get(), kSize, true));
@@ -4287,15 +4281,17 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
   EXPECT_EQ(0, memcmp(read_buf2->data(), buf2->data(), kSize));
 
   // Two more things than last time --- entries[0] and |alt_entry|
+  histogram_tester.ExpectBucketCount(
+      "SimpleCache.FileDescriptorLimiterAction",
+      disk_cache::FD_LIMIT_CLOSE_FILE,
+      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_CLOSE_FILE,
-                                     512 - 64 + 1 + 511 + 2);
-  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_REOPEN_FILE, 513);
+                                     disk_cache::FD_LIMIT_REOPEN_FILE,
+                                     kLargeNumEntries + 1);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 
-  for (int i = 0; i < kNumEntries; ++i) {
+  for (int i = 0; i < kLargeNumEntries; ++i) {
     entries[i]->Close();
   }
   alt_entry->Close();
@@ -4303,12 +4299,14 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
 
   // Closes have to pull things in to write out the footer, but they also
   // free up FDs, so we will only need to kick one more thing out.
-  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_CLOSE_FILE,
-                                     512 - 64 + 1 + 511 + 2 + 1);
-  histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
-                                     disk_cache::FD_LIMIT_REOPEN_FILE,
-                                     512 - 64 + 1 + 511 + 2 + 1);
+  histogram_tester.ExpectBucketCount(
+      "SimpleCache.FileDescriptorLimiterAction",
+      disk_cache::FD_LIMIT_CLOSE_FILE,
+      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2 + 1);
+  histogram_tester.ExpectBucketCount(
+      "SimpleCache.FileDescriptorLimiterAction",
+      disk_cache::FD_LIMIT_REOPEN_FILE,
+      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2 + 1);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 }
