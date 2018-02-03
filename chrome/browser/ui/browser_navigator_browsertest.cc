@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
 // This test verifies that we're picking the correct browser and tab to
 // switch to. It verifies that we don't recommend the active tab, and that,
 // when switching, we don't mistakenly pick the current browser.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
   GURL singleton_url("http://maps.google.com/");
 
   // Make singleton tab.
@@ -657,8 +657,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
                                          WindowOpenDisposition::CURRENT_TAB);
 
   // Make a new window with different URL.
-  NavigateHelper(GURL("http://www.google.com/"), browser(),
-                 WindowOpenDisposition::NEW_WINDOW);
+  Browser* middle_browser =
+      NavigateHelper(GURL("http://www.google.com/"), orig_browser,
+                     WindowOpenDisposition::NEW_WINDOW);
+  EXPECT_NE(orig_browser, middle_browser);
 
   ChromeAutocompleteProviderClient client(browser()->profile());
   // We avoid recommending the active tab, because during navigation, we
@@ -668,8 +670,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
   EXPECT_TRUE(client.IsTabOpenWithURL(singleton_url));
 
   // Navigate to the singleton again.
-  Browser* test_browser = NavigateHelper(singleton_url, browser(),
-                                         WindowOpenDisposition::SINGLETON_TAB);
+  Browser* test_browser = NavigateHelper(singleton_url, middle_browser,
+                                         WindowOpenDisposition::SWITCH_TO_TAB);
 
   // Make sure we chose the browser with the tab, not simply the current
   // browser.
@@ -679,9 +681,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
   EXPECT_FALSE(client.IsTabOpenWithURL(singleton_url));
 }
 
-// This test verifies that navigation to a singleton prefers the latest
-// used browser, if multiple exist.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonLatestWindow) {
+// This test verifies that "switch to tab" prefers the latest used browser,
+// if multiple exist.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabLatestWindow) {
   // Navigate to a site.
   NavigateHelper(GURL("http://maps.google.com/"), browser(),
                  WindowOpenDisposition::CURRENT_TAB);
@@ -698,29 +700,55 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonLatestWindow) {
   // the previous browser.
   Browser* test_browser =
       NavigateHelper(GURL("http://maps.google.com/"), browser1,
-                     WindowOpenDisposition::SINGLETON_TAB);
+                     WindowOpenDisposition::SWITCH_TO_TAB);
 
   EXPECT_EQ(browser2, test_browser);
 }
 
-// Tests that a disposition of SINGLETON_TAB can "see" non-incognito
-// tab URLs from incognito mode, but not vice versa, and that a
-// disposition of SWITCH_TO_TAB can't transition either direction.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonProfileLeak) {
-  // Navigate to a site.
-  NavigateHelper(GURL("http://maps.google.com/"), browser(),
-                 WindowOpenDisposition::CURRENT_TAB);
+// Tests that a disposition of SINGLETON_TAB cannot see outside its
+// window.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonWindowLeak) {
+  Browser* browser1;
 
-  // Open settings for finding later.
-  NavigateHelper(GURL("chrome://settings"), browser(),
+  // Navigate to a site.
+  browser1 = NavigateHelper(GURL("chrome://dino"), browser(),
+                            WindowOpenDisposition::CURRENT_TAB);
+
+  // Navigate to a new window.
+  Browser* browser2 = NavigateHelper(GURL("chrome://about"), browser(),
+                                     WindowOpenDisposition::NEW_WINDOW);
+
+  // Make sure we open non-special URL here.
+  Browser* test_browser =
+      NavigateHelper(GURL("chrome://dino"), browser2,
+                     WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  EXPECT_EQ(browser2, test_browser);
+}
+
+// Tests that a disposition of SINGLETON_TAB cannot see outside its
+// window, and that a disposition of SWITCH_TO_TAB can't see outside
+// its profile, except for certain non-incognito affinity URLs.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonProfileLeak) {
+  Browser* orig_browser;
+
+  // Navigate to a site.
+  orig_browser = NavigateHelper(GURL("http://maps.google.com/"), browser(),
+                                WindowOpenDisposition::CURRENT_TAB);
+
+  // Open dino for finding later.
+  NavigateHelper(GURL("chrome://dino"), orig_browser,
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB);
+
+  // Also open settings for finding later.
+  NavigateHelper(GURL("chrome://settings"), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
   // Also open about for searching too.
-  NavigateHelper(GURL("chrome://about"), browser(),
+  NavigateHelper(GURL("chrome://about"), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
-  // Sanity check that the above created 3 separate tabs.
-  EXPECT_EQ(3, browser()->tab_strip_model()->count());
+  // Sanity check that the above created 4 separate tabs.
+  EXPECT_EQ(4, browser()->tab_strip_model()->count());
 
   Browser* test_browser;
 
@@ -730,8 +758,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonProfileLeak) {
     test_browser = NavigateHelper(GURL("chrome://downloads"), incognito_browser,
                                   WindowOpenDisposition::OFF_THE_RECORD);
     // Sanity check where OTR tab landed.
-    EXPECT_NE(browser(), test_browser);
     EXPECT_EQ(incognito_browser, test_browser);
+
+    // Sanity check that browser() always returns original.
+    EXPECT_EQ(orig_browser, browser());
 
     // Make another for switch-to-tab to try and find.
     NavigateHelper(GURL("chrome://history"), incognito_browser,
@@ -743,22 +773,27 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonProfileLeak) {
                                   WindowOpenDisposition::SWITCH_TO_TAB);
     EXPECT_EQ(incognito_browser, test_browser);
 
-    // Open settings singleton. Should find in regular browser and switch
-    // to it.
+    // Open dino singleton. Should not find in regular browser and
+    // open locally.
+    test_browser = NavigateHelper(GURL("chrome://dino"), incognito_browser,
+                                  WindowOpenDisposition::SINGLETON_TAB);
+    EXPECT_NE(orig_browser, test_browser);
+
+    // Open settings. Should switch to non-incognito profile to do so.
     test_browser = NavigateHelper(GURL("chrome://settings"), incognito_browser,
                                   WindowOpenDisposition::SINGLETON_TAB);
-    EXPECT_EQ(browser(), test_browser);
+    EXPECT_EQ(orig_browser, test_browser);
   }
 
   // Open downloads singleton. Should not search OTR browser and
   // should open in regular browser.
-  test_browser = NavigateHelper(GURL("chrome://downloads"), browser(),
+  test_browser = NavigateHelper(GURL("chrome://downloads"), orig_browser,
                                 WindowOpenDisposition::SINGLETON_TAB);
   EXPECT_EQ(browser(), test_browser);
 
   // Likewise, switch-to-tab shouldn't find the incognito tab either,
   // and open new one in current browser.
-  test_browser = NavigateHelper(GURL("chrome://history"), browser(),
+  test_browser = NavigateHelper(GURL("chrome://history"), orig_browser,
                                 WindowOpenDisposition::SWITCH_TO_TAB);
   EXPECT_EQ(browser(), test_browser);
 }
