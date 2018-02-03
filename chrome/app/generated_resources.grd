@@ -4005,9 +4005,6 @@ are declared in build/common.gypi.
         <message name="IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW" desc="Text of the sync promo at the bottom of the extension installed bubble, prompting the user to sign in in order to sync extensions.">
           To get your extensions on all your computers, <ph name="SIGN_IN_LINK">$1<ex>sign in to Chrome</ex></ph>.
         </message>
-        <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO" desc="The remaining text of the sign-in promo paragraph. Will be appended as a label to the string above. The triple single quotes are needed to preserve the space before the word 'to' (which is handy when the language (Chrome is being translated to) uses space as word separator).">
-          ''' to get this extension, your history, and other Chrome settings on all your devices.'''
-        </message>
 
         <!-- Begin of Sync Promo strings for Desktop Identity Consistency. -->
         <message name="IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE" desc="Text of the sync promo displayed at the bottom of the extension installed bubble asking the user to sign in and enable sync.">
