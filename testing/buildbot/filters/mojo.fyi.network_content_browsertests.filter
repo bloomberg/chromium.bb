@@ -127,3 +127,6 @@
 
 # Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests__dbg__1_%2F69105%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_content_browsertests%2F0%2Flogs%2FWebContentsImplBrowserTest.DownloadImage_Allow_FileImage%2F0
 -WebContentsImplBrowserTest.DownloadImage_Allow_FileImage
+
+# https://crbug.com/808759
+-DownloadContentTest.DownloadAttributeBlobURL
