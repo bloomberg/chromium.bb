@@ -536,14 +536,18 @@ Chromium is unable to recover your settings.
 
       <if expr="enable_extensions">
         <!-- Extension installed bubble -->
-        <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
-          <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chromium.
-        </message>
+        <if expr="use_titlecase">
+          <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="In Title Case: Title of the extension-installed bubble. Instructs that the extension was installed.">
+            <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> Has Been Added to Chromium
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="Title of the extension-installed bubble. Instructs that the extension was installed.">
+            <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chromium
+          </message>
+        </if>
         <message name="IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW" desc="Text of the link to sign in to Chromium from the extension installed bubble. This will be converted to a link, with additional text around it.">
           sign in to Chromium
-        </message>
-        <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK" desc="The first part of the sign-in promo paragraph. This part will be converted to a link and will get more text appended to it (see IDS_EXTENSION_INSTALLED_SIGNIN_PROMO). Keep this text short.">
-          Sign in to Chromium
         </message>
 
         <!-- Extension context menu -->
