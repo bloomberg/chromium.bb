@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//url/mojo/url.mojom"
+mojom = "//url/mojom/url.mojom"
 public_headers = [ "//third_party/WebKit/Source/platform/weborigin/KURL.h" ]
 traits_headers =
     [ "//third_party/WebKit/Source/platform/mojo/KURLStructTraits.h" ]

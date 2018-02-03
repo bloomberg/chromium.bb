@@ -6,7 +6,7 @@ module safe_browsing.mojom;
 
 import "content/public/common/resource_type.mojom";
 import "services/network/public/interfaces/http_request_headers.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Provided by the browser and used by renderers to perform SafeBrowsing URL
 // checks.

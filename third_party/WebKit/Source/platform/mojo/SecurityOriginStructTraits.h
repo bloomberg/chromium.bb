@@ -7,7 +7,7 @@
 
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/WTFString.h"
-#include "url/mojo/origin.mojom-blink.h"
+#include "url/mojom/origin.mojom-blink.h"
 
 namespace mojo {
 

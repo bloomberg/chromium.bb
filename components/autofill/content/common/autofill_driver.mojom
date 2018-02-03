@@ -9,7 +9,7 @@ import "mojo/common/string16.mojom";
 import "mojo/common/text_direction.mojom";
 import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // There is one instance of this interface per render frame host in the browser
 // process. All methods are called by renderer on browser.

@@ -9,8 +9,8 @@ import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
 import "third_party/WebKit/common/blob/blob_url_store.mojom";
-import "url/mojo/origin.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/origin.mojom";
+import "url/mojom/url.mojom";
 
 // This interface is the primary access point from renderer to the browser's blob system.
 // This interface provides methods to register new blobs and get references to existing blobs.

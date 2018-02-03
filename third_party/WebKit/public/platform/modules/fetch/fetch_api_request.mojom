@@ -8,7 +8,7 @@ import "services/network/public/interfaces/fetch_api.mojom";
 import "services/network/public/interfaces/request_context_frame_type.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Type of the context associated with a request.
 enum RequestContextType {

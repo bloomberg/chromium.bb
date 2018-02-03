@@ -9,7 +9,7 @@ mojom("mojo_bindings") {
     "common/contextual_search_js_api_service.mojom",
   ]
   public_deps = [
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 

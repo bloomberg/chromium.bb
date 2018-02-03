@@ -353,7 +353,7 @@ static_library("test_support") {
     "//ui/resources",
     "//ui/surface",
     "//url",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
     "//v8",
   ]
 
@@ -542,7 +542,7 @@ mojom("content_test_mojo_bindings") {
     "test_browser_associated_interfaces.mojom",
   ]
   public_deps = [
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 

@@ -4,7 +4,7 @@
 
 module identity.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Defines an authentication error from a Google service. See comments on
 // google_service_auth_error.h, to which these interfaces are typemapped.

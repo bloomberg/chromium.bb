@@ -11,7 +11,7 @@
 #include "net/proxy_resolution/proxy_config_source.h"
 #include "net/proxy_resolution/proxy_list.h"
 #include "services/network/public/interfaces/proxy_config.mojom-shared.h"
-#include "url/mojo/url_gurl_struct_traits.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 // This file handles the serialization of net::ProxyConfig.
 

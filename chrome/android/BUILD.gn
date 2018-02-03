@@ -269,7 +269,7 @@ android_library("chrome_java") {
     "//ui/android:ui_java",
     "//ui/base/mojo:mojo_bindings_java",
     "//ui/gfx/geometry/mojo:mojo_java",
-    "//url/mojo:url_mojom_gurl_java",
+    "//url/mojom:url_mojom_gurl_java",
   ]
 
   srcjar_deps = [
@@ -447,7 +447,7 @@ junit_binary("chrome_junit_tests") {
     "//third_party/custom_tabs_client:custom_tabs_support_java",
     "//third_party/hamcrest:hamcrest_java",
     "//ui/android:ui_java",
-    "//url/mojo:url_mojom_gurl_java",
+    "//url/mojom:url_mojom_gurl_java",
   ]
   srcjar_deps = [ "//base:base_build_config_gen" ]
 
@@ -565,7 +565,7 @@ android_library("chrome_test_java") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
     "//ui/base/mojo:mojo_bindings_java",
-    "//url/mojo:url_mojom_gurl_java",
+    "//url/mojom:url_mojom_gurl_java",
   ]
 
   data = [

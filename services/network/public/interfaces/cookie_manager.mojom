@@ -5,7 +5,7 @@
 module network.mojom;
 
 import "mojo/common/time.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 enum CookiePriority {
   LOW,

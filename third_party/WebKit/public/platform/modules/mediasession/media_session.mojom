@@ -6,7 +6,7 @@ module blink.mojom;
 
 import "mojo/common/string16.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Spec: https://wicg.github.io/mediasession/
 enum MediaSessionAction {

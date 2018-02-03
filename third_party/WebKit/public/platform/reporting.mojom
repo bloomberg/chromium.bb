@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "mojo/common/time.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface ReportingServiceProxy {
   // Attempts to queue an Intervention report using the Reporting API.

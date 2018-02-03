@@ -6,7 +6,7 @@ module content.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface ImageDownloader {
   // Fetch and decode an image from a given URL.

@@ -4514,8 +4514,8 @@ grit("resources") {
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces_js",
     "//device/bluetooth/public/mojom:mojom_js",
-    "//url/mojo:url_mojom_gurl_js",
-    "//url/mojo:url_mojom_origin_js",
+    "//url/mojom:url_mojom_gurl_js",
+    "//url/mojom:url_mojom_origin_js",
   ]
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {

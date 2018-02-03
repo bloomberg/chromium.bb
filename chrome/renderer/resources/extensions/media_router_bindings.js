@@ -18,8 +18,8 @@ loadScript('media/mojo/interfaces/remoting_common.mojom');
 loadScript('mojo/common/time.mojom');
 loadScript('net/interfaces/ip_address.mojom');
 loadScript('net/interfaces/ip_endpoint.mojom');
-loadScript('url/mojo/origin.mojom');
-loadScript('url/mojo/url.mojom');
+loadScript('url/mojom/origin.mojom');
+loadScript('url/mojom/url.mojom');
 
 // The following adapter classes preserve backward compatibility for the media
 // router component extension.

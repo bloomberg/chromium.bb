@@ -10,7 +10,7 @@ import "third_party/WebKit/common/service_worker/service_worker_error_type.mojom
 import "third_party/WebKit/common/service_worker/service_worker_object.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_registration.mojom";
 import "third_party/WebKit/public/platform/web_feature.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // mojom::ServiceWorkerContainerHost is a browser-side interface. The renderer
 // process uses this interface to request the browser process to do operations

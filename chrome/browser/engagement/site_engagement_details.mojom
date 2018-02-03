@@ -4,7 +4,7 @@
 
 module mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 struct SiteEngagementDetails {
   url.mojom.Url origin;
