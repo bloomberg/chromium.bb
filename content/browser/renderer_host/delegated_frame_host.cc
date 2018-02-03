@@ -60,6 +60,8 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
   viz::HostFrameSinkManager* host_frame_sink_manager =
       factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
   host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
+  host_frame_sink_manager->EnableSynchronizationReporting(
+      frame_sink_id_, "Compositing.MainFrameSynchronization.Duration");
 #if DCHECK_IS_ON()
   host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_,
                                                   "DelegatedFrameHost");

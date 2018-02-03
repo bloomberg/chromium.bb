@@ -263,7 +263,7 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   // HostFrameSinkClient.
   EXPECT_EQ(0u, host_client_parent.last_frame_token_seen());
 
-  parent_surface->ActivatePendingFrameForDeadline();
+  parent_surface->ActivatePendingFrameForDeadline(base::nullopt);
   EXPECT_FALSE(parent_surface->has_deadline());
   EXPECT_TRUE(parent_surface->HasActiveFrame());
   EXPECT_FALSE(parent_surface->HasPendingFrame());

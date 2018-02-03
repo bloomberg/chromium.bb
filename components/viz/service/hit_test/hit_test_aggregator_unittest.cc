@@ -77,7 +77,7 @@ class TestHitTestManager : public HitTestManager {
   ~TestHitTestManager() override = default;
 
   void CallOnSurfaceActivated(const SurfaceId surface_id) {
-    OnSurfaceActivated(surface_id);
+    OnSurfaceActivated(surface_id, base::nullopt);
   }
   void CallOnSurfaceDiscarded(const SurfaceId surface_id) {
     OnSurfaceDiscarded(surface_id);

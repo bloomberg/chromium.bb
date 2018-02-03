@@ -115,7 +115,7 @@ void SurfaceDependencyTracker::ActivateLateSurfaceSubtree(Surface* surface) {
       ActivateLateSurfaceSubtree(dependency);
   }
 
-  surface->ActivatePendingFrameForDeadline();
+  surface->ActivatePendingFrameForDeadline(base::nullopt);
 }
 
 void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {

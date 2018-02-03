@@ -29,8 +29,8 @@ void SurfaceDependencyDeadline::Set(uint32_t number_of_frames_to_deadline) {
   begin_frame_source_->AddObserver(this);
 }
 
-void SurfaceDependencyDeadline::Cancel() {
-  CancelInternal(false);
+base::Optional<base::TimeDelta> SurfaceDependencyDeadline::Cancel() {
+  return CancelInternal(false);
 }
 
 bool SurfaceDependencyDeadline::InheritFrom(
@@ -66,9 +66,10 @@ void SurfaceDependencyDeadline::OnBeginFrame(const BeginFrameArgs& args) {
   if (--(*number_of_frames_to_deadline_) > 0)
     return;
 
-  CancelInternal(true);
+  base::Optional<base::TimeDelta> duration = CancelInternal(true);
+  DCHECK(duration);
 
-  client_->OnDeadline();
+  client_->OnDeadline(*duration);
 }
 
 const BeginFrameArgs& SurfaceDependencyDeadline::LastUsedBeginFrameArgs()
@@ -82,17 +83,22 @@ bool SurfaceDependencyDeadline::WantsAnimateOnlyBeginFrames() const {
 
 void SurfaceDependencyDeadline::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-void SurfaceDependencyDeadline::CancelInternal(bool deadline) {
+base::Optional<base::TimeDelta> SurfaceDependencyDeadline::CancelInternal(
+    bool deadline) {
   if (!number_of_frames_to_deadline_)
-    return;
+    return base::nullopt;
   begin_frame_source_->RemoveObserver(this);
   number_of_frames_to_deadline_.reset();
 
+  base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+
   UMA_HISTOGRAM_TIMES("Compositing.SurfaceDependencyDeadline.Duration",
-                      base::TimeTicks::Now() - start_time_);
+                      duration);
 
   UMA_HISTOGRAM_BOOLEAN("Compositing.SurfaceDependencyDeadline.DeadlineHit",
                         deadline);
+
+  return duration;
 }
 
 }  // namespace viz

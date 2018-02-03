@@ -92,6 +92,19 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   display_hit_test_query_.erase(frame_sink_id);
 }
 
+void HostFrameSinkManager::EnableSynchronizationReporting(
+    const FrameSinkId& frame_sink_id,
+    const std::string& reporting_label) {
+  DCHECK(frame_sink_id.is_valid());
+
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(data.IsFrameSinkRegistered());
+
+  data.synchronization_reporting_label = reporting_label;
+  frame_sink_manager_->EnableSynchronizationReporting(frame_sink_id,
+                                                      reporting_label);
+}
+
 void HostFrameSinkManager::SetFrameSinkDebugLabel(
     const FrameSinkId& frame_sink_id,
     const std::string& debug_label) {
@@ -319,6 +332,10 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
     FrameSinkData& data = map_entry.second;
     if (data.client)
       frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+    if (!data.synchronization_reporting_label.empty()) {
+      frame_sink_manager_->EnableSynchronizationReporting(
+          frame_sink_id, data.synchronization_reporting_label);
+    }
     if (!data.debug_label.empty()) {
       frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id,
                                                   data.debug_label);

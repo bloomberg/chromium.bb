@@ -81,6 +81,14 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // message pipe to the client will be closed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
+  // Tells FrameSinkManger to report when a synchronization event completes via
+  // tracing and UMA and the duration of that event. A synchronization event
+  // occurs when a CompositorFrame submitted to the CompositorFrameSink
+  // specified by |frame_sink_id| activates after having been blocked by
+  // unresolved dependencies.
+  void EnableSynchronizationReporting(const FrameSinkId& frame_sink_id,
+                                      const std::string& reporting_label);
+
   // |debug_label| is used when printing out the surface hierarchy so we know
   // which clients are contributing which surfaces.
   void SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
@@ -156,6 +164,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
     // The client to be notified of changes to this FrameSink.
     HostFrameSinkClient* client = nullptr;
+
+    // The label to use whether this client would like reporting for
+    // synchronization events.
+    std::string synchronization_reporting_label;
 
     // The name of the HostFrameSinkClient used for debug purposes.
     std::string debug_label;

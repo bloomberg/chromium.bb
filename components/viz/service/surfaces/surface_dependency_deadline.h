@@ -18,7 +18,11 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   ~SurfaceDependencyDeadline() override;
 
   void Set(uint32_t number_of_frames_to_deadline);
-  void Cancel();
+
+  // If a deadline had been set, then cancel the deadline and return the
+  // the duration of the event tracked by this object. If there was no
+  // deadline set, then return base::nullopt.
+  base::Optional<base::TimeDelta> Cancel();
 
   bool has_deadline() const {
     return number_of_frames_to_deadline_.has_value();
@@ -40,7 +44,7 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   bool WantsAnimateOnlyBeginFrames() const override;
 
  private:
-  void CancelInternal(bool deadline);
+  base::Optional<base::TimeDelta> CancelInternal(bool deadline);
 
   SurfaceDeadlineClient* const client_;
   BeginFrameSource* begin_frame_source_ = nullptr;

@@ -37,6 +37,8 @@ void FakeSurfaceObserver::OnFirstSurfaceActivation(
   last_surface_info_ = surface_info;
 }
 
-void FakeSurfaceObserver::OnSurfaceActivated(const SurfaceId& surface_id) {}
+void FakeSurfaceObserver::OnSurfaceActivated(
+    const SurfaceId& surface_id,
+    base::Optional<base::TimeDelta> duration) {}
 
 }  // namespace viz

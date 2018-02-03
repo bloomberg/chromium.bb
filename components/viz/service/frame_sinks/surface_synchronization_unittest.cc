@@ -1826,7 +1826,7 @@ TEST_F(SurfaceSynchronizationTest, PreviousFrameSurfaceId) {
 
   // Activate the pending frame in |parent_id2|. previous_frame_surface_id()
   // should still return |parent_id1|.
-  parent_surface2->ActivatePendingFrameForDeadline();
+  parent_surface2->ActivatePendingFrameForDeadline(base::nullopt);
   EXPECT_TRUE(parent_surface2->HasActiveFrame());
   EXPECT_FALSE(parent_surface2->HasPendingFrame());
   EXPECT_EQ(parent_id1, parent_surface2->previous_frame_surface_id());
@@ -1859,7 +1859,7 @@ TEST_F(SurfaceSynchronizationTest, FrameIndexWithPendingFrames) {
 
   // Activate the pending frame. GetActiveFrameIndex should return the frame
   // index of the newly activated frame.
-  parent_surface->ActivatePendingFrameForDeadline();
+  parent_surface->ActivatePendingFrameForDeadline(base::nullopt);
   EXPECT_EQ(initial_frame_index + n_iterations,
             parent_surface->GetActiveFrameIndex());
 }
