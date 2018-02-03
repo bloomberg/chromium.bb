@@ -83,48 +83,6 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
 
 def get_fyi_waterfall_config():
   waterfall = {'builders':{}, 'testers': {}}
-  waterfall = add_tester(
-    waterfall, 'Win 10 Low-End Perf Tests',
-    'win-10-low-end', 'win',
-    swarming=[
-      {
-       'gpu': '1002:9874',
-       'os': 'Windows-10-10586',
-       'pool': 'Chrome-perf-fyi',
-       'device_ids': [
-           'build171-b4', 'build186-b4', 'build202-b4', 'build203-b4',
-           'build204-b4', 'build205-b4', 'build206-b4', 'build207-b4',
-           'build208-b4', 'build209-b4', 'build210-b4', 'build211-b4',
-           'build212-b4', 'build213-b4', 'build214-b4', 'build215-b4',
-           'build216-b4', 'build217-b4', 'build218-b4', 'build219-b4',
-           'build220-b4', 'build221-b4']
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Win 10 4 Core Low-End Perf Tests',
-    'win-10-4-core-low-end', 'win',
-    swarming=[
-      {
-       'gpu': '8086:22b1',
-       'os': 'Windows-10-10586',
-       'pool': 'Chrome-perf-fyi',
-       'device_ids': [
-           'build136-b1', 'build137-b1', 'build138-b1', 'build139-b1',
-           'build140-b1', 'build141-b1', 'build142-b1', 'build143-b1',
-           'build144-b1', 'build145-b1', 'build146-b1', 'build147-b1',
-           'build148-b1', 'build149-b1', 'build150-b1', 'build151-b1',
-           'build152-b1', 'build153-b1', 'build154-b1', 'build155-b1',
-           'build47-b4', 'build48-b4'],
-       'perf_tests': [
-         ('cc_perftests', 'build136-b1'),
-         ('gpu_perftests', 'build136-b1'),
-         ('load_library_perf_tests', 'build136-b1'),
-         ('angle_perftests', 'build137-b1'),
-         ('performance_browser_tests', 'build137-b1'),
-         ('tracing_perftests', 'build137-b1')]
-      }
-    ])
-
   return waterfall
 
 
