@@ -14,6 +14,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "crypto/random.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -99,8 +100,12 @@ void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
                                            const rtc::PacketOptions& options,
                                            uint64_t packet_id) {
   TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", packet_id);
-  dispatcher_->SendP2PMessage(
-      new P2PHostMsg_Send(socket_id_, address, data, options, packet_id));
+
+  // TODO(crbug.com/656607): Add proper annotation.
+  dispatcher_->SendP2PMessage(new P2PHostMsg_Send(
+      socket_id_, data, P2PPacketInfo(address, options, packet_id),
+      net::MutableNetworkTrafficAnnotationTag(
+          NO_TRAFFIC_ANNOTATION_BUG_656607)));
 }
 
 void P2PSocketClientImpl::SetOption(P2PSocketOption option,
