@@ -30,7 +30,7 @@ Polymer({
 
       attached: function() {
         Polymer.RenderStatus.afterNextRender(this, function() {
-          this.setScrollDirection('y');
+          Polymer.Gestures.setTouchAction(this, 'pan-y');
         });
       },
 
