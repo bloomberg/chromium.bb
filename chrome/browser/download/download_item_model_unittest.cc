@@ -43,9 +43,9 @@ namespace {
 // that all the interrupt reason codes are accounted for. The reason codes are
 // unfortunately sparse, making this necessary.
 char kInterruptReasonCounter[] = {
-  0,                                // content::DOWNLOAD_INTERRUPT_REASON_NONE
+    0,  // download::DOWNLOAD_INTERRUPT_REASON_NONE
 #define INTERRUPT_REASON(name,value) 0,
-#include "content/public/browser/download_interrupt_reason_values.h"
+#include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 };
 const size_t kInterruptReasonCount = arraysize(kInterruptReasonCounter);
@@ -93,13 +93,13 @@ class DownloadItemModelTest : public testing::Test {
     ON_CALL(item_, IsPaused()).WillByDefault(Return(false));
   }
 
-  void SetupInterruptedDownloadItem(content::DownloadInterruptReason reason) {
+  void SetupInterruptedDownloadItem(download::DownloadInterruptReason reason) {
     EXPECT_CALL(item_, GetLastReason()).WillRepeatedly(Return(reason));
     EXPECT_CALL(item_, GetState())
-        .WillRepeatedly(Return(
-            (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) ?
-                DownloadItem::IN_PROGRESS :
-                DownloadItem::INTERRUPTED));
+        .WillRepeatedly(
+            Return((reason == download::DOWNLOAD_INTERRUPT_REASON_NONE)
+                       ? DownloadItem::IN_PROGRESS
+                       : DownloadItem::INTERRUPTED));
   }
 
   content::MockDownloadItem& item() {
@@ -122,63 +122,63 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
   // are in the INTERRUPTED state.
   const struct TestCase {
     // The reason.
-    content::DownloadInterruptReason reason;
+    download::DownloadInterruptReason reason;
 
     // Expected status string. This will include the progress as well.
     const char* expected_status;
   } kTestCases[] = {
-      {content::DOWNLOAD_INTERRUPT_REASON_NONE, "1/2 B"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_NONE, "1/2 B"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        "Failed - Download error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
        "Failed - Insufficient permissions"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, "Failed - Disk full"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, "Failed - Disk full"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        "Failed - Path too long"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE,
        "Failed - File too large"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
        "Failed - Virus detected"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, "Failed - Blocked"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, "Failed - Blocked"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED,
        "Failed - Virus scan failed"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
        "Failed - File truncated"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
        "Failed - Already downloaded"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR,
        "Failed - System busy"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
        "Failed - Download error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
        "Failed - Network error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT,
        "Failed - Network timeout"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
        "Failed - Network disconnected"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN,
        "Failed - Server unavailable"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
        "Failed - Network error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
        "Failed - Server problem"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE,
        "Failed - Download error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
        "Failed - No file"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
        "Failed - Needs authorization"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM,
        "Failed - Bad certificate"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
        "Failed - Forbidden"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
        "Failed - Server unreachable"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH,
        "Failed - File incomplete"},
-      {content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, "Canceled"},
-      {content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "Failed - Shutdown"},
-      {content::DOWNLOAD_INTERRUPT_REASON_CRASH, "Failed - Crash"},
+      {download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, "Canceled"},
+      {download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "Failed - Shutdown"},
+      {download::DOWNLOAD_INTERRUPT_REASON_CRASH, "Failed - Crash"},
   };
   static_assert(kInterruptReasonCount == arraysize(kTestCases),
                 "interrupt reason mismatch");
@@ -198,65 +198,65 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
   // the INTERRUPTED state.
   const struct TestCase {
     // The reason.
-    content::DownloadInterruptReason reason;
+    download::DownloadInterruptReason reason;
 
     // Expected tooltip text. The tooltip text for interrupted downloads
     // typically consist of two lines. One for the filename and one for the
     // interrupt reason. The returned string contains a newline.
     const char* expected_tooltip;
   } kTestCases[] = {
-      {content::DOWNLOAD_INTERRUPT_REASON_NONE, "foo.bar"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_NONE, "foo.bar"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        "foo.bar\nDownload error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
        "foo.bar\nInsufficient permissions"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, "foo.bar\nDisk full"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, "foo.bar\nDisk full"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        "foo.bar\nPath too long"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE,
        "foo.bar\nFile too large"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
        "foo.bar\nVirus detected"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, "foo.bar\nBlocked"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, "foo.bar\nBlocked"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED,
        "foo.bar\nVirus scan failed"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
        "foo.bar\nFile truncated"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
        "foo.bar\nAlready downloaded"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR,
        "foo.bar\nSystem busy"},
-      {content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
        "foo.bar\nDownload error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
        "foo.bar\nNetwork error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT,
        "foo.bar\nNetwork timeout"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
        "foo.bar\nNetwork disconnected"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN,
        "foo.bar\nServer unavailable"},
-      {content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
        "foo.bar\nNetwork error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
        "foo.bar\nServer problem"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE,
        "foo.bar\nDownload error"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
        "foo.bar\nNo file"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
        "foo.bar\nNeeds authorization"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM,
        "foo.bar\nBad certificate"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
        "foo.bar\nForbidden"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
        "foo.bar\nServer unreachable"},
-      {content::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH,
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH,
        "foo.bar\nFile incomplete"},
-      {content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, "foo.bar"},
-      {content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "foo.bar\nShutdown"},
-      {content::DOWNLOAD_INTERRUPT_REASON_CRASH, "foo.bar\nCrash"},
+      {download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, "foo.bar"},
+      {download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "foo.bar\nShutdown"},
+      {download::DOWNLOAD_INTERRUPT_REASON_CRASH, "foo.bar\nCrash"},
   };
   static_assert(kInterruptReasonCount == arraysize(kTestCases),
                 "interrupt reason mismatch");

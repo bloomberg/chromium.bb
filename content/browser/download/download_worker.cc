@@ -4,10 +4,10 @@
 
 #include "content/browser/download/download_worker.h"
 
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/resource_downloader.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/features.h"
@@ -133,8 +133,7 @@ void DownloadWorker::OnUrlDownloadStarted(
   }
 
   // TODO(xingliu): Add metric for error handling.
-  if (create_info->result !=
-      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (create_info->result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     VLOG(kWorkerVerboseLevel)
         << "Parallel download sub-request failed. reason = "
         << create_info->result;

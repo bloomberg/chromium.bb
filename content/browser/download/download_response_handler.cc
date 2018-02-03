@@ -17,27 +17,27 @@ namespace content {
 namespace {
 
 mojom::NetworkRequestStatus ConvertInterruptReasonToMojoNetworkRequestStatus(
-    DownloadInterruptReason reason) {
+    download::DownloadInterruptReason reason) {
   switch (reason) {
-    case DOWNLOAD_INTERRUPT_REASON_NONE:
+    case download::DOWNLOAD_INTERRUPT_REASON_NONE:
       return mojom::NetworkRequestStatus::OK;
-    case DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
       return mojom::NetworkRequestStatus::NETWORK_TIMEOUT;
-    case DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
       return mojom::NetworkRequestStatus::NETWORK_DISCONNECTED;
-    case DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
       return mojom::NetworkRequestStatus::NETWORK_SERVER_DOWN;
-    case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
       return mojom::NetworkRequestStatus::SERVER_NO_RANGE;
-    case DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
       return mojom::NetworkRequestStatus::SERVER_CONTENT_LENGTH_MISMATCH;
-    case DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
       return mojom::NetworkRequestStatus::SERVER_UNREACHABLE;
-    case DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
       return mojom::NetworkRequestStatus::SERVER_CERT_PROBLEM;
-    case DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
+    case download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
       return mojom::NetworkRequestStatus::USER_CANCELED;
-    case DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
       return mojom::NetworkRequestStatus::NETWORK_FAILED;
     default:
       NOTREACHED();
@@ -67,7 +67,7 @@ DownloadResponseHandler::DownloadResponseHandler(
       download_source_(download_source),
       has_strong_validators_(false),
       is_partial_request_(save_info_->offset > 0),
-      abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
+      abort_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE) {
   if (!is_parallel_request)
     RecordDownloadCountWithSource(UNTHROTTLED_COUNT, download_source);
   if (resource_request->request_initiator.has_value())
@@ -105,7 +105,7 @@ void DownloadResponseHandler::OnReceiveResponse(
     create_info_->save_info->suggested_name.clear();
   }
 
-  if (create_info_->result != DOWNLOAD_INTERRUPT_REASON_NONE)
+  if (create_info_->result != download::DOWNLOAD_INTERRUPT_REASON_NONE)
     OnResponseStarted(mojom::DownloadStreamHandlePtr());
 }
 
@@ -117,15 +117,15 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   auto create_info = std::make_unique<DownloadCreateInfo>(
       base::Time::Now(), std::move(save_info_));
 
-  DownloadInterruptReason result =
+  download::DownloadInterruptReason result =
       head.headers
           ? HandleSuccessfulServerResponse(
                 *head.headers, create_info->save_info.get(), fetch_error_body_)
-          : DOWNLOAD_INTERRUPT_REASON_NONE;
+          : download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   create_info->total_bytes = head.content_length > 0 ? head.content_length : 0;
   create_info->result = result;
-  if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
+  if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     create_info->remote_address = head.socket_address.host();
   create_info->method = method_;
   create_info->connection_info = head.connection_info;
@@ -149,7 +149,7 @@ void DownloadResponseHandler::OnReceiveRedirect(
     // A redirect while attempting a partial resumption indicates a potential
     // middle box. Trigger another interruption so that the DownloadItem can
     // retry.
-    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
+    abort_reason_ = download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
     OnComplete(network::URLLoaderCompletionStatus(net::OK));
     return;
   }
@@ -187,7 +187,7 @@ void DownloadResponseHandler::OnStartLoadingResponseBody(
 
 void DownloadResponseHandler::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  DownloadInterruptReason reason = HandleRequestCompletionStatus(
+  download::DownloadInterruptReason reason = HandleRequestCompletionStatus(
       static_cast<net::Error>(status.error_code), has_strong_validators_,
       cert_status_, abort_reason_);
 

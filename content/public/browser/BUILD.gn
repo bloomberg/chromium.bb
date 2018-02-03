@@ -107,8 +107,6 @@ jumbo_source_set("browser_sources") {
     "devtools_socket_factory.h",
     "discardable_shared_memory_manager.h",
     "dom_storage_context.h",
-    "download_interrupt_reason_values.h",
-    "download_interrupt_reasons.h",
     "download_item.h",
     "download_manager.cc",
     "download_manager.h",

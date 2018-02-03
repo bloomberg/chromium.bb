@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/background_service/driver_entry.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/http/http_response_headers.h"
@@ -42,19 +42,19 @@ DriverEntry::State ToDriverEntryState(
 }
 
 FailureType FailureTypeFromInterruptReason(
-    content::DownloadInterruptReason reason) {
+    download::DownloadInterruptReason reason) {
   switch (reason) {
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED:
-    case content::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED:
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
-    case content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+    case download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
       return FailureType::NOT_RECOVERABLE;
     default:
       return FailureType::RECOVERABLE;
@@ -62,7 +62,7 @@ FailureType FailureTypeFromInterruptReason(
 }
 
 // Logs interrupt reason when download fails.
-void LogDownloadInterruptReason(content::DownloadInterruptReason reason) {
+void LogDownloadInterruptReason(download::DownloadInterruptReason reason) {
   base::UmaHistogramSparse("Download.Service.Driver.InterruptReason", reason);
 }
 
@@ -249,15 +249,14 @@ void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,
 
   using DownloadState = content::DownloadItem::DownloadState;
   DownloadState state = item->GetState();
-  content::DownloadInterruptReason reason = item->GetLastReason();
+  download::DownloadInterruptReason reason = item->GetLastReason();
   DriverEntry entry = CreateDriverEntry(item);
 
   if (state == DownloadState::COMPLETE) {
     client_->OnDownloadSucceeded(entry);
   } else if (state == DownloadState::IN_PROGRESS) {
     client_->OnDownloadUpdated(entry);
-  } else if (reason !=
-             content::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  } else if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     if (client_->IsTrackingDownload(item->GetGuid()))
       LogDownloadInterruptReason(reason);
     client_->OnDownloadFailed(entry, FailureTypeFromInterruptReason(reason));

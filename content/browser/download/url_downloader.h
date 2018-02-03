@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/download/url_download_handler.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/redirect_info.h"

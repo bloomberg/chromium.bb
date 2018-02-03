@@ -280,14 +280,14 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   // Half open finished preceding stream with 0 bytes written, if there is no
   // error, the download should be finished.
   preceding_stream->set_finished(true);
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             preceding_stream->GetCompletionStatus());
   EXPECT_TRUE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Half open finished preceding stream with error, should be treated as
   // failed.
   preceding_stream->OnResponseCompleted(
-      DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Even if it has written some data.
@@ -308,7 +308,7 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   // Inject an error results in failure, even if data written exceeds the first
   // byte of error stream.
   preceding_stream->OnResponseCompleted(
-      DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
   preceding_stream->OnWriteBytesToDisk(1000u);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
@@ -383,7 +383,7 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   // Even if inject an error, since data written has cover the upper bound of
   // the error stream, it should succeed.
   preceding_stream->OnResponseCompleted(
-      DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
   EXPECT_TRUE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Preceding stream that never download data won't recover the error stream.

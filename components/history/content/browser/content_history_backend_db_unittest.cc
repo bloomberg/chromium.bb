@@ -44,7 +44,7 @@ struct InterruptReasonAssociation {
 // in order.
 const InterruptReasonAssociation current_reasons[] = {
 #define INTERRUPT_REASON(a, b) { #a, b },
-#include "content/public/browser/download_interrupt_reason_values.h"
+#include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 };
 

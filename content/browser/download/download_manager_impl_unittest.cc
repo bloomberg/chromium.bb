@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
@@ -34,7 +35,6 @@
 #include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/test/mock_download_item.h"
@@ -153,7 +153,7 @@ class MockDownloadItemFactory
       const std::string& hash,
       DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
+      download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
@@ -230,7 +230,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     const std::string& hash,
     DownloadItem::DownloadState state,
     download::DownloadDangerType danger_type,
-    DownloadInterruptReason interrupt_reason,
+    download::DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
     bool transient,
@@ -396,7 +396,7 @@ class DownloadManagerTest : public testing::Test {
       : callback_called_(false),
         target_disposition_(DownloadItem::TARGET_DISPOSITION_OVERWRITE),
         danger_type_(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
-        interrupt_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+        interrupt_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE),
         next_download_id_(0) {}
 
   // We tear down everything in TearDown().
@@ -501,7 +501,7 @@ class DownloadManagerTest : public testing::Test {
       DownloadItem::TargetDisposition disposition,
       download::DownloadDangerType danger_type,
       const base::FilePath& intermediate_path,
-      DownloadInterruptReason interrupt_reason) {
+      download::DownloadInterruptReason interrupt_reason) {
     callback_called_ = true;
     target_path_ = target_path;
     target_disposition_ = disposition;
@@ -532,7 +532,7 @@ class DownloadManagerTest : public testing::Test {
   DownloadItem::TargetDisposition target_disposition_;
   download::DownloadDangerType danger_type_;
   base::FilePath intermediate_path_;
-  DownloadInterruptReason interrupt_reason_;
+  download::DownloadInterruptReason interrupt_reason_;
 
   std::vector<GURL> download_urls_;
 
@@ -618,7 +618,7 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
   EXPECT_EQ(DownloadItem::TARGET_DISPOSITION_OVERWRITE, target_disposition_);
   EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, danger_type_);
   EXPECT_EQ(path, intermediate_path_);
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason_);
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason_);
 }
 
 TEST_F(DownloadManagerTest, GetDownloadByGuid) {
@@ -640,8 +640,8 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
       DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, base::Time::Now(), true,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+      base::Time::Now(), true, std::vector<DownloadItem::ReceivedSlice>());
   ASSERT_TRUE(persisted_item);
 
   ASSERT_EQ(persisted_item, download_manager_->GetDownloadByGuid(kGuid));

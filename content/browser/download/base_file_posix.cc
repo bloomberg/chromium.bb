@@ -7,11 +7,11 @@
 #include <errno.h>
 
 #include "base/files/file_util.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 
 namespace content {
 
-DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
+download::DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     const base::FilePath& new_path) {
   // Similarly, on Unix, we're moving a temp file created with permissions 600
   // to |new_path|. Here, we try to fix up the destination file with appropriate
@@ -38,7 +38,7 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     if (chmod_error < 0)
       LogSystemError("chmod", errno);
   }
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 }  // namespace content

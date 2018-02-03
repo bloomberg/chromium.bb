@@ -15,7 +15,7 @@ namespace content {
 namespace {
 
 void SuccessRun(const DownloadFile::InitializeCallback& initialize_callback) {
-  initialize_callback.Run(DOWNLOAD_INTERRUPT_REASON_NONE);
+  initialize_callback.Run(download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void PostSuccessRun(

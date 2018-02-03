@@ -14,7 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -274,10 +274,13 @@ class DownloadTestItemCreationObserver
   void WaitForDownloadItemCreation();
 
   uint32_t download_id() const { return download_id_; }
-  DownloadInterruptReason interrupt_reason() const { return interrupt_reason_; }
+  download::DownloadInterruptReason interrupt_reason() const {
+    return interrupt_reason_;
+  }
   bool started() const { return called_back_count_ > 0; }
   bool succeeded() const {
-    return started() && interrupt_reason_ == DOWNLOAD_INTERRUPT_REASON_NONE;
+    return started() &&
+           interrupt_reason_ == download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   const DownloadUrlParameters::OnStartedCallback callback();
@@ -287,12 +290,13 @@ class DownloadTestItemCreationObserver
 
   ~DownloadTestItemCreationObserver();
 
-  void DownloadItemCreationCallback(DownloadItem* item,
-                                    DownloadInterruptReason interrupt_reason);
+  void DownloadItemCreationCallback(
+      DownloadItem* item,
+      download::DownloadInterruptReason interrupt_reason);
 
   // The download creation information we received.
   uint32_t download_id_;
-  DownloadInterruptReason interrupt_reason_;
+  download::DownloadInterruptReason interrupt_reason_;
 
   // Count of callbacks.
   size_t called_back_count_;

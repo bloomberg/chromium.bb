@@ -89,7 +89,7 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
   bool is_partial_request_;
 
   // The abort reason if this class decides to block the download.
-  DownloadInterruptReason abort_reason_;
+  download::DownloadInterruptReason abort_reason_;
 
   // Mojo interface ptr to send the completion status to the download sink.
   mojom::DownloadStreamClientPtr client_ptr_;

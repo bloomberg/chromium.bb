@@ -35,7 +35,7 @@ void DownloadUkmHelper::RecordDownloadStarted(
 void DownloadUkmHelper::RecordDownloadInterrupted(
     int download_id,
     base::Optional<int> change_in_file_size,
-    DownloadInterruptReason reason,
+    download::DownloadInterruptReason reason,
     int resulting_file_size,
     const base::TimeDelta& time_since_start) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();

@@ -15,10 +15,10 @@
 
 #include "base/optional.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
 #include "content/browser/download/download_content.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -199,7 +199,7 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
                              download::DownloadSource download_source);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
-void RecordDownloadInterrupted(DownloadInterruptReason reason,
+void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
                                int64_t received,
                                int64_t total,
                                bool is_parallelizable,
@@ -303,7 +303,7 @@ void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event);
 // Record the result of a download file rename.
 void RecordDownloadFileRenameResultAfterRetry(
     base::TimeDelta time_since_first_failure,
-    DownloadInterruptReason interrupt_reason);
+    download::DownloadInterruptReason interrupt_reason);
 
 enum SavePackageEvent {
   // The user has started to save a page as a package.

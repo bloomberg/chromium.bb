@@ -173,10 +173,10 @@ void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
 }
 
 std::string GetErrorMessageForDownloadInterrupt(
-    content::DownloadInterruptReason reason) {
+    download::DownloadInterruptReason reason) {
   switch (reason) {
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
       return l10n_util::GetStringUTF8(IDS_WEBSTORE_DOWNLOAD_ACCESS_DENIED);
     default:
       break;
@@ -451,11 +451,11 @@ WebstoreInstaller::~WebstoreInstaller() {
 void WebstoreInstaller::OnDownloadStarted(
     const std::string& extension_id,
     DownloadItem* item,
-    content::DownloadInterruptReason interrupt_reason) {
-  if (!item || interrupt_reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    download::DownloadInterruptReason interrupt_reason) {
+  if (!item || interrupt_reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     if (item)
       item->Remove();
-    ReportFailure(content::DownloadInterruptReasonToString(interrupt_reason),
+    ReportFailure(download::DownloadInterruptReasonToString(interrupt_reason),
                   FAILURE_REASON_OTHER);
     return;
   }
@@ -478,7 +478,7 @@ void WebstoreInstaller::OnDownloadStarted(
     return;
   }
 
-  DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+  DCHECK_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
   DCHECK(!pending_modules_.empty());
   download_item_ = item;
   download_item_->AddObserver(this);

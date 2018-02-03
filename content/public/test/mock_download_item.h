@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +51,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetId, uint32_t());
   MOCK_CONST_METHOD0(GetGuid, const std::string&());
   MOCK_CONST_METHOD0(GetState, DownloadState());
-  MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
+  MOCK_CONST_METHOD0(GetLastReason, download::DownloadInterruptReason());
   MOCK_CONST_METHOD0(IsPaused, bool());
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_CONST_METHOD0(CanResume, bool());
@@ -108,13 +108,15 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_METHOD2(OnContentCheckCompleted,
-               void(download::DownloadDangerType, DownloadInterruptReason));
+               void(download::DownloadDangerType,
+                    download::DownloadInterruptReason));
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_METHOD1(SetLastAccessTime, void(base::Time));
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
-  MOCK_METHOD1(SimulateErrorForTesting, void(DownloadInterruptReason));
+  MOCK_METHOD1(SimulateErrorForTesting,
+               void(download::DownloadInterruptReason));
 
  private:
   base::ObserverList<Observer> observers_;

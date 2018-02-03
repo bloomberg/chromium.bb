@@ -54,7 +54,7 @@ class DownloadItemControllerTest : public CocoaProfileTest {
     ON_CALL(*download_item_, GetTargetFilePath())
         .WillByDefault(ReturnRefOfCopy(base::FilePath()));
     ON_CALL(*download_item_, GetLastReason())
-        .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
+        .WillByDefault(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
     ON_CALL(*download_item_, GetURL()).WillByDefault(ReturnRefOfCopy(GURL()));
     ON_CALL(*download_item_, GetReferrerUrl())
         .WillByDefault(ReturnRefOfCopy(GURL()));

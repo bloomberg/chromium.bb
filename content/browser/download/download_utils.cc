@@ -12,7 +12,7 @@
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_save_info.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,9 +118,11 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
 
 }  // namespace
 
-DownloadInterruptReason HandleRequestCompletionStatus(
-    net::Error error_code, bool has_strong_validators,
-    net::CertStatus cert_status, DownloadInterruptReason abort_reason) {
+download::DownloadInterruptReason HandleRequestCompletionStatus(
+    net::Error error_code,
+    bool has_strong_validators,
+    net::CertStatus cert_status,
+    download::DownloadInterruptReason abort_reason) {
   // ERR_CONTENT_LENGTH_MISMATCH can be caused by 1 of the following reasons:
   // 1. Server or proxy closes the connection too early.
   // 2. The content-length header is wrong.
@@ -149,10 +151,10 @@ DownloadInterruptReason HandleRequestCompletionStatus(
     // interruption that doesn't discard the partial state, unlike
      // USER_CANCELLED. (https://crbug.com/166179)
     if (net::IsCertStatusError(cert_status))
-      return DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM;
+      return download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM;
     else
-      return DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
-  } else if (abort_reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+      return download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+  } else if (abort_reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     // If a more specific interrupt reason was specified before the request
     // was explicitly cancelled, then use it.
     return abort_reason;
@@ -266,11 +268,12 @@ CreateURLRequestOnIOThread(DownloadUrlParameters* params) {
   return request;
 }
 
-DownloadInterruptReason HandleSuccessfulServerResponse(
+download::DownloadInterruptReason HandleSuccessfulServerResponse(
     const net::HttpResponseHeaders& http_headers,
     download::DownloadSaveInfo* save_info,
     bool fetch_error_body) {
-  DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason result =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   switch (http_headers.response_code()) {
     case -1:  // Non-HTTP request.
     case net::HTTP_OK:
@@ -296,35 +299,35 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
     // resource not being found since there is no entity to download.
 
     case net::HTTP_NOT_FOUND:
-      result = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+      result = download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
       break;
 
     case net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE:
       // Retry by downloading from the start automatically:
       // If we haven't received data when we get this error, we won't.
-      result = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+      result = download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
       break;
     case net::HTTP_UNAUTHORIZED:
     case net::HTTP_PROXY_AUTHENTICATION_REQUIRED:
       // Server didn't authorize this request.
-      result = DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED;
+      result = download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED;
       break;
     case net::HTTP_FORBIDDEN:
       // Server forbids access to this resource.
-      result = DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN;
+      result = download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN;
       break;
     default:  // All other errors.
       // Redirection and informational codes should have been handled earlier
       // in the stack.
       // TODO(xingliu): Handle HTTP_PRECONDITION_FAILED and resurrect
-      // DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION for range requests.
-      // This will change extensions::api::download::InterruptReason.
+      // download::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION for range
+      // requests. This will change extensions::api::download::InterruptReason.
       DCHECK_NE(3, http_headers.response_code() / 100);
       DCHECK_NE(1, http_headers.response_code() / 100);
-      result = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+      result = download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
   }
 
-  if (result != DOWNLOAD_INTERRUPT_REASON_NONE && !fetch_error_body)
+  if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE && !fetch_error_body)
     return result;
 
   // The caller is expecting a partial response.
@@ -335,7 +338,7 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       // last byte position. e.g. "Range:bytes=50-99".
       if (save_info->length != download::DownloadSaveInfo::kLengthFullContent &&
           !fetch_error_body)
-        return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+        return download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
       // Requested a partial range, but received the entire response, when
       // the range request header is "Range:bytes={offset}-".
@@ -344,14 +347,14 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       save_info->offset = 0;
       save_info->hash_of_partial_file.clear();
       save_info->hash_state.reset();
-      return DOWNLOAD_INTERRUPT_REASON_NONE;
+      return download::DOWNLOAD_INTERRUPT_REASON_NONE;
     }
 
     int64_t first_byte = -1;
     int64_t last_byte = -1;
     int64_t length = -1;
     if (!http_headers.GetContentRangeFor206(&first_byte, &last_byte, &length))
-      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+      return download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
     DCHECK_GE(first_byte, 0);
 
     if (first_byte != save_info->offset ||
@@ -363,16 +366,16 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       // In the future we should consider allowing offsets that are less than
       // the offset we've requested, since in theory we can truncate the partial
       // file at the offset and continue.
-      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+      return download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
     }
 
-    return DOWNLOAD_INTERRUPT_REASON_NONE;
+    return download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   if (http_headers.response_code() == net::HTTP_PARTIAL_CONTENT)
-    return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+    return download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void HandleResponseHeaders(const net::HttpResponseHeaders* headers,

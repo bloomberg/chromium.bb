@@ -10,7 +10,8 @@
 namespace history {
 namespace {
 
-// Values are copied from content/public/browser/download_interrupt_reasons.h.
+// Values are copied from
+// components/download/public/common/download_interrupt_reasons.h.
 // Their value is irrelevant for iOS but must be kept in sync until iOS code
 // downstream stops compiling some part of content.
 

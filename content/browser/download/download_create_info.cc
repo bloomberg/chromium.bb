@@ -22,7 +22,7 @@ DownloadCreateInfo::DownloadCreateInfo(
       offset(0),
       has_user_gesture(false),
       transient(false),
-      result(DOWNLOAD_INTERRUPT_REASON_NONE),
+      result(download::DOWNLOAD_INTERRUPT_REASON_NONE),
       save_info(std::move(save_info)),
       accept_range(false),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),

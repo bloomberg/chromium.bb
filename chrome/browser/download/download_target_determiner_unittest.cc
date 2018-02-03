@@ -35,11 +35,11 @@
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -358,7 +358,7 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
   ON_CALL(*item, GetId())
       .WillByDefault(Return(id));
   ON_CALL(*item, GetLastReason())
-      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
+      .WillByDefault(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
   ON_CALL(*item, GetMimeType())
       .WillByDefault(Return(test_case.mime_type));
   ON_CALL(*item, GetReferrerUrl())
@@ -1678,8 +1678,8 @@ TEST_F(DownloadTargetDeterminerTest, InitialVirtualPathUnsafe) {
   std::unique_ptr<content::MockDownloadItem> item =
       CreateActiveDownloadItem(1, test_case);
   EXPECT_CALL(*item, GetLastReason())
-      .WillRepeatedly(Return(
-          content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
   EXPECT_CALL(*item, GetTargetDisposition())
       .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_PROMPT));
   RunTestCase(test_case, GetPathInDownloadDir(kInitialPath), item.get());
@@ -1751,8 +1751,8 @@ TEST_F(DownloadTargetDeterminerTest, ResumedNoPrompt) {
     base::FilePath expected_path =
         GetPathInDownloadDir(test_case.expected_local_path);
     ON_CALL(*item.get(), GetLastReason())
-        .WillByDefault(Return(
-            content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+        .WillByDefault(
+            Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
     // Extensions should be notified if a new path is being generated and there
     // is no forced path. In the test cases above, this is true for tests with
     // type == AUTOMATIC.
@@ -1792,7 +1792,7 @@ TEST_F(DownloadTargetDeterminerTest, ResumedForcedDownload) {
   std::unique_ptr<content::MockDownloadItem> item =
       CreateActiveDownloadItem(0, test_case);
   ON_CALL(*item.get(), GetLastReason())
-      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
+      .WillByDefault(Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
       .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
   EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
@@ -1864,8 +1864,8 @@ TEST_F(DownloadTargetDeterminerTest, ResumedWithPrompt) {
     std::unique_ptr<content::MockDownloadItem> item =
         CreateActiveDownloadItem(i, test_case);
     ON_CALL(*item.get(), GetLastReason())
-        .WillByDefault(Return(
-            content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
+        .WillByDefault(
+            Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
         .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
     EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
@@ -1972,8 +1972,8 @@ TEST_F(DownloadTargetDeterminerTest, IntermediateNameForResumed) {
         CreateActiveDownloadItem(i, test_case.general);
 
     ON_CALL(*item.get(), GetLastReason())
-        .WillByDefault(Return(
-            content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+        .WillByDefault(
+            Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
     ON_CALL(*item.get(), GetFullPath())
         .WillByDefault(ReturnRefOfCopy(
             GetPathInDownloadDir(test_case.initial_intermediate_path)));
@@ -2112,7 +2112,8 @@ TEST_F(DownloadTargetDeterminerTest, ResumedWithUserValidatedDownload) {
   ON_CALL(*item.get(), GetFullPath())
       .WillByDefault(ReturnRefOfCopy(GetPathInDownloadDir(kIntermediatePath)));
   ON_CALL(*item.get(), GetLastReason())
-      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+      .WillByDefault(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _));
   EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
   EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
@@ -2191,7 +2192,8 @@ TEST_F(DownloadTargetDeterminerTest, TransientDownloadResumption) {
   ON_CALL(*item.get(), GetFullPath())
       .WillByDefault(ReturnRefOfCopy(expected_path));
   ON_CALL(*item.get(), GetLastReason())
-      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+      .WillByDefault(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
 
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
   EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false,

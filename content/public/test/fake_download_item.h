@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
 #include "components/download/public/common/download_danger_type.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -74,8 +74,8 @@ class FakeDownloadItem : public DownloadItem {
   void SetOriginalUrl(const GURL& url);
   const GURL& GetOriginalUrl() const override;
 
-  void SetLastReason(DownloadInterruptReason last_reason);
-  DownloadInterruptReason GetLastReason() const override;
+  void SetLastReason(download::DownloadInterruptReason last_reason);
+  download::DownloadInterruptReason GetLastReason() const override;
 
   void SetReceivedBytes(int64_t received_bytes);
   int64_t GetReceivedBytes() const override;
@@ -147,13 +147,15 @@ class FakeDownloadItem : public DownloadItem {
   bool GetOpened() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
-  void OnContentCheckCompleted(download::DownloadDangerType danger_type,
-                               DownloadInterruptReason reason) override;
+  void OnContentCheckCompleted(
+      download::DownloadDangerType danger_type,
+      download::DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
-  void SimulateErrorForTesting(DownloadInterruptReason reason) override;
+  void SimulateErrorForTesting(
+      download::DownloadInterruptReason reason) override;
 
  private:
   base::ObserverList<Observer> observers_;
@@ -173,8 +175,8 @@ class FakeDownloadItem : public DownloadItem {
   scoped_refptr<const net::HttpResponseHeaders> response_headers_;
   std::string mime_type_;
   GURL original_url_;
-  DownloadInterruptReason last_reason_ =
-      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason last_reason_ =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   int64_t received_bytes_ = 0;
   int64_t total_bytes_ = 0;
   bool is_transient_ = false;

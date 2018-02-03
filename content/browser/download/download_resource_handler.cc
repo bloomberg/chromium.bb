@@ -11,9 +11,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_task_runner.h"
@@ -23,7 +24,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -69,7 +69,8 @@ static void StartOnUIThread(
     // NULL in unittests or if the page closed right after starting the
     // download.
     if (!started_cb.is_null())
-      started_cb.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+      started_cb.Run(nullptr,
+                     download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 
     if (stream)
       GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
@@ -247,7 +248,8 @@ void DownloadResourceHandler::OnStart(
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // If the user cancels the download, then don't call start. Instead ignore the
   // download entirely.
-  if (create_info->result == DOWNLOAD_INTERRUPT_REASON_USER_CANCELED &&
+  if (create_info->result ==
+          download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED &&
       create_info->download_id == DownloadItem::kInvalidId) {
     if (!callback.is_null())
       BrowserThread::PostTask(

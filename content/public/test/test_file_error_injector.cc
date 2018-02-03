@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
-#include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_task_runner.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -48,11 +48,11 @@ class DownloadFileWithError: public DownloadFileImpl {
                   bool is_parallelizable) override;
 
   // DownloadFile interface.
-  DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                          const char* data,
-                                          size_t data_len) override;
+  download::DownloadInterruptReason WriteDataToFile(int64_t offset,
+                                                    const char* data,
+                                                    size_t data_len) override;
 
-  DownloadInterruptReason HandleStreamCompletionStatus(
+  download::DownloadInterruptReason HandleStreamCompletionStatus(
       SourceStream* source_stream) override;
 
   void RenameAndUniquify(const base::FilePath& full_path,
@@ -65,9 +65,9 @@ class DownloadFileWithError: public DownloadFileImpl {
 
  private:
   // Error generating helper.
-  DownloadInterruptReason ShouldReturnError(
+  download::DownloadInterruptReason ShouldReturnError(
       TestFileErrorInjector::FileOperationCode code,
-      DownloadInterruptReason original_error);
+      download::DownloadInterruptReason original_error);
 
   // Determine whether to overwrite an operation with the given code
   // with a substitute error; if returns true, |*original_error| is
@@ -75,9 +75,8 @@ class DownloadFileWithError: public DownloadFileImpl {
   // NOTE: This routine changes state; specifically, it increases the
   // operations counts for the specified code.  It should only be called
   // once per operation.
-  bool OverwriteError(
-    TestFileErrorInjector::FileOperationCode code,
-    DownloadInterruptReason* output_error);
+  bool OverwriteError(TestFileErrorInjector::FileOperationCode code,
+                      download::DownloadInterruptReason* output_error);
 
   // Our injected error.  Only one per file.
   TestFileErrorInjector::FileErrorInfo error_info_;
@@ -91,20 +90,21 @@ class DownloadFileWithError: public DownloadFileImpl {
 
 static void InitializeErrorCallback(
     const DownloadFile::InitializeCallback original_callback,
-    DownloadInterruptReason overwrite_error,
-    DownloadInterruptReason original_error) {
+    download::DownloadInterruptReason overwrite_error,
+    download::DownloadInterruptReason original_error) {
   original_callback.Run(overwrite_error);
 }
 
 static void RenameErrorCallback(
     const DownloadFile::RenameCompletionCallback original_callback,
-    DownloadInterruptReason overwrite_error,
-    DownloadInterruptReason original_error,
+    download::DownloadInterruptReason overwrite_error,
+    download::DownloadInterruptReason original_error,
     const base::FilePath& path_result) {
   original_callback.Run(
       overwrite_error,
-      overwrite_error == DOWNLOAD_INTERRUPT_REASON_NONE ?
-      path_result : base::FilePath());
+      overwrite_error == download::DOWNLOAD_INTERRUPT_REASON_NONE
+          ? path_result
+          : base::FilePath());
 }
 
 DownloadFileWithError::DownloadFileWithError(
@@ -142,14 +142,15 @@ void DownloadFileWithError::Initialize(
     const CancelRequestCallback& cancel_request_callback,
     const DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
-  DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason error_to_return =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   InitializeCallback callback_to_use = initialize_callback;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
           TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
           &error_to_return)) {
-    if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
+    if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, Initialize; just
       // return the error.
       BrowserThread::PostTask(
@@ -167,7 +168,7 @@ void DownloadFileWithError::Initialize(
                                received_slices, is_parallelizable);
 }
 
-DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
+download::DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
     int64_t offset,
     const char* data,
     size_t data_len) {
@@ -176,9 +177,10 @@ DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
       DownloadFileImpl::WriteDataToFile(offset, data, data_len));
 }
 
-DownloadInterruptReason DownloadFileWithError::HandleStreamCompletionStatus(
+download::DownloadInterruptReason
+DownloadFileWithError::HandleStreamCompletionStatus(
     SourceStream* source_stream) {
-  DownloadInterruptReason origin_error =
+  download::DownloadInterruptReason origin_error =
       DownloadFileImpl::HandleStreamCompletionStatus(source_stream);
 
   if (error_info_.code ==
@@ -194,14 +196,15 @@ DownloadInterruptReason DownloadFileWithError::HandleStreamCompletionStatus(
 void DownloadFileWithError::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
-  DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason error_to_return =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
           TestFileErrorInjector::FILE_OPERATION_RENAME_UNIQUIFY,
           &error_to_return)) {
-    if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
+    if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndUniquify; just
       // return the error.
       BrowserThread::PostTask(
@@ -224,14 +227,15 @@ void DownloadFileWithError::RenameAndAnnotate(
     const GURL& source_url,
     const GURL& referrer_url,
     const RenameCompletionCallback& callback) {
-  DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason error_to_return =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
           TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE,
           &error_to_return)) {
-    if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
+    if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndAnnotate; just
       // return the error.
       BrowserThread::PostTask(
@@ -251,7 +255,7 @@ void DownloadFileWithError::RenameAndAnnotate(
 
 bool DownloadFileWithError::OverwriteError(
     TestFileErrorInjector::FileOperationCode code,
-    DownloadInterruptReason* output_error) {
+    download::DownloadInterruptReason* output_error) {
   int counter = operation_counter_[code]++;
 
   if (code != error_info_.code)
@@ -264,10 +268,10 @@ bool DownloadFileWithError::OverwriteError(
   return true;
 }
 
-DownloadInterruptReason DownloadFileWithError::ShouldReturnError(
+download::DownloadInterruptReason DownloadFileWithError::ShouldReturnError(
     TestFileErrorInjector::FileOperationCode code,
-    DownloadInterruptReason original_error) {
-  DownloadInterruptReason output_error = original_error;
+    download::DownloadInterruptReason original_error) {
+  download::DownloadInterruptReason output_error = original_error;
   OverwriteError(code, &output_error);
   return output_error;
 }
@@ -329,12 +333,12 @@ bool DownloadFileWithErrorFactory::SetError(
 TestFileErrorInjector::FileErrorInfo::FileErrorInfo()
     : FileErrorInfo(FILE_OPERATION_INITIALIZE,
                     -1,
-                    DOWNLOAD_INTERRUPT_REASON_NONE) {}
+                    download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
 TestFileErrorInjector::FileErrorInfo::FileErrorInfo(
     FileOperationCode code,
     int operation_instance,
-    DownloadInterruptReason error)
+    download::DownloadInterruptReason error)
     : code(code), operation_instance(operation_instance), error(error) {}
 
 TestFileErrorInjector::TestFileErrorInjector(DownloadManager* download_manager)
@@ -361,7 +365,7 @@ void TestFileErrorInjector::ClearError() {
   // An error with an index of -1, which will never be reached.
   static const TestFileErrorInjector::FileErrorInfo kNoOpErrorInfo = {
       TestFileErrorInjector::FILE_OPERATION_INITIALIZE, -1,
-      DOWNLOAD_INTERRUPT_REASON_NONE};
+      download::DOWNLOAD_INTERRUPT_REASON_NONE};
   InjectError(kNoOpErrorInfo);
 }
 

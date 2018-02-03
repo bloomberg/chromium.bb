@@ -29,7 +29,8 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "components/download/public/common/download_danger_type.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
+#include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -202,7 +203,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // |DOWNLOAD_INTERRUPT_REASON_NONE| if there is no previous interrupt reason.
   // Interrupted downloads and resumed downloads return the last known interrupt
   // reason.
-  virtual DownloadInterruptReason GetLastReason() const = 0;
+  virtual download::DownloadInterruptReason GetLastReason() const = 0;
 
   // The download is currently paused. Calling Resume() will transition out of
   // this paused state.
@@ -447,8 +448,9 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // TODO(crbug.com/733291): Move DownloadInterruptReason out of here and add a
   // new  Interrupt method instead. Same for other methods supporting
   // interruptions.
-  virtual void OnContentCheckCompleted(download::DownloadDangerType danger_type,
-                                       DownloadInterruptReason reason) = 0;
+  virtual void OnContentCheckCompleted(
+      download::DownloadDangerType danger_type,
+      download::DownloadInterruptReason reason) = 0;
 
   // Mark the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open) = 0;
@@ -466,7 +468,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Debug/testing -------------------------------------------------------------
   virtual std::string DebugString(bool verbose) const = 0;
-  virtual void SimulateErrorForTesting(DownloadInterruptReason reason) = 0;
+  virtual void SimulateErrorForTesting(
+      download::DownloadInterruptReason reason) = 0;
 };
 
 }  // namespace content

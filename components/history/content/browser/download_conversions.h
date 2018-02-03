@@ -10,9 +10,9 @@
 #include <string>
 
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/history/core/browser/download_slice_info.h"
 #include "components/history/core/browser/download_types.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 
 namespace history {
@@ -31,14 +31,14 @@ download::DownloadDangerType ToContentDownloadDangerType(
 DownloadDangerType ToHistoryDownloadDangerType(
     download::DownloadDangerType danger_type);
 
-// Utility functions to convert between content::DownloadInterruptReason
+// Utility functions to convert between download::DownloadInterruptReason
 // enumeration and history::DownloadInterruptReason type (value have no
 // meaning in history, but have a different type to avoid bugs due to
 // implicit conversions).
-content::DownloadInterruptReason ToContentDownloadInterruptReason(
+download::DownloadInterruptReason ToContentDownloadInterruptReason(
     DownloadInterruptReason interrupt_reason);
 DownloadInterruptReason ToHistoryDownloadInterruptReason(
-    content::DownloadInterruptReason interrupt_reason);
+    download::DownloadInterruptReason interrupt_reason);
 
 // Utility functions to convert between content download id values and
 // history::DownloadId type (value have no meaning in history, except

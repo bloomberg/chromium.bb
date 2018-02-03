@@ -370,8 +370,8 @@ void IndexedDBInternalsUI::OnDownloadStarted(
     const base::FilePath& temp_path,
     size_t connection_count,
     DownloadItem* item,
-    DownloadInterruptReason interrupt_reason) {
-  if (interrupt_reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    download::DownloadInterruptReason interrupt_reason) {
+  if (interrupt_reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     LOG(ERROR) << "Error downloading database dump: "
                << DownloadInterruptReasonToString(interrupt_reason);
     return;

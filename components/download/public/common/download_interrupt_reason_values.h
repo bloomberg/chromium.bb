@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,6 @@ INTERRUPT_REASON(USER_CANCELED, 40)
 // The user shut down the browser.
 // Internal use only:  resume pending downloads if possible.
 INTERRUPT_REASON(USER_SHUTDOWN, 41)
-
 
 // Crash.
 

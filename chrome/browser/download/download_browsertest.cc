@@ -77,6 +77,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -86,7 +87,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -329,7 +329,7 @@ bool WasAutoOpened(DownloadItem* item) {
 #if !defined(OS_CHROMEOS)
 // Called when a download starts. Marks the download as hidden.
 void SetHiddenDownloadCallback(DownloadItem* item,
-                               content::DownloadInterruptReason reason) {
+                               download::DownloadInterruptReason reason) {
   DownloadItemModel(item).SetShouldShowInShelf(false);
 }
 #endif
@@ -432,7 +432,7 @@ class DownloadTest : public InProcessBrowserTest {
                                         // URL.
     DownloadMethod download_method;     // Navigation or Direct.
     // Download interrupt reason (NONE is OK).
-    content::DownloadInterruptReason reason;
+    download::DownloadInterruptReason reason;
     bool show_download_item;  // True if the download item appears on the shelf.
     bool should_redirect_to_documents;  // True if we save it in "My Documents".
   };
@@ -904,7 +904,7 @@ class DownloadTest : public InProcessBrowserTest {
     ASSERT_TRUE(web_contents);
 
     std::unique_ptr<content::DownloadTestObserver> observer;
-    if (download_info.reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    if (download_info.reason == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
       observer.reset(new content::DownloadTestObserverTerminal(
           download_manager, 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
@@ -941,9 +941,9 @@ class DownloadTest : public InProcessBrowserTest {
       downloads_expected++;
       observer->WaitForFinished();
       DownloadItem::DownloadState final_state =
-          (download_info.reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) ?
-              DownloadItem::COMPLETE :
-              DownloadItem::INTERRUPTED;
+          (download_info.reason == download::DOWNLOAD_INTERRUPT_REASON_NONE)
+              ? DownloadItem::COMPLETE
+              : DownloadItem::INTERRUPTED;
       EXPECT_EQ(1u, observer->NumDownloadsSeenInState(final_state));
     }
 
@@ -1013,7 +1013,7 @@ class DownloadTest : public InProcessBrowserTest {
         << " index = " << i << " operation code = "
         << content::TestFileErrorInjector::DebugString(info.error_info.code)
         << " instance = " << info.error_info.operation_instance << " error = "
-        << content::DownloadInterruptReasonToString(info.error_info.error));
+        << download::DownloadInterruptReasonToString(info.error_info.error));
 
     injector->InjectError(info.error_info);
 
@@ -1064,7 +1064,7 @@ class DownloadTest : public InProcessBrowserTest {
   // * Returns the resulting interrupted download.
   DownloadItem* StartMockDownloadAndInjectError(
       content::TestFileErrorInjector* error_injector,
-      content::DownloadInterruptReason error) {
+      download::DownloadInterruptReason error) {
     content::TestFileErrorInjector::FileErrorInfo error_info;
     error_info.code = content::TestFileErrorInjector::FILE_OPERATION_WRITE;
     error_info.operation_instance = 0;
@@ -1877,7 +1877,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
       TestFileErrorInjector::Create(DownloadManagerForBrowser(browser())));
   TestFileErrorInjector::FileErrorInfo error_info = {
       TestFileErrorInjector::FILE_OPERATION_STREAM_COMPLETE, 0,
-      content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED};
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED};
   error_info.stream_offset = 0;
   error_info.stream_bytes_written = 1024;
   injector->InjectError(error_info);
@@ -1963,7 +1963,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
             row1.total_bytes);
   EXPECT_EQ(history::DownloadState::INTERRUPTED, row1.state);
   EXPECT_EQ(history::ToHistoryDownloadInterruptReason(
-                content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED),
+                download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED),
             row1.interrupt_reason);
   EXPECT_FALSE(row1.opened);
 }
@@ -2608,44 +2608,44 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
   DownloadInfo download_info[] = {
       {// Normal navigated download.
        "a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, false},
+       download::DOWNLOAD_INTERRUPT_REASON_NONE, true, false},
       {// Normal direct download.
        "a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, false},
+       download::DOWNLOAD_INTERRUPT_REASON_NONE, true, false},
       {// Direct download with 404 error.
        "there_IS_no_spoon.zip", "there_IS_no_spoon.zip", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, true, false},
+       download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, true, false},
       {// Navigated download with 404 error.
        "there_IS_no_spoon.zip", "there_IS_no_spoon.zip", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, false, false},
+       download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, false, false},
       {// Direct download with 400 error.
        "zip_file_not_found.zip", "zip_file_not_found.zip", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, true, false},
+       download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, true, false},
       {// Navigated download with 400 error.
        "zip_file_not_found.zip", "", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false},
+       download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false},
       {// Simulates clicking on <a href="http://..." download="">. The name does
        // not resolve. But since this is an explicit download, the download
        // should appear on the shelf and the error should be indicated.
        "download-anchor-attrib-name-not-resolved.html",
        "http://doesnotexist/shouldnotberesolved", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, false},
+       download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, false},
       {// Simulates clicking on <a href="http://..." download=""> where the URL
        // leads to a 404 response. This is different from the previous test case
        // in that the ResourceLoader issues a OnResponseStarted() callback since
        // the headers are successfully received.
        "download-anchor-attrib-404.html", "there_IS_no_spoon.zip",
-       DOWNLOAD_NAVIGATE, content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
-       false, false},
+       DOWNLOAD_NAVIGATE,
+       download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, false, false},
       {// Similar to the above, but the resulting response contains a status
        // code of 400.
        "download-anchor-attrib-400.html", "zip_file_not_found.zip",
-       DOWNLOAD_NAVIGATE, content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+       DOWNLOAD_NAVIGATE, download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
        false, false},
       {// Direct download of a URL where the hostname doesn't resolve.
        "http://doesnotexist/shouldnotdownloadsuccessfully",
        "http://doesnotexist/shouldnotdownloadsuccessfully", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false}};
+       download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false}};
 
   DownloadFilesCheckErrors(arraysize(download_info), download_info);
 }
@@ -2661,95 +2661,95 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsFile) {
   FileErrorInjectInfo error_info[] = {
       {// Navigated download with injected "Disk full" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Direct download with injected "Disk full" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Navigated download with injected "Disk full" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Direct download with injected "Disk full" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Navigated download with injected "Failed" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Failed" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Navigated download with injected "Failed" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Failed" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Navigated download with injected "Name too long" error in
        // Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        }},
       {// Direct download with injected "Name too long" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        }},
       {// Navigated download with injected "Name too long" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Name too long" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Disk full" error in 2nd Write().
        {"06bESSE21Evolution.ppt", "06bESSE21Evolution.ppt", DOWNLOAD_DIRECT,
-        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
            content::TestFileErrorInjector::FILE_OPERATION_WRITE, 1,
-           content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+           download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }}};
 
   DownloadInsertFilesErrorCheckErrors(arraysize(error_info), error_info);
@@ -2759,10 +2759,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
   DownloadInfo download_info[] = {
       {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
        // This passes because we switch to the My Documents folder.
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, true},
+       download::DOWNLOAD_INTERRUPT_REASON_NONE, true, true},
       {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
        // This passes because we switch to the My Documents folder.
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, true}};
+       download::DOWNLOAD_INTERRUPT_REASON_NONE, true, true}};
 
   DownloadFilesToReadonlyFolder(arraysize(download_info), download_info);
 }
@@ -3296,7 +3296,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_NoPrompt) {
   EnableFileChooser(true);
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      error_injector.get(), download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
   download->Resume();
@@ -3319,7 +3319,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPrompt) {
   EnableFileChooser(true);
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+      error_injector.get(), download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
   ASSERT_TRUE(download);
 
   download->Resume();
@@ -3343,7 +3343,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPromptAlways) {
   EnableFileChooser(true);
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      error_injector.get(), download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
   // Prompts the user initially because of the kPromptForDownload preference.
@@ -3367,7 +3367,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
 
   DownloadItem* download = StartMockDownloadAndInjectError(
       error_injector.get(),
-      content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
   ASSERT_TRUE(download);
 
   // The number of times this the download is resumed automatically is defined
@@ -3402,13 +3402,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
 
   EnableFileChooser(true);
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      error_injector.get(), download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
   content::TestFileErrorInjector::FileErrorInfo error_info;
   error_info.code = content::TestFileErrorInjector::FILE_OPERATION_WRITE;
   error_info.operation_instance = 0;
-  error_info.error = content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+  error_info.error = download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
   error_injector->InjectError(error_info);
 
   // Resuming should cause the download to be interrupted again due to the
@@ -3416,7 +3416,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
   download->Resume();
   resumable_observer->WaitForFinished();
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  ASSERT_EQ(content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+  ASSERT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
             download->GetLastReason());
 
   error_injector->ClearError();

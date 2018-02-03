@@ -49,7 +49,7 @@ class MockDownloadManager : public DownloadManager {
     std::string hash;
     DownloadItem::DownloadState state;
     download::DownloadDangerType danger_type;
-    DownloadInterruptReason interrupt_reason;
+    download::DownloadInterruptReason interrupt_reason;
     bool opened;
     base::Time last_access_time;
     bool transient;
@@ -76,7 +76,7 @@ class MockDownloadManager : public DownloadManager {
         const std::string& hash,
         DownloadItem::DownloadState state,
         download::DownloadDangerType danger_type,
-        DownloadInterruptReason interrupt_reason,
+        download::DownloadInterruptReason interrupt_reason,
         bool opened,
         base::Time last_access_time,
         bool transient,
@@ -139,7 +139,7 @@ class MockDownloadManager : public DownloadManager {
       const std::string& hash,
       DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
+      download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,

@@ -14,9 +14,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_save_info.h"
 #include "content/browser/loader/resource_handler.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 
@@ -76,7 +76,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // Used to notify DownloadRequestCore that the caller is about to abort the
   // outer request. |reason| will be used as the final interrupt reason when
   // OnResponseCompleted() is called.
-  void OnWillAbort(DownloadInterruptReason reason);
+  void OnWillAbort(download::DownloadInterruptReason reason);
 
   // Should be called when the Read() operation completes. |defer| will be set
   // to true if reading is to be suspended. In the latter case, once more data
@@ -117,7 +117,7 @@ class CONTENT_EXPORT DownloadRequestCore
 
  private:
   std::unique_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
-      DownloadInterruptReason result);
+      download::DownloadInterruptReason result);
 
   Delegate* delegate_;
   net::URLRequest* request_;
@@ -157,7 +157,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // status indicating that the request was aborted. When this happens, the
   // interrupt reason in |abort_reason_| will be used instead of USER_CANCELED
   // which is vague.
-  DownloadInterruptReason abort_reason_;
+  download::DownloadInterruptReason abort_reason_;
 
   // Source of the download, used in metrics.
   download::DownloadSource download_source_;

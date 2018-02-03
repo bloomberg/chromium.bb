@@ -78,11 +78,12 @@ const std::vector<GURL>& FakeDownloadItem::GetUrlChain() const {
   return url_chain_;
 }
 
-void FakeDownloadItem::SetLastReason(DownloadInterruptReason last_reason) {
+void FakeDownloadItem::SetLastReason(
+    download::DownloadInterruptReason last_reason) {
   last_reason_ = last_reason;
 }
 
-DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
+download::DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
   return last_reason_;
 }
 
@@ -423,7 +424,7 @@ WebContents* FakeDownloadItem::GetWebContents() const {
 
 void FakeDownloadItem::OnContentCheckCompleted(
     download::DownloadDangerType danger_type,
-    DownloadInterruptReason reason) {
+    download::DownloadInterruptReason reason) {
   NOTREACHED();
 }
 
@@ -444,7 +445,8 @@ std::string FakeDownloadItem::DebugString(bool verbose) const {
   return std::string();
 }
 
-void FakeDownloadItem::SimulateErrorForTesting(DownloadInterruptReason reason) {
+void FakeDownloadItem::SimulateErrorForTesting(
+    download::DownloadInterruptReason reason) {
   NOTREACHED();
 }
 

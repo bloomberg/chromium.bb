@@ -103,7 +103,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const std::string& hash,
       content::DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
+      download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
@@ -136,7 +136,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // ResourceDispatcherHostImpl::BeginURLRequest function. The function returns
   // the result of the downoad operation. Please see the
   // DownloadInterruptReason enum for information on possible return values.
-  static DownloadInterruptReason BeginDownloadRequest(
+  static download::DownloadInterruptReason BeginDownloadRequest(
       std::unique_ptr<net::URLRequest> url_request,
       ResourceContext* resource_context,
       DownloadUrlParameters* params);

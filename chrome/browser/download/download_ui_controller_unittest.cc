@@ -234,7 +234,7 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   EXPECT_CALL(*item, GetLastReason())
-      .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
+      .WillRepeatedly(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
   EXPECT_CALL(*item, GetReceivedBytes()).WillRepeatedly(Return(0));
   EXPECT_CALL(*item, GetReceivedSlices()).WillRepeatedly(
       ReturnRefOfCopy(std::vector<content::DownloadItem::ReceivedSlice>()));

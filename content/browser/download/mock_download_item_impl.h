@@ -33,7 +33,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                     TargetDisposition,
                     download::DownloadDangerType,
                     const base::FilePath&,
-                    DownloadInterruptReason));
+                    download::DownloadInterruptReason));
   MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
   MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));
   MOCK_METHOD0(UpdateObservers, void());
@@ -70,7 +70,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
   MOCK_METHOD2(OnContentCheckCompleted,
-               void(download::DownloadDangerType, DownloadInterruptReason));
+               void(download::DownloadDangerType,
+                    download::DownloadInterruptReason));
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_METHOD1(SetTotalBytes, void(int64_t));
@@ -111,7 +112,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetLastAccessTime, base::Time());
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
-  MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
+  MOCK_CONST_METHOD0(GetLastReason, download::DownloadInterruptReason());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, base::FilePath());

@@ -18,7 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
@@ -39,7 +39,7 @@ class FileErrorData : public base::trace_event::ConvertableToTraceFormat {
  public:
   FileErrorData(const char* operation,
                 int os_error,
-                DownloadInterruptReason interrupt_reason)
+                download::DownloadInterruptReason interrupt_reason)
       : operation_(operation),
         os_error_(os_error),
         interrupt_reason_(interrupt_reason) {}
@@ -60,7 +60,7 @@ class FileErrorData : public base::trace_event::ConvertableToTraceFormat {
  private:
   std::string operation_;
   int os_error_;
-  DownloadInterruptReason interrupt_reason_;
+  download::DownloadInterruptReason interrupt_reason_;
   DISALLOW_COPY_AND_ASSIGN(FileErrorData);
 };
 }  // namespace
@@ -77,7 +77,7 @@ BaseFile::~BaseFile() {
     Cancel();  // Will delete the file.
 }
 
-DownloadInterruptReason BaseFile::Initialize(
+download::DownloadInterruptReason BaseFile::Initialize(
     const base::FilePath& full_path,
     const base::FilePath& default_directory,
     base::File file,
@@ -100,8 +100,9 @@ DownloadInterruptReason BaseFile::Initialize(
     if ((initial_directory.empty() ||
          !base::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
         !base::CreateTemporaryFile(&temp_file)) {
-      return LogInterruptReason("Unable to create", 0,
-                                DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      return LogInterruptReason(
+          "Unable to create", 0,
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     }
     full_path_ = temp_file;
   } else {
@@ -119,15 +120,15 @@ DownloadInterruptReason BaseFile::Initialize(
   return Open(hash_so_far);
 }
 
-DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
-                                                   size_t data_len) {
+download::DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
+                                                             size_t data_len) {
   DCHECK(!is_sparse_file_);
   return WriteDataToFile(bytes_so_far_, data, data_len);
 }
 
-DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
-                                                  const char* data,
-                                                  size_t data_len) {
+download::DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
+                                                            const char* data,
+                                                            size_t data_len) {
   // NOTE(benwells): The above DCHECK won't be present in release builds,
   // so we log any occurences to see how common this error is in the wild.
   if (detached_)
@@ -135,11 +136,11 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
 
   if (!file_.IsValid())
     return LogInterruptReason("No file stream on append", 0,
-                              DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+                              download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
   // TODO(phajdan.jr): get rid of this check.
   if (data_len == 0)
-    return DOWNLOAD_INTERRUPT_REASON_NONE;
+    return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Use nestable async event instead of sync event so that all the writes
   // belong to the same download will be grouped together.
@@ -167,17 +168,19 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
   if (secure_hash_)
     secure_hash_->Update(data, data_len);
 
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
+download::DownloadInterruptReason BaseFile::Rename(
+    const base::FilePath& new_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DownloadInterruptReason rename_result = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason rename_result =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
   if (new_path == full_path_)
-    return DOWNLOAD_INTERRUPT_REASON_NONE;
+    return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Save the information whether the download is in progress because
   // it will be overwritten by closing the file.
@@ -197,17 +200,19 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
 
   CONDITIONAL_TRACE(END0("download", "DownloadFileRename"));
 
-  if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE)
+  if (rename_result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     full_path_ = new_path;
 
   // Re-open the file if we were still using it regardless of the interrupt
   // reason.
-  DownloadInterruptReason open_result = DOWNLOAD_INTERRUPT_REASON_NONE;
+  download::DownloadInterruptReason open_result =
+      download::DOWNLOAD_INTERRUPT_REASON_NONE;
   if (was_in_progress)
     open_result = Open(std::string());
 
-  return rename_result == DOWNLOAD_INTERRUPT_REASON_NONE ? open_result
-                                                         : rename_result;
+  return rename_result == download::DOWNLOAD_INTERRUPT_REASON_NONE
+             ? open_result
+             : rename_result;
 }
 
 void BaseFile::Detach() {
@@ -255,12 +260,12 @@ std::string BaseFile::DebugString() const {
       detached_ ? 'T' : 'F');
 }
 
-DownloadInterruptReason BaseFile::CalculatePartialHash(
+download::DownloadInterruptReason BaseFile::CalculatePartialHash(
     const std::string& hash_to_expect) {
   secure_hash_ = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
 
   if (bytes_so_far_ == 0)
-    return DOWNLOAD_INTERRUPT_REASON_NONE;
+    return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (file_.Seek(base::File::FROM_BEGIN, 0) != 0)
     return LogSystemError("Seek partial file",
@@ -287,9 +292,9 @@ DownloadInterruptReason BaseFile::CalculatePartialHash(
         std::min<int64_t>(buffer.size(), bytes_so_far_ - current_position);
     int length = file_.ReadAtCurrentPos(&buffer.front(), bytes_to_read);
     if (length == -1) {
-      return LogInterruptReason("Reading partial file",
-                                logging::GetLastSystemErrorCode(),
-                                DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
+      return LogInterruptReason(
+          "Reading partial file", logging::GetLastSystemErrorCode(),
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
     }
 
     if (length == 0)
@@ -301,7 +306,8 @@ DownloadInterruptReason BaseFile::CalculatePartialHash(
 
   if (current_position != bytes_so_far_) {
     return LogInterruptReason(
-        "Verifying prefix hash", 0, DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
+        "Verifying prefix hash", 0,
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
   }
 
   if (!hash_to_expect.empty()) {
@@ -313,16 +319,17 @@ DownloadInterruptReason BaseFile::CalculatePartialHash(
     if (memcmp(&buffer.front(),
                hash_to_expect.c_str(),
                partial_hash->GetHashLength())) {
-      return LogInterruptReason("Verifying prefix hash",
-                                0,
-                                DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH);
+      return LogInterruptReason(
+          "Verifying prefix hash", 0,
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH);
     }
   }
 
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
+download::DownloadInterruptReason BaseFile::Open(
+    const std::string& hash_so_far) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
@@ -346,15 +353,17 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
   if (is_sparse_file_) {
     if (file_.GetLength() < bytes_so_far_) {
       ClearFile();
-      return LogInterruptReason("File has fewer written bytes than expected", 0,
-                                DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
+      return LogInterruptReason(
+          "File has fewer written bytes than expected", 0,
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
     }
-    return DOWNLOAD_INTERRUPT_REASON_NONE;
+    return download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   if (!secure_hash_) {
-    DownloadInterruptReason reason = CalculatePartialHash(hash_so_far);
-    if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    download::DownloadInterruptReason reason =
+        CalculatePartialHash(hash_so_far);
+    if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
       ClearFile();
       return reason;
     }
@@ -378,11 +387,12 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
   } else if (file_size < bytes_so_far_) {
     // The file is shorter than we expected.  Our hashes won't be valid.
     ClearFile();
-    return LogInterruptReason("Unable to seek to last written point", 0,
-                              DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
+    return LogInterruptReason(
+        "Unable to seek to last written point", 0,
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
   }
 
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void BaseFile::Close() {
@@ -404,16 +414,15 @@ void BaseFile::ClearFile() {
       NESTABLE_ASYNC_END0("download", "DownloadFileOpen", download_id_));
 }
 
-DownloadInterruptReason BaseFile::LogNetError(
-    const char* operation,
-    net::Error error) {
+download::DownloadInterruptReason BaseFile::LogNetError(const char* operation,
+                                                        net::Error error) {
   CONDITIONAL_TRACE(INSTANT2("download", "DownloadFileError",
                              TRACE_EVENT_SCOPE_THREAD, "operation", operation,
                              "net_error", error));
   return ConvertNetErrorToInterruptReason(error, DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
-DownloadInterruptReason BaseFile::LogSystemError(
+download::DownloadInterruptReason BaseFile::LogSystemError(
     const char* operation,
     logging::SystemErrorCode os_error) {
   // There's no direct conversion from a system error to an interrupt reason.
@@ -423,10 +432,10 @@ DownloadInterruptReason BaseFile::LogSystemError(
       ConvertFileErrorToInterruptReason(file_error));
 }
 
-DownloadInterruptReason BaseFile::LogInterruptReason(
+download::DownloadInterruptReason BaseFile::LogInterruptReason(
     const char* operation,
     int os_error,
-    DownloadInterruptReason reason) {
+    download::DownloadInterruptReason reason) {
   DVLOG(1) << __func__ << "() operation:" << operation
            << " os_error:" << os_error
            << " reason:" << DownloadInterruptReasonToString(reason);
@@ -473,7 +482,7 @@ GURL GetEffectiveAuthorityURL(const GURL& source_url,
 
 }  // namespace
 
-DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
+download::DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url) {
@@ -489,15 +498,15 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
 
   switch (result) {
     case QuarantineFileResult::OK:
-      return DOWNLOAD_INTERRUPT_REASON_NONE;
+      return download::DOWNLOAD_INTERRUPT_REASON_NONE;
     case QuarantineFileResult::VIRUS_INFECTED:
-      return DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
+      return download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
     case QuarantineFileResult::SECURITY_CHECK_FAILED:
-      return DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
+      return download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
     case QuarantineFileResult::BLOCKED_BY_POLICY:
-      return DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
+      return download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
     case QuarantineFileResult::ACCESS_DENIED:
-      return DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+      return download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
 
     case QuarantineFileResult::FILE_MISSING:
       // Don't have a good interrupt reason here. This return code means that
@@ -507,7 +516,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
       //
       // Intentionally using a different error message than
       // SECURITY_CHECK_FAILED in order to distinguish the two.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+      return download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
 
     case QuarantineFileResult::ANNOTATION_FAILED:
       // This means that the mark-of-the-web couldn't be applied. The file is
@@ -518,16 +527,16 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
       // streams. We are going to allow these downloads to progress on the
       // assumption that failures to apply MOTW can't reliably be introduced
       // remotely.
-      return DOWNLOAD_INTERRUPT_REASON_NONE;
+      return download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
-  return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+  return download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
 }
 #else  // !OS_WIN && !OS_MACOSX && !OS_LINUX
-DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
+download::DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url) {
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 #endif
 

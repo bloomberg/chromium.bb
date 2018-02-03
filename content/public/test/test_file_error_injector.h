@@ -12,8 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -62,10 +61,10 @@ class TestFileErrorInjector
     FileErrorInfo();
     FileErrorInfo(FileOperationCode code,
                   int operation_instance,
-                  DownloadInterruptReason error);
+                  download::DownloadInterruptReason error);
     FileOperationCode code;  // Operation to affect.
     int operation_instance;  // 0-based count of operation calls, for each code.
-    DownloadInterruptReason error;  // Error to inject.
+    download::DownloadInterruptReason error;  // Error to inject.
     int64_t stream_offset = -1;     // Offset of the error stream.
     int64_t stream_bytes_written = -1;  // Bytes written to the error stream.
   };

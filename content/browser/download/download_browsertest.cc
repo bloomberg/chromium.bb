@@ -190,7 +190,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   static void RenameCallbackWrapper(
       const base::WeakPtr<DownloadFileWithDelayFactory>& factory,
       const RenameCompletionCallback& original_callback,
-      DownloadInterruptReason reason,
+      download::DownloadInterruptReason reason,
       const base::FilePath& path);
 
   // This variable may only be read on the download sequence, and may only be
@@ -276,7 +276,7 @@ void DownloadFileWithDelay::RenameAndAnnotate(
 void DownloadFileWithDelay::RenameCallbackWrapper(
     const base::WeakPtr<DownloadFileWithDelayFactory>& factory,
     const RenameCompletionCallback& original_callback,
-    DownloadInterruptReason reason,
+    download::DownloadInterruptReason reason,
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!factory)
@@ -421,11 +421,11 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
     error_stream_length_ = error_stream_length;
   }
 
-  DownloadInterruptReason HandleStreamCompletionStatus(
+  download::DownloadInterruptReason HandleStreamCompletionStatus(
       SourceStream* source_stream) override {
     if (source_stream->offset() == error_stream_offset_ &&
         source_stream->bytes_written() >= error_stream_length_) {
-      return DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+      return download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
     }
     return DownloadFileImpl::HandleStreamCompletionStatus(source_stream);
   }
@@ -1395,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
       first_url);
   download->Resume();
   WaitForInterrupt(download);
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
             download->GetLastReason());
 
   // Back to the original request handler. Resumption should now succeed, and
@@ -1450,7 +1450,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
       server_url);
   download->Resume();
   WaitForInterrupt(download);
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
 
   // Or this time, the server sends a response with an invalid Content-Range
@@ -1462,7 +1462,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
       server_url);
   download->Resume();
   WaitForInterrupt(download);
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
 
   // Or no Content-Range header at all.
@@ -1473,7 +1473,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
       server_url);
   download->Resume();
   WaitForInterrupt(download);
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
 
   // Back to the original request handler. Resumption should now succeed, and
@@ -1665,14 +1665,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromInitFileError) {
 
   const TestFileErrorInjector::FileErrorInfo err = {
       TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
-      DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
   injector->InjectError(err);
 
   // Start and watch for interrupt.
   DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
             download->GetLastReason());
   EXPECT_EQ(0, download->GetReceivedBytes());
   EXPECT_TRUE(download->GetFullPath().empty());
@@ -1706,14 +1706,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   const TestFileErrorInjector::FileErrorInfo err = {
       TestFileErrorInjector::FILE_OPERATION_RENAME_UNIQUIFY, 0,
-      DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
   injector->InjectError(err);
 
   // Start and watch for interrupt.
   DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
             download->GetLastReason());
   EXPECT_TRUE(download->GetFullPath().empty());
   // Target path will have been set after file name determination. GetFullPath()
@@ -1747,14 +1747,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
 
   TestFileErrorInjector::FileErrorInfo err = {
       TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE, 0,
-      DOWNLOAD_INTERRUPT_REASON_FILE_FAILED};
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED};
   injector->InjectError(err);
 
   // Start and watch for interrupt.
   DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, download->GetLastReason());
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+            download->GetLastReason());
   EXPECT_TRUE(download->GetFullPath().empty());
   // Target path should still be intact.
   EXPECT_FALSE(download->GetTargetFilePath().empty());
@@ -2084,8 +2085,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -2147,8 +2148,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -2197,8 +2198,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       base::Time(), "fake-etag", std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -2253,8 +2254,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       parameters.size,
       std::string(std::begin(kPartialHash), std::end(kPartialHash)),
       DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -2316,8 +2317,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
       parameters.size,
       std::string(std::begin(kPartialHash), std::end(kPartialHash)),
       DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -2387,8 +2388,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -2456,8 +2457,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
       base::Time(), parameters.etag, std::string(), kIntermediateSize,
       parameters.size, std::string(), DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      std::vector<DownloadItem::ReceivedSlice>());
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, std::vector<DownloadItem::ReceivedSlice>());
 
   download->Resume();
   WaitForCompletion(download);
@@ -3028,8 +3029,8 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
       base::Time(), parameters.etag, parameters.last_modified,
       kIntermediateSize * 3, parameters.size, std::string(),
       DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
-      received_slices);
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(),
+      false, received_slices);
 
   // Resume the parallel download with sparse file and received slices data.
   download->Resume();

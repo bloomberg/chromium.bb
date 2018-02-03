@@ -6,7 +6,8 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UTILS_H_
 
 #include "base/optional.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
+#include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
@@ -32,9 +33,11 @@ struct DownloadCreateInfo;
 
 // Handle the url request completion status and return the interrupt reasons.
 // |cert_status| is ignored if error_code is not net::ERR_ABORTED.
-DownloadInterruptReason CONTENT_EXPORT HandleRequestCompletionStatus(
-    net::Error error_code, bool has_strong_validators,
-    net::CertStatus cert_status, DownloadInterruptReason abort_reason);
+download::DownloadInterruptReason CONTENT_EXPORT
+HandleRequestCompletionStatus(net::Error error_code,
+                              bool has_strong_validators,
+                              net::CertStatus cert_status,
+                              download::DownloadInterruptReason abort_reason);
 
 // Create a ResourceRequest from |params|.
 std::unique_ptr<network::ResourceRequest> CONTENT_EXPORT
@@ -47,7 +50,7 @@ std::unique_ptr<net::URLRequest> CONTENT_EXPORT CreateURLRequestOnIOThread(
 // Parse the HTTP server response code.
 // If |fetch_error_body| is true, most of HTTP response codes will be accepted
 // as successful response.
-DownloadInterruptReason CONTENT_EXPORT
+download::DownloadInterruptReason CONTENT_EXPORT
 HandleSuccessfulServerResponse(const net::HttpResponseHeaders& http_headers,
                                download::DownloadSaveInfo* save_info,
                                bool fetch_error_body);

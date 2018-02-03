@@ -63,7 +63,7 @@ using DownloadTargetCallback =
                         DownloadItem::TargetDisposition disposition,
                         download::DownloadDangerType danger_type,
                         const base::FilePath& intermediate_path,
-                        DownloadInterruptReason interrupt_reason)>;
+                        download::DownloadInterruptReason interrupt_reason)>;
 
 // Called when a download delayed by the delegate has completed.
 using DownloadOpenDelayedCallback = base::Callback<void(bool)>;

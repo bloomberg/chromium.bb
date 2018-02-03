@@ -10,8 +10,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_util.h"
 
@@ -23,7 +23,7 @@ namespace {
 // are all positive (since histograms expect positive sample values).
 const int kAllInterruptReasonCodes[] = {
 #define INTERRUPT_REASON(label, value) (value),
-#include "content/public/browser/download_interrupt_reason_values.h"
+#include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 };
 
@@ -341,7 +341,7 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
   }
 }
 
-void RecordDownloadInterrupted(DownloadInterruptReason reason,
+void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
                                int64_t received,
                                int64_t total,
                                bool is_parallelizable,
@@ -986,8 +986,8 @@ void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event) {
 
 void RecordDownloadFileRenameResultAfterRetry(
     base::TimeDelta time_since_first_failure,
-    DownloadInterruptReason interrupt_reason) {
-  if (interrupt_reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+    download::DownloadInterruptReason interrupt_reason) {
+  if (interrupt_reason == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     UMA_HISTOGRAM_TIMES("Download.TimeToRenameSuccessAfterInitialFailure",
                         time_since_first_failure);
   } else {

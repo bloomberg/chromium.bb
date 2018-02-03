@@ -209,13 +209,13 @@ void SaveFileManager::UpdateSaveProgress(SaveItemId save_item_id,
   if (save_file) {
     DCHECK(save_file->InProgress());
 
-    DownloadInterruptReason reason =
+    download::DownloadInterruptReason reason =
         save_file->AppendDataToFile(data->data(), data_len);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&SaveFileManager::OnUpdateSaveProgress, this,
                        save_file->save_item_id(), save_file->BytesSoFar(),
-                       reason == DOWNLOAD_INTERRUPT_REASON_NONE));
+                       reason == download::DOWNLOAD_INTERRUPT_REASON_NONE));
   }
 }
 

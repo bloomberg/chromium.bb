@@ -34,7 +34,7 @@ void DownloadItemImplDelegate::DetermineDownloadTarget(
   base::FilePath target_path(download->GetForcedFilePath());
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
-               DOWNLOAD_INTERRUPT_REASON_NONE);
+               download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 bool DownloadItemImplDelegate::ShouldCompleteDownload(
