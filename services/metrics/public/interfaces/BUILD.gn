@@ -11,6 +11,6 @@ mojom("interfaces") {
   ]
 
   public_deps = [
-    "//url/mojom:url_mojom_gurl",
+    "//url/mojo:url_mojom_gurl",
   ]
 }

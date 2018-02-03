@@ -6,7 +6,7 @@ module network.mojom;
 
 import "cookie_manager.mojom";
 import "mojo/common/time.mojom";
-import "url/mojom/url.mojom";
+import "url/mojo/url.mojom";
 
 enum CookieMatchType {
   EQUALS,

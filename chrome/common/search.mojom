@@ -6,7 +6,7 @@ module chrome.mojom;
 
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
-import "url/mojom/url.mojom";
+import "url/mojo/url.mojom";
 
 [Native]
 enum NTPLoggingEventType;
