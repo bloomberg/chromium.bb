@@ -135,30 +135,19 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
   Profile* profile = params.initiating_profile;
 
   switch (params.disposition) {
-    case WindowOpenDisposition::SINGLETON_TAB:
     case WindowOpenDisposition::SWITCH_TO_TAB:
-#if defined(OS_ANDROID)
-      // Do not support tab switching on Android yet.
-      if (params.disposition == WindowOpenDisposition::SINGLETON_TAB) {
-#endif
-        for (auto browser_it = BrowserList::GetInstance()->begin_last_active();
-             browser_it != BrowserList::GetInstance()->end_last_active();
-             ++browser_it) {
-          Browser* browser = *browser_it;
-          // When tab switching, only look at same profile and anonymity
-          // level. Allow SINGLETON to transition from incognito mode.
-          if (browser->profile()->IsSameProfile(profile) &&
-              (browser->profile()->GetProfileType() ==
-                   profile->GetProfileType() ||
-               (params.disposition == WindowOpenDisposition::SINGLETON_TAB &&
-                profile->GetProfileType() ==
-                    Profile::ProfileType::INCOGNITO_PROFILE))) {
-            int index = GetIndexOfExistingTab(browser, params);
-            if (index >= 0)
-              return {browser, index};
-          }
+#if !defined(OS_ANDROID)
+      for (auto browser_it = BrowserList::GetInstance()->begin_last_active();
+           browser_it != BrowserList::GetInstance()->end_last_active();
+           ++browser_it) {
+        Browser* browser = *browser_it;
+        // When tab switching, only look at same profile and anonymity level.
+        if (browser->profile()->IsSameProfile(profile) &&
+            browser->profile()->GetProfileType() == profile->GetProfileType()) {
+          int index = GetIndexOfExistingTab(browser, params);
+          if (index >= 0)
+            return {browser, index};
         }
-#if defined(OS_ANDROID)
       }
 #endif
       FALLTHROUGH;
@@ -168,6 +157,12 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
+    case WindowOpenDisposition::SINGLETON_TAB: {
+      int index = GetIndexOfExistingTab(params.browser, params);
+      if (index >= 0)
+        return {params.browser, index};
+    }
+      FALLTHROUGH;
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
       // See if we can open the tab in the window this navigator is bound to.
@@ -208,11 +203,10 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
                   profile, params.user_gesture)),
               -1};
     }
-    case WindowOpenDisposition::NEW_WINDOW: {
+    case WindowOpenDisposition::NEW_WINDOW:
       // Make a new normal browser window.
       return {new Browser(Browser::CreateParams(profile, params.user_gesture)),
               -1};
-    }
     case WindowOpenDisposition::OFF_THE_RECORD:
       // Make or find an incognito window.
       return {GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
