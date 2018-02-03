@@ -41,7 +41,6 @@ extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillSendBillingCustomerNumber;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
-extern const base::Feature kAutofillToolkitViewsCreditCardDialogsMac;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const base::Feature kAutofillUpstreamSendDetectedValues;

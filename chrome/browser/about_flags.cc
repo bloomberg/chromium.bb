@@ -2988,12 +2988,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseNewSettingsNameInDropdown)},
-    {"enable-macviews-credit-card-dialogs",
-     flag_descriptions::kEnableAutofillToolkitViewsCreditCardDialogsMac,
-     flag_descriptions::
-         kEnableAutofillToolkitViewsCreditCardDialogsMacDescription,
-     kOsMac,
-     FEATURE_VALUE_TYPE(autofill::kAutofillToolkitViewsCreditCardDialogsMac)},
 
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",

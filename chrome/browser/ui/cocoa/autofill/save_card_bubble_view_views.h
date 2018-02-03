@@ -16,8 +16,7 @@ class WebContents;
 
 namespace autofill {
 
-// Creates the appropriate SaveCardBubbleView implementation, depending on
-// whether MacViews dialogs is enabled.
+// Creates the SaveCardBubbleView implementation.
 SaveCardBubbleView* CreateSaveCardBubbleView(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
