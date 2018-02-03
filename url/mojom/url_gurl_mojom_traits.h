@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef URL_MOJO_URL_GURL_STRUCT_TRAITS_H_
-#define URL_MOJO_URL_GURL_STRUCT_TRAITS_H_
+#ifndef URL_MOJOM_URL_GURL_MOJOM_TRAITS_H_
+#define URL_MOJOM_URL_GURL_MOJOM_TRAITS_H_
 
 #include "base/strings/string_piece.h"
 #include "url/gurl.h"
-#include "url/mojo/url.mojom.h"
+#include "url/mojom/url.mojom.h"
 #include "url/url_constants.h"
 
 namespace mojo {
@@ -39,6 +39,6 @@ struct StructTraits<url::mojom::UrlDataView, GURL> {
   }
 };
 
-}
+}  // namespace mojo
 
-#endif  // URL_MOJO_URL_GURL_STRUCT_TRAITS_H_
+#endif  // URL_MOJOM_URL_GURL_MOJOM_TRAITS_H_

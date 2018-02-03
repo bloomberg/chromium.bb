@@ -7,8 +7,8 @@ module chrome.mojom;
 import "content/public/common/webplugininfo.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/string16.mojom";
-import "url/mojo/origin.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/origin.mojom";
+import "url/mojom/url.mojom";
 
 
 // Plugin messages sent from renderer to the host.

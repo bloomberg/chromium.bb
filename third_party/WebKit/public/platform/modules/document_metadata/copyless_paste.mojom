@@ -4,7 +4,7 @@
 
 module blink.mojom.document_metadata;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Due to the restriction of AppIndexing, all elements should be of the
 // same type. Non-array values are converted to arrays of one element.

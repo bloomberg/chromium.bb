@@ -25,8 +25,8 @@ mojom("media_router") {
     "//media/mojo/interfaces:mirror_service_remoting",
     "//mojo/common:common_custom_types",
     "//net/interfaces:interfaces",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 }
 

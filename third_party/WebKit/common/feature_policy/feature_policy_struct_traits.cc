@@ -4,7 +4,7 @@
 
 #include "third_party/WebKit/common/feature_policy/feature_policy_struct_traits.h"
 
-#include "url/mojo/origin_struct_traits.h"
+#include "url/mojom/origin_mojom_traits.h"
 
 namespace mojo {
 

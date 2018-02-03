@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//url/mojo/origin.mojom"
-public_headers = [ "//url/origin.h" ]
-traits_headers = [ "//url/mojo/origin_struct_traits.h" ]
+mojom = "//url/mojom/url.mojom"
+public_headers = [ "//url/gurl.h" ]
+traits_headers = [ "//url/mojom/url_gurl_mojom_traits.h" ]
 deps = [
   "//url",
 ]
-type_mappings = [ "url.mojom.Origin=url::Origin" ]
+type_mappings = [ "url.mojom.Url=GURL" ]

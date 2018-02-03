@@ -5,7 +5,7 @@
 module webauth.mojom;
 
 import "mojo/common/time.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // This file describes the communication between the WebAuthentication renderer
 // implementation and browser-side implementations to create public key

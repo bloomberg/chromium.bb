@@ -4,7 +4,7 @@
 
 module ukm.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 struct UkmMetric {
   uint64 metric_hash;

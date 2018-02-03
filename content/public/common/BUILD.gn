@@ -379,8 +379,8 @@ mojom("interfaces") {
     ":resource_type_bindings",
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   component_output_prefix = "content_public_common_mojo_bindings"

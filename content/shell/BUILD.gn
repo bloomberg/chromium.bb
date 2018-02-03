@@ -830,7 +830,7 @@ mojom("mojo_bindings") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 

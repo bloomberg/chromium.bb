@@ -683,8 +683,8 @@ mojom("mojo_bindings") {
     "//mojo/common:common_custom_types",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx/geometry/mojo",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   if (safe_browsing_mode == 1) {
@@ -709,7 +709,7 @@ mojom("search_mojom") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 
@@ -732,7 +732,7 @@ mojom("client_hints_mojom") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//third_party/WebKit/public:web_client_hints_types_mojo_bindings",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_origin",
   ]
 }
 

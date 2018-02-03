@@ -49,8 +49,8 @@ mojom("interfaces") {
     "//mojo/common:common_custom_types",
     "//services/service_manager/public/interfaces",
     "//ui/gfx/geometry/mojo",
-    "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   # TODO(xhwang): Remove cdm_service_mac.mojom when we support EnabledIf

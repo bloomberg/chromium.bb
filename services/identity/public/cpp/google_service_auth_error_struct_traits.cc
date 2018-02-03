@@ -4,7 +4,7 @@
 
 #include "services/identity/public/cpp/google_service_auth_error_struct_traits.h"
 
-#include "url/mojo/url_gurl_struct_traits.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
 

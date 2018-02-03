@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "services/service_manager/public/interfaces/interface_provider.mojom";
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose dedicated-worker-specific interfaces between renderer

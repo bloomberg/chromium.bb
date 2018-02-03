@@ -12,7 +12,7 @@ mojom("interfaces") {
 
   public_deps = [
     "//third_party/WebKit/public:mojo_bindings",
-    "//url/mojo:url_mojom_gurl",
+    "//url/mojom:url_mojom_gurl",
   ]
 
   overridden_deps = [ "//third_party/WebKit/public:mojo_bindings" ]

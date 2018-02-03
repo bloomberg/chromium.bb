@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 interface HostZoom {
   // Sets the host zoom level for the given url, called just before commit.

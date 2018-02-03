@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 // This mirrors blink::WebSandboxFlags enum bitfield.
 [Extensible]

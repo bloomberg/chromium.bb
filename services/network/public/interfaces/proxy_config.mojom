@@ -4,7 +4,7 @@
 
 module network.mojom;
 
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // This corresponds to the string representation of net::ProxyConfigBypassRules.
 struct ProxyBypassRules {

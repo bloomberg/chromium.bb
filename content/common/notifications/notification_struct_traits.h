@@ -15,7 +15,7 @@
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/WebKit/public/platform/modules/notifications/notification.mojom.h"
 #include "url/gurl.h"
-#include "url/mojo/url_gurl_struct_traits.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
 

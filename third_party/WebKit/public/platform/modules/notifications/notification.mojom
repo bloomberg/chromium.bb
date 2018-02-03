@@ -6,7 +6,7 @@ module blink.mojom;
 
 import "mojo/common/string16.mojom";
 import "skia/public/interfaces/bitmap.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Directionality options that can be indicated for notifications.
 enum NotificationDirection {

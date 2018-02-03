@@ -9,7 +9,7 @@ import "media/mojo/interfaces/video_decode_stats_recorder.mojom";
 import "media/mojo/interfaces/watch_time_recorder.mojom";
 import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojo/origin.mojom";
+import "url/mojom/origin.mojom";
 
 // Provider interface used to avoid having one time setters on each interface.
 // Each recorder will be stamped with an ID which can be used for linking UKM.

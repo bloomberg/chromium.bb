@@ -6,7 +6,7 @@ module blink.mojom;
 
 import "third_party/WebKit/common/service_worker/service_worker_error_type.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_client.mojom";
-import "url/mojo/url.mojom";
+import "url/mojom/url.mojom";
 
 // Host for a running service worker execution context. Implemented in the
 // browser process. The service worker running in the renderer process uses this

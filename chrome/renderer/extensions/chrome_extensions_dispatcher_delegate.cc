@@ -281,8 +281,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_MOJO_IP_ADDRESS_MOJOM_JS);
   source_map->RegisterSource("net/interfaces/ip_endpoint.mojom",
                              IDR_MOJO_IP_ENDPOINT_MOJOM_JS);
-  source_map->RegisterSource("url/mojo/origin.mojom", IDR_ORIGIN_MOJOM_JS);
-  source_map->RegisterSource("url/mojo/url.mojom", IDR_MOJO_URL_MOJOM_JS);
+  source_map->RegisterSource("url/mojom/origin.mojom", IDR_ORIGIN_MOJOM_JS);
+  source_map->RegisterSource("url/mojom/url.mojom", IDR_MOJO_URL_MOJOM_JS);
   source_map->RegisterSource("media/mojo/interfaces/remoting_common.mojom",
                              IDR_REMOTING_COMMON_JS);
   source_map->RegisterSource(
