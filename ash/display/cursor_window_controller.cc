@@ -120,7 +120,8 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   if ((display_manager->is_multi_mirroring_enabled() &&
        display_manager->IsInSoftwareMirrorMode()) ||
-      display_manager->IsInUnifiedMode()) {
+      display_manager->IsInUnifiedMode() ||
+      display_manager->screen_capture_is_active()) {
     return true;
   }
 

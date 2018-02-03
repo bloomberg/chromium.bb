@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/ui/screen_capture_notification_ui_chromeos.h"
@@ -29,6 +30,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace {
@@ -133,6 +135,9 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
       base::BindRepeating(&ArcScreenCaptureSession::NotificationStop,
                           weak_ptr_factory_.GetWeakPtr()));
 
+  ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();
+  ash::Shell::Get()->UpdateCursorCompositingEnabled();
+
   mojom::ScreenCaptureSessionPtr interface_ptr;
   binding_.Bind(mojo::MakeRequest(&interface_ptr));
   binding_.set_connection_error_handler(
@@ -147,6 +152,8 @@ void ArcScreenCaptureSession::Close() {
 
 ArcScreenCaptureSession::~ArcScreenCaptureSession() {
   desktop_window_->GetHost()->compositor()->RemoveAnimationObserver(this);
+  ash::Shell::Get()->display_manager()->dec_screen_capture_active_counter();
+  ash::Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
 void ArcScreenCaptureSession::NotificationStop() {
