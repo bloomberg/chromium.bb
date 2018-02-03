@@ -459,4 +459,10 @@ void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
 }
 
+CardUnmaskPromptView* CreateCardUnmaskPromptView(
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents) {
+  return new CardUnmaskPromptViews(controller, web_contents);
+}
+
 }  // namespace autofill
