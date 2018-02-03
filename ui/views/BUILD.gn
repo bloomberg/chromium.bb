@@ -684,6 +684,7 @@ jumbo_component("views") {
 
   if (is_mac) {
     deps += [
+      "//components/crash/core/common",
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",
     ]

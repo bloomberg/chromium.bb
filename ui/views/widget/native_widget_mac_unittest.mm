@@ -760,6 +760,76 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_EQ(0u, [[native_parent childWindows] count]);
 }
 
+// Tests that CloseAllSecondaryWidgets behaves in various configurations.
+TEST_F(NativeWidgetMacTest, CloseAllSecondaryWidgetsValidState) {
+  NSWindow* last_window = nil;
+  {
+    // First verify the behavior of CloseAllSecondaryWidgets in the normal case,
+    // and how [NSApp windows] changes in response to Widget closure.
+    base::mac::ScopedNSAutoreleasePool pool;
+    Widget* widget = CreateTopLevelPlatformWidget();
+    widget->Show();
+    TestWidgetObserver observer(widget);
+    last_window = widget->GetNativeWindow();
+    EXPECT_TRUE([[NSApp windows] containsObject:last_window]);
+    Widget::CloseAllSecondaryWidgets();
+    EXPECT_TRUE(observer.widget_closed());
+  }
+
+  {
+    // Calls to [NSApp windows] do autorelease, so ensure the pool empties.
+    base::mac::ScopedNSAutoreleasePool pool;
+
+    // [NSApp windows] updates inside dealloc, so the window should be gone.
+    EXPECT_FALSE([[NSApp windows] containsObject:last_window]);
+  }
+
+  {
+    // Repeat, but now retain a reference and close the window before
+    // CloseAllSecondaryWidgets().
+    base::mac::ScopedNSAutoreleasePool pool;
+    Widget* widget = CreateTopLevelPlatformWidget();
+    widget->Show();
+    TestWidgetObserver observer(widget);
+    last_window = [widget->GetNativeWindow() retain];
+    EXPECT_TRUE([[NSApp windows] containsObject:last_window]);
+    widget->CloseNow();
+    EXPECT_TRUE(observer.widget_closed());
+  }
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    // Reference retained, so the window should still be present.
+    EXPECT_TRUE([[NSApp windows] containsObject:last_window]);
+  }
+
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    Widget::CloseAllSecondaryWidgets();
+    [last_window release];
+  }
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    EXPECT_FALSE([[NSApp windows] containsObject:last_window]);
+  }
+
+  // Repeat, with two Widgets. We can't control the order of window closure.
+  // If the parent is closed first, it should tear down the child while
+  // iterating over the windows. -[NSWindow close] will be sent to the child
+  // twice, but that should be fine.
+  Widget* parent = CreateTopLevelPlatformWidget();
+  Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
+  parent->Show();
+  child->Show();
+  TestWidgetObserver parent_observer(parent);
+  TestWidgetObserver child_observer(child);
+
+  EXPECT_TRUE([[NSApp windows] containsObject:parent->GetNativeWindow()]);
+  EXPECT_TRUE([[NSApp windows] containsObject:child->GetNativeWindow()]);
+  Widget::CloseAllSecondaryWidgets();
+  EXPECT_TRUE(parent_observer.widget_closed());
+  EXPECT_TRUE(child_observer.widget_closed());
+}
+
 // Tests closing the last remaining NSWindow reference via -windowWillClose:.
 // This is a regression test for http://crbug.com/616701.
 TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
