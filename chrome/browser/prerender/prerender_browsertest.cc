@@ -3524,8 +3524,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       "Prerender.none_PerceivedTTFCPRecorded.Visible", 0, 1);
 }
 
+// Disabled on ChromeOS due to flakiness. See https://crbug.com/808578.
+#if defined(OS_CHROMEOS)
+#define MAYBE_FirstContentfulPaintTimingTwoPages \
+  DISABLED_FirstContentfulPaintTimingTwoPages
+#else
+#define MAYBE_FirstContentfulPaintTimingTwoPages \
+  FirstContentfulPaintTimingTwoPages
+#endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FirstContentfulPaintTimingTwoPages) {
+                       MAYBE_FirstContentfulPaintTimingTwoPages) {
   GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
   base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
 
