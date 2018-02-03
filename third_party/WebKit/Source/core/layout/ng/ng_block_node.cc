@@ -518,7 +518,14 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
 
 scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
-  NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
+  LayoutUnit inline_size =
+      Style().LogicalWidth().IsPercent()
+          ? constraint_space.PercentageResolutionSize().inline_size
+          : constraint_space.AvailableSize().inline_size;
+  LayoutUnit block_size =
+      Style().LogicalHeight().IsPercent()
+          ? constraint_space.PercentageResolutionSize().block_size
+          : constraint_space.AvailableSize().block_size;
   LayoutObject* containing_block = box_->ContainingBlock();
   WritingMode writing_mode = Style().GetWritingMode();
   bool parallel_writing_mode;
@@ -529,16 +536,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
         containing_block->StyleRef().GetWritingMode(), writing_mode);
   }
   if (parallel_writing_mode) {
-    box_->SetOverrideContainingBlockContentLogicalWidth(
-        available_size.inline_size);
-    box_->SetOverrideContainingBlockContentLogicalHeight(
-        available_size.block_size);
+    box_->SetOverrideContainingBlockContentLogicalWidth(inline_size);
+    box_->SetOverrideContainingBlockContentLogicalHeight(block_size);
   } else {
     // OverrideContainingBlock should be in containing block writing mode.
-    box_->SetOverrideContainingBlockContentLogicalWidth(
-        available_size.block_size);
-    box_->SetOverrideContainingBlockContentLogicalHeight(
-        available_size.inline_size);
+    box_->SetOverrideContainingBlockContentLogicalWidth(block_size);
+    box_->SetOverrideContainingBlockContentLogicalHeight(inline_size);
   }
 
   // TODO(layout-ng): Does this handle scrollbars correctly?

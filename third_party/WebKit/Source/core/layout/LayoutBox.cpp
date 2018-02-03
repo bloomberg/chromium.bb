@@ -3157,6 +3157,10 @@ void LayoutBox::ComputeLogicalHeight(
   Length h;
   if (IsOutOfFlowPositioned()) {
     ComputePositionedLogicalHeight(computed_values);
+    if (HasOverrideLogicalContentHeight()) {
+      computed_values.extent_ =
+          OverrideLogicalContentHeight() + BorderAndPaddingLogicalHeight();
+    }
   } else {
     LayoutBlock* cb = ContainingBlock();
 
@@ -4941,7 +4945,17 @@ bool LayoutBox::ShrinkToAvoidFloats() const {
     return false;
 
   // Only auto width objects can possibly shrink to avoid floats.
-  return Style()->Width().IsAuto();
+  if (!Style()->Width().IsAuto())
+    return false;
+
+  // If the containing block is LayoutNG, we will not let legacy layout deal
+  // with positioning of floats or sizing of auto-width new formatting context
+  // block level objects adjacent to them.
+  if (const auto* containing_block = ContainingBlock()) {
+    if (containing_block->IsLayoutNGMixin())
+      return false;
+  }
+  return true;
 }
 
 DISABLE_CFI_PERF
