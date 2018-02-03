@@ -596,15 +596,6 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   const ComputedStyle& child_style = child.Style();
   const TextDirection direction = ConstraintSpace().Direction();
-
-  bool is_fixed_inline_size =
-      (IsHorizontalWritingMode(ConstraintSpace().GetWritingMode())
-           ? child_style.Width().IsAuto()
-           : child_style.Height().IsAuto()) &&
-      IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
-                            child_style.GetWritingMode()) &&
-      !child.ShouldBeConsideredAsReplaced();
-
   NGInflowChildData child_data =
       ComputeChildData(*previous_inflow_position, child, child_break_token);
 
@@ -617,37 +608,43 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       adjoining_margin_strut.Sum();
   LayoutUnit child_bfc_offset_estimate = initial_child_bfc_offset_estimate;
 
+  // If the child has a non-zero block-start margin, our initial estimate will
+  // be that any pending floats will be flush (block-start-wise) with this
+  // child, since they are affected by margin collapsing. Furthermore, this
+  // child's margin may also pull parent blocks downwards. However, this is only
+  // the case if the child fits beside the floats at the current block
+  // offset. If it doesn't (or if it gets clearance), the child needs to be
+  // pushed down. In this case, the child's margin no longer collapses with the
+  // previous margin strut, so the pending floats and parent blocks need to
+  // ignore this margin, which may cause them to end up at completely different
+  // positions than initially estimated. In other words, we'll need another
+  // layout pass if this happens.
+  bool abort_if_cleared = child_data.margins.block_start != LayoutUnit();
   NGLayoutOpportunity opportunity;
   scoped_refptr<NGLayoutResult> layout_result;
   std::tie(layout_result, opportunity) =
-      LayoutNewFormattingContext(child, child_break_token, is_fixed_inline_size,
-                                 child_data, child_bfc_offset_estimate);
+      LayoutNewFormattingContext(child, child_break_token, child_data,
+                                 child_bfc_offset_estimate, abort_if_cleared);
 
-  DCHECK(layout_result->PhysicalFragment());
-  LayoutUnit fragment_block_size =
-      NGFragment(ConstraintSpace().GetWritingMode(),
-                 *layout_result->PhysicalFragment())
-          .BlockSize();
-
-  // We allow a single re-layout for new formatting contexts. If the first
-  // layout doesn't produce which fragment which sends up at the top of the
-  // exclusion space, or it just doesn't fit, we relayout with a
-  // *non*-adjoining margin strut.
-  //
-  // This re-layout *must* produce a fragment and opportunity which fits within
-  // the exclusion space.
-  if (opportunity.rect.start_offset.block_offset != child_bfc_offset_estimate ||
-      (is_fixed_inline_size &&
-       fragment_block_size > opportunity.rect.BlockSize())) {
+  if (!layout_result) {
+    DCHECK(abort_if_cleared);
+    // Layout got aborted, because the child got pushed down by floats, and we
+    // had pending floats that we tentatively positioned incorrectly, due to a
+    // margin that shouldn't have affected them. Try again without the child's
+    // margin. This re-layout *must* produce a fragment and opportunity which
+    // fits within the exclusion space.
+    DCHECK_GT(opportunity.rect.start_offset.block_offset,
+              child_bfc_offset_estimate);
     NGMarginStrut non_adjoining_margin_strut(
         previous_inflow_position->margin_strut);
     child_bfc_offset_estimate = child_data.bfc_offset_estimate.block_offset +
                                 non_adjoining_margin_strut.Sum();
 
     std::tie(layout_result, opportunity) = LayoutNewFormattingContext(
-        child, child_break_token, is_fixed_inline_size, child_data,
-        child_bfc_offset_estimate);
+        child, child_break_token, child_data, child_bfc_offset_estimate,
+        /* abort_if_cleared */ false);
   }
+  DCHECK(layout_result->PhysicalFragment());
 
   // We now know the childs BFC offset, try and update our own if needed.
   bool updated = MaybeUpdateFragmentBfcOffset(child_bfc_offset_estimate);
@@ -707,17 +704,11 @@ std::pair<scoped_refptr<NGLayoutResult>, NGLayoutOpportunity>
 NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     NGLayoutInputNode child,
     NGBreakToken* child_break_token,
-    bool is_fixed_inline_size,
     const NGInflowChildData& child_data,
-    LayoutUnit child_origin_block_offset) {
-  const ComputedStyle& child_style = child.Style();
-  const EClear child_clear = child_style.Clear();
+    LayoutUnit child_origin_block_offset,
+    bool abort_if_cleared) {
   const TextDirection direction = ConstraintSpace().Direction();
-
-  LayoutUnit child_bfc_line_offset =
-      ConstraintSpace().BfcOffset().line_offset +
-      border_scrollbar_padding_.LineLeft(direction) +
-      child_data.margins.LineLeft(direction);
+  const WritingMode writing_mode = ConstraintSpace().GetWritingMode();
 
   // Position all the pending floats into a temporary exclusion space. This
   // *doesn't* place them into our output exclusion space yet, as we don't know
@@ -727,85 +718,74 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   PositionFloats(child_origin_block_offset, child_origin_block_offset,
                  unpositioned_floats_, ConstraintSpace(), &tmp_exclusion_space);
 
+  LayoutUnit child_bfc_line_offset =
+      ConstraintSpace().BfcOffset().line_offset +
+      border_scrollbar_padding_.LineLeft(direction) +
+      child_data.margins.LineLeft(direction);
+
   // The origin offset is where we should start looking for layout
   // opportunities. It needs to be adjusted by the child's clearance, in
   // addition to the parent's (if we don't know our BFC offset yet).
   NGBfcOffset origin_offset = {child_bfc_line_offset,
                                child_origin_block_offset};
-  AdjustToClearance(tmp_exclusion_space.ClearanceOffset(child_clear),
+  AdjustToClearance(tmp_exclusion_space.ClearanceOffset(child.Style().Clear()),
                     &origin_offset);
   if (!container_builder_.BfcOffset())
     AdjustToClearance(ConstraintSpace().ClearanceOffset(), &origin_offset);
 
-  // TODO(ikilpatrick): min_max_size, max_inline_size, min_inline_size,
-  // is_fixed_inline_size, should be computed in ComputeChildData. This will
-  // allow us to handle 'auto' in the parent by assigning a fixed size to our
-  // children. This will require us to remove the requirement that
-  // ResolveInlineLength to take a constraint space, instead taking a
-  // {writing_mode, available_size, percentage_size} struct.
-  scoped_refptr<NGConstraintSpace> child_space =
-      CreateConstraintSpaceForChild(child, child_data);
+  // Before we lay out, figure out how much inline space we have available at
+  // the start block offset estimate (the child is not allowed to overlap with
+  // floats, so we need to find out how much space is used by floats at this
+  // block offset). This may affect the inline size of the child, e.g. when it's
+  // specified as auto, or if it's a table (with table-layout:auto). This will
+  // not affect percentage resolution, because that's going to be resolved
+  // against the containing block, regardless of adjacent floats. When looking
+  // for space, we ignore inline margins, as they will overlap with any adjacent
+  // floats.
+  LayoutUnit inline_margin = child_data.margins.InlineSum();
+  LayoutUnit inline_size =
+      (child_available_size_.inline_size - inline_margin).ClampNegativeToZero();
+  NGLayoutOpportunity opportunity = tmp_exclusion_space.FindLayoutOpportunity(
+      origin_offset, inline_size, NGLogicalSize());
 
-  WTF::Optional<MinMaxSize> min_max_size;
-  if (NeedMinMaxSize(*child_space, child_style))
-    min_max_size = child.ComputeMinMaxSize();
+  scoped_refptr<NGLayoutResult> layout_result;
 
-  Optional<LayoutUnit> max_inline_size;
-  if (!child_style.LogicalMaxWidth().IsMaxSizeNone()) {
-    max_inline_size = ResolveInlineLength(
-        *child_space, child_style, min_max_size, child_style.LogicalMaxWidth(),
-        LengthResolveType::kMaxSize);
-  }
-  Optional<LayoutUnit> min_inline_size = ResolveInlineLength(
-      *child_space, child_style, min_max_size, child_style.LogicalMinWidth(),
-      LengthResolveType::kMinSize);
+  // Now we lay out. This will give us a child fragment and thus its size, which
+  // means that we can find out where it's actually going to fit. If it doesn't
+  // fit where it was laid out, and is pushed downwards, we'll lay out over
+  // again, since a new BFC offset could result in a new fragment size,
+  // e.g. when inline size is auto, or if we're block-fragmented.
+  do {
+    if (abort_if_cleared &&
+        origin_offset.block_offset < opportunity.rect.BlockStartOffset()) {
+      // Abort if we got pushed downwards. We need to adjust
+      // child_origin_block_offset and try again.
+      layout_result = nullptr;
+      break;
+    }
 
-  // Adjust the area we search for layout opportunities by the child's margins.
-  LayoutUnit child_available_inline_size =
-      std::max(LayoutUnit(), child_available_size_.inline_size -
-                                 child_data.margins.InlineSum());
-  NGLogicalSize child_available_size(child_available_inline_size,
-                                     LayoutUnit(-1));
+    origin_offset.block_offset = opportunity.rect.BlockStartOffset();
+    // The available inline size in the child constraint space needs to include
+    // inline margins, since layout algorithms (both legacy and NG) will resolve
+    // auto inline size by subtracting the inline margins from available inline
+    // size. We have calculated a layout opportunity without margins in mind,
+    // since they overlap with adjacent floats. Now we need to add them.
+    NGLogicalSize child_available_size = {
+        (opportunity.rect.InlineSize() + inline_margin).ClampNegativeToZero(),
+        child_available_size_.block_size};
+    auto child_space =
+        CreateConstraintSpaceForChild(child, child_data, child_available_size);
+    layout_result = child.Layout(*child_space, child_break_token);
+    DCHECK(layout_result->PhysicalFragment());
 
-  // If we have should have a fixed inline size, we find a layout opportunity
-  // before layout, then fixed our child to that size.
-  WTF::Optional<NGLayoutOpportunity> opportunity;
-  WTF::Optional<LayoutUnit> fixed_inline_size;
-  if (is_fixed_inline_size) {
-    // TODO(ikilpatrick): This actually needs to take into account the border
-    // and padding of the child for the minimum layout opportunity size.
-    // TODO(ikilpatrick): min_inline_size should be applied before finding the
-    // layout opportunity.
-    // TODO(ikilpatrick): During the second layout pass of new formatting
-    // contexts, we actually need to find the first "open" layout opportunity.
-    // TODO(ikilpatrick): Investigate tables 'auto' size as this is subtly
-    // different to normal 'auto' sizing behaviour.
+    // Now find a layout opportunity where the fragment is actually going to
+    // fit.
+    NGFragment fragment(writing_mode, *layout_result->PhysicalFragment());
     opportunity = tmp_exclusion_space.FindLayoutOpportunity(
-        origin_offset, child_available_size.inline_size, NGLogicalSize());
-    fixed_inline_size = ConstrainByMinMax(opportunity->rect.InlineSize(),
-                                          min_inline_size, max_inline_size);
-  }
+        origin_offset, inline_size, fragment.Size());
+  } while (origin_offset.block_offset < opportunity.rect.BlockStartOffset());
 
-  child_space = CreateConstraintSpaceForChild(child, child_data, WTF::nullopt,
-                                              fixed_inline_size);
-  scoped_refptr<NGLayoutResult> layout_result =
-      child.Layout(*child_space, child_break_token);
-  DCHECK(layout_result->PhysicalFragment());
-
-  // If we didn't have a fixed inline size, we now search for the layout
-  // opportunity we fit into.
-  if (!opportunity) {
-    NGFragment fragment(ConstraintSpace().GetWritingMode(),
-                        *layout_result->PhysicalFragment());
-
-    // TODO(ikilpatrick): child_available_size is probably wrong as the area we
-    // need to search shrinks by the origin_offset and LineRight margin.
-    opportunity = tmp_exclusion_space.FindLayoutOpportunity(
-        origin_offset, child_available_size.inline_size,
-        NGLogicalSize{fragment.InlineSize(), fragment.BlockSize()});
-  }
-
-  return std::make_pair(std::move(layout_result), opportunity.value());
+  return std::make_pair(std::move(layout_result), opportunity);
 }
 
 bool NGBlockLayoutAlgorithm::HandleInflow(
@@ -877,7 +857,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   NGInflowChildData child_data =
       ComputeChildData(*previous_inflow_position, child, child_break_token);
   scoped_refptr<NGConstraintSpace> child_space =
-      CreateConstraintSpaceForChild(child, child_data);
+      CreateConstraintSpaceForChild(child, child_data, child_available_size_);
   scoped_refptr<NGLayoutResult> layout_result =
       child.Layout(*child_space, child_break_token);
 
@@ -992,7 +972,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
        empty_block_affected_by_clearance_needs_relayout) &&
       child_bfc_offset) {
     scoped_refptr<NGConstraintSpace> new_child_space =
-        CreateConstraintSpaceForChild(child, child_data, child_bfc_offset);
+        CreateConstraintSpaceForChild(child, child_data, child_available_size_,
+                                      child_bfc_offset);
     layout_result = child.Layout(*new_child_space, child_break_token);
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
@@ -1519,17 +1500,12 @@ scoped_refptr<NGConstraintSpace>
 NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGLayoutInputNode child,
     const NGInflowChildData& child_data,
-    const WTF::Optional<NGBfcOffset> floats_bfc_offset,
-    const WTF::Optional<LayoutUnit> fixed_inline_size) {
+    const NGLogicalSize child_available_size,
+    const WTF::Optional<NGBfcOffset> floats_bfc_offset) {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
 
-  NGLogicalSize available_size(child_available_size_);
+  NGLogicalSize available_size(child_available_size);
   NGLogicalSize percentage_size(child_percentage_size_);
-  if (fixed_inline_size) {
-    space_builder.SetIsFixedSizeInline(true);
-    available_size.inline_size = fixed_inline_size.value();
-    percentage_size.inline_size = fixed_inline_size.value();
-  }
   space_builder.SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size);
 

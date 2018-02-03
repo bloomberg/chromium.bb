@@ -313,18 +313,15 @@ void LayoutTable::UpdateLogicalWidth() {
         MinimumValueForLength(Style()->MarginStart(), available_logical_width);
     LayoutUnit margin_end =
         MinimumValueForLength(Style()->MarginEnd(), available_logical_width);
-    LayoutUnit margin_total = RuntimeEnabledFeatures::LayoutNGEnabled()
-                                  ? LayoutUnit()
-                                  : margin_start + margin_end;
+    LayoutUnit margin_total = margin_start + margin_end;
 
     // Subtract out our margins to get the available content width.
     LayoutUnit available_content_logical_width =
         (container_width_in_inline_direction - margin_total)
             .ClampNegativeToZero();
-    if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(cb)->ContainsFloats() &&
-        !has_perpendicular_containing_block &&
-        !RuntimeEnabledFeatures::LayoutNGEnabled())
+    if (!cb->IsLayoutNGMixin() && ShrinkToAvoidFloats() &&
+        cb->IsLayoutBlockFlow() && ToLayoutBlockFlow(cb)->ContainsFloats() &&
+        !has_perpendicular_containing_block)
       available_content_logical_width = ShrinkLogicalWidthToAvoidFloats(
           margin_start, margin_end, ToLayoutBlockFlow(cb));
 

@@ -44,6 +44,7 @@ struct CORE_EXPORT NGBfcRect {
 
     return end_offset.line_offset - start_offset.line_offset;
   }
+  NGLogicalSize Size() const { return {InlineSize(), BlockSize()}; }
 
   bool operator==(const NGBfcRect& other) const;
   bool operator!=(const NGBfcRect& other) const { return !(*this == other); }
