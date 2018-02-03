@@ -15,6 +15,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -64,6 +65,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::P2PPortRange)
   IPC_STRUCT_TRAITS_MEMBER(min_port)
   IPC_STRUCT_TRAITS_MEMBER(max_port)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::P2PPacketInfo)
+  IPC_STRUCT_TRAITS_MEMBER(destination)
+  IPC_STRUCT_TRAITS_MEMBER(packet_options)
+  IPC_STRUCT_TRAITS_MEMBER(packet_id)
 IPC_STRUCT_TRAITS_END()
 
 // P2P Socket messages sent from the browser to the renderer.
@@ -124,12 +131,12 @@ IPC_MESSAGE_CONTROL3(P2PHostMsg_AcceptIncomingTcpConnection,
                     int /* connected_socket_id */)
 
 // TODO(sergeyu): Use shared memory to pass the data.
-IPC_MESSAGE_CONTROL5(P2PHostMsg_Send,
-                     int /* socket_id */,
-                     net::IPEndPoint /* socket_address */,
-                     std::vector<char> /* data */,
-                     rtc::PacketOptions /* packet options */,
-                     uint64_t /* packet_id */)
+IPC_MESSAGE_CONTROL4(
+    P2PHostMsg_Send,
+    int /* socket_id */,
+    std::vector<char> /* data */,
+    content::P2PPacketInfo /* packet_info */,
+    net::MutableNetworkTrafficAnnotationTag /* traffic_annotation */)
 
 IPC_MESSAGE_CONTROL1(P2PHostMsg_DestroySocket,
                      int /* socket_id */)
