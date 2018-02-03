@@ -2056,6 +2056,8 @@ split_static_library("browser") {
       "android/ntp/content_suggestions_notifier.h",
       "android/ntp/content_suggestions_notifier_service.cc",
       "android/ntp/content_suggestions_notifier_service.h",
+      "android/ntp/get_remote_suggestions_scheduler.cc",
+      "android/ntp/get_remote_suggestions_scheduler.h",
       "android/ntp/most_visited_sites_bridge.cc",
       "android/ntp/most_visited_sites_bridge.h",
       "android/ntp/new_tab_page_url_handler.cc",
