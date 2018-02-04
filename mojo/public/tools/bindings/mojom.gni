@@ -801,9 +801,6 @@ template("mojom") {
         testonly = invoker.testonly
       }
       defines = []
-      if (defined(invoker.testonly)) {
-        testonly = invoker.testonly
-      }
       if (defined(invoker.export_define)) {
         defines += [ invoker.export_define ]
       }
