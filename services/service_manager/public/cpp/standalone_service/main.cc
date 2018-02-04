@@ -13,7 +13,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/init.h"
 
 #if defined(OS_MACOSX)

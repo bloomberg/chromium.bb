@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
-#include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 namespace service_manager {
 class EmbeddedServiceRunner;

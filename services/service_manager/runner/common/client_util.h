@@ -5,7 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_RUNNER_COMMON_CLIENT_UTIL_H_
 #define SERVICES_SERVICE_MANAGER_RUNNER_COMMON_CLIENT_UTIL_H_
 
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class CommandLine;

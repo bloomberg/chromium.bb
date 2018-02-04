@@ -6,7 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_BIND_SOURCE_INFO_STRUCT_TRAITS_H_
 
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace mojo {
 

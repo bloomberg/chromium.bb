@@ -6,7 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/content_decryption_module.mojom";
 import "mojo/common/file_path.mojom";
-import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/mojom/interface_provider.mojom";
 
 // A service to create a CdmFactory that can provide CDM service, typically
 // to the media pipeline running in the renderer process. The service itself

@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/mojom/interface_provider.mojom";
 import "url/mojom/origin.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the

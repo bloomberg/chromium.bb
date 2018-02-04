@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 
 namespace catalog {
 namespace {

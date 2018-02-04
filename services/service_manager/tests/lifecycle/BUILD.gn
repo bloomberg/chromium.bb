@@ -19,7 +19,7 @@ source_set("lifecycle") {
     "//base/test:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
     "//services/service_manager/tests:util",
   ]
@@ -62,7 +62,7 @@ source_set("app_client") {
     ":interfaces",
     "//base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 
@@ -76,7 +76,7 @@ service("lifecycle_unittest_package") {
     ":interfaces",
     "//base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 

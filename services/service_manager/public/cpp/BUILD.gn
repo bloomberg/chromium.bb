@@ -30,8 +30,8 @@ component("cpp") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/service_manager/public/interfaces",
-    "//services/service_manager/public/interfaces:constants",
+    "//services/service_manager/public/mojom",
+    "//services/service_manager/public/mojom:constants",
     "//url",
   ]
 
@@ -55,7 +55,7 @@ component("cpp_types") {
   ]
 
   deps = [
-    "//services/service_manager/public/interfaces:constants",
+    "//services/service_manager/public/mojom:constants",
   ]
 
   defines = [ "SERVICE_MANAGER_PUBLIC_CPP_TYPES_IMPL" ]
@@ -80,7 +80,7 @@ static_library("service_test_support") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/background:lib",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 
   data_deps = []

@@ -12,7 +12,7 @@
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/data_decoder/public/interfaces/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/mojom/constants.mojom.h"
 
 namespace data_decoder {
 

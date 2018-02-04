@@ -894,7 +894,7 @@ static_library("extensions") {
     "//services/identity/public/interfaces",
     "//services/network/public/interfaces",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//skia",
     "//sql",
     "//storage/browser",

@@ -466,7 +466,7 @@ if (!is_ios) {
       "//printing/features",
       "//services/device/public/interfaces",
       "//services/service_manager/public/cpp",
-      "//services/service_manager/public/interfaces",
+      "//services/service_manager/public/mojom",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/base",

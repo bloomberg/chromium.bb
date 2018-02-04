@@ -50,7 +50,7 @@ static_library("browser") {
 
   public_deps = [
     "//ipc",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 
   data_deps = []

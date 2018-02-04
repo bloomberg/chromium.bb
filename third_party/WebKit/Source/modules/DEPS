@@ -15,6 +15,6 @@ include_rules = [
     "!platform/wtf/Noncopyable.h",
     "+public/platform",
     "+public/web",
-    "+services/service_manager/public/interfaces/interface_provider.mojom-blink.h",
+    "+services/service_manager/public/mojom/interface_provider.mojom-blink.h",
     "-web",
 ]

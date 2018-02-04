@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom =
-    "//services/service_manager/public/interfaces/interface_provider_spec.mojom"
+mojom = "//services/service_manager/public/mojom/interface_provider_spec.mojom"
 public_headers =
     [ "//services/service_manager/public/cpp/interface_provider_spec.h" ]
-traits_headers = [ "//services/service_manager/public/cpp/interface_provider_spec_struct_traits.h" ]
+traits_headers = [ "//services/service_manager/public/cpp/interface_provider_spec_mojom_traits.h" ]
 public_deps = [
   "//services/service_manager/public/cpp:cpp_types",
 ]

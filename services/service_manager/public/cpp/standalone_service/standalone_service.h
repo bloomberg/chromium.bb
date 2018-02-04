@@ -6,7 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_STANDALONE_SERVICE_H_
 
 #include "base/callback.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
 

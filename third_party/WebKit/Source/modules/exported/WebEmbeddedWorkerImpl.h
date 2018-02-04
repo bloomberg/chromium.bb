@@ -41,7 +41,7 @@
 #include "public/web/WebEmbeddedWorker.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 #include "base/test/mock_callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

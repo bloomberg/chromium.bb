@@ -11,8 +11,8 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 
 namespace base {

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/child/service_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
 

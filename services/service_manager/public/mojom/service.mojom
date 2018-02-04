@@ -4,10 +4,10 @@
 
 module service_manager.mojom;
 
-import "services/service_manager/public/interfaces/connector.mojom";
-import "services/service_manager/public/interfaces/interface_provider.mojom";
-import "services/service_manager/public/interfaces/interface_provider_spec.mojom";
-import "services/service_manager/public/interfaces/service_control.mojom";
+import "services/service_manager/public/mojom/connector.mojom";
+import "services/service_manager/public/mojom/interface_provider.mojom";
+import "services/service_manager/public/mojom/interface_provider_spec.mojom";
+import "services/service_manager/public/mojom/service_control.mojom";
 
 // Metadata describing an instance of a service that originated a call to
 // BindInterface().

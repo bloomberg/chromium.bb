@@ -4,7 +4,7 @@ include_rules = [
   "+device/geolocation/public",
   "+gpu/config/gpu_info.h",
   "+services/device/public",
-  "+services/service_manager/public/interfaces",
+  "+services/service_manager/public/mojom",
   "+third_party/WebKit/public/platform/WebRect.h",
 ]
 

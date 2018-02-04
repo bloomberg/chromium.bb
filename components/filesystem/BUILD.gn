@@ -31,7 +31,7 @@ static_library("lib") {
     "//mojo/common:common_base",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//url",
   ]
 }

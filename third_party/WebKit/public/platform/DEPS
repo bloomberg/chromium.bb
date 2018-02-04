@@ -29,7 +29,7 @@ include_rules = [
     "+services/network/public/interfaces/cors.mojom-shared.h",
     "+services/network/public/interfaces/fetch_api.mojom-shared.h",
     "+services/network/public/interfaces/request_context_frame_type.mojom-shared.h",
-    "+services/service_manager/public/interfaces",
+    "+services/service_manager/public/mojom",
     "+third_party/skia",
     "+ui/gfx",
     "+url",

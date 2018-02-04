@@ -6,7 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_PROVIDER_SPEC_STRUCT_TRAITS_H_
 
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
-#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 
 namespace mojo {
 
@@ -16,11 +16,11 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
                  service_manager::InterfaceProviderSpec> {
   static const std::map<service_manager::Capability,
                         service_manager::InterfaceSet>&
-      provides(const service_manager::InterfaceProviderSpec& spec) {
+  provides(const service_manager::InterfaceProviderSpec& spec) {
     return spec.provides;
   }
   static const std::map<service_manager::Name, service_manager::CapabilitySet>&
-      requires(const service_manager::InterfaceProviderSpec& spec) {
+  requires(const service_manager::InterfaceProviderSpec& spec) {
     return spec.requires;
   }
   static bool Read(service_manager::mojom::InterfaceProviderSpecDataView data,

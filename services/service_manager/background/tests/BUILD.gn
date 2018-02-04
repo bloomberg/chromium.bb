@@ -44,7 +44,7 @@ service("background_service_manager_test_service") {
     ":test_service_interfaces",
     "//base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 

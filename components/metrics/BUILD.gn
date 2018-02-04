@@ -246,7 +246,7 @@ static_library("single_sample_metrics") {
   deps = [
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 
   public_deps = [

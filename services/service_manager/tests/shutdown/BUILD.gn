@@ -22,7 +22,7 @@ source_set("shutdown") {
     "//base/test:test_config",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 
   data_deps = [
@@ -56,7 +56,7 @@ service("shutdown_service") {
     ":interfaces",
     "//base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 
@@ -74,7 +74,7 @@ service("shutdown_client") {
     ":interfaces",
     "//base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 

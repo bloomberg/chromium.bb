@@ -181,7 +181,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns a Service User ID associated with this BrowserContext. This ID is
   // not persistent across runs. See
-  // services/service_manager/public/interfaces/connector.mojom. By default,
+  // services/service_manager/public/mojom/connector.mojom. By default,
   // this user id is randomly generated when Initialize() is called.
   static const std::string& GetServiceUserIdFor(
       BrowserContext* browser_context);

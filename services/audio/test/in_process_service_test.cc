@@ -12,7 +12,7 @@
 #include "services/audio/service_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 using testing::Exactly;
 using testing::Invoke;

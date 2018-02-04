@@ -128,7 +128,7 @@ source_set("tests") {
     "//services/resource_coordinator/tracing:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

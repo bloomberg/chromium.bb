@@ -62,7 +62,7 @@ source_set("ppapi_plugin_sources") {
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
     "//sandbox",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/icu",

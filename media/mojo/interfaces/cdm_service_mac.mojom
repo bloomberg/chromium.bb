@@ -7,7 +7,7 @@ module media.mojom;
 import "media/mojo/interfaces/content_decryption_module.mojom";
 import "mojo/common/file_path.mojom";
 import "sandbox/mac/mojom/seatbelt_extension_token.mojom";
-import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/mojom/interface_provider.mojom";
 
 // TODO(xhwang): Merge this file with media_service.mojom once EnabledIf
 // attribute is supported in mojom files. See https://crbug.com/676224

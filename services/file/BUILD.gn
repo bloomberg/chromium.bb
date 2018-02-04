@@ -25,7 +25,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//services/file/public/interfaces",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//url",
   ]
 }

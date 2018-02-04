@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
-#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace catalog {

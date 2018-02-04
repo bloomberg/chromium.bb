@@ -44,7 +44,7 @@
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebSharedWorkerClient.h"
 #include "public/web/worker_content_settings_proxy.mojom-blink.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 
 namespace blink {
 

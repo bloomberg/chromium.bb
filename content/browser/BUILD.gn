@@ -138,7 +138,7 @@ jumbo_source_set("browser") {
     "//services/service_manager",
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
     "//services/shape_detection:lib",

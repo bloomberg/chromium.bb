@@ -53,7 +53,7 @@
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 

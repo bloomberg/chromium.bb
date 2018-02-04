@@ -83,7 +83,7 @@ component("network_service") {
     "//services/network/public/cpp",
     "//services/network/public/interfaces",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//url",
   ]
 

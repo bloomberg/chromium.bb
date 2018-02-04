@@ -26,7 +26,7 @@
 #include "public/web/WebFrameClient.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/WebKit/public/platform/dedicated_worker_factory.mojom-blink.h"
 
 namespace blink {
