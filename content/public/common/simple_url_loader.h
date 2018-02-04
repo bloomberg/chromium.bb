@@ -34,6 +34,8 @@ class URLLoaderFactory;
 
 namespace content {
 
+class SimpleURLLoaderStreamConsumer;
+
 // Creates and wraps a URLLoader, and runs it to completion. It's recommended
 // that consumers use this class instead of URLLoader directly, due to the
 // complexity of the API.
@@ -108,10 +110,11 @@ class CONTENT_EXPORT SimpleURLLoader {
   // MiB. For anything larger, it's recommended to either save to a temp file,
   // or consume the data as it is received.
   //
-  // Whether the request succeeds or fails, or the body exceeds |max_body_size|,
-  // |body_as_string_callback| will be invoked on completion. Deleting the
-  // SimpleURLLoader before the callback is invoked will return in cancelling
-  // the request, and the callback will not be called.
+  // Whether the request succeeds or fails, the URLLoaderFactory pipe is closed,
+  // or the body exceeds |max_body_size|, |body_as_string_callback| will be
+  // invoked on completion. Deleting the SimpleURLLoader before the callback is
+  // invoked will result in cancelling the request, and the callback will not be
+  // called.
   virtual void DownloadToString(
       network::mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback,
@@ -130,7 +133,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // specified path. File I/O will happen on another sequence, so it's safe to
   // use this on any sequence.
   //
-  // If there's a file, network, or http error, or the max limit
+  // If there's a file, network, Mojo, or http error, or the max limit
   // is exceeded, the file will be automatically destroyed before the callback
   // is invoked and en empty path passed to the callback, unless
   // SetAllowPartialResults() and/or SetAllowHttpErrorResults() were used to
@@ -152,6 +155,19 @@ class CONTENT_EXPORT SimpleURLLoader {
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
 
+  // SimpleURLLoader will stream the response body to
+  // SimpleURLLoaderStreamConsumer on the current thread. Destroying the
+  // SimpleURLLoader will cancel the request, and prevent any subsequent
+  // methods from being invoked on the Handler. The SimpleURLLoader may also be
+  // destroyed in any of the Handler's callbacks.
+  //
+  // |stream_handler| must remain valid until either the SimpleURLLoader is
+  // deleted, or the handler's OnComplete() method has been invoked by the
+  // SimpleURLLoader.
+  virtual void DownloadAsStream(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      SimpleURLLoaderStreamConsumer* stream_consumer) = 0;
+
   // Sets callback to be invoked during redirects. Callback may delete the
   // SimpleURLLoader.
   virtual void SetOnRedirectCallback(
@@ -160,8 +176,10 @@ class CONTENT_EXPORT SimpleURLLoader {
   // Sets whether partially received results are allowed. Defaults to false.
   // When true, if an error is received after reading the body starts or the max
   // allowed body size exceeded, the partial response body that was received
-  // will be provided to the BodyAsStringCallback. The partial response body may
-  // be an empty string.
+  // will be provided to the caller. The partial response body may be an empty
+  // string.
+  //
+  // When downloading as a stream, this has no observable effect.
   //
   // May only be called before the request is started.
   virtual void SetAllowPartialResults(bool allow_partial_results) = 0;
@@ -220,7 +238,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // this method. May only be called before the request is started.
   //
   // Cannot retry requests with an upload body that contains a data pipe that
-  // was added the ResourceRequest passed to Create() by the consumer.
+  // was added to the ResourceRequest passed to Create() by the consumer.
   virtual void SetRetryOptions(int max_retries, int retry_mode) = 0;
 
   // Returns the net::Error representing the final status of the request. May

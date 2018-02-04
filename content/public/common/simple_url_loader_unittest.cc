@@ -22,11 +22,13 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/simple_url_loader_stream_consumer.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -86,11 +88,11 @@ std::string GetLongUploadBody() {
 
 // Class to make it easier to start a SimpleURLLoader, wait for it to complete,
 // and check the result.
-class SimpleLoaderTestHelper {
+class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
  public:
   // What the response should be downloaded to. Running all tests for all types
   // is more than strictly needed, but simplest just to cover all cases.
-  enum class DownloadType { TO_STRING, TO_FILE, TO_TEMP_FILE };
+  enum class DownloadType { TO_STRING, TO_FILE, TO_TEMP_FILE, AS_STREAM };
 
   explicit SimpleLoaderTestHelper(
       std::unique_ptr<network::ResourceRequest> resource_request,
@@ -107,10 +109,12 @@ class SimpleLoaderTestHelper {
     }
   }
 
-  ~SimpleLoaderTestHelper() {
+  ~SimpleLoaderTestHelper() override {
     base::ScopedAllowBlockingForTesting allow_blocking;
     if (temp_dir_.IsValid())
       EXPECT_TRUE(temp_dir_.Delete());
+    if (!on_destruction_callback_.is_null())
+      std::move(on_destruction_callback_).Run();
   }
 
   // File path that will be written to.
@@ -171,6 +175,11 @@ class SimpleLoaderTestHelper {
               max_body_size);
         }
         break;
+      case DownloadType::AS_STREAM:
+        // Downloading to stream doesn't support a max body size.
+        DCHECK_LT(max_body_size, 0);
+        simple_url_loader_->DownloadAsStream(url_loader_factory, this);
+        break;
     }
   }
 
@@ -194,6 +203,33 @@ class SimpleLoaderTestHelper {
     expect_path_exists_on_error_ = expect_path_exists_on_error;
   }
 
+  // Sets whether reading is resumed asynchronously when downloading as a
+  // stream. Defaults to false.
+  void set_download_to_stream_async_resume(
+      bool download_to_stream_async_resume) {
+    download_to_stream_async_resume_ = download_to_stream_async_resume;
+  }
+
+  // Sets whether the helper should destroy the SimpleURLLoader in
+  // OnDataReceived.
+  void set_download_to_stream_destroy_on_data_received(
+      bool download_to_stream_destroy_on_data_received) {
+    download_to_stream_destroy_on_data_received_ =
+        download_to_stream_destroy_on_data_received;
+  }
+
+  // Sets whether retrying is done asynchronously when downloading as a stream.
+  // Defaults to false.
+  void set_download_to_stream_async_retry(bool download_to_stream_async_retry) {
+    download_to_stream_async_retry_ = download_to_stream_async_retry;
+  }
+
+  // Sets whether the helper should destroy the SimpleURLLoader in OnRetry.
+  void set_download_to_stream_destroy_on_retry(
+      bool download_to_stream_destroy_on_retry) {
+    download_to_stream_destroy_on_retry_ = download_to_stream_destroy_on_retry;
+  }
+
   // Received response body, if any. Returns nullptr if no body was received
   // (Which is different from a 0-length body). For DownloadType::TO_STRING,
   // this is just the value passed to the callback. For DownloadType::TO_FILE,
@@ -215,6 +251,11 @@ class SimpleLoaderTestHelper {
   // directory.
   void DestroySimpleURLLoader() { simple_url_loader_.reset(); }
 
+  void SetAllowPartialResults(bool allow_partial_results) {
+    simple_url_loader_->SetAllowPartialResults(allow_partial_results);
+    allow_http_error_results_ = allow_partial_results;
+  }
+
   // Returns the HTTP response code. Fails if there isn't one.
   int GetResponseCode() const {
     EXPECT_TRUE(done_);
@@ -227,6 +268,13 @@ class SimpleLoaderTestHelper {
       return -1;
     }
     return simple_url_loader_->ResponseInfo()->headers->response_code();
+  }
+
+  // Returns the number of retries. Number of retries are only exposed when
+  // downloading as a stream.
+  int download_as_stream_retries() const {
+    DCHECK_EQ(DownloadType::AS_STREAM, download_type_);
+    return download_as_stream_retries_;
   }
 
  private:
@@ -279,6 +327,82 @@ class SimpleLoaderTestHelper {
     run_loop_.Quit();
   }
 
+  // SimpleURLLoaderStreamConsumer implementation:
+
+  void OnDataReceived(base::StringPiece string_piece,
+                      base::OnceClosure resume) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    EXPECT_FALSE(done_);
+    EXPECT_EQ(DownloadType::AS_STREAM, download_type_);
+
+    // If destroying the stream on data received, destroy the stream before
+    // reading the data, to make sure that works.
+    if (download_to_stream_destroy_on_data_received_) {
+      simple_url_loader_.reset();
+      done_ = true;
+    }
+
+    download_as_stream_response_body_.append(string_piece.as_string());
+
+    if (download_to_stream_destroy_on_data_received_) {
+      run_loop_.Quit();
+      return;
+    }
+
+    if (download_to_stream_async_resume_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                       std::move(resume));
+      return;
+    }
+    std::move(resume).Run();
+  }
+
+  void OnComplete(bool success) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    EXPECT_FALSE(done_);
+    EXPECT_EQ(DownloadType::AS_STREAM, download_type_);
+    EXPECT_FALSE(response_body_);
+
+    // If headers weren't received for the final request, the response body
+    // should be empty.
+    if (!simple_url_loader_->ResponseInfo())
+      DCHECK(download_as_stream_response_body_.empty());
+
+    // This makes behavior of downloading a response to a stream more closely
+    // resemble other DownloadTypes, so most test logic can be shared.
+    if (success ||
+        (allow_http_error_results_ && simple_url_loader_->ResponseInfo())) {
+      response_body_ =
+          std::make_unique<std::string>(download_as_stream_response_body_);
+    }
+
+    done_ = true;
+    run_loop_.Quit();
+  }
+
+  void OnRetry(base::OnceClosure start_retry) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    EXPECT_FALSE(done_);
+    EXPECT_EQ(DownloadType::AS_STREAM, download_type_);
+
+    ++download_as_stream_retries_;
+    download_as_stream_response_body_.clear();
+
+    if (download_to_stream_destroy_on_retry_) {
+      simple_url_loader_.reset();
+      done_ = true;
+      run_loop_.Quit();
+      return;
+    }
+
+    if (download_to_stream_async_retry_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                       std::move(start_retry));
+      return;
+    }
+    std::move(start_retry).Run();
+  }
+
   DownloadType download_type_;
   bool done_ = false;
 
@@ -287,7 +411,22 @@ class SimpleLoaderTestHelper {
   std::unique_ptr<SimpleURLLoader> simple_url_loader_;
   base::RunLoop run_loop_;
 
+  // Response body, regardless of DownloadType. Only populated on completion.
+  // Null on error.
   std::unique_ptr<std::string> response_body_;
+
+  base::OnceClosure on_destruction_callback_;
+
+  // Response data when downloading as stream:
+  std::string download_as_stream_response_body_;
+  int download_as_stream_retries_ = 0;
+
+  bool download_to_stream_async_resume_ = false;
+  bool download_to_stream_destroy_on_data_received_ = false;
+  bool download_to_stream_async_retry_ = false;
+  bool download_to_stream_destroy_on_retry_ = false;
+
+  bool allow_http_error_results_ = false;
 
   base::ScopedTempDir temp_dir_;
   base::FilePath dest_path_;
@@ -723,6 +862,10 @@ TEST_P(SimpleURLLoaderTest, BigResponseBody) {
 }
 
 TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeMatchingLimit) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 16;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(
@@ -738,6 +881,10 @@ TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeMatchingLimit) {
 }
 
 TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeBelowLimit) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 16;
   const uint32_t kMaxResponseSize = kResponseSize + 1;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -754,6 +901,10 @@ TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeBelowLimit) {
 }
 
 TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimit) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 16;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(
@@ -768,12 +919,16 @@ TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimit) {
 
 // Same as above, but with setting allow_partial_results to true.
 TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimitPartialResponse) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 16;
   const uint32_t kMaxResponseSize = kResponseSize - 1;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)));
-  test_helper->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper->SetAllowPartialResults(true);
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get(),
                                         kMaxResponseSize);
 
@@ -787,6 +942,10 @@ TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimitPartialResponse) {
 // The next 4 tests duplicate the above 4, but with larger response sizes. This
 // means the size limit will not be exceeded on the first read.
 TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeMatchingLimit) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 512 * 1024;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(
@@ -801,6 +960,10 @@ TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeMatchingLimit) {
 }
 
 TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeBelowLimit) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 512 * 1024;
   const uint32_t kMaxResponseSize = kResponseSize + 1;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -816,6 +979,10 @@ TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeBelowLimit) {
 }
 
 TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimit) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 512 * 1024;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(
@@ -829,12 +996,16 @@ TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimit) {
 }
 
 TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimitPartialResponse) {
+  // Download to stream doesn't support response sizes.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    return;
+
   const uint32_t kResponseSize = 512 * 1024;
   const uint32_t kMaxResponseSize = kResponseSize - 1;
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)));
-  test_helper->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper->SetAllowPartialResults(true);
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get(),
                                         kMaxResponseSize);
 
@@ -861,10 +1032,11 @@ TEST_P(SimpleURLLoaderTest, NetErrorBeforeHeadersWithPartialResults) {
   // the error is before body reading starts.
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL("/close-socket"));
-  test_helper->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper->SetAllowPartialResults(true);
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
 
   EXPECT_FALSE(test_helper->response_body());
+
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE,
             test_helper->simple_url_loader()->NetError());
   EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
@@ -885,7 +1057,7 @@ TEST_P(SimpleURLLoaderTest, NetErrorAfterHeadersWithPartialResults) {
   // Allow response body on error. This case results in a 0-byte response body.
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(kInvalidGzipPath));
-  test_helper->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper->SetAllowPartialResults(true);
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
 
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED,
@@ -909,7 +1081,7 @@ TEST_P(SimpleURLLoaderTest, TruncatedBody) {
 TEST_P(SimpleURLLoaderTest, TruncatedBodyWithPartialResults) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL(kTruncatedBodyPath));
-  test_helper->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper->SetAllowPartialResults(true);
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
 
   EXPECT_EQ(net::ERR_CONTENT_LENGTH_MISMATCH,
@@ -993,6 +1165,9 @@ TEST_P(SimpleURLLoaderTest, UploadShortStringWithRetry) {
   EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
   ASSERT_TRUE(test_helper->response_body());
   EXPECT_EQ(kShortUploadBody, *test_helper->response_body());
+
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    EXPECT_EQ(1, test_helper->download_as_stream_retries());
 }
 
 TEST_P(SimpleURLLoaderTest, UploadLongStringWithRetry) {
@@ -1007,6 +1182,9 @@ TEST_P(SimpleURLLoaderTest, UploadLongStringWithRetry) {
   EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
   ASSERT_TRUE(test_helper->response_body());
   EXPECT_EQ(long_string, *test_helper->response_body());
+
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    EXPECT_EQ(1, test_helper->download_as_stream_retries());
 }
 
 TEST_P(SimpleURLLoaderTest, UploadFile) {
@@ -1068,6 +1246,9 @@ TEST_P(SimpleURLLoaderTest, UploadFileWithRetry) {
   EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
   ASSERT_TRUE(test_helper->response_body());
   EXPECT_EQ(GetTestFileContents(), *test_helper->response_body());
+
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    EXPECT_EQ(1, test_helper->download_as_stream_retries());
 }
 
 TEST_P(SimpleURLLoaderTest, UploadNonexistantFile) {
@@ -1607,8 +1788,7 @@ TEST_P(SimpleURLLoaderTest, CloseClientPipeOrder) {
 
           std::unique_ptr<SimpleLoaderTestHelper> test_helper =
               CreateHelperForURL(GURL("foo://bar/"));
-          test_helper->simple_url_loader()->SetAllowPartialResults(
-              allow_partial_results);
+          test_helper->SetAllowPartialResults(allow_partial_results);
           loader_factory.RunTest(test_helper.get());
 
           EXPECT_EQ(200, test_helper->GetResponseCode());
@@ -1814,7 +1994,7 @@ TEST_P(SimpleURLLoaderTest, RetryOn5xx) {
     bool expect_success;
 
     // Expected times the url should be requested.
-    uint32_t expected_num_requests;
+    int expected_num_requests;
   } const kTestCases[] = {
       // No retry on 5xx when retries disabled.
       {0, SimpleURLLoader::RETRY_NEVER, 1, false, 1},
@@ -1867,10 +2047,15 @@ TEST_P(SimpleURLLoaderTest, RetryOn5xx) {
       EXPECT_FALSE(test_helper->response_body());
     }
 
-    EXPECT_EQ(test_case.expected_num_requests,
+    EXPECT_EQ(static_cast<size_t>(test_case.expected_num_requests),
               loader_factory.requested_urls().size());
     for (const auto& url : loader_factory.requested_urls()) {
       EXPECT_EQ(kInitialURL, url);
+    }
+
+    if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM) {
+      EXPECT_EQ(test_case.expected_num_requests - 1,
+                test_helper->download_as_stream_retries());
     }
   }
 }
@@ -1889,6 +2074,9 @@ TEST_P(SimpleURLLoaderTest, NoRetryOn4xx) {
   EXPECT_EQ(401, test_helper->GetResponseCode());
   EXPECT_FALSE(test_helper->response_body());
   EXPECT_EQ(1u, loader_factory.requested_urls().size());
+
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    EXPECT_EQ(0, test_helper->download_as_stream_retries());
 }
 
 // Checks that retrying after a redirect works. The original URL should be
@@ -1925,6 +2113,9 @@ TEST_P(SimpleURLLoaderTest, RetryAfterRedirect) {
   for (const auto& url : loader_factory.requested_urls()) {
     EXPECT_EQ(kInitialURL, url);
   }
+
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    EXPECT_EQ(1, test_helper->download_as_stream_retries());
 }
 
 TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
@@ -1971,7 +2162,7 @@ TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
     bool expect_success;
 
     // Expected times the url should be requested.
-    uint32_t expected_num_requests;
+    int expected_num_requests;
   } const kTestCases[] = {
       // No retry on network change when retries disabled.
       {0, SimpleURLLoader::RETRY_NEVER, 1, false, 1},
@@ -2026,10 +2217,15 @@ TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
         EXPECT_FALSE(test_helper->response_body());
       }
 
-      EXPECT_EQ(test_case.expected_num_requests,
+      EXPECT_EQ(static_cast<size_t>(test_case.expected_num_requests),
                 loader_factory.requested_urls().size());
       for (const auto& url : loader_factory.requested_urls()) {
         EXPECT_EQ(kInitialURL, url);
+      }
+
+      if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM) {
+        EXPECT_EQ(test_case.expected_num_requests - 1,
+                  test_helper->download_as_stream_retries());
       }
     }
   }
@@ -2054,6 +2250,9 @@ TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
     EXPECT_EQ(net::ERR_TIMED_OUT, test_helper->simple_url_loader()->NetError());
     EXPECT_FALSE(test_helper->response_body());
     EXPECT_EQ(1u, loader_factory.requested_urls().size());
+
+    if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+      EXPECT_EQ(0, test_helper->download_as_stream_retries());
   }
 }
 
@@ -2073,6 +2272,10 @@ TEST_P(SimpleURLLoaderTest, RetryWithUnboundFactory) {
   loader_factory.RunTest(test_helper.get());
   EXPECT_EQ(net::ERR_FAILED, test_helper->simple_url_loader()->NetError());
   EXPECT_FALSE(test_helper->response_body());
+
+  // Retry is still called, before the dead factory is discovered.
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
+    EXPECT_EQ(1, test_helper->download_as_stream_retries());
 }
 
 // Test the case where DataPipeGetter::Read is called twice in a row,
@@ -2130,7 +2333,8 @@ INSTANTIATE_TEST_CASE_P(
     SimpleURLLoaderTest,
     testing::Values(SimpleLoaderTestHelper::DownloadType::TO_STRING,
                     SimpleLoaderTestHelper::DownloadType::TO_FILE,
-                    SimpleLoaderTestHelper::DownloadType::TO_TEMP_FILE));
+                    SimpleLoaderTestHelper::DownloadType::TO_TEMP_FILE,
+                    SimpleLoaderTestHelper::DownloadType::AS_STREAM));
 
 class SimpleURLLoaderFileTest : public SimpleURLLoaderTestBase,
                                 public testing::Test {
@@ -2242,6 +2446,88 @@ TEST_F(SimpleURLLoaderFileTest, DeleteLoaderDuringRequestDestroysFile) {
       }
     }
   }
+}
+
+// Used for testing stream-specific features.
+class SimpleURLLoaderStreamTest : public SimpleURLLoaderTestBase,
+                                  public testing::Test {
+ public:
+  SimpleURLLoaderStreamTest() {}
+  ~SimpleURLLoaderStreamTest() override {}
+
+  std::unique_ptr<SimpleLoaderTestHelper> CreateHelperForURL(
+      const GURL& url,
+      const std::string& method = "GET") {
+    std::unique_ptr<network::ResourceRequest> resource_request =
+        std::make_unique<network::ResourceRequest>();
+    resource_request->url = url;
+    resource_request->method = method;
+    return std::make_unique<SimpleLoaderTestHelper>(
+        std::move(resource_request),
+        SimpleLoaderTestHelper::DownloadType::AS_STREAM);
+  }
+};
+
+TEST_F(SimpleURLLoaderStreamTest, OnDataReceivedCompletesAsync) {
+  const uint32_t kResponseSize = 2 * 1024 * 1024;
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(
+          base::StringPrintf("/response-size?%u", kResponseSize)));
+  test_helper->set_download_to_stream_async_resume(true);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper->GetResponseCode());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_EQ(kResponseSize, test_helper->response_body()->length());
+  EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper->response_body());
+  EXPECT_EQ(0, test_helper->download_as_stream_retries());
+}
+
+// Test case where class is destroyed during OnDataReceived. Main purpose is to
+// make sure there's not a crash.
+TEST_F(SimpleURLLoaderStreamTest, OnDataReceivedDestruction) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/response-size?1"));
+  test_helper->set_download_to_stream_destroy_on_data_received(true);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_FALSE(test_helper->simple_url_loader());
+  // Make sure no pending task results in a crash.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(SimpleURLLoaderStreamTest, OnRetryCompletesAsync) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(kFailOnceThenEchoBody), "POST");
+  test_helper->simple_url_loader()->AttachStringForUpload(kShortUploadBody,
+                                                          "text/plain");
+  test_helper->simple_url_loader()->SetRetryOptions(
+      1, SimpleURLLoader::RETRY_ON_5XX);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_EQ(kShortUploadBody, *test_helper->response_body());
+  EXPECT_EQ(1, test_helper->download_as_stream_retries());
+}
+
+// Test case where class is destroyed during OnRetry. While setting the loader
+// to retry and then destroying it on retry is perhaps a bit strange, seems best
+// to be consistent in the provided API. Main purpose of this test is to make
+// sure there's not a crash.
+TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(kFailOnceThenEchoBody), "POST");
+  test_helper->simple_url_loader()->AttachStringForUpload(kShortUploadBody,
+                                                          "text/plain");
+  test_helper->set_download_to_stream_destroy_on_retry(true);
+  test_helper->simple_url_loader()->SetRetryOptions(
+      1, SimpleURLLoader::RETRY_ON_5XX);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_FALSE(test_helper->simple_url_loader());
+  // Make sure no pending task results in a crash.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace
