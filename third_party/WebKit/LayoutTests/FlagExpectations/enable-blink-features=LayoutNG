@@ -2955,6 +2955,7 @@ crbug.com/591099 fast/css/text-overflow-ellipsis-text-align-justify.html [ Failu
 crbug.com/591099 fast/css/text-overflow-ellipsis-text-align-left.html [ Failure ]
 crbug.com/591099 fast/css/text-overflow-ellipsis-text-align-right.html [ Failure ]
 crbug.com/714962 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Timeout ]
+crbug.com/591099 fast/css/text-overflow-ellipsis-vertical-select.html [ Failure ]
 crbug.com/591099 fast/css/text-overflow-ellipsis.html [ Failure ]
 crbug.com/591099 fast/css/text-overflow-input.html [ Failure ]
 crbug.com/591099 fast/css/text-rendering.html [ Failure ]

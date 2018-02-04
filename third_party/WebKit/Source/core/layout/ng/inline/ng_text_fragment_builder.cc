@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 
 namespace blink {
@@ -39,6 +40,10 @@ void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
   DCHECK(item_result);
   DCHECK(item_result->item->Style());
 
+  text_ = inline_node_.Text();
+  item_index_ = item_result->item_index;
+  start_offset_ = item_result->start_offset;
+  end_offset_ = item_result->end_offset;
   SetStyle(item_result->item->Style());
   size_ = {item_result->inline_size, line_height};
   end_effect_ = item_result->text_end_effect;
@@ -47,27 +52,17 @@ void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
   layout_object_ = item_result->item->GetLayoutObject();
 }
 
-void NGTextFragmentBuilder::SetText(
-    scoped_refptr<const ComputedStyle> style,
-    scoped_refptr<const ShapeResult> shape_result,
-    NGLogicalSize size) {
-  DCHECK(style);
+void NGTextFragmentBuilder::SetAtomicInline(NGInlineItemResult* item_result,
+                                            NGLogicalSize size) {
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled());
+  DCHECK(item_result);
+  DCHECK(item_result->item->Style());
 
-  SetStyle(style);
-  size_ = size;
-  end_effect_ = NGTextEndEffect::kNone;
-  shape_result_ = shape_result;
-  expansion_ = 0;
-  layout_object_ = inline_node_.GetLayoutObject();
-  ;
-}
-
-void NGTextFragmentBuilder::SetAtomicInline(
-    scoped_refptr<const ComputedStyle> style,
-    NGLogicalSize size) {
-  DCHECK(style);
-
-  SetStyle(style);
+  text_ = inline_node_.Text();
+  item_index_ = item_result->item_index;
+  start_offset_ = item_result->start_offset;
+  end_offset_ = item_result->end_offset;
+  SetStyle(item_result->item->Style());
   size_ = size;
   end_effect_ = NGTextEndEffect::kNone;
   shape_result_ = nullptr;
@@ -75,14 +70,36 @@ void NGTextFragmentBuilder::SetAtomicInline(
   layout_object_ = inline_node_.GetLayoutObject();
 }
 
-scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
-    unsigned index,
-    unsigned start_offset,
-    unsigned end_offset) {
+void NGTextFragmentBuilder::SetText(
+    LayoutObject* layout_object,
+    const String& text,
+    scoped_refptr<const ComputedStyle> style,
+    scoped_refptr<const ShapeResult> shape_result) {
+  DCHECK(layout_object);
+  DCHECK(style);
+  DCHECK(shape_result);
+
+  text_ = text;
+  item_index_ = std::numeric_limits<unsigned>::max();
+  start_offset_ = shape_result->StartIndexForResult();
+  end_offset_ = shape_result->EndIndexForResult();
+  SetStyle(style);
+  FontBaseline baseline_type = style->IsHorizontalWritingMode()
+                                   ? kAlphabeticBaseline
+                                   : kIdeographicBaseline;
+  size_ = {shape_result->SnappedWidth(),
+           NGLineHeightMetrics(*style, baseline_type).LineHeight()};
+  shape_result_ = std::move(shape_result);
+  layout_object_ = layout_object;
+  end_effect_ = NGTextEndEffect::kNone;
+  expansion_ = 0;
+}
+
+scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment() {
   scoped_refptr<NGPhysicalTextFragment> fragment =
       base::AdoptRef(new NGPhysicalTextFragment(
-          layout_object_, Style(), inline_node_.Text(), index, start_offset,
-          end_offset, size_.ConvertToPhysical(GetWritingMode()), expansion_,
+          layout_object_, Style(), text_, item_index_, start_offset_,
+          end_offset_, size_.ConvertToPhysical(GetWritingMode()), expansion_,
           ToLineOrientation(GetWritingMode()), end_effect_,
           std::move(shape_result_)));
   return fragment;

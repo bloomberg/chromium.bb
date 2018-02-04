@@ -34,6 +34,16 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
       std::move(space));
 }
 
+scoped_refptr<const NGPhysicalBoxFragment>
+NGBaseLayoutAlgorithmTest::GetBoxFragmentByElementId(const char* id) {
+  LayoutObject* layout_object = GetLayoutObjectByElementId(id);
+  CHECK(layout_object && layout_object->IsLayoutNGMixin());
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
+      ToLayoutBlockFlow(layout_object)->CurrentFragment();
+  CHECK(fragment);
+  return fragment;
+}
+
 const NGPhysicalBoxFragment* NGBaseLayoutAlgorithmTest::CurrentFragmentFor(
     const LayoutNGBlockFlow* block_flow) {
   return block_flow->CurrentFragment();

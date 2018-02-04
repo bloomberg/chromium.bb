@@ -10,6 +10,7 @@
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
@@ -67,6 +68,64 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   auto* line3 =
       ToNGPhysicalLineBoxFragment(layout_result3->PhysicalFragment().get());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
+}
+
+TEST_F(NGInlineLayoutAlgorithmTest, GenerateHyphen) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    #container {
+      font: 10px/1 Ahem;
+      width: 5ch;
+    }
+    </style>
+    <div id=container>abc&shy;def</div>
+  )HTML");
+  scoped_refptr<const NGPhysicalBoxFragment> block =
+      GetBoxFragmentByElementId("container");
+  EXPECT_EQ(2u, block->Children().size());
+  const NGPhysicalLineBoxFragment& line1 =
+      ToNGPhysicalLineBoxFragment(*block->Children()[0]);
+
+  // The hyphen is in its own NGPhysicalTextFragment.
+  EXPECT_EQ(2u, line1.Children().size());
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
+  const auto& hyphen = ToNGPhysicalTextFragment(*line1.Children()[1]);
+  EXPECT_EQ(String(u"\u2010"), hyphen.Text().ToString());
+  // It should have the same LayoutObject as the hyphened word.
+  EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), hyphen.GetLayoutObject());
+}
+
+TEST_F(NGInlineLayoutAlgorithmTest, GenerateEllipsis) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    #container {
+      font: 10px/1 Ahem;
+      width: 5ch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    </style>
+    <div id=container>123456</div>
+  )HTML");
+  scoped_refptr<const NGPhysicalBoxFragment> block =
+      GetBoxFragmentByElementId("container");
+  EXPECT_EQ(1u, block->Children().size());
+  const NGPhysicalLineBoxFragment& line1 =
+      ToNGPhysicalLineBoxFragment(*block->Children()[0]);
+
+  // The ellipsis is in its own NGPhysicalTextFragment.
+  EXPECT_EQ(2u, line1.Children().size());
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
+  const auto& ellipsis = ToNGPhysicalTextFragment(*line1.Children()[1]);
+  EXPECT_EQ(String(u"\u2026"), ellipsis.Text().ToString());
+  // It should have the same LayoutObject as the clipped word.
+  EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), ellipsis.GetLayoutObject());
 }
 
 // This test ensures that if an inline box generates (or does not generate) box
