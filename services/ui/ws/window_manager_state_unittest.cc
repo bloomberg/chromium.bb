@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/ws/accelerator.h"

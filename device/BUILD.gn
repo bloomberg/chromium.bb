@@ -130,7 +130,7 @@ test("device_unittests") {
       "//services/device/public/cpp/hid",
       "//services/device/public/interfaces",
       "//services/service_manager/public/cpp",
-      "//services/service_manager/public/interfaces",
+      "//services/service_manager/public/mojom",
     ]
 
     # Serial is supported in below platforms. See //device/servial/BUILD.gn

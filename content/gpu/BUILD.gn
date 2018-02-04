@@ -77,7 +77,7 @@ target(link_target_type, "gpu_sources") {
     "//media/gpu/ipc/service",
     "//media/mojo/clients:clients",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/interfaces",
     "//services/viz/privileged/interfaces",

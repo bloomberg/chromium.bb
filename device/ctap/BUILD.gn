@@ -42,7 +42,7 @@ source_set("ctap") {
     "//components/cbor",
     "//services/device/public/interfaces",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 

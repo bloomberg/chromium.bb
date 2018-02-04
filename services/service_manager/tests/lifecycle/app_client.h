@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 
 namespace service_manager {

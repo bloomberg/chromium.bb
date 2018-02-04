@@ -16,7 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 

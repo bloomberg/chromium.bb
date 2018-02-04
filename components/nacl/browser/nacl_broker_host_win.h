@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
 class BrowserChildProcessHost;

@@ -4,7 +4,7 @@
 
 module service_manager.test.mojom;
 
-import "services/service_manager/public/interfaces/connector.mojom";
+import "services/service_manager/public/mojom/connector.mojom";
 
 interface CreateInstanceTest {
   SetTargetIdentity(service_manager.mojom.Identity identity);

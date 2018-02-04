@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 
 // ProxyResolverFactory that acts as a proxy to the proxy resolver service.
 // Starts the service as needed, and maintains no active mojo pipes to it,

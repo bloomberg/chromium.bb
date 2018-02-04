@@ -6,7 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_IDENTITY_STRUCT_TRAITS_H_
 
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 
 namespace mojo {
 

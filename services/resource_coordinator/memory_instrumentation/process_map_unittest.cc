@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace memory_instrumentation {

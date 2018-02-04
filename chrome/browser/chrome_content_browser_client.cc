@@ -236,7 +236,7 @@
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
@@ -287,7 +287,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
-#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)

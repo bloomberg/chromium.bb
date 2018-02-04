@@ -21,7 +21,7 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "url/origin.h"
 
 namespace media {

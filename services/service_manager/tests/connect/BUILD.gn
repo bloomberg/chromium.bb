@@ -19,7 +19,7 @@ source_set("connect") {
     "//base/test:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/service_manager/tests:util",
   ]
 
@@ -37,7 +37,7 @@ mojom("interfaces") {
     "connect_test.mojom",
   ]
   deps = [
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 
@@ -71,7 +71,7 @@ service("connect_test_package") {
     "//base",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 
@@ -95,7 +95,7 @@ service("connect_test_app") {
     "//base",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 
@@ -114,7 +114,7 @@ service("connect_test_class_app") {
     "//base",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
   ]
 }
 

@@ -86,7 +86,7 @@ target(link_target_type, "child") {
   public_deps = [
     "//gpu/ipc/client:client",
     "//ipc",
-    "//services/service_manager/public/interfaces:interfaces_blink",
+    "//services/service_manager/public/mojom:mojom_blink",
   ]
 
   deps = [
@@ -114,7 +114,7 @@ target(link_target_type, "child") {
     "//services/device/public/interfaces:constants",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
     "//skia",
     "//storage/common",

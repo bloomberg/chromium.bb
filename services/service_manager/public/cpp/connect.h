@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace service_manager {
 

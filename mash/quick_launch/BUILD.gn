@@ -20,7 +20,7 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/interfaces",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
     "//url",

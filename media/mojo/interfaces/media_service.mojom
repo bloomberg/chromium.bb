@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/interface_factory.mojom";
-import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/mojom/interface_provider.mojom";
 
 // A service to provide media InterfaceFactory, typically to the media pipeline
 // running in the renderer process. The service itself runs in the process

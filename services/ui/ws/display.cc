@@ -10,7 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/ui/common/types.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"

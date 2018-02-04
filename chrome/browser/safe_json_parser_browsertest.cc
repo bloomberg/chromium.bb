@@ -18,7 +18,7 @@
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/data_decoder/public/interfaces/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace {
 

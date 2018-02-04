@@ -4,8 +4,8 @@
 
 module service_manager.mojom;
 
-import "services/service_manager/public/interfaces/constants.mojom";
-import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/mojom/constants.mojom";
+import "services/service_manager/public/mojom/interface_provider.mojom";
 
 // TODO(beng): Evalute the utility of this enum. There are some inconsistencies
 //             in its use with BindInterface/StartService.

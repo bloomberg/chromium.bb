@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/tests/lifecycle/app_client.h"
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 

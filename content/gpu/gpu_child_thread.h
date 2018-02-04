@@ -34,7 +34,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 

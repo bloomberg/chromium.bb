@@ -43,7 +43,7 @@ jumbo_source_set("utility") {
     "//services/network:network_service",
     "//services/service_manager",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/interfaces",
     "//services/video_capture:lib",

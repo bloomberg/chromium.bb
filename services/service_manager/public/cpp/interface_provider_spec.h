@@ -21,7 +21,7 @@ using InterfaceSet = std::set<std::string>;
 using Name = std::string;
 
 // See comments in
-// services/service_manager/public/interfaces/interface_provider_spec.mojom for
+// services/service_manager/public/mojom/interface_provider_spec.mojom for
 // a description of InterfaceProviderSpec.
 struct SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT InterfaceProviderSpec {
   InterfaceProviderSpec();

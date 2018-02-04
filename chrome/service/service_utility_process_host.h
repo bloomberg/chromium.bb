@@ -15,7 +15,7 @@
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class CommandLine;

@@ -14,7 +14,7 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/hid.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

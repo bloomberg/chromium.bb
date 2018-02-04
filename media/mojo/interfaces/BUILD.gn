@@ -47,7 +47,7 @@ mojom("interfaces") {
   public_deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",

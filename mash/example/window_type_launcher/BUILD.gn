@@ -21,7 +21,7 @@ service("window_type_launcher") {
     "//mash/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces",
+    "//services/service_manager/public/mojom",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",

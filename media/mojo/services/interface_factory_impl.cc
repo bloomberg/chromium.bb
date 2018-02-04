@@ -13,7 +13,7 @@
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 #include "media/mojo/services/mojo_audio_decoder_service.h"

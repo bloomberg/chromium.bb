@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 
 namespace service_manager {
 

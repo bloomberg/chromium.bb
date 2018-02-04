@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 
 namespace base {
 class Process;

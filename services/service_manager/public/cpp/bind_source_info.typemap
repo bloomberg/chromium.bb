@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/service_manager/public/interfaces/service.mojom"
+mojom = "//services/service_manager/public/mojom/service.mojom"
 public_headers = [ "//services/service_manager/public/cpp/bind_source_info.h" ]
 traits_headers =
-    [ "//services/service_manager/public/cpp/bind_source_info_struct_traits.h" ]
+    [ "//services/service_manager/public/cpp/bind_source_info_mojom_traits.h" ]
 public_deps = [
   "//services/service_manager/public/cpp:cpp_types",
 ]

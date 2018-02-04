@@ -258,8 +258,8 @@ if (is_android) {
       "//services/device/time_zone_monitor:java",
       "//services/device/vibration/android:vibration_manager_java",
       "//services/device/wake_lock/power_save_blocker:java",
-      "//services/service_manager/public/interfaces:interfaces_java",
       "//services/service_manager/public/java:service_manager_java",
+      "//services/service_manager/public/mojom:mojom_java",
     ]
   }
 }

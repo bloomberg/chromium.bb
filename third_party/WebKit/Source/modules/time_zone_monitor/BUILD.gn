@@ -13,7 +13,6 @@ blink_modules_sources("time_zone_monitor") {
   deps = [
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/interfaces:interfaces_blink",
     "//third_party/WebKit/Source/platform",
     "//third_party/icu:icui18n",
   ]

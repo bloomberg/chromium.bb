@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "base/process/port_provider_mac.h"

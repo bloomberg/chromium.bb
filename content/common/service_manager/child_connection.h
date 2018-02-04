@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 
 namespace service_manager {
 class Connector;

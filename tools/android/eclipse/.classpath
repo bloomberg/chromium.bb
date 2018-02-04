@@ -290,7 +290,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/net/android/net_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/printing/printing_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/services/data_decoder/public/android/safe_json_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/services/service_manager/public/interfaces/interfaces_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/services/service_manager/public/mojom/mojom_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/sync/android/sync_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/sync/test_support_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_data_chart/android_data_chart_java.jar"/>

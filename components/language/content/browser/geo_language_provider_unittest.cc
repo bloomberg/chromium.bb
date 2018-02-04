@@ -16,7 +16,7 @@
 #include "services/device/public/interfaces/geolocation.mojom.h"
 #include "services/device/public/interfaces/public_ip_address_geolocation_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

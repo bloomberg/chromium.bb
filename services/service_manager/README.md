@@ -19,7 +19,7 @@ The Service Manager performs the following functions:
   system state.
 
 The Service Manager presents a series of Mojo
-[interfaces](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces/)
+[interfaces](https://cs.chromium.org/chromium/src/services/service_manager/public/mojom/)
 to services, though in practice most interaction with the Service Manager is
 made simpler by using its corresponding
 [C++ client library](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/).
@@ -69,7 +69,7 @@ ID**, and **instance qualifier**:
 
 As long as a service instance is running it must maintain an implementation of
 the
-[`service_manager.mojom.Service`](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces/service.mojom)
+[`service_manager.mojom.Service`](https://cs.chromium.org/chromium/src/services/service_manager/public/mojom/service.mojom)
 interface. Typically this is done in C++ code by implementing the C++ client
 library's
 [`service_manager::Service`](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/service.h)
@@ -80,7 +80,7 @@ other services.
 Every service instance also has an outgoing link back to the Service Manager
 which it can use to make interface requests to other services in the system.
 This is the
-[`service_manager.mojom.Connector`](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces/connector.mojom)
+[`service_manager.mojom.Connector`](https://cs.chromium.org/chromium/src/services/service_manager/public/mojom/connector.mojom)
 interface, and it's commonly used via the C++ client library's
 [`service_manager::Connector`](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/connector.h)
 class.

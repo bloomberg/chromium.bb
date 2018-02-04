@@ -20,7 +20,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 
 namespace blink {
 

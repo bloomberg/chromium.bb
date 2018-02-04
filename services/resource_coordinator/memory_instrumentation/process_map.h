@@ -12,7 +12,7 @@
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace service_manager {
 class Connector;

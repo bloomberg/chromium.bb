@@ -4,8 +4,8 @@
 
 module service_manager.mojom;
 
-import "services/service_manager/public/interfaces/connector.mojom";
-import "services/service_manager/public/interfaces/service.mojom";
+import "services/service_manager/public/mojom/connector.mojom";
+import "services/service_manager/public/mojom/service.mojom";
 
 // Implemented by a package containing multiple services identified by
 // unique names.

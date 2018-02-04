@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/cursor_location_manager.h"

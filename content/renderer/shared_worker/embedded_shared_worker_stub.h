@@ -17,7 +17,7 @@
 #include "content/renderer/child_message_filter.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"

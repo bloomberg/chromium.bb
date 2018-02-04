@@ -15,7 +15,7 @@
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace media {
 class MediaInterfaceProvider;

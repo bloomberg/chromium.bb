@@ -20,7 +20,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "media/base/decode_capabilities.h"
-#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"

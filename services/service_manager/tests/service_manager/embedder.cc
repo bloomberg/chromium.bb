@@ -15,8 +15,8 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/public/interfaces/service_factory.mojom.h"
-#include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace {
 
