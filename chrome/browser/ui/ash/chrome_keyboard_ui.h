@@ -13,7 +13,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
-#include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace {

@@ -17,7 +17,6 @@
 #include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
