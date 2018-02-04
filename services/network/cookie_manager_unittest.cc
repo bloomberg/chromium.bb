@@ -1457,6 +1457,8 @@ TEST_F(CookieManagerTest, DeleteByAll) {
   EXPECT_EQ("A7", cookies[5].Name());
 }
 
+namespace {
+
 // Receives and records notifications from the network::mojom::CookieManager.
 class CookieChangeNotification
     : public network::mojom::CookieChangeNotification {
@@ -1508,6 +1510,8 @@ class CookieChangeNotification
 
   mojo::Binding<network::mojom::CookieChangeNotification> binding_;
 };
+
+}  // anonymous namespace
 
 TEST_F(CookieManagerTest, Notification) {
   GURL notification_url("http://www.testing.com/pathele");
