@@ -356,6 +356,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED:
       RecordAction(UserMetricsAction("StatusArea_Network_Settings"));
+      break;
     case UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED:
       RecordAction(UserMetricsAction("StatusArea_OS_Update_Default_Selected"));
       break;
