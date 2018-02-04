@@ -60,9 +60,11 @@ struct color_yuv {
 	  .u = MAKE_YUV_601_U(r, g, b), \
 	  .v = MAKE_YUV_601_V(r, g, b) }
 
-static inline uint32_t shiftcolor(const struct util_color_component *comp,
+/* This function takes 8-bit color values */
+static inline uint32_t shiftcolor8(const struct util_color_component *comp,
 				  uint32_t value)
 {
+	value &= 0xff;
 	/* Fill the low bits with the high bits. */
 	value = (value << 8) | value;
 	/* Shift down to remove unwanted low bits */
@@ -71,11 +73,30 @@ static inline uint32_t shiftcolor(const struct util_color_component *comp,
 	return value << comp->offset;
 }
 
+/* This function takes 10-bit color values */
+static inline uint32_t shiftcolor10(const struct util_color_component *comp,
+				    uint32_t value)
+{
+	value &= 0x3ff;
+	/* Fill the low bits with the high bits. */
+	value = (value << 6) | (value >> 4);
+	/* Shift down to remove unwanted low bits */
+	value = value >> (16 - comp->length);
+	/* Shift back up to where the value should be */
+	return value << comp->offset;
+}
+
+#define MAKE_RGBA10(rgb, r, g, b, a) \
+	(shiftcolor10(&(rgb)->red, (r)) | \
+	 shiftcolor10(&(rgb)->green, (g)) | \
+	 shiftcolor10(&(rgb)->blue, (b)) | \
+	 shiftcolor10(&(rgb)->alpha, (a)))
+
 #define MAKE_RGBA(rgb, r, g, b, a) \
-	(shiftcolor(&(rgb)->red, (r)) | \
-	 shiftcolor(&(rgb)->green, (g)) | \
-	 shiftcolor(&(rgb)->blue, (b)) | \
-	 shiftcolor(&(rgb)->alpha, (a)))
+	(shiftcolor8(&(rgb)->red, (r)) | \
+	 shiftcolor8(&(rgb)->green, (g)) | \
+	 shiftcolor8(&(rgb)->blue, (b)) | \
+	 shiftcolor8(&(rgb)->alpha, (a)))
 
 #define MAKE_RGB24(rgb, r, g, b) \
 	{ .value = MAKE_RGBA(rgb, r, g, b, 0) }
@@ -912,6 +933,85 @@ static void fill_plain(void *planes[3],
 	memset(planes[0], 0x77, stride * height);
 }
 
+static void fill_gradient_rgb32(const struct util_rgb_info *rgb,
+				void *mem,
+				unsigned int width, unsigned int height,
+				unsigned int stride)
+{
+	int i, j;
+
+	for (i = 0; i < height / 2; i++) {
+		uint32_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint32_t value = MAKE_RGBA10(rgb, j & 0x3ff, j & 0x3ff, j & 0x3ff, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+
+	for (; i < height; i++) {
+		uint32_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint32_t value = MAKE_RGBA10(rgb, j & 0x3fc, j & 0x3fc, j & 0x3fc, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+}
+
+/* The gradient pattern creates two horizontal gray gradients, split
+ * into two halves. The top half has 10bpc precision, the bottom half
+ * has 8bpc precision. When using with a 10bpc fb format, there are 3
+ * possible outcomes:
+ *
+ *  - Pixel data is encoded as 8bpc to the display, no dithering. This
+ *    would lead to the top and bottom halves looking identical.
+ *
+ *  - Pixel data is encoded as 8bpc to the display, with dithering. This
+ *    would lead to there being a visible difference between the two halves,
+ *    but the top half would look a little speck-y due to the dithering.
+ *
+ *  - Pixel data is encoded at 10bpc+ to the display (which implies
+ *    the display is able to show this level of depth). This should
+ *    lead to the top half being a very clean gradient, and visibly different
+ *    from the bottom half.
+ *
+ * Once we support additional fb formats, this approach could be extended
+ * to distinguish even higher bpc precisions.
+ *
+ * Note that due to practical size considerations, for the screens
+ * where this matters, the pattern actually emits stripes 2-pixels
+ * wide for each gradient color. Otherwise the difference may be a bit
+ * hard to notice.
+ */
+static void fill_gradient(const struct util_format_info *info, void *planes[3],
+			  unsigned int width, unsigned int height,
+			  unsigned int stride)
+{
+	switch (info->format) {
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_XBGR8888:
+	case DRM_FORMAT_RGBA8888:
+	case DRM_FORMAT_RGBX8888:
+	case DRM_FORMAT_BGRA8888:
+	case DRM_FORMAT_BGRX8888:
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_ABGR2101010:
+	case DRM_FORMAT_XBGR2101010:
+	case DRM_FORMAT_RGBA1010102:
+	case DRM_FORMAT_RGBX1010102:
+	case DRM_FORMAT_BGRA1010102:
+	case DRM_FORMAT_BGRX1010102:
+		return fill_gradient_rgb32(&info->rgb, planes[0],
+					   width, height, stride);
+	}
+}
+
 /*
  * util_fill_pattern - Fill a buffer with a test pattern
  * @format: Pixel format
@@ -943,6 +1043,9 @@ void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 
 	case UTIL_PATTERN_PLAIN:
 		return fill_plain(planes, height, stride);
+
+	case UTIL_PATTERN_GRADIENT:
+		return fill_gradient(info, planes, width, height, stride);
 
 	default:
 		printf("Error: unsupported test pattern %u.\n", pattern);

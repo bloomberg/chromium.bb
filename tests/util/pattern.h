@@ -32,6 +32,7 @@ enum util_fill_pattern {
 	UTIL_PATTERN_TILES,
 	UTIL_PATTERN_PLAIN,
 	UTIL_PATTERN_SMPTE,
+	UTIL_PATTERN_GRADIENT,
 };
 
 void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
