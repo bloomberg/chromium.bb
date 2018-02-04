@@ -19,6 +19,7 @@ include_rules = [
     "-cc/blink",
     "+components/viz/common",
     "+mojo/public",
+    "+net/cert",
     "+net/http",
     "+public/platform",
     "-public/web",

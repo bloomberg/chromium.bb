@@ -103,6 +103,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   remote_ip_address_ = AtomicString(data->remote_ip_address_);
   remote_port_ = data->remote_port_;
   has_major_certificate_errors_ = data->has_major_certificate_errors_;
+  ct_policy_compliance_ = data->ct_policy_compliance_;
   is_legacy_symantec_cert_ = data->is_legacy_symantec_cert_;
   cert_validity_start_ = data->cert_validity_start_;
   was_fetched_via_spdy_ = data->was_fetched_via_spdy_;
@@ -165,6 +166,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
   data->remote_ip_address_ = remote_ip_address_.GetString().IsolatedCopy();
   data->remote_port_ = remote_port_;
   data->has_major_certificate_errors_ = has_major_certificate_errors_;
+  data->ct_policy_compliance_ = ct_policy_compliance_;
   data->is_legacy_symantec_cert_ = is_legacy_symantec_cert_;
   data->cert_validity_start_ = cert_validity_start_;
   data->was_fetched_via_spdy_ = was_fetched_via_spdy_;
@@ -512,6 +514,10 @@ scoped_refptr<ResourceLoadInfo> ResourceResponse::GetResourceLoadInfo() const {
 void ResourceResponse::SetResourceLoadInfo(
     scoped_refptr<ResourceLoadInfo> load_info) {
   resource_load_info_ = std::move(load_info);
+}
+
+void ResourceResponse::SetCTPolicyCompliance(CTPolicyCompliance compliance) {
+  ct_policy_compliance_ = compliance;
 }
 
 KURL ResourceResponse::OriginalURLViaServiceWorker() const {

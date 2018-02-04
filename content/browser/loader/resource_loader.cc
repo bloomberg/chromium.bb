@@ -110,6 +110,8 @@ void PopulateResourceResponse(
 
   if (request->ssl_info().cert.get()) {
     response->head.cert_status = request->ssl_info().cert_status;
+    response->head.ct_policy_compliance =
+        request->ssl_info().ct_policy_compliance;
     response->head.is_legacy_symantec_cert =
         (!net::IsCertStatusError(response->head.cert_status) ||
          net::IsCertStatusMinorError(response->head.cert_status)) &&

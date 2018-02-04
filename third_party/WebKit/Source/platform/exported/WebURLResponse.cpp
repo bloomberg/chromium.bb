@@ -232,6 +232,32 @@ void WebURLResponse::SetHasMajorCertificateErrors(bool value) {
   resource_response_->SetHasMajorCertificateErrors(value);
 }
 
+void WebURLResponse::SetCTPolicyCompliance(
+    net::ct::CTPolicyCompliance compliance) {
+  switch (compliance) {
+    case net::ct::CTPolicyCompliance::
+        CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE:
+    case net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY:
+      resource_response_->SetCTPolicyCompliance(
+          ResourceResponse::kCTPolicyComplianceDetailsNotAvailable);
+      break;
+    case net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS:
+    case net::ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS:
+      resource_response_->SetCTPolicyCompliance(
+          ResourceResponse::kCTPolicyDoesNotComply);
+      break;
+    case net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS:
+      resource_response_->SetCTPolicyCompliance(
+          ResourceResponse::kCTPolicyComplies);
+      break;
+    case net::ct::CTPolicyCompliance::CT_POLICY_MAX:
+      NOTREACHED();
+      resource_response_->SetCTPolicyCompliance(
+          ResourceResponse::kCTPolicyComplianceDetailsNotAvailable);
+      break;
+  };
+}
+
 void WebURLResponse::SetIsLegacySymantecCert(bool value) {
   resource_response_->SetIsLegacySymantecCert(value);
 }
