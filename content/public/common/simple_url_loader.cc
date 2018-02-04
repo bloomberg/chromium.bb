@@ -20,9 +20,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "content/public/common/simple_url_loader_stream_consumer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -196,6 +198,9 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       network::mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size) override;
+  void DownloadAsStream(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      SimpleURLLoaderStreamConsumer* stream_consumer) override;
   void SetOnRedirectCallback(
       const OnRedirectCallback& on_redirect_callback) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
@@ -345,10 +350,15 @@ class BodyReader {
    public:
     Delegate() {}
 
-    // The specified amount of data was read from the pipe. The BodyReader must
-    // not be deleted during this callback. The Delegate should return net::OK
-    // to continue reading, or a value indicating an error if the pipe should be
-    // closed.
+    // The specified amount of data was read from the pipe. The Delegate should
+    // return net::OK to continue reading, or a value indicating an error if the
+    // pipe should be closed.  A return value of net::ERR_IO_PENDING means that
+    // the BodyReader should stop reading, and not call OnDone(), until its
+    // Resume() method is called. Resume() must not be called synchronously.
+    //
+    // It's safe to delete the BodyReader during this call. If that happens,
+    // |data| will still remain valid for the duration of the call, and the
+    // returned net::Error will be ignored.
     virtual net::Error OnDataRead(uint32_t length, const char* data) = 0;
 
     // Called when the pipe is closed by the remote size, the size limit is
@@ -365,7 +375,9 @@ class BodyReader {
   };
 
   BodyReader(Delegate* delegate, int64_t max_body_size)
-      : delegate_(delegate), max_body_size_(max_body_size) {
+      : delegate_(delegate),
+        max_body_size_(max_body_size),
+        weak_ptr_factory_(this) {
     DCHECK_GE(max_body_size_, 0);
   }
 
@@ -390,9 +402,14 @@ class BodyReader {
     ReadData();
   }
 
+  void Resume() { ReadData(); }
+
  private:
   void MojoReadyCallback(MojoResult result,
                          const mojo::HandleSignalsState& state) {
+    // Shouldn't be watching the pipe when there's a pending error.
+    DCHECK_EQ(net::OK, pending_error_);
+
     ReadData();
   }
 
@@ -400,6 +417,13 @@ class BodyReader {
   // |body_|. Arms |handle_watcher_| when data is not currently available.
   void ReadData() {
     while (true) {
+      if (pending_error_) {
+        ClosePipe();
+        // This call may delete the BodyReader.
+        delegate_->OnDone(pending_error_, total_bytes_read_);
+        return;
+      }
+
       const void* body_data;
       uint32_t read_size;
       MojoResult result = body_data_pipe_->BeginReadData(
@@ -417,6 +441,8 @@ class BodyReader {
         // closed.
         DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
         ClosePipe();
+
+        // This call may delete the BodyReader.
         delegate_->OnDone(net::OK, total_bytes_read_);
         return;
       }
@@ -427,19 +453,36 @@ class BodyReader {
         copy_size = max_body_size_ - total_bytes_read_;
 
       total_bytes_read_ += copy_size;
+
+      if (copy_size < read_size)
+        pending_error_ = net::ERR_INSUFFICIENT_RESOURCES;
+
+      // Need a weak pointer to |this| to detect deletion.
+      base::WeakPtr<BodyReader> weak_this =
+          this->weak_ptr_factory_.GetWeakPtr();
+      // Need to keep the data pipe alive if |this| is deleted, to keep
+      // |body_data| alive. Also unclear if it's safe to delete while a read is
+      // in progress.
+      mojo::ScopedDataPipeConsumerHandle body_data_pipe =
+          std::move(body_data_pipe_);
+
+      // This call may delete the BodyReader.
       net::Error error =
           delegate_->OnDataRead(copy_size, static_cast<const char*>(body_data));
-      body_data_pipe_->EndReadData(read_size);
-      // Handling reads asynchronously is currently not supported.
-      DCHECK_NE(error, net::ERR_IO_PENDING);
-      if (error == net::OK && copy_size < read_size)
-        error = net::ERR_INSUFFICIENT_RESOURCES;
-
-      if (error) {
-        ClosePipe();
-        delegate_->OnDone(error, total_bytes_read_);
+      body_data_pipe->EndReadData(read_size);
+      if (!weak_this) {
+        // This object was deleted, so nothing else to do.
         return;
       }
+
+      body_data_pipe_ = std::move(body_data_pipe);
+
+      // Wait for Resume() on net::ERR_IO_PENDING.
+      if (error == net::ERR_IO_PENDING)
+        return;
+
+      if (error != net::OK)
+        pending_error_ = error;
     }
   }
 
@@ -456,6 +499,14 @@ class BodyReader {
 
   const int64_t max_body_size_;
   int64_t total_bytes_read_ = 0;
+
+  // Set to an error code when Delegate::OnDataRead() returns ERR_IO_PENDING,
+  // and there was a pending error from the BodyReader itself (Generally, length
+  // limit exceeded). When this happens, the error will be passed to the
+  // Delegate only after Resume() is called.
+  net::Error pending_error_ = net::OK;
+
+  base::WeakPtrFactory<BodyReader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BodyReader);
 };
@@ -876,6 +927,83 @@ class SaveToFileBodyHandler : public BodyHandler {
   DISALLOW_COPY_AND_ASSIGN(SaveToFileBodyHandler);
 };
 
+// Class to handle streaming data to the consumer as it arrives
+class DownloadAsStreamBodyHandler : public BodyHandler,
+                                    public BodyReader::Delegate {
+ public:
+  DownloadAsStreamBodyHandler(SimpleURLLoaderImpl* simple_url_loader,
+                              SimpleURLLoaderStreamConsumer* stream_consumer)
+      : BodyHandler(simple_url_loader),
+        stream_consumer_(stream_consumer),
+        weak_ptr_factory_(this) {}
+
+  ~DownloadAsStreamBodyHandler() override {}
+
+  // BodyHandler implementation:
+
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body_data_pipe) override {
+    DCHECK(!body_reader_);
+
+    body_reader_ =
+        std::make_unique<BodyReader>(this, std::numeric_limits<int64_t>::max());
+    body_reader_->Start(std::move(body_data_pipe));
+  }
+
+  void NotifyConsumerOfCompletion(bool destroy_results) override {
+    body_reader_.reset();
+    stream_consumer_->OnComplete(simple_url_loader()->NetError() == net::OK);
+  }
+
+  void PrepareToRetry(base::OnceClosure retry_callback) override {
+    body_reader_.reset();
+    stream_consumer_->OnRetry(std::move(retry_callback));
+  }
+
+ private:
+  // BodyReader::Delegate implementation.
+
+  net::Error OnDataRead(uint32_t length, const char* data) override {
+    in_recursive_call_ = true;
+    base::WeakPtr<DownloadAsStreamBodyHandler> weak_this(
+        weak_ptr_factory_.GetWeakPtr());
+    stream_consumer_->OnDataReceived(
+        base::StringPiece(data, length),
+        base::BindOnce(&DownloadAsStreamBodyHandler::Resume,
+                       weak_ptr_factory_.GetWeakPtr()));
+    // Protect against deletion.
+    if (weak_this)
+      in_recursive_call_ = false;
+    return net::ERR_IO_PENDING;
+  }
+
+  void OnDone(net::Error error, int64_t total_bytes) override {
+    simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
+  }
+
+  void Resume() {
+    // Can't call DownloadAsStreamBodyHandler::Resume() immediately when called
+    // recursively from OnDataRead.
+    if (in_recursive_call_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&DownloadAsStreamBodyHandler::Resume,
+                                    weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
+    body_reader_->Resume();
+  }
+
+  SimpleURLLoaderStreamConsumer* stream_consumer_;
+
+  std::unique_ptr<BodyReader> body_reader_;
+
+  bool in_recursive_call_ = false;
+
+  base::WeakPtrFactory<DownloadAsStreamBodyHandler> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadAsStreamBodyHandler);
+};
+
 SimpleURLLoaderImpl::SimpleURLLoaderImpl(
     std::unique_ptr<network::ResourceRequest> resource_request,
     const net::NetworkTrafficAnnotationTag& annotation_tag)
@@ -944,6 +1072,14 @@ void SimpleURLLoaderImpl::DownloadToTempFile(
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
       this, std::move(download_to_file_complete_callback), base::FilePath(),
       true /* create_temp_file */, max_body_size, GetTaskPriority());
+  Start(url_loader_factory);
+}
+
+void SimpleURLLoaderImpl::DownloadAsStream(
+    network::mojom::URLLoaderFactory* url_loader_factory,
+    SimpleURLLoaderStreamConsumer* stream_consumer) {
+  body_handler_ =
+      std::make_unique<DownloadAsStreamBodyHandler>(this, stream_consumer);
   Start(url_loader_factory);
 }
 
