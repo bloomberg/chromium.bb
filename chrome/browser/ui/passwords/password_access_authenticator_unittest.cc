@@ -26,25 +26,24 @@ bool FakeOsReauthCall(bool* reauth_called, ReauthResult result) {
 TEST(PasswordAccessAuthenticatorTest, Expiration) {
   bool reauth_called = false;
 
-  auto clock_owned = std::make_unique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock = clock_owned.get();
-  clock->Advance(base::TimeDelta::FromSeconds(123));
+  base::SimpleTestClock clock;
+  clock.Advance(base::TimeDelta::FromSeconds(123));
 
   PasswordAccessAuthenticator authenticator(base::BindRepeating(
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
-  authenticator.SetClockForTesting(std::move(clock_owned));
+  authenticator.SetClockForTesting(&clock);
 
   EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
   EXPECT_TRUE(reauth_called);
 
-  clock->Advance(base::TimeDelta::FromSeconds(
+  clock.Advance(base::TimeDelta::FromSeconds(
       PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
   reauth_called = false;
 
   EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
   EXPECT_FALSE(reauth_called);
 
-  clock->Advance(base::TimeDelta::FromSeconds(2));
+  clock.Advance(base::TimeDelta::FromSeconds(2));
   reauth_called = false;
 
   EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
@@ -55,18 +54,17 @@ TEST(PasswordAccessAuthenticatorTest, Expiration) {
 TEST(PasswordAccessAuthenticatorTest, ForceReauth) {
   bool reauth_called = false;
 
-  auto clock_owned = std::make_unique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock = clock_owned.get();
-  clock->Advance(base::TimeDelta::FromSeconds(123));
+  base::SimpleTestClock clock;
+  clock.Advance(base::TimeDelta::FromSeconds(123));
 
   PasswordAccessAuthenticator authenticator(base::BindRepeating(
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
-  authenticator.SetClockForTesting(std::move(clock_owned));
+  authenticator.SetClockForTesting(&clock);
 
   EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
   EXPECT_TRUE(reauth_called);
 
-  clock->Advance(base::TimeDelta::FromSeconds(
+  clock.Advance(base::TimeDelta::FromSeconds(
       PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
   reauth_called = false;
 
@@ -79,20 +77,19 @@ TEST(PasswordAccessAuthenticatorTest, ForceReauth) {
 TEST(PasswordAccessAuthenticatorTest, Failed) {
   bool reauth_called = false;
 
-  auto clock_owned = std::make_unique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock = clock_owned.get();
-  clock->Advance(base::TimeDelta::FromSeconds(456));
+  base::SimpleTestClock clock;
+  clock.Advance(base::TimeDelta::FromSeconds(456));
 
   PasswordAccessAuthenticator authenticator(base::BindRepeating(
       &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
-  authenticator.SetClockForTesting(std::move(clock_owned));
+  authenticator.SetClockForTesting(&clock);
 
   EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated());
   EXPECT_TRUE(reauth_called);
 
   // Advance just a little bit, so that if |authenticator| starts the grace
   // period, this is still within it.
-  clock->Advance(base::TimeDelta::FromSeconds(1));
+  clock.Advance(base::TimeDelta::FromSeconds(1));
   reauth_called = false;
 
   EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated());
@@ -105,12 +102,12 @@ TEST(PasswordAccessAuthenticatorTest, Failed) {
 TEST(PasswordAccessAuthenticatorTest, TimeZero) {
   bool reauth_called = false;
 
-  auto clock = std::make_unique<base::SimpleTestClock>();
+  base::SimpleTestClock clock;
   // |clock| now shows exactly 0.
 
   PasswordAccessAuthenticator authenticator(base::BindRepeating(
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
-  authenticator.SetClockForTesting(std::move(clock));
+  authenticator.SetClockForTesting(&clock);
 
   EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
   EXPECT_TRUE(reauth_called);

@@ -126,6 +126,8 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  // TODO(tzik): Remove |mock_tick_clock_| after updating TestMockTimeTaskRunner
+  // to own the clock instances.
   std::unique_ptr<base::TickClock> mock_tick_clock_;
   MockAffiliationFetchThrottlerDelegate mock_delegate_;
 

@@ -12,7 +12,7 @@
 
 PasswordAccessAuthenticator::PasswordAccessAuthenticator(
     base::RepeatingCallback<bool()> os_reauth_call)
-    : clock_(std::make_unique<base::DefaultClock>()),
+    : clock_(base::DefaultClock::GetInstance()),
       os_reauth_call_(std::move(os_reauth_call)) {}
 
 PasswordAccessAuthenticator::~PasswordAccessAuthenticator() = default;
@@ -52,7 +52,6 @@ void PasswordAccessAuthenticator::SetOsReauthCallForTesting(
   os_reauth_call_ = std::move(os_reauth_call);
 }
 
-void PasswordAccessAuthenticator::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void PasswordAccessAuthenticator::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }

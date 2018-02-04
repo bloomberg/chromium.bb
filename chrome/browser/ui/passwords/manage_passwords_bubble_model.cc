@@ -102,9 +102,7 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
     sign_in_promo_dismissal_reason_ = reason;
   }
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-    clock_ = std::move(clock);
-  }
+  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
   void set_sign_in_promo_shown_count(int count) {
     sign_in_promo_shown_count = count;
@@ -135,7 +133,7 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
   password_manager::InteractionsStats interaction_stats_;
 
   // Used to retrieve the current time, in base::Time units.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Number of times the sign-in promo was shown to the user.
   int sign_in_promo_shown_count;
@@ -151,7 +149,7 @@ ManagePasswordsBubbleModel::InteractionKeeper::InteractionKeeper(
       update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION),
       sign_in_promo_dismissal_reason_(metrics_util::CHROME_SIGNIN_DISMISSED),
       interaction_stats_(std::move(stats)),
-      clock_(new base::DefaultClock),
+      clock_(base::DefaultClock::GetInstance()),
       sign_in_promo_shown_count(0) {}
 
 void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
@@ -572,9 +570,8 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
   return false;
 }
 
-void ManagePasswordsBubbleModel::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  interaction_keeper_->SetClockForTesting(std::move(clock));
+void ManagePasswordsBubbleModel::SetClockForTesting(base::Clock* clock) {
+  interaction_keeper_->SetClockForTesting(clock);
 }
 
 bool ManagePasswordsBubbleModel::RevealPasswords() {

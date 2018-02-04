@@ -64,8 +64,8 @@ class AffiliationBackend : public FacetManagerHost,
   AffiliationBackend(
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      std::unique_ptr<base::Clock> time_source,
-      std::unique_ptr<base::TickClock> time_tick_source);
+      base::Clock* time_source,
+      base::TickClock* time_tick_source);
   ~AffiliationBackend() override;
 
   // Performs the I/O-heavy part of initialization. The database used to cache
@@ -142,8 +142,8 @@ class AffiliationBackend : public FacetManagerHost,
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::unique_ptr<base::Clock> clock_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::Clock* clock_;
+  base::TickClock* tick_clock_;
 
   std::unique_ptr<AffiliationDatabase> cache_;
   std::unique_ptr<AffiliationFetcher> fetcher_;

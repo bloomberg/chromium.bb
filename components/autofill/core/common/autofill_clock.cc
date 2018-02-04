@@ -4,40 +4,30 @@
 
 #include "components/autofill/core/common/autofill_clock.h"
 
-#include <utility>
-
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 
 namespace autofill {
-
 namespace {
-
-static base::LazyInstance<AutofillClock>::DestructorAtExit g_autofill_clock =
-    LAZY_INSTANCE_INITIALIZER;
-
+base::Clock* g_autofill_clock = nullptr;
 }  // namespace
 
 // static
 base::Time AutofillClock::Now() {
-  if (!g_autofill_clock.Get().clock_)
+  if (!g_autofill_clock)
     SetClock();
-
-  return g_autofill_clock.Get().clock_->Now();
+  return g_autofill_clock->Now();
 }
-
-AutofillClock::AutofillClock(){};
-AutofillClock::~AutofillClock(){};
 
 // static
 void AutofillClock::SetClock() {
-  g_autofill_clock.Get().clock_ = std::make_unique<base::DefaultClock>();
+  g_autofill_clock = base::DefaultClock::GetInstance();
 }
 
 // static
-void AutofillClock::SetTestClock(std::unique_ptr<base::Clock> clock) {
+void AutofillClock::SetTestClock(base::Clock* clock) {
   DCHECK(clock);
-  g_autofill_clock.Get().clock_ = std::move(clock);
+  g_autofill_clock = clock;
 }
 
 }  // namespace autofill

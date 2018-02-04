@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/simple_test_clock.h"
 
 namespace base {
-class SimpleTestClock;
 class Time;
 }  // namespace base
 
@@ -29,7 +29,7 @@ class TestAutofillClock {
   void SetNow(base::Time now);
 
  private:
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClock);
 };

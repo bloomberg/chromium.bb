@@ -48,14 +48,14 @@ class PasswordAccessAuthenticator {
       base::RepeatingCallback<bool()> os_reauth_call);
 
   // Use this to manipulate time in tests.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
  private:
   // The last time the user was successfully authenticated.
   base::Optional<base::Time> last_authentication_time_;
 
   // Used to measure the time since the last authentication.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Used to directly present the authentication challenge (such as the login
   // prompt) to the user.
