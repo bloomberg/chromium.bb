@@ -5,19 +5,17 @@
 #ifndef VectorMathSSE_h
 #define VectorMathSSE_h
 
-#include <xmmintrin.h>
+#include <cstddef>
 
 namespace blink {
 namespace VectorMath {
 namespace SSE {
 
-using MType = __m128;
-
 constexpr size_t kBitsPerRegister = 128u;
 constexpr size_t kPackedFloatsPerRegister = kBitsPerRegister / 32u;
 constexpr size_t kFramesToProcessMask = ~(kPackedFloatsPerRegister - 1u);
 
-bool IsAligned(const float* p);
+bool IsAligned(const float*);
 
 // dest[k] = source1[k] + source2[k]
 void Vadd(const float* source1p,
@@ -33,6 +31,8 @@ void Vclip(const float* source_p,
            float* dest_p,
            size_t frames_to_process);
 
+// *max_p = max(*max_p, source_max) where
+// source_max = max(abs(source[k])) for all k
 void Vmaxmgv(const float* source_p, float* max_p, size_t frames_to_process);
 
 // dest[k] = source1[k] * source2[k]
@@ -56,8 +56,8 @@ void Vsmul(const float* source_p,
 // sum += sum(source[k]^2) for all k
 void Vsvesq(const float* source_p, float* sum_p, size_t frames_to_process);
 
-// real_dest_p[k] = real1[k] * real2[k] - imag1[k] * imag2[k]
-// imag_dest_p[k] = real1[k] * imag2[k] + imag1[k] * real2[k]
+// real_dest[k] = real1[k] * real2[k] - imag1[k] * imag2[k]
+// imag_dest[k] = real1[k] * imag2[k] + imag1[k] * real2[k]
 void Zvmul(const float* real1p,
            const float* imag1p,
            const float* real2p,
