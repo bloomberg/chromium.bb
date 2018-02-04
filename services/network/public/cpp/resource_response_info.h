@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -49,6 +50,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // The character encoding of the response or none if not applicable to the
   // response's mime type.  This may be a derived value.
   std::string charset;
+
+  // The resource's compliance with the Certificate Transparency policy.
+  net::ct::CTPolicyCompliance ct_policy_compliance;
 
   // True if the resource was loaded with an otherwise-valid legacy Symantec
   // certificate which will be distrusted in future.

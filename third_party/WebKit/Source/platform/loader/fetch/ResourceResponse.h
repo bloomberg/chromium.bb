@@ -78,6 +78,12 @@ class PLATFORM_EXPORT ResourceResponse final {
     kSecurityStyleAuthenticated
   };
 
+  enum CTPolicyCompliance {
+    kCTPolicyComplianceDetailsNotAvailable,
+    kCTPolicyComplies,
+    kCTPolicyDoesNotComply
+  };
+
   class PLATFORM_EXPORT SignedCertificateTimestamp final {
    public:
     SignedCertificateTimestamp(String status,
@@ -241,6 +247,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetHasMajorCertificateErrors(bool has_major_certificate_errors) {
     has_major_certificate_errors_ = has_major_certificate_errors;
   }
+
+  CTPolicyCompliance GetCTPolicyCompliance() const {
+    return ct_policy_compliance_;
+  }
+  void SetCTPolicyCompliance(CTPolicyCompliance);
 
   bool IsLegacySymantecCert() const { return is_legacy_symantec_cert_; }
   void SetIsLegacySymantecCert(bool is_legacy_symantec_cert) {
@@ -434,6 +445,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // certificate errors.
   bool has_major_certificate_errors_ = false;
 
+  // The Certificate Transparency policy compliance status of the resource.
+  CTPolicyCompliance ct_policy_compliance_ =
+      kCTPolicyComplianceDetailsNotAvailable;
+
   // True if the resource was retrieved with a legacy Symantec certificate which
   // is slated for distrust in future.
   bool is_legacy_symantec_cert_ = false;
@@ -574,6 +589,7 @@ struct CrossThreadResourceResponseData {
   std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
   scoped_refptr<ResourceLoadTiming> resource_load_timing_;
   bool has_major_certificate_errors_;
+  ResourceResponse::CTPolicyCompliance ct_policy_compliance_;
   bool is_legacy_symantec_cert_;
   base::Time cert_validity_start_;
   ResourceResponse::SecurityStyle security_style_;

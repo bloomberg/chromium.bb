@@ -9,7 +9,9 @@
 namespace network {
 
 ResourceResponseInfo::ResourceResponseInfo()
-    : is_legacy_symantec_cert(false),
+    : ct_policy_compliance(net::ct::CTPolicyCompliance::
+                               CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE),
+      is_legacy_symantec_cert(false),
       content_length(-1),
       encoded_data_length(-1),
       encoded_body_length(-1),

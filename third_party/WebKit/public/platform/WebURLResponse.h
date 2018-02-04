@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebSecurityStyle.h"
@@ -196,6 +197,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetAppCacheManifestURL(const WebURL&);
 
   BLINK_PLATFORM_EXPORT void SetHasMajorCertificateErrors(bool);
+  BLINK_PLATFORM_EXPORT void SetCTPolicyCompliance(net::ct::CTPolicyCompliance);
   BLINK_PLATFORM_EXPORT void SetIsLegacySymantecCert(bool);
 
   BLINK_PLATFORM_EXPORT void SetSecurityStyle(WebSecurityStyle);

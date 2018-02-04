@@ -104,6 +104,23 @@ enum class RequestMethod { kIsPost, kIsNotPost };
 enum class RequestType { kIsConditional, kIsNotConditional };
 enum class ResourceType { kIsMainResource, kIsNotMainResource };
 
+void MaybeRecordCTPolicyComplianceUseCounter(
+    LocalFrame* frame,
+    Resource::Type resource_type,
+    ResourceResponse::CTPolicyCompliance compliance) {
+  if (compliance != ResourceResponse::kCTPolicyDoesNotComply)
+    return;
+  // Exclude main-frame navigation requests; those are tracked elsewhere.
+  if (!frame->Tree().Parent() && resource_type == Resource::kMainResource)
+    return;
+  UseCounter::Count(
+      frame,
+      frame->Tree().Parent()
+          ? WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe
+          : WebFeature::
+                kCertificateTransparencyNonCompliantSubresourceInMainFrame);
+}
+
 // Determines FetchCacheMode for a main resource, or FetchCacheMode that is
 // corresponding to FrameLoadType.
 // TODO(toyoshim): Probably, we should split FrameLoadType to FetchCacheMode
@@ -501,6 +518,9 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     ResourceResponseType response_type) {
   if (IsDetached())
     return;
+
+  MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource->GetType(),
+                                          response.GetCTPolicyCompliance());
 
   ParseAndPersistClientHints(response);
 
