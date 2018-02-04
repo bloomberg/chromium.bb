@@ -208,8 +208,8 @@ void SadTab::RecordFirstPaint() {
 #if defined(OS_CHROMEOS)
     case SAD_TAB_KIND_KILLED_BY_OOM:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillDisplayed.OOM");
+      FALLTHROUGH;
 #endif
-    // Fallthrough
     case SAD_TAB_KIND_KILLED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillDisplayed");
       break;
@@ -269,8 +269,8 @@ SadTab::SadTab(content::WebContents* web_contents, SadTabKind kind)
         memory::OomMemoryDetails::Log(
             "Tab OOM-Killed Memory details: " + spec + ", ", base::Closure());
       }
+      FALLTHROUGH;
 #endif
-    // Fall through
     case SAD_TAB_KIND_KILLED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillCreated");
       LOG(WARNING) << "Tab Killed: "
