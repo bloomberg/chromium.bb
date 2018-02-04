@@ -78,7 +78,7 @@ class RepeatingCallback<R(Args...)> : public internal::CallbackBaseCopyable {
   explicit RepeatingCallback(internal::BindStateBase* bind_state)
       : internal::CallbackBaseCopyable(bind_state) {}
 
-  // Copyable and movabl.
+  // Copyable and movable.
   RepeatingCallback(const RepeatingCallback&) = default;
   RepeatingCallback& operator=(const RepeatingCallback&) = default;
   RepeatingCallback(RepeatingCallback&&) = default;
