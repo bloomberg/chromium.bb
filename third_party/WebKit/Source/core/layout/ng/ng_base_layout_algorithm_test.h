@@ -33,6 +33,9 @@ class NGBaseLayoutAlgorithmTest
             scoped_refptr<NGConstraintSpace>>
   RunBlockLayoutAlgorithmForElement(Element* element);
 
+  scoped_refptr<const NGPhysicalBoxFragment> GetBoxFragmentByElementId(
+      const char*);
+
   static const NGPhysicalBoxFragment* CurrentFragmentFor(
       const LayoutNGBlockFlow*);
 };

@@ -67,11 +67,9 @@ void NGLineInfo::SetLineBfcOffset(NGBfcOffset line_bfc_offset,
   width_ = width;
 }
 
-void NGLineInfo::SetLineEndShapeResult(
-    scoped_refptr<ShapeResult> result,
-    scoped_refptr<const ComputedStyle> style) {
-  line_end_shape_result_ = std::move(result);
-  line_end_style_ = std::move(style);
+void NGLineInfo::SetLineEndFragment(
+    scoped_refptr<NGPhysicalTextFragment> fragment) {
+  line_end_fragment_ = std::move(fragment);
 }
 
 }  // namespace blink

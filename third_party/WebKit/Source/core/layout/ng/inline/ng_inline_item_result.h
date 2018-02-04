@@ -6,6 +6,7 @@
 #define NGInlineItemResult_h
 
 #include "core/layout/ng/geometry/ng_box_strut.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_end_effect.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "platform/LayoutUnit.h"
@@ -156,19 +157,16 @@ class CORE_EXPORT NGLineInfo {
     base_direction_ = direction;
   }
 
-  // ShapeResult to append to the line end. Used by 'text-overflow: ellipsis'.
-  scoped_refptr<ShapeResult>& LineEndShapeResult() {
-    return line_end_shape_result_;
+  // Fragment to append to the line end. Used by 'text-overflow: ellipsis'.
+  scoped_refptr<NGPhysicalTextFragment>& LineEndFragment() {
+    return line_end_fragment_;
   }
-  scoped_refptr<const ComputedStyle>& LineEndStyle() { return line_end_style_; }
-  void SetLineEndShapeResult(scoped_refptr<ShapeResult>,
-                             scoped_refptr<const ComputedStyle>);
+  void SetLineEndFragment(scoped_refptr<NGPhysicalTextFragment>);
 
  private:
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
-  scoped_refptr<ShapeResult> line_end_shape_result_;
-  scoped_refptr<const ComputedStyle> line_end_style_;
+  scoped_refptr<NGPhysicalTextFragment> line_end_fragment_;
 
   NGBfcOffset line_bfc_offset_;
   LayoutUnit available_width_;

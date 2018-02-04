@@ -24,7 +24,6 @@ class NGInlineBreakToken;
 class NGInlineNode;
 class NGInlineItem;
 class NGLineBoxFragmentBuilder;
-class NGTextFragmentBuilder;
 struct NGPositionedFloat;
 
 // A class for laying out an inline formatting context, i.e. a block with inline
@@ -54,15 +53,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   void BidiReorder();
 
-  void PlaceText(scoped_refptr<const ShapeResult>,
-                 scoped_refptr<const ComputedStyle>,
-                 UBiDiLevel bidi_level,
-                 NGInlineBoxState*,
-                 NGTextFragmentBuilder*);
-  void PlaceGeneratedContent(scoped_refptr<const ShapeResult>,
-                             scoped_refptr<const ComputedStyle>,
-                             NGInlineBoxState*,
-                             NGTextFragmentBuilder*);
+  void PlaceGeneratedContent(scoped_refptr<NGPhysicalFragment>,
+                             UBiDiLevel,
+                             NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       NGInlineItemResult*,
                                       const NGLineInfo&);
