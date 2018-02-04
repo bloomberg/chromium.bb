@@ -24,7 +24,7 @@ constexpr TimeDelta kMaxInactivityTime = TimeDelta::FromSeconds(10);
 
 PasswordReuseDetectionManager::PasswordReuseDetectionManager(
     PasswordManagerClient* client)
-    : client_(client), clock_(new base::DefaultClock) {
+    : client_(client), clock_(base::DefaultClock::GetInstance()) {
   DCHECK(client_);
 }
 
@@ -113,9 +113,8 @@ void PasswordReuseDetectionManager::OnReuseFound(
 #endif
 }
 
-void PasswordReuseDetectionManager::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void PasswordReuseDetectionManager::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace password_manager

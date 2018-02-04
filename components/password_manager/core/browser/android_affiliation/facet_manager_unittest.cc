@@ -413,6 +413,8 @@ class FacetManagerTest : public testing::Test {
   MockAffiliationConsumer mock_consumer_;
   scoped_refptr<base::TestSimpleTaskRunner> consumer_task_runner_;
   scoped_refptr<base::TestMockTimeTaskRunner> main_task_runner_;
+  // TODO(tzik): Remove |main_clock_| after updating TestMockTimeTaskRunner to
+  // own the clock instances.
   std::unique_ptr<base::Clock> main_clock_;
   TestFacetManagerNotifier facet_manager_notifier_;
   MockFacetManagerHost facet_manager_host_;

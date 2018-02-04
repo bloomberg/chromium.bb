@@ -261,10 +261,10 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   PretendPasswordWaiting();
 
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model()->state());
-  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  base::SimpleTestClock clock;
   base::Time now = base::Time::Now();
-  clock->SetNow(now);
-  model()->SetClockForTesting(std::move(clock));
+  clock.SetNow(now);
+  model()->SetClockForTesting(&clock);
   password_manager::InteractionsStats stats = GetTestStats();
   stats.dismissal_count++;
   stats.update_time = now;

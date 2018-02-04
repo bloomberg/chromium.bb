@@ -12,13 +12,7 @@
 namespace autofill {
 
 TestAutofillClock::TestAutofillClock() {
-  // Create a new test clock and set it as the AutofillClock clock and keep a
-  // pointer to manipulate the time it returns.
-  std::unique_ptr<base::SimpleTestClock> unique_test_clock(
-      new base::SimpleTestClock());
-  // Keep a pointer to the clock to be able to use its SetNow() function.
-  test_clock_ = unique_test_clock.get();
-  AutofillClock::SetTestClock(std::move(unique_test_clock));
+  AutofillClock::SetTestClock(&test_clock_);
 }
 
 TestAutofillClock::~TestAutofillClock() {
@@ -27,7 +21,7 @@ TestAutofillClock::~TestAutofillClock() {
 }
 
 void TestAutofillClock::SetNow(base::Time now) {
-  test_clock_->SetNow(now);
+  test_clock_.SetNow(now);
 }
 
 }  // namespace autofill

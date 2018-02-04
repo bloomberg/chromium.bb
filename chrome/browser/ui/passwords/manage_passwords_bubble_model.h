@@ -148,7 +148,7 @@ class ManagePasswordsBubbleModel {
   // returns false and leaves the current state.
   bool ReplaceToShowPromotionIfNeeded();
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // Returns true if passwords revealing is not locked or re-authentication is
   // not available on the given platform. Otherwise, the method schedules

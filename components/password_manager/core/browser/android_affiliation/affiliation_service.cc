@@ -38,12 +38,10 @@ void AffiliationService::Initialize(
     const base::FilePath& db_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!backend_);
-  backend_ =
-      new AffiliationBackend(request_context_getter, backend_task_runner_,
-                             std::make_unique<base::DefaultClock>(),
-                             std::make_unique<base::DefaultTickClock>());
+  backend_ = new AffiliationBackend(
+      request_context_getter, backend_task_runner_,
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance());
 
-  std::unique_ptr<base::TickClock> tick_clock(new base::DefaultTickClock);
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AffiliationBackend::Initialize,
                             base::Unretained(backend_), db_path));

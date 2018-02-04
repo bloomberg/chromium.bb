@@ -96,17 +96,16 @@ TEST_F(PasswordReuseDetectionManagerTest,
       .WillRepeatedly(testing::Return(store_.get()));
   PasswordReuseDetectionManager manager(&client_);
 
-  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  base::SimpleTestClock clock;
   base::Time now = base::Time::Now();
-  clock->SetNow(now);
-  base::SimpleTestClock* clock_weak = clock.get();
-  manager.SetClockForTesting(std::move(clock));
+  clock.SetNow(now);
+  manager.SetClockForTesting(&clock);
 
   EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("1"), _, _));
   manager.OnKeyPressed(base::ASCIIToUTF16("1"));
 
   // Simulate 10 seconds of inactivity.
-  clock_weak->SetNow(now + base::TimeDelta::FromSeconds(10));
+  clock.SetNow(now + base::TimeDelta::FromSeconds(10));
   // Expect that a keystroke typed before inactivity is cleared.
   EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("2"), _, _));
   manager.OnKeyPressed(base::ASCIIToUTF16("2"));
