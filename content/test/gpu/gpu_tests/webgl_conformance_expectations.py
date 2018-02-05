@@ -132,6 +132,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=735483)
 
     # Passthrough command decoder / OpenGL
+    self.Flaky('*', ['linux', 'passthrough', 'opengl'], bug=602688)
     self.Fail('conformance/buffers/buffer-uninitialized.html',
         ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/extensions/' +

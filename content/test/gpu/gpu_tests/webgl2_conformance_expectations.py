@@ -237,6 +237,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     # Passthrough command decoder / OpenGL
+    self.Flaky('*', ['linux', 'passthrough', 'opengl'], bug=602688)
     self.Fail('conformance/extensions/webgl-compressed-texture-s3tc.html',
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
@@ -332,7 +333,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
-    self.Flaky('*', ['linux', 'passthrough', 'opengl', 'nvidia'], bug=602688)
     self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=773861)
