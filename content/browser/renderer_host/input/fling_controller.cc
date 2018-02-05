@@ -422,6 +422,11 @@ bool FlingController::FlingCancellationIsDeferred() const {
   return fling_booster_ && fling_booster_->fling_cancellation_is_deferred();
 }
 
+bool FlingController::TouchscreenFlingInProgress() const {
+  return fling_in_progress_ && current_fling_parameters_.source_device ==
+                                   blink::kWebGestureDeviceTouchscreen;
+}
+
 TouchpadTapSuppressionController*
 FlingController::GetTouchpadTapSuppressionController() {
   return &touchpad_tap_suppression_controller_;

@@ -118,6 +118,8 @@ class CONTENT_EXPORT GestureEventQueue {
 
   bool FlingCancellationIsDeferred() const;
 
+  bool TouchscreenFlingInProgress() const;
+
   void set_debounce_interval_time_ms_for_testing(int interval_ms) {
     debounce_interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
   }

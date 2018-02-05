@@ -347,6 +347,10 @@ void InputRouterImpl::OnFilteringTouchEvent(const WebTouchEvent& touch_event) {
   output_stream_validator_.Validate(touch_event);
 }
 
+bool InputRouterImpl::TouchscreenFlingInProgress() {
+  return gesture_event_queue_.TouchscreenFlingInProgress();
+}
+
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(

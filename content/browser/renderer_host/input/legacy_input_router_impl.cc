@@ -272,6 +272,10 @@ void LegacyInputRouterImpl::OnFilteringTouchEvent(
   output_stream_validator_.Validate(touch_event);
 }
 
+bool LegacyInputRouterImpl::TouchscreenFlingInProgress() {
+  return gesture_event_queue_.TouchscreenFlingInProgress();
+}
+
 void LegacyInputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckSource ack_source,

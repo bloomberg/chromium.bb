@@ -115,6 +115,7 @@ class CONTENT_EXPORT InputRouterImpl
                        InputEventAckSource ack_source,
                        InputEventAckState ack_result) override;
   void OnFilteringTouchEvent(const blink::WebTouchEvent& touch_event) override;
+  bool TouchscreenFlingInProgress() override;
 
   // GestureEventFilterClient
   void SendGestureEventImmediately(

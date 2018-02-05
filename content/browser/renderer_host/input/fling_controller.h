@@ -87,6 +87,8 @@ class CONTENT_EXPORT FlingController {
 
   bool FlingCancellationIsDeferred() const;
 
+  bool TouchscreenFlingInProgress() const;
+
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
 
@@ -153,8 +155,7 @@ class CONTENT_EXPORT FlingController {
 
   ActiveFlingParameters current_fling_parameters_;
 
-  // True while no GestureFlingCancel has arrived after the FlingController has
-  // processed a GestureFlingStart.
+  // True when a fling is active.
   bool fling_in_progress_;
 
   // Whether an active fling has seen a |ProgressFling()| call. This is useful
