@@ -162,19 +162,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         getUiLayout().setCloseButtonListener(mDelegate.getVrCloseButtonListener());
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
-            mNonVrModalDialogManager = mActivity.getModalDialogManager();
-            mNonVrModalDialogManager.cancelAllDialogs();
-            mActivity.setModalDialogManager(new ModalDialogManager(
-                    new VrModalPresenter(this), ModalDialogManager.APP_MODAL));
-        }
-        ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
-        mUiView = new FrameLayout(decor.getContext());
-        LayoutParams params = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        decor.addView(mUiView, params);
-        mVrUiViewContainer = new VrViewContainer(mActivity);
-        mUiView.addView(mVrUiViewContainer);
+        if (mVrBrowsingEnabled) injectVrHostedUiView();
 
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
@@ -279,6 +267,22 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         parent.addView(viewContainer);
         viewContainer.addView(content);
         mNonVrViews = viewContainer;
+    }
+
+    private void injectVrHostedUiView() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) return;
+        mNonVrModalDialogManager = mActivity.getModalDialogManager();
+        mNonVrModalDialogManager.cancelAllDialogs();
+        mActivity.setModalDialogManager(
+                new ModalDialogManager(new VrModalPresenter(this), ModalDialogManager.APP_MODAL));
+
+        ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
+        mUiView = new FrameLayout(decor.getContext());
+        LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        decor.addView(mUiView, params);
+        mVrUiViewContainer = new VrViewContainer(mActivity);
+        mUiView.addView(mVrUiViewContainer);
     }
 
     private void removeVrRootView() {
@@ -530,7 +534,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @CalledByNative
     public void dialogSurfaceCreated(Surface surface) {
-        mVrUiViewContainer.setSurface(surface);
+        if (mVrBrowsingEnabled) mVrUiViewContainer.setSurface(surface);
     }
 
     @Override
