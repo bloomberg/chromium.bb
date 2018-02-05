@@ -73,7 +73,6 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
       const AtomicString& slot_name);
 
   void ResolveAssignment();
-  void DistributeTo(Node&, HTMLSlotElement&);
 
   void DidAddSlotInternal(HTMLSlotElement&);
   void DidRemoveSlotInternal(HTMLSlotElement&,
