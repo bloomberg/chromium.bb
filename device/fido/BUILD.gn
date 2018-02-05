@@ -1,0 +1,193 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
+
+source_set("fido") {
+  sources = [
+    "attestation_object.cc",
+    "attestation_object.h",
+    "attestation_statement.cc",
+    "attestation_statement.h",
+    "attested_credential_data.cc",
+    "attested_credential_data.h",
+    "authenticator_data.cc",
+    "authenticator_data.h",
+    "ec_public_key.cc",
+    "ec_public_key.h",
+    "fido_attestation_statement.cc",
+    "fido_attestation_statement.h",
+    "public_key.cc",
+    "public_key.h",
+    "register_response_data.cc",
+    "register_response_data.h",
+    "response_data.cc",
+    "response_data.h",
+    "sign_response_data.cc",
+    "sign_response_data.h",
+    "u2f_apdu_command.cc",
+    "u2f_apdu_command.h",
+    "u2f_apdu_response.cc",
+    "u2f_apdu_response.h",
+    "u2f_ble_connection.cc",
+    "u2f_ble_connection.h",
+    "u2f_ble_device.cc",
+    "u2f_ble_device.h",
+    "u2f_ble_discovery.cc",
+    "u2f_ble_discovery.h",
+    "u2f_ble_frames.cc",
+    "u2f_ble_frames.h",
+    "u2f_ble_transaction.cc",
+    "u2f_ble_transaction.h",
+    "u2f_ble_uuids.cc",
+    "u2f_ble_uuids.h",
+    "u2f_command_type.h",
+    "u2f_device.cc",
+    "u2f_device.h",
+    "u2f_discovery.cc",
+    "u2f_discovery.h",
+    "u2f_message.cc",
+    "u2f_message.h",
+    "u2f_packet.cc",
+    "u2f_packet.h",
+    "u2f_parsing_utils.cc",
+    "u2f_parsing_utils.h",
+    "u2f_register.cc",
+    "u2f_register.h",
+    "u2f_request.cc",
+    "u2f_request.h",
+    "u2f_return_code.h",
+    "u2f_sign.cc",
+    "u2f_sign.h",
+    "u2f_transport_protocol.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/cbor",
+    "//crypto",
+    "//device/base",
+    "//device/bluetooth",
+    "//net",
+    "//services/device/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+    "//third_party/boringssl",
+  ]
+
+  # HID is not supported on Android.
+  if (!is_android) {
+    sources += [
+      "u2f_hid_device.cc",
+      "u2f_hid_device.h",
+      "u2f_hid_discovery.cc",
+      "u2f_hid_discovery.h",
+    ]
+
+    deps += [
+      "//services/device/public/cpp/hid",
+      "//services/device/public/interfaces",
+    ]
+  }
+}
+
+source_set("mocks") {
+  testonly = true
+
+  sources = [
+    "mock_u2f_ble_connection.cc",
+    "mock_u2f_ble_connection.h",
+    "mock_u2f_device.cc",
+    "mock_u2f_device.h",
+    "mock_u2f_discovery.cc",
+    "mock_u2f_discovery.h",
+  ]
+
+  deps = [
+    ":fido",
+    "//base",
+    "//testing/gmock",
+  ]
+}
+
+fuzzer_test("u2f_apdu_fuzzer") {
+  sources = [
+    "u2f_apdu_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//net",
+  ]
+  libfuzzer_options = [ "max_len=65537" ]
+}
+
+fuzzer_test("u2f_message_fuzzer") {
+  sources = [
+    "u2f_message_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//net",
+  ]
+  libfuzzer_options = [ "max_len=2048" ]
+}
+
+fuzzer_test("u2f_ble_frames_fuzzer") {
+  sources = [
+    "u2f_ble_frames_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//net",
+  ]
+  libfuzzer_options = [ "max_len=65535" ]
+}
+
+fuzzer_test("sign_response_data_fuzzer") {
+  sources = [
+    "sign_response_data_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "response_data_fuzzer_corpus/"
+  libfuzzer_options = [ "max_len=65537" ]
+}
+
+fuzzer_test("register_response_data_fuzzer") {
+  sources = [
+    "register_response_data_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//net",
+  ]
+
+  seed_corpus = "response_data_fuzzer_corpus/"
+  libfuzzer_options = [ "max_len=65537" ]
+}
+
+is_linux_without_udev = is_linux && !use_udev
+
+source_set("test_support") {
+  testonly = true
+
+  # Android doesn't compile.
+  # Linux, requires udev.
+  if (!is_linux_without_udev && !is_android) {
+    sources = [
+      "fake_hid_impl_for_testing.cc",
+      "fake_hid_impl_for_testing.h",
+    ]
+    deps = [
+      "//base",
+      "//mojo/public/cpp/bindings",
+      "//services/device/public/interfaces",
+      "//testing/gmock",
+    ]
+  }
+}

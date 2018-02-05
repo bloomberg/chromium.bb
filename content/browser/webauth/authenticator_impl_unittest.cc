@@ -18,7 +18,7 @@
 #include "content/browser/webauth/collected_client_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/test/test_render_frame_host.h"
-#include "device/u2f/fake_hid_impl_for_testing.h"
+#include "device/fido/fake_hid_impl_for_testing.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
