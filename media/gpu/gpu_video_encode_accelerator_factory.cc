@@ -4,6 +4,7 @@
 
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/gpu/features.h"
@@ -32,11 +33,11 @@ namespace media {
 namespace {
 #if BUILDFLAG(USE_V4L2_CODEC)
 std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA() {
-  auto device = V4L2Device::Create();
-  if (device)
-    return base::WrapUnique<VideoEncodeAccelerator>(
-        new V4L2VideoEncodeAccelerator(device));
-  return nullptr;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return nullptr;
+  return base::WrapUnique<VideoEncodeAccelerator>(
+      new V4L2VideoEncodeAccelerator(std::move(device)));
 }
 #endif
 
@@ -62,48 +63,46 @@ std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
 #endif
 
 #if defined(OS_WIN)
-// Creates a MediaFoundationVEA for Windows 8 or above only.
-std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA() {
+// Creates a MediaFoundationVEA for Win 7 or later. If |compatible_with_win7| is
+// true, VEA is limited to a subset of features that is compatible with Win 7.
+std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA(
+    bool compatible_with_win7) {
   return base::WrapUnique<VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator(false));
-}
-
-// Creates a MediaFoundationVEA compatible with Windows 7.
-std::unique_ptr<VideoEncodeAccelerator> CreateCompatibleMediaFoundationVEA() {
-  return base::WrapUnique<VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator(true));
+      new MediaFoundationVideoEncodeAccelerator(compatible_with_win7));
 }
 #endif
 
-using VEAFactoryFunction = std::unique_ptr<VideoEncodeAccelerator> (*)();
+using VEAFactoryFunction =
+    base::RepeatingCallback<std::unique_ptr<VideoEncodeAccelerator>()>;
 
 std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
     const gpu::GpuPreferences& gpu_preferences) {
-  // Array of Create..VEA() function pointers, potentially usable on current
-  // platform. This list is ordered by priority, from most to least preferred,
-  // if applicable.
-  std::vector<VEAFactoryFunction> vea_factory_functions;
+  // Array of VEAFactoryFunctions potentially usable on the current platform.
+  // This list is ordered by priority, from most to least preferred, if
+  // applicable. This list is composed once and then reused.
+  static std::vector<VEAFactoryFunction> vea_factory_functions;
   if (gpu_preferences.disable_accelerated_video_encode)
     return vea_factory_functions;
+  if (!vea_factory_functions.empty())
+    return vea_factory_functions;
+
 #if BUILDFLAG(USE_V4L2_CODEC)
-  vea_factory_functions.push_back(&CreateV4L2VEA);
+  vea_factory_functions.push_back(base::BindRepeating(&CreateV4L2VEA));
 #endif
 #if BUILDFLAG(USE_VAAPI)
-  vea_factory_functions.push_back(&CreateVaapiVEA);
+  vea_factory_functions.push_back(base::BindRepeating(&CreateVaapiVEA));
 #endif
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
-  vea_factory_functions.push_back(&CreateAndroidVEA);
+  vea_factory_functions.push_back(base::BindRepeating(&CreateAndroidVEA));
 #endif
 #if defined(OS_MACOSX)
-  vea_factory_functions.push_back(&CreateVTVEA);
+  vea_factory_functions.push_back(base::BindRepeating(&CreateVTVEA));
 #endif
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding)) {
-    if (gpu_preferences.enable_media_foundation_vea_on_windows7) {
-      vea_factory_functions.push_back(&CreateCompatibleMediaFoundationVEA);
-    } else {
-      vea_factory_functions.push_back(&CreateMediaFoundationVEA);
-    }
+    vea_factory_functions.push_back(base::BindRepeating(
+        &CreateMediaFoundationVEA,
+        gpu_preferences.enable_media_foundation_vea_on_windows7));
   }
 #endif
   return vea_factory_functions;
@@ -121,12 +120,14 @@ GpuVideoEncodeAcceleratorFactory::CreateVEA(
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   for (const auto& create_vea : GetVEAFactoryFunctions(gpu_preferences)) {
-    auto vea = create_vea();
+    auto vea = create_vea.Run();
     if (!vea)
       continue;
     if (!vea->Initialize(input_format, input_visible_size, output_profile,
                          initial_bitrate, client)) {
-      DLOG(ERROR) << "VEA initialize failed";
+      DLOG(ERROR) << "VEA initialize failed ("
+                  << VideoPixelFormatToString(input_format) << ", "
+                  << GetProfileName(output_profile) << ")";
       continue;
     }
     return vea;
@@ -140,10 +141,11 @@ GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
     const gpu::GpuPreferences& gpu_preferences) {
   VideoEncodeAccelerator::SupportedProfiles profiles;
   for (const auto& create_vea : GetVEAFactoryFunctions(gpu_preferences)) {
-    auto vea = create_vea();
-    if (vea)
-      GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
-          vea->GetSupportedProfiles(), &profiles);
+    auto vea = std::move(create_vea).Run();
+    if (!vea)
+      continue;
+    GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
+        vea->GetSupportedProfiles(), &profiles);
   }
   return profiles;
 }
