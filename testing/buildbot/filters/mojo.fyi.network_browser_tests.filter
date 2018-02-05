@@ -33,8 +33,6 @@
 -DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 -DomainReliabilityBrowserTest.Upload
--DoNotTrackTest.Redirect
--DoNotTrackTest.Simple
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
@@ -159,6 +157,11 @@
 -WebViewTests/WebViewTest.StoragePersistence/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
+
+# Need support for DoNotTrack:
+# https://crbug.com/808948
+-DoNotTrackTest.Redirect
+-DoNotTrackTest.Simple
 
 # Need support for blocking cookies via content settings:
 # https://crbug.com/803452.
