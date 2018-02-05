@@ -55,7 +55,7 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
     return CSSUnparsedValue::FromCSSValue(*variable_data);
   }
   if (value.IsImageValue()) {
-    return CSSURLImageValue::Create(ToCSSImageValue(value).Clone());
+    return CSSURLImageValue::FromCSSValue(*ToCSSImageValue(value).Clone());
   }
   return nullptr;
 }
