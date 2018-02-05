@@ -489,8 +489,8 @@ void Geolocation::UpdateGeolocationConnection() {
 
   InterfaceInvalidator* invalidator =
       GetExecutionContext()->GetInterfaceInvalidator();
-  GetFrame()->GetInterfaceProvider().GetInterface(
-      MakeRequest(&geolocation_service_, invalidator));
+  GetFrame()->GetInterfaceProvider().GetInterface(&geolocation_service_,
+                                                  invalidator);
   geolocation_service_->CreateGeolocation(
       MakeRequest(&geolocation_, invalidator),
       Frame::HasTransientUserActivation(GetFrame()));

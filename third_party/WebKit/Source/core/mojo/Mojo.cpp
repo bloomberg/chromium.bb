@@ -102,7 +102,7 @@ void Mojo::bindInterface(ScriptState* script_state,
 
   if (auto* interface_provider =
           ExecutionContext::From(script_state)->GetInterfaceProvider()) {
-    interface_provider->GetInterface(name, std::move(handle));
+    interface_provider->GetInterfaceByName(name, std::move(handle));
   }
 }
 

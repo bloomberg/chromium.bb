@@ -53,7 +53,7 @@ base::WeakPtr<InterfaceProvider> InterfaceProvider::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void InterfaceProvider::GetInterface(
+void InterfaceProvider::GetInterfaceByName(
     const std::string& name,
     mojo::ScopedMessagePipeHandle request_handle) {
   // Local binders can be registered via TestApi.
