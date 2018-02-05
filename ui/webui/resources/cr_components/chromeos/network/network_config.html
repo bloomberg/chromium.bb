@@ -24,14 +24,14 @@
     </style>
 
     <!-- SSID (WiFi) -->
-    <template is="dom-if" if="[[isType_(NetworkType_.WI_FI, type)]]">
+    <template is="dom-if" if="[[isType_(NetworkType_.WI_FI, type)]]" restamp>
       <network-config-input id="ssid" label="[[i18n('OncWiFi-SSID')]]"
           value="{{configProperties_.WiFi.SSID}}" disabled="[[hasGuid_(guid)]]">
       </network-config-input>
     </template>
 
     <!-- Security (WiFi and Ethernet) -->
-    <template is="dom-if" if="[[securityIsVisible_(type)]]">
+    <template is="dom-if" if="[[securityIsVisible_(type)]]" restamp>
       <network-config-select id="security" label="[[i18n('OncWiFi-Security')]]"
           value="{{security_}}"
           disabled="[[!securityIsEnabled_(guid, type)]]"
@@ -41,7 +41,8 @@
     </template>
 
     <!-- Passphrase (WiFi) -->
-    <template is="dom-if" if="[[configRequiresPassphrase_(type, security_)]]">
+    <template is="dom-if" if="[[configRequiresPassphrase_(type, security_)]]"
+        restamp>
       <network-config-input label="[[i18n('OncWiFi-Passphrase')]]"
           value="{{configProperties_.WiFi.Passphrase}}" password>
         <iron-a11y-keys keys="enter" on-keys-pressed="connectIfConfigured_">
@@ -50,7 +51,7 @@
     </template>
 
     <!-- VPN -->
-    <template is="dom-if" if="[[showVpn_]]">
+    <template is="dom-if" if="[[showVpn_]]" restamp>
       <network-config-input label="[[i18n('OncVPN-Host')]]"
           value="{{configProperties_.VPN.Host}}">
       </network-config-input>
@@ -111,7 +112,7 @@
     </template>
 
     <!-- EAP (WiFi, WiMAX, Ethernet) -->
-    <template is="dom-if" if="[[showEap_]]">
+    <template is="dom-if" if="[[showEap_]]" restamp>
       <network-config-select id="outer" label="[[i18n('OncEAP-Outer')]]"
           value="{{eapProperties_.Outer}}" items="[[eapOuterItems_]]"
           onc-prefix="EAP.Outer" hidden="[[!showEap_.Outer]]">
@@ -156,7 +157,7 @@
 
     <!-- Share (WiFi and WiMAX) -->
     <template is="dom-if"
-        if="[[shareIsVisible_(guid, type, networkProperties)]]">
+        if="[[shareIsVisible_(guid, type, networkProperties)]]" restamp>
       <div class="property-box">
         <div id="shareLabel" class="start">[[i18n('networkConfigShare')]]</div>
         <paper-toggle-button id="share" checked="{{shareNetwork_}}"
@@ -168,7 +169,7 @@
     </template>
 
     <template is="dom-if"
-        if="[[connectingIsVisible_(propertiesSent_, error_)]]">
+        if="[[connectingIsVisible_(propertiesSent_, error_)]]" restamp>
       <div class="property-box">
         <div class="start layout horizontal center">
           <cr-network-icon is-list-item
@@ -179,7 +180,7 @@
       </div>
     </template>
 
-    <template is="dom-if" if="[[error_]]">
+    <template is="dom-if" if="[[error_]]" restamp>
       <div class="property-box">
         <div id="error" class="start">
           [[getError_(error_)]]
