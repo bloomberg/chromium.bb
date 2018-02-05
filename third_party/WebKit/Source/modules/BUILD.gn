@@ -299,7 +299,7 @@ jumbo_source_set("unit_tests") {
     "push_messaging/PushMessageDataTest.cpp",
     "push_messaging/PushSubscriptionTest.cpp",
     "remoteplayback/RemotePlaybackTest.cpp",
-    "screen_orientation/ScreenOrientationDelegateTest.cpp",
+    "screen_orientation/ScreenOrientationControllerImplTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "serviceworkers/WebEmbeddedWorkerImplTest.cpp",
     "wake_lock/ScreenWakeLockTest.cpp",
