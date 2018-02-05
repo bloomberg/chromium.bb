@@ -1,0 +1,8 @@
+{
+  "required_files" : {
+    "v8_snapshot_data" : [{
+      "path": "snapshot_blob.bin",
+      "platform": "linux"
+    }]
+  }
+}
