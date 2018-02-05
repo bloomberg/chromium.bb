@@ -4,7 +4,6 @@
 
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 
-#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -16,11 +15,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/password_manager_util_linux.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -34,12 +33,6 @@ using password_manager::MatchResult;
 using password_manager::PasswordStore;
 
 namespace {
-const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
-}
-
-namespace {
-
-const char kGnomeKeyringAppString[] = "chrome";
 
 // Convert the attributes of a given keyring entry into a new PasswordForm.
 // Note: does *not* get the actual password, as that is not a key attribute!
@@ -58,7 +51,7 @@ std::unique_ptr<PasswordForm> FormFromAttributes(
   }
   // Check to make sure this is a password we care about.
   const std::string& app_value = string_attr_map["application"];
-  if (!base::StringPiece(app_value).starts_with(kGnomeKeyringAppString))
+  if (!base::StringPiece(app_value).starts_with(kLibsecretAndGnomeAppString))
     return std::unique_ptr<PasswordForm>();
 
   std::unique_ptr<PasswordForm> form(new PasswordForm());
@@ -474,14 +467,6 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
     method->forms_.clear();
   method->lookup_form_.reset();
   method->event_.Signal();
-}
-
-// Generates a profile-specific app string based on profile_id.
-std::string GetProfileSpecificAppString(LocalProfileId profile_id) {
-  // Originally, the application string was always just "chrome" and used only
-  // so that we had *something* to search for since GNOME Keyring won't search
-  // for nothing. Now we use it to distinguish passwords for different profiles.
-  return base::StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id);
 }
 
 }  // namespace
