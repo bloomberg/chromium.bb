@@ -120,6 +120,7 @@ source_set("tests") {
     "keepalive_statistics_recorder_unittest.cc",
     "network_change_manager_unittest.cc",
     "network_context_unittest.cc",
+    "network_service_unittest.cc",
     "proxy_config_service_mojo_unittest.cc",
     "proxy_resolving_client_socket_unittest.cc",
     "resource_scheduler_unittest.cc",
@@ -132,12 +133,7 @@ source_set("tests") {
   ]
 
   if (!is_ios) {
-    sources += [
-      # TODO(sdefresne): get these working on iOS. They currently hang.
-      # http://crbug.com/803149
-      "network_service_unittest.cc",
-      "proxy_resolver_factory_mojo_unittest.cc",
-    ]
+    sources += [ "proxy_resolver_factory_mojo_unittest.cc" ]
   }
 
   deps = [
