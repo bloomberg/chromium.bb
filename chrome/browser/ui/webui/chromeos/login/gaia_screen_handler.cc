@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/untrusted_authority_certs_cache.h"
+#include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
@@ -954,8 +954,8 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     // When the WebUI is destroyed, |untrusted_authority_certs_cache_| will go
     // out of scope and the certificates will not be held in memory anymore.
     untrusted_authority_certs_cache_ =
-        std::make_unique<policy::UntrustedAuthorityCertsCache>(
-            policy::UntrustedAuthorityCertsCache::
+        std::make_unique<policy::TempCertsCacheNSS>(
+            policy::TempCertsCacheNSS::
                 GetUntrustedAuthoritiesFromDeviceOncPolicy());
   }
 
