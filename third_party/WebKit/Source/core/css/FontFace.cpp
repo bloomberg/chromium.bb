@@ -147,7 +147,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
         kSyntaxError, "The source provided ('" + source +
                           "') could not be parsed as a value list."));
 
-  font_face->InitCSSFontFace(context, src);
+  font_face->InitCSSFontFace(context, *src);
   return font_face;
 }
 
@@ -204,7 +204,7 @@ FontFace* FontFace::Create(Document* document,
                                       AtRuleDescriptorID::FontDisplay) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
-    font_face->InitCSSFontFace(document, src);
+    font_face->InitCSSFontFace(document, *src);
     return font_face;
   }
   return nullptr;
@@ -702,22 +702,21 @@ bool ContextAllowsDownload(ExecutionContext* context) {
   return true;
 }
 
-void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue* src) {
+void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
   css_font_face_ = CreateCSSFontFace(this, unicode_range_.Get());
   if (error_)
     return;
 
   // Each item in the src property's list is a single CSSFontFaceSource. Put
   // them all into a CSSFontFace.
-  DCHECK(src);
-  DCHECK(src->IsValueList());
-  const CSSValueList* src_list = ToCSSValueList(src);
-  int src_length = src_list->length();
+  DCHECK(src.IsValueList());
+  const CSSValueList& src_list = ToCSSValueList(src);
+  int src_length = src_list.length();
 
   for (int i = 0; i < src_length; i++) {
     // An item in the list either specifies a string (local font name) or a URL
     // (remote font to download).
-    const CSSFontFaceSrcValue& item = ToCSSFontFaceSrcValue(src_list->Item(i));
+    const CSSFontFaceSrcValue& item = ToCSSFontFaceSrcValue(src_list.Item(i));
 
     if (!item.IsLocal()) {
       if (ContextAllowsDownload(context) && item.IsSupportedFormat()) {
