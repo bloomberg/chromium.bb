@@ -51,7 +51,7 @@ class V8GCForContextDispose {
   void PseudoIdleTimerFired(TimerBase*);
   void Reset();
 
-  Timer<V8GCForContextDispose> pseudo_idle_timer_;
+  TaskRunnerTimer<V8GCForContextDispose> pseudo_idle_timer_;
   bool did_dispose_context_for_main_frame_;
   double last_context_disposal_time_;
 };

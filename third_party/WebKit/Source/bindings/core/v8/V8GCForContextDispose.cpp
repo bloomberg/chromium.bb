@@ -34,6 +34,7 @@
 #include "platform/Histogram.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/bindings/V8PerIsolateData.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/ProcessMetrics.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Time.h"
@@ -54,7 +55,10 @@ size_t GetMemoryUsage() {
 namespace blink {
 
 V8GCForContextDispose::V8GCForContextDispose()
-    : pseudo_idle_timer_(this, &V8GCForContextDispose::PseudoIdleTimerFired) {
+    : pseudo_idle_timer_(
+          Platform::Current()->MainThread()->Scheduler()->V8TaskRunner(),
+          this,
+          &V8GCForContextDispose::PseudoIdleTimerFired) {
   Reset();
 }
 
