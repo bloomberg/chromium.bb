@@ -19,15 +19,16 @@ namespace {
 
 const char kShortcutNameKey[] = "shortcut_name";
 const char kActiveTimeKey[] = "active_time";
-const char kUserNameKey[] = "user_name";
-const char kAvatarIconKey[] = "avatar_icon";
 const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kPasswordTokenKey[] = "gaia_password_token";
-const char kBackgroundAppsKey[] = "background_apps";
-const char kProfileIsEphemeral[] = "is_ephemeral";
 const char kIsAuthErrorKey[] = "is_auth_error";
 
 }  // namespace
+
+const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
+const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
+const char ProfileAttributesEntry::kProfileIsEphemeral[] = "is_ephemeral";
+const char ProfileAttributesEntry::kUserNameKey[] = "user_name";
 
 ProfileAttributesEntry::ProfileAttributesEntry()
     : profile_info_cache_(nullptr),
