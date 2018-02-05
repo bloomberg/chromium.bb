@@ -50,7 +50,7 @@ void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
     type = service_manager::SANDBOX_TYPE_NO_SANDBOX;
   }
 
-  DCHECK(type = service_manager::SANDBOX_TYPE_NO_SANDBOX);
+  DCHECK_EQ(type, service_manager::SANDBOX_TYPE_NO_SANDBOX);
   options->clone_flags =
       LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB | LP_CLONE_FDIO_STDIO;
   options->clear_environ = false;
