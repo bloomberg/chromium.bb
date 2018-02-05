@@ -998,9 +998,6 @@ class CORE_EXPORT Element : public ContainerNode {
                                const AtomicString& value,
                                SynchronizationOfLazyAttribute);
   void RemoveAttributeInternal(size_t index, SynchronizationOfLazyAttribute);
-  void AttributeChangedFromParserOrByCloning(const QualifiedName&,
-                                             const AtomicString&,
-                                             AttributeModificationReason);
 
   void CancelFocusAppearanceUpdate();
 

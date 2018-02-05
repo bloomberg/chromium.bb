@@ -1506,15 +1506,6 @@ const QualifiedName& Element::SubResourceAttributeName() const {
   return QualifiedName::Null();
 }
 
-// TODO(tkent): Remove this function, and call AttributeChanged directly.
-inline void Element::AttributeChangedFromParserOrByCloning(
-    const QualifiedName& name,
-    const AtomicString& new_value,
-    AttributeModificationReason reason) {
-  AttributeChanged(
-      AttributeModificationParams(name, g_null_atom, new_value, reason));
-}
-
 template <typename CharacterType>
 static inline ClassStringContent ClassStringHasClassName(
     const CharacterType* characters,
@@ -1671,9 +1662,9 @@ void Element::ParserSetAttributes(const Vector<Attribute>& attribute_vector) {
   // Use attributeVector instead of m_elementData because attributeChanged might
   // modify m_elementData.
   for (const auto& attribute : attribute_vector) {
-    AttributeChangedFromParserOrByCloning(
-        attribute.GetName(), attribute.Value(),
-        AttributeModificationReason::kByParser);
+    AttributeChanged(AttributeModificationParams(
+        attribute.GetName(), g_null_atom, attribute.Value(),
+        AttributeModificationReason::kByParser));
   }
 }
 
@@ -4385,10 +4376,10 @@ void Element::CloneAttributesFromElement(const Element& other) {
   else
     element_data_ = other.element_data_->MakeUniqueCopy();
 
-  AttributeCollection attributes = element_data_->Attributes();
-  for (const Attribute& attr : attributes) {
-    AttributeChangedFromParserOrByCloning(
-        attr.GetName(), attr.Value(), AttributeModificationReason::kByCloning);
+  for (const Attribute& attr : element_data_->Attributes()) {
+    AttributeChanged(
+        AttributeModificationParams(attr.GetName(), g_null_atom, attr.Value(),
+                                    AttributeModificationReason::kByCloning));
   }
 
   if (other.nonce() != g_null_atom)
