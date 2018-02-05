@@ -174,6 +174,12 @@ TEST_F(InputInjectorEvdevTest, RightClick) {
   run_loop_.RunUntilIdle();
 }
 
+TEST_F(InputInjectorEvdevTest, MiddleClick) {
+  ExpectClick(12, 13, EF_MIDDLE_MOUSE_BUTTON, 1);
+  SimulateMouseClick(12, 13, EF_MIDDLE_MOUSE_BUTTON, 1);
+  run_loop_.RunUntilIdle();
+}
+
 TEST_F(InputInjectorEvdevTest, DoubleClick) {
   ExpectClick(12, 13, EF_LEFT_MOUSE_BUTTON, 2);
   SimulateMouseClick(12, 13, EF_LEFT_MOUSE_BUTTON, 2);
