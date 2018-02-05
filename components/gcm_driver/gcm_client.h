@@ -82,7 +82,7 @@ class GCMClient {
     PLATFORM_CROS,
     PLATFORM_IOS,
     PLATFORM_ANDROID,
-    PLATFORM_UNKNOWN
+    PLATFORM_UNSPECIFIED
   };
 
   enum ChromeChannel {
