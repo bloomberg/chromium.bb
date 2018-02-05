@@ -40,6 +40,12 @@ SSLErrorNavigationThrottle::WillFailRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
+  // Do not set special error page HTML for subframes; those are handled as
+  // normal network errors.
+  if (!handle->IsInMainFrame()) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
   // We don't know whether SSLErrorHandler will call the ShowInterstitial()
   // callback synchronously, so we post a task that will run after this function
   // defers the navigation. This ensures that ShowInterstitial() can always
