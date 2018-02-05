@@ -38,7 +38,7 @@ bool DoublesConsideredDifferent(double value1, double value2, double delta) {
   return abs_difference > delta;
 }
 
-std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
+std::unique_ptr<base::DictionaryValue> GetSiteEngagementScoreDictForSettings(
     const HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
@@ -209,14 +209,13 @@ void SiteEngagementScore::UpdateFromVariations(const char* param_name) {
     SiteEngagementScore::GetParamValues()[i].second = param_vals[i];
 }
 
-SiteEngagementScore::SiteEngagementScore(
-    base::Clock* clock,
-    const GURL& origin,
-    HostContentSettingsMap* settings)
+SiteEngagementScore::SiteEngagementScore(base::Clock* clock,
+                                         const GURL& origin,
+                                         HostContentSettingsMap* settings)
     : SiteEngagementScore(
           clock,
           origin,
-          GetScoreDictForSettings(settings, origin)) {
+          GetSiteEngagementScoreDictForSettings(settings, origin)) {
   settings_map_ = settings;
 }
 
