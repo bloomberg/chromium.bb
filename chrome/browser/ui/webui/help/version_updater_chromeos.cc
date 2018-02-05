@@ -303,7 +303,7 @@ void VersionUpdaterCros::UpdateStatusChanged(
       break;
     case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
       progress = static_cast<int>(round(status.download_progress * 100));
-      // Fall through.
+      FALLTHROUGH;
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       my_status = UPDATING;
       break;
