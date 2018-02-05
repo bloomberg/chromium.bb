@@ -51,11 +51,13 @@ void TaskScheduler::StartWithDefaultParams() {
   // * There are few background threads.
   // * Background threads never outnumber foreground threads.
   // * The system is utilized maximally by foreground threads.
+  // * The main thread is assumed to be busy, cap foreground workers at
+  //   |num_cores - 1|.
   const int num_cores = SysInfo::NumberOfProcessors();
   constexpr int kBackgroundMaxThreads = 1;
   constexpr int kBackgroundBlockingMaxThreads = 2;
-  const int kForegroundMaxThreads = std::max(1, num_cores);
-  const int kForegroundBlockingMaxThreads = std::max(2, num_cores);
+  const int kForegroundMaxThreads = std::max(1, num_cores - 1);
+  const int kForegroundBlockingMaxThreads = std::max(2, num_cores - 1);
 
   constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
 
