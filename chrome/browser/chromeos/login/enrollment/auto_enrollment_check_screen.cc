@@ -212,8 +212,9 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
           AutoEnrollmentController::EXPLICITLY_REQUIRED) {
         return false;
       }
-    // Fall to the same behavior like any connection error if the device is
-    // enrolled.
+      // Fall to the same behavior like any connection error if the device is
+      // enrolled.
+      FALLTHROUGH;
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
       ShowErrorScreen(NetworkError::ERROR_STATE_OFFLINE);
       return true;
