@@ -2463,6 +2463,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   int partition_none_allowed = has_rows && has_cols;
 
   (void)*tp_orig;
+  (void)split_rd;
 
   // Override partition costs at the edges of the frame in the same
   // way as in read_partition (see decodeframe.c)
