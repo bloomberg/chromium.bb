@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/installable/installable_metrics.h"
@@ -127,6 +128,9 @@ class BookmarkAppHelper : public content::NotificationObserver {
   std::unique_ptr<FaviconDownloader> favicon_downloader_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BookmarkAppHelperTest,
+                           CreateWindowedPWAIntoAppWindow);
+
   enum Installable {
     INSTALLABLE_YES,
     INSTALLABLE_NO,

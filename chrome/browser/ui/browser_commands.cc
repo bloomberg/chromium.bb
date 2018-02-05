@@ -1205,6 +1205,7 @@ void OpenInChrome(Browser* browser) {
       true);
   target_browser->window()->Show();
 }
+
 bool CanViewSource(const Browser* browser) {
   return !browser->is_devtools() &&
       browser->tab_strip_model()->GetActiveWebContents()->GetController().
