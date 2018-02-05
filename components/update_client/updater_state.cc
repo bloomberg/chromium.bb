@@ -53,6 +53,10 @@ void UpdaterState::ReadState() {
 UpdaterState::Attributes UpdaterState::BuildAttributes() const {
   Attributes attributes;
 
+#if defined(OS_WIN)
+  // Only Windows implements this attribute in a meaningful way.
+  attributes["ismachine"] = is_machine_ ? "1" : "0";
+#endif  // OS_WIN
   attributes[kIsEnterpriseManaged] = is_enterprise_managed_ ? "1" : "0";
 
   attributes["name"] = updater_name_;
