@@ -69,11 +69,7 @@ struct TestRule {
 TestRule CreateGenericRule();
 
 // Helper to build an extension manifest which uses the
-// kDeclarativeNetRequestKey manifest key. By default, "all_urls" will be
-// specified as the host permissions.
-std::unique_ptr<base::DictionaryValue> CreateManifest(
-    const std::string& json_rules_filename,
-    const std::vector<std::string>& hosts);
+// kDeclarativeNetRequestKey manifest key.
 std::unique_ptr<base::DictionaryValue> CreateManifest(
     const std::string& json_rules_filename);
 
