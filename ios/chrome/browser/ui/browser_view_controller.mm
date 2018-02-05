@@ -621,6 +621,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // is used to determine whether the pre-rendering animation should be played
   // or not.
   BOOL _insertedTabWasPrerenderedTab;
+
+  // A pointer to the most recently presented UIDocumentMenuViewController.
+  // Used to work around https://crbug.com/801165.
+  __weak UIDocumentMenuViewController*
+      _lastPresentedUIDocumentMenuViewController;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -1776,6 +1781,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
+  if (!base::ios::IsRunningOnIOS11OrLater() &&
+      _lastPresentedUIDocumentMenuViewController &&
+      !self.presentedViewController) {
+    // TODO(crbug.com/801165): On iOS10, UIDocumentMenuViewController and
+    // WKFileUploadPanel somehow combine to call dismiss twice instead of once.
+    // The second call would dismiss the BVC itself, so look for that case and
+    // return early.
+    return;
+  }
+
   // It is an error to call this method when no VC is being presented.
   DCHECK(!TabSwitcherPresentsBVCEnabled() || self.presentedViewController);
 
@@ -1860,6 +1875,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.dialogPresenterDelegateIsPresenting = YES;
   if ([self.sideSwipeController inSwipe]) {
     [self.sideSwipeController resetContentView];
+  }
+
+  // TODO(crbug.com/801165): Workaround for an iOS10 bug.
+  // UIDocumentMenuViewController, when used via WKFileUploadPanel,
+  // over-dismisses itself, which triggers a DCHECK in
+  // dismissViewController:animated:.  If a UIDocumentMenuViewController is
+  // being presented here, save a weak pointer that can be tested later when
+  // dismiss is called.
+  if (!base::ios::IsRunningOnIOS11OrLater() &&
+      [viewControllerToPresent
+          isKindOfClass:[UIDocumentMenuViewController class]]) {
+    _lastPresentedUIDocumentMenuViewController =
+        base::mac::ObjCCastStrict<UIDocumentMenuViewController>(
+            viewControllerToPresent);
   }
 
   [super presentViewController:viewControllerToPresent
