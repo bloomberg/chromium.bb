@@ -17755,6 +17755,7 @@ Called by update_net_error_codes.py.-->
       label="CertificateTransparencyNonCompliantSubresourceInMainFrame"/>
   <int value="2360"
       label="CertificateTransparencyNonCompliantResourceInSubframe"/>
+  <int value="2361" label="V8AbortController_Constructor"/>
 </enum>
 
 <enum name="FeedbackSource">

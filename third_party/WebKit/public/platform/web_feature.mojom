@@ -1871,6 +1871,7 @@ enum WebFeature {
   kDisablePictureInPictureAttribute = 2358,
   kCertificateTransparencyNonCompliantSubresourceInMainFrame = 2359,
   kCertificateTransparencyNonCompliantResourceInSubframe = 2360,
+  kV8AbortController_Constructor = 2361,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

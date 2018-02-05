@@ -1,8 +1,19 @@
 [INTERFACES]
+interface AbortController
+    attribute @@toStringTag
+    getter signal
+    method abort
+    method constructor
 interface AbortPaymentEvent : ExtendableEvent
     attribute @@toStringTag
     method constructor
     method respondWith
+interface AbortSignal : EventTarget
+    attribute @@toStringTag
+    getter aborted
+    getter onabort
+    method constructor
+    setter onabort
 interface BackgroundFetchClickEvent : BackgroundFetchEvent
     attribute @@toStringTag
     getter state

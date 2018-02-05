@@ -5,6 +5,17 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 [INTERFACES]
+interface AbortController
+    attribute @@toStringTag
+    getter signal
+    method abort
+    method constructor
+interface AbortSignal : EventTarget
+    attribute @@toStringTag
+    getter aborted
+    getter onabort
+    method constructor
+    setter onabort
 interface AbsoluteOrientationSensor : OrientationSensor
     attribute @@toStringTag
     method constructor

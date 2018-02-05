@@ -100,6 +100,8 @@ core_idl_files =
                     "css/cssom/CSSVariableReferenceValue.idl",
                     "css/cssom/StylePropertyMap.idl",
                     "css/cssom/StylePropertyMapReadOnly.idl",
+                    "dom/AbortController.idl",
+                    "dom/AbortSignal.idl",
                     "dom/AccessibleNode.idl",
                     "dom/AccessibleNodeList.idl",
                     "dom/Attr.idl",
