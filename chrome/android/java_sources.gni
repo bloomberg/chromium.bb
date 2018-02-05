@@ -630,6 +630,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/metrics/MediaNotificationUma.java",
   "java/src/org/chromium/chrome/browser/metrics/MemoryUma.java",
   "java/src/org/chromium/chrome/browser/metrics/OneShotImpressionListener.java",
+  "java/src/org/chromium/chrome/browser/metrics/PackageMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/StartupMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/StartupPageLoadMetricsObserver.java",

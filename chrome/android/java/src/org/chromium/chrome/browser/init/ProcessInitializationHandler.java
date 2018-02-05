@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGe
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.metrics.PackageMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
@@ -463,6 +464,7 @@ public class ProcessInitializationHandler {
                     // instance is initialized.
                     WebappRegistry.warmUpSharedPrefs();
 
+                    PackageMetrics.recordPackageStats();
                     return null;
                 } finally {
                     TraceEvent.end("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
