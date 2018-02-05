@@ -23,9 +23,6 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   explicit StatusAreaWidgetDelegate(Shelf* shelf);
   ~StatusAreaWidgetDelegate() override;
 
-  // Add a tray view to the widget (e.g. system tray, web notifications).
-  void AddTray(views::View* tray);
-
   // Called whenever layout might change (e.g. alignment changed).
   void UpdateLayout();
 
