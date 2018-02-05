@@ -979,6 +979,7 @@ void MobileActivator::ChangeState(const NetworkState* network,
       case PLAN_ACTIVATION_DONE:
         new_state = PLAN_ACTIVATION_ERROR;
         error_description = GetErrorMessage(kErrorNoService);
+        break;
       default:
         break;
     }
