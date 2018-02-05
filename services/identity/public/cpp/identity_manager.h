@@ -15,6 +15,16 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 
+// Necessary to declare functions in identity_test_utils.h as friends.
+class FakeSigninManagerBase;
+class FakeSigninManager;
+
+#if defined(OS_CHROMEOS)
+using SigninManagerForTest = FakeSigninManagerBase;
+#else
+using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
+
 namespace identity {
 
 // Primary client-side interface to the Identity Service, encapsulating a
@@ -93,20 +103,20 @@ class IdentityManager : public SigninManagerBase::Observer,
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
+ private:
+  // This function calls the below test function.
+  friend void MakePrimaryAccountAvailable(
+      SigninManagerForTest* signin_manager,
+      ProfileOAuth2TokenService* token_service,
+      IdentityManager* identity_manager,
+      const std::string& email);
+
   // Sets the primary account info synchronously with both the IdentityManager
-  // and its backing SigninManager/ProfileOAuth2TokenService instances. For use
-  // only by tests. Even in testing contexts, use IdentityTestEnvironment if
-  // possible (and IdentityTestEnvironment::MakePrimaryAccountAvailable()). This
-  // method should be used directly only if the production code is using
-  // IdentityManager, but it is not yet feasible to convert the test code to use
-  // IdentityTestEnvironment. Any such usage should only be temporary, i.e.,
-  // should be followed as quickly as possible by conversion of the test to
-  // use IdentityTestEnvironment.
+  // and its backing SigninManager/ProfileOAuth2TokenService instances.
   void SetPrimaryAccountSynchronouslyForTests(std::string gaia_id,
                                               std::string email_address,
                                               std::string refresh_token);
 
- private:
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;

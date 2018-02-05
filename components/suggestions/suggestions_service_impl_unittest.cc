@@ -44,9 +44,7 @@ using testing::StrictMock;
 
 namespace {
 
-const char kGaiaId[] = "foo_gaia";
 const char kEmail[] = "foo_email";
-const char kRefreshToken[] = "foo_token";
 const char kSuggestionsUrlPath[] = "/chromesuggestions";
 const char kBlacklistUrlPath[] = "/chromesuggestions/blacklist";
 const char kBlacklistClearUrlPath[] = "/chromesuggestions/blacklist/clear";
@@ -143,8 +141,7 @@ class SuggestionsServiceTest : public testing::Test {
         mock_thumbnail_manager_(nullptr),
         mock_blacklist_store_(nullptr),
         test_suggestions_store_(nullptr) {
-    identity_test_env_.MakePrimaryAccountAvailable(kGaiaId, kEmail,
-                                                   kRefreshToken);
+    identity_test_env_.MakePrimaryAccountAvailable(kEmail);
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   }
 

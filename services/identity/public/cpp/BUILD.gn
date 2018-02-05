@@ -32,6 +32,8 @@ source_set("test_support") {
   sources = [
     "identity_test_environment.cc",
     "identity_test_environment.h",
+    "identity_test_utils.cc",
+    "identity_test_utils.h",
   ]
 
   public_deps = [

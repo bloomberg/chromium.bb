@@ -124,8 +124,7 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
   }
 
   void InitializeFakeCredentials() {
-    identity_test_env()->MakePrimaryAccountAvailable(kTestEmail, kTestEmail,
-                                                     "token");
+    identity_test_env()->MakePrimaryAccountAvailable(kTestEmail);
   }
 
   void SetFakeResponse(const std::string& response_data,
