@@ -43,23 +43,24 @@ namespace content {
 class CONTENT_EXPORT CrossSiteDocumentResourceHandler
     : public LayeredResourceHandler {
  public:
-  // This enum backs a histogram. Update enums.xml if you make any updates, and
-  // put new entries before |kCount|.
+  // This enum backs a histogram, so do not change the order of entries or
+  // remove entries. Put new entries before |kCount| and update enums.xml (see
+  // the SiteIsolationResponseAction enum).
   enum class Action {
     // Logged at OnResponseStarted.
-    kResponseStarted,
+    kResponseStarted = 0,
 
     // Logged when a response is blocked without requiring sniffing.
-    kBlockedWithoutSniffing,
+    kBlockedWithoutSniffing = 1,
 
     // Logged when a response is blocked as a result of sniffing the content.
-    kBlockedAfterSniffing,
+    kBlockedAfterSniffing = 2,
 
     // Logged when a response is allowed without requiring sniffing.
-    kAllowedWithoutSniffing,
+    kAllowedWithoutSniffing = 3,
 
     // Logged when a response is allowed as a result of sniffing the content.
-    kAllowedAfterSniffing,
+    kAllowedAfterSniffing = 4,
 
     kCount
   };
