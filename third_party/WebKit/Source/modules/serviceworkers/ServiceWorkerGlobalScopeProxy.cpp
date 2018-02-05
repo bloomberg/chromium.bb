@@ -40,6 +40,7 @@
 #include "core/fetch/Headers.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/messaging/BlinkTransferableMessage.h"
 #include "core/messaging/MessagePort.h"
 #include "core/origin_trials/origin_trials.h"
 #include "core/workers/ParentFrameTaskRunners.h"
@@ -233,15 +234,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchActivateEvent(int event_id) {
 
 void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     int event_id,
-    const WebString& message,
+    TransferableMessage message,
     const WebSecurityOrigin& source_origin,
-    WebVector<MessagePortChannel> channels,
     const WebServiceWorkerClientInfo& client) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WebSerializedScriptValue value =
-      WebSerializedScriptValue::FromString(message);
+  auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
-      MessagePort::EntanglePorts(*worker_global_scope_, std::move(channels));
+      MessagePort::EntanglePorts(*worker_global_scope_, std::move(msg.ports));
   String origin;
   if (!source_origin.IsUnique())
     origin = source_origin.ToString();
@@ -253,22 +252,20 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kMessage, event_id);
 
-  Event* event =
-      ExtendableMessageEvent::Create(value, origin, ports, source, observer);
+  Event* event = ExtendableMessageEvent::Create(std::move(msg.message), origin,
+                                                ports, source, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     int event_id,
-    const WebString& message,
+    TransferableMessage message,
     const WebSecurityOrigin& source_origin,
-    WebVector<MessagePortChannel> channels,
     std::unique_ptr<WebServiceWorker::Handle> handle) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WebSerializedScriptValue value =
-      WebSerializedScriptValue::FromString(message);
+  auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
-      MessagePort::EntanglePorts(*worker_global_scope_, std::move(channels));
+      MessagePort::EntanglePorts(*worker_global_scope_, std::move(msg.ports));
   String origin;
   if (!source_origin.IsUnique())
     origin = source_origin.ToString();
@@ -278,8 +275,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kMessage, event_id);
 
-  Event* event =
-      ExtendableMessageEvent::Create(value, origin, ports, source, observer);
+  Event* event = ExtendableMessageEvent::Create(std::move(msg.message), origin,
+                                                ports, source, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 

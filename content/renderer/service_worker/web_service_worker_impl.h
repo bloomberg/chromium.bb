@@ -49,9 +49,8 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   blink::mojom::ServiceWorkerState GetState() const override;
   void PostMessageToWorker(
       blink::WebServiceWorkerProvider* provider,
-      const blink::WebString& message,
-      const blink::WebSecurityOrigin& source_origin,
-      blink::WebVector<blink::MessagePortChannel> channels) override;
+      blink::TransferableMessage message,
+      const blink::WebSecurityOrigin& source_origin) override;
   void Terminate() override;
 
   // Creates WebServiceWorker::Handle object that owns a reference to the given

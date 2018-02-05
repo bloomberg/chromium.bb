@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/service_worker/controller_service_worker.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "third_party/WebKit/common/message_port/message_port.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_error_type.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_object.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_registration.mojom";
@@ -98,10 +99,8 @@ interface ServiceWorkerContainer {
   // Corresponds to Client#postMessage().
   // Sends |message| from the service worker |source| to this service worker
   // client.
-  // TODO(xiaofeng.zhang): Use blink.mojom.TransferableMessage as the parameter.
   PostMessageToClient(blink.mojom.ServiceWorkerObjectInfo source,
-                      mojo_base.mojom.String16 message,
-                      array<handle<message_pipe>> message_ports);
+                      blink.mojom.TransferableMessage message);
 
   // Notifies this service worker client that its controller used a |feature|,
   // for UseCounter purposes.

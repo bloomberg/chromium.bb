@@ -10,12 +10,10 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "third_party/WebKit/common/blob/serialized_blob.mojom.h"
 #include "third_party/WebKit/common/common_export.h"
 
 namespace blink {
-namespace mojom {
-class SerializedBlob;
-}
 
 // This struct represents messages as they are posted over a broadcast channel.
 // This type can be serialized as a blink::mojom::CloneableMessage struct.
@@ -37,8 +35,11 @@ struct BLINK_COMMON_EXPORT CloneableMessage {
   base::span<const uint8_t> encoded_message;
   std::vector<uint8_t> owned_encoded_message;
 
+  // Copies data into owned_encoded_message if it's not already there.
+  void EnsureDataIsOwned();
+
   // Blob handles for any blobs being sent in this message.
-  std::vector<mojo::StructPtr<mojom::SerializedBlob>> blobs;
+  std::vector<mojom::SerializedBlobPtr> blobs;
 
   // Stack trace captured by sender.
   // For more details see v8_inspector::V8StackTraceId.

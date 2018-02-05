@@ -1295,8 +1295,8 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
 
 void ServiceWorkerVersion::OnPostMessageToClient(
     const std::string& client_uuid,
-    const base::string16& message,
-    const std::vector<blink::MessagePortChannel>& sent_message_ports) {
+    const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
+        message) {
   if (!context_)
     return;
   TRACE_EVENT1("ServiceWorker",
@@ -1313,7 +1313,7 @@ void ServiceWorkerVersion::OnPostMessageToClient(
     // possibly due to timing issue or bad message.
     return;
   }
-  provider_host->PostMessageToClient(this, message, sent_message_ports);
+  provider_host->PostMessageToClient(this, std::move(message->data));
 }
 
 void ServiceWorkerVersion::OnFocusClient(int request_id,

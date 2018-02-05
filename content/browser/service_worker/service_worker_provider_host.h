@@ -36,10 +36,6 @@
 #include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
-namespace blink {
-class MessagePortChannel;
-}
-
 namespace network {
 class ResourceRequestBody;
 }
@@ -296,10 +292,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsContextAlive();
 
   // Dispatches message event to the document.
-  void PostMessageToClient(
-      ServiceWorkerVersion* version,
-      const base::string16& message,
-      const std::vector<blink::MessagePortChannel>& sent_message_ports);
+  void PostMessageToClient(ServiceWorkerVersion* version,
+                           blink::TransferableMessage message);
 
   // Notifies the client that its controller used a feature, for UseCounter
   // purposes. This can only be called if IsProviderForClient() is true.

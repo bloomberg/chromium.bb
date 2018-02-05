@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/messaging/BlinkCloneableMessage.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 
 namespace blink {
 
@@ -29,6 +30,14 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
  private:
   DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);
 };
+
+CORE_EXPORT BlinkTransferableMessage
+    ToBlinkTransferableMessage(TransferableMessage);
+// Returned message will still be backed by the SerializedScriptValue in the
+// input message, so is only valid as long as that SerializedScriptValue is
+// alive. Call EnsureDataIsOwned on the returned message if you need it to live
+// longer.
+CORE_EXPORT TransferableMessage ToTransferableMessage(BlinkTransferableMessage);
 
 }  // namespace blink
 

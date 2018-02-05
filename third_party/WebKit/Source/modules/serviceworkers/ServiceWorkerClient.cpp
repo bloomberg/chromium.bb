@@ -12,6 +12,7 @@
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
+#include "core/messaging/BlinkTransferableMessage.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/WebString.h"
@@ -91,15 +92,14 @@ void ServiceWorkerClient::postMessage(
     const MessagePortArray& ports,
     ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  // Disentangle the port in preparation for sending it to the remote context.
-  auto channels =
-      MessagePort::DisentanglePorts(context, ports, exception_state);
+  BlinkTransferableMessage msg;
+  msg.message = message;
+  msg.ports = MessagePort::DisentanglePorts(context, ports, exception_state);
   if (exception_state.HadException())
     return;
 
-  WebString message_string = message->ToWireString();
   ServiceWorkerGlobalScopeClient::From(context)->PostMessageToClient(
-      uuid_, message_string, std::move(channels));
+      uuid_, ToTransferableMessage(std::move(msg)));
 }
 
 }  // namespace blink

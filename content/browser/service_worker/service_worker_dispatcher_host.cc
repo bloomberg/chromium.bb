@@ -228,9 +228,9 @@ ServiceWorkerDispatcherHost::AsWeakPtr() {
 void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     int handle_id,
     int provider_id,
-    const base::string16& message,
-    const url::Origin& source_origin,
-    const std::vector<MessagePortChannel>& sent_message_ports) {
+    const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
+        message,
+    const url::Origin& source_origin) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnPostMessageToWorker");
   if (!GetContext())
@@ -250,17 +250,22 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     return;
   }
 
+  // When this method is called the encoded_message inside message could just
+  // point to the IPC message's buffer. But that buffer can become invalid
+  // before the message is passed on to the service worker, so make sure
+  // message owns its data.
+  message->data.EnsureDataIsOwned();
+
   DispatchExtendableMessageEvent(
-      base::WrapRefCounted(handle->version()), message, source_origin,
-      sent_message_ports, sender_provider_host,
+      base::WrapRefCounted(handle->version()), std::move(message->data),
+      source_origin, sender_provider_host,
       base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
 void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
     scoped_refptr<ServiceWorkerVersion> worker,
-    const base::string16& message,
+    blink::TransferableMessage message,
     const url::Origin& source_origin,
-    const std::vector<MessagePortChannel>& sent_message_ports,
     ServiceWorkerProviderHost* sender_provider_host,
     StatusCallback callback) {
   switch (sender_provider_host->provider_type()) {
@@ -271,9 +276,8 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
           base::BindOnce(&ServiceWorkerDispatcherHost::
                              DispatchExtendableMessageEventInternal<
                                  blink::mojom::ServiceWorkerClientInfoPtr>,
-                         this, worker, message, source_origin,
-                         sent_message_ports, base::nullopt,
-                         std::move(callback)));
+                         this, worker, std::move(message), source_origin,
+                         base::nullopt, std::move(callback)));
       break;
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker: {
       // Clamp timeout to the sending worker's remaining timeout, to prevent
@@ -289,9 +293,9 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
           base::BindOnce(&ServiceWorkerDispatcherHost::
                              DispatchExtendableMessageEventInternal<
                                  blink::mojom::ServiceWorkerObjectInfoPtr>,
-                         this, worker, message, source_origin,
-                         sent_message_ports, base::make_optional(timeout),
-                         std::move(callback), std::move(worker_info)));
+                         this, worker, std::move(message), source_origin,
+                         base::make_optional(timeout), std::move(callback),
+                         std::move(worker_info)));
       break;
     }
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
@@ -363,9 +367,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
 template <typename SourceInfoPtr>
 void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     scoped_refptr<ServiceWorkerVersion> worker,
-    const base::string16& message,
+    blink::TransferableMessage message,
     const url::Origin& source_origin,
-    const std::vector<MessagePortChannel>& sent_message_ports,
     const base::Optional<base::TimeDelta>& timeout,
     StatusCallback callback,
     SourceInfoPtr source_info) {
@@ -387,7 +390,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
       base::BindOnce(
           &ServiceWorkerDispatcherHost::
               DispatchExtendableMessageEventAfterStartWorker<SourceInfoPtr>,
-          this, worker, message, source_origin, sent_message_ports,
+          this, worker, std::move(message), source_origin,
           std::move(source_info), timeout, std::move(callback)));
 }
 
@@ -395,9 +398,8 @@ template <typename SourceInfoPtr>
 void ServiceWorkerDispatcherHost::
     DispatchExtendableMessageEventAfterStartWorker(
         scoped_refptr<ServiceWorkerVersion> worker,
-        const base::string16& message,
+        blink::TransferableMessage message,
         const url::Origin& source_origin,
-        const std::vector<MessagePortChannel>& sent_message_ports,
         SourceInfoPtr source_info,
         const base::Optional<base::TimeDelta>& timeout,
         StatusCallback callback,
@@ -419,9 +421,8 @@ void ServiceWorkerDispatcherHost::
   }
 
   mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
-  event->message = message;
+  event->message = std::move(message);
   event->source_origin = source_origin;
-  event->message_ports = MessagePortChannel::ReleaseHandles(sent_message_ports);
   SetMessageEventSource(&event, std::move(source_info));
 
   worker->event_dispatcher()->DispatchExtendableMessageEvent(

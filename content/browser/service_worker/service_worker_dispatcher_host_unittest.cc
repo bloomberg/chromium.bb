@@ -230,13 +230,12 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   void DispatchExtendableMessageEvent(
       scoped_refptr<ServiceWorkerVersion> worker,
-      const base::string16& message,
+      blink::TransferableMessage message,
       const url::Origin& source_origin,
-      const std::vector<MessagePortChannel>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       ServiceWorkerDispatcherHost::StatusCallback callback) {
     dispatcher_host_->DispatchExtendableMessageEvent(
-        std::move(worker), message, source_origin, sent_message_ports,
+        std::move(worker), std::move(message), source_origin,
         sender_provider_host, std::move(callback));
   }
 
@@ -423,13 +422,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
   // Dispatch ExtendableMessageEvent.
-  std::vector<MessagePortChannel> ports;
-  SetUpDummyMessagePort(&ports);
+  blink::TransferableMessage message;
+  SetUpDummyMessagePort(&message.ports);
   called = false;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
-      version_, base::string16(),
-      url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
+      version_, std::move(message),
+      url::Origin::Create(version_->scope().GetOrigin()), provider_host_,
       base::BindOnce(&SaveStatusCallback, &called, &status));
   // The 2nd reference to |sender_worker_handle| has been passed via the above
   // dispatch of ExtendableMessageEvent.
@@ -458,13 +457,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the
   // worker and to dispatch the event.
-  std::vector<MessagePortChannel> ports;
-  SetUpDummyMessagePort(&ports);
+  blink::TransferableMessage message;
+  SetUpDummyMessagePort(&message.ports);
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
-      version_, base::string16(),
-      url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
+      version_, std::move(message),
+      url::Origin::Create(version_->scope().GetOrigin()), provider_host_,
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);

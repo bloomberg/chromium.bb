@@ -24,10 +24,6 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
-namespace blink {
-class MessagePortChannel;
-}
-
 namespace url {
 class Origin;
 }  // namespace url
@@ -144,34 +140,31 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnPostMessageToWorker(
       int handle_id,
       int provider_id,
-      const base::string16& message,
-      const url::Origin& source_origin,
-      const std::vector<blink::MessagePortChannel>& sent_message_ports);
+      const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
+          message,
+      const url::Origin& source_origin);
 
   void OnTerminateWorker(int handle_id);
 
   void DispatchExtendableMessageEvent(
       scoped_refptr<ServiceWorkerVersion> worker,
-      const base::string16& message,
+      blink::TransferableMessage message,
       const url::Origin& source_origin,
-      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       StatusCallback callback);
   template <typename SourceInfoPtr>
   void DispatchExtendableMessageEventInternal(
       scoped_refptr<ServiceWorkerVersion> worker,
-      const base::string16& message,
+      blink::TransferableMessage message,
       const url::Origin& source_origin,
-      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       const base::Optional<base::TimeDelta>& timeout,
       StatusCallback callback,
       SourceInfoPtr source_info);
   template <typename SourceInfoPtr>
   void DispatchExtendableMessageEventAfterStartWorker(
       scoped_refptr<ServiceWorkerVersion> worker,
-      const base::string16& message,
+      blink::TransferableMessage message,
       const url::Origin& source_origin,
-      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       SourceInfoPtr source_info,
       const base::Optional<base::TimeDelta>& timeout,
       StatusCallback callback,

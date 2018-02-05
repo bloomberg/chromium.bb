@@ -20,6 +20,7 @@
 #include "ipc/ipc_param_traits.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -102,13 +103,13 @@ IPC_STRUCT_TRAITS_END()
 // Messages sent from the child process to the browser.
 
 // Sends ExtendableMessageEvent to a service worker (renderer->browser).
-IPC_MESSAGE_CONTROL5(
+IPC_MESSAGE_CONTROL4(
     ServiceWorkerHostMsg_PostMessageToWorker,
     int /* handle_id */,
     int /* provider_id */,
-    base::string16 /* message */,
-    url::Origin /* source_origin */,
-    std::vector<blink::MessagePortChannel> /* sent_message_ports */)
+    scoped_refptr<
+        base::RefCountedData<blink::TransferableMessage>> /* message */,
+    url::Origin /* source_origin */)
 
 // Tells the browser to terminate a service worker. Used in layout tests to
 // verify behavior when a service worker isn't running.
@@ -116,11 +117,11 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
                      int /* handle_id */)
 
 // Sends MessageEvent to a client (renderer->browser).
-IPC_MESSAGE_ROUTED3(
+IPC_MESSAGE_ROUTED2(
     ServiceWorkerHostMsg_PostMessageToClient,
     std::string /* uuid */,
-    base::string16 /* message */,
-    std::vector<blink::MessagePortChannel> /* sent_message_ports */)
+    scoped_refptr<
+        base::RefCountedData<blink::TransferableMessage>> /* message */)
 
 // Ask the browser to focus a client (renderer->browser).
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,

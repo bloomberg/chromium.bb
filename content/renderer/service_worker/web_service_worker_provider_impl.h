@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
@@ -63,10 +64,8 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
                      bool should_notify_controller_change);
   // Posts a message to the ServiceWorkerContainer for this provider.
   // Corresponds to Client#postMessage().
-  void PostMessageToClient(
-      blink::mojom::ServiceWorkerObjectInfoPtr source,
-      const base::string16& message,
-      std::vector<mojo::ScopedMessagePipeHandle> message_pipes);
+  void PostMessageToClient(blink::mojom::ServiceWorkerObjectInfoPtr source,
+                           blink::TransferableMessage message);
   // For UseCounter purposes. Called when the controller service worker used a
   // feature. It is counted as if it were a feature usage from the page.
   void CountFeature(blink::mojom::WebFeature feature);

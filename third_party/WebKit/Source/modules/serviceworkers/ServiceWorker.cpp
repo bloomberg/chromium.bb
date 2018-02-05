@@ -35,6 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
+#include "core/messaging/BlinkTransferableMessage.h"
 #include "core/messaging/MessagePort.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
@@ -62,11 +63,13 @@ void ServiceWorker::postMessage(ScriptState* script_state,
     return;
   }
 
-  // Disentangle the port in preparation for sending it to the remote context.
-  auto channels = MessagePort::DisentanglePorts(
+  BlinkTransferableMessage msg;
+  msg.message = message;
+  msg.ports = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
+
   if (handle_->ServiceWorker()->GetState() ==
       mojom::blink::ServiceWorkerState::kRedundant) {
     exception_state.ThrowDOMException(kInvalidStateError,
@@ -74,11 +77,9 @@ void ServiceWorker::postMessage(ScriptState* script_state,
     return;
   }
 
-  WebString message_string = message->ToWireString();
   handle_->ServiceWorker()->PostMessageToWorker(
-      client->Provider(), message_string,
-      WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()),
-      std::move(channels));
+      client->Provider(), ToTransferableMessage(std::move(msg)),
+      WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()));
 }
 
 void ServiceWorker::InternalsTerminate() {

@@ -153,8 +153,7 @@ class MockWebServiceWorkerProviderClientImpl
 
   void DispatchMessageEvent(
       std::unique_ptr<blink::WebServiceWorker::Handle> handle,
-      const blink::WebString& message,
-      blink::WebVector<blink::MessagePortChannel> ports) override {
+      blink::TransferableMessage message) override {
     was_dispatch_message_event_called_ = true;
   }
 
@@ -659,9 +658,8 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   ASSERT_FALSE(client->was_dispatch_message_event_called());
 
   ipc_sink()->ClearMessages();
-  container_ptr->PostMessageToClient(
-      std::move(object_info), base::string16(),
-      std::vector<mojo::ScopedMessagePipeHandle>());
+  container_ptr->PostMessageToClient(std::move(object_info),
+                                     blink::TransferableMessage());
   base::RunLoop().RunUntilIdle();
 
   // The passed reference should be owned by the provider client (but the

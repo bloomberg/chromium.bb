@@ -242,9 +242,8 @@ void ServiceWorkerGlobalScopeClient::DidHandlePaymentRequestEvent(
 
 void ServiceWorkerGlobalScopeClient::PostMessageToClient(
     const WebString& client_uuid,
-    const WebString& message,
-    Vector<MessagePortChannel> channels) {
-  client_.PostMessageToClient(client_uuid, message, std::move(channels));
+    TransferableMessage message) {
+  client_.PostMessageToClient(client_uuid, std::move(message));
 }
 
 void ServiceWorkerGlobalScopeClient::SkipWaiting(

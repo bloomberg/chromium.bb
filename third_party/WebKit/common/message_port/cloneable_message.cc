@@ -36,4 +36,11 @@ CloneableMessage CloneableMessage::ShallowClone() const {
   return clone;
 }
 
+void CloneableMessage::EnsureDataIsOwned() {
+  if (encoded_message.data() == owned_encoded_message.data())
+    return;
+  owned_encoded_message.assign(encoded_message.begin(), encoded_message.end());
+  encoded_message = owned_encoded_message;
+}
+
 }  // namespace blink

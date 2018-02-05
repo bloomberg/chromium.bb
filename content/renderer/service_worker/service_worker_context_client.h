@@ -232,10 +232,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   CreateServiceWorkerFetchContext() override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
-  void PostMessageToClient(
-      const blink::WebString& uuid,
-      const blink::WebString& message,
-      blink::WebVector<blink::MessagePortChannel> channels) override;
+  void PostMessageToClient(const blink::WebString& uuid,
+                           blink::TransferableMessage message) override;
   void Focus(const blink::WebString& uuid,
              std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void Navigate(

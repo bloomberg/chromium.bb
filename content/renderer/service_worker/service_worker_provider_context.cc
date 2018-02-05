@@ -363,15 +363,14 @@ void ServiceWorkerProviderContext::SetController(
 
 void ServiceWorkerProviderContext::PostMessageToClient(
     blink::mojom::ServiceWorkerObjectInfoPtr source,
-    const base::string16& message,
-    std::vector<mojo::ScopedMessagePipeHandle> message_pipes) {
+    blink::TransferableMessage message) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
   ProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
   if (state->web_service_worker_provider) {
-    state->web_service_worker_provider->PostMessageToClient(
-        std::move(source), message, std::move(message_pipes));
+    state->web_service_worker_provider->PostMessageToClient(std::move(source),
+                                                            std::move(message));
   }
 }
 

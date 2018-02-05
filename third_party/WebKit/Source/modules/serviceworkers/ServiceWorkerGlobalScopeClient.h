@@ -41,6 +41,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom-blink.h"
 
 namespace blink {
@@ -140,9 +141,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   void DidHandlePaymentRequestEvent(int payment_request_event_id,
                                     mojom::ServiceWorkerEventStatus,
                                     double event_dispatch_time);
-  void PostMessageToClient(const WebString& client_uuid,
-                           const WebString& message,
-                           Vector<MessagePortChannel>);
+  void PostMessageToClient(const WebString& client_uuid, TransferableMessage);
   void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
   void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
   void Focus(const WebString& client_uuid,

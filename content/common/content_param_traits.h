@@ -23,6 +23,7 @@
 
 namespace blink {
 class MessagePortChannel;
+struct TransferableMessage;
 }
 
 namespace content {
@@ -79,6 +80,18 @@ struct CONTENT_EXPORT ParamTraits<ui::AXMode> {
 template <>
 struct CONTENT_EXPORT ParamTraits<scoped_refptr<storage::BlobHandle>> {
   typedef scoped_refptr<storage::BlobHandle> param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<
+    scoped_refptr<base::RefCountedData<blink::TransferableMessage>>> {
+  typedef scoped_refptr<base::RefCountedData<blink::TransferableMessage>>
+      param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
