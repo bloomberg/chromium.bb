@@ -481,6 +481,8 @@ def _GenerateCoverageInHtmlForDirectory(
           entry_path)
       entry_coverage_summary = per_directory_coverage_summary[entry_path]
     else:
+      # Any file without executable lines shouldn't be included into the report.
+      # For example, OWNER and README.md files.
       continue
 
     html_generator.AddLinkToAnotherReport(entry_html_report_path,
@@ -558,9 +560,9 @@ def _GenerateCoverageInHtmlForComponent(
   """Generates coverage html report for a component."""
   component_html_report_path = _GetCoverageHtmlReportPathForComponent(
       component_name)
-  component_html_report_dirname = os.path.dirname(component_html_report_path)
-  if not os.path.exists(component_html_report_dirname):
-    os.makedirs(component_html_report_dirname)
+  component_html_report_dir = os.path.dirname(component_html_report_path)
+  if not os.path.exists(component_html_report_dir):
+    os.makedirs(component_html_report_dir)
 
   html_generator = _CoverageReportHtmlGenerator(component_html_report_path,
                                                 'Path')
@@ -568,6 +570,8 @@ def _GenerateCoverageInHtmlForComponent(
   for dir_path in component_to_directories[component_name]:
     dir_absolute_path = os.path.abspath(dir_path)
     if dir_absolute_path not in per_directory_coverage_summary:
+      # Any directory without an excercised file shouldn't be included into the
+      # report.
       continue
 
     html_generator.AddLinkToAnotherReport(
@@ -600,7 +604,7 @@ def _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary):
 
   html_generator.CreateTotalsEntry(totals_coverage_summary)
   html_generator.WriteHtmlCoverageReport()
-  logging.debug('Generating component view html index file.')
+  logging.debug('Finished generating component view html index file.')
 
 
 def _OverwriteHtmlReportsIndexFile():
@@ -635,6 +639,7 @@ def _GetCoverageHtmlReportPathForFile(file_path):
 
   # '+' is used instead of os.path.join because both of them are absolute paths
   # and os.path.join ignores the first path.
+  # TODO(crbug.com/809150): Think of a generic cross platform fix (Windows).
   return _GetCoverageReportRootDirPath() + html_report_path
 
 
@@ -646,6 +651,7 @@ def _GetCoverageHtmlReportPathForDirectory(dir_path):
 
   # '+' is used instead of os.path.join because both of them are absolute paths
   # and os.path.join ignores the first path.
+  # TODO(crbug.com/809150): Think of a generic cross platform fix (Windows).
   return _GetCoverageReportRootDirPath() + html_report_path
 
 
@@ -955,10 +961,10 @@ def _GetRelativePathToDirectoryOfFile(target_path, base_path):
   os.path.relpath directly.
   """
   assert os.path.dirname(base_path) != base_path, (
-      'Base path: "%s" is a directly, please call os.path.relpath directly.' %
+      'Base path: "%s" is a directory, please call os.path.relpath directly.' %
       base_path)
-  base_dirname = os.path.dirname(base_path)
-  return os.path.relpath(target_path, base_dirname)
+  base_dir = os.path.dirname(base_path)
+  return os.path.relpath(target_path, base_dir)
 
 
 def _ParseCommandArguments():
