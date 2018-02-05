@@ -34,6 +34,7 @@
 <translation id="145015347812617860">有<ph name="COUNT" />个书签</translation>
 <translation id="1491277525950327607">点按两次即可切换设置</translation>
 <translation id="152234381334907219">一律不保存</translation>
+<translation id="1532451416480227577">显示存储在 Google Pay 中的地址和信用卡信息</translation>
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描 QR 码</translation>
 <translation id="1580783302095112590">邮件已发送。</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">仅限使用无线局域网时</translation>
 <translation id="2747003861858887689">上一个字段</translation>
 <translation id="2780046210906776326">没有电子邮件帐号</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">离开标签页切换器</translation>
 <translation id="283291358677939992">在网页中查找...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />，<ph name="STATE" />，<ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3210163015918861891">同步功能已关闭</translation>
+<translation id="3224641773458703735">要想导出密码，您必须先在设备上设置屏幕锁定。</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">显示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>
-<translation id="533632423981297619">所有能查看此导出文件的人员都能看到您的密码。因此，请勿与任何人共享该文件。</translation>
 <translation id="5388358297987318779">打开图片</translation>
 <translation id="5409365236829784218">没有安装可打开此文件的应用。</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
@@ -306,6 +308,7 @@
 <translation id="681368974849482173">书签已创建</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6903907808598579934">开启同步功能</translation>
+<translation id="6914783257214138813">所有能查看此导出文件的人员都能看到您的密码。</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6973630695168034713">文件夹</translation>
 <translation id="7004499039102548441">最近打开的标签页</translation>

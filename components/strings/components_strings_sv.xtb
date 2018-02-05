@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Rensa formuläret</translation>
 <translation id="2851634818064021665">Du behöver tillstånd att besöka den här webbplatsen</translation>
 <translation id="2856444702002559011">En angripare kan försöka stjäla dina uppgifter från <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (t.ex. lösenord, meddelanden eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Vill du spara kortet?</translation>
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
 <translation id="2916038427272391327">Stäng andra program</translation>
 <translation id="2922350208395188000">Servercertifikatet kan inte kontrolleras.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">Godkända kreditkort och förbetalda kort</translation>
 <translation id="8759274551635299824">Kortets giltighetstid har löpt ut</translation>
 <translation id="8761567432415473239">Googles tjänst Säker webbsökning <ph name="BEGIN_LINK" />hittade skadliga program<ph name="END_LINK" /> på <ph name="SITE" /> nyligen.</translation>
+<translation id="8763927697961133303">USB-enhet</translation>
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
 <translation id="8800988563907321413">Förslag på webbsidor i närheten visas här</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;Testa att avinstallera eller inaktivera <ph name="SOFTWARE_NAME" />&lt;/li&gt;
     &lt;li&gt;Testa att ansluta till ett annat nätverk&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Från Google Pay</translation>
 </translationbundle>

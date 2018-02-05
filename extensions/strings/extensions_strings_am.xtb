@@ -53,12 +53,14 @@
 <translation id="677806580227005219">የሚሜ ተቆጣጣሪ፦ <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">ይህ ቅጥያ ብዙ ጊዜ እራሱን ዳግም ጭኗል።</translation>
 <translation id="7003844668372540529">ያልታወቀ ምርት <ph name="PRODUCT_ID" /> ከ<ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">የዝርዝር ሰነድ ፋይሉ ልክ ያልሆነ ነው</translation>
 <translation id="7217838517480956708">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME" /> እንዲጫን ይፈልጋል። ሊወገድ ወይም ሊቀየር አይችልም።</translation>
 <translation id="7972881773422714442">አማራጮች፦ <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ተጠቃሚውን የሚመለከት</translation>
 <translation id="8047248493720652249">ይህ ቅጥያ የወረደውን «<ph name="ATTEMPTED_FILENAME" />» ብሎ መሰየም አልተሳካለትም፣ ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) ሌላ የፋይል ስም «<ph name="ACTUAL_FILENAME" />» ስለወሰነ ነው።</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> ከ<ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">ይህ ቅጥያ ለአንድ የአውታረ መረብ ጥያቄ ምስክርነቶችን ማቅረብ አልቻለም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) የተለዩ ምስክርነቶችን ስላቀረበ።</translation>
+<translation id="8517576857589387417">የዝርዝር ሰነድ ፋይሉ ጠፍቷል ወይም ተነባቢ አይደለም</translation>
 <translation id="8636666366616799973">ጥቅሉ ልክ አይደለም። ዝርዝሮች፦ «<ph name="ERROR_MESSAGE" />»።</translation>
 <translation id="8670869118777164560">ይህ ቅጥያ አንድ የአውታረ መረብ ጥያቄ ወደ <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> ማዞር አልተሳካለትም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) ወደ <ph name="ACTUAL_REDIRECT_DESTINATION" /> አዙሮታል።</translation>
 <translation id="8712265948125780616">ቅጥያ ማራገፊያ</translation>

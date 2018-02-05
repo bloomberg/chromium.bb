@@ -26,6 +26,7 @@
 
       Jei ši politika nustatyta, prisijungimo ekranas visada bus pateikiamas lokale, kuria pateikta pirma šios politikos vertė (politika apibrėžta kaip sąrašas, kad būtų suderinama ir ateityje).  Jei ši politika nenustatyta arba nustatytas tuščias sąrašas, prisijungimo ekranas bus pateikiamas paskutinės naudotojo sesijos lokale.  Jei ši politika nustatyta į netinkamą lokalės vertę, prisijungimo ekranas bus pateikiamas atsargine lokale (šiuo metu tai en-US).</translation>
 <translation id="1062011392452772310">Įgalinti nuotolinį įrenginio patvirtinimą</translation>
+<translation id="1062407476771304334">Pakeisti</translation>
 <translation id="1093082332347834239">Jei šis nustatymas įgalintas, nuotolinės pagalbos prieglobos serveris bus vykdomas su „<ph name="UIACCESS_PERMISSION_NAME" />“ leidimais. Taip nuotoliniai naudotojai galės sąveikauti su pakeltais langais vietiniame naudotojo staliniame kompiuteryje.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, nuotolinės pagalbos prieglobos serveris bus vykdomas naudotojo kontekste ir nuotoliniai naudotojai negalės sąveikauti su pakeltais langais staliniame kompiuteryje.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
 <translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
-<translation id="1420281424655200442">Valdoma, kurie spausdintuvai iš „<ph name="DEVICE_PRINTERS_POLICY" />“ pasiekiami naudotojams.
-
-      Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai. Jei pasirinkta „<ph name="PRINTERS_ALLOW_ALL" />“, rodomi visi spausdintuvai. Jei pasirinkta „<ph name="PRINTERS_BLACKLIST" />“, „<ph name="DEVICE_PRINTERS_BLACKLIST" />“ naudojama pasiekiamumui prie nurodytų spausdintuvų apriboti. Jei pasirinkta „<ph name="PRINTERS_WHITELIST" />“, „<ph name="DEVICE_PRINTERS_WHITELIST" />“ nustato tik tuos spausdintuvus, kuriuos galima pasirinkti.
-
-      Jei ši politika nenustatyta, taikoma „<ph name="PRINTERS_BLACKLIST" />“.
-      </translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
@@ -284,12 +279,6 @@
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
 <translation id="203096360153626918">Ši politika neturi įtakos „Android“ programoms. Jas naudojant bus galima įjungti viso ekrano režimą, net jei ši politika nustatyta į „<ph name="FALSE" />“.</translation>
 <translation id="2043770014371753404">Išjungti įmonės spausdintuvai</translation>
-<translation id="2063380907529983889">Valdoma, kurie spausdintuvai iš „<ph name="BULK_PRINTERS_POLICY" />“ pasiekiami naudotojams.
-
-      Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai. Jei pasirinkta „<ph name="PRINTERS_ALLOW_ALL" />“, rodomi visi spausdintuvai. Jei pasirinkta „<ph name="PRINTERS_BLACKLIST" />“, „<ph name="BULK_PRINTERS_BLACKLIST" />“ naudojama pasiekiamumui prie nurodytų spausdintuvų apriboti. Jei pasirinkta „<ph name="PRINTERS_WHITELIST" />“, „<ph name="BULK_PRINTERS_WHITELIST" />“ nustato tik tuos spausdintuvus, kuriuos galima pasirinkti.
-
-      Jei ši politika nenustatyta, taikoma „<ph name="PRINTERS_BLACKLIST" />“.
-      </translation>
 <translation id="206623763829450685">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME" />“.
 
           Galimos vertės: „basic“, „digest“, „ntlm“ ir „negotiate“. Kelias vertes atskirkite kableliais.
@@ -475,6 +464,9 @@
 <translation id="2466131534462628618">Fiksuotojo portalo autentifikavimas nepaiso tarpinio serverio</translation>
 <translation id="2482676533225429905">Savoji susirašinėjimo pranešimais programa</translation>
 <translation id="2483146640187052324">Tinklo veiksmų numatymas naudojant bet kurį tinklo ryšį</translation>
+<translation id="2485721741875148980">Jei ši politika nustatyta į „true“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta į „false“. Atminkite, kad įgalinus šią politiką esami profiliai, prie kurių neprisijungta, bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį.
+
+      Jei ši politika nustatyta į „false“ arba nesukonfigūruota, naudotojas galės naudoti naršyklę neprisijungęs prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="2486371469462493753">Išjungiamas sertifikato skaidrumo reikalavimų taikymas nurodytiems URL.
 
       Taikant šią politiką leidžiama neatskleisti prieglobos serverių pavadinimų nurodytuose URL sertifikatų taikant sertifikato skaidrumą. Todėl bus leidžiama toliau naudoti sertifikatus, kurie priešingu atveju būtų nepatikimi, nes nebuvo tinkamai viešai atskleisti, bet bus sudėtingiau aptikti netinkamai naudojamus šių prieglobų sertifikatus.
@@ -788,6 +780,7 @@
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
+<translation id="3587482841069643663">Visi</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
@@ -1239,6 +1232,7 @@
 <translation id="489803897780524242">Parametras, valdantis numatytojo paieškos teikėjo paieškos termino paskirties vietą</translation>
 <translation id="4899708173828500852">Įgalinti saugų naršymą</translation>
 <translation id="4906194810004762807">Atnaujinti įrenginio politikos reitingą</translation>
+<translation id="4917385247580444890">Stiprus</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
 
@@ -1653,13 +1647,6 @@
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="6158324314836466367">Įmonės internetinės parduotuvės pavadinimas (nebenaudojama)</translation>
 <translation id="6161405879872578475">Įgalinama „<ph name="PRODUCT_NAME" />“</translation>
-<translation id="6167074305866468481">Įspėjimas: 3 versijos SSL palaikymas bus visiškai pašalintas iš „<ph name="PRODUCT_NAME" />“ išleidus 43 versijos programą (maždaug 2015 m. liepos mėn.). Tuo pačiu metu bus pašalinta ir ši politika.
-
-      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudos numatytosios minimalios versijos funkciją, kuri yra 3 versijos SSL naudojant 39 versijos „<ph name="PRODUCT_NAME" />“ ir 1.0 versijos TLS naudojant naujesnės versijos programą.
-
-      Kitaip tai gali būti nustatyta į vieną iš šių verčių: „sslv3“, „tls1“, „tls1.1“ arba „tls1.2“. Kai politika nustatyta, „<ph name="PRODUCT_NAME" />“ nenaudos senesnės nei nurodyta versijos SSL / TLS. Neatpažintos vertės bus nepaisoma.
-
-      Atminkite, kad, nepaisant skaičiaus, „sslv3“ yra senesnės versijos funkcija nei „tls1“.</translation>
 <translation id="6181608880636987460">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama paleisti papildinio „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
 
           Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
@@ -2079,6 +2066,7 @@
       Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ naudos nurodytą lokalę. Jei sukonfigūruota lokalė nebus palaikoma, bus naudojama „en-US“.
 
       Jei šio nustatymo neleisite arba nekonfigūruosite, „<ph name="PRODUCT_NAME" />“ naudos naudotojo nurodytą pageidaujamą lokalę (jei ji sukonfigūruota), sistemos lokalę arba atsarginę lokalę „en-US“.</translation>
+<translation id="7643883929273267746">„<ph name="PRODUCT_NAME" />“ matomų paskyrų ribojimas</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
 <translation id="7683777542468165012">Dinaminis politikos atnaujinimas</translation>
 <translation id="7694807474048279351">Suplanuoti automatinį operacinės sistemos įkėlimą, kai pritaikytas „<ph name="PRODUCT_OS_NAME" />“ naujinys.
@@ -2193,7 +2181,6 @@
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="7941975817681987555">Nenumatyti tinklo veiksmų, naudojant bet kurį tinklo ryšį</translation>
 <translation id="7953256619080733119">Tvarkomos naudotojo neautomatinių išimčių prieglobos</translation>
-<translation id="7971839631300653352">3.0 versijos SSL</translation>
 <translation id="7974114691960514888">Ši politika nebepalaikoma.
           Įgalinamas STUN ir perdavimo serverių naudojimas, kai prisijungiama prie nuotolinių programų.
 
@@ -2413,6 +2400,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Jei ši politika nenustatyta, naudojamas numatytasis skalės mastelio faktorius.
 
           Skalės mastelio faktorius turi būti 100 proc. ar daugiau. Vertės, dėl kurių ekrano užtemdymo delsos laikas dirbant pristatymo režimu būtų trumpesnis nei įprastos ekrano užtemdymo delsos laikas, neleidžiamos.</translation>
+<translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8818173863808665831">Pranešti geografinę šio įrenginio vietą.
 
       Jei ši politika nenustatyta ar nustatyta „Ne“, nebus pranešta apie vietą.</translation>

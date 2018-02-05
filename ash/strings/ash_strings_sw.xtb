@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Kifaa hiki kinadhibitiwa na <ph name="DOMAIN" /> .</translation>
 <translation id="2050339315714019657">Wima</translation>
 <translation id="2067602449040652523">Ung'avu wa kibodi</translation>
-<translation id="207439088875642105">Hii ni akaunti ya watoto inayodhibitiwa na <ph name="FIRST_PARENT_EMAIL" /> na <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Acha kutuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
 <translation id="2144487987174258011">Zima kisha uwashe ili usasishe Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Kipengele cha sauti moja</translation>
 <translation id="3009178788565917040">Towe</translation>
 <translation id="3019353588588144572">Muda unaosalia hadi betri itakapochajiwa kikamilifu, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Hii ni akaunti ya watoto inayodhibitiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Chini</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Kikuza skrini</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Angazia kiteuzi cha kipanya</translation>
+<translation id="3513798432020909783">Akaunti inasimamiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
 <translation id="3582792037806681688">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja umezimwa kwa mtumiaji katika kipindi hiki</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
@@ -276,6 +275,7 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="7829386189513694949">Mtandao ni thabiti</translation>
 <translation id="7904094684485781019">Msimamizi wa akaunti hii ameondoa uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="7933084174919150729">Programu ya Mratibu wa Google inapatikana kwenye wasifu wa msingi pekee.</translation>
+<translation id="79341161159229895">Akaunti inasimamiwa na <ph name="FIRST_PARENT_EMAIL" /> na <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Inatafuta mitandao ya simu...</translation>
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="7994370417837006925">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
@@ -312,6 +312,7 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 Arifa, madirisha na vidirisha vya baadaye vitagawanywa baina ya maeneo-kazi.</translation>
 <translation id="8825534185036233643">Kuakisi ukitumia zaidi ya skrini mbili hakuruhusiwi.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Kitufe cha Nyuma</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Programu haiwezi kutumia skrini iliyogawanywa.</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>

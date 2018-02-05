@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Eliminar formulario</translation>
 <translation id="2851634818064021665">Necesitas permiso para acceder a este sitio web</translation>
 <translation id="2856444702002559011">Es posible que los atacantes estén intentando robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por ejemplo, contraseñas, mensajes o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">¿Quieres guardar la tarjeta?</translation>
 <translation id="2909946352844186028">Se ha detectado un cambio de red.</translation>
 <translation id="2916038427272391327">Cierra otros programas</translation>
 <translation id="2922350208395188000">No es posible comprobar el certificado del servidor.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Tarjetas prepago y de crédito aceptadas</translation>
 <translation id="8759274551635299824">La tarjeta ha caducado</translation>
 <translation id="8761567432415473239">La función de Navegación Segura de Google <ph name="BEGIN_LINK" />encontró programas dañinos<ph name="END_LINK" /> recientemente en el sitio <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="8790007591277257123">&amp;Rehacer eliminación</translation>
 <translation id="8800988563907321413">Las sugerencias de la sección Cercanas aparecen aquí</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;Prueba a desinstalar o inhabilitar "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Prueba a conectarte a otra red&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">De Google Pay</translation>
 </translationbundle>

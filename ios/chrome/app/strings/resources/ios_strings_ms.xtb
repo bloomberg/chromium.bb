@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> item</translation>
 <translation id="1491277525950327607">Dwiketik untuk togol tetapan</translation>
 <translation id="152234381334907219">Tidak Pernah Disimpan</translation>
+<translation id="1532451416480227577">Tunjukkan alamat dan kad kredit daripada Google Pay</translation>
 <translation id="1540800554400757039">Alamat 1</translation>
 <translation id="1545749641540134597">Imbas Kod QR</translation>
 <translation id="1580783302095112590">Mel dihantar.</translation>
@@ -96,6 +97,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2718352093833049315">Hanya pada Wi-Fi</translation>
 <translation id="2747003861858887689">Medan sebelumnya</translation>
 <translation id="2780046210906776326">Tiada Akaun E-mel</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Tinggalkan Penukar Tab</translation>
 <translation id="283291358677939992">Cari dalam Halaman...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3175081911749765310">Prkhdmtn Web</translation>
 <translation id="3207960819495026254">Ditandai halaman</translation>
 <translation id="3210163015918861891">Penyegerakan Dimatikan</translation>
+<translation id="3224641773458703735">Untuk mengeksport kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
 <translation id="3240426699337459095">Pautan disalin</translation>
 <translation id="3244271242291266297">BB</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> daripada <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
-<translation id="533632423981297619">Kata laluan anda akan dapat dilihat oleh sesiapa sahaja yang dapat melihat fail yang dieksport. Jangan kongsi fail ini dengan sesiapa.</translation>
 <translation id="5388358297987318779">Buka Imej</translation>
 <translation id="5409365236829784218">Tiada aplikasi dipasang yang boleh membuka fail ini.</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
@@ -306,6 +308,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="681368974849482173">Item dibuat</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
+<translation id="6914783257214138813">Kata laluan anda akan kelihatan kepada sesiapa yang dapat melihat fail yang dieksport.</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6973630695168034713">Folder</translation>
 <translation id="7004499039102548441">Tab Terbaharu</translation>

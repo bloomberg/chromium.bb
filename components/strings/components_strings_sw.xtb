@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Futa fomu</translation>
 <translation id="2851634818064021665">Unahitaji ruhusa ili utembelee tovuti hii</translation>
 <translation id="2856444702002559011">Huenda wavamizi wanajaribu kuiba maelezo yako kutoka <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (kwa mfano, manenosiri, ujumbe au kadi za mikopo).<ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Ungependa kuhifadhi kadi?</translation>
 <translation id="2909946352844186028">Mabadiliko ya mtandao yamegunduliwa.</translation>
 <translation id="2916038427272391327">Funga programu nyingine</translation>
 <translation id="2922350208395188000">Cheti cha seva hakiwezi kukaguliwa.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">Kadi za Mikopo na za Kulipia Awali Zinazokubaliwa</translation>
 <translation id="8759274551635299824">Muda wa matumizi wa kadi hii umekwisha</translation>
 <translation id="8761567432415473239">Kuvinjari Salama kwa Google <ph name="BEGIN_LINK" />kulipata programu zinazodhuru<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi karibuni.</translation>
+<translation id="8763927697961133303">Kifaa cha USB</translation>
 <translation id="8790007591277257123">Rudia kufuta</translation>
 <translation id="8800988563907321413">Mapendekezo ya maudhui ya uhamishaji wa karibu yataonekana hapa</translation>
 <translation id="8820817407110198400">Alamisho</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;Jaribu kuondoa au kuzima "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Jaribu kuunganisha kwenye mtandao mwingine&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Kutoka Google Pay</translation>
 </translationbundle>

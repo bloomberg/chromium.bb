@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
-<translation id="207439088875642105">Dette er en konto for barn, som administreres av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Slutt å caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="2144487987174258011">Start på nytt for å oppdatere Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3009178788565917040">Utdata</translation>
 <translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Dette er en konto for barn, som administreres av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="3477079411857374384">Ctrl+Shift+Mellomrom</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
+<translation id="3513798432020909783">Kontoen er administrert av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3582792037806681688">Multipålogging har blitt deaktivert for en bruker i denne økten.</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
@@ -276,6 +275,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7829386189513694949">Sterkt signal</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
+<translation id="79341161159229895">Kontoen er administrert av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
 <translation id="7994370417837006925">Multipålogging</translation>
@@ -312,6 +312,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="8825534185036233643">Speiling med mer enn to skjermer støttes ikke.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Tilbakeknapp</translation>
 <translation id="8850991929411075241">Søk+Esc</translation>
 <translation id="8870509716567206129">Appen støtter ikke delt skjerm.</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>

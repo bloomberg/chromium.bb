@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Руковалац за MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Овај додатак се сувише често поново учитавао.</translation>
 <translation id="7003844668372540529">Непознати производ <ph name="PRODUCT_ID" /> продавца <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Датотека манифеста је неважећа</translation>
 <translation id="7217838517480956708">Администратор овог уређаја захтева да додатак <ph name="EXTENSION_NAME" /> буде инсталиран. Не можете да га уклоните или измените.</translation>
 <translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Предња</translation>
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME" />“ зато што је један други додатак (<ph name="EXTENSION_NAME" />) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Овај додатак није успео да достави акредитиве захтеву мреже јер је други додатак (<ph name="EXTENSION_NAME" />) доставио друге акредитиве.</translation>
+<translation id="8517576857589387417">Датотека манифеста недостаје или није могла да се чита</translation>
 <translation id="8636666366616799973">Пакет је неважећи. Детаљи: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Овај додатак није успео да преусмери захтев мреже на <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> пошто га је други додатак (<ph name="EXTENSION_NAME" />) преусмерио на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Распакивање додатака</translation>

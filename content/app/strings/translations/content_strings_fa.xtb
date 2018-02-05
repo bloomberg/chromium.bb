@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">وضعیت</translation>
 <translation id="1938124657309484470">مقدار باید <ph name="MAXIMUM_DATE_OR_TIME" /> یا قبل از آن باشد.</translation>
+<translation id="1993104285338243655">به نمایش صفحه‌نمایش روی دستگاه دیگر تغییر یافت</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» در «<ph name="INVALIDDOMAIN" />» در محل اشتباهی قرار دارد.</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2226276347425096477">لطفاً این متن را به اندازه <ph name="MAX_CHARACTERS" /> نویسه یا کمتر کوتاه کنید (شما در حال حاضر از <ph name="CURRENT_LENGTH" /> نویسه استفاده می‌کنید).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">میلی‌ ثانیه</translation>
 <translation id="4151657705144244502">گرافیک</translation>
 <translation id="4201051445878709314">نمایش ماه قبلی</translation>
+<translation id="4205604240201363801">اکنون درحالت تصویر در تصویر</translation>
 <translation id="421884353938374759">انتخابگر رنگ</translation>
 <translation id="4248100235867064564">نوار منو</translation>
 <translation id="4254339807215791271">اطلاعات محتوا</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="668171684555832681">دیگر...</translation>
 <translation id="6692633176391053278">گام به گام</translation>
+<translation id="6709570249143506788">کیفیت پخش ضعیف</translation>
 <translation id="6755330956360078551">نکته ابزار</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6820355525329141109">افزایه بارگیری نشد.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> فایل</translation>
 <translation id="8451268428117625855">لطفاً یک فایل انتخاب کنید.</translation>
 <translation id="8461852803063341183">دکمه رادیو</translation>
-<translation id="8511325616783751178">دکمه کرکره‌ای</translation>
 <translation id="8534579021159131403">دقیقه</translation>
 <translation id="8541249477527128034">کنترل رسانه</translation>
 <translation id="8583702881314752957">فهرست معنی‌ها</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">شروع بازپخش</translation>
 <translation id="8845239796550121995">درحال ارسال محتوا به تلویزیون</translation>
 <translation id="8851136666856101339">اصلی</translation>
+<translation id="8875657656876809964">خطا در بازپخش ویدئو</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> کیلوبایت</translation>
 <translation id="8987927404178983737">ماه</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>

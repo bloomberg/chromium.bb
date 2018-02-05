@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Манипулатор на MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Това разширение се презарежда твърде често.</translation>
 <translation id="7003844668372540529">Неизвестен продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Файлът на манифеста е невалиден</translation>
 <translation id="7217838517480956708">Администраторът на тази машина изисква разширението <ph name="EXTENSION_NAME" /> да е инсталирано. То не може да бъде премахнато или променено.</translation>
 <translation id="7972881773422714442">Опции: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Предна</translation>
 <translation id="8047248493720652249">Това разширение не успя да наименува изтеглянето „<ph name="ATTEMPTED_FILENAME" />“, защото друго разширение (<ph name="EXTENSION_NAME" />) определи различно файлово име – „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Това разширение не успя да предостави идентификационни данни за заявка от мрежата, защото друго разширение (<ph name="EXTENSION_NAME" />) посочи различни данни.</translation>
+<translation id="8517576857589387417">Файлът на манифеста липсва или не може да бъде прочетен</translation>
 <translation id="8636666366616799973">Пакетът е невалиден. Подробности: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Това разширение не успя да пренасочи заявка от мрежата към <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, защото друго разширение (<ph name="EXTENSION_NAME" />) я пренасочи към <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Разпакетиране на разширения</translation>

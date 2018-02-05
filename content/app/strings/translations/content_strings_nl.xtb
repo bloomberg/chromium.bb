@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Waarde moet <ph name="MAXIMUM_DATE_OR_TIME" /> of eerder zijn.</translation>
+<translation id="1993104285338243655">Overgeschakeld naar mirroring</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' wordt op een verkeerde positie gebruikt in '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2226276347425096477">Kort deze tekst in tot <ph name="MAX_CHARACTERS" /> tekens of minder (je gebruikt momenteel <ph name="CURRENT_LENGTH" /> tekens).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milliseconden</translation>
 <translation id="4151657705144244502">afbeelding</translation>
 <translation id="4201051445878709314">Vorige maand weergeven</translation>
+<translation id="4205604240201363801">Nu in scherm-in-scherm-modus</translation>
 <translation id="421884353938374759">kleurkiezer</translation>
 <translation id="4248100235867064564">menubalk</translation>
 <translation id="4254339807215791271">informatie over content</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="668171684555832681">Anders...</translation>
 <translation id="6692633176391053278">stappenregelaar</translation>
+<translation id="6709570249143506788">Slechte afspeelkwaliteit</translation>
 <translation id="6755330956360078551">knopinfo</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="6820355525329141109">Kan plug-in niet laden.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> bestanden</translation>
 <translation id="8451268428117625855">Selecteer een bestand.</translation>
 <translation id="8461852803063341183">keuzerondje</translation>
-<translation id="8511325616783751178">dropdown-knop</translation>
 <translation id="8534579021159131403">Minuten</translation>
 <translation id="8541249477527128034">mediacontrole</translation>
 <translation id="8583702881314752957">definitielijst</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">afspelen starten</translation>
 <translation id="8845239796550121995">Wordt nu gecast naar je tv</translation>
 <translation id="8851136666856101339">hoofd</translation>
+<translation id="8875657656876809964">Fout bij afspelen video</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />  KB</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="901493112792887934">huidige tijd in seconden</translation>

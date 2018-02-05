@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">படிவத்தை அழி</translation>
 <translation id="2851634818064021665">இந்தத் தளத்தைப் பார்ப்பதற்கு அனுமதி தேவை</translation>
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> தளத்திலிருந்து ஹேக்கர்கள் உங்கள் தகவலை (எடுத்துக்காட்டாக, கடவுச்சொற்கள், செய்திகள் அல்லது கிரெடிட் கார்டுகள்) திருட முயற்சிக்கக்கூடும். <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">கார்டைச் சேமிக்கவா?</translation>
 <translation id="2909946352844186028">பிணைய மாற்றம் கண்டறியப்பட்டது.</translation>
 <translation id="2916038427272391327">பிற நிரல்களை மூடவும்</translation>
 <translation id="2922350208395188000">சேவையகச் சான்றிதழை சோதிக்க முடியவில்லை.</translation>
@@ -993,6 +994,7 @@
 <translation id="874846938927089722">ஏற்கப்படும் கிரெடிட் மற்றும் ப்ரீபெய்டு கார்டுகள்</translation>
 <translation id="8759274551635299824">கார்டு காலாவதியாகிவிட்டது</translation>
 <translation id="8761567432415473239">Google பாதுகாப்பான தேடல், <ph name="SITE" /> இல் சமீபத்தில் <ph name="BEGIN_LINK" />தீங்கான நிரல்களைக் கண்டறிந்தது<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">USB சாதனம்</translation>
 <translation id="8790007591277257123">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="8800988563907321413">உங்கள் அருகிலுள்ளவற்றுக்கான பரிந்துரைகள் இங்கே தோன்றும்</translation>
 <translation id="8820817407110198400">புத்தகக்குறிகள்</translation>
@@ -1070,4 +1072,5 @@
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" மென்பொருளை நிறுவல் நீக்கவும் அல்லது முடக்கவும்&lt;/li&gt;
     &lt;li&gt;வேறொரு நெட்வொர்க்குடன் இணைக்கவும்&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Google Pay இலிருந்து</translation>
 </translationbundle>

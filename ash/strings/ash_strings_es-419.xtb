@@ -47,7 +47,6 @@
 <translation id="2049639323467105390"><ph name="DOMAIN" /> administra esta cuenta.</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
-<translation id="207439088875642105">Esta es una cuenta para niños administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Detener la transmisión de <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carga lenta</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que la batería esté completamente cargada: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Esta es una cuenta para niños administrada por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3477079411857374384">Control-Mayúscula-Espacio</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
+<translation id="3513798432020909783">Cuenta administrada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
 <translation id="3582792037806681688">Se inhabilitó el acceso múltiple para un usuario en esta sesión.</translation>
 <translation id="3595596368722241419">Batería completa</translation>
@@ -276,6 +275,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7829386189513694949">Señal fuerte</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7933084174919150729">El Asistente de Google solo está disponible para el perfil principal.</translation>
+<translation id="79341161159229895">Cuenta administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
@@ -312,6 +312,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 Es posible que las notificaciones, las ventanas y los diálogos posteriores se dividan entre los escritorios.</translation>
 <translation id="8825534185036233643">La duplicación con más de dos pantallas no es compatible.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8850991929411075241">Tecla de búsqueda + Esc</translation>
 <translation id="8870509716567206129">La app no es compatible con la función de pantalla dividida.</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>

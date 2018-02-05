@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Очистить форму</translation>
 <translation id="2851634818064021665">Для доступа к этой странице требуется разрешение.</translation>
 <translation id="2856444702002559011">Злоумышленники могут пытаться похитить ваши данные с сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (например, пароли, сообщения или номера банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Сохранить карту?</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2916038427272391327">Закройте другие программы.</translation>
 <translation id="2922350208395188000">Не удается проверить сертификат сервера.</translation>
@@ -996,6 +997,7 @@
 <translation id="874846938927089722">Кредитные карты и карты предоплаты, которые принимаются к оплате</translation>
 <translation id="8759274551635299824">Срок действия карты истек.</translation>
 <translation id="8761567432415473239">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">USB-устройство</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8800988563907321413">Здесь появятся рекомендации.</translation>
 <translation id="8820817407110198400">Закладки</translation>
@@ -1072,4 +1074,5 @@
     &lt;li&gt;Попробуйте удалить или отключить программу "<ph name="SOFTWARE_NAME" />".&lt;/li&gt;
     &lt;li&gt;Попробуйте подключиться к другой сети.&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Из Google Pay</translation>
 </translationbundle>

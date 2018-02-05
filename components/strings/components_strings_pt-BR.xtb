@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Limpar formulário</translation>
 <translation id="2851634818064021665">Você precisa de permissão para visitar este site</translation>
 <translation id="2856444702002559011">Invasores podem estar tentando roubar suas informações de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por exemplo, senhas, mensagens ou cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Salvar cartão?</translation>
 <translation id="2909946352844186028">Foi detectada uma alteração na rede.</translation>
 <translation id="2916038427272391327">Fechar outros programas</translation>
 <translation id="2922350208395188000">O certificado do servidor não pode ser verificado.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">Cartões de crédito e pré-pagos aceitos</translation>
 <translation id="8759274551635299824">Este cartão expirou</translation>
 <translation id="8761567432415473239">Recentemente, a Navegação Segura do Google <ph name="BEGIN_LINK" />encontrou programas nocivos<ph name="END_LINK" /> no site <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
 <translation id="8800988563907321413">As sugestões de itens nas proximidades são exibidas aqui</translation>
 <translation id="8820817407110198400">Favoritos</translation>
@@ -1075,4 +1077,5 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
     &lt;li&gt;Tente desinstalar ou desativar o "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Tente conectar-se a outra rede&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Do Google Pay</translation>
 </translationbundle>

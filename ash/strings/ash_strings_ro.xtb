@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Luminozitatea tastaturii</translation>
-<translation id="207439088875642105">Acesta este un cont pentru copii gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="2144487987174258011">Repornește ca să actualizezi Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Ieșiri</translation>
 <translation id="3019353588588144572">Timp rămas până la încărcarea completă a bateriei: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Acesta este un cont pentru copii gestionat de <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Jos</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Lupă de ecran</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Evidențiază cursorul mouse-ului</translation>
+<translation id="3513798432020909783">Cont gestionat de <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Modifică înapoi la „<ph name="FROM_LOCALE" />” (este necesară repornirea)</translation>
 <translation id="3582792037806681688">Conectarea multiplă a fost interzisă pentru un utilizator din această sesiune</translation>
 <translation id="3595596368722241419">Baterie încărcată</translation>
@@ -275,6 +274,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7829386189513694949">Semnal puternic</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7933084174919150729">Asistentul Google este disponibil numai pentru profilul principal.</translation>
+<translation id="79341161159229895">Cont gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Se caută rețele mobile…</translation>
 <translation id="7982789257301363584">Rețea</translation>
 <translation id="7994370417837006925">Conectare multiplă</translation>
@@ -311,6 +311,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împărțite între ecrane.</translation>
 <translation id="8825534185036233643">Oglindirea cu mai mult de două afișaje nu este acceptată.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Butonul Înapoi</translation>
 <translation id="8850991929411075241">Tasta de căutare + Esc</translation>
 <translation id="8870509716567206129">Aplicația nu acceptă ecranul împărțit.</translation>
 <translation id="8878886163241303700">Ecran extins</translation>

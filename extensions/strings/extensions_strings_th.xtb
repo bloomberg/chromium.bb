@@ -53,12 +53,14 @@
 <translation id="677806580227005219">เครื่องจัดการ MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">ส่วนขยายนี้โหลดตัวเองซ้ำบ่อยเกินไป</translation>
 <translation id="7003844668372540529">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID" /> จาก <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">ไฟล์ Manifest ไม่ถูกต้อง</translation>
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME" /> โดยไม่สามารถลบหรือแก้ไขได้</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">กล้องหน้า</translation>
 <translation id="8047248493720652249">ส่วนขยายนี้ล้มเหลวในการตั้งชื่อการดาวน์โหลดว่า "<ph name="ATTEMPTED_FILENAME" />" เนื่องจากอีกส่วนขยายหนึ่ง (<ph name="EXTENSION_NAME" />) ได้กำหนดชื่อไฟล์ที่แตกต่างไว้ว่า "<ph name="ACTUAL_FILENAME" />"</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> จาก <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">ส่วนขยายนี้ไม่สามารถให้ข้อมูลรับรองแก่คำขอเครือข่ายได้เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME" />) ได้ให้ข้อมูลรับรองซึ่งต่างออกไป</translation>
+<translation id="8517576857589387417">ไฟล์ Manifest หายไปหรืออ่านไม่ได้</translation>
 <translation id="8636666366616799973">แพ็กเกจไม่ถูกต้อง รายละเอียด: "<ph name="ERROR_MESSAGE" />"</translation>
 <translation id="8670869118777164560">ส่วนขยายนี้ไม่สามารถเปลี่ยนเส้นทางคำขอเครือข่ายไปยัง <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME" />) ได้เปลี่ยนเส้นทางคำขอไปยัง <ph name="ACTUAL_REDIRECT_DESTINATION" /></translation>
 <translation id="8712265948125780616">ตัวแตกไฟล์ส่วนขยาย</translation>

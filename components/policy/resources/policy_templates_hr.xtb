@@ -26,6 +26,7 @@
 
       Ako se to pravilo postavi, zaslon za prijavu uvijek će se prikazivati na jeziku određenom prvom vrijednošću pravila (pravilo je definirano kao popis za kompatibilnost s budućim verzijama). Ako se to pravilo ne postavi ili se postavi na prazan popis, zaslon za prijavu prikazivat će se na jeziku zadnje korisničke sesije. Ako se to pravilo postavi na vrijednost koja nije važeća oznaka zemlje/jezika, zaslon za prijavu prikazivat će se na osnovnom jeziku (trenutačno en-US).</translation>
 <translation id="1062011392452772310">Omogući daljinsku ovjeru za uređaj</translation>
+<translation id="1062407476771304334">Zamijeni</translation>
 <translation id="1093082332347834239">Ako se omogući ta postavka, host daljinske pomoći pokrenut će se u procesu s dopuštenjima <ph name="UIACCESS_PERMISSION_NAME" />. To će udaljenim korisnicima omogućiti interakciju s privilegiranim prozorima na računalu lokalnog korisnika.
 
           Ako je ta postavka onemogućena ili nije konfigurirana, host daljinske pomoći pokrenut će se u kontekstu korisnika i udaljeni korisnici neće moći pristupiti privilegiranim prozorima na računalu.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
-<translation id="1420281424655200442">Određuje koji su pisači iz pravila <ph name="DEVICE_PRINTERS_POLICY" /> dostupni korisnicima.
-
-      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača. Ako se odabere <ph name="PRINTERS_ALLOW_ALL" />, prikazuju se svi pisači. Ako se odabere <ph name="PRINTERS_BLACKLIST" />, <ph name="DEVICE_PRINTERS_BLACKLIST" /> upotrebljava se za ograničenje pristupa navedenim pisačima.  Ako se odabere <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> određuje samo one pisače koji se mogu odabrati.
-
-      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
 <translation id="1435659902881071157">Mrežna konfiguracija na razini uređaja</translation>
@@ -276,12 +271,6 @@
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="203096360153626918">To pravilo nema utjecaja na Android aplikacije. Moći će pokrenuti način prikazivanja na cijelom zaslonu čak i ako je to pravilo postavljeno na <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Onemogućeni pisači tvrtke</translation>
-<translation id="2063380907529983889">Upravlja time koji su pisači iz pravila <ph name="BULK_PRINTERS_POLICY" /> dostupni korisnicima.
-
-      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača. Ako se odabere <ph name="PRINTERS_ALLOW_ALL" />, prikazuju se svi pisači. Ako se odabere <ph name="PRINTERS_BLACKLIST" />, <ph name="BULK_PRINTERS_BLACKLIST" /> upotrebljava se za ograničenje pristupa navedenim pisačima.  Ako se odabere <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> određuje samo one pisače koji se mogu odabrati.
-
-      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava.
 
           Moguće su vrijednosti "basic" (osnovno), "digest" (sažeto), "NTLM" i "negotiate" (pregovaranje). Više vrijednosti odvojite zarezima.
@@ -459,6 +448,9 @@
 <translation id="2466131534462628618">Autentifikacija putem obaveznog portala zanemaruje proxy</translation>
 <translation id="2482676533225429905">Lokalno slanje poruka</translation>
 <translation id="2483146640187052324">Predvidi mrežne radnje na bilo kojoj mrežnoj vezi</translation>
+<translation id="2485721741875148980">Ako se to pravilo postavi na točno, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati preglednik. Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na netočno. Napominjemo da će nakon omogućivanja ovog pravila postojeći nepotpisani profili biti zaključani i neće im biti moguće pristupiti. Više informacija možete pronaći u centru za pomoć.
+
+      Ako se to pravilo postavi na netočno ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Onemogućuje provedbu zahtjeva Transparentnosti certifikata za navedene URL-ove.
 
       To pravilo omogućuje da se certifikati za nazive hostova na navedenim URL-ovima ne otkrivaju putem Transparentnosti certifikata. Tako se omogućuje nastavak upotrebe certifikata koji se inače ne bi smatrali pouzdanima jer nisu pravilno javno otkriveni, ali se otežava otkrivanje zloupotrijebljenih certifikata za te hostove.
@@ -753,6 +745,7 @@
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="3577251398714997599">Postavke oglasa za web-lokacije s ometajućim oglasima</translation>
+<translation id="3587482841069643663">Sve</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
 <translation id="3627678165642179114">Omogući ili onemogući web-uslugu provjere pravopisa</translation>
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
@@ -1186,6 +1179,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="489803897780524242">Parametar koji kontrolira položaj pojma za pretraživanje za zadanog pružatelja usluge pretraživanja</translation>
 <translation id="4899708173828500852">Omogući Sigurno pregledavanje</translation>
 <translation id="4906194810004762807">Brzina osvježavanja za pravilo uređaja</translation>
+<translation id="4917385247580444890">Jak</translation>
 <translation id="494613465159630803">Cast prijemnik</translation>
 <translation id="4962262530309732070">Ako se pravilo postavi na točno ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
 
@@ -1570,13 +1564,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6157537876488211233">Popis pravila zaobilaženja proxyja odvojenih zarezima</translation>
 <translation id="6158324314836466367">Naziv web-trgovine tvrtke (obustavljeno)</translation>
 <translation id="6161405879872578475">Omogući <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Upozorenje: podrška za SSLv3 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 43 (otprilike u srpnju 2015.) i istovremeno će se ukloniti i ovo pravilo.
-
-      Ako se pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je SSLv3 za <ph name="PRODUCT_NAME" /> 39 i TLS 1.0 za novije verzije.
-
-      U protivnom se može postaviti na jednu od sljedećih vrijednosti: "sslv3", "tls1", "tls1.1" ili "tls1.2". Kada se postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a starije od navedene verzije. Neprepoznate će se vrijednosti zanemariti.
-
-      Napomena: usprkos broju, "sslv3" starija je verzija od "tls1".</translation>
 <translation id="6181608880636987460">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima nije dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>
@@ -1955,6 +1942,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7625444193696794922">Određuje kanal za izdavanje na koji bi ovaj uređaj trebao biti priključen.</translation>
 <translation id="7632724434767231364">Naziv GSSAPI biblioteke</translation>
 <translation id="7635471475589566552">Konfigurira oznaku zemlje/jezika aplikacije u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene oznaku zemlje/jezika. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> upotrebljavat će navedenu oznaku zemlje/jezika. Ako konfigurirana oznaka zemlje/jezika nije podržana, upotrebljavat će se "en-US". Ako je ova postavka onemogućena ili nije postavljena, <ph name="PRODUCT_NAME" /> upotrebljavat će oznaku zemlje/jezika koju odredi korisnik (ako je konfigurirana), oznaku zemlje/jezika sustava ili standardnu oznaku zemlje/jezika "en-US".</translation>
+<translation id="7643883929273267746">Ograniči račune koji su vidljivi u pregledniku <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
 <translation id="7683777542468165012">Dinamičko osvježavanje pravila</translation>
 <translation id="7694807474048279351">Odredi vrijeme automatskog ponovnog pokretanja nakon primjene ažuriranja sustava <ph name="PRODUCT_OS_NAME" />.
@@ -2067,7 +2055,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="7941975817681987555">Ne predviđaj mrežne radnje ni na jednoj mrežnoj vezi</translation>
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
 <translation id="7976157349247117979">Naziv odredišta za <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nema posebnih ograničenja</translation>
@@ -2274,6 +2261,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Ako se to pravilo ne postavi, upotrebljava se zadani faktor skaliranja.
 
           Faktor skaliranja mora biti 100% ili više. Vrijednosti koje bi učinile odgodu zatamnjivanja zaslona u načinu prezentacije kraćom od uobičajene odgode zatamnjivanja zaslona nisu dopuštene.</translation>
+<translation id="8798099450830957504">Zadano</translation>
 <translation id="8818173863808665831">Prijavljuje geografsku lokaciju uređaja.
 
       Ako se to pravilo ne postavi ili ako se postavi na lažno, lokacija se neće prijavljivati.</translation>

@@ -26,6 +26,7 @@
 
       Dacă această politică este configurată, ecranul de conectare va fi afișat întotdeauna în limba specificată de prima valoare a politicii (politica este definită ca o listă pentru postcompatibilitate). Dacă această politică nu este configurată sau este configurată la o listă necompletată, ecranul de conectare va fi afișat în limba ultimei sesiuni a utilizatorului. Dacă politica este configurată la o valoare care nu este o limbă validă, ecranul de conectare va fi afișat într-o limbă de rezervă (în prezent, en-US).</translation>
 <translation id="1062011392452772310">Activați atestarea la distanță pentru dispozitiv</translation>
+<translation id="1062407476771304334">Înlocuiți</translation>
 <translation id="1093082332347834239">Dacă această setare este activată, gazda asistenței la distanță va rula într-un proces cu permisiunile <ph name="UIACCESS_PERMISSION_NAME" />. Astfel, utilizatorii la distanță pot să interacționeze cu ferestrele cu privilegii superioare de pe computerul utilizatorului local.
 
           Dacă această setare este dezactivată sau nu este configurată, gazda asistenței la distanță va rula în contextul utilizatorului, iar utilizatorii la distanță nu vor putea să interacționeze cu ferestrele cu privilegii superioare de pe computer.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Activează interogările către Quirks Server pentru profilurile hardware</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
-<translation id="1420281424655200442">Controlează care imprimante din <ph name="DEVICE_PRINTERS_POLICY" /> sunt disponibile utilizatorilor.
-
-      Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc. Dacă se selectează <ph name="PRINTERS_ALLOW_ALL" />, toate imprimantele sunt afișate. Dacă se selectează <ph name="PRINTERS_BLACKLIST" />, se va folosi <ph name="DEVICE_PRINTERS_BLACKLIST" /> pentru a se restricționa accesul la imprimantele specificate. Dacă se selectează <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> indică numai acele imprimante care se pot selecta.
-
-      Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_BLACKLIST" /> în mod prestabilit.
-      </translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
@@ -277,12 +272,6 @@
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="203096360153626918">Această politică nu afectează aplicațiile Android. Acestea vor putea fi deschise în modul ecran complet, chiar dacă politica este setată la <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Imprimantele dezactivate ale companiei</translation>
-<translation id="2063380907529983889">Controlează care imprimante din <ph name="BULK_PRINTERS_POLICY" /> sunt disponibile utilizatorilor.
-
-      Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc. Dacă se selectează <ph name="PRINTERS_ALLOW_ALL" />, toate imprimantele sunt afișate. Dacă se selectează <ph name="PRINTERS_BLACKLIST" />, se va folosi <ph name="BULK_PRINTERS_BLACKLIST" /> pentru a se restricționa accesul la imprimantele specificate. Dacă se selectează <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> indică numai acele imprimante care se pot selecta.
-
-      Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_BLACKLIST" /> în mod prestabilit.
-      </translation>
 <translation id="206623763829450685">Specifică schemele de autentificare HTTP acceptate de <ph name="PRODUCT_NAME" />.
 
           Valorile posibile sunt „basic”, „digest”, „ntlm” și „negotiate”. Separă valorile multiple prin virgulă.
@@ -462,6 +451,9 @@
 <translation id="2466131534462628618">Autentificarea prin portalul captiv ignoră proxy-ul</translation>
 <translation id="2482676533225429905">Mesagerie nativă</translation>
 <translation id="2483146640187052324">Anticipează acțiunile în rețea pentru orice conexiune la rețea</translation>
+<translation id="2485721741875148980">Dacă această politică este activată, utilizatorul trebuie să se conecteze la <ph name="PRODUCT_NAME" /> cu profilul său înainte de a folosi browserul. Iar politica BrowserGuestModeEnabled va fi în mod prestabilit dezactivată. Reține că profilurile nesemnate existente vor fi blocate și inaccesibile după activarea acestei politici. Pentru mai multe informații, consultă articolul din centrul de ajutor.
+
+      Dacă această politică este dezactivată sau nu este configurată, utilizatorul poate folosi browserul fără să se conecteze la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Dezactivează aplicarea cerințelor privind Transparența certificatului pentru adresele URL menționate.
 
       Această politică permite ca certificatele pentru numele de gazdă din adresele URL specificate să nu fie dezvăluite folosind Transparența certificatului. Astfel, certificatele care altfel nu ar fi de încredere, deoarece nu au fost dezvăluite public corespunzător, pot fi folosite în continuare, dar detectarea certificatelor emise greșit pentru gazdele respective este mai dificilă.
@@ -759,6 +751,7 @@
 <translation id="3528000905991875314">Activează pagini de eroare alternative</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="3577251398714997599">Setare pentru anunțurile de pe site-urile cu anunțuri deranjante</translation>
+<translation id="3587482841069643663">Toate</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
@@ -1197,6 +1190,7 @@
 <translation id="489803897780524242">Parametru care controlează poziționarea termenilor de căutare pentru furnizorul prestabilit de servicii de căutare</translation>
 <translation id="4899708173828500852">Activează funcția Navigare sigură</translation>
 <translation id="4906194810004762807">Rata de actualizare pentru Politica privind dispozitivele</translation>
+<translation id="4917385247580444890">Puternic</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite opțiunea Adaugă o persoană din managerul de utilizatori.
 
@@ -1581,13 +1575,6 @@
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
 <translation id="6161405879872578475">Activează <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Avertisment: compatibilitatea cu SSLv3 va fi eliminată complet pentru <ph name="PRODUCT_NAME" /> după versiunea 43 (în jurul lunii iulie 2015), iar această politică va fi eliminată concomitent.
-
-      Dacă această politică nu este configurată, <ph name="PRODUCT_NAME" /> va folosi o versiune minimă prestabilită, care pentru <ph name="PRODUCT_NAME" /> 39 este SSLv3, iar pentru versiunile ulterioare este TLS 1.0.
-
-      În caz contrar, poate fi configurată la una dintre următoarele valori: „sslv3”, „tls1”, „tls1.1” sau „tls1.2”. Atunci când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiuni SSL/TLS inferioare versiunii specificate. Valorile neidentificate vor fi ignorate.
-
-      Reține că în ciuda numărului, „sslv3” este o versiune anterioară versiunii „tls1”.</translation>
 <translation id="6181608880636987460">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care nu au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
 
           Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -1975,6 +1962,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="7632724434767231364">Nume bibliotecă GSSAPI</translation>
 <translation id="7635471475589566552">Configurează limba aplicației din <ph name="PRODUCT_NAME" /> și împiedică modificarea limbii de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME" /> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>
+<translation id="7643883929273267746">Restricționează conturile vizibile în <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Această politică stabilește dacă roamingul de date trebuie să fie activat pentru dispozitiv. Dacă această politică este activată, roamingul de date este permis. Dacă politica nu este configurată sau este neactivată, roamingul de date nu va fi disponibil.</translation>
 <translation id="7683777542468165012">Actualizează politica dinamică</translation>
 <translation id="7694807474048279351">Programați o repornire automată după aplicarea unei actualizări <ph name="PRODUCT_OS_NAME" />.
@@ -2087,7 +2075,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
 <translation id="7976157349247117979">Numele destinației pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Fără restricții speciale</translation>
@@ -2293,6 +2280,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Dacă această politică nu este setată, se utilizează un factor de ajustare prestabilit.
 
           Factorul de ajustare trebuie să fie de minimum 100 %. Valorile prin care intervalul până la reducerea luminozității ecranului în modul de prezentare ar deveni mai scurt decât intervalul obișnuit până la reducerea luminozității ecranului nu sunt permise.</translation>
+<translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8818173863808665831">Raportează locația geografică a dispozitivului.
 
           Dacă politica nu este setată sau nu este activată, locația nu va fi raportată.</translation>

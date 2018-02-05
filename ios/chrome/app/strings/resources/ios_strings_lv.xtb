@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> vienumi</translation>
 <translation id="1491277525950327607">Veiciet dubultskārienu, lai pārslēgtu iestatījumu.</translation>
 <translation id="152234381334907219">Jaunākie saglabātie</translation>
+<translation id="1532451416480227577">Rādīt adreses un kredītkartes no pakalpojuma Google Pay</translation>
 <translation id="1540800554400757039">1. adrese</translation>
 <translation id="1545749641540134597">Skenējiet QR kodu</translation>
 <translation id="1580783302095112590">E-pasts nosūtīts.</translation>
@@ -96,6 +97,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="2747003861858887689">Iepriekšējais lauks</translation>
 <translation id="2780046210906776326">Nav e-pasta kontu</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Aizvērt ciļņu pārslēdzēju</translation>
 <translation id="283291358677939992">Atrast lapā...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="3175081911749765310">Tīm. pak.</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3210163015918861891">Sinhronizācija izslēgta</translation>
+<translation id="3224641773458703735">Lai eksportētu paroles, vispirms ierīcei ir jāiestata piekļuves kods.</translation>
 <translation id="3240426699337459095">Saite nokopēta</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />. no <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
-<translation id="533632423981297619">Jūsu paroles būs redzamas ikvienam, kas var skatīt eksportēto failu. Nekopīgojiet šo failu ne ar vienu.</translation>
 <translation id="5388358297987318779">Atvērt attēlu</translation>
 <translation id="5409365236829784218">Nav instalēta neviena lietotne, ar kuru atvērt šo failu.</translation>
 <translation id="5433691172869980887">Lietotājvārds ir nokopēts.</translation>
@@ -306,6 +308,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="681368974849482173">Vienums izveidots</translation>
 <translation id="6896758677409633944">Kopēt</translation>
 <translation id="6903907808598579934">Ieslēgt sinhronizāciju</translation>
+<translation id="6914783257214138813">Jūsu paroles būs redzamas ikvienam, kas var skatīt eksportēto failu.</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6973630695168034713">Mapes</translation>
 <translation id="7004499039102548441">Nesen atvērtas cilnes</translation>

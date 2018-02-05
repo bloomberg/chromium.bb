@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Vymazat formulář</translation>
 <translation id="2851634818064021665">K návštěvě tohoto webu potřebujete povolení</translation>
 <translation id="2856444702002559011">Útočníci se mohou pokusit odcizit vaše údaje na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (například hesla, zprávy nebo informace o platebních kartách). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Uložit kartu?</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2916038427272391327">Zavřete ostatní programy</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
@@ -993,6 +994,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="874846938927089722">Přijímané kreditní a předplacené karty</translation>
 <translation id="8759274551635299824">Platnost této karty vypršela</translation>
 <translation id="8761567432415473239">Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />nalezlo škodlivé programy<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">Zařízení USB</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
 <translation id="8800988563907321413">Zde se zobrazí návrhy funkce Nablízku</translation>
 <translation id="8820817407110198400">Záložky</translation>
@@ -1069,4 +1071,5 @@ Kontaktujte administrátora systému.</translation>
     &lt;li&gt;Zkuste software <ph name="SOFTWARE_NAME" /> odinstalovat nebo deaktivovat.&lt;/li&gt;
     &lt;li&gt;Zkuste se připojit k jiné síti.&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Z Google Pay</translation>
 </translationbundle>

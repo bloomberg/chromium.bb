@@ -26,6 +26,7 @@
 
       När principen har ställts in visas inloggningsskärmen alltid på det språk som har angetts först i principen (definitionen ges i form av en lista så att principen ska vara kompatibel med framtida versioner). Om principen inte har ställts in eller om en tom lista har angetts visas inloggningsskärmen på det språk som användes vid den senaste användarsessionen. Om principen har ställts in på ett ogiltigt värde används reservspråkkoden (för närvarande en-US) för inloggningsskärmen.</translation>
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
+<translation id="1062407476771304334">Ersätt</translation>
 <translation id="1093082332347834239">Om inställningen är aktiverad körs fjärrhjälpsvärden i en process med behörigheter för <ph name="UIACCESS_PERMISSION_NAME" />. Det innebär att fjärranvändare kan interagera med fönster som öppnats med högre behörighet på den lokala användarens dator.
 
           Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
-<translation id="1420281424655200442">Styr vilka skrivare i <ph name="DEVICE_PRINTERS_POLICY" /> som får användas.
-
-      Anger vilken åtkomstprincip som gäller vid gruppkonfigurering av skrivare. Med alternativet <ph name="PRINTERS_ALLOW_ALL" /> visas alla skrivare. Med alternativet <ph name="PRINTERS_BLACKLIST" /> blockeras de skrivare som anges i <ph name="DEVICE_PRINTERS_BLACKLIST" />. Med alternativet <ph name="PRINTERS_WHITELIST" /> går endast de skrivare som anges i <ph name="DEVICE_PRINTERS_WHITELIST" /> att välja.
-
-      Om inget värde anges för principen används <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -285,12 +280,6 @@
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="203096360153626918">Den här principen gäller inte Android-appar. De kan använda helskärmsläge även om den har principen har ställts in på <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Inaktiverade företagsskrivare</translation>
-<translation id="2063380907529983889">Styr vilka skrivare i <ph name="BULK_PRINTERS_POLICY" /> som får användas.
-
-      Anger vilken åtkomstprincip som gäller vid gruppkonfigurering av skrivare. Med alternativet <ph name="PRINTERS_ALLOW_ALL" /> visas alla skrivare. Med alternativet <ph name="PRINTERS_BLACKLIST" /> blockeras de skrivare som anges i <ph name="BULK_PRINTERS_BLACKLIST" />. Med alternativet <ph name="PRINTERS_WHITELIST" /> går endast de skrivare som anges i <ph name="BULK_PRINTERS_WHITELIST" /> att välja.
-
-      Om inget värde anges för principen används <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
 
           Möjliga värden är basic, digest, ntlm och negotiate. Avgränsa värdena med komma.
@@ -476,6 +465,9 @@
 <translation id="2466131534462628618">Autentisering via infångstportal ignorerar proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="2483146640187052324">Förutsäg nätverksåtgärder för alla nätverksanslutningar</translation>
+<translation id="2485721741875148980">Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. I artikeln i hjälpcentret finns mer information.
+
+      Om principen är inställd på falskt eller om den inte har konfigurerats kan användaren använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Inaktiverar kraven för certifikattransparens på webbadresserna i listan.
 
       Principen gör så att certifikaten för värdnamnen i de angivna webbadresserna inte lämnas ut via Certifikattransparens. Detta gör det möjligt att fortsätta använda certifikat som annars skulle vara opålitliga eftersom de inte lämnades ut ordentligt. Men det blir svårare att upptäcka felaktigt utfärdade certifikat för dessa värdar.
@@ -790,6 +782,7 @@
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
+<translation id="3587482841069643663">Alla</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
@@ -1242,6 +1235,7 @@
 <translation id="489803897780524242">Parameter som styr sökordsplacering för standardsökleverantören</translation>
 <translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
 <translation id="4906194810004762807">Uppdateringsfrekvens för enhetspolicy</translation>
+<translation id="4917385247580444890">Stark</translation>
 <translation id="494613465159630803">Cast-mottagare</translation>
 <translation id="4962262530309732070">Om den här principen är inställd på sant eller inte har konfigurerats tillåts Lägg till person i användarhanteraren av <ph name="PRODUCT_NAME" />.
 
@@ -1657,13 +1651,6 @@
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
 <translation id="6161405879872578475">Aktiverar <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Varning! Stöd för SSLv3 kommer helt att tas bort från <ph name="PRODUCT_NAME" /> efter version 43 (kring juli 2015) och denna princip tas bort samtidigt med detta.
-
-      Om principen inte konfigureras använder <ph name="PRODUCT_NAME" /> en standardminimiversion som är SSLv3 i <ph name="PRODUCT_NAME" /> 39 and TLS 1.0 i senare versioner.
-
-      I andra fall kan den sättas till något av följande värden: sslv3, tls1, tls1.1 eller tls1.2. Efter inställning kommer <ph name="PRODUCT_NAME" /> inte att använda SSL-/TLS-versioner som är tidigare än den angivna versionen. Ett värde som inte känns igen ignoreras.
-
-      Observera att sslv3 trots numret är en tidigare version än tls1.</translation>
 <translation id="6181608880636987460">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> inte får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
@@ -2082,6 +2069,7 @@
       Om du aktiverar den här inställningen används den angivna språkversionen av <ph name="PRODUCT_NAME" />. Om den språkversion som anges inte stöds används en-US istället.
 
       Om inställningen inaktiveras eller inte är konfigurerad använder <ph name="PRODUCT_NAME" /> antingen den språkversion som användaren anger (om den är konfigurerad), samma språk som datorn eller standardversionen en-US.</translation>
+<translation id="7643883929273267746">Begränsa vilka konton som är synliga i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgör om dataroaming ska vara tillåtet för enheten. Om värdet är sant är dataroaming tillåten. Om policyn inte är konfigurerad eller om värdet är falskt är dataroaming inte tillåten.</translation>
 <translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
 <translation id="7694807474048279351">Schemalägg en automatisk omstart efter uppdatering av <ph name="PRODUCT_OS_NAME" />.
@@ -2196,7 +2184,6 @@
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.
           Gör att STUN och reläservrar kan användas för att ansluta till en fjärrklient.
 
@@ -2416,6 +2403,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
           Om den här principen inte har angetts används en standardskalningsfaktor.
 
           Skalningsfaktorn måste vara 100 % eller mer. Värden som skulle göra fördröjningen av skärmdämpningen i presentationsläge kortare än den vanliga fördröjningen tillåts inte.</translation>
+<translation id="8798099450830957504">Standard</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
       Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>

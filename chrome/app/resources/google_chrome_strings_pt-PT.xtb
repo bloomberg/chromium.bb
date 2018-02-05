@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="1001534784610492198">O arquivo do programa de instalação está corrompido ou é inválido. Transfira de novo o Google Chrome.</translation>
+<translation id="102763973188675173">Personalize e controle o Google Chrome. Está disponível uma atualização.</translation>
 <translation id="1035334672863811645">inicie sessão no Chrome</translation>
 <translation id="1065672644894730302">Não é possível ler as suas preferências. Algumas funcionalidades poderão estar indisponíveis e as alterações efetuadas às preferências não serão guardadas.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> estava a utilizar o Chrome</translation>
@@ -34,6 +35,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obter ajuda para utilizar o Chrome OS</translation>
 <translation id="1795405610103747296">Instale o Chrome no telemóvel. Vamos enviar uma SMS para o seu telemóvel: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1860536484129686729">O Chrome necessita de autorização de acesso à câmara para este site.</translation>
+<translation id="1873233029667955273">O Google Chrome não é o seu navegador predefinido.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
 <translation id="2063848847527508675">O Chrome OS tem de ser reiniciado para aplicar a atualização.</translation>
@@ -53,10 +56,12 @@
 <translation id="2346876346033403680">Anteriormente, alguém iniciou sessão no Chrome neste computador com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Se esta conta não for sua, crie um novo utilizador do Chrome para manter as informações em separado.
 
 Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, histórico e outras definições, fundir-se-ão com <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
+<translation id="2348335408836342058">O Chrome necessita de autorização de acesso à câmara e ao microfone para este site.</translation>
 <translation id="2397416548179033562">Mostrar menu do Chrome</translation>
 <translation id="2429317896000329049">O Google Chrome não conseguiu sincronizar os dados porque a Sincronização não está disponível para o seu domínio.</translation>
 <translation id="2446511512801740068">O Chrome está desatualizado porque não é reiniciado há algum tempo. Está disponível uma atualização que será aplicada logo que o reinicie.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
+<translation id="2534507159460261402">Google Pay (copiado para o Chrome)</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome atualmente em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="2586406160782125153">Esta ação elimina os seus dados de navegação deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logótipo do Chrome</translation>
@@ -65,6 +70,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK" /> à Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="2705403826523567092">Inicie sessão para obter uma experiência de navegação personalizada, sincronizada entre dispositivos.</translation>
+<translation id="2765403129283291972">O Chrome necessita de autorização de acesso ao microfone para este site.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2847461019998147611">Apresentar o Google Chrome neste idioma</translation>
@@ -91,6 +97,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="3451115285585441894">A adicionar ao Chrome...</translation>
 <translation id="345171907106878721">Adicionar-se ao Chrome</translation>
 <translation id="3479552764303398839">Agora não</translation>
+<translation id="3503306920980160878">O Chrome necessita de acesso à sua localização para a partilhar com este site.</translation>
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="3622797965165704966">Agora é mais fácil utilizar o Chrome com a sua Conta Google e em computadores partilhados.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome OS</translation>
@@ -193,8 +200,8 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7106741999175697885">Gestor de tarefas - Google Chrome</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="7164397146364144019">Pode contribuir para tornar o Chrome mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
-<translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> foi adicionado ao Chrome.</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o gestor controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE" /></translation>
+<translation id="7308322188646931570">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="7330164299247909639">Falha no certificado de autenticação. Inicie sessão novamente no Google Chrome como <ph name="USER_NAME" /> ou contacte o gestor para mais informações. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="7369650938475876456">Utilize uma palavra-passe forte gerada pelo Chrome</translation>
@@ -207,6 +214,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7494905215383356681">Licenças de código aberto do Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Apresentar o Chrome OS neste idioma</translation>
+<translation id="7589360514048265910">Este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.9 já não é suportado.</translation>
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>

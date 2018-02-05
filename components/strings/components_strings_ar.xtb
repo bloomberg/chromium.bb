@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">محو النموذج</translation>
 <translation id="2851634818064021665">يلزمك الحصول على إذن لزيارة هذا الموقع</translation>
 <translation id="2856444702002559011">قد يحاول المهاجمون سرقة معلوماتك من <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (على سبيل المثال، كلمات المرور، أو الرسائل، أو بطاقات الائتمان). <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">هل تريد حفظ البطاقة؟</translation>
 <translation id="2909946352844186028">تم اكتشاف حدوث تغيير في الشبكة.</translation>
 <translation id="2916038427272391327">إغلاق البرامج الأخرى</translation>
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="8759274551635299824">هذه البطاقة منتهية الصلاحية</translation>
 <translation id="8761567432415473239">‏عثر ‏‫التصفح الآمن من Google‬ مؤخرًا <ph name="BEGIN_LINK" />على برامج ضارة<ph name="END_LINK" /> في <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">‏جهاز USB</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
 <translation id="8800988563907321413">تظهر اقتراحاتك "المجاورة" هنا</translation>
 <translation id="8820817407110198400">إشارات</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;حاوِل إلغاء تثبيت "<ph name="SOFTWARE_NAME" />" أو تعطيل&lt;/li&gt;
     &lt;li&gt;حاوِل الاتصال بشبكة أخرى&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">‏من Google Pay</translation>
 </translationbundle>

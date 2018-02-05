@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">આ એક્સ્ટેન્શન પોતાની મેળે ઘણી વાર ફરીથી લોડ થયેલું.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> નું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /></translation>
+<translation id="7068383018033524534">મેનિફેસ્ટ ફાઇલ અમાન્ય છે</translation>
 <translation id="7217838517480956708">આ મશીનના વ્યવસ્થાપકને ઇન્સ્ટોલ કરવા માટે <ph name="EXTENSION_NAME" /> ની આવશ્કતા છે. તેને દૂર અથવા સંશોધિત કરી શકાશે નહીં.</translation>
 <translation id="7972881773422714442">વિકલ્પો: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">સામેનો કૅમેરો</translation>
 <translation id="8047248493720652249">આ એક્સટેન્શન "<ph name="ATTEMPTED_FILENAME" />" ને ડાઉનલોડ નામ આપવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ એક જુદું ફાઇલનામ "<ph name="ACTUAL_FILENAME" />" નક્કી કર્યું છે.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> તરફથી <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને ઓળખપત્ર પ્રદાન કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ વિવિધ ઓળખપત્ર પ્રદાન કર્યાં છે.</translation>
+<translation id="8517576857589387417">મેનિફેસ્ટ ફાઇલ ખૂટે છે અથવા સરળતાથી વાંચી શકાય તેવી નથી</translation>
 <translation id="8636666366616799973">પૅકેજ અમાન્ય છે. વિગતો: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> પર રીડાયરેક્ટ કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ તેને <ph name="ACTUAL_REDIRECT_DESTINATION" /> પર રીડાયરેક્ટ કર્યું છે.</translation>
 <translation id="8712265948125780616">વિસ્તાર અનપેકર</translation>

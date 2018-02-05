@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Peranti ini diuruskan oleh <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2067602449040652523">Kecerahan papan kekunci</translation>
-<translation id="207439088875642105">Ini ialah akaun kanak-kanak yang diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Berhenti menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
 <translation id="2144487987174258011">Mulakan semula untuk mengemas kini Pemain Adobe Flash</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Masa yang tinggal sehingga bateri dicas sepenuhnya, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Ini ialah akaun untuk kanak-kanak yang diurus oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Penggadang skrin</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Serlahkan kursor tetikus</translation>
+<translation id="3513798432020909783">Akaun diurus oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Tukar kembali kepada "<ph name="FROM_LOCALE" />" (perlu dimulakan semula)</translation>
 <translation id="3582792037806681688">Log masuk berbilang tidak dibenarkan untuk pengguna dalam sesi ini</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
@@ -276,6 +275,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7829386189513694949">Isyarat kuat</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
 <translation id="7933084174919150729">Google Assistant hanya tersedia untuk profil utama.</translation>
+<translation id="79341161159229895">Akaun diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Mencari rangkaian mudah alih...</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
 <translation id="7994370417837006925">Log masuk berbilang</translation>
@@ -312,6 +312,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 Pemberitahuan, tetingkap dan dialog seterusnya mungkin dipisahkan antara desktop.</translation>
 <translation id="8825534185036233643">Pencerminan menggunakan lebih daripada dua paparan tidak disokong.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Butang kembali</translation>
 <translation id="8850991929411075241">Carian+Esc</translation>
 <translation id="8870509716567206129">Apl tidak menyokong skrin pisah.</translation>
 <translation id="8878886163241303700">Meluaskan skrin</translation>

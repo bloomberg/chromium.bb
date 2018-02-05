@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Masyadong madalas nag-reload ang extension na ito.</translation>
 <translation id="7003844668372540529">Hindi kilalang produkto na <ph name="PRODUCT_ID" /> mula sa <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Invalid ang manifest file</translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME" />. Hindi ito maaaring alisin o baguhin.</translation>
 <translation id="7972881773422714442">Mga Opsyon: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Nakaharap sa user</translation>
 <translation id="8047248493720652249">Nabigong pangalanan ng extension na ito ang download na "<ph name="ATTEMPTED_FILENAME" />" dahil nakatukoy ang isa pang extension (<ph name="EXTENSION_NAME" />) ng ibang filename na "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> mula sa <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Nabigo ang extension na ito na magbigay ng mga kredensyal sa isang kahilingan sa network dahil may isa pang extension (<ph name="EXTENSION_NAME" />) na nagbigay ng ibang mga kredensyal.</translation>
+<translation id="8517576857589387417">Nawawala o hindi mabasa ang manifest file</translation>
 <translation id="8636666366616799973">Di-wasto ang package. Mga Detalye: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Nabigo ang extension na ito na mag-redirect ng kahilingan sa network sa <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> dahil may isa pang extension (<ph name="EXTENSION_NAME" />) na nag-redirect nito sa <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Pang-unpack ng Extension</translation>

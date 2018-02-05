@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1001534784610492198">Instalētāja arhīvs ir bojāts vai nav derīgs. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
+<translation id="102763973188675173">Pielāgojiet un pārvaldiet pārlūku Google Chrome. Ir pieejams atjauninājums.</translation>
 <translation id="1035334672863811645">pierakstieties pārlūkā Chrome</translation>
 <translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> iepriekš izmantoja Chrome</translation>
@@ -36,6 +37,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Saņemt palīdzību par Chrome OS izmantošanu</translation>
 <translation id="1795405610103747296">Instalējiet pārlūku Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
+<translation id="1860536484129686729">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu kamerai šajā vietnē.</translation>
+<translation id="1873233029667955273">Google Chrome nav jūsu noklusējuma pārlūks.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
 <translation id="2063848847527508675">Lai lietotu atjauninājumu, Chrome OS ir jārestartē.</translation>
@@ -55,10 +58,12 @@
 <translation id="2346876346033403680">Kāds iepriekš pierakstījās pārlūkā Chrome šajā datorā, izmantojot e-pasta adresi <ph name="ACCOUNT_EMAIL_LAST" />. Ja tas nav jūsu konts, izveidojiet jaunu Chrome profilu, lai jūsu informācija tiktu glabāta atsevišķi.
 
 Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, vēsture un citi iestatījumi, tiks apvienota ar konta <ph name="ACCOUNT_EMAIL_NEW" /> informāciju.</translation>
+<translation id="2348335408836342058">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu kamerai un mikrofonam šajā vietnē.</translation>
 <translation id="2397416548179033562">Rādīt Chrome izvēlni</translation>
 <translation id="2429317896000329049">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="2446511512801740068">Pārlūks Chrome ir novecojis, jo jau kādu laiku tas nav atkārtoti palaists. Atjauninājums ir pieejams un tiks lietots, tiklīdz atkārtoti palaidīsiet pārlūku.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
+<translation id="2534507159460261402">Google Pay (kopēts pārlūkā Chrome)</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
 <translation id="2586406160782125153">Veicot šo darbību, no šīs ierīces tiks dzēsti pārlūkošanas dati. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chrome kā <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome logotips</translation>
@@ -67,6 +72,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2665296953892887393">Palīdzēt uzlabot pārlūku Google Chrome, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chrome.</translation>
 <translation id="2705403826523567092">Pierakstieties, lai personalizētu pārlūkošanas iespējas, kas tiek sinhronizētas ierīcēs.</translation>
+<translation id="2765403129283291972">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="2799223571221894425">Restartēt</translation>
 <translation id="2847461019998147611">Rādīt Google Chrome šajā valodā</translation>
@@ -93,6 +99,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="3451115285585441894">Notiek pievienošana pārlūkam Chrome...</translation>
 <translation id="345171907106878721">Pievienot savu kontu pārlūkā Chrome</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
+<translation id="3503306920980160878">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="3612333635265770873">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Google Chrome.</translation>
 <translation id="3622797965165704966">Tagad pārlūkā Chrome ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />pakalpojumu sniegšanas noteikumi<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -197,8 +204,8 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7106741999175697885">Uzdevumu pārvaldnieks - Google Chrome</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>
 <translation id="7164397146364144019">Varat palīdzēt uzlabot Chrome drošību un lietošanas ērtumu, automātiski nosūtot Google serveriem informāciju par iespējamām drošības problēmām.</translation>
-<translation id="7185038942300673794">Paplašinājums <ph name="EXTENSION_NAME" /> ir pievienots pārlūkam Chrome.</translation>
 <translation id="7242029209006116544">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chrome datus. <ph name="LEARN_MORE" /></translation>
+<translation id="7308322188646931570">Pārlūkam Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="7330164299247909639">Autentificēšanas sertifikāts nedarbojās. Lūdzu, vēlreiz pierakstieties pārlūkā Google Chrome kā lietotājs <ph name="USER_NAME" /> vai sazinieties ar administratoru, lai iegūtu plašāku informāciju. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Jauns logs</translation>
 <translation id="7369650938475876456">Izmantot Chrome ģenerētu drošu paroli</translation>
@@ -211,6 +218,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7494905215383356681">Chrome atklātā pirmkoda licences</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Rādīt Chrome OS šajā valodā</translation>
+<translation id="7589360514048265910">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēma Mac OS X 10.9 vairs netiek atbalstīta.</translation>
 <translation id="7592736734348559088">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="7626032353295482388">Laipni lūdzam pārlūkā Chrome</translation>
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>

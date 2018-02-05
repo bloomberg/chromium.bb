@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Įrenginys valdomas „<ph name="DOMAIN" />“.</translation>
 <translation id="2050339315714019657">Stačias</translation>
 <translation id="2067602449040652523">Klaviatūros šviesumas</translation>
-<translation id="207439088875642105">Tai yra vaikų paskyra, kurią tvarko <ph name="FIRST_PARENT_EMAIL" /> ir <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Sustabdyti „<ph name="TAB_NAME" />“ perdavimą į: <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
 <translation id="2144487987174258011">Paleiskite iš naujo, kad atnaujintumėte „Adobe Flash Player“</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monofoninis garsas</translation>
 <translation id="3009178788565917040">Išvestis</translation>
 <translation id="3019353588588144572">Laikas, likęs iki akumuliatoriaus įkrovimo: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Tai yra vaikų paskyra, kurią tvarko <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> („Bluetooth“)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="3477079411857374384">„Control“ + „Shift“ + „Space“</translation>
 <translation id="3510164367642747937">Paryškinti pelės žymeklį</translation>
+<translation id="3513798432020909783">Paskyrą tvarko: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE" />“ (reikia paleisti iš naujo)</translation>
 <translation id="3582792037806681688">Šioje sesijoje naudotojui neleidžiama prisijungti prie kelių paskyrų</translation>
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">Stiprus signalas</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7933084174919150729">„Google“ padėjėjas pasiekiamas tik pagrindiniame profilyje.</translation>
+<translation id="79341161159229895">Paskyrą tvarko: <ph name="FIRST_PARENT_EMAIL" /> ir <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Ieškoma mobiliojo ryšio tinklų...</translation>
 <translation id="7982789257301363584">Tinklas</translation>
 <translation id="7994370417837006925">Kelios paskyros</translation>
@@ -312,6 +312,7 @@
 Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose darbalaukiuose.</translation>
 <translation id="8825534185036233643">Negalima bendrinti daugiau nei dviejų ekranų vaizdų.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Mygtukas „Atgal“</translation>
 <translation id="8850991929411075241">Paieškos klavišas + „Esc“</translation>
 <translation id="8870509716567206129">Programoje nepalaikomas skaidytas ekranas.</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>

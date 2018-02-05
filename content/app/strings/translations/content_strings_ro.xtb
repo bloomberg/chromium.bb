@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">zz</translation>
 <translation id="1930711995431081526">stare</translation>
 <translation id="1938124657309484470">Valoarea pentru dată/oră trebuie să fie <ph name="MAXIMUM_DATE_OR_TIME" /> sau una anterioară.</translation>
+<translation id="1993104285338243655">S-a comutat la oglindire</translation>
 <translation id="2060505056492490888">Semnul „<ph name="DOT" />” apare poziționat greșit în „<ph name="INVALIDDOMAIN" />”.</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2226276347425096477">Micșorează acest text la cel mult <ph name="MAX_CHARACTERS" /> caractere (în prezent utilizezi <ph name="CURRENT_LENGTH" /> caractere).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milisecunde</translation>
 <translation id="4151657705144244502">element grafic</translation>
 <translation id="4201051445878709314">Afișează luna anterioară</translation>
+<translation id="4205604240201363801">Ești acum în modul picture-in-picture</translation>
 <translation id="421884353938374759">selector de culoare</translation>
 <translation id="4248100235867064564">bară de meniu</translation>
 <translation id="4254339807215791271">informații privind conținutul</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Ștergeți</translation>
 <translation id="668171684555832681">Altele...</translation>
 <translation id="6692633176391053278">control numeric cu incrementare/decrementare</translation>
+<translation id="6709570249143506788">Calitate slabă a redării</translation>
 <translation id="6755330956360078551">balon explicativ</translation>
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6820355525329141109">Nu s-a putut încărca pluginul.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fișiere</translation>
 <translation id="8451268428117625855">Selectează un fișier.</translation>
 <translation id="8461852803063341183">buton radio</translation>
-<translation id="8511325616783751178">buton drop-down</translation>
 <translation id="8534579021159131403">Minute</translation>
 <translation id="8541249477527128034">comandă media</translation>
 <translation id="8583702881314752957">listă de definiții</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">începeți redarea</translation>
 <translation id="8845239796550121995">Acum se proiectează pe televizor</translation>
 <translation id="8851136666856101339">principal</translation>
+<translation id="8875657656876809964">Eroare de redare video</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KO</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="901493112792887934">timp actual în secunde</translation>

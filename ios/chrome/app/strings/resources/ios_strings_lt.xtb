@@ -34,6 +34,7 @@
 <translation id="145015347812617860">Elementų: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dukart palieskite, kad perjungtumėte nustatymą</translation>
 <translation id="152234381334907219">Niekada neišsaugota</translation>
+<translation id="1532451416480227577">Rodyti „Google Pay“ adresus ir kredito korteles</translation>
 <translation id="1540800554400757039">1 adreso eil.</translation>
 <translation id="1545749641540134597">Nuskaitykite QR kodą</translation>
 <translation id="1580783302095112590">El. laiškas išsiųstas.</translation>
@@ -96,6 +97,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2718352093833049315">Tik su „Wi–Fi“</translation>
 <translation id="2747003861858887689">Ankstesnis laukas</translation>
 <translation id="2780046210906776326">Nėra el. pašto pask.</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Išjungti skirtukų perjungiklį</translation>
 <translation id="283291358677939992">Rasti puslapyje...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="3175081911749765310">Žin. pasl.</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3210163015918861891">Sinchronizavimas išjungtas</translation>
+<translation id="3224641773458703735">Jei norite eksportuoti slaptažodžius, pirmiausia turite nustatyti įrenginio slaptažodį.</translation>
 <translation id="3240426699337459095">Nuoroda nukopijuota</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> iš <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
-<translation id="533632423981297619">Slaptažodžiai bus matomi visiems, kas gali peržiūrėti eksportuotą failą. Nebendrinkite šio failo su niekuo.</translation>
 <translation id="5388358297987318779">Atidaryti vaizdą</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
 <translation id="5433691172869980887">Naudotojo vardas nukopijuotas</translation>
@@ -306,6 +308,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="681368974849482173">Elementas sukurtas</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
+<translation id="6914783257214138813">Jūsų slaptažodžiai bus matomi visiems, kurie gali peržiūrėti eksportuotą failą.</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6973630695168034713">Aplankai</translation>
 <translation id="7004499039102548441">Naujausi skirtukai</translation>

@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">આ ઉપકરણને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલું છે.</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="2067602449040652523">કીબોર્ડનું તેજ</translation>
-<translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> અને <ph name="SECOND_PARENT_EMAIL" /> દ્વારા સંચાલિત આ બાળકો માટેનું એક એકાઉન્ટ છે</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> પર <ph name="TAB_NAME" /> ને કાસ્ટ કરવાનું રોકો</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
 <translation id="2144487987174258011">Adobe Flash Player અપડેટ કરવા પુનઃપ્રારંભ કરો</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">મૉનો ઑડિઓ</translation>
 <translation id="3009178788565917040">આઉટપુટ</translation>
 <translation id="3019353588588144572">બેટરી સંપૂર્ણપણે ચાર્જ થવામાં બાકી સમય, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">આ <ph name="MANAGER_EMAIL" /> દ્વારા સંચાલિત બાળકોનું એકાઉન્ટ છે</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">તળિયું</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
+<translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
 <translation id="3582792037806681688">આ સત્રમાં કોઈ વપરાશકર્તા માટે બહુવિધ સાઇન-ઇન નામંજૂર કરવામાં આવેલ છે</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">પ્રબળ સિગ્નલ</translation>
 <translation id="7904094684485781019">આ એકાઉન્ટ માટે વ્યસ્થાપકે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.</translation>
 <translation id="7933084174919150729">Google સહાયક માત્ર પ્રાથમિક પ્રોફાઇલ માટે જ ઉપલબ્ધ છે.</translation>
+<translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> અને <ph name="SECOND_PARENT_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="7977927628060636163">મોબાઇલ નેટવર્કની શોધ કરી રહ્યું છે...</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
@@ -312,6 +312,7 @@
 પાછળથી આવતી સૂચનાઓ, વિંડોઝ અને સંવાદો ડેસ્કટૉપ્સ વચ્ચે વિભાજિત થઈ શકે છે.</translation>
 <translation id="8825534185036233643">બે કરતાં વધુ પ્રદર્શનો સાથે મીરરીંગ સમર્થિત નથી.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">પાછળ બટન</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">ઍપ સ્ક્રીન-વિભાજનને સહાય કરતી નથી.</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>

@@ -34,6 +34,7 @@
 <translation id="145015347812617860">Broj stavki: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dodirnite dvaput da biste promijenili postavku</translation>
 <translation id="152234381334907219">Nikad spremljeno</translation>
+<translation id="1532451416480227577">Prikaži adrese i kreditne kartice s Google Paya</translation>
 <translation id="1540800554400757039">1. adresni redak</translation>
 <translation id="1545749641540134597">Skeniranje QR koda</translation>
 <translation id="1580783302095112590">Poruka je poslana.</translation>
@@ -96,6 +97,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2718352093833049315">Samo na Wi-Fi-ju</translation>
 <translation id="2747003861858887689">Prethodno polje</translation>
 <translation id="2780046210906776326">Nema računa e-pošte</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Zatvori prekidač za prebacivanje između kartica</translation>
 <translation id="283291358677939992">Traži na stranici...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3175081911749765310">Web-usluge</translation>
 <translation id="3207960819495026254">Označeno</translation>
 <translation id="3210163015918861891">Sinkronizacija je isključena</translation>
+<translation id="3224641773458703735">Da biste izvezli zaporke, najprije morate postaviti šifru zaporke na uređaju.</translation>
 <translation id="3240426699337459095">Veza je kopirana</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> od <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
-<translation id="533632423981297619">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku. Nemojte dijeliti datoteku ni s kim.</translation>
 <translation id="5388358297987318779">Otvori sliku</translation>
 <translation id="5409365236829784218">Nema instalirane aplikacije za otvaranje ove datoteke.</translation>
 <translation id="5433691172869980887">Korisničko je ime kopirano</translation>
@@ -306,6 +308,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="681368974849482173">Stavka je stvorena</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6903907808598579934">Uključi sinkronizaciju</translation>
+<translation id="6914783257214138813">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku.</translation>
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6973630695168034713">Mape</translation>
 <translation id="7004499039102548441">Nedavne kartice</translation>

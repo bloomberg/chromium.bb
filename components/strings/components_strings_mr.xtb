@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
 <translation id="2851634818064021665">या साइटला भेट देण्यासाठी तुम्हाला परवानगीची गरज आहे</translation>
 <translation id="2856444702002559011">हल्लेखोर कदाचित तुमची माहिती (उदाहरणार्थ पासवर्ड, संदेश किंवा क्रेडिट कार्ड) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मधून चोरण्याचा प्रयत्न करत असतील. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">कार्ड सेव्ह करायचे?</translation>
 <translation id="2909946352844186028">एक नेटवर्क बदल आढळला.</translation>
 <translation id="2916038427272391327">अन्य प्रोग्राम बंद करा</translation>
 <translation id="2922350208395188000">सर्व्हरचे प्रमाणपत्र तपासणे शक्य नाही.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">स्वीकारली जाणारी क्रेडिट आणि प्रीपेड कार्डे</translation>
 <translation id="8759274551635299824">या कार्डची मुदत संपली आहे</translation>
 <translation id="8761567432415473239">Google सुरक्षित ब्राउझिंग ला <ph name="SITE" /> वर अलीकडे <ph name="BEGIN_LINK" />हानिकारक प्रोग्राम आढळले आहेत<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">USB डिव्हाइस</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8800988563907321413">आपल्या जवळपासच्या सूचना येथे दिसतात</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" अनइंस्टॉल किंवा बंद करून पहा&lt;/li&gt;
     &lt;li&gt;दुसर्‍या वाय-फाय नेटवर्कशी कनेक्ट करून पहा&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Google Pay वरून</translation>
 </translationbundle>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
+<translation id="102763973188675173">Google Chrome をカスタマイズしてご活用ください。アップデートが利用可能です。</translation>
 <translation id="1035334672863811645">Chrome にログイン</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="1088300314857992706">Chrome の前回の使用者は <ph name="USER_EMAIL_ADDRESS" /> です</translation>
@@ -34,6 +35,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1795405610103747296">Chrome をスマートフォンにインストールしませんか。お客様の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
+<translation id="1860536484129686729">このサイトを利用するには、Chrome でカメラの使用を許可する必要があります</translation>
+<translation id="1873233029667955273">Google Chrome はデフォルトのブラウザとして設定されていません</translation>
 <translation id="1874309113135274312">Google Chrome ベータ版（mDNS-In）</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
@@ -53,10 +56,12 @@
 <translation id="2346876346033403680">別のユーザーが前回このパソコンから <ph name="ACCOUNT_EMAIL_LAST" /> として Chrome にログインしました。このメール アドレスがご自分のアカウントでない場合は、新しい Chrome ユーザーを作成して情報を個別に保持してください。
 
 このままログインすると、ブックマーク、履歴、その他の設定などの Chrome データが <ph name="ACCOUNT_EMAIL_NEW" /> と統合されます。</translation>
+<translation id="2348335408836342058">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります</translation>
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="2446511512801740068">Chrome はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
+<translation id="2534507159460261402">Google Pay（Chrome にコピー）</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="2586406160782125153">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="2588322182880276190">Chrome ロゴ</translation>
@@ -65,6 +70,7 @@
 <translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK" />を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="2689103672227170538">この拡張機能により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="2705403826523567092">ログインすると、個人向けにカスタマイズされたブラウジング環境をさまざまな端末間で同期して使用できます</translation>
+<translation id="2765403129283291972">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2799223571221894425">再起動</translation>
 <translation id="2847461019998147611">Google Chrome をこの言語で表示</translation>
@@ -91,6 +97,7 @@
 <translation id="3451115285585441894">Chrome に追加...</translation>
 <translation id="345171907106878721">Chrome に自分を追加</translation>
 <translation id="3479552764303398839">後で</translation>
+<translation id="3503306920980160878">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="3622797965165704966">共有パソコンの Chrome で Google アカウントが簡単に使用できるようになりました。</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -193,8 +200,8 @@
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
-<translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
+<translation id="7308322188646931570">ファイルをダウンロードするには、Chrome でストレージへのアクセスを許可する必要があります</translation>
 <translation id="7330164299247909639">認証証明書でエラーが発生しました。<ph name="USER_NAME" /> として Google Chrome にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7369650938475876456">Chrome で生成された安全なパスワードの使用をおすすめします</translation>
@@ -207,6 +214,7 @@
 <translation id="7494905215383356681">Chrome オープンソース ライセンス</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS をこの言語で表示</translation>
+<translation id="7589360514048265910">Mac OS X 10.9 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome にようこそ</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>

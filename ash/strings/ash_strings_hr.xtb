@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Ovim uređajem upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Svjetlina tipkovnice</translation>
-<translation id="207439088875642105">Ovo je račun za djecu kojim upravljaju <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Zaustavi emitiranje kartice <ph name="TAB_NAME" /> na prijamniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="2144487987174258011">Ponovno pokrenite da biste ažurirali Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monoaudio</translation>
 <translation id="3009178788565917040">Izlaz</translation>
 <translation id="3019353588588144572">Baterija će se napuniti za <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Ovo je račun za djecu kojim upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Donji</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Povećalo</translation>
 <translation id="3477079411857374384">Control-Shift-razmaknica</translation>
 <translation id="3510164367642747937">Istakni pokazivač miša</translation>
+<translation id="3513798432020909783">Računom upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
 <translation id="3582792037806681688">Višestruka prijava odbijena je za korisnika u ovoj sesiji</translation>
 <translation id="3595596368722241419">Baterija je puna</translation>
@@ -276,6 +275,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7829386189513694949">Jak signal</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="7933084174919150729">Google asistent dostupan je samo za primarni profil.</translation>
+<translation id="79341161159229895">Računom upravljaju <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Traženje mobilnih mreža...</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="7994370417837006925">Višestruka prijava</translation>
@@ -312,6 +312,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 Naknadne obavijesti, prozori i dijaloški okviri mogu biti podijeljeni između radnih površina.</translation>
 <translation id="8825534185036233643">Zrcaljenje s više od dva zaslona nije podržano.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Gumb Natrag</translation>
 <translation id="8850991929411075241">Pretraživanje + Esc</translation>
 <translation id="8870509716567206129">Aplikacija ne podržava podijeljeni zaslon.</translation>
 <translation id="8878886163241303700">Produljenje zaslona</translation>

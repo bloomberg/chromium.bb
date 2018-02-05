@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">I-clear ang form</translation>
 <translation id="2851634818064021665">Kailangan mo ng pahintulot upang mabisita ang site na ito</translation>
 <translation id="2856444702002559011">Maaaring sinusubukang nakawin ng mga attacker ang iyong impormasyon mula sa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (halimbawa, mga password, mensahe, o credit card). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">I-save ang card?</translation>
 <translation id="2909946352844186028">May nakitang pagbabago sa network.</translation>
 <translation id="2916038427272391327">Isara ang iba pang program</translation>
 <translation id="2922350208395188000">Hindi masuri ang certificate ng server.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Mga Tinatanggap na Credit at Prepaid Card</translation>
 <translation id="8759274551635299824">Nag-expire na ang card na ito</translation>
 <translation id="8761567432415473239">Ang Google Safe Browsing ay may <ph name="BEGIN_LINK" />natagpuang mga nakakasirang program<ph name="END_LINK" /> sa <ph name="SITE" /> kamakailan.</translation>
+<translation id="8763927697961133303">USB device</translation>
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
 <translation id="8800988563907321413">Lalabas dito ang iyong mga suhestyon na malapit</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;Subukang i-uninstall o i-disable ang "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Subukang kumonekta sa ibang network&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Mula sa Google Pay</translation>
 </translationbundle>

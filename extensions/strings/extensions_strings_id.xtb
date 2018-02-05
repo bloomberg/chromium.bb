@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Ekstensi ini terlalu sering memuat ulang sendiri.</translation>
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID" /> tak dikenal dari <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">File manifes tidak valid</translation>
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME" /> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Kamera depan</translation>
 <translation id="8047248493720652249">Ekstensi ini gagal memberi nama download "<ph name="ATTEMPTED_FILENAME" />" karena ekstensi lain (<ph name="EXTENSION_NAME" />) menentukan nama file yang berbeda "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> dari <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Ekstensi ini gagal memberikan kredensial ke permintaan jaringan karena ekstensi lain (<ph name="EXTENSION_NAME" />) telah memberikan kredensial yang berbeda.</translation>
+<translation id="8517576857589387417">File manifes tidak ada atau tidak dapat dibaca</translation>
 <translation id="8636666366616799973">Paket tidak valid. Detail: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Ekstensi ini gagal mengalihkan permintaan jaringan ke <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> karena ekstensi lain (<ph name="EXTENSION_NAME" />) mengalihkannya ke <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Pembuka Ekstensi</translation>

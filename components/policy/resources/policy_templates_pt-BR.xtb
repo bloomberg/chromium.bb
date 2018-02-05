@@ -26,6 +26,7 @@
 
       Se esta política for configurada, a tela de login sempre será exibida na localidade estabelecida pelo primeiro valor da política (definida como uma lista de compatibilidade de encaminhamento). Se esta política não for definida ou for definida como uma lista vazia, a tela de login será exibida na localidade da última sessão do usuário. Se esta política for definida para um valor que não seja uma localidade válida, a tela de login será exibida em uma localidade substituta (atualmente en-US).</translation>
 <translation id="1062011392452772310">Ativar declaração remota para o dispositivo</translation>
+<translation id="1062407476771304334">Substituir</translation>
 <translation id="1093082332347834239">Se esta configuração for ativada, o host de assistência remota será executado em um processo com permissões <ph name="UIACCESS_PERMISSION_NAME" />. Isso permitirá que os usuários remotos interajam com janelas elevadas na área de trabalho do usuário local.
 
           Se esta configuração for desativada ou não for configurada, o host de assistência remota será executado no contexto do usuário, e os usuários remotos não poderão interagir com janelas elevadas na área de trabalho.</translation>
@@ -85,12 +86,6 @@
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
-<translation id="1420281424655200442">Controla quais impressoras da política <ph name="DEVICE_PRINTERS_POLICY" /> estão disponíveis para os usuários.
-
-      Designa qual política de acesso é usada para configuração em massa. Se <ph name="PRINTERS_ALLOW_ALL" /> for selecionada, todas as impressoras serão exibidas. Se <ph name="PRINTERS_BLACKLIST" /> for selecionada, <ph name="DEVICE_PRINTERS_BLACKLIST" /> será usada para restringir o acesso às impressoras especificadas. Se <ph name="PRINTERS_WHITELIST" /> for selecionada, <ph name="DEVICE_PRINTERS_WHITELIST" /> designará as impressoras selecionáveis.
-
-      Se esta política não for definida, <ph name="PRINTERS_BLACKLIST" /> será adotada.
-      </translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
@@ -272,12 +267,6 @@
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
 <translation id="203096360153626918">Esta política não tem nenhum efeito sobre os apps Android. Eles poderão entrar no modo de tela cheia mesmo se a política estiver definida como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
-<translation id="2063380907529983889">Controla quais impressoras da política <ph name="BULK_PRINTERS_POLICY" /> estão disponíveis para os usuários.
-
-      Designa qual política de acesso é usada para configuração em massa. Se <ph name="PRINTERS_ALLOW_ALL" /> for selecionada, todas as impressoras serão exibidas. Se <ph name="PRINTERS_BLACKLIST" /> for selecionada, <ph name="BULK_PRINTERS_BLACKLIST" /> será usada para restringir o acesso às impressoras especificadas. Se <ph name="PRINTERS_WHITELIST" /> for selecionada, <ph name="BULK_PRINTERS_WHITELIST" /> designará as impressoras selecionáveis.
-
-      Se esta política não for definida, <ph name="PRINTERS_BLACKLIST" /> será adotada.
-      </translation>
 <translation id="206623763829450685">Especifica quais esquemas de autenticação HTTP são compatíveis com <ph name="PRODUCT_NAME" />.
 
           Os valores possíveis são "básico", "resumo", "ntlm" e "negociar". Separe valores múltiplos com vírgulas.
@@ -454,6 +443,9 @@
 <translation id="2466131534462628618">A autenticação de portal cativo ignora o proxy</translation>
 <translation id="2482676533225429905">Mensagens nativas</translation>
 <translation id="2483146640187052324">Prever ações da rede em qualquer conexão de rede</translation>
+<translation id="2485721741875148980">Se esta política for definida como verdadeira, o usuário precisará fazer login no <ph name="PRODUCT_NAME" /> com o próprio perfil antes de usar o navegador. O valor padrão de BrowserGuestModeEnabled será definido como falso. Os perfis já existentes não atribuídos serão bloqueados e ficarão inacessíveis depois da ativação desta política. Para ver mais informações, consulte o artigo da Central de Ajuda.
+
+      Se esta política for definida como falsa ou não for configurada, o usuário poderá usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Desativa a aplicação dos requisitos de Transparência dos certificados para os URLs listados.
 
       Esta política permite que os certificados dos nomes de host nos URLs especificados não sejam divulgados pela Transparência dos certificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados, mas a detecção de certificados usados erroneamente por esses hosts é dificultada.
@@ -749,6 +741,7 @@
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3577251398714997599">Configurações de anúncios para sites com anúncios invasivos</translation>
+<translation id="3587482841069643663">Tudo</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
@@ -1181,6 +1174,7 @@
 <translation id="489803897780524242">Parâmetro que controla o posicionamento do termo de pesquisa para o provedor de pesquisa padrão</translation>
 <translation id="4899708173828500852">Ativar Navegação segura</translation>
 <translation id="4906194810004762807">Taxa de atualização da Política de dispositivos</translation>
+<translation id="4917385247580444890">Forte</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permitirá a adição de uma pessoa no gerenciador de usuários.
 
@@ -1556,13 +1550,6 @@
 <translation id="6157537876488211233">Lista separada por vírgulas das regras de proxies ignoráveis</translation>
 <translation id="6158324314836466367">Nome da loja on-line da empresa (uso suspenso)</translation>
 <translation id="6161405879872578475">Ativa o <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Aviso: o suporte para SSLv3 será totalmente removido do <ph name="PRODUCT_NAME" /> após a versão 43 (por volta de julho de 2015) e esta política será removida na mesma época.
-
-      Se esta política não está configurada, o <ph name="PRODUCT_NAME" /> usa a versão mínima padrão, que é SSLv3 no <ph name="PRODUCT_NAME" /> e TLS 1.0 em versões mais recentes.
-
-      Caso contrário, ela pode ser definida para um dos valores a seguir: "sslv3", "tls1", "tls1.1" ou "tls1.2". Quando definida, o <ph name="PRODUCT_NAME" /> não usa versões SSL/TLS menores que a versão especificada. Um valor não reconhecido será ignorado.
-
-      Observe que, apesar do número, "sslv3" é uma versão mais antiga que "tls1".</translation>
 <translation id="6181608880636987460">Permite definir uma lista de padrões de URL que especificam quais sites não podem executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites, seja a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
@@ -1949,6 +1936,7 @@
 <translation id="7625444193696794922">Especifica o canal de liberação ao qual este dispositivo deve ser vinculado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura a localidade do aplicativo em <ph name="PRODUCT_NAME" /> e impede que os usuários a alterem. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> utilizará a localidade especificada. Se a localidade configurada não for compatível, "pt-BR" será utilizada. Se esta configuração for desativada ou não for configurada, <ph name="PRODUCT_NAME" /> utilizará a localidade preferida especificada pelo usuário (se configurada), a localidade do sistema ou a localidade padrão "pt-BR".</translation>
+<translation id="7643883929273267746">Contas restritas que estão visíveis no <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve ser ativado para o dispositivo. Se configurado para true, o roaming de dados será permitido. Se não for configurado ou for configurado como false, o roaming de dados não estará disponível.</translation>
 <translation id="7683777542468165012">Atualização de política dinâmica</translation>
 <translation id="7694807474048279351">Agendar uma reinicialização automática após a aplicação de uma atualização do <ph name="PRODUCT_OS_NAME" /> 
@@ -2061,7 +2049,6 @@
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nenhuma restrição especial</translation>
@@ -2264,6 +2251,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Se esta política não for definida, será usado um fator de escala padrão.
 
           O fator de escala deve ser de 100% ou mais. Não são permitidos valores que tornam o intervalo de escurecimento da tela no modo de apresentação menor do que o intervalo de escurecimento regular da tela.</translation>
+<translation id="8798099450830957504">Padrão</translation>
 <translation id="8818173863808665831">Informar a localização geográfica do dispositivo. 
 
       Se a política não for configurada, ou for configurada como falsa, o local não será informado.</translation>

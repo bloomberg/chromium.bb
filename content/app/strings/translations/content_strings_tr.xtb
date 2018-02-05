@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">gg</translation>
 <translation id="1930711995431081526">durum</translation>
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME" /> veya daha geri olmalıdır.</translation>
+<translation id="1993104285338243655">Yansıtmaya geçildi</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />", "<ph name="INVALIDDOMAIN" />" adı içinde yanlış bir konumda kullanılmış.</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2226276347425096477">Lütfen bu metni <ph name="MAX_CHARACTERS" /> veya daha az karakter olacak şekilde kısaltın (şu anda <ph name="CURRENT_LENGTH" /> karakter kullanıyorsunuz).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milisaniye</translation>
 <translation id="4151657705144244502">grafik</translation>
 <translation id="4201051445878709314">Önceki ayı göster</translation>
+<translation id="4205604240201363801">Şimdi pencere içinde pencere modunda</translation>
 <translation id="421884353938374759">renk seçici</translation>
 <translation id="4248100235867064564">menü çubuğu</translation>
 <translation id="4254339807215791271">içerik bilgileri</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="668171684555832681">Diğer...</translation>
 <translation id="6692633176391053278">stepper (adımlayıcı)</translation>
+<translation id="6709570249143506788">Oynatma kalitesi kötü</translation>
 <translation id="6755330956360078551">ipucu</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6820355525329141109">Eklenti yüklenemedi.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> dosya</translation>
 <translation id="8451268428117625855">Lütfen bir dosya seçin.</translation>
 <translation id="8461852803063341183">radyo düğmesi</translation>
-<translation id="8511325616783751178">açılır liste düğmesi</translation>
 <translation id="8534579021159131403">Dakika</translation>
 <translation id="8541249477527128034">medya kontrolü</translation>
 <translation id="8583702881314752957">tanım listesi</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">oynatmayı başlat</translation>
 <translation id="8845239796550121995">Şimdi TV'nize yayınlanıyor</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8875657656876809964">Video oynatma hatası</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Ay</translation>
 <translation id="901493112792887934">saniye olarak geçerli süre</translation>

@@ -42,6 +42,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2527042973354814951">Starta om Chromium om du vill aktivera <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Det gick inte att synkronisera data med Chromium eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
+<translation id="2560420686485554789">Du behöver ge Chromium åtkomst till lagringsutrymmet om det ska gå att ladda ned filer</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>
 <translation id="2587578672395088481">Chromium OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
@@ -124,6 +125,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
 <translation id="5479196819031988440">Det går inte att öppna den här sidan i Chromium OS.</translation>
+<translation id="5480860683791598150">Du behöver ge Chromium åtkomst till din plats om den ska kunna delas med webbplatsen</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>
 <translation id="5680901439334282664">Logga in i Chromium</translation>
@@ -138,11 +140,11 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5902536751647951209">Autentiseringscertifikatet fungerade inte. Logga in i Chromium igen eller kontakta administratören. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
-<translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har lagts till i Chromium.</translation>
 <translation id="5987687638152509985">Du måste uppdatera Chromium innan synkroniseringen kan starta</translation>
 <translation id="6055895534982063517">Det finns en ny version av Chromium och den är snabbare än någonsin.</translation>
 <translation id="6063093106622310249">&amp;Öppna i Chromium</translation>
 <translation id="608189560609172163">Chromium kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
+<translation id="6096348254544841612">Anpassa och styr Chromium. En uppdatering är tillgänglig.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
 <translation id="6212496753309875659">Det finns redan en nyare version av Chromium på den här datorn. Avinstallera Chromium och försök igen om programvaran inte fungerar.</translation>
 <translation id="6248213926982192922">Använd Chromium som standardwebbläsare</translation>
@@ -152,6 +154,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6334986366598267305">Nu är det enklare att använda Chromium med ditt Google-konto och på delade datorer.</translation>
 <translation id="6373523479360886564">Vill du avinstallera Chromium?</translation>
 <translation id="6394232988457703198">Starta om Chromium nu.</translation>
+<translation id="6400072781405947421">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium är en webbläsare som kör webbsidor och appar blixtsnabbt. Den är snabb, stabil och lätt att använda. Surfa säkrare med Chromiums skydd mot skadliga program och lösenordsfiske.</translation>
 <translation id="6475912303565314141">Det styr också vilken sida som visas när du startar Chromium.</translation>
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL" />. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
@@ -165,10 +168,12 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6734291798041940871">Chromium har redan installerats för alla användare på datorn.</translation>
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
+<translation id="6863361426438995919">Google Pay (har kopierats till Chromium)</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="6944967875980567883">Moduler som är inlästa i Chromium</translation>
 <translation id="6964305034639999644">Öppna länken i ett inko&amp;gnitofönster i Chromium.</translation>
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
+<translation id="6990124437352146030">Du behöver ge Chromium behörighet att använda mikrofonen på webbplatsen</translation>
 <translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="7066436765290594559">Det gick inte att synkronisera data med Chromium. Uppdatera lösenfrasen för synkronisering.</translation>
 <translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
@@ -190,11 +195,13 @@ Kom ihåg att låsa din profil när du inte använder Chromium om <ph name="NEW_
 <ph name="BEGIN_LINK_2" />Läs mer<ph name="END_LINK_2" />
 
 Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7451052299415159299">Du behöver ge Chromium behörighet att använda kameran på webbplatsen</translation>
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7577193603922410712">En särskild säkerhetsuppdatering för Chromium installerades precis. Tillämpa uppdateringen genom att starta om (vi återställer flikarna).</translation>
 <translation id="761356813943268536">Chromium använder din kamera och mikrofon.</translation>
 <translation id="7617377681829253106">Vi har förbättrat Chromium</translation>
+<translation id="7686590090926151193">Chromium är inte din standardwebbläsare</translation>
 <translation id="7729447699958282447">Chromium kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="7745317241717453663">Webbinformationen raderas från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
@@ -226,6 +233,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="8697124171261953979">Det styr också vilken sida som visas när du startar Chromium eller söker i adressfältet.</translation>
 <translation id="8704119203788522458">Det här är Chromium</translation>
 <translation id="872034308864968620">Låt Chromium köras i bakgrunden</translation>
+<translation id="8796602469536043152">Du behöver ge Chromium behörighet att använda kameran och mikrofonen på webbplatsen</translation>
 <translation id="8803635938069941624">Villkor för Chromium OS</translation>
 <translation id="8821041990367117597">Chromium kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
@@ -249,6 +257,7 @@ Om du loggar in ändå kommer information som bokmärken, historik och andra ins
 <translation id="918373042641772655">Om du kopplar från <ph name="USERNAME" /> rensas din historik, dina bokmärken, dina inställningar och annan Chromium-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK" />Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Du är nu inloggad i Chromium</translation>
+<translation id="93478295209880648">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Windows XP och Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

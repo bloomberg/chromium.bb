@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Цим пристроєм керує домен <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Портретна</translation>
 <translation id="2067602449040652523">Яскравість клавіатури</translation>
-<translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /> керують цим обліковим записом для дітей</translation>
 <translation id="2122028596993374965">Зупинити трансляцію вкладки "<ph name="TAB_NAME" />" на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
 <translation id="2144487987174258011">Перезапустіть Chrome, щоб оновити Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Монофонічне аудіо</translation>
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="3019353588588144572">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454"><ph name="MANAGER_EMAIL" /> керує цим обліковим записом для дітей.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Низ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3477079411857374384">Комбінація клавіш "Control-Shift-Space"</translation>
 <translation id="3510164367642747937">Підсвічувати курсор миші</translation>
+<translation id="3513798432020909783">Обліковим записом керує <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
 <translation id="3582792037806681688">Паралельний вхід для користувача в цьому сеансі заборонено</translation>
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">потужний сигнал</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
 <translation id="7933084174919150729">Google Асистент доступний лише в основному профілі.</translation>
+<translation id="79341161159229895">Обліковим записом керують <ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Пошук мобільних мереж…</translation>
 <translation id="7982789257301363584">Мережа</translation>
 <translation id="7994370417837006925">Паралельний вхід</translation>
@@ -312,6 +312,7 @@
 Нові сповіщення та вікна можуть розділятися між робочими столами.</translation>
 <translation id="8825534185036233643">Дзеркалювання на більше ніж двох дисплеях не підтримується.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8850991929411075241">Search (Пошук)+Esc</translation>
 <translation id="8870509716567206129">Додаток не підтримує розділення екрана.</translation>
 <translation id="8878886163241303700">Розширення екрана</translation>

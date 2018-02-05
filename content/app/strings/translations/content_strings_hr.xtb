@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Vrijednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ili prije toga.</translation>
+<translation id="1993104285338243655">Prebačeno na zrcaljenje</translation>
 <translation id="2060505056492490888">Znak "<ph name="DOT" />" upotrebljava se na pogrešnom položaju u domeni "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Danas</translation>
 <translation id="2226276347425096477">Skratite taj tekst na <ph name="MAX_CHARACTERS" /> znakova ili manje (trenutačno upotrebljavate <ph name="CURRENT_LENGTH" /> znakova).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milisekunde</translation>
 <translation id="4151657705144244502">slika</translation>
 <translation id="4201051445878709314">Prikaži prethodni mjesec</translation>
+<translation id="4205604240201363801">Sada u načinu slike u slici</translation>
 <translation id="421884353938374759">odabir boja</translation>
 <translation id="4248100235867064564">traka izbornika</translation>
 <translation id="4254339807215791271">informacije o sadržaju</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="668171684555832681">Ostalo...</translation>
 <translation id="6692633176391053278">povećanje/smanjenje strelicama gore/dolje (stepper)</translation>
+<translation id="6709570249143506788">Loša kvaliteta reprodukcije</translation>
 <translation id="6755330956360078551">opis</translation>
 <translation id="6790428901817661496">Reproduciraj</translation>
 <translation id="6820355525329141109">Nije bilo moguće učitati dodatak.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423">Broj datoteka: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="8451268428117625855">Odaberite datoteku.</translation>
 <translation id="8461852803063341183">izborni gumb</translation>
-<translation id="8511325616783751178">gumb padajućeg izbornika</translation>
 <translation id="8534579021159131403">Minute</translation>
 <translation id="8541249477527128034">kontrola medija</translation>
 <translation id="8583702881314752957">popis definicija</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">početak reprodukcije</translation>
 <translation id="8845239796550121995">Emitira se na televizoru</translation>
 <translation id="8851136666856101339">glav</translation>
+<translation id="8875657656876809964">Pogreška pri reprodukciji videozapisa</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mjesec</translation>
 <translation id="901493112792887934">trenutačno vrijeme u sekundama</translation>

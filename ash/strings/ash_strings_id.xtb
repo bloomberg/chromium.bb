@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Perangkat ini dikelola oleh <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2067602449040652523">Kecerahan keyboard</translation>
-<translation id="207439088875642105">Ini adalah akun untuk anak yang dikelola oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Hentikan casting <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="2144487987174258011">Nyalakan ulang untuk mengupdate Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Keluaran</translation>
 <translation id="3019353588588144572">Waktu yang tersisa hingga baterai terisi penuh, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Ini adalah akun untuk anak yang dikelola oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
+<translation id="3513798432020909783">Akun dikelola oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3582792037806681688">Fitur masuk banyak akun telah dilarang untuk pengguna di sesi ini</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
@@ -276,6 +275,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7829386189513694949">Sinyal kuat</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="7933084174919150729">Asisten Google hanya tersedia untuk profil utama.</translation>
+<translation id="79341161159229895">Akun dikelola oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Menelusuri jaringan seluler...</translation>
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="7994370417837006925">Fitur masuk banyak akun</translation>
@@ -312,6 +312,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</translation>
 <translation id="8825534185036233643">Pencerminan dengan lebih dari dua layar tidak didukung.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Tombol kembali</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Aplikasi tidak mendukung layar terpisah.</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>

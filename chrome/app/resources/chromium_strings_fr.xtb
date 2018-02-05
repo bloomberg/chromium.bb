@@ -41,6 +41,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2527042973354814951">Redémarrer Chromium pour activer <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Impossible de synchroniser vos données dans Chromium OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
+<translation id="2560420686485554789">Pour télécharger des fichiers, Chromium a besoin d'accéder à l'espace de stockage</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Redémarrez Chromium OS pour appliquer la mise à jour.</translation>
 <translation id="2647554856022461007">Chromium peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -123,6 +124,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5427571867875391349">Définir Chromium comme navigateur par défaut</translation>
 <translation id="5466153949126434691">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version. Une fois le téléchargement terminé, Chromium redémarre et vous pouvez de nouveau l'utiliser.</translation>
 <translation id="5479196819031988440">Chromium OS ne peut pas ouvrir cette page</translation>
+<translation id="5480860683791598150">Chromium a besoin d'accéder à votre position pour la partager avec ce site</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour du système.</translation>
 <translation id="5634636535844844681">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Chromium.</translation>
 <translation id="5680901439334282664">connectez-vous à Chromium</translation>
@@ -137,11 +139,11 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5902536751647951209">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Chromium ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
-<translation id="5942520288919337908">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée à Chromium.</translation>
 <translation id="5987687638152509985">Mettre à jour Chromium pour lancer la synchronisation</translation>
 <translation id="6055895534982063517">Une nouvelle version de Chromium encore plus rapide est disponible.</translation>
 <translation id="6063093106622310249">&amp;Ouvrir dans Chromium</translation>
 <translation id="608189560609172163">Impossible de synchroniser vos données dans Chromium, car une erreur s'est produite lors de la connexion.</translation>
+<translation id="6096348254544841612">Personnalisez et contrôlez Chromium. Une mise à jour est disponible.</translation>
 <translation id="6129621093834146363">Chromium a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="6212496753309875659">Cet ordinateur dispose déjà d'une version plus récente de Chromium. Si le logiciel ne fonctionne pas, veuillez le désinstaller, puis réessayer.</translation>
 <translation id="6248213926982192922">Définir Chromium en tant que navigateur par défaut</translation>
@@ -151,6 +153,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="6334986366598267305">Il est désormais plus facile d'utiliser Chromium avec votre compte Google et sur des ordinateurs partagés.</translation>
 <translation id="6373523479360886564">Voulez-vous vraiment désinstaller Chromium ?</translation>
 <translation id="6394232988457703198">Redémarrez Chromium maintenant</translation>
+<translation id="6400072781405947421">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
 <translation id="6475912303565314141">Elle contrôle également la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
@@ -164,10 +167,12 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6734291798041940871">Chromium est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
 <translation id="6810143991807788455">Aidez-nous à améliorer Chromium en nous signalant vos paramètres actuels.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
+<translation id="6863361426438995919">Google Pay (copiée dans Chromium)</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
 <translation id="6944967875980567883">Modules chargés dans Chromium</translation>
 <translation id="6964305034639999644">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chromium</translation>
 <translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
+<translation id="6990124437352146030">Chromium a besoin de votre autorisation pour accéder à votre micro pour ce site</translation>
 <translation id="705851970750939768">Mettre à jour Chromium</translation>
 <translation id="7066436765290594559">Impossible de synchroniser vos données dans Chromium OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="7162152143154757523">Chromium peut vous proposer une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
@@ -189,11 +194,13 @@ Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assure
 <ph name="BEGIN_LINK_2" />En savoir plus<ph name="END_LINK_2" />
 
 Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
+<translation id="7451052299415159299">Chromium a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
 <translation id="7577193603922410712">Une mise à jour spéciale de sécurité pour Chromium vient d'être installée. Redémarrez maintenant pour qu'elle soit prise en compte (vos onglets seront restaurés).</translation>
 <translation id="761356813943268536">Votre webcam et votre micro sont en cours d'utilisation dans Chromium.</translation>
 <translation id="7617377681829253106">Chromium s'est amélioré</translation>
+<translation id="7686590090926151193">Chromium n'est pas votre navigateur par défaut</translation>
 <translation id="7729447699958282447">Impossible de synchroniser vos données dans Chromium, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="7745317241717453663">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
@@ -225,6 +232,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="8697124171261953979">Elle contrôle également la page qui s'affiche au démarrage de Chromium ou lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="8704119203788522458">Voici votre Chromium</translation>
 <translation id="872034308864968620">Laisser Chromium s'exécuter en arrière-plan</translation>
+<translation id="8796602469536043152">Chromium a besoin de votre autorisation pour accéder à votre appareil photo et à votre micro pour ce site</translation>
 <translation id="8803635938069941624">Conditions d'utilisation de Chromium OS</translation>
 <translation id="8821041990367117597">Impossible de synchroniser vos données dans Chromium, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
@@ -248,6 +256,7 @@ Si vous vous connectez quand même, toutes les informations Chromium, comme les
 <translation id="918373042641772655">La déconnexion de <ph name="USERNAME" /> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chromium stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Vous êtes connecté à Chromium</translation>
+<translation id="93478295209880648">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> exige que vous lisiez et acceptiez les présentes conditions d'utilisation pour utiliser cet appareil. Ces dernières n'étendent, ne modifient ni ne restreignent les conditions d'utilisation de Chromium OS.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>
 </translationbundle>

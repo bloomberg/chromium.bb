@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="2067602449040652523">Klaviatuuri eredus</translation>
-<translation id="207439088875642105">See on lastekonto, mida haldavad <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Peata vahekaardi <ph name="TAB_NAME" /> ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
 <translation id="2144487987174258011">Taaskäivitage Adobe Flash Playeri värskendamiseks</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monoheli</translation>
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="3019353588588144572">Aku täitumiseni on aega <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Seda lastekontot haldab <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
 <translation id="3087734570205094154">Alaserv</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
 <translation id="3477079411857374384">Ctrl + Tõstuklahv + Tühik</translation>
 <translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
+<translation id="3513798432020909783">Kontohaldur: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
 <translation id="3582792037806681688">Selle seanssi kasutaja jaoks on mitmele kontole sisselogimine keelatud</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
@@ -276,6 +275,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7829386189513694949">Tugev signaal</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
 <translation id="7933084174919150729">Google'i assistent on saadaval ainult peamisel profiilil.</translation>
+<translation id="79341161159229895">Kontohaldurid: <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Mobiilsidevõrkude otsimine …</translation>
 <translation id="7982789257301363584">Võrk</translation>
 <translation id="7994370417837006925">Mitmele kontole sisselogimine</translation>
@@ -312,6 +312,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vahel.</translation>
 <translation id="8825534185036233643">Rohkem kui kahe ekraaniga peegeldamist ei toetata.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Nupp Tagasi</translation>
 <translation id="8850991929411075241">Otsing + ESC</translation>
 <translation id="8870509716567206129">Rakendus ei toeta jagatud ekraani.</translation>
 <translation id="8878886163241303700">Ekraani laiendamine</translation>

@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">या विस्ताराने स्वतःस वारंवार रीलोड केले आहे.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_ID" /> अज्ञात उत्पादन</translation>
+<translation id="7068383018033524534">मॅनिफेस्ट फाइल चुकीची आहे</translation>
 <translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME" /> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">वापरकर्ता-समोरील</translation>
 <translation id="8047248493720652249">दुसर्‍या विस्ताराने (<ph name="EXTENSION_NAME" />) एक वेगळे फाईलनाव "<ph name="ACTUAL_FILENAME" />" निर्धारित केल्यामुळे डाउनलोड "<ph name="ATTEMPTED_FILENAME" />" ला नाव देण्यात हा विस्तार अयशस्वी झाला.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">हा विस्तार एका नेटवर्क विनंतीवर क्रेडेन्शियल प्रदान करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME" />) विस्ताराने वेगळी क्रेडेन्शियल प्रदान केली.</translation>
+<translation id="8517576857589387417">मॅनिफेस्ट फाइल गहाळ किंवा वाचता न येण्यासारखी आहे</translation>
 <translation id="8636666366616799973">पॅकेज अवैध आहे. तपशील: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">हा विस्तार <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> वर एक नेटवर्क विनंती पुनर्निर्देशित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME" />) विस्ताराने तो <ph name="ACTUAL_REDIRECT_DESTINATION" /> वर पुनर्निर्देशित केला.</translation>
 <translation id="8712265948125780616">विस्तार अनपॅकर</translation>

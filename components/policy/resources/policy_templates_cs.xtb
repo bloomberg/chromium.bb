@@ -26,6 +26,7 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 
       Je-li nastavena tato zásada, přihlašovací obrazovka se vždy zobrazí v jazyce, který je určen první hodnotou této zásady (z důvodu kompatibility s budoucími verzemi je zásada definována jako seznam). Pokud tato zásada není nastavena nebo je nastavena na prázdný seznam, zobrazí se přihlašovací obrazovka v jazyce poslední uživatelské relace. Pokud je tato zásada nastavena na hodnotu, která není platným jazykem, zobrazí se přihlašovací obrazovka v záložním jazyce (aktuálně americká angličtina).</translation>
 <translation id="1062011392452772310">Povolit vzdálené ověření identity zařízení</translation>
+<translation id="1062407476771304334">Nahradit</translation>
 <translation id="1093082332347834239">Pokud je zapnuto toto nastavení, hostitel vzdálené pomoci bude spuštěn v procesu s oprávněními <ph name="UIACCESS_PERMISSION_NAME" />. Vzdálení uživatelé tak na počítači místního uživatele budou moci provádět interakci s okny, která vyžadují zvýšená oprávnění.
 
           Pokud je toto nastavení vypnuto nebo není nakonfigurováno, hostitel vzdálené pomoci poběží v kontextu uživatele a vzdálení uživatelé na počítači nebudou moci provádět interakci s okny, která vyžadují zvýšená oprávnění.</translation>
@@ -88,12 +89,6 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 <translation id="1363275621236827384">Povolit dotazy na server Quirks pro hardwarové profily</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
-<translation id="1420281424655200442">Určuje, které tiskárny ze zásady <ph name="DEVICE_PRINTERS_POLICY" /> budou uživatelům dostupné.
-
-      Stanovuje, která zásada přístupu se použije pro hromadnou konfiguraci tiskáren. Je-li vybrána možnost <ph name="PRINTERS_ALLOW_ALL" />, budou zobrazeny všechny tiskárny. Je-li vybrána možnost <ph name="PRINTERS_BLACKLIST" />, bude zakázán přístup k tiskárnám uvedeným v zásadě <ph name="DEVICE_PRINTERS_BLACKLIST" />. Je-li vybrána možnost <ph name="PRINTERS_WHITELIST" />, bude možné vybrat pouze tiskárny uvedené v zásadě <ph name="DEVICE_PRINTERS_WHITELIST" />.
-
-      Pokud tato zásada není nastavena, předpokládá se použití možnosti <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
 <translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
@@ -270,12 +265,6 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
 <translation id="203096360153626918">Tato zásada nemá vliv na aplikace pro Android. Budou moci přejít do režimu celé obrazovky i v případě, že je tato zásada nastavena na hodnotu <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Zakázané podnikové tiskárny</translation>
-<translation id="2063380907529983889">Určuje, které tiskárny ze zásady <ph name="BULK_PRINTERS_POLICY" /> budou uživatelům dostupné.
-
-      Stanovuje, která zásada přístupu se použije pro hromadnou konfiguraci tiskáren. Je-li vybrána možnost <ph name="PRINTERS_ALLOW_ALL" />, budou zobrazeny všechny tiskárny. Je-li vybrána možnost <ph name="PRINTERS_BLACKLIST" />, bude zakázán přístup k tiskárnám uvedeným v zásadě <ph name="BULK_PRINTERS_BLACKLIST" />. Je-li vybrána možnost <ph name="PRINTERS_WHITELIST" />, bude možné vybrat pouze tiskárny uvedené v zásadě <ph name="BULK_PRINTERS_WHITELIST" />.
-
-      Pokud tato zásada není nastavena, předpokládá se použití možnosti <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Určuje, která schémata ověření v protokolu HTTP bude prohlížeč <ph name="PRODUCT_NAME" /> podporovat.
 
           Zadat můžete hodnoty „basic“, „digest“, „ntlm“ a „negotiate“. Chcete-li zadat více hodnot, oddělte je čárkami.
@@ -454,6 +443,9 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2466131534462628618">Ověření captive portálu ignoruje proxy server</translation>
 <translation id="2482676533225429905">Zasílání nativních zpráv</translation>
 <translation id="2483146640187052324">Předvídat síťové akce u všech síťových připojení</translation>
+<translation id="2485721741875148980">Pokud je tato zásada nastavena na hodnotu True, uživatel se do prohlížeče <ph name="PRODUCT_NAME" /> před použitím musí přihlásit pomocí svého profilu. V tomto případě bude výchozí hodnota zásady BrowserGuestModeEnabled nastavena na False. Existující nepodepsané profily budou po aktivaci této zásady uzamknuty a nebudou již přístupné. Další informace najdete v článku centra nápovědy.
+
+      Pokud je tato zásada nastavena na hodnotu False nebo není nakonfigurována, může uživatel prohlížeč <ph name="PRODUCT_NAME" /> používat bez přihlášení.</translation>
 <translation id="2486371469462493753">Deaktivuje vynucování požadavků zásad Certificate Transparency pro uvedené adresy URL.
 
       Tato zásada povolí použití certifikátů pro názvy hostitelů v uvedených adresách URL bez zveřejnění prostřednictvím Certificate Transparency. Bude tak možné používat certifikáty, které by jinak byly považovány za nedůvěryhodné, protože nebyly zveřejněny. Bude však obtížnější odhalit zneužití certifikátů těchto hostitelů.
@@ -766,6 +758,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3577251398714997599">Nastavení reklam pro weby s rušivými reklamami</translation>
+<translation id="3587482841069643663">Vše</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
@@ -803,7 +796,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud tyto zásady ponecháte nenastavené, uživatelé budou moci zvolit vlastní nastavení proxy serveru.</translation>
 <translation id="3758249152301468420">Deaktivovat nástroje pro vývojáře</translation>
 <translation id="3765260570442823273">Doba zobrazení zprávy s upozorněním na odhlášení z důvodu nečinnosti</translation>
-<translation id="377044054160169374">Vynucování zásahů proti podvodnému chování</translation>
+<translation id="377044054160169374">Vynucování zásahů proti obtěžujícímu chování</translation>
 <translation id="3780152581321609624">Zahrnout do hlavního názvu služby protokolu Kerberos nestandardní port</translation>
 <translation id="3780319008680229708">Je-li tato zásada nastavena na hodnotu true, bude ikona Cast na liště nebo v rozbalovací nabídce vždy zobrazena a uživatelé ji nebudou moci odebrat.
 
@@ -1204,6 +1197,7 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 <translation id="489803897780524242">Parametr nastavující nahrazení vyhledávacích dotazů pro výchozího poskytovatele vyhledávání</translation>
 <translation id="4899708173828500852">Aktivovat Bezpečné prohlížení</translation>
 <translation id="4906194810004762807">Obnovovací frekvence zásad pro zařízení</translation>
+<translation id="4917385247580444890">Silný</translation>
 <translation id="494613465159630803">Přijímač Cast</translation>
 <translation id="4962262530309732070">Pokud je tato zásada nastavena na hodnotu true nebo nastavena není, bude <ph name="PRODUCT_NAME" /> povolovat přidávání osob ze správce uživatelů.
 
@@ -1614,13 +1608,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6157537876488211233">Seznam pravidel vynechání proxy serveru oddělených čárkami</translation>
 <translation id="6158324314836466367">Název podnikového úložiště aplikací (podpora ukončena)</translation>
 <translation id="6161405879872578475">Aktivuje službu <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Upozornění: Podpora protokolu SSL verze 3 bude z prohlížeče <ph name="PRODUCT_NAME" /> po verzi 43 (okolo července 2015) zcela odstraněna. Současně bude odebrána také tato zásada.
-
-Pokud tato zásada není nakonfigurována, <ph name="PRODUCT_NAME" /> použije výchozí minimální verzi protokolu, což je SSL verze 3 ve verzi <ph name="PRODUCT_NAME" /> 39 a TLS 1.0 v novějších verzích.
-
-Zásadu lze nastavit na jednu z následujících hodnot: sslv3, tls1, tls1.1 nebo tls1.2. Je-li nastavena, <ph name="PRODUCT_NAME" /> nebude používat verze protokolů SSL a TLS nižší, než je uvedená verze. Nerozpoznané hodnoty budou ignorovány.
-
-Upozorňujeme, že verze sslv3 je starší než tls1 (bez ohledu na číslo).</translation>
 <translation id="6181608880636987460">Umožňuje nastavit seznam vzorů adres URL webů, které nemají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
@@ -2028,6 +2015,7 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
       Pokud toto nastavení aktivujete, bude aplikace <ph name="PRODUCT_NAME" /> používat zvolený jazyk. Není-li nakonfigurovaný jazyk podporován, použije se místo něho nastavení „en-US“. 
 
       Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, použije aplikace <ph name="PRODUCT_NAME" /> buď preferovaný jazyk nastavený uživatelem (je-li nakonfigurován), jazyk systému, nebo základní nastavení „en-US“.</translation>
+<translation id="7643883929273267746">Omezit účty, které jsou v prohlížeči <ph name="PRODUCT_NAME" /> viditelné</translation>
 <translation id="7651739109954974365">Určuje, zda bude v zařízení povolen datový roaming. Pokud je tato zásada nastavena na hodnotu True, je datový roaming povolen. Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, datový roaming nebude k dispozici.</translation>
 <translation id="7683777542468165012">Dynamická aktualizace zásad</translation>
 <translation id="7694807474048279351">Naplánuje automatický restart po použití aktualizace systému <ph name="PRODUCT_OS_NAME" />.
@@ -2140,7 +2128,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tato zásada již není podporována.
           Povolí použití synchronizačních serverů a serverů STUN při připojování ke vzdálenému klientu.
 
@@ -2350,6 +2337,7 @@ Pokud je tato zásada nastavena, určuje, na kolik procent bude prodloužena pro
 Není-li tato zásada nastavena, bude použita výchozí hodnota prodloužení.
 
 Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu ztmavení obrazovky oproti výchozí hodnotě zkrátily, nejsou povoleny.</translation>
+<translation id="8798099450830957504">Výchozí</translation>
 <translation id="8818173863808665831">Oznámí zeměpisnou polohu zařízení.
 
       Pokud tato zásada není nastavena, nebo je nastavena na hodnotu false, poloha oznamována nebude.</translation>

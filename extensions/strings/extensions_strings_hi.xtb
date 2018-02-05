@@ -53,12 +53,14 @@
 <translation id="677806580227005219">माइमहैंडलर: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">इस एक्सटेंशन ने स्वयं को बहुत जल्दी-जल्दी फिर से लोड किया.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
+<translation id="7068383018033524534">मेनिफ़ेस्ट फ़ाइल अमान्य है</translation>
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME" /> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">सामने वाला कैमरा</translation>
 <translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" निर्धारित कर लिया है.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">यह एक्सटेंशन किसी नेटवर्क अनुरोध को प्रमाणिकता प्रदान करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने भिन्न प्रमाणिकता प्रदान कर दिए थे.</translation>
+<translation id="8517576857589387417">मेनिफ़ेस्ट फ़ाइल गुम है या पढ़ने योग्य नहीं है</translation>
 <translation id="8636666366616799973">पैकेज अमान्य है. विवरण: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">यह एक्सटेंशन <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> तक नेटवर्क अनुरोध को रीडायरेक्ट करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने इसे <ph name="ACTUAL_REDIRECT_DESTINATION" /> को रीडायरेक्ट कर दिया था.</translation>
 <translation id="8712265948125780616">एक्‍सटेंशन अनपैकर</translation>

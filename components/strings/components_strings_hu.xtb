@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Űrlap törlése</translation>
 <translation id="2851634818064021665">A webhely felkereséséhez jogosultságra van szüksége</translation>
 <translation id="2856444702002559011">A támadók megpróbálhatják ellopni a(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhelyen lévő adatait (például jelszavait, üzeneteit és hitelkártyaadatait). <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="2881276955470682203">Menti a kártyát?</translation>
 <translation id="2909946352844186028">Változást érzékeltünk a hálózatban.</translation>
 <translation id="2916038427272391327">Zárja be a többi programot</translation>
 <translation id="2922350208395188000">A szerver tanúsítványát nem sikerült leellenőrizni.</translation>
@@ -996,6 +997,7 @@
 <translation id="874846938927089722">Elfogadott hitel- és feltöltőkártyák</translation>
 <translation id="8759274551635299824">A kártya lejárt</translation>
 <translation id="8761567432415473239">A Google Biztonságos Böngészés nemrég <ph name="BEGIN_LINK" />ártalmas programokat talált<ph name="END_LINK" /> a következő webhelyen: <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">USB-eszköz</translation>
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
 <translation id="8800988563907321413">A közeli javaslatok helye</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
@@ -1072,4 +1074,5 @@
     &lt;li&gt;Próbálkozzon a(z) „<ph name="SOFTWARE_NAME" />” eltávolításával vagy letiltásával.&lt;/li&gt;
     &lt;li&gt;Próbáljon másik hálózathoz csatlakozni.&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">A Google Payről</translation>
 </translationbundle>

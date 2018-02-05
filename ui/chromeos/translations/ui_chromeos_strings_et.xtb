@@ -14,15 +14,18 @@
 <translation id="1337036551624197047">Tšehhi klaviatuur</translation>
 <translation id="1352103415082130575">Tai klaviatuur (Pattachote)</translation>
 <translation id="1358032944105037487">Jaapani klaviatuur</translation>
+<translation id="1383876407941801731">Otsi</translation>
 <translation id="1399648040768741453">Telugu klaviatuur (foneetiline)</translation>
 <translation id="1441841714100794440">Vietnami klaviatuur (Telex)</translation>
 <translation id="1455548678241328678">Norra klaviatuur</translation>
 <translation id="148466539719134488">Šveitsi</translation>
+<translation id="1510238584712386396">Käivitaja</translation>
 <translation id="1547964879613821194">Kanada inglise</translation>
 <translation id="158809615184981282">Fäärikeelne klaviatuur</translation>
 <translation id="1646136617204068573">Ungari klaviatuur</translation>
 <translation id="164729547906544836">Tamili klaviatuur (itrans)</translation>
 <translation id="164969095109328410">Chrome'i seade</translation>
+<translation id="169515659049020177">Tõstuklahv</translation>
 <translation id="1829129547161959350">Pingviin</translation>
 <translation id="184633654410729720">Tai klaviatuur (Kedmanee)</translation>
 <translation id="1921986354447415460">Türgi F-klaviatuur</translation>
@@ -44,6 +47,7 @@
 <translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="247772113373397749">Kanada mitmekeelne klaviatuur</translation>
 <translation id="2494837236724268445">Gujarati klaviatuur (foneetiline)</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2529133382850673012">USA klaviatuur</translation>
 <translation id="255937426064304553">USA rahvusvaheline</translation>
 <translation id="2563185590376525700">Konn</translation>
@@ -66,6 +70,7 @@
 <translation id="3064388234319122767">Transliteratsioon (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Transliteratsioon (salam ← سلام)</translation>
 <translation id="3116361045094675131">Ühendkuningriigi klaviatuur</translation>
+<translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157729859914172001">USA rahvusvaheline (PC) klaviatuur</translation>
 <translation id="3187212781151025377">Heebrea klaviatuur</translation>
 <translation id="3197563288998582412">Ühendkuningriigi Dvorak</translation>
@@ -195,6 +200,7 @@
 <translation id="6937152069980083337">Google'i jaapanikeelne sisestus (USA klaviatuuri jaoks)</translation>
 <translation id="6939777852457331078">USA Workmani klaviatuur</translation>
 <translation id="6970230597523682626">bulgaaria keel</translation>
+<translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteratsioon (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Eesti klaviatuur</translation>

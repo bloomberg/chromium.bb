@@ -26,6 +26,7 @@
 
       Jika dasar ini ditetapkan, skrin log masuk akan sentiasa dipaparkan dalam tempat peristiwa yang diberikan oleh nilai pertama dasar ini (dasar ditentukan sebagai senarai untuk keserasian pemajuan).  Jika dasar ini tidak ditetapkan atau ditetapkan pada senarai kosong, skrin log masuk akan dipaparkan dalam tempat peristiwa sesi pengguna yang terakhir.  Jika dasar ini ditetapkan pada nilai yang merupakan tempat peristiwa yang tidak sah, skrin log masuk akan dipaparkan dalam tempat peristiwa sandaran (pada masa ini, en-US).</translation>
 <translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
+<translation id="1062407476771304334">Gantikan</translation>
 <translation id="1093082332347834239">Jika tetapan ini didayakan, hos bantuan jauh akan dijalankan dalam proses dengan kebenaran <ph name="UIACCESS_PERMISSION_NAME" />. Langkah ini akan membolehkan pengguna jauh berinteraksi dengan tetingkap ternaik pada desktop pengguna setempat.
 
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, hos bantuan jauh akan dijalankan dalam konteks pengguna dan pengguna jauh tidak boleh berinteraksi dengan tetingkap ternaik pada desktop.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
-<translation id="1420281424655200442">Mengawal pencetak daripada <ph name="DEVICE_PRINTERS_POLICY" /> yang tersedia kepada pengguna.
-
-      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak pukal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua pencetak akan dipaparkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> akan digunakan untuk mengehadkan akses kepada pencetak yang ditetapkan.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> akan menetapkan pencetak yang boleh dipilih sahaja.
-
-      Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_BLACKLIST" /> akan digunakan.
-      </translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
@@ -284,12 +279,6 @@
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="203096360153626918">Dasar ini tidak berkesan terhadap apl Android. Apl ini dapat memasuki mod skrin penuh walaupun jika dasar ini ditetapkan kepada <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Pencetak perusahaan dilumpuhkan</translation>
-<translation id="2063380907529983889">Mengawal pencetak daripada <ph name="BULK_PRINTERS_POLICY" /> yang tersedia kepada pengguna.
-
-      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak pukal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua pencetak akan dipaparkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="BULK_PRINTERS_BLACKLIST" /> akan digunakan untuk mengehadkan akses kepada pencetak yang ditetapkan.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="BULK_PRINTERS_WHITELIST" /> akan menetapkan pencetak yang boleh dipilih sahaja.
-
-      Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_BLACKLIST" /> akan digunakan.
-      </translation>
 <translation id="206623763829450685">Menetapkan skim pengesahan HTTP yang disokong oleh <ph name="PRODUCT_NAME" />.
 
           Nilai yang mungkin terdiri daripada 'basic', 'digest', 'ntlm' dan 'negotiate'. Pisahkan berbilang nilai dengan koma.
@@ -475,6 +464,9 @@
 <translation id="2466131534462628618">Pengesahan portal tawanan mengabaikan proksi</translation>
 <translation id="2482676533225429905">Pemesejan Natif</translation>
 <translation id="2483146640187052324">Ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
+<translation id="2485721741875148980">Jika dasar ini ditetapkan kepada benar, pengguna perlu mengelog masuk ke <ph name="PRODUCT_NAME" /> menggunakan profil mereka sebelum menggunakan penyemak imbas. Selain itu, nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Harap maklum bahawa profil sedia ada yang tidak dilog masuk akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan.
+
+      Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, pengguna boleh menggunakan penyemak imbas tanpa perlu mengelog masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Melumpuhkan penguatkuasaan keperluan Ketelusan Sijil kepada URL yang disenaraikan.
 
       Dasar ini membenarkan sijil bagi nama hos dalam URL yang dinyatakan, tidak didedahkan melalui Ketelusan Sijil. Pada umumnya, sijil yang tidak didedahkan kepada umum dengan betul, dikendalikan sebagai sijil yang tidak dipercayai. Namun, dasar ini membenarkan sijil yang tidak dipercayai itu untuk terus digunakan, tetapi hal ini akan menyukarkan lagi kami mengesan sijil yang tersilap dikeluarkan oleh hos tersebut.
@@ -786,6 +778,7 @@
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3577251398714997599">Tetapan iklan untuk tapak yang mengandungi iklan yang mengganggu</translation>
+<translation id="3587482841069643663">Semua</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
 <translation id="3627678165642179114">Dayakan atau lumpuhkan perkhidmatan web penyemakan ejaan</translation>
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
@@ -1237,6 +1230,7 @@
 <translation id="489803897780524242">Parameter yang mengawal kedudukan istilah carian untuk penyedia carian lalai</translation>
 <translation id="4899708173828500852">Dayakan Penyemakan Imbas Selamat</translation>
 <translation id="4906194810004762807">Segar semula kadar untuk Dasar Peranti</translation>
+<translation id="4917385247580444890">Kuat</translation>
 <translation id="494613465159630803">Penerima Cast</translation>
 <translation id="4962262530309732070">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membenarkan ciri Tambah Orang daripada pengurus pengguna.
 
@@ -1648,13 +1642,6 @@
 <translation id="6157537876488211233">Senarai diasingkan koma bagi peraturan memintas proksi</translation>
 <translation id="6158324314836466367">Nama kedai web perusahaan (tidak akan digunakan lagi)</translation>
 <translation id="6161405879872578475">Mendayakan <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Amaran: Sokongan SSLv3 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 43 (sekitar Julai 2015) dan dasar ini akan dialih keluar pada masa yang sama.
-
-      Jika dasar ini tidak dikonfigurasi, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum lalai iaitu SSLv3 dalam <ph name="PRODUCT_NAME" /> 39 dan TLS 1.0 dalam versi yang lebih baharu.
-
-      Jika tidak, produk mungkin ditetapkan kepada salah satu nilai berikut: "sslv3", "tls1", "tls1.1" atau "tls1.2". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang dinyatakan. Nilai yang tidak dikenali akan diabaikan.
-
-      Ambil perhatian bahawa, "sslv3" ialah versi yang lebih awal daripada "tls1" walaupun nombornya tidak menggambarkan begitu.</translation>
 <translation id="6181608880636987460">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang tidak dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
@@ -2074,6 +2061,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> menggunakan penempatan yang dinyatakan. Sebaliknya, jika penempatan yang dikonfigurasi tidak disokong, 'en-US' akan digunakan.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> menggunakan sama ada penempatan pilihan yang ditentukan pengguna (jika dikonfigurasi), penempatan sistem atau penempatan bertahan 'en-US'.</translation>
+<translation id="7643883929273267746">Sekat akaun yang dapat dilihat di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Menentukan sama ada data perayauan perlu didayakan untuk peranti. Jika ditetapkan kepada benar, perayauan data dibenarkan. Jika dibiarkan tanpa dikonfigurasi atau ditetapkan kepada palsu, perayauan data tidak akan tersedia.</translation>
 <translation id="7683777542468165012">Segar Semula Dasar Dinamik</translation>
 <translation id="7694807474048279351">Jadualkan but semula automatik selepas kemas kini <ph name="PRODUCT_OS_NAME" /> telah dilaksanakan.
@@ -2188,7 +2176,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7937766917976512374">Benarkan atau nafikan rakaman video</translation>
 <translation id="7941975817681987555">Jangan ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
 <translation id="7953256619080733119">Hos pengecualian manual pengguna terurus</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Dasar ini tidak lagi disokong.
           Membolehkan penggunaan pelayan STUN dan geganti apabila bersambung dengan pelanggan jauh.
 
@@ -2409,6 +2396,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
           Jika dasar ini tidak ditetapkan, faktor skala lalai akan digunakan.
 
           Faktor skala mesti 100% atau lebih. Nilai yang akan menyebabkan kelewatan melahu dalam mod penyampaian lebih pendek daripada kelewatan melahu biasa tidak dibenarkan.</translation>
+<translation id="8798099450830957504">Lalai</translation>
 <translation id="8818173863808665831">Laporkan lokasi geografi peranti.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, lokasi tersebut tidak akan dilaporkan.</translation>

@@ -26,6 +26,7 @@
 
       Jika kebijakan ini disetel, layar login akan selalu ditampilkan dalam lokal yang diberikan oleh nilai pertama dari kebijakan ini (kebijakan didefinisikan sebagai daftar untuk kompatibilitas yang diteruskan).  Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, layar login akan ditampilkan dalam lokal sesi pengguna terakhir.  Jika kebijakan ini disetel ke nilai lokal yang tidak valid, layar login akan ditampilkan di lokal alternatif (saat ini, en-US).</translation>
 <translation id="1062011392452772310">Mengaktifkan pengesahan jarak jauh untuk perangkat tersebut</translation>
+<translation id="1062407476771304334">Ganti</translation>
 <translation id="1093082332347834239">Jika setelan ini diaktifkan, host bantuan jarak jauh akan dijalankan dalam proses dengan izin <ph name="UIACCESS_PERMISSION_NAME" />.  Hal ini akan memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di desktop pengguna lokal.
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, host bantuan jarak jauh akan dijalankan dalam konteks pengguna dan pengguna jarak jauh tidak dapat berinteraksi dengan jendela yang berada jauh di desktop.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
-<translation id="1420281424655200442">Mengontrol printer mana dari <ph name="DEVICE_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
-
-      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan. Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> akan menetapkan hanya printer yang dapat dipilih.
-
-      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_BLACKLIST" /> akan diterapkan.
-      </translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
@@ -276,12 +271,6 @@
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="203096360153626918">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi akan dapat memasuki mode layar penuh meski kebijakan ini disetel ke <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Menonaktifkan printer perusahaan</translation>
-<translation id="2063380907529983889">Mengontrol printer mana dari <ph name="BULK_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
-
-      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="BULK_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan. Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="BULK_PRINTERS_WHITELIST" /> hanya akan menetapkan printer yang dapat dipilih.
-
-      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_BLACKLIST" /> akan diterapkan.
-      </translation>
 <translation id="206623763829450685">Menentukan skema autentikasi HTTP yang didukung oleh <ph name="PRODUCT_NAME" />.
 
           Nilai yang mungkin adalah 'basic', 'digest', 'ntlm', dan 'negotiate'. Pisahkan beberapa nilai dengan koma.
@@ -459,6 +448,9 @@
 <translation id="2466131534462628618">Autentikasi portal tawanan mengabaikan proxy</translation>
 <translation id="2482676533225429905">Perpesanan Asli</translation>
 <translation id="2483146640187052324">Prediksi tindakan jaringan di sambungan jaringan apa pun</translation>
+<translation id="2485721741875148980">Jika kebijakan ini disetel ke true, pengguna harus login ke <ph name="PRODUCT_NAME" /> dengan profilnya sebelum menggunakan browser. Nilai default BrowserGuestModeEnabled akan disetel ke false. Harap diperhatikan bahwa profil yang tidak login akan dikunci dan tidak dapat diakses setelah kebijakan ini diaktifkan. Untuk informasi selengkapnya, lihat artikel pusat bantuan.
+
+      Jika kebijakan ini disetel ke false atau tidak dikonfigurasi, pengguna dapat menggunakan browser tanpa harus login ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Menonaktifkan penerapan persyaratan Transparansi Sertifikat ke URL yang tercantum.
 
       Kebijakan ini memungkinkan agar sertifikat hostname pada URL yang ditentukan, tidak diungkapkan melalui Transparansi Sertifikat. Ini memungkinkan sertifikat yang tidak tepercaya untuk terus digunakan, karena tidak diungkapkan ke publik dengan tepat, namun lebih sulit mendeteksi sertifikat yang salah terbit untuk host tersebut.
@@ -754,6 +746,7 @@
 <translation id="3528000905991875314">Mengaktifkan halaman kesalahan alternatif</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3577251398714997599">Setelan iklan untuk situs yang menayangkan iklan mengganggu</translation>
+<translation id="3587482841069643663">Semua</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
 <translation id="3646859102161347133">Menyetel jenis lup</translation>
@@ -1187,6 +1180,7 @@
 <translation id="489803897780524242">Parameter yang mengendalikan penempatan istilah penelusuran untuk penyedia penelusuran default</translation>
 <translation id="4899708173828500852">Aktifkan Safe Browsing</translation>
 <translation id="4906194810004762807">Segarkan peringkat untuk Kebijakan Perangkat</translation>
+<translation id="4917385247580444890">Kuat</translation>
 <translation id="494613465159630803">Penerima Cast</translation>
 <translation id="4962262530309732070">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengizinkan setelan Tambahkan Pengguna dari pengelola pengguna.
 
@@ -1567,13 +1561,6 @@
 <translation id="6157537876488211233">Peraturan mengabaikan proxy yang dipisahkan koma</translation>
 <translation id="6158324314836466367">Nama toko web perusahaan (tidak digunakan)</translation>
 <translation id="6161405879872578475">Mengaktifkan <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Peringatan: Dukungan SSLv3 akan dihapus sepenuhnya dari <ph name="PRODUCT_NAME" /> setelah versi 43 (sekitar bulan Juli 2015) dan kebijakan ini akan dihapus pada waktu yang sama.
-
-      Jika kebijakan ini tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum default yaitu SSLv3 di <ph name="PRODUCT_NAME" /> 39 dan TLS 1.0 di versi setelahnya.
-
-      Jika tidak, kebijakan ini akan disetel ke salah satu dari nilai berikut: "sslv3", "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan SSL/TLS dengan versi yang kurang dari versi yang ditentukan. Nilai yang tidak dikenali akan diabaikan.
-
-      Perhatikan bahwa, "sslv3" adalah versi yang lebih awal dibandingkan "tls1", meskipun angkanya lebih besar.</translation>
 <translation id="6181608880636987460">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
@@ -1961,6 +1948,7 @@
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
 <translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
 <translation id="7635471475589566552">Mengonfigurasi lokal aplikasi di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah lokal tersebut. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menggunakan lokal yang ditentukan. Jika lokal terkonfigurasi tidak didukung, 'en-US' akan digunakan. Jika setelan ini dinonaktifkan atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menggunakan lokal terpilih yang ditentukan pengguna (jika dikonfigurasi), lokal sistem, atau lokal pengganti 'en-US'.</translation>
+<translation id="7643883929273267746">Batasi akun yang terlihat di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Menentukan apakah roaming data harus diaktifkan untuk perangkat. Jika disetel ke true, roaming data akan diizinkan. Jika dibiarkan tanpa konfigurasi atau disetel ke false, roaming data tidak akan tersedia.</translation>
 <translation id="7683777542468165012">Penyegaran Kebijakan Dinamis</translation>
 <translation id="7694807474048279351">Menjadwalkan mulai ulang otomatis setelah pembaruan <ph name="PRODUCT_OS_NAME" /> diterapkan.
@@ -2073,7 +2061,6 @@
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>
 <translation id="7976157349247117979">Nama tujuan <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Tidak ada batasan khusus</translation>
@@ -2280,6 +2267,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Jika kebijakan ini tidak disetel, faktor skala default akan digunakan.
 
           Faktor skala harus 100% atau lebih. Nilai yang akan membuat penundaan layar redup dalam mode presentasi jadi lebih pendek daripada versi reguler tidak diizinkan.</translation>
+<translation id="8798099450830957504">Default</translation>
 <translation id="8818173863808665831">Melaporkan lokasi geografis perangkat.
 
       Jika kebijakan tidak disetel, atau disetel ke false, lokasi tidak akan dilaporkan.</translation>

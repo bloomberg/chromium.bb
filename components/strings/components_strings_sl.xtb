@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Počisti obrazec</translation>
 <translation id="2851634818064021665">Za obisk tega spletnega mesta potrebujete dovoljenje</translation>
 <translation id="2856444702002559011">Morda poskušajo napadalci ukrasti vaše podatke s spletnega mesta <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na primer gesla, sporočila ali podatke kreditnih kartic). <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Želite shraniti kartico?</translation>
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2916038427272391327">Zaprite druge programe</translation>
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Sprejete kreditne in predplačniške kartice</translation>
 <translation id="8759274551635299824">Ta kartica je potekla</translation>
 <translation id="8761567432415473239">Googlova funkcija varnega brskanja je nedavno <ph name="BEGIN_LINK" />odkrila škodljive programe<ph name="END_LINK" /> na spletnem mestu <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Naprava USB</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8800988563907321413">Tu so prikazani predlogi v bližini</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;Poskusite odstraniti »<ph name="SOFTWARE_NAME" />«&lt;/li&gt;
     &lt;li&gt;Poskusite se povezati z drugim omrežjem&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Iz Googla Pay</translation>
 </translationbundle>

@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">清除表單</translation>
 <translation id="2851634818064021665">你必須獲得授權，才能造訪這個網站</translation>
 <translation id="2856444702002559011">攻擊者可能會試圖從 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 竊取你的資訊 (例如密碼、郵件或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">要儲存卡片嗎？</translation>
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2916038427272391327">關閉其他程式</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">接受的信用卡和預付卡</translation>
 <translation id="8759274551635299824">這張信用卡已過期</translation>
 <translation id="8761567432415473239">Google 安全瀏覽最近在「<ph name="SITE" />」<ph name="BEGIN_LINK" />發現了有害程式<ph name="END_LINK" />。</translation>
+<translation id="8763927697961133303">USB 裝置</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8800988563907321413">這裡會顯示系統建議你瀏覽的鄰近網頁</translation>
 <translation id="8820817407110198400">書籤</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;嘗試解除安裝或停用「<ph name="SOFTWARE_NAME" />」&lt;/li&gt;
     &lt;li&gt;嘗試連線至其他網路&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">來自 Google Pay</translation>
 </translationbundle>

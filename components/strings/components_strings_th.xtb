@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">ล้างฟอร์ม</translation>
 <translation id="2851634818064021665">คุณต้องได้รับสิทธิ์เพื่อเข้าชมไซต์นี้</translation>
 <translation id="2856444702002559011">ผู้โจมตีอาจพยายามขโมยข้อมูลจาก <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ตัวอย่างเช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต) <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">บันทึกบัตรไหม</translation>
 <translation id="2909946352844186028">ตรวจพบการเปลี่ยนแปลงเครือข่าย</translation>
 <translation id="2916038427272391327">ปิดโปรแกรมอื่นๆ</translation>
 <translation id="2922350208395188000">ไม่สามารถตรวจสอบใบรับรองของเซิร์ฟเวอร์</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">บัตรเครดิตและบัตรเติมเงินที่ยอมรับ</translation>
 <translation id="8759274551635299824">บัตรนี้หมดอายุแล้ว</translation>
 <translation id="8761567432415473239">Google Safe Browsing <ph name="BEGIN_LINK" />พบโปรแกรมที่เป็นอันตราย<ph name="END_LINK" />บน <ph name="SITE" /> เมื่อเร็วๆ นี้</translation>
+<translation id="8763927697961133303">อุปกรณ์ USB</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
 <translation id="8800988563907321413">คำแนะนำในบริเวณใกล้เคียงจะปรากฏที่นี่</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;ลองถอนการติดตั้งหรือปิดใช้ "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;ลองเชื่อมต่อกับเครือข่ายอื่น&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">จาก Google Pay</translation>
 </translationbundle>

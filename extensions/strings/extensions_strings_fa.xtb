@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">این برنامه افزودنی بیش از حد خود را بارگیری مجدد می‌کند.</translation>
 <translation id="7003844668372540529">محصول نامشخص <ph name="PRODUCT_ID" /> از <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">فایل مانیفست نامعتبر است</translation>
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME" /> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">رو به کاربر</translation>
 <translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری بارگیری «<ph name="ATTEMPTED_FILENAME" />» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME" />) نام فایل دیگری «<ph name="ACTUAL_FILENAME" />» را تعیین کرد.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> از <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">این فایل افزودنی نتوانست مدارک صلاحیت درخواست شبکه را ارائه دهد چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME" />) مدارک صلاحیت دیگری را ارائه کرده است.</translation>
+<translation id="8517576857589387417">فایل مانیفست وجود ندارد یا قابل‌خواندن نیست</translation>
 <translation id="8636666366616799973">بسته نامعتبر است. جزئیات: "<ph name="ERROR_MESSAGE" />"</translation>
 <translation id="8670869118777164560">این فایل افزودنی نتوانست درخواست شبکه را به <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> مجدداً هدایت کند چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME" />) آن را به <ph name="ACTUAL_REDIRECT_DESTINATION" /> مجدداً هدایت کرد.</translation>
 <translation id="8712265948125780616">بازکننده بسته افزونه</translation>

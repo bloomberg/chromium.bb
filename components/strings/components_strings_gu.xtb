@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
 <translation id="2851634818064021665">આ સાઇટની મુલાકાત લેવા માટે તમને પરનાવગીની જરૂર છે</translation>
 <translation id="2856444702002559011">હુમલાખોરો કદાચ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />માંથી તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, સંદેશા અથવા ક્રેડિટ કાર્ડ) ચોરવાનો પ્રયાસ કરી રહ્યાં હોઈ શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">કાર્ડ સાચવીએ?</translation>
 <translation id="2909946352844186028">નેટવર્ક ફેરફાર મળ્યો હતો.</translation>
 <translation id="2916038427272391327">અન્ય પ્રોગ્રામ બંધ કરો</translation>
 <translation id="2922350208395188000">સર્વરનું પ્રમાણપત્ર તપાસી શકાતું નથી.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">સ્વીકૃત ક્રેડિટ અને પ્રિપેઇડ કાર્ડ</translation>
 <translation id="8759274551635299824">આ કાર્ડની સમયસીમા સમાપ્ત થઈ ગઈ છે</translation>
 <translation id="8761567432415473239">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />હાનિકારક પ્રોગ્રામ્સ મળ્યાં<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">USB ઉપકરણ</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
 <translation id="8800988563907321413">તમારા નજીકના સૂચનો અહીં દેખાય છે</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />"ને અનઇન્સ્ટૉલ કે બંધ કરવાનો પ્રયાસ કરો&lt;/li&gt;
     &lt;li&gt;બીજા નેટવર્ક સાથે કનેક્ટ કરવાનો પ્રયાસ કરો&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Google Pay માંથી</translation>
 </translationbundle>

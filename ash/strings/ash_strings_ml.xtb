@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">ഈ ഉപകരണം നിയന്ത്രിക്കുന്നത് <ph name="DOMAIN" /> ആണ്.</translation>
 <translation id="2050339315714019657">ഛായാചിത്രം</translation>
 <translation id="2067602449040652523">കീബോർഡ് തെളിച്ചം</translation>
-<translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവർ നിയന്ത്രിക്കുന്ന കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണിത്</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" />, <ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
 <translation id="2144487987174258011">Adobe Flash Player അപ്‌ഡേറ്റുചെയ്യാൻ പുനരാരംഭിക്കുക</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">മോണോ ഓഡിയോ</translation>
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="3019353588588144572">ബാറ്ററി പൂർണ്ണമായി ചാർജ്ജാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">ഇത് <ph name="MANAGER_EMAIL" /> എന്നയാളുടെ നിയന്ത്രണത്തിലുള്ള കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണ്</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">താഴെ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="3477079411857374384">കൺട്രോൾ-ഷിഫ്‌റ്റ്-സ്പേസ്</translation>
 <translation id="3510164367642747937">മൗസ് കഴ്‌സർ ഹൈലൈറ്റുചെയ്യുക</translation>
+<translation id="3513798432020909783">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER_EMAIL" /> ആണ്</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" എന്നതിലേക്ക് തിരികെ മാറുക (റീസ്റ്റാര്‍ട്ട് ആവശ്യമാണ്)</translation>
 <translation id="3582792037806681688">ഈ സെഷനിൽ ഒരു ഉപയോക്താവിനായി ഒന്നിലധികം സൈൻ ഇൻ അനുവദനീയമല്ല.</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">ശക്തിയുള്ള സിഗ്നൽ</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="7933084174919150729">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Google സഹായി ലഭ്യമാകൂ.</translation>
+<translation id="79341161159229895">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവരാണ്</translation>
 <translation id="7977927628060636163">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു...</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
 <translation id="7994370417837006925">ഒന്നിലധികം സൈൻ ഇൻ</translation>
@@ -312,6 +312,7 @@
 തുടർന്നുള്ള അറിയിപ്പുകൾ, വിൻഡോകൾ, ഡയലോഗുകൾ എന്നിവ ഡെസ്‌ക്‌‌ടോപ്പുകൾക്കിടയിൽ വിഭജിക്കപ്പെടാം.</translation>
 <translation id="8825534185036233643">രണ്ടിലധികം ഡിസ്‌പ്ലേകളിൽ മിററിംഗ് ചെയ്യുന്നത് പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">ബാക്ക് ബട്ടൺ</translation>
 <translation id="8850991929411075241">തിരയൽ+Esc</translation>
 <translation id="8870509716567206129">സ്പ്ലിറ്റ്-സ്ക്രീനിനെ ആപ്പ് പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>

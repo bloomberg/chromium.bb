@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> 個項目</translation>
 <translation id="1491277525950327607">輕觸兩下即可切換設定</translation>
 <translation id="152234381334907219">永不儲存</translation>
+<translation id="1532451416480227577">顯示 Google Pay 中儲存的地址和信用卡資訊</translation>
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描 QR 圖碼</translation>
 <translation id="1580783302095112590">已傳送郵件。</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">僅限連上 Wi-Fi 網路時</translation>
 <translation id="2747003861858887689">上一個欄位</translation>
 <translation id="2780046210906776326">無電子郵件帳戶</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">退出分頁切換選項</translation>
 <translation id="283291358677939992">在網頁中尋找...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />，<ph name="STATE" />，<ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">網路服務</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3210163015918861891">同步功能已關閉</translation>
+<translation id="3224641773458703735">你必須先在裝置上設定通行碼，才能匯出密碼。</translation>
 <translation id="3240426699337459095">連結已複製</translation>
 <translation id="3244271242291266297">月</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
-<translation id="533632423981297619">凡是可查看匯出檔案的使用者都看得到你的密碼。請勿與任何人共用這個檔案。</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
@@ -306,6 +308,7 @@
 <translation id="681368974849482173">項目已建立</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="6903907808598579934">開啟同步處理功能</translation>
+<translation id="6914783257214138813">凡是可查看匯出的檔案的使用者都能看到你的密碼。</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>

@@ -53,12 +53,14 @@
 <translation id="677806580227005219">MIME apdarinātājs: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Šis paplašinājums pārāk bieži veica atkārtotu ielādi.</translation>
 <translation id="7003844668372540529">Nezināms produkts (ID: <ph name="PRODUCT_ID" />), ko piedāvā <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Manifesta fails nav derīgs.</translation>
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME" /> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Vērsta uz lietotāju</translation>
 <translation id="8047248493720652249">Šim paplašinājumam neizdevās piešķirt nosaukumu lejupielādei “<ph name="ATTEMPTED_FILENAME" />”, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) noteica citu faila nosaukumu “<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> no <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Šis paplašinājums nevarēja sniegt tīkla pieprasījuma akreditācijas datus, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) sniedza atšķirīgus akreditācijas datus.</translation>
+<translation id="8517576857589387417">Manifesta fails nav atrodams vai nolasāms.</translation>
 <translation id="8636666366616799973">Pakotne nav derīga. Detaļas: <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="8670869118777164560">Šis paplašinājums nevarēja novirzīt tīkla pieprasījumu uz galamērķi <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) to novirzīja uz šādu galamērķi: <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Paplašinājumu pakotņu atvērējs</translation>

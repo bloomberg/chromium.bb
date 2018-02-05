@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> mục</translation>
 <translation id="1491277525950327607">Nhấn đúp để chuyển đổi cài đặt</translation>
 <translation id="152234381334907219">Không bao giờ lưu</translation>
+<translation id="1532451416480227577">Hiển thị địa chỉ và thẻ tín dụng từ Google Pay</translation>
 <translation id="1540800554400757039">Địa chỉ 1</translation>
 <translation id="1545749641540134597">Quét mã QR</translation>
 <translation id="1580783302095112590">Thư đã được gửi.</translation>
@@ -96,6 +97,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2718352093833049315">Chỉ trên Wi-Fi</translation>
 <translation id="2747003861858887689">Trường trước</translation>
 <translation id="2780046210906776326">Ko có TK email nào</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Rời khỏi Trình chuyển đổi tab</translation>
 <translation id="283291358677939992">Tìm trong trang...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3175081911749765310">Dịch vụ web</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
 <translation id="3210163015918861891">Đồng bộ hóa đã tắt</translation>
+<translation id="3224641773458703735">Để xuất mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
 <translation id="3240426699337459095">Đã sao chép liên kết</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> trong số <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
-<translation id="533632423981297619">Mật khẩu của bạn sẽ hiển thị với bất kỳ ai có thể xem tệp đã xuất. Không chia sẻ tệp này với bất cứ ai.</translation>
 <translation id="5388358297987318779">Mở hình ảnh</translation>
 <translation id="5409365236829784218">Không có ứng dụng nào được cài đặt có thể mở tệp này.</translation>
 <translation id="5433691172869980887">Đã sao chép tên người dùng</translation>
@@ -306,6 +308,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="681368974849482173">Đã tạo mục</translation>
 <translation id="6896758677409633944">Sao chép</translation>
 <translation id="6903907808598579934">Bật đồng bộ hóa</translation>
+<translation id="6914783257214138813">Bất cứ ai có thể xem tệp đã xuất đều có thể biết mật khẩu của bạn.</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6973630695168034713">Thư mục</translation>
 <translation id="7004499039102548441">Các tab gần đây</translation>

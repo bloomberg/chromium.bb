@@ -26,6 +26,7 @@
 
       Ist diese Richtlinie festgelegt, wird die Anmeldeseite immer in der Sprache angezeigt, die durch den ersten Wert der Richtlinie bestimmt wird. Sie ist als eine Liste für Aufwärtskompatibilität definiert. Ist sie nicht festgelegt oder verweist auf eine leere Liste, wird die Anmeldeseite in der Sprache der letzten Nutzersitzung dargestellt. Ist für diese Richtlinie eine ungültige Sprache festgelegt, wird die Anmeldeseite in einer Ersatzsprache angezeigt, derzeit en-US.</translation>
 <translation id="1062011392452772310">Remote-Bescheinigung (Remote Attestation) für das Gerät aktivieren</translation>
+<translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1093082332347834239">Ist diese Einstellung aktiviert, läuft der Host für Remote-Unterstützung in einem Prozess mit <ph name="UIACCESS_PERMISSION_NAME" />-Berechtigungen. So kann der Remote-Nutzer mit geöffneten Fenstern auf dem lokalen Desktop arbeiten.
 
           Ist diese Einstellung deaktiviert oder nicht konfiguriert, läuft der Host für Remote-Unterstützung nur im Nutzerbereich. Remote-Nutzer können nicht mit geöffneten Fenstern auf dem Desktop arbeiten.</translation>
@@ -89,12 +90,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1363275621236827384">Abfragen an Quirks-Server für Hardwareprofile aktivieren</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
-<translation id="1420281424655200442">Bestimmt, welche Drucker aus <ph name="DEVICE_PRINTERS_POLICY" /> Nutzern zur Verfügung stehen.
-
-      Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern verwendet wird. Wenn <ph name="PRINTERS_ALLOW_ALL" /> ausgewählt ist, werden alle Drucker angezeigt. Wenn <ph name="PRINTERS_BLACKLIST" /> ausgewählt ist, wird anhand von <ph name="DEVICE_PRINTERS_BLACKLIST" /> der Zugriff auf die angegebenen Drucker eingeschränkt. Wenn <ph name="PRINTERS_WHITELIST" /> ausgewählt ist, gibt <ph name="DEVICE_PRINTERS_WHITELIST" /> nur die Drucker an, die ausgewählt werden können.
-
-      Wenn die Richtlinie nicht konfiguriert ist, wird angenommen, dass <ph name="PRINTERS_BLACKLIST" /> ausgewählt ist.
-      </translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
@@ -270,12 +265,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="203096360153626918">Diese Richtlinie hat keine Auswirkungen auf die Android-Apps. Der Vollbildmodus kann aktiviert werden, auch wenn diese Richtlinie auf <ph name="FALSE" /> gesetzt ist.</translation>
 <translation id="2043770014371753404">Deaktivierte Unternehmensdrucker</translation>
-<translation id="2063380907529983889">Bestimmt, welche Drucker aus <ph name="BULK_PRINTERS_POLICY" /> Nutzern zur Verfügung stehen.
-
-      Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern verwendet wird. Wenn <ph name="PRINTERS_ALLOW_ALL" /> ausgewählt ist, werden alle Drucker angezeigt. Wenn <ph name="PRINTERS_BLACKLIST" /> ausgewählt ist, wird anhand von <ph name="BULK_PRINTERS_BLACKLIST" /> der Zugriff auf die angegebenen Drucker eingeschränkt. Wenn <ph name="PRINTERS_WHITELIST" /> ausgewählt ist, gibt <ph name="BULK_PRINTERS_WHITELIST" /> nur die Drucker an, die ausgewählt werden können.
-
-      Wenn die Richtlinie nicht konfiguriert ist, wird angenommen, dass <ph name="PRINTERS_BLACKLIST" /> ausgewählt ist.
-      </translation>
 <translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
 
           Mögliche Werte sind "basic", "digest", "ntlm" und "negotiate". Trennen Sie mehrere Werte durch Kommas.
@@ -454,6 +443,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="2483146640187052324">Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen</translation>
+<translation id="2485721741875148980">Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Profil in <ph name="PRODUCT_NAME" /> anmelden, um den Browser zu nutzen. Außerdem wird der Standardwert von BrowserGuestModeEnabled auf "false" gesetzt. Beachten Sie, dass vorhandene, nicht signierte Profile gesperrt werden und nach Aktivieren dieser Richtlinie nicht mehr zugänglich sind. Weitere Informationen erhalten Sie im Hilfeartikel.
+
+      Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer den Browser verwenden, ohne sich in <ph name="PRODUCT_NAME" /> anzumelden.</translation>
 <translation id="2486371469462493753">Deaktiviert das Erzwingen von Zertifikatstransparenz-Anforderungen für die aufgeführten URLs.
 
       Diese Richtlinie erlaubt, dass Zertifikate für die Hostnamen in den angegebenen URLs nicht über die Zertifikatstransparenz offengelegt werden. Dadurch sind Zertifikate weiterhin zulässig, die anderenfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Es wird jedoch schwieriger, fehlerhaft ausgestellte Zertifikate für diese Hosts zu erkennen.
@@ -753,6 +745,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3528000905991875314">Alternative Fehlerseiten aktivieren</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
+<translation id="3587482841069643663">Alle</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
@@ -792,7 +785,7 @@ Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der g
 <translation id="3765260570442823273">Dauer der Warnmeldung zur Abmeldung bei Inaktivität</translation>
 <translation id="377044054160169374">Zwingende Maßnahmen bei irreführenden Inhalten</translation>
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
-<translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Überlaufmenü und Nutzer können es nicht entfernen.
+<translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Dreipunkt-Menü und Nutzer können es nicht entfernen.
 
           Wenn diese Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können Nutzer das Symbol über das Kontextmenü anheften oder entfernen.
 
@@ -1186,6 +1179,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="489803897780524242">Parameter zur Steuerung der Suchbegriffersetzung für den Standardsuchanbieter</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
 <translation id="4906194810004762807">Aktualisierungsrate für Geräterichtlinien</translation>
+<translation id="4917385247580444890">Stark</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Wurde für diese Richtlinie "true" festgelegt oder nichts konfiguriert, ist in <ph name="PRODUCT_NAME" /> die Verwendung der Funktion "Person hinzufügen" über den Nutzermanager zulässig.
 
@@ -1569,13 +1563,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6157537876488211233">Kommagetrennte Liste der Proxy-Umgehungsregeln</translation>
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>
 <translation id="6161405879872578475">Aktiviert <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Achtung: Die SSLv3-Unterstützung wurde im Juli 2015 nach Version 43 zusammen mit dieser Richtlinie vollständig aus <ph name="PRODUCT_NAME" /> entfernt.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> standardmäßig eine Mindestversion: die SSLv3-Version in <ph name="PRODUCT_NAME" /> 39 und TLS 1.0 in höheren Versionen.
-
-      Für die Richtlinie kann auch einer der folgenden Werte festgelegt werden: "sslv3", "tls1", "tls1.1" oder "tls1.2". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine Versionen von SSL/TLS, die niedriger als die vorgegebene Version sind. Unbekannte Werte werden ignoriert.
-
-      Beachten Sie, dass "sslv3" trotz der höheren Zahl eine frühere Version als "tls1" ist.</translation>
 <translation id="6181608880636987460">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" nicht gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
@@ -1964,6 +1951,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7625444193696794922">Gibt den Release-Kanal an, an den dieses Gerät gebunden werden soll.</translation>
 <translation id="7632724434767231364">Name der GSSAPI-Bibliothek</translation>
 <translation id="7635471475589566552">Konfiguriert das App-Gebietsschema in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer das Gebietsschema ändern. Wenn Sie diese Einstellung aktivieren, verwendet <ph name="PRODUCT_NAME" /> das angegebene Gebietsschema. Wird das konfigurierte Gebietsschema nicht unterstützt, kommt stattdessen "en-US" zum Einsatz. Ist diese Einstellung deaktiviert oder nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> das vom Nutzer angegebene bevorzugte Gebietsschema (sofern konfiguriert), das Gebietsschema des Systems oder das Ersatz-Gebietsschema "en-US".</translation>
+<translation id="7643883929273267746">Sichtbarkeit von Konten in <ph name="PRODUCT_NAME" /> einschränken</translation>
 <translation id="7651739109954974365">Legt fest, ob Daten-Roaming für das Gerät aktiviert werden soll. Bei Einstellung auf "true" ist das Roaming erlaubt. Ist die Richtlinie nicht konfiguriert oder auf "false" gesetzt, ist kein Roaming verfügbar.</translation>
 <translation id="7683777542468165012">Dynamische Richtlinienaktualisierung</translation>
 <translation id="7694807474048279351">Hiermit wird ein automatischer Neustart nach einem Update von <ph name="PRODUCT_OS_NAME" /> geplant.
@@ -2076,7 +2064,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
 <translation id="7976157349247117979">Name des <ph name="PRODUCT_NAME" />-Ziels</translation>
 <translation id="7980227303582973781">Keine besonderen Einschränkungen</translation>
@@ -2274,6 +2261,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
           Ist diese Richtlinie nicht konfiguriert, wird ein Standardfaktor für die Skalierung verwendet.
 
           Der Skalierungsfaktor muss mindestens 100 % betragen. Werte, bei denen die Spanne für die Bildschirmabdunkelung im Präsentationsmodus kürzer wäre als regulär, sind nicht zulässig.</translation>
+<translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
       Wenn die Richtlinie nicht oder auf "False" festgelegt wird, wird der Standort nicht gemeldet.</translation>

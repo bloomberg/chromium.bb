@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">hali</translation>
 <translation id="1938124657309484470">Thamani lazima iwe <ph name="MAXIMUM_DATE_OR_TIME" /> au mapema.</translation>
+<translation id="1993104285338243655">Inatumia hali ya kuakisi</translation>
 <translation id="2060505056492490888">' <ph name="DOT" /> 'imetumika kwenye nafasi isiyostahili katika '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2226276347425096477">Tafadhali fupisha maandishi haya hadi vibambo <ph name="MAX_CHARACTERS" /> au chini (kwa sasa unatumia vibambo <ph name="CURRENT_LENGTH" /> ).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">nukta</translation>
 <translation id="4151657705144244502">mchoro</translation>
 <translation id="4201051445878709314">Onyesha mwezi uliotangulia</translation>
+<translation id="4205604240201363801">Sasa iko katika hali ya picha ndani ya picha</translation>
 <translation id="421884353938374759">kiteua rangi</translation>
 <translation id="4248100235867064564">upau wa menyu</translation>
 <translation id="4254339807215791271">maelezo ya maudhui</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Futa</translation>
 <translation id="668171684555832681">Mengine...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709570249143506788">Ubora wa chini wa kucheza video</translation>
 <translation id="6755330956360078551">kidirisha cha vidokezo</translation>
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="6820355525329141109">Haikuweza kupakia programu-jalizi.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423">faili <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="8451268428117625855">Tafadhali chagua faili.</translation>
 <translation id="8461852803063341183">kitufe cha mviringo</translation>
-<translation id="8511325616783751178">kitufe kunjuzi</translation>
 <translation id="8534579021159131403">Dakika</translation>
 <translation id="8541249477527128034">udhibiti wa vyombo vya habari</translation>
 <translation id="8583702881314752957">orodha ya ufafanuzi</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">anza kucheza</translation>
 <translation id="8845239796550121995">Sasa inatuma kwenye TV yako</translation>
 <translation id="8851136666856101339">kuu</translation>
+<translation id="8875657656876809964">Hitilafu ya kucheza video</translation>
 <translation id="8901569739625249689">KB <ph name="QUANTITY" /></translation>
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="901493112792887934">muda wa sasa kwa sekunde</translation>

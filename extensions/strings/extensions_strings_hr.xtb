@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Proširenje se prečesto ponovno učitavalo.</translation>
 <translation id="7003844668372540529">Nepoznati proizvod <ph name="PRODUCT_ID" />, <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Datoteka manifesta nije važeća</translation>
 <translation id="7217838517480956708">Administrator ovog računala zahtijeva instalaciju proširenja <ph name="EXTENSION_NAME" />. Ona se ne može ukloniti ni izmijeniti.</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Prema korisniku</translation>
 <translation id="8047248493720652249">To proširenje nije uspjelo dodijeliti naziv preuzimanju "<ph name="ATTEMPTED_FILENAME" />" jer je drugo proširenje (<ph name="EXTENSION_NAME" />) odredilo drugačiji naziv datoteke "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> od dobavljača <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Ovo proširenje nije uspješno dodijelilo vjerodajnice za mrežni zahtjev jer je drugo proširenje (<ph name="EXTENSION_NAME" />) dodijelilo druge vjerodajnice.</translation>
+<translation id="8517576857589387417">Datoteka manifesta nedostaje ili nije čitljiva</translation>
 <translation id="8636666366616799973">Paket je nevažeći. Pojedinosti "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Ovo proširenje nije uspjelo preusmjeriti mrežni zahtjev na odredište <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> jer ga je drugo proširenje (<ph name="EXTENSION_NAME" />) preusmjerilo na odredište <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Otpakiravanje proširenja</translation>

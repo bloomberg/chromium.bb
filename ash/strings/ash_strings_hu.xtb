@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
 <translation id="2050339315714019657">Álló</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
-<translation id="207439088875642105">Ez a fiók gyerekeknek készült; <ph name="FIRST_PARENT_EMAIL" /> és <ph name="SECOND_PARENT_EMAIL" /> felügyelete mellett.</translation>
 <translation id="2122028596993374965">„<ph name="TAB_NAME" />” lap „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
 <translation id="2144487987174258011">Az Adobe Flash Player frissítéséhez újraindítás szükséges</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monó hang</translation>
 <translation id="3009178788565917040">Kimenet</translation>
 <translation id="3019353588588144572">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Ez a fiók gyerekeknek készült; <ph name="MANAGER_EMAIL" /> felügyelete mellett.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Alja</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Képernyőnagyító</translation>
 <translation id="3477079411857374384">Control+Shift+szóköz</translation>
 <translation id="3510164367642747937">Egérmutató kiemelése</translation>
+<translation id="3513798432020909783">A fiókot a(z) <ph name="MANAGER_EMAIL" /> kezeli</translation>
 <translation id="3573179567135747900">Visszatérés ehhez: "<ph name="FROM_LOCALE" />" (újraindítás szükséges)</translation>
 <translation id="3582792037806681688">A többfiókos bejelentkezés le van tiltva egy felhasználó miatt ebben a munkamenetben</translation>
 <translation id="3595596368722241419">Akkumulátor feltöltve</translation>
@@ -276,6 +275,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7829386189513694949">Erős jel</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7933084174919150729">A Google Segéd csak az elsődleges profilhoz áll rendelkezésre.</translation>
+<translation id="79341161159229895">A fiókot a(z) <ph name="FIRST_PARENT_EMAIL" /> és a(z) <ph name="SECOND_PARENT_EMAIL" /> kezeli</translation>
 <translation id="7977927628060636163">Mobilhálózatok keresése…</translation>
 <translation id="7982789257301363584">Hálózat</translation>
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
@@ -312,6 +312,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer megoszthatja az asztalok között.</translation>
 <translation id="8825534185036233643">A böngésző nem támogatja a tükrözést kettőnél több megjelenítő esetén.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Vissza gomb</translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>
 <translation id="8870509716567206129">Az alkalmazás nem támogatja az osztott képernyős nézetet.</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>

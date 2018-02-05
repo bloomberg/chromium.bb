@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> elements</translation>
 <translation id="1491277525950327607">Fes doble toc per canviar la configuració</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
+<translation id="1532451416480227577">Mostra les adreces i les targetes de crèdit de Google Pay</translation>
 <translation id="1540800554400757039">Adreça 1</translation>
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
 <translation id="1580783302095112590">Correu enviat.</translation>
@@ -96,6 +97,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2718352093833049315">Només amb Wi-Fi</translation>
 <translation id="2747003861858887689">Camp anterior</translation>
 <translation id="2780046210906776326">Cap compte de correu</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Surt del selector de pestanyes</translation>
 <translation id="283291358677939992">Cerca a la pàgina...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3175081911749765310">Serveis web</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
 <translation id="3210163015918861891">La sincronització està desactivada.</translation>
+<translation id="3224641773458703735">Per exportar les contrasenyes, primer has d'establir una contrasenya al dispositiu.</translation>
 <translation id="3240426699337459095">S'ha copiat l'enllaç.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
@@ -146,7 +149,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3603009562372709545">Copia l'URL de l'enllaç</translation>
 <translation id="3607167657931203000">Dades d'Emplenament automàtic</translation>
 <translation id="3628119975092896051">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" />.</translation>
-<translation id="3638472932233958418">Pujada prèvia de pàgines web</translation>
+<translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
 <translation id="3779810277399252432">No hi ha connexió a Internet.</translation>
@@ -218,7 +221,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
-<translation id="533632423981297619">Tothom que pugui veure el fitxer exportat podrà veure també les teves contrasenyes. No comparteixis aquest fitxer amb ningú.</translation>
 <translation id="5388358297987318779">Obre una imatge</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
 <translation id="5433691172869980887">S'ha copiat el nom d'usuari</translation>
@@ -306,6 +308,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="681368974849482173">S'ha creat un element.</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Activa la sincronització</translation>
+<translation id="6914783257214138813">Tothom que pugui veure el fitxer exportat podrà veure també les teves contrasenyes.</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6973630695168034713">Carpetes</translation>
 <translation id="7004499039102548441">Pestanyes recents</translation>

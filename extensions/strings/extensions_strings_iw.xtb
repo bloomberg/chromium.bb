@@ -53,12 +53,14 @@
 <translation id="677806580227005219">‏מטפל MIME:‏ <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">התוסף הזה טען את עצמו מחדש בתדירות גבוהה מדי.</translation>
 <translation id="7003844668372540529">מוצר לא ידוע <ph name="PRODUCT_ID" /> מאת <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">קובץ המניספט לא חוקי</translation>
 <translation id="7217838517480956708">מנהל המערכת של מחשב זה דורש התקנת <ph name="EXTENSION_NAME" />. לא ניתן להסיר או לשנות אותו.</translation>
 <translation id="7972881773422714442">אפשרויות: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">מצלמה קדמית</translation>
 <translation id="8047248493720652249">תוסף זה לא הצליח לתת שם לקובץ "<ph name="ATTEMPTED_FILENAME" />" שהורד, משום שתוסף אחר (<ph name="EXTENSION_NAME" />) קבע שם קובץ אחר - "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> מאת <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">תוסף זה נכשל באספקת אישורים לבקשת רשת מכיוון שתוסף אחר (<ph name="EXTENSION_NAME" />) סיפק אישורים אחרים.</translation>
+<translation id="8517576857589387417">אין קובץ מניפסט, או שהוא אינו קריא</translation>
 <translation id="8636666366616799973">החבילה לא חוקית. פרטים: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">תוסף זה נכשל בניתוב בקשת רשת אל <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> מכיוון שתוסף אחר (<ph name="EXTENSION_NAME" />) ניתב אותו אל <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">פורק התוספים</translation>

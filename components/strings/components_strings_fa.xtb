@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">پاک کردن فرم</translation>
 <translation id="2851634818064021665">برای بازدید کردن از این سایت، مجوز لازم دارید</translation>
 <translation id="2856444702002559011">شاید مهاجم‌ها در تلاش باشند اطلاعات شما (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) را از <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> سرقت کنند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">کارت ذخیره شود؟</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2916038427272391327">برنامه‌های دیگر را ببندید</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="8759274551635299824">کارت منقضی شده است</translation>
 <translation id="8761567432415473239">‏مرور ایمن Google اخیراً <ph name="BEGIN_LINK" />برنامه‌های خطرناک<ph name="END_LINK" /> را در <ph name="SITE" /> پیدا کرده است.</translation>
+<translation id="8763927697961133303">‏دستگاه USB</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
 <translation id="8800988563907321413">پیشنهادات اطراف شما در اینجا نشان داده می‌شوند</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;«<ph name="SOFTWARE_NAME" />» را حذف‌نصب یا غیرفعال کنید&lt;/li&gt;
     &lt;li&gt;به شبکه دیگری متصل شوید&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">‏از Google Pay</translation>
 </translationbundle>

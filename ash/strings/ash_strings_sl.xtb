@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">To napravo upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pokončno</translation>
 <translation id="2067602449040652523">Svetlost tipkovnice</translation>
-<translation id="207439088875642105">Top je račun za otroke, ki ga upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Ustavi predvajanje zavihka <ph name="TAB_NAME" /> v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
 <translation id="2144487987174258011">Če želite posodobiti Adobe Flash Player, znova zaženite</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Mono zvok</translation>
 <translation id="3009178788565917040">Izhod</translation>
 <translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">To je račun za otroke, ki ga upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Na dno</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3477079411857374384">Control + Shift + preslednica</translation>
 <translation id="3510164367642747937">Označitev miškinega kazalca</translation>
+<translation id="3513798432020909783">Račun upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
 <translation id="3582792037806681688">V tej seji uporabniku ni dovoljena uporaba prijave z več računi</translation>
 <translation id="3595596368722241419">Baterija je polna</translation>
@@ -276,6 +275,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7829386189513694949">Močan signal</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7933084174919150729">Pomočnik Google je na voljo samo za primarni profil.</translation>
+<translation id="79341161159229895">Račun upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Iskanje mobilnih omrežij ...</translation>
 <translation id="7982789257301363584">Omrežje</translation>
 <translation id="7994370417837006925">Prijava z več računi</translation>
@@ -312,6 +312,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</translation>
 <translation id="8825534185036233643">Zrcaljenje z več kot dvema zaslonoma ni podprto.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Gumb za nazaj</translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
 <translation id="8870509716567206129">Aplikacija ne podpira načina razdeljenega zaslona.</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>

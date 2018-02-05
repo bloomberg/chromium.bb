@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">O valor deve ser <ph name="MAXIMUM_DATE_OR_TIME" /> ou anterior.</translation>
+<translation id="1993104285338243655">Alterado para espelhamento</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" está sendo usado em uma posição incorreta em "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2226276347425096477">Reduza este texto para <ph name="MAX_CHARACTERS" /> caracteres ou menos (você está usando <ph name="CURRENT_LENGTH" /> caracteres).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milésimos de segundo</translation>
 <translation id="4151657705144244502">gráfico</translation>
 <translation id="4201051445878709314">Mostrar mês anterior</translation>
+<translation id="4205604240201363801">Agora no modo picture in picture</translation>
 <translation id="421884353938374759">Seletor de cores</translation>
 <translation id="4248100235867064564">barra de menu</translation>
 <translation id="4254339807215791271">informações sobre o conteúdo</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="668171684555832681">Outro...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709570249143506788">Baixa qualidade de reprodução</translation>
 <translation id="6755330956360078551">dica</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6820355525329141109">Não foi possível carregar o plug-in.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> arquivos</translation>
 <translation id="8451268428117625855">Selecione um arquivo.</translation>
 <translation id="8461852803063341183">botão de opção</translation>
-<translation id="8511325616783751178">botão suspenso</translation>
 <translation id="8534579021159131403">Minutos</translation>
 <translation id="8541249477527128034">controle de mídia</translation>
 <translation id="8583702881314752957">lista de definições</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">iniciar reprodução</translation>
 <translation id="8845239796550121995">Reproduzindo agora na sua TV</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8875657656876809964">Erro na reprodução do vídeo</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="901493112792887934">tempo atual em segundos</translation>

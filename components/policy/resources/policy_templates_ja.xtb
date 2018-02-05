@@ -26,6 +26,7 @@
 
       このポリシーが設定されている場合、ログイン画面は常にこのポリシーの最初の値で指定されている言語 / 地域で表示されます（このポリシーは今後の互換性を確保するためにリスト形式で定義します）。このポリシーが未設定か空のリストに設定されている場合、ログイン画面は前回のユーザー セッションで使用された言語 / 地域で表示されます。このポリシーが無効な言語 / 地域の値に設定されている場合、ログイン画面は代替の言語 / 地域（現在は「en-US」）で表示されます。</translation>
 <translation id="1062011392452772310">デバイスのリモート認証を有効にする</translation>
+<translation id="1062407476771304334">置換</translation>
 <translation id="1093082332347834239">この設定が有効になっている場合、リモート アシスタンス ホストは <ph name="UIACCESS_PERMISSION_NAME" /> 権限を持つプロセスで実行されます。リモート ユーザーはローカル ユーザーのデスクトップ上の権限昇格ウィンドウとやり取りできるようになります。
 
           この設定が無効な場合や設定されていない場合、リモート アシスタンス ホストはユーザーのコンテキストで実行され、リモート ユーザーはデスクトップ上の権限昇格ウィンドウとやり取りできません。</translation>
@@ -88,12 +89,6 @@
 <translation id="1363275621236827384">ハードウェア プロファイルを Quirks サーバーに問い合わせられるようにする</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
 <translation id="1397855852561539316">デフォルト検索プロバイダ サジェスト URL</translation>
-<translation id="1420281424655200442">ユーザーが <ph name="DEVICE_PRINTERS_POLICY" /> のどのプリンタを使用できるかを制御します。
-
-      このポリシーは、プリンタの一括設定で使用するアクセス ポリシーを指定するものです。<ph name="PRINTERS_ALLOW_ALL" /> が選択されている場合は、すべてのプリンタが表示されます。<ph name="PRINTERS_BLACKLIST" /> が選択されている場合は、<ph name="DEVICE_PRINTERS_BLACKLIST" /> に基づき、指定されたプリンタへのアクセスが制限されます。<ph name="PRINTERS_WHITELIST" /> が選択されている場合は、<ph name="DEVICE_PRINTERS_WHITELIST" /> で指定されたプリンタのみが選択可能になります。
-
-      このポリシーが未設定の場合は、<ph name="PRINTERS_BLACKLIST" /> が選択された場合と同じ動作になります。
-      </translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1427655258943162134">プロキシ サーバーのアドレスまたは URL</translation>
 <translation id="1435659902881071157">デバイス レベルのネットワーク設定</translation>
@@ -277,12 +272,6 @@
 <translation id="2030905906517501646">デフォルトの検索プロバイダのキーワード</translation>
 <translation id="203096360153626918">このポリシーは Android アプリには適用されません。このポリシーを <ph name="FALSE" /> に設定した場合でも、Android アプリの全画面表示は可能です。</translation>
 <translation id="2043770014371753404">無効な企業プリンタ</translation>
-<translation id="2063380907529983889">ユーザーが <ph name="BULK_PRINTERS_POLICY" /> のどのプリンタを使用できるかを制御します。
-
-      このポリシーは、プリンタの一括設定で使用するアクセス ポリシーを指定するものです。<ph name="PRINTERS_ALLOW_ALL" /> が選択されている場合は、すべてのプリンタが表示されます。<ph name="PRINTERS_BLACKLIST" /> が選択されている場合は、<ph name="BULK_PRINTERS_BLACKLIST" /> に基づき、指定されたプリンタへのアクセスが制限されます。<ph name="PRINTERS_WHITELIST" /> が選択されている場合は、<ph name="BULK_PRINTERS_WHITELIST" /> で指定されたプリンタのみが選択可能になります。
-
-      このポリシーが未設定の場合は、<ph name="PRINTERS_BLACKLIST" /> が選択された場合と同じ動作になります。
-      </translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" /> でサポートされる HTTP 認証スキームを指定します。
 
           有効な値は「basic」、「digest」、「ntlm」、「negotiate」です。値を複数指定する場合はカンマで区切ります。
@@ -454,6 +443,9 @@
 <translation id="2466131534462628618">キャプティブ ポータル認証でプロキシを無視する</translation>
 <translation id="2482676533225429905">ネイティブ メッセージング</translation>
 <translation id="2483146640187052324">ネットワーク接続でネットワーク動作を予測する</translation>
+<translation id="2485721741875148980">このポリシーが true に設定されている場合、ユーザーがブラウザを使用するには自分のプロフィールで <ph name="PRODUCT_NAME" /> にログインする必要があります。また、BrowserGuestModeEnabled の既定値は false に設定されます。このポリシーを有効にした後は、ログインしていない既存のプロフィールはロックされてアクセスできなくなります。詳しくは、ヘルプセンターの記事をご覧ください。
+
+      このポリシーが false に設定されているか未設定のままの場合、ユーザーは <ph name="PRODUCT_NAME" /> にログインしなくてもブラウザを使用できます。</translation>
 <translation id="2486371469462493753">指定された URL に対し、証明書の透明性の要件を無効にします。
 
       このポリシーを使用すると、指定した URL のホスト名に対し、証明書の透明性ポリシーを介して公開されていない証明書の使用を許可することができます。この場合、適切に公開されていないために信頼できない可能性のある証明書でも、引き続き使用が可能になります。ただし、これらのホストに対して間違って発行された証明書は検出が難しくなります。
@@ -751,6 +743,7 @@
 <translation id="3528000905991875314">別のエラー ページを有効にする</translation>
 <translation id="3547954654003013442">プロキシ設定</translation>
 <translation id="3577251398714997599">煩わしい広告を含むサイトでの広告表示に関する設定</translation>
+<translation id="3587482841069643663">すべて</translation>
 <translation id="3591584750136265240">ログイン認証の動作を設定する</translation>
 <translation id="3627678165642179114">スペルチェック ウェブ サービスを有効または無効にする</translation>
 <translation id="3646859102161347133">画面拡大鏡のタイプを設定する</translation>
@@ -1183,6 +1176,7 @@
 <translation id="489803897780524242">デフォルトの検索プロバイダに対する検索キーワードの置き換えを指定するパラメータ</translation>
 <translation id="4899708173828500852">セーフ ブラウジングを有効にする</translation>
 <translation id="4906194810004762807">端末ポリシーの更新間隔</translation>
+<translation id="4917385247580444890">強い</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">このポリシーが true に設定されているか未設定の場合は、<ph name="PRODUCT_NAME" /> のユーザー管理画面で [ユーザーを追加] を使用することができます。
 
@@ -1563,13 +1557,6 @@
 <translation id="6157537876488211233">プロキシ バイパス ルールのカンマ区切りリスト</translation>
 <translation id="6158324314836466367">エンタープライズ ウェブストア名（サポート終了）</translation>
 <translation id="6161405879872578475"><ph name="PRODUCT_NAME" /> を有効にする</translation>
-<translation id="6167074305866468481">警告: <ph name="PRODUCT_NAME" /> のバージョン 43（2015 年 7 月またはその前後より利用可能）では、SSLv3 がサポート対象から外され、同時にこのポリシーも削除されます。
-
-このポリシーが設定されていない場合、<ph name="PRODUCT_NAME" /> では既定の最小バージョン（<ph name="PRODUCT_NAME" /> 39 では SSLv3、それ以降のバージョンでは TLS 1.0）が使用されます。
-
-それ以外で「sslv3」、「tls1」、「tls1.1」、「tls1.2」のいずれかの値が設定されている場合、<ph name="PRODUCT_NAME" /> では指定のバージョンより小さい SSL / TLS のバージョンは使用されません。認識されなかった値は無視されます。
-
-なお「sslv3」は「tls1」よりも前のバージョンです。</translation>
 <translation id="6181608880636987460"><ph name="FLASH_PLUGIN_NAME" /> プラグインの実行を許可しないサイトを表す URL パターンのリストを設定します。
 
           このポリシーが未設定の場合は、すべてのサイトでグローバルなデフォルト値（「DefaultPluginsSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。</translation>
@@ -1957,6 +1944,7 @@
 <translation id="7625444193696794922">この端末を固定するリリース チャンネルを指定します。</translation>
 <translation id="7632724434767231364">GSSAPI ライブラリ名</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" /> のアプリケーションの言語/地域を設定し、ユーザーが言語/地域を変更できないようにします。この設定を有効にすると、<ph name="PRODUCT_NAME" /> では指定された言語/地域が使用されます。設定した言語/地域がサポートされない場合、「en-US」が使用されます。この設定を無効にするか設定しないと、<ph name="PRODUCT_NAME" /> ではユーザー指定の適切な言語/地域（設定されている場合）、システムの言語/地域、代替の言語/地域「en-US」のいずれかが使用されます。</translation>
+<translation id="7643883929273267746"><ph name="PRODUCT_NAME" /> に表示されるアカウントを制限する</translation>
 <translation id="7651739109954974365">データ ローミングを端末に対して有効にするかどうかを指定します。true に設定した場合、データ ローミングが許可されます。未設定または false に設定した場合、データ ローミングは利用できません。</translation>
 <translation id="7683777542468165012">動的なポリシーの更新</translation>
 <translation id="7694807474048279351"><ph name="PRODUCT_OS_NAME" /> のアップデート適用後に自動的に再起動するように設定します。
@@ -2069,7 +2057,6 @@
 <translation id="7937766917976512374">動画キャプチャを許可または拒否する</translation>
 <translation id="7941975817681987555">ネットワーク接続でネットワーク動作を予測しない</translation>
 <translation id="7953256619080733119">管理対象ユーザーの手動による例外管理 - ホスト</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">このポリシーは現在サポートされていません。リモート クライアントに接続するときの STUN とリレー サーバーの使用を有効にします。この設定が有効になっている場合は、間にファイアウォールがあるかどうかにかかわらず、このコンピュータがリモート ホスト コンピュータを検出して接続することができます。この設定が無効であり、かつ発信 UDP 接続がファイアウォールによってフィルタリングされている場合は、このコンピュータから接続できるのはローカル ネットワーク内のホスト コンピュータのみとなります。</translation>
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> のレシーバー名</translation>
 <translation id="7980227303582973781">特別な制限なし</translation>
@@ -2276,6 +2263,7 @@
           このポリシーが未設定の場合は、デフォルトの倍率が使用されます。
 
           倍率は 100% 以上でなければなりません。プレゼンテーション モードでの画面を暗くするまでの時間を標準値よりも短くするように値を設定することはできません。</translation>
+<translation id="8798099450830957504">既定</translation>
 <translation id="8818173863808665831">端末の地理的位置をレポートします。
 
       このポリシーを設定していない場合、あるいは false に設定している場合、位置はレポートされません。</translation>

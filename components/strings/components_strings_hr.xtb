@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Obriši obrazac</translation>
 <translation id="2851634818064021665">Potrebno ti je dopuštenje za posjet toj web-lokaciji</translation>
 <translation id="2856444702002559011">Napadači možda pokušavaju ukrasti vaše podatke s web-lokacije <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na primjer zaporke, poruke ili brojeve kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Želite li spremiti karticu?</translation>
 <translation id="2909946352844186028">Otkrivena je promjena mreže.</translation>
 <translation id="2916038427272391327">Zatvorite ostale programe</translation>
 <translation id="2922350208395188000">Certifikat poslužitelja nije moguće provjeriti.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Prihvaćene kreditne i pretplatne kartice</translation>
 <translation id="8759274551635299824">Ta je kartica istekla</translation>
 <translation id="8761567432415473239">Googleovo Sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />pronašlo štetne programe<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">USB uređaj</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
 <translation id="8800988563907321413">Ovdje se prikazuju prijedlozi u blizini za vas</translation>
 <translation id="8820817407110198400">Knjižne oznake</translation>
@@ -1074,4 +1076,5 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
     &lt;li&gt;Pokušajte deinstalirati ili onemogućiti softver "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Pokušajte se povezati s drugom mrežom&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">S Google Paya</translation>
 </translationbundle>

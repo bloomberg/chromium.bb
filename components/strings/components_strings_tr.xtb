@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Formu temizle</translation>
 <translation id="2851634818064021665">Bu siteyi ziyaret etmek için izninizin olması gerekir</translation>
 <translation id="2856444702002559011">Saldırganlar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> üzerinden bilgilerinizi çalmaya çalışıyor olabilir (örneğin, şifreler, mesajlar veya kredi kartları). <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Kart kaydedilsin mi?</translation>
 <translation id="2909946352844186028">Bir ağ değişikliği algılandı.</translation>
 <translation id="2916038427272391327">Diğer programları kapatın</translation>
 <translation id="2922350208395188000">Sunucunun sertifikası kontrol edilemiyor.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">Kabul Edilen Kredi Kartları ve Ön Ödemeli Kartlar</translation>
 <translation id="8759274551635299824">Bu kartın kullanım süresi doldu</translation>
 <translation id="8761567432415473239">Google Güvenli Tarama, yakın zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />zararlı programlar buldu<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">USB cihaz</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
 <translation id="8800988563907321413">Yakın çevrenizle ilgili öneriler burada görünür</translation>
 <translation id="8820817407110198400">Favoriler</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" yazılımının yüklemesini kaldırmayı veya devre dışı bırakmayı deneyin&lt;/li&gt;
     &lt;li&gt;Başka bir kablosuz ağa bağlanmayı deneyin&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Google Pay'den</translation>
 </translationbundle>

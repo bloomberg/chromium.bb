@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Controlador MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Esta extensão foi recarregada demasiado frequentemente.</translation>
 <translation id="7003844668372540529">Produto desconhecido <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">O ficheiro de manifesto é inválido.</translation>
 <translation id="7217838517480956708">O gestor desta máquina exige que o <ph name="EXTENSION_NAME" /> seja instalado. Este não pode ser removido ou modificado.</translation>
 <translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Virada para o utilizador</translation>
 <translation id="8047248493720652249">Esta extensão não conseguiu atribuir o nome "<ph name="ATTEMPTED_FILENAME" />" à transferência, porque outra extensão (<ph name="EXTENSION_NAME" />) determinou um nome de ficheiro diferente: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Falha desta extensão ao fornecer credenciais a um pedido de rede, porque outra extensão (<ph name="EXTENSION_NAME" />) forneceu credenciais diferentes.</translation>
+<translation id="8517576857589387417">O ficheiro de manifesto está em falta ou é ilegível.</translation>
 <translation id="8636666366616799973">O pacote é inválido. Detalhes: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Falha desta extensão ao redirecionar um pedido de rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, porque outra extensão (<ph name="EXTENSION_NAME" />) o redirecionou para <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Descompactador de extensões</translation>

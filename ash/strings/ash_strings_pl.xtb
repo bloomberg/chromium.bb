@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
-<translation id="207439088875642105">To jest konto dla dzieci, którym zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Zakończ przesyłanie karty <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="2144487987174258011">Uruchom ponownie, by zaktualizować Adobe Flash Playera</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Dźwięk mono</translation>
 <translation id="3009178788565917040">Urządzenie wyjściowe</translation>
 <translation id="3019353588588144572">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">To jest konto dla dzieci, którym zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3477079411857374384">Control+Shift+spacja</translation>
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
+<translation id="3513798432020909783">Kontem zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
 <translation id="3582792037806681688">Wielokrotne logowanie użytkownika w tej sesji zostało zabronione</translation>
 <translation id="3595596368722241419">Bateria naładowana</translation>
@@ -276,6 +275,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7829386189513694949">silny sygnał</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="7933084174919150729">Asystent Google jest dostępny tylko na profilu głównym.</translation>
+<translation id="79341161159229895">Kontem zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Szukam sieci komórkowych…</translation>
 <translation id="7982789257301363584">Sieć</translation>
 <translation id="7994370417837006925">Wielokrotne logowanie</translation>
@@ -312,6 +312,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpitami.</translation>
 <translation id="8825534185036233643">Odbicie lustrzane na więcej niż dwóch wyświetlaczach nie jest obsługiwane.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Przycisk Wstecz</translation>
 <translation id="8850991929411075241">Szukaj+Esc</translation>
 <translation id="8870509716567206129">Aplikacja nie obsługuje dzielonego ekranu.</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>

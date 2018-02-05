@@ -26,6 +26,7 @@
 
       Jos tälle käytännölle on määritetty arvo, kirjautumisnäytön kieli- ja maa-asetus vastaa aina käytännön ensimmäistä arvoa (käytäntö on muodoltaan lista tulevaisuuden vaatimusten huomioon ottamiseksi). Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä lista, kirjautumisnäyttö näytetään edellisen käyttökerran kielellä. Jos käytännön arvo ei kelpaa, kirjautumisnäytöllä käytetään kieli- ja maa-asetuksen vara-arvoa (tällä hetkellä en-US).</translation>
 <translation id="1062011392452772310">Salli etätodennus laitteelle</translation>
+<translation id="1062407476771304334">Korvaa</translation>
 <translation id="1093082332347834239">Jos tämä asetus on käytössä, etätuen isäntä suoritetaan prosessissa, jonka käyttöoikeuksiin sisältyy <ph name="UIACCESS_PERMISSION_NAME" />. Tällöin etäkäyttäjä voi käyttää paikallisen käyttäjän työpöydällä olevia ikkunoita, jotka edellyttävät järjestelmänvalvojan käyttöoikeuksia.
 
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, etätuen isäntä suoritetaan käyttäjän kontekstissa, jolloin etäkäyttäjä ei voi käyttää työpöydällä olevia järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
 <translation id="1397855852561539316">Oletushakupalvelun ehdottama URL-osoite</translation>
-<translation id="1420281424655200442">Hallinnoi, mitkä tulostimet <ph name="DEVICE_PRINTERS_POLICY" />-määrityksestä ovat käyttäjien käytettävissä.
-
-      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen. Jos <ph name="PRINTERS_ALLOW_ALL" /> on valittu, kaikki tulostimet näytetään. Jos <ph name="PRINTERS_BLACKLIST" /> on valittu, <ph name="DEVICE_PRINTERS_BLACKLIST" />-arvoa käytetään määritettyjen tulostimien käytön rajoittamiseen. Jos <ph name="PRINTERS_WHITELIST" /> on valittu, <ph name="DEVICE_PRINTERS_WHITELIST" /> määrittää valittavissa olevat tulostimet.
-
-      Jos käytäntöä ei ole määritetty, oletuksena käytetään <ph name="PRINTERS_BLACKLIST" />-arvoa.
-      </translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
 <translation id="1435659902881071157">Laitetason verkon määritys</translation>
@@ -276,12 +271,6 @@
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Käytöstä poistetut yritystulostimet</translation>
-<translation id="2063380907529983889">Hallinnoi, mitkä tulostimet <ph name="BULK_PRINTERS_POLICY" />-määrityksestä ovat käyttäjien käytettävissä.
-
-      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen. Jos <ph name="PRINTERS_ALLOW_ALL" /> on valittu, kaikki tulostimet näytetään. Jos <ph name="PRINTERS_BLACKLIST" /> on valittu, <ph name="BULK_PRINTERS_BLACKLIST" />-arvoa käytetään määritettyjen tulostimien käytön rajoittamiseen. Jos <ph name="PRINTERS_WHITELIST" /> on valittu, <ph name="BULK_PRINTERS_WHITELIST" /> määrittää valittavissa olevat tulostimet.
-
-      Jos käytäntöä ei ole määritetty, oletuksena käytetään <ph name="PRINTERS_BLACKLIST" />-arvoa.
-      </translation>
 <translation id="206623763829450685">Määrittää, mitä HTTP-todennustapoja <ph name="PRODUCT_NAME" /> tukee.
  
           Mahdollisia arvoja ovat basic, digest, ntlm ja negotiate. Erota arvot toisistaan pilkuilla.
@@ -459,6 +448,9 @@
 <translation id="2466131534462628618">Captive portal -todennus ohittaa välityspalvelimen</translation>
 <translation id="2482676533225429905">Laitteen oma viestijärjestelmä</translation>
 <translation id="2483146640187052324">Ennakoi verkon toimia millä tahansa verkkoyhteydellä</translation>
+<translation id="2485721741875148980">Jos tämän käytännön arvoksi on määritetty tosi, käyttäjän on kirjauduttava kohteeseen <ph name="PRODUCT_NAME" /> omalla profiilillaan ennen selaimen käyttämistä ja BrowserGuestModeEnabled-arvon oletukseksi määritetään epätosi. Aiemmin luodut profiilit, joihin ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on päällä. Lue lisää ohjekeskuksen artikkelista.
+
+      Jos tämän käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, selainta voi käyttää ilman <ph name="PRODUCT_NAME" /> ‑kirjautumista.</translation>
 <translation id="2486371469462493753">Poistaa Certificate Transparency ‑noudattamisvaatimukset luettelon URL-osoitteilta.
 
       Tähän käytäntöön listattujen URL-osoitteiden isäntänimien ei tarvitse luovuttaa tietoja Certificate Transparency ‑menettelyllä. Tämän seurauksena myös sellaisia varmenteita, jotka estettäisiin puutteellisten tietojen vuoksi, voidaan jatkossa käyttää. Samalla näiden isäntänimien vilpillisesti myönnettyjen varmenteiden tunnistaminen vaikeutuu.
@@ -756,6 +748,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3528000905991875314">Ota vaihtoehtoiset virhesivut käyttöön</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3577251398714997599">Häiritseviä mainoksia sisältävien sivustojen mainosasetukset</translation>
+<translation id="3587482841069643663">Kaikki</translation>
 <translation id="3591584750136265240">Määritä kirjautumistodennuksen käytös.</translation>
 <translation id="3627678165642179114">Ota käyttöön tai poista käytöstä oikoluku-verkkopalvelu</translation>
 <translation id="3646859102161347133">Aseta näytön suurentajan tyyppi</translation>
@@ -1189,6 +1182,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="489803897780524242">Parametri, joka hallitsee oletushakupalvelun hakutermien sijoittelua</translation>
 <translation id="4899708173828500852">Ota selaussuoja käyttöön</translation>
 <translation id="4906194810004762807">Laitekäytännön päivitystiheys</translation>
+<translation id="4917385247580444890">Vahva</translation>
 <translation id="494613465159630803">Cast-vastaanotin</translation>
 <translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
 
@@ -1566,13 +1560,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
 <translation id="6161405879872578475">Ota <ph name="PRODUCT_NAME" /> käyttöön</translation>
-<translation id="6167074305866468481">Varoitus: <ph name="PRODUCT_NAME" /> ei tue SSLv3:a versiosta 43 (noin heinäkuusta 2015) lähtien, ja samassa yhteydessä myös tämä käytäntö poistetaan.
-
-      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vähintään SSLv3:a versiossa <ph name="PRODUCT_NAME" /> 39 ja TLS 1.0:aa uudemmissa versioissa.
-
-      Käytännölle voidaan asettaa seuraavat arvot: sslv3, tls1, tls1.1 tai tls1.2. Kun arvo on asetettu, <ph name="PRODUCT_NAME" /> ei käytä asetettua arvoa pienempiä SSL/TLS-versioita. Tunnistamattomat arvot ohitetaan.
-
-      Huom. Nimestään huolimatta sslv3 on vanhempi versio kuin tls1.</translation>
 <translation id="6181608880636987460">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot eivät saa suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennusta.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>
@@ -1958,6 +1945,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>
+<translation id="7643883929273267746">Rajoita tilejä, jotka <ph name="PRODUCT_NAME" /> näyttää</translation>
 <translation id="7651739109954974365">Määrittää, onko mobiilitiedonsiirto roaming-tilassa käytössä laitteessa. Jos arvo on tosi, mobiilitiedonsiirto roaming-tilassa on sallittu. Jos arvoa ei määritetä tai määritetty arvo on epätosi, mobiilitiedonsiirto roaming-tilassa ei ole käytettävissä.</translation>
 <translation id="7683777542468165012">Dynaaminen käytännön päivitys</translation>
 <translation id="7694807474048279351">Ajoita automaattinen uudelleenkäynnistys, kun tuotteen <ph name="PRODUCT_OS_NAME" /> päivitys on otettu käyttöön.
@@ -2070,7 +2058,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> ‑kohteen nimi</translation>
 <translation id="7980227303582973781">Ei erikoisrajoituksia</translation>
@@ -2277,6 +2264,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
           Jos tätä käytäntöä ei ole määritetty, oletusskaalauskerrointa käytetään.
 
           Skaalauskertoimen on oltava vähintään 100 %. Sellaiset arvot eivät ole sallittuja, jotka tekisivät näytön himmennyksen viiveestä esitystilassa lyhyemmän kuin normaalitilassa.</translation>
+<translation id="8798099450830957504">Oletus</translation>
 <translation id="8818173863808665831">Ilmoita laitteen maantieteellinen sijainti.
 
       Jos käytäntöä ei ole määritetty, sijaintia ei ilmoiteta.</translation>

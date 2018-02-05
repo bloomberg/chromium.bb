@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">pp</translation>
 <translation id="1930711995431081526">olek</translation>
 <translation id="1938124657309484470">Väärtus peab olema <ph name="MAXIMUM_DATE_OR_TIME" /> või varasem.</translation>
+<translation id="1993104285338243655">Lülitatud peegeldamisele</translation>
 <translation id="2060505056492490888">Tähist „<ph name="DOT" />” on aadressis „<ph name="INVALIDDOMAIN" />” valesti kasutatud.</translation>
 <translation id="2148716181193084225">Täna</translation>
 <translation id="2226276347425096477">Lühendage seda teksti <ph name="MAX_CHARACTERS" /> tähemärgini või rohkem (praegu kasutate <ph name="CURRENT_LENGTH" /> tähemärki).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Millisekundid</translation>
 <translation id="4151657705144244502">graafika</translation>
 <translation id="4201051445878709314">Eelmise kuu kuvamine</translation>
+<translation id="4205604240201363801">Nüüd režiimis Pilt pildis</translation>
 <translation id="421884353938374759">värvivalija</translation>
 <translation id="4248100235867064564">menüüriba</translation>
 <translation id="4254339807215791271">sisu teave</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="668171684555832681">Muu...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709570249143506788">Kehv esituskvaliteet</translation>
 <translation id="6755330956360078551">tööriistavihje</translation>
 <translation id="6790428901817661496">Esita</translation>
 <translation id="6820355525329141109">Pistikprogrammi ei saanud laadida.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> faili</translation>
 <translation id="8451268428117625855">Valige üks fail.</translation>
 <translation id="8461852803063341183">raadionupp</translation>
-<translation id="8511325616783751178">rippmenüü nupp</translation>
 <translation id="8534579021159131403">Minutid</translation>
 <translation id="8541249477527128034">meedia juhtimine</translation>
 <translation id="8583702881314752957">definitsioonide loend</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">taasesituse alustamine</translation>
 <translation id="8845239796550121995">Kantakse nüüd üle telerisse</translation>
 <translation id="8851136666856101339">pea</translation>
+<translation id="8875657656876809964">Video taasesituse viga</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">kuu</translation>
 <translation id="901493112792887934">praegune aeg sekundites</translation>

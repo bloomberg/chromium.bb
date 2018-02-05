@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para ativar ou desativar a definição</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
+<translation id="1532451416480227577">Mostrar endereços e cartões de crédito do Google Pay</translation>
 <translation id="1540800554400757039">Morada 1</translation>
 <translation id="1545749641540134597">Ler código QR</translation>
 <translation id="1580783302095112590">Correio enviado.</translation>
@@ -96,6 +97,7 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="2718352093833049315">Apenas em Wi-Fi</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
 <translation id="2780046210906776326">Sem Contas de Email</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sair do Comutador de separadores</translation>
 <translation id="283291358677939992">Localizar na Página...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="3175081911749765310">Serviços Web</translation>
 <translation id="3207960819495026254">Adicionado aos marcadores</translation>
 <translation id="3210163015918861891">A sincronização está desativada</translation>
+<translation id="3224641773458703735">Para exportar palavras-passe, tem de definir primeiro um código secreto no dispositivo.</translation>
 <translation id="3240426699337459095">Link copiado</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="533632423981297619">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado. Não partilhe este ficheiro com ninguém.</translation>
 <translation id="5388358297987318779">Abrir Imagem</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
@@ -306,6 +308,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
+<translation id="6914783257214138813">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="7004499039102548441">Separadores recentes</translation>

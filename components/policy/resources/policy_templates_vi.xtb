@@ -26,6 +26,7 @@
 
       Nếu chính sách này được đặt, màn hình đăng nhập sẽ luôn được hiển thị bằng ngôn ngữ được cung cấp theo giá trị đầu tiên của chính sách (chính sách được định nghĩa là danh sách về khả năng tương thích chuyển tiếp).  Nếu chính sách này chưa được đặt hoặc được đặt thành danh sách trống, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ của phiên người dùng cuối cùng.  Nếu chính sách này được đặt thành giá trị không phải là ngôn ngữ hợp lệ, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ dự phòng (hiện tại là en-US).</translation>
 <translation id="1062011392452772310">Cho phép chứng thực từ xa cho thiết bị</translation>
+<translation id="1062407476771304334">Thay thế</translation>
 <translation id="1093082332347834239">Nếu cài đặt này được bật, máy chủ hỗ trợ từ xa sẽ chạy theo quy trình với các quyền <ph name="UIACCESS_PERMISSION_NAME" />. Điều này sẽ cho phép người dùng ở xa tương tác với cửa sổ bật lên trên màn hình của người dùng cục bộ.
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, máy chủ hỗ trợ từ xa sẽ chạy trên ngữ cảnh của người dùng và người dùng ở xa không thể tương tác với cửa sổ bật lên trên màn hình.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Bật truy vấn cấu hình Máy chủ Quirks cho phần cứng</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
-<translation id="1420281424655200442">Kiểm soát máy in nào từ <ph name="DEVICE_PRINTERS_POLICY" /> được cung cấp cho người dùng.
-
-      Chỉ định chính sách truy cập nào được sử dụng cho cấu hình máy in số lượng lớn. Nếu chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ được sử dụng để hạn chế truy cập vào các máy in đã chỉ định. Nếu chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.
-
-      Nếu không đặt chính sách này, thì <ph name="PRINTERS_BLACKLIST" /> sẽ được sử dụng làm mặc định.
-      </translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
@@ -278,12 +273,6 @@
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="203096360153626918">Chính sách này không ảnh hưởng đến các ứng dụng Android. Các ứng dụng đó sẽ có thể vào chế độ toàn màn hình ngay cả khi chính sách này được đặt thành <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Đã tắt máy in dành cho doanh nghiệp</translation>
-<translation id="2063380907529983889">Kiểm soát máy in nào từ <ph name="BULK_PRINTERS_POLICY" /> được cung cấp cho người dùng.
-
-      Chỉ định chính sách truy cập nào được sử dụng cho cấu hình máy in số lượng lớn. Nếu chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="BULK_PRINTERS_BLACKLIST" /> sẽ được sử dụng để hạn chế truy cập vào những máy in đã chỉ định. Nếu chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="BULK_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.
-
-      Nếu không đặt chính sách này, thì <ph name="PRINTERS_BLACKLIST" /> sẽ được sử dụng làm mặc định.
-      </translation>
 <translation id="206623763829450685">Chỉ định các cơ chế xác thực HTTP mà <ph name="PRODUCT_NAME" /> hỗ trợ.
 
           Các giá trị có thể có là 'basic', 'digest', 'ntlm' và 'negotiate'. Phân tách nhiều giá trị bằng dấu phẩy.
@@ -473,6 +462,9 @@
 <translation id="2466131534462628618">Xác thực cổng cố định bỏ qua proxy</translation>
 <translation id="2482676533225429905">Nhắn tin gốc</translation>
 <translation id="2483146640187052324">Dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
+<translation id="2485721741875148980">Nếu bạn đặt chính sách này là true, người dùng sẽ phải đăng nhập vào <ph name="PRODUCT_NAME" /> bằng hồ sơ của mình trước khi sử dụng trình duyệt. Giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt là false. Hãy lưu ý rằng sau khi bật chính sách này, các hồ sơ chưa ký hiện tại sẽ bị khóa và bạn không thể truy cập vào các hồ sơ đó. Để biết thêm thông tin, hãy xem bài viết trên trung tâm trợ giúp.
+
+      Nếu bạn đặt chính sách này là false hoặc chưa đặt chính sách thì người dùng có thể sử dụng trình duyệt mà không cần đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Tắt buộc thực thi yêu cầu Tính minh bạch của chứng chỉ cho các URL được liệt kê.
 
       Chính sách này cho phép chứng chỉ cho tên máy chủ trong URL được chỉ định không bị tiết lộ qua Tính minh bạch của chứng chỉ. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng. Tuy nhiên, điều này cũng khiến việc phát hiện các chứng chỉ bị sử dụng sai cho các máy chủ này trở nên khó khăn hơn.
@@ -786,6 +778,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web chứa quảng cáo xâm nhập</translation>
+<translation id="3587482841069643663">Tất cả</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3646859102161347133">Đặt loại kính lúp màn hình</translation>
@@ -1230,6 +1223,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="489803897780524242">Tham số kiểm soát vị trí cụm từ tìm kiếm cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4899708173828500852">Bật Duyệt web an toàn</translation>
 <translation id="4906194810004762807">Chính sách tốc độ làm mới cho thiết bị</translation>
+<translation id="4917385247580444890">Mạnh</translation>
 <translation id="494613465159630803">Bộ thu Google Cast</translation>
 <translation id="4962262530309732070">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ cho phép Thêm người từ trình quản lý người dùng.
 
@@ -1645,13 +1639,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6157537876488211233">Danh sách quy tắc bỏ qua proxy được phân cách bằng dấu phẩy</translation>
 <translation id="6158324314836466367">Tên cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
 <translation id="6161405879872578475">Bật <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Cảnh báo: Hỗ trợ SSLv3 sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 43 (khoảng tháng 7 năm 2015), đồng thời chính sách này cũng sẽ bị xóa.
-
-      Nếu chính sách này không được định cấu hình thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là SSLv3 trong <ph name="PRODUCT_NAME" /> 39 và TLS 1.0 trong các phiên bản mới hơn.
-
-      Ngoài ra, chính sách này có thể được đặt thành một trong các giá trị sau: "sslv3", "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS nhỏ hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.
-
-      Lưu ý rằng, dù số lớn hơn nhưng "sslv3" là phiên bản cũ hơn "tls1".</translation>
 <translation id="6181608880636987460">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web không được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
@@ -2060,6 +2047,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7625444193696794922">Chỉ định kênh phát hành mà thiết bị này phải bị khóa.</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
+<translation id="7643883929273267746">Hạn chế các tài khoản được hiển thị trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Xác định liệu chuyển vùng dữ liệu có được bật cho thiết bị hay không. Nếu được đặt thành đúng, chuyển vùng dữ liệu sẽ được phép. Nếu không được định cấu hình hoặc được đặt thành sai, chuyển vùng dữ liệu sẽ không khả dụng.</translation>
 <translation id="7683777542468165012">Làm mới chính sách động</translation>
 <translation id="7694807474048279351">Lên lịch tự động khởi động lại sau khi áp dụng cập nhật <ph name="PRODUCT_OS_NAME" />.
@@ -2171,7 +2159,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="7953256619080733119">Lưu trữ ngoại lệ hướng dẫn người dùng được quản lý</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Chính sách này không còn được hỗ trợ.
           Cho phép sử dụng STUN và máy chủ chuyển tiếp khi kết nối với máy khách từ xa.
 
@@ -2406,6 +2393,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu không đặt chính sách này, hệ số tỷ lệ mặc định được sử dụng.
 
           Hệ số tỷ lệ phải từ 100% trở lên. Không cho phép các giá trị làm cho độ trễ mờ màn hình trong chế độ bản trình bày ngắn hơn độ trễ mờ màn hình thông thường.</translation>
+<translation id="8798099450830957504">Mặc định</translation>
 <translation id="8818173863808665831">Báo cáo vị trí địa lý của thiết bị.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>

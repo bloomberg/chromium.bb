@@ -26,6 +26,7 @@
 
       如果設定這項政策，系統將一律以這項政策第一個值指定的語言代碼顯示登入畫面 (為了日後的相容性，系統會將政策定義為清單)。  如果未設定這項政策，或將政策設定為空白清單，系統將以上一個使用者工作階段的語言代碼顯示登入畫面。  如果這項政策設定的值不是有效的語言代碼，系統則將以備用語言代碼 (目前為 en-US) 顯示登入畫面。</translation>
 <translation id="1062011392452772310">為裝置啟用遠端認證機制</translation>
+<translation id="1062407476771304334">取代</translation>
 <translation id="1093082332347834239">如果啟用這項設定，選端協助主機會在具備 <ph name="UIACCESS_PERMISSION_NAME" /> 的處理程序中執行，讓遠端使用者在本機使用者桌面上操控權限較高的視窗。
 
           如果停用或未指定這項設定，遠端協助主機則會在使用者的作業環境中執行，遠端使用者將無法在桌面上操控權限較高的視窗。</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">允許在 Quirks Server 中查詢硬體設定檔</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
-<translation id="1420281424655200442">根據 <ph name="DEVICE_PRINTERS_POLICY" /> 設定哪些印表機是可供使用的。
-
-      指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="DEVICE_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
-
-      如果沒有設定這項政策，系統會自動採用 <ph name="PRINTERS_BLACKLIST" />。
-      </translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
@@ -276,12 +271,6 @@
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
 <translation id="2043770014371753404">停用的企業印表機</translation>
-<translation id="2063380907529983889">根據 <ph name="BULK_PRINTERS_POLICY" /> 設定哪些印表機是可供使用的。
-
-      指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="BULK_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="BULK_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
-
-      如果沒有設定這項政策，系統會自動採用 <ph name="PRINTERS_BLACKLIST" />。
-      </translation>
 <translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支援的 HTTP 驗證機制。
 
           可用的值為「basic」、「digest」、「ntlm」和「negotiate」。如果指定多個值，請以半形逗號分隔。
@@ -459,6 +448,9 @@
 <translation id="2466131534462628618">要求網頁認證入口的驗證機制忽略 Proxy 設定</translation>
 <translation id="2482676533225429905">內建訊息傳遞</translation>
 <translation id="2483146640187052324">無論使用任何網路連線，皆預測網路動作</translation>
+<translation id="2485721741875148980">如果將這項政策設為 true，使用者必須以自己的設定檔登入 <ph name="PRODUCT_NAME" />，才能使用瀏覽器。此外，BrowserGuestModeEnabled 的預設值將設為 false。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定，無法再使用。詳情請參閱說明中心文章。
+
+      如果將這項政策設為 false 或不予設定，使用者不必登入 <ph name="PRODUCT_NAME" /> 即可使用瀏覽器。</translation>
 <translation id="2486371469462493753">不強制要求列出的網址符合憑證透明化規定。
 
       這項政策可讓指定的網址中的主機名稱不依憑證透明化規定公開憑證。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續使用，但系統會因此而不容易偵測到這些主機誤用憑證的情形。
@@ -756,6 +748,7 @@
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3577251398714997599">含侵入式廣告的網站的廣告設定</translation>
+<translation id="3587482841069643663">全部</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
@@ -1187,6 +1180,7 @@
 <translation id="489803897780524242">可使用這個參數來決定是否要為預設搜尋服務商提供替代搜尋字詞。</translation>
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
+<translation id="4917385247580444890">強</translation>
 <translation id="494613465159630803">Cast 接收器</translation>
 <translation id="4962262530309732070">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
 
@@ -1567,13 +1561,6 @@
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="6158324314836466367">企業線上應用程式商店名稱 (已不適用)</translation>
 <translation id="6161405879872578475">啟用「<ph name="PRODUCT_NAME" />」</translation>
-<translation id="6167074305866468481">警告：我們將自 <ph name="PRODUCT_NAME" /> 43 版 (2015 年 7 月左右推出) 起完全停止支援 SSLv3，而且同時移除這項政策。
-
-      如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本；在 <ph name="PRODUCT_NAME" /> 39 中為 SSLv3，在之後的版本中則為 TLS 1.0)。
-
-      可使用的設定值包括：「sslv3」、「tls1」、「tls1.1」或「tls1.2」。設定時，<ph name="PRODUCT_NAME" /> 不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。
-
-      請注意，雖然標有版次編號，但「sslv3」版本早於「tls1」版本。</translation>
 <translation id="6181608880636987460">允許你設定網址模式清單，指定不允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
           如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -1959,6 +1946,7 @@
 <translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
+<translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
 <translation id="7683777542468165012">動態政策更新</translation>
 <translation id="7694807474048279351">在系統已套用 <ph name="PRODUCT_OS_NAME" />更新之後安排自動重新啟動。
@@ -2071,7 +2059,6 @@
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
 <translation id="7976157349247117979">「<ph name="PRODUCT_NAME" />」目的地名稱</translation>
 <translation id="7980227303582973781">無特殊限制</translation>
@@ -2269,6 +2256,7 @@
           如果你未設定這項政策，系統會使用預設的比例因數。
 
           比例因數必須為 100% 以上的值。如果該值會使簡報模式中的調暗延遲時間比一般調暗延遲時間更短，就無法予以採用。</translation>
+<translation id="8798099450830957504">預設</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>

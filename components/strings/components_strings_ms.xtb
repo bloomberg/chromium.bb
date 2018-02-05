@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Kosongkan borang</translation>
 <translation id="2851634818064021665">Anda memerlukan kebenaran untuk melawat tapak ini</translation>
 <translation id="2856444702002559011">Penyerang mungkin akan cuba mencuri maklumat anda daripada <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (contohnya, kata laluan, mesej atau kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Simpan kad?</translation>
 <translation id="2909946352844186028">Perubahan rangkaian dikesan.</translation>
 <translation id="2916038427272391327">Tutup atur cara lain</translation>
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
@@ -999,6 +1000,7 @@
 <translation id="874846938927089722">Kad Kredit dan Prabayar yang Diterima</translation>
 <translation id="8759274551635299824">Kad ini telah tamat tempoh</translation>
 <translation id="8761567432415473239">Penyemakan Imbas Selamat Google baru-baru ini <ph name="BEGIN_LINK" />menemui atur cara berbahaya<ph name="END_LINK" /> pada <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Peranti USB</translation>
 <translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>
 <translation id="8800988563907321413">Cadangan berdekatan anda dipaparkan di sini</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
@@ -1075,4 +1077,5 @@
     &lt;li&gt;Cuba nyahpasang atau lumpuhkan  "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Cuba sambung ke rangkaian lain&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Daripada Google Pay</translation>
 </translationbundle>

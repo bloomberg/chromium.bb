@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
-<translation id="207439088875642105">Dies ist ein Konto für Kinder, das von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /> verwaltet wird.</translation>
 <translation id="2122028596993374965">Streamen von <ph name="TAB_NAME" /> an <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="2144487987174258011">Neu starten, um den Adobe Flash Player zu aktualisieren</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Dies ist ein Konto für Kinder, das von <ph name="MANAGER_EMAIL" /> verwaltet wird.</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3087734570205094154">Unten</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="3477079411857374384">Strg + Shift + Leertaste</translation>
 <translation id="3510164367642747937">Mauszeiger hervorheben</translation>
+<translation id="3513798432020909783">Konto verwaltet von <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
 <translation id="3582792037806681688">Die Mehrfachanmeldung wurde für einen Nutzer in dieser Sitzung deaktiviert.</translation>
 <translation id="3595596368722241419">Akku voll</translation>
@@ -276,6 +275,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7933084174919150729">Google Assistant ist nur für das Hauptprofil verfügbar.</translation>
+<translation id="79341161159229895">Konto verwaltet von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Nach Mobilfunknetzen wird gesucht…</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
 <translation id="7994370417837006925">Mehrfachanmeldung</translation>
@@ -312,6 +312,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständen zwischen den Desktops aufgeteilt</translation>
 <translation id="8825534185036233643">Das Spiegeln mit mehr als zwei Displays wird nicht unterstützt.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Schaltfläche "Zurück"</translation>
 <translation id="8850991929411075241">Suche + Esc</translation>
 <translation id="8870509716567206129">Das Teilen des Bildschirms wird in dieser App nicht unterstützt.</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>

@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Это расширение слишком часто перезагружалось.</translation>
 <translation id="7003844668372540529">Неизвестный продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Недопустимый файл манифеста</translation>
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME" /> на этом компьютере запрещено администратором.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальная</translation>
 <translation id="8047248493720652249">Данному расширению не удалось присвоить скачанному файлу имя "<ph name="ATTEMPTED_FILENAME" />", поскольку другое расширение (<ph name="EXTENSION_NAME" />) уже присвоило ему другое имя: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Это расширение не может предоставить учетные данные для сетевого запроса, поскольку другое расширение (<ph name="EXTENSION_NAME" />) передало иные учетные данные.</translation>
+<translation id="8517576857589387417">Файл манифеста отсутствует или недоступен для чтения</translation>
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Расширение не может перенаправить сетевой запрос на <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, поскольку другое расширение (<ph name="EXTENSION_NAME" />) перенаправило его на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Распаковщик расширений</translation>

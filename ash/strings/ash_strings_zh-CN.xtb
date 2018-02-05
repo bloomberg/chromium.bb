@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2067602449040652523">键盘亮度</translation>
-<translation id="207439088875642105">此帐号是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理的未成年人帐号</translation>
 <translation id="2122028596993374965">停止将<ph name="TAB_NAME" />投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2144487987174258011">请重新启动以更新 Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">单声道音频</translation>
 <translation id="3009178788565917040">输出</translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING" />后充满</translation>
-<translation id="3047477924825107454">此帐号是由 <ph name="MANAGER_EMAIL" /> 管理的未成年人帐号</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（蓝牙）</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="3477079411857374384">Ctrl+Shift+空格键</translation>
 <translation id="3510164367642747937">突出显示鼠标光标</translation>
+<translation id="3513798432020909783">该帐号由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE" />”（需要重启）</translation>
 <translation id="3582792037806681688">由于有用户退出了此次会话，多帐号登录已被禁止</translation>
 <translation id="3595596368722241419">电池已充满</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">信号较强</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7933084174919150729">Google 智能助理仅适用于主要个人资料。</translation>
+<translation id="79341161159229895">该帐号由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="7977927628060636163">正在搜索移动网络…</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="7994370417837006925">多帐号登录</translation>
@@ -312,6 +312,7 @@
 后续通知、窗口和对话框可能会在不同的桌面上分开显示。</translation>
 <translation id="8825534185036233643">系统不支持镜像两个以上的显示屏。</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">“返回”按钮</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">应用不支持分屏。</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>

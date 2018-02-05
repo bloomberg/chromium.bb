@@ -26,6 +26,7 @@
 
       Hvis denne regelen er spesifisert, vises påloggingsskjermen alltid med lokaliteten som er angitt av den første verdien i denne regelen. (Regelen defineres som en liste for fremoverkompatibilitet.) Hvis regelen ikke er spesifisert eller den er angitt som en tom liste, vises påloggingsskjermen med lokaliteten for den forrige brukerøkten. Hvis regelen er angitt som en verdi som ikke er noen gyldig lokalitet, vises påloggingsskjermen med en reservelokalitet (som for øyeblikket er en-US).</translation>
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
+<translation id="1062407476771304334">Erstatt</translation>
 <translation id="1093082332347834239">Hvis denne innstillingen er slått på, kjøres verten for fjernhjelp i en prosess med <ph name="UIACCESS_PERMISSION_NAME" />-tillatelser. Dette tillater at eksterne brukere kommuniserer via uthevede vinduer i på skrivebordet til den lokale brukeren.
 
           Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
-<translation id="1420281424655200442">Kontrollerer hvilke skrivere fra <ph name="DEVICE_PRINTERS_POLICY" /> som er tilgjengelige for brukere.
-
-      Spesifiserer hvilken tilgangsregel som brukes for å konfigurere flere skrivere om gangen. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle skrivere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, brukes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til å begrense tilgangen til de angitte skriverne. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, spesifiserer <ph name="DEVICE_PRINTERS_WHITELIST" /> bare de skriverne som kan velges. 
-
-      Hvis denne regelen ikke er angitt, brukes <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
@@ -282,12 +277,6 @@
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverte bedriftsskrivere</translation>
-<translation id="2063380907529983889">Kontrollerer hvilke skrivere fra <ph name="BULK_PRINTERS_POLICY" /> som er tilgjengelige for brukere.
-
-      Spesifiserer hvilken tilgangsregel som brukes for å konfigurere flere skrivere om gangen. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle skrivere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, brukes <ph name="BULK_PRINTERS_BLACKLIST" /> til å begrense tilgangen til de angitte skriverne. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, spesifiserer <ph name="BULK_PRINTERS_WHITELIST" /> bare de skriverne som kan velges. 
-
-      Hvis denne regelen ikke er angitt, brukes <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Spesifiserer hvilke HTTP-autentiseringsskjemaer som støttes av <ph name="PRODUCT_NAME" />.
 
           Mulige verdier er «basic», «digest», «ntlm» og «negotiate». Bruk komma til å skille mellom flere verdier.
@@ -465,6 +454,9 @@
 <translation id="2466131534462628618">Autentisering via obligatoriske sider ignorerer proxy-tjenere</translation>
 <translation id="2482676533225429905">Innebygde meldinger</translation>
 <translation id="2483146640187052324">Forutsi nettverkshandlinger på alle nettverkstilkoblinger</translation>
+<translation id="2485721741875148980">Hvis denne regelen er angitt som «sann», må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før vedkommende bruker nettleseren. Standardverdien for BrowserGuestModeEnabled er «usann». Vær oppmerksom på at eksisterende usignerte profiler blir låst og utilgjengelige etter at denne regelen aktiveres. Hvis du vil ha mer informasjon, kan du gå til artikkelen i brukerstøtten.
+
+      Hvis denne regelen er satt til «usann» eller ikke er konfigurert, kan brukeren bruke nettleseren uten å logge på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Slår av bruk av krav om sertifikatåpenhet for de angitte nettadressene.
 
       Denne regelen tillater at sertifikater for vertsnavnene i de angitte nettadressene ikke vises i henhold til regelen om sertifikatåpenhet. Dermed kan sertifikater som ellers hadde blitt vurdert som upålitelige (fordi de ikke er tilstrekkelig vist offentlig), fortsatt brukes. Dette gjør det vanskeligere for verter å oppdage sertifikater som ikke er korrekt utstedt.
@@ -760,6 +752,7 @@
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
+<translation id="3587482841069643663">Alle</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
@@ -1195,6 +1188,7 @@
 <translation id="489803897780524242">Parametret som kontrollerer søkeordplasseringen for standardsøkemotoren</translation>
 <translation id="4899708173828500852">Aktiver Safe Browsing</translation>
 <translation id="4906194810004762807">Oppdateringsfrekvens for enhetsinnstilling</translation>
+<translation id="4917385247580444890">Sterk</translation>
 <translation id="494613465159630803">Cast-mottaker</translation>
 <translation id="4962262530309732070">Hvis denne regelen angis som «true» (sann) eller ikke konfigureres, tillates «Legg til person» i brukeradministreringen for <ph name="PRODUCT_NAME" />.
 
@@ -1594,13 +1588,6 @@
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå proxy-tjener</translation>
 <translation id="6158324314836466367">Navn på bedriftens nettbutikk (avviklet)</translation>
 <translation id="6161405879872578475">Slår på <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Advarsel: SSLv3-støtte blir fjernet helt fra <ph name="PRODUCT_NAME" /> etter versjon 43 (cirka juli 2015), og denne regelen blir fjernet samtidig.
-
-      Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er SSLv3 i <ph name="PRODUCT_NAME" /> 39 og TLS 1.0 i nyere versjoner.
-
-      Ellers kan den settes til én av de følgende verdiene: «sslv3», «tls1», «tls1.1» eller «tls1.2». Når den er spesifisert, bruker ikke <ph name="PRODUCT_NAME" /> SSL-/TLS-versjoner som er lavere enn den angitte versjonen. Verdier som ikke gjenkjennes, blir ignorert.
-
-      Vær oppmerksom på at «sslv3» er en tidligere versjon enn «tls1», til tross for tallet.</translation>
 <translation id="6181608880636987460">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget ikke skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -2015,6 +2002,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis du aktiverer denne innstillingen, bruker <ph name="PRODUCT_NAME" /> det angitte språket. Hvis det konfigurerte språket ikke håndteres, brukes språket en-US i stedet.
 
       Hvis denne innstillingen er deakivert eller ikke angis, bruker <ph name="PRODUCT_NAME" /> enten det brukerspesifikke foretrukne språket (hvis dette er konfiguert), systemspråket eller, som siste mulighet, en-US.</translation>
+<translation id="7643883929273267746">Begrens kontoer som er synlige i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
 <translation id="7683777542468165012">Dynamisk oppdatering av retningslinje</translation>
 <translation id="7694807474048279351">Angi en automatisk omstart etter en oppdatering for <ph name="PRODUCT_OS_NAME" /> er lagt til.
@@ -2129,7 +2117,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
@@ -2341,6 +2328,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Hvis denne innstillingen ikke angis, brukes en standard skaleringsfaktor.
 
           Skaleringsfaktoren må være på minst 100 %. Det er ikke tillatt med verdier som gjør inaktivitetsforsinkelsen i presentasjonsmodus kortere enn den er ved vanlig bruk.</translation>
+<translation id="8798099450830957504">Standard</translation>
 <translation id="8818173863808665831">Rapportering av enhetens geografiske posisjon.
 
       Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>

@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Hapus formulir</translation>
 <translation id="2851634818064021665">Anda memerlukan izin untuk membuka situs ini</translation>
 <translation id="2856444702002559011">Penyerang mungkin berusaha mencuri informasi Anda dari <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (misalnya, sandi, pesan, atau kartu kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Simpan kartu?</translation>
 <translation id="2909946352844186028">Perubahan jaringan terdeteksi.</translation>
 <translation id="2916038427272391327">Tutup program lain</translation>
 <translation id="2922350208395188000">Sertifikat server tidak dapat diperiksa.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Kartu Kredit dan Prabayar yang Diterima</translation>
 <translation id="8759274551635299824">Kartu sudah tidak aktif</translation>
 <translation id="8761567432415473239">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />menemukan program berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Perangkat USB</translation>
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
 <translation id="8800988563907321413">Saran terdekat muncul di sini</translation>
 <translation id="8820817407110198400">Bookmark</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;Coba uninstal atau nonaktifkan "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Coba hubungkan ke jaringan lain&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Dari Google Pay</translation>
 </translationbundle>

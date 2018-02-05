@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Obslužný nástroj štandardu MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Toto rozšírenie sa obnovovalo príliš často.</translation>
 <translation id="7003844668372540529">Neznámy produkt <ph name="PRODUCT_ID" /> od dodávateľa <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Súbor manifestu je neplatný</translation>
 <translation id="7217838517480956708">Správca tohto zariadenia vyžaduje inštaláciu rozšírenia <ph name="EXTENSION_NAME" />. Nemôže byť odstránené alebo upravené.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Nasmerovaný na používateľa</translation>
 <translation id="8047248493720652249">Tomuto rozšíreniu sa nepodarilo pomenovať stiahnutý súbor s názvom „<ph name="ATTEMPTED_FILENAME" />„, pretože ďalšie rozšírenie (<ph name="EXTENSION_NAME" />) určilo odlišný názov súboru „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Tomuto rozšíreniu sa nepodarilo poskytnúť poverenia žiadosti o sieť, pretože iné rozšírenie (<ph name="EXTENSION_NAME" />) poskytlo odlišné poverenia.</translation>
+<translation id="8517576857589387417">Súbor manifestu chýba alebo je nečitateľný</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Tomuto rozšíreniu sa nepodarilo presmerovať žiadosť o siete na stránky <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, pretože ju iné rozšírenie (<ph name="EXTENSION_NAME" />) presmerovalo na stránky <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>

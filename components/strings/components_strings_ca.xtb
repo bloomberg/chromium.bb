@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Esborra el formulari</translation>
 <translation id="2851634818064021665">Necessites permís per visitar aquest lloc web</translation>
 <translation id="2856444702002559011">Pot ser que els atacants provin de robar la teva informació del lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (per exemple, contrasenyes, missatges o targetes de crèdit). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Vols desar la targeta?</translation>
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Targetes de crèdit i de prepagament acceptades</translation>
 <translation id="8759274551635299824">Aquesta targeta ha caducat</translation>
 <translation id="8761567432415473239">Recentment, amb Navegació segura de Google s'han <ph name="BEGIN_LINK" />detectat programes perjudicials<ph name="END_LINK" /> al lloc <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Dispositiu USB</translation>
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>
 <translation id="8800988563907321413">Els suggeriments més propers es mostren aquí</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
@@ -1073,4 +1075,5 @@
     &lt;li&gt;Prova de desinstal·lar o desactivar <ph name="SOFTWARE_NAME" />&lt;/li&gt;
     &lt;li&gt;Prova de connectar-te a una altra xarxa&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">De Google Pay</translation>
 </translationbundle>

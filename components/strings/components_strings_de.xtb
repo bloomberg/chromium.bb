@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="2851634818064021665">Sie benötigen eine Berechtigung, um auf diese Website zuzugreifen</translation>
 <translation id="2856444702002559011">Hacker könnten versuchen, Ihre Daten von <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zu stehlen, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Karte speichern?</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2916038427272391327">Andere Programme schließen</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
@@ -997,6 +998,7 @@
 <translation id="874846938927089722">Akzeptierte Kredit- und Prepaidkarten</translation>
 <translation id="8759274551635299824">Diese Karte ist abgelaufen</translation>
 <translation id="8761567432415473239">Google Safe Browsing hat vor Kurzem <ph name="BEGIN_LINK" />schädliche Programme<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden.</translation>
+<translation id="8763927697961133303">USB-Gerät</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8800988563907321413">Hier werden Ihre Vorschläge in der Nähe angezeigt</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;Deinstallieren oder deaktivieren Sie "<ph name="SOFTWARE_NAME" />".&lt;/li&gt;
     &lt;li&gt;Stellen Sie eine Verbindung zu einem anderen Netzwerk her.&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Aus Google Pay</translation>
 </translationbundle>

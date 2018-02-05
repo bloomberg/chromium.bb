@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Värdet måste vara <ph name="MAXIMUM_DATE_OR_TIME" /> eller tidigare.</translation>
+<translation id="1993104285338243655">Bytte till spegling</translation>
 <translation id="2060505056492490888"><ph name="DOT" /> används på fel plats i <ph name="INVALIDDOMAIN" />.</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2226276347425096477">Förkorta texten till <ph name="MAX_CHARACTERS" /> tecken eller mindre (nu är texten <ph name="CURRENT_LENGTH" /> tecken).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Millisekunder</translation>
 <translation id="4151657705144244502">bild</translation>
 <translation id="4201051445878709314">Visa föregående månad</translation>
+<translation id="4205604240201363801">Visas i läget bild-i-bild</translation>
 <translation id="421884353938374759">färgval</translation>
 <translation id="4248100235867064564">menyfält</translation>
 <translation id="4254339807215791271">innehållsinformation</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="668171684555832681">Annan...</translation>
 <translation id="6692633176391053278">knappreglage</translation>
+<translation id="6709570249143506788">Låg uppspelningskvalitet</translation>
 <translation id="6755330956360078551">beskrivning</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6820355525329141109">Det gick inte att läsa in plugin-programmet.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> filer</translation>
 <translation id="8451268428117625855">Välj en fil.</translation>
 <translation id="8461852803063341183">alternativknapp</translation>
-<translation id="8511325616783751178">rullgardinsknapp</translation>
 <translation id="8534579021159131403">Minuter</translation>
 <translation id="8541249477527128034">mediekontroll</translation>
 <translation id="8583702881314752957">definitionslista</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">starta uppspelning</translation>
 <translation id="8845239796550121995">Castar nu till TV:n</translation>
 <translation id="8851136666856101339">huvud</translation>
+<translation id="8875657656876809964">Videouppspelningsfel</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">Månad</translation>
 <translation id="901493112792887934">aktuell tid i sekunder</translation>

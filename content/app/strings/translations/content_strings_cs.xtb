@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stav</translation>
 <translation id="1938124657309484470">Datum musí být <ph name="MAXIMUM_DATE_OR_TIME" /> nebo dříve.</translation>
+<translation id="1993104285338243655">Přepnuto na zrcadlení</translation>
 <translation id="2060505056492490888">Znak <ph name="DOT" /> v doméně <ph name="INVALIDDOMAIN" /> není použitý správně.</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2226276347425096477">Zkraťte prosím tento text na <ph name="MAX_CHARACTERS" /> znaků nebo méně. (Aktuálně má <ph name="CURRENT_LENGTH" /> znaků.)</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milisekundy</translation>
 <translation id="4151657705144244502">obrázek</translation>
 <translation id="4201051445878709314">Zobrazit předchozí měsíc</translation>
+<translation id="4205604240201363801">Je aktivní režim obrazu v obraze</translation>
 <translation id="421884353938374759">výběr barev</translation>
 <translation id="4248100235867064564">panel nabídky</translation>
 <translation id="4254339807215791271">informace o obsahu</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="668171684555832681">Další...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709570249143506788">Špatná kvalita přehrávání</translation>
 <translation id="6755330956360078551">popisek</translation>
 <translation id="6790428901817661496">Přehrát</translation>
 <translation id="6820355525329141109">Plugin se nepodařilo načíst.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423">Počet souborů: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="8451268428117625855">Vyberte prosím soubor.</translation>
 <translation id="8461852803063341183">přepínač</translation>
-<translation id="8511325616783751178">tlačítko rozbalovací nabídky</translation>
 <translation id="8534579021159131403">Minuty</translation>
 <translation id="8541249477527128034">ovládání médií</translation>
 <translation id="8583702881314752957">seznam definic</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">zahájit přehrávání</translation>
 <translation id="8845239796550121995">Odesílání do televize</translation>
 <translation id="8851136666856101339">hlavní</translation>
+<translation id="8875657656876809964">Chyba přehrávání videa</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">Měsíc</translation>
 <translation id="901493112792887934">aktuální čas v sekundách</translation>

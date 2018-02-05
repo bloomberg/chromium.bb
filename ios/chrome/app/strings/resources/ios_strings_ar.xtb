@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> من العناصر</translation>
 <translation id="1491277525950327607">انقر نقرًا مزدوجًا لتبديل الإعداد</translation>
 <translation id="152234381334907219">لم يتم الحفظ مطلقًا</translation>
+<translation id="1532451416480227577">‏عرض العناوين وبطاقات الائتمان من Google Pay</translation>
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
 <translation id="1580783302095112590">تم إرسال البريد.</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">‏في شبكة Wi-Fi فقط</translation>
 <translation id="2747003861858887689">الحقل السابق</translation>
 <translation id="2780046210906776326">لا تتوفر حسابات بريد إلكتروني</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">الخروج من أداة تغيير علامات التبويب</translation>
 <translation id="283291358677939992">البحث في الصفحة...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />، <ph name="STATE" />، <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">خدمات الويب</translation>
 <translation id="3207960819495026254">محدد بعلامة متابعة القراءة</translation>
 <translation id="3210163015918861891">تم إيقاف المزامنة</translation>
+<translation id="3224641773458703735">لتصدير كلمات المرور، يلزمك أولاً تعيين رمز مرور على جهازك.</translation>
 <translation id="3240426699337459095">تم نسخ الرابط</translation>
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، و<ph name="ADDITIONAL_INFO" />، و<ph name="INDEX" /> من <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
-<translation id="533632423981297619">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على الملف الذي تم تصديره. ينبغي عدم مشاركة هذا الملف مع أي شخص.</translation>
 <translation id="5388358297987318779">فتح الصورة</translation>
 <translation id="5409365236829784218">لا تتوفر تطبيقات مثبتة يمكن من خلالها فتح هذا الملف.</translation>
 <translation id="5433691172869980887">تم نسخ اسم المستخدم</translation>
@@ -306,6 +308,7 @@
 <translation id="681368974849482173">تم إنشاء العنصر</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
+<translation id="6914783257214138813">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على الملف الذي تم تصديره.</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6973630695168034713">المجلدات</translation>
 <translation id="7004499039102548441">علامات التبويب الأخيرة</translation>

@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Χειρισμός mime: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Αυτή η επέκταση επαναφορτώνεται πολύ συχνά.</translation>
 <translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Το αρχείο μανιφέστου δεν είναι έγκυρο</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Μπροστινή κάμερα</translation>
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη "<ph name="ATTEMPTED_FILENAME" />" επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME" />) καθόρισε ένα διαφορετικό όνομα "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> της <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Αυτή η επέκταση απέτυχε να παράσχει διαπιστευτήρια σε κάποιο αίτημα δικτύου επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />) παρέσχεσε διαφορετικά διαπιστευτήρια.</translation>
+<translation id="8517576857589387417">Το αρχείο μανιφέστου λείπει ή δεν είναι δυνατή η ανάγνωσή του</translation>
 <translation id="8636666366616799973">Μη έγκυρο πακέτο. Λεπτομέρειες: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Αυτή η επέκταση απέτυχε να ανακατευθύνει κάποιο αίτημα δικτύου στο <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />) το ανακατεύθυνε στο <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Εργαλείο αποσυσκευασίας επεκτάσεων</translation>

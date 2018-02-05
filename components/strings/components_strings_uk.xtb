@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">Очистити форму</translation>
 <translation id="2851634818064021665">Щоб відвідувати цей сайт, потрібен дозвіл</translation>
 <translation id="2856444702002559011">Зловмисники можуть намагатися викрасти вашу інформацію із сайту <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (наприклад, паролі, повідомлення чи дані кредитних карток). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">Зберегти картку?</translation>
 <translation id="2909946352844186028">Виявлено зміну в мережі.</translation>
 <translation id="2916038427272391327">Закрийте інші програми</translation>
 <translation id="2922350208395188000">Сертифікат сервера неможливо перевірити.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">Кредитні та передплачені картки, які приймаються до оплати</translation>
 <translation id="8759274551635299824">Термін дії цієї картки минув</translation>
 <translation id="8761567432415473239">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила шкідливі програми<ph name="END_LINK" /> на сайті <ph name="SITE" />.</translation>
+<translation id="8763927697961133303">Пристрій USB</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
 <translation id="8800988563907321413">Тут відображатимуться пропозиції</translation>
 <translation id="8820817407110198400">Закладки</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;Видаліть або вимкніть <ph name="SOFTWARE_NAME" />&lt;/li&gt;
     &lt;li&gt;Під’єднайтеся до іншої мережі&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">З Google Pay</translation>
 </translationbundle>

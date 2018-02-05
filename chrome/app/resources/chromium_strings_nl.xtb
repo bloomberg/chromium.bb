@@ -42,6 +42,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2527042973354814951">Chromium opnieuw opstarten om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
 <translation id="2535480412977113886">Chromium OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
+<translation id="2560420686485554789">Chromium heeft toegang tot de opslag nodig om bestanden te downloaden</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Chromium OS moet opnieuw worden gestart om de update toe te passen.</translation>
 <translation id="2647554856022461007">Chromium kan webservices gebruiken om de browsefunctionaliteit te verbeteren. Je kunt deze services eventueel uitschakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
@@ -124,6 +125,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5427571867875391349">Chromium instellen als je standaardbrowser</translation>
 <translation id="5466153949126434691">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chromium opnieuw gestart en kun je doorgaan.</translation>
 <translation id="5479196819031988440">Chromium OS kan deze pagina niet openen.</translation>
+<translation id="5480860683791598150">Chromium heeft toegang tot je locatie nodig om je locatie met deze site te delen</translation>
 <translation id="549669000822060376">Wacht terwijl Chromium de nieuwste systeemupdates installeert.</translation>
 <translation id="5634636535844844681">Voor Chromium is Windows 7 of hoger vereist.</translation>
 <translation id="5680901439334282664">inloggen bij Chromium</translation>
@@ -138,11 +140,11 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5902536751647951209">Verificatiecertificaat mislukt. Log opnieuw in bij Chromium of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
-<translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chromium.</translation>
 <translation id="5987687638152509985">Chromium updaten om de synchronisatie te starten</translation>
 <translation id="6055895534982063517">Er is een nieuwe versie van Chromium beschikbaar, en deze is sneller dan ooit.</translation>
 <translation id="6063093106622310249">&amp;Openen in Chromium</translation>
 <translation id="608189560609172163">Chromium kan je gegevens niet synchroniseren door een fout tijdens het inloggen.</translation>
+<translation id="6096348254544841612">Chromium aanpassen en beheren. Update is beschikbaar</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> is gevaarlijk en is daarom door Chromium geblokkeerd.</translation>
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet je Chromium verwijderen en het opnieuw proberen.</translation>
 <translation id="6248213926982192922">Chromium als standaardbrowser instellen</translation>
@@ -152,6 +154,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6334986366598267305">Het is nu gemakkelijker om Chromium met je Google-account en op gedeelde computers te gebruiken.</translation>
 <translation id="6373523479360886564">Weet je zeker dat je Chromium wilt verwijderen?</translation>
 <translation id="6394232988457703198">Je moet Chromium nu opnieuw starten.</translation>
+<translation id="6400072781405947421">Chromium werkt wellicht niet naar behoren omdat dit niet meer op Mac OS X 10.9 wordt ondersteund.</translation>
 <translation id="6403826409255603130">Chromium is een webbrowser die webpagina's en applicaties bliksemsnel uitvoert. Chromium is snel, stabiel en eenvoudig in gebruik. Surf veiliger op internet met de in Chromium ingebouwde beveiliging tegen malware en phishing.</translation>
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="6485906693002546646">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chromium-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chromium zonder een Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
@@ -165,10 +168,12 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="6734291798041940871">Chromium is al geïnstalleerd voor alle gebruikers op je computer.</translation>
 <translation id="6810143991807788455">Help Chromium beter te maken door de huidige instellingen te melden</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
+<translation id="6863361426438995919">Google Pay (gekopieerd naar Chromium)</translation>
 <translation id="6893813176749746474">Chromium is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
 <translation id="6964305034639999644">Link openen in een Chromium-inco&amp;gnitovenster</translation>
 <translation id="6970811910055250180">Je apparaat bijwerken...</translation>
+<translation id="6990124437352146030">Chromium heeft toegangsrechten voor je microfoon nodig voor deze site</translation>
 <translation id="705851970750939768">Chromium updaten</translation>
 <translation id="7066436765290594559">Chromium OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="7162152143154757523">Chromium kan een betere spellingcontrole leveren door wat je in de browser typt naar Google-servers te verzenden. Hierdoor kun je profiteren van dezelfde technologie voor spellingcontrole die ook voor Google Zoeken wordt gebruikt.</translation>
@@ -190,11 +195,13 @@ Als je wilt voorkomen dat <ph name="NEW_PROFILE_NAME" /> toegang krijgt tot je a
 <ph name="BEGIN_LINK_2" />Meer informatie<ph name="END_LINK_2" />
 
 Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</translation>
+<translation id="7451052299415159299">Chromium heeft toegangsrechten voor je camera nodig voor deze site</translation>
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="7549178288319965365">Over Chromium OS</translation>
 <translation id="7577193603922410712">Er is zojuist een speciale beveiligingsupdate voor Chromium toegepast. Je moet Chromium nu opnieuw starten om de update toe te passen (je tabbladen worden hersteld).</translation>
 <translation id="761356813943268536">Chromium gebruikt je camera en microfoon.</translation>
 <translation id="7617377681829253106">Chromium is nu nog beter</translation>
+<translation id="7686590090926151193">Chromium is niet je standaardbrowser</translation>
 <translation id="7729447699958282447">Chromium kan je gegevens niet synchroniseren, omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="7745317241717453663">Hiermee worden je browsergegevens verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chromium als <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
@@ -226,6 +233,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="8697124171261953979">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start of vanuit de omnibox zoekt.</translation>
 <translation id="8704119203788522458">Personaliseer jouw Chromium</translation>
 <translation id="872034308864968620">Chromium laten uitvoeren op de achtergrond</translation>
+<translation id="8796602469536043152">Chromium heeft toegangsrechten voor je camera en microfoon nodig voor deze site</translation>
 <translation id="8803635938069941624">Voorwaarden van Chromium OS</translation>
 <translation id="8821041990367117597">Chromium kan je gegevens niet synchroniseren, omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
@@ -249,6 +257,7 @@ Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en 
 <translation id="918373042641772655">Als je de verbinding met <ph name="USERNAME" /> verbreekt, worden je geschiedenis, bladwijzers, instellingen en andere Chromium-gegevens die op dit apparaat zijn opgeslagen, gewist. Gegevens die zijn opgeslagen in je Google-account worden niet gewist en kunnen worden beheerd via <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Je bent nu ingelogd bij Chromium</translation>
+<translation id="93478295209880648">Chromium werkt mogelijk niet naar behoren omdat dit niet langer wordt ondersteund op Windows XP en Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Deze voorwaarden zijn geen uitbreiding, aanpassing of beperking van de Voorwaarden van Chromium OS.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 </translationbundle>

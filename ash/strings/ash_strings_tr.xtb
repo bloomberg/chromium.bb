@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="2050339315714019657">Dikey</translation>
 <translation id="2067602449040652523">Klavye parlaklığı</translation>
-<translation id="207439088875642105">Bu hesap çocuklar içindir ve <ph name="FIRST_PARENT_EMAIL" /> ile <ph name="SECOND_PARENT_EMAIL" /> tarafından yönetilmektedir</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" /> sekmesinin <ph name="RECEIVER_NAME" /> cihazına yayınını durdur</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="2144487987174258011">Adobe Flash Player'ı güncellemek için yeniden başlatın</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Mono ses</translation>
 <translation id="3009178788565917040">Çıkış</translation>
 <translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Bu hesap çocuklar içindir ve <ph name="MANAGER_EMAIL" /> tarafından yönetilmektedir</translation>
 <translation id="3077734595579995578">üstkrktr</translation>
 <translation id="3087734570205094154">Alt</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Ekran büyüteci</translation>
 <translation id="3477079411857374384">Control-Üst Karakter-Boşluk</translation>
 <translation id="3510164367642747937">Fare imlecini vurgula</translation>
+<translation id="3513798432020909783">Hesap <ph name="MANAGER_EMAIL" /> tarafından yönetiliyor</translation>
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="3582792037806681688">Bu oturumdaki bir kullanıcı için çoklu oturum açma engellendi</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
@@ -277,6 +276,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7829386189513694949">Güçlü sinyal</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
 <translation id="7933084174919150729">Google Asistan yalnızca birincil profilde kullanılabilir.</translation>
+<translation id="79341161159229895">Hesap <ph name="FIRST_PARENT_EMAIL" /> ve <ph name="SECOND_PARENT_EMAIL" /> tarafından yönetiliyor</translation>
 <translation id="7977927628060636163">Mobil ağlar aranıyor...</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="7994370417837006925">Çoklu oturum açma</translation>
@@ -313,6 +313,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutuları masaüstleri arasında bölünebilir.</translation>
 <translation id="8825534185036233643">İkiden fazla ekranla yansıtma desteklenmez.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Geri düğmesi</translation>
 <translation id="8850991929411075241">Ara+Esc</translation>
 <translation id="8870509716567206129">Uygulama bölünmüş ekranı desteklemiyor.</translation>
 <translation id="8878886163241303700">Genişletilmiş ekran</translation>

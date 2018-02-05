@@ -26,6 +26,7 @@
 
       If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
+<translation id="1062407476771304334">Replace</translation>
 <translation id="1093082332347834239">If this setting is enabled, the remote assistance host will be run in a process with <ph name="UIACCESS_PERMISSION_NAME" /> permissions. This will allow remote users to interact with elevated windows on the local user's desktop.
 
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
-<translation id="1420281424655200442">Controls which printers from the <ph name="DEVICE_PRINTERS_POLICY" /> are available to users.
-
-      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="DEVICE_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. f <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="DEVICE_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
-
-      If this policy is not set, <ph name="PRINTERS_BLACKLIST" /> is assumed.
-      </translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
@@ -284,12 +279,6 @@
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Disabled enterprise printers</translation>
-<translation id="2063380907529983889">Controls which printers from the <ph name="BULK_PRINTERS_POLICY" /> are available to users.
-
-      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="BULK_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. If <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="BULK_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
-
-      If this policy is not set, <ph name="PRINTERS_BLACKLIST" /> is assumed.
-      </translation>
 <translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
@@ -475,6 +464,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2466131534462628618">Captive portal authentication ignores proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="2483146640187052324">Predict network actions on any network connection</translation>
+<translation id="2485721741875148980">If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see Help Centre article.
+
+      If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Disables enforcing Certificate Transparency requirements to the listed URLs.
 
       This policy allows certificates for the hostnames in the specified URLs to not be disclosed via Certificate Transparency. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used, but makes it harder to detect miss-isued certificates for those hosts.
@@ -788,6 +780,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
+<translation id="3587482841069643663">All</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
@@ -1240,6 +1233,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="489803897780524242">Parameter controlling search term placement for the default search provider</translation>
 <translation id="4899708173828500852">Enable Safe Browsing</translation>
 <translation id="4906194810004762807">Refresh rate for Device Policy</translation>
+<translation id="4917385247580444890">Strong</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
 
@@ -1655,13 +1649,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
 <translation id="6161405879872578475">Enables <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME" /> after version 43 (around July 2015) and this policy will be removed at the same time.
-
-      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is SSLv3 in <ph name="PRODUCT_NAME" /> 39 and TLS 1.0 in later versions.
-
-      Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.
-
-      Note that, despite the number, "sslv3" is an earlier version than "tls1".</translation>
 <translation id="6181608880636987460">Allows you to set a list of URL patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
@@ -2077,6 +2064,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, <ph name="PRODUCT_NAME" /> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME" /> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
+<translation id="7643883929273267746">Restrict accounts that are visible in <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
 <translation id="7683777542468165012">Dynamic Policy Refresh</translation>
 <translation id="7694807474048279351">Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME" /> update has been applied.
@@ -2191,7 +2179,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
-<translation id="7971839631300653352">SSL</translation>
 <translation id="7974114691960514888">This policy is no longer supported.
           Enables usage of STUN and relay servers when connecting to a remote client.
 
@@ -2411,6 +2398,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           If this policy is unset, a default scale factor is used.
 
           The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.</translation>
+<translation id="8798099450830957504">Default</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
       If the policy is not set or set to false, the location will not be reported.</translation>

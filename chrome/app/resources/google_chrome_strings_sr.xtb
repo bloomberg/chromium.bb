@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1001534784610492198">Архива програма за инсталацију је оштећена или неважећа. Преузмите Google Chrome поново.</translation>
+<translation id="102763973188675173">Прилагодите и контролишите Google Chrome. Доступно је ажурирање.</translation>
 <translation id="1035334672863811645">пријавите се у Chrome</translation>
 <translation id="1065672644894730302">Подешавања не могу да се прочитају.
 
@@ -38,6 +39,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Пронађи помоћ за коришћење Chrome ОС-а</translation>
 <translation id="1795405610103747296">Инсталирајте Chrome на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1860536484129686729">Chrome тражи дозволу да приступи камери за овај сајт</translation>
+<translation id="1873233029667955273">Google Chrome није подразумевани прегледач</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
 <translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
@@ -57,10 +60,12 @@
 <translation id="2346876346033403680">Неко се претходно пријавио у Chrome на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Ако то није ваш налог, направите новог Chrome корисника да би информације биле раздвојене.
 
 Ако се ипак пријавите, Chrome информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
+<translation id="2348335408836342058">Chrome тражи дозволу да приступи камери и микрофону за овај сајт</translation>
 <translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="2446511512801740068">Chrome је застарео јер дуго није поново покренут. Ажурирање је доступно и биће примењено чим га поново покренете.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2534507159460261402">Google Pay (копирано у Chrome)</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
 <translation id="2586406160782125153">Овим ћете избрисати податке прегледања са уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome логотип</translation>
@@ -69,6 +74,7 @@
 <translation id="2665296953892887393">Помозите нам да побољшамо Google Chrome тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Овај додатак је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="2705403826523567092">Пријавите се за персонализовани доживљај прегледања који је синхронизован на свим уређајима</translation>
+<translation id="2765403129283291972">Chrome тражи дозволу да приступи микрофону за овај сајт</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2847461019998147611">Приказуј Google Chrome на овом језику</translation>
@@ -95,6 +101,7 @@
 <translation id="3451115285585441894">Додавање у Chrome...</translation>
 <translation id="345171907106878721">Додајте себе у Chrome</translation>
 <translation id="3479552764303398839">Не сада</translation>
+<translation id="3503306920980160878">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
 <translation id="3622797965165704966">Сада можете лакше да користите Chrome са Google налогом и на дељеним рачунарима.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Услови коришћења<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -201,8 +208,8 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7106741999175697885">Менаџер задатака – Google Chrome</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
 <translation id="7164397146364144019">Можете да помогнете да Chrome буде безбеднији и једноставнији за коришћење ако аутоматски пријављујете Google-у детаље могућих безбедносних инцидената.</translation>
-<translation id="7185038942300673794">Додатак <ph name="EXTENSION_NAME" /> је додат у Chrome.</translation>
 <translation id="7242029209006116544">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Google Chrome профилом. Chrome подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. Можете опционално да направите нови профил да би постојећи Chrome подаци остали одвојени. <ph name="LEARN_MORE" /></translation>
+<translation id="7308322188646931570">Chrome тражи приступ меморијском простору да би преузимао датотеке</translation>
 <translation id="7330164299247909639">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Google Chrome као <ph name="USER_NAME" /> или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="7369650938475876456">Користите јаку лозинку коју је Chrome генерисао</translation>
@@ -215,6 +222,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7494905215383356681">Лиценце отвореног кода за Chrome</translation>
 <translation id="7535429826459677826">Програмерска верзија Google Chrome-а</translation>
 <translation id="7552219221109926349">Приказуј Chrome ОС на овом језику</translation>
+<translation id="7589360514048265910">Овај рачунар више неће добијати ажурирања за Google Chrome зато што Mac OS X 10.9 више није подржан.</translation>
 <translation id="7592736734348559088">Google Chrome не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="7626032353295482388">Добро дошли у Chrome</translation>
 <translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>

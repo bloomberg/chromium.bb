@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">清除表单</translation>
 <translation id="2851634818064021665">您需获得许可，才能访问此网站</translation>
 <translation id="2856444702002559011">攻击者可能会试图从 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 窃取您的信息（例如：密码、通讯内容或信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">保存卡片？</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
 <translation id="2916038427272391327">关闭其他程序</translation>
 <translation id="2922350208395188000">无法核实服务器证书。</translation>
@@ -994,6 +995,7 @@
 <translation id="874846938927089722">接受的信用卡和预付卡</translation>
 <translation id="8759274551635299824">此信用卡已失效</translation>
 <translation id="8761567432415473239">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />发现了有害程序<ph name="END_LINK" />。</translation>
+<translation id="8763927697961133303">USB 设备</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8800988563907321413">此处将显示系统建议您浏览的附近网页</translation>
 <translation id="8820817407110198400">书签</translation>
@@ -1070,4 +1072,5 @@
     &lt;li&gt;请尝试卸载或停用“<ph name="SOFTWARE_NAME" />”&lt;/li&gt;
     &lt;li&gt;请尝试连接到其他网络&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">来自 Google Pay</translation>
 </translationbundle>

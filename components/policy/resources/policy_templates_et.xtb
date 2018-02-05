@@ -26,6 +26,7 @@
 
       Kui see reegel on määratud, kuvatakse sisselogimisekraan alati lokaadis, mis selle reegli esimese väärtusega määratakse (reegel on määratud suunamise ühilduvuse loendina). Kui seda reeglit pole määratud või see on tühi loend, kuvatakse sisselogimisekraan kasutaja viimase seansi lokaadis. Kui sellele reeglile on määratud väärtus, mis ei ole kehtiv lokaat, kuvatakse sisselogimisekraan varulokaadis (praegu en-US).</translation>
 <translation id="1062011392452772310">Seadme kaugatesteerimise lubamine</translation>
+<translation id="1062407476771304334">Asenda</translation>
 <translation id="1093082332347834239">Kui seade on lubatud, käitatakse protsessis kaugabi hosti lubadega <ph name="UIACCESS_PERMISSION_NAME" />. See võimaldab kaugkasutajatel suhelda kohaliku kasutaja töölaual olevate administraatoriõigusi nõudvate akendega.
 
           Kui seade on keelatud või seadistamata, käitatakse kaugabi hosti kasutaja kontekstis ja kaugkasutajad ei saa töölaual suhelda administraatoriõigusi nõudvate akendega.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Lubatakse riistvaraprofiilide päringud Quirks Serverist</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
-<translation id="1420281424655200442">Juhib, millised printerid seadistusest <ph name="DEVICE_PRINTERS_POLICY" /> on kasutajatele saadaval.
-
-      Määrab, millist juurdepääsureeglit kasutatakse printerite hulgiseadistamiseks. Kui valitud on väärtus <ph name="PRINTERS_ALLOW_ALL" />, kuvatakse kõik printerid. Kui valitud on väärtus <ph name="PRINTERS_BLACKLIST" />, kasutatakse määratud printeritele juurdepääsu piiramiseks reeglit <ph name="DEVICE_PRINTERS_BLACKLIST" />. Kui valitud on väärtus <ph name="PRINTERS_WHITELIST" />, määrab reegel <ph name="DEVICE_PRINTERS_WHITELIST" /> ainult need printerid, mida saab valida.
-
-      Kui see reegel on määramata, kasutatakse reeglit <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="1427655258943162134">Puhverserveri aadress või URL</translation>
 <translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
@@ -284,12 +279,6 @@
 <translation id="2030905906517501646">Vaikeotsingupakkuja märksõna</translation>
 <translation id="203096360153626918">See reegel ei mõjuta Androidi rakendusi. Täisekraanirežiimi saab aktiveerida ka siis, kui reegli väärtuseks on määratud <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Ettevõtte keelatud printerid</translation>
-<translation id="2063380907529983889">Juhib, millised printerid seadistusest <ph name="BULK_PRINTERS_POLICY" /> on kasutajatele saadaval.
-
-      Määrab, millist juurdepääsureeglit kasutatakse printerite hulgiseadistamiseks. Kui valitud on väärtus <ph name="PRINTERS_ALLOW_ALL" />, kuvatakse kõik printerid. Kui valitud on väärtus <ph name="PRINTERS_BLACKLIST" />, kasutatakse määratud printeritele juurdepääsu piiramiseks reeglit <ph name="BULK_PRINTERS_BLACKLIST" />. Kui valitud on väärtus <ph name="PRINTERS_WHITELIST" />, määrab reegel <ph name="BULK_PRINTERS_WHITELIST" /> ainult need printerid, mida saab valida.
-
-      Kui see reegel on määramata, kasutatakse reeglit <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Määrab, milliseid HTTP autentimisskeeme rakendus <ph name="PRODUCT_NAME" /> toetab.
 
           Võimalikud väärtused on „basic”, „digest”, „ntlm” ja „negotiate”. Eraldage eri väärtused komadega.
@@ -473,6 +462,9 @@
 <translation id="2466131534462628618">Hõiveportaali autentimisel puhverserveri eiramine</translation>
 <translation id="2482676533225429905">Omasõnumside</translation>
 <translation id="2483146640187052324">Ennusta võrgutoiminguid iga võrguühenduse puhul</translation>
+<translation id="2485721741875148980">Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist teenusesse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse reegli BrowserGuestModeEnabled vaikeväärtuseks Väär. Pange tähele, et olemasolevad allkirjastamata profiilid lukustatakse ja nendele ei pääse pärast selle reegli lubamist juurde. Lisateavet leiate abikeskuse artiklist.
+
+      Kui reegel määratakse väärtusele Väär või jäetakse seadistamata, saab kasutaja brauserit kasutada teenusesse <ph name="PRODUCT_NAME" /> sisse logimata.</translation>
 <translation id="2486371469462493753">Keelab sertifikaadi läbipaistvuse nõuete jõustamise loetletud URL-idel.
 
       Reegel lubab määratud URL-ide hostinimede sertifikaadid, mis ei ole sertifikaadi läbipaistvuse reegli kaudu avalikustatud. See lubab ka edaspidi kasutada sertifikaate, mida peetaks muidu ebausaldusväärseks, kuna need ei ole sobival moel avalikustatud, ent muudab hostide valesti väljastatud sertifikaatide tuvastamise keerulisemaks.
@@ -784,6 +776,7 @@
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3577251398714997599">Sekkuvate reklaamidega saitide reklaamiseaded</translation>
+<translation id="3587482841069643663">Kõik</translation>
 <translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
 <translation id="3627678165642179114">Õigekirjakontrolli veebiteenuse lubamine või keelamine</translation>
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
@@ -1229,6 +1222,7 @@
 <translation id="489803897780524242">Parameeter, mis juhib otsingutermini paigutust vaikeotsingupakkuja puhul</translation>
 <translation id="4899708173828500852">Luba ohutu sirvimine</translation>
 <translation id="4906194810004762807">Seadme reeglite värskendussagedus</translation>
+<translation id="4917385247580444890">Tugev</translation>
 <translation id="494613465159630803">Cast'i vastuvõtja</translation>
 <translation id="4962262530309732070">Kui selle reegli väärtuseks määratakse Tõene või seda ei seadistata, lubab teenus <ph name="PRODUCT_NAME" /> kasutajahalduris funktsiooni Inimese lisamine.
 
@@ -1641,13 +1635,6 @@
 <translation id="6157537876488211233">Puhverserveri möödumisreeglite komadega eraldatud loend</translation>
 <translation id="6158324314836466367">Ettevõtte veebipoe nimi (tugi on katkestatud)</translation>
 <translation id="6161405879872578475">Lubab teenuse <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Hoiatus. SSLv3 tugi eemaldatakse teenusest <ph name="PRODUCT_NAME" /> täielikult pärast versiooni 43 (umbes juulis 2015) ja see reegel eemaldatakse samal ajal.
-
-      Kui seda reeglit pole seadistatud, siis kasutab teenus <ph name="PRODUCT_NAME" /> vaikimisi minimaalset versiooni, mis on teenuse <ph name="PRODUCT_NAME" /> versioonis 39 SSLv3 ja hilisemates versioonides TLS 1.0.
-
-      Muul juhul võidakse see määrata ühele järgmistest väärtustest: „sslv3”, „tls1”, „tls1.1” või „tls1.2”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> SSL-i/TLS-i versioone, mis on määratud versioonist vanemad. Tundmatut väärtust eiratakse.
-
-      Pange tähele, et numbrist olenemata on „sslv3” versioonist „tls1” vanem versioon.</translation>
 <translation id="6181608880636987460">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
 
           Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.</translation>
@@ -2068,6 +2055,7 @@
       Seade lubamisel kasutab rakendus <ph name="PRODUCT_NAME" /> määratud lokaati. Kui seadistatud lokaati ei toetata, siis kasutatakse lokaati „en-US”.
 
       Kui keelate seade või jätate selle määramata, kasutab rakendus <ph name="PRODUCT_NAME" /> kasutaja määratud eelistatud lokaati (kui see on seadistatud), süsteemi lokaati või varulokaati „en-US”.</translation>
+<translation id="7643883929273267746">Teenuses <ph name="PRODUCT_NAME" /> nähtavate kontode piiramine</translation>
 <translation id="7651739109954974365">Määrab, kas seadmes on andmeside rändlusteenus lubatud. Selle reegli aktiveerimisel on andmeside rändlusteenus lubatud. Kui jätate selle reegli seadistamata või keelate, siis ei ole andmeside rändlusteenus saadaval.</translation>
 <translation id="7683777542468165012">Dünaamiline reeglivärskendus</translation>
 <translation id="7694807474048279351">Toote <ph name="PRODUCT_OS_NAME" /> värskenduse rakendamise järgse automaatse taaskäivitamise ajastamine.
@@ -2181,7 +2169,6 @@
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
 <translation id="7953256619080733119">Kasutaja käsitsi sisestatavate hostide erandite haldamine</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Seda reeglit ei toetata enam.
           Lubab STUN-i ja vaheserverite kasutamise kaugkliendiga ühenduse loomisel.
 
@@ -2403,6 +2390,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Kui reegel ei ole määratud, kasutatakse skaleerimise vaiketegurit.
 
           Skaleerimistegur peab olema vähemalt 100%. Väärtused, mis võivad teha ekraani tumenduse viivituse esitlusrežiimis lühemaks kui tavaline ekraani tumenduse viivitus, pole lubatud.</translation>
+<translation id="8798099450830957504">Vaikimisi</translation>
 <translation id="8818173863808665831">Esitab seadme geograafilise asukoha.
 
       Kui jätate eeskirjad määramata või keelate need, siis asukohta ei esitata.</translation>
