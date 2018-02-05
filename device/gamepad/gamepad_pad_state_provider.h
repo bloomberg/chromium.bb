@@ -34,20 +34,24 @@ enum GamepadSource {
   GAMEPAD_SOURCE_WIN_RAW,
 };
 
-enum GamepadActiveState {
-  GAMEPAD_INACTIVE = 0,
-  GAMEPAD_ACTIVE,
-  GAMEPAD_NEWLY_ACTIVE,
-};
-
 struct PadState {
   // Which data fetcher provided this gamepad's data.
   GamepadSource source;
   // Data fetcher-specific identifier for this gamepad.
   int source_id;
 
-  // Indicates whether or not the gamepad is actively being updated
-  GamepadActiveState active_state;
+  // Indicates whether this gamepad is actively receiving input. |is_active| is
+  // initialized to false on each polling cycle and must is set to true when new
+  // data is received.
+  bool is_active;
+
+  // True if the gamepad is newly connected but notifications have not yet been
+  // sent.
+  bool is_newly_active;
+
+  // Set by the data fetcher to indicate that one-time initialization for this
+  // gamepad has been completed.
+  bool is_initialized;
 
   // Gamepad data, unmapped.
   Gamepad data;

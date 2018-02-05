@@ -66,7 +66,8 @@ void SetTouchData(PadState* state,
   if (!state)
     return;
   Gamepad& pad = state->data;
-  if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+  if (!state->is_initialized) {
+    state->is_initialized = true;
     pad.connected = true;
     pad.pose.not_null = true;
     pad.pose.has_orientation = true;
@@ -212,7 +213,8 @@ void OculusGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     PadState* state = GetPadState(ovrControllerType_Remote);
     if (state) {
       Gamepad& pad = state->data;
-      if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+      if (!state->is_initialized) {
+        state->is_initialized = true;
         swprintf(pad.id, Gamepad::kIdLengthCap, L"Oculus Remote");
         pad.connected = true;
         pad.display_id = display_id_;

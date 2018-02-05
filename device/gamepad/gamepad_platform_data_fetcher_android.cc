@@ -88,7 +88,8 @@ static void JNI_GamepadList_SetGamepadData(
   Gamepad& pad = state->data;
 
   // Is this the first time we've seen this device?
-  if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+  if (!state->is_initialized) {
+    state->is_initialized = true;
     // Map the Gamepad DeviceName String to the Gamepad Id. Ideally it should
     // be mapped to vendor and product information but it is only available at
     // kernel level and it can not be queried using class

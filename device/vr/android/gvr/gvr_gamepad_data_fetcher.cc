@@ -82,7 +82,8 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   GvrGamepadData provided_data = gamepad_data_;
 
   Gamepad& pad = state->data;
-  if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+  if (!state->is_initialized) {
+    state->is_initialized = true;
     // This is the first time we've seen this device, so do some one-time
     // initialization
     CopyToUString(pad.id, Gamepad::kIdLengthCap,
