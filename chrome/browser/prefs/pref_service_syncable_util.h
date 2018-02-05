@@ -37,7 +37,8 @@ sync_preferences::PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(
 //
 // If the Mojo pref service is in use |incognito_connector| and |user_connector|
 // must be non-null.
-sync_preferences::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
+std::unique_ptr<sync_preferences::PrefServiceSyncable>
+CreateIncognitoPrefServiceSyncable(
     sync_preferences::PrefServiceSyncable* pref_service,
     PrefStore* incognito_extension_pref_store,
     std::unique_ptr<PrefValueStore::Delegate> delegate);

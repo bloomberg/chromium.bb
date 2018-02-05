@@ -321,7 +321,7 @@ TestingProfile::TestingProfile(
     const TestingFactories& factories,
     const std::string& profile_name)
     : start_time_(Time::Now()),
-      prefs_(prefs.release()),
+      prefs_(std::move(prefs)),
       testing_prefs_(NULL),
       force_incognito_(false),
       original_profile_(parent),
@@ -785,8 +785,8 @@ void TestingProfile::CreateIncognitoPrefService() {
   DCHECK(!testing_prefs_);
   // Simplified version of ProfileImpl::GetOffTheRecordPrefs(). Note this
   // leaves testing_prefs_ unset.
-  prefs_.reset(CreateIncognitoPrefServiceSyncable(
-      original_profile_->prefs_.get(), nullptr, nullptr));
+  prefs_ = CreateIncognitoPrefServiceSyncable(original_profile_->prefs_.get(),
+                                              nullptr, nullptr);
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
 

@@ -28,7 +28,8 @@ sync_preferences::PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(
       profile->GetOffTheRecordPrefs());
 }
 
-sync_preferences::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
+std::unique_ptr<sync_preferences::PrefServiceSyncable>
+CreateIncognitoPrefServiceSyncable(
     sync_preferences::PrefServiceSyncable* pref_service,
     PrefStore* incognito_extension_pref_store,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {

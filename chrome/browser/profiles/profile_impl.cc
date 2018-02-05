@@ -978,8 +978,8 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
 
 PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {
   if (!dummy_otr_prefs_) {
-    dummy_otr_prefs_.reset(CreateIncognitoPrefServiceSyncable(
-        prefs_.get(), CreateExtensionPrefStore(this, true), nullptr));
+    dummy_otr_prefs_ = CreateIncognitoPrefServiceSyncable(
+        prefs_.get(), CreateExtensionPrefStore(this, true), nullptr);
   }
   return dummy_otr_prefs_.get();
 }

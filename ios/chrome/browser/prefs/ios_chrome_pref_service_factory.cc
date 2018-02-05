@@ -79,7 +79,7 @@ CreateIncognitoBrowserStatePrefs(
   // history or behaviour of the user should have this property.
   std::vector<const char*> overlay_pref_names;
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
-  return base::WrapUnique(pref_service->CreateIncognitoPrefService(
+  return pref_service->CreateIncognitoPrefService(
       nullptr,  // incognito_extension_pref_store
-      overlay_pref_names, nullptr));
+      overlay_pref_names, nullptr);
 }

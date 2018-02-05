@@ -212,8 +212,8 @@ class ControlledPrefsInstallIncognitoPersistent
                                    new base::Value("val1"));
     InstallExtensionControlledPrefIncognito(extension1(), kPref1,
                                             new base::Value("val2"));
-    std::unique_ptr<PrefService> incog_prefs(
-        prefs_.CreateIncognitoPrefService());
+    std::unique_ptr<PrefService> incog_prefs =
+        prefs_.CreateIncognitoPrefService();
     std::string actual = incog_prefs->GetString(kPref1);
     EXPECT_EQ("val2", actual);
   }
@@ -223,8 +223,8 @@ class ControlledPrefsInstallIncognitoPersistent
     std::string actual = prefs()->pref_service()->GetString(kPref1);
     EXPECT_EQ("val1", actual);
     // Incognito pref service shall see incognito values.
-    std::unique_ptr<PrefService> incog_prefs(
-        prefs_.CreateIncognitoPrefService());
+    std::unique_ptr<PrefService> incog_prefs =
+        prefs_.CreateIncognitoPrefService();
     actual = incog_prefs->GetString(kPref1);
     EXPECT_EQ("val2", actual);
   }
@@ -243,8 +243,8 @@ class ControlledPrefsInstallIncognitoSessionOnly
                                    new base::Value("val1"));
     InstallExtensionControlledPrefIncognitoSessionOnly(extension1(), kPref1,
                                                        new base::Value("val2"));
-    std::unique_ptr<PrefService> incog_prefs(
-        prefs_.CreateIncognitoPrefService());
+    std::unique_ptr<PrefService> incog_prefs =
+        prefs_.CreateIncognitoPrefService();
     std::string actual = incog_prefs->GetString(kPref1);
     EXPECT_EQ("val2", actual);
   }
@@ -255,8 +255,8 @@ class ControlledPrefsInstallIncognitoSessionOnly
     // Incognito pref service shall see session-only incognito values only
     // during first run. Once the pref service was reloaded, all values shall be
     // discarded.
-    std::unique_ptr<PrefService> incog_prefs(
-        prefs_.CreateIncognitoPrefService());
+    std::unique_ptr<PrefService> incog_prefs =
+        prefs_.CreateIncognitoPrefService();
     actual = incog_prefs->GetString(kPref1);
     if (iteration_ == 0) {
       EXPECT_EQ("val2", actual);
@@ -314,8 +314,8 @@ class ControlledPrefsNotifyWhenNeeded : public ExtensionControlledPrefsTest {
     registrar.Add(kPref1, observer.GetCallback());
 
     MockPrefChangeCallback incognito_observer(prefs()->pref_service());
-    std::unique_ptr<PrefService> incog_prefs(
-        prefs_.CreateIncognitoPrefService());
+    std::unique_ptr<PrefService> incog_prefs =
+        prefs_.CreateIncognitoPrefService();
     PrefChangeRegistrar incognito_registrar;
     incognito_registrar.Init(incog_prefs.get());
     incognito_registrar.Add(kPref1, incognito_observer.GetCallback());
