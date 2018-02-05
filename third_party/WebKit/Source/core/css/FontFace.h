@@ -145,7 +145,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
            const AtomicString& family,
            const FontFaceDescriptors&);
 
-  void InitCSSFontFace(ExecutionContext*, const CSSValue* src);
+  void InitCSSFontFace(ExecutionContext*, const CSSValue& src);
   void InitCSSFontFace(const unsigned char* data, size_t);
   void SetPropertyFromString(const ExecutionContext*,
                              const String&,
