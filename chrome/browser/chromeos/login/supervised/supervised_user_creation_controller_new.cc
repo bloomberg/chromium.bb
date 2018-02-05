@@ -235,13 +235,13 @@ void SupervisedUserCreationControllerNew::OnAuthenticationFailure(
   timeout_timer_.Stop();
   ErrorCode code = NO_ERROR;
   switch (error) {
-    case SupervisedUserAuthenticator::NO_MOUNT:
+    case ExtendedAuthenticator::NO_MOUNT:
       code = CRYPTOHOME_NO_MOUNT;
       break;
-    case SupervisedUserAuthenticator::FAILED_MOUNT:
+    case ExtendedAuthenticator::FAILED_MOUNT:
       code = CRYPTOHOME_FAILED_MOUNT;
       break;
-    case SupervisedUserAuthenticator::FAILED_TPM:
+    case ExtendedAuthenticator::FAILED_TPM:
       code = CRYPTOHOME_FAILED_TPM;
       break;
     default:

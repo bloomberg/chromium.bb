@@ -1074,8 +1074,6 @@ source_set("chromeos") {
     "login/startup_utils.h",
     "login/supervised/supervised_user_authentication.cc",
     "login/supervised/supervised_user_authentication.h",
-    "login/supervised/supervised_user_authenticator.cc",
-    "login/supervised/supervised_user_authenticator.h",
     "login/supervised/supervised_user_constants.cc",
     "login/supervised/supervised_user_constants.h",
     "login/supervised/supervised_user_creation_controller.cc",
