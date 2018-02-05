@@ -247,3 +247,5 @@ crbug.com/803958 external/wpt/websockets/cookies/002.html?wss [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/003.html?wss [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/007.html [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/007.html?wss [ Failure ]
+
+crbug.com/809119 http/tests/fetch/chromium/keepalive-resource-exhaustion.html [ Failure ]
