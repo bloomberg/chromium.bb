@@ -534,7 +534,8 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @CalledByNative
     public void dialogSurfaceCreated(Surface surface) {
-        if (mVrBrowsingEnabled) mVrUiViewContainer.setSurface(surface);
+        if (mVrBrowsingEnabled && mVrUiViewContainer != null)
+            mVrUiViewContainer.setSurface(surface);
     }
 
     @Override
@@ -593,7 +594,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     public void shutdown() {
         if (mVrBrowsingEnabled) {
             mNonVrViews.destroy();
-            mVrUiViewContainer.destroy();
+            if (mVrUiViewContainer != null) mVrUiViewContainer.destroy();
             removeVrRootView();
         }
 
