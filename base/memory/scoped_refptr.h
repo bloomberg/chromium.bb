@@ -152,6 +152,17 @@ scoped_refptr<T> WrapRefCounted(T* t) {
 //     // now, |a| and |b| each own a reference to the same MyFoo object.
 //   }
 //
+// Also see Chromium's ownership and calling conventions:
+// https://chromium.googlesource.com/chromium/src/+/lkgr/styleguide/c++/c++.md#object-ownership-and-calling-conventions
+// Specifically:
+//   If the function (at least sometimes) takes a ref on a refcounted object,
+//   declare the param as scoped_refptr<T>. The caller can decide whether it
+//   wishes to transfer ownership (by calling std::move(t) when passing t) or
+//   retain its ref (by simply passing t directly).
+//   In other words, use scoped_refptr like you would a std::unique_ptr except
+//   in the odd case where it's required to hold on to a ref while handing one
+//   to another component (if a component merely needs to use t on the stack
+//   without keeping a ref: pass t as a raw T*).
 template <class T>
 class scoped_refptr {
  public:
