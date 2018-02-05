@@ -301,12 +301,12 @@ class SmoothnessToughScrollingCases(_Smoothness):
   page_set = page_sets.ToughScrollingCasesPageSet
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    del is_first_result  # unused
+  def ShouldAddValue(cls, name, from_first_story_run):
+    del from_first_story_run  # unused
     # Only keep 'mean_pixels_approximated' and 'mean_pixels_checkerboarded'
     # metrics. (crbug.com/529331)
-    return value.name in ('mean_pixels_approximated',
-                          'mean_pixels_checkerboarded')
+    return name in ('mean_pixels_approximated',
+                    'mean_pixels_checkerboarded')
 
   @classmethod
   def Name(cls):
@@ -398,10 +398,10 @@ class SmoothnessToughAdCases(_Smoothness):
     return 'smoothness.tough_ad_cases'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    del is_first_result  # unused
+  def ShouldAddValue(cls, name, from_first_story_run):
+    del from_first_story_run  # unused
     # These pages don't scroll so it's not necessary to measure input latency.
-    return value.name != 'first_gesture_scroll_update_latency'
+    return name != 'first_gesture_scroll_update_latency'
 
 
 @benchmark.Owner(emails=['skyostil@chromium.org'])
