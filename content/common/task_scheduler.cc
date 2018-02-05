@@ -4,12 +4,15 @@
 
 #include "content/common/task_scheduler.h"
 
+#include <algorithm>
+
 #include "base/sys_info.h"
 
 namespace content {
 
 int GetMinThreadsInRendererTaskSchedulerForegroundPool() {
-  return base::SysInfo::NumberOfProcessors();
+  // Assume a busy main thread.
+  return std::max(1, base::SysInfo::NumberOfProcessors() - 1);
 }
 
 }  // namespace content

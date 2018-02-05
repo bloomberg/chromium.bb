@@ -31,7 +31,7 @@ TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
     EXPECT_GE(base::TaskScheduler::GetInstance()
                   ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                       {base::TaskPriority::USER_VISIBLE}),
-              base::SysInfo::NumberOfProcessors());
+              base::SysInfo::NumberOfProcessors() - 1);
     browser_main_loop.ShutdownThreadsAndCleanUp();
   }
   for (int id = BrowserThread::UI; id < BrowserThread::ID_COUNT; ++id) {
