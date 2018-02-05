@@ -112,19 +112,30 @@ void NGPaintFragment::PopulateDescendants(
   }
 }
 
+NGPaintFragment* NGPaintFragment::GetForInlineContainer(
+    const LayoutObject* layout_object) {
+  DCHECK(layout_object && layout_object->IsInline());
+  // Search from its parent because |EnclosingNGBlockFlow| returns itself when
+  // the LayoutObject is a box (i.e., atomic inline, including inline block and
+  // replaced elements.)
+  if (LayoutObject* parent = layout_object->Parent()) {
+    if (LayoutBlockFlow* block_flow = parent->EnclosingNGBlockFlow())
+      return block_flow->PaintFragment();
+  }
+  return nullptr;
+}
+
 NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
     const LayoutObject* layout_object) {
   DCHECK(layout_object && layout_object->IsInline());
-  if (LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow()) {
-    if (const NGPaintFragment* root = block_flow->PaintFragment()) {
-      auto it = root->first_fragment_map_.find(layout_object);
-      if (it != root->first_fragment_map_.end())
-        return FragmentRange(it->value);
+  if (const NGPaintFragment* root = GetForInlineContainer(layout_object)) {
+    auto it = root->first_fragment_map_.find(layout_object);
+    if (it != root->first_fragment_map_.end())
+      return FragmentRange(it->value);
 
-      // TODO(kojii): This is a culled inline box. Should we handle the case
-      // here, or by the caller, or even stop the culled inline boxes?
-      DCHECK(layout_object->IsLayoutInline());
-    }
+    // Reaching here means that there are no fragments for the LayoutObject.
+    // Culled inline box is one, but can be space-only LayoutText that were
+    // collapsed out.
   }
   return FragmentRange(nullptr);
 }
