@@ -48,19 +48,12 @@ class MacPort(base.Port):
     # We also currently only support Retina on 10.11.
 
     FALLBACK_PATHS = {}
-    FALLBACK_PATHS['mac10.13'] = ['mac']
 
-    # FIXME(crbug.com/774301): ideally the 10.12 bots will fall back to the
-    # 10.13 bots, but we can't really make that happen until we have 10.13
-    # on the main waterfalls. For now, mac10.12 and mac10.13 will share
-    # the baselines in platform/mac, meaning that 10.13 will fail when
-    # the results differ. Uncomment the following line (and delete the
-    # current mac10.12 line) to fix this when ready.
-    # FALLBACK_PATHS['mac10.12'] = ['mac-mac10.12'] + FALLBACK_PATHS['mac10.13']
-    FALLBACK_PATHS['mac10.12'] = ['mac']
+    FALLBACK_PATHS['mac10.13'] = ['mac']
+    FALLBACK_PATHS['mac10.12'] = ['mac-mac10.12'] + FALLBACK_PATHS['mac10.13']
     FALLBACK_PATHS['mac10.11'] = ['mac-mac10.11'] + FALLBACK_PATHS['mac10.12']
     FALLBACK_PATHS['mac10.10'] = ['mac-mac10.10'] + FALLBACK_PATHS['mac10.11']
-    FALLBACK_PATHS['retina'] = ['mac-retina', 'mac']
+    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mac10.11']
 
     CONTENT_SHELL_NAME = 'Content Shell'
 
