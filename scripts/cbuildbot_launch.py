@@ -173,7 +173,7 @@ def CleanBuildRoot(root, repo, metrics_fields):
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
     metrics.Counter(METRIC_CLOBBER).increment(
         field(metrics_fields, reason='layout_change'))
-    chroot_dir = os.path.join(root, 'chroot')
+    chroot_dir = os.path.join(root, constants.DEFAULT_CHROOT_DIR)
     if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
       cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
     osutils.RmDir(root, ignore_missing=True, sudo=True)
@@ -185,7 +185,7 @@ def CleanBuildRoot(root, repo, metrics_fields):
           field(metrics_fields, old_branch=old_branch))
 
       logging.info('Remove Chroot.')
-      chroot_dir = os.path.join(repo.directory, 'chroot')
+      chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
       if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
         cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
       osutils.RmDir(chroot_dir, ignore_missing=True, sudo=True)
@@ -291,6 +291,19 @@ def RunCbuildbot(buildroot, depot_tools_path, argv):
   return result.returncode
 
 
+@StageDecorator
+def CleanupChroot(buildroot):
+  """Unmount/clean up an image-based chroot without deleting the backing image.
+
+  Args:
+    buildroot: Directory containing the chroot to be cleaned up.
+  """
+  chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
+  logging.info('Cleaning up chroot at %s', chroot_dir)
+  if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+    cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=False)
+
+
 def ConfigureGlobalEnvironment():
   """Setup process wide environmental changes."""
   # Set umask to 022 so files created by buildbot are readable.
@@ -366,6 +379,7 @@ def _main(argv):
     with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
       result = RunCbuildbot(buildroot, depot_tools_path, argv)
       s_fields['success'] = (result == 0)
+      CleanupChroot(buildroot)
       return result
 
 

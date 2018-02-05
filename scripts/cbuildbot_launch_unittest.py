@@ -167,6 +167,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
                                   autospec=True)
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
                                      autospec=True)
+    mock_cleanup_chroot = self.PatchObject(cbuildbot_launch, 'CleanupChroot',
+                                           autospec=True)
 
     cbuildbot_launch._main(['-r', '/root', 'config'])
 
@@ -200,6 +202,10 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
         cwd='/root/repository',
         error_code_ok=True)
 
+    # Ensure we clean the chroot, as expected.
+    self.assertEqual(mock_cleanup_chroot.mock_calls, [
+        mock.call('/root/repository')])
+
   def testMainMax(self):
     """Test a larger set of command line options."""
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
@@ -216,6 +222,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
                                   autospec=True)
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
                                      autospec=True)
+    mock_cleanup_chroot = self.PatchObject(cbuildbot_launch, 'CleanupChroot',
+                                           autospec=True)
 
     cbuildbot_launch._main(['--buildroot', '/root',
                             '--branch', 'branch',
@@ -256,6 +264,10 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
         error_code_ok=True)
+
+    # Ensure we clean the chroot, as expected.
+    self.assertEqual(mock_cleanup_chroot.mock_calls, [
+        mock.call('/root/repository')])
 
 
 class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
