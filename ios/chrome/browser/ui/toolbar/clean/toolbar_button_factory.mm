@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -166,7 +167,13 @@ const int styleCount = 2;
 
   SetA11yLabelAndUiAutomationName(toolsMenuButton, IDS_IOS_TOOLBAR_SETTINGS,
                                   kToolbarToolsMenuButtonIdentifier);
-  [self configureButton:toolsMenuButton width:kToolsMenuButtonWidth];
+  if (IsUIRefreshPhase1Enabled()) {
+    [self configureButton:toolsMenuButton width:kToolbarButtonWidth];
+    [toolsMenuButton.heightAnchor constraintEqualToConstant:kToolbarHeight]
+        .active = YES;
+  } else {
+    [self configureButton:toolsMenuButton width:kToolsMenuButtonWidth];
+  }
   [toolsMenuButton addTarget:self.dispatcher
                       action:@selector(showToolsMenu)
             forControlEvents:UIControlEventTouchUpInside];
