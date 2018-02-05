@@ -828,6 +828,7 @@ void TouchExplorationController::OnTapTimerFired() {
     case SINGLE_TAP_PRESSED:
       if (passthrough_timer_.IsRunning())
         return;
+      FALLTHROUGH;
     case GESTURE_IN_PROGRESS:
       // If only one finger is down, go into touch exploration.
       if (current_touch_ids_.size() == 1) {
