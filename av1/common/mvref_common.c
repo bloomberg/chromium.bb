@@ -1125,14 +1125,12 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 #endif  // !CONFIG_MFMV
 
-  // Since we couldn't find 2 mvs from the same reference frame
-  // go back through the neighbors and find motion vectors from
-  // different reference frames.
-  if (
+// Since we couldn't find 2 mvs from the same reference frame
+// go back through the neighbors and find motion vectors from
+// different reference frames.
 #if CONFIG_INTRABC
-      ref_frame != INTRA_FRAME
+  if (ref_frame != INTRA_FRAME) {
 #endif  // CONFIG_INTRABC
-      ) {
     for (i = 0; i < MVREF_NEIGHBOURS; ++i) {
       const POSITION *mv_ref = &mv_ref_search[i];
       if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, mv_ref)) {
@@ -1150,7 +1148,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                  refmv_count, mv_ref_list, bw, bh, xd, Done);
       }
     }
+#if CONFIG_INTRABC
   }
+#endif  // CONFIG_INTRABC
 
 #if !CONFIG_MFMV
   // Since we still don't have a candidate we'll try the last frame.
