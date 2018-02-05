@@ -23,8 +23,7 @@ class InputHandlerProxyClient {
 
   // Dispatch a non blocking event to the main thread. This is used when a
   // gesture fling from a touchpad is processed and the target only has
-  // passive event listeners. If the target has blocking event listeners
-  // |TransferActiveWheelFlingAnimation| will be used instead.
+  // passive event listeners.
   virtual void DispatchNonBlockingEventToMainThread(
       WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) = 0;
