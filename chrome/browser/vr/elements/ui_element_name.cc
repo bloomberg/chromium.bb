@@ -60,6 +60,7 @@ static const char* g_ui_element_name_strings[] = {
     "kOmniboxSuggestions",
     "kOmniboxSuggestionsOuterLayout",
     "kOmniboxOuterLayout",
+    "kOmniboxOuterLayoutSpacer",
     "kOmniboxShadow",
     "k2dBrowsingVisibiltyControlForVoice",
     "k2dBrowsingVisibiltyControlForSiteInfoPrompt",
@@ -125,7 +126,9 @@ static const char* g_ui_element_name_strings[] = {
     "kControllerTrackpadRepositionLabel",
     "kControllerExitButtonLabel",
     "kControllerBackButtonLabel",
+    "kContentRepositionLabel",
     "kContentRepositionHitPlane",
+    "kContentRepositionVisibilityToggle",
 };
 
 static_assert(

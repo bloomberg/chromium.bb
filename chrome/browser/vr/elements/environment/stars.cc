@@ -67,10 +67,7 @@ static constexpr char const* kFragmentShader = SHADER(
 
 }  // namespace
 
-Stars::Stars() {
-  set_hit_testable(false);
-}
-
+Stars::Stars() = default;
 Stars::~Stars() = default;
 
 void Stars::Render(UiElementRenderer* renderer,

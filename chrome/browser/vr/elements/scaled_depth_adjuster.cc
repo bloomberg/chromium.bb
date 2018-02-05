@@ -8,7 +8,6 @@ namespace vr {
 
 ScaledDepthAdjuster::ScaledDepthAdjuster(float delta_z) : delta_z_(delta_z) {
   SetType(kTypeScaledDepthAdjuster);
-  set_hit_testable(false);
 }
 
 ScaledDepthAdjuster::~ScaledDepthAdjuster() = default;

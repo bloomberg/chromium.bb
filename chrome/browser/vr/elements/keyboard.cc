@@ -13,6 +13,7 @@ namespace vr {
 Keyboard::Keyboard() {
   SetName(kKeyboard);
   set_focusable(false);
+  set_hit_testable(true);
   SetVisibleImmediately(false);
 }
 
