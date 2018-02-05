@@ -58,7 +58,7 @@ const char kTestChromeContentSuggestionsSignedOutUrl[] =
 const char kTestChromeContentSuggestionsSignedInUrl[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
 
-const char kTestAccount[] = "foo@bar.com";
+const char kTestEmail[] = "foo@bar.com";
 
 // Artificial time delay for JSON parsing.
 const int64_t kTestJsonParsingLatencyMs = 20;
@@ -297,10 +297,7 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     fetcher_->SetClockForTesting(clock_.get());
   }
 
-  void SignIn() {
-    identity_test_env_.MakePrimaryAccountAvailable(kTestAccount, kTestAccount,
-                                                   "token");
-  }
+  void SignIn() { identity_test_env_.MakePrimaryAccountAvailable(kTestEmail); }
 
   RemoteSuggestionsFetcher::SnippetsAvailableCallback
   ToSnippetsAvailableCallback(MockSnippetsAvailableCallback* callback) {
