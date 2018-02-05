@@ -78,6 +78,12 @@ enum Event {
   kLast = kValueChanged,
 };
 
+// Explanation:
+// The majority of these roles come from the ARIA specification. Reference
+// the latest draft for proper usage.
+//
+// Roles not included by the ARIA specification should be avoided, especially
+// internal roles used by the accessibility infrastructure.
 enum Role {
   kNone,
   kAbbr,
@@ -110,7 +116,7 @@ enum Role {
   kDescriptionListDetail,
   kDescriptionList,
   kDescriptionListTerm,
-  kDesktop,
+  kDesktop,  // internal
   kDetails,
   kDialog,
   kDirectory,
