@@ -85,7 +85,7 @@ class TestExtensionPrefs {
   // This will add extension in our ExtensionPrefs.
   void AddExtension(Extension* extension);
 
-  PrefService* CreateIncognitoPrefService() const;
+  std::unique_ptr<PrefService> CreateIncognitoPrefService() const;
 
   // Allows disabling the loading of preferences of extensions. Becomes
   // active after calling RecreateExtensionPrefs(). Defaults to false.

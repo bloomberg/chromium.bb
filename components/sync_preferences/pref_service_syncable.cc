@@ -75,7 +75,8 @@ PrefServiceSyncable::~PrefServiceSyncable() {
       user_prefs::PrefRegistrySyncable::SyncableRegistrationCallback());
 }
 
-PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
+std::unique_ptr<PrefServiceSyncable>
+PrefServiceSyncable::CreateIncognitoPrefService(
     PrefStore* incognito_extension_pref_store,
     const std::vector<const char*>& overlay_pref_names,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
@@ -107,11 +108,10 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
       nullptr,  // recommended
       forked_registry->defaults().get(), pref_notifier.get(),
       std::move(delegate));
-  PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
+  return std::make_unique<PrefServiceSyncable>(
       std::move(pref_notifier), std::move(pref_value_store),
       incognito_pref_store.get(), forked_registry.get(),
       pref_sync_associator_.client(), read_error_callback_, false);
-  return incognito_service;
 }
 
 bool PrefServiceSyncable::IsSyncing() {

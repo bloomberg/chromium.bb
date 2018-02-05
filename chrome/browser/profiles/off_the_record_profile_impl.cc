@@ -131,11 +131,11 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
   // Must happen before we ask for prefs as prefs needs the connection to the
   // service manager, which is set up in Initialize.
   BrowserContext::Initialize(this, profile_->GetPath());
-  prefs_.reset(CreateIncognitoPrefServiceSyncable(
+  prefs_ = CreateIncognitoPrefServiceSyncable(
       PrefServiceSyncableFromProfile(profile_),
       CreateExtensionPrefStore(profile_, true),
       InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
-          ->CreateDelegate()));
+          ->CreateDelegate());
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
