@@ -191,21 +191,12 @@ class PageAllocator : public v8::PageAllocator {
                       size_t length,
                       size_t alignment,
                       v8::PageAllocator::Permission permissions) override {
-    // V8 doesn't align the hint.
-    // TODO(bbudge) Remove this when V8 aligns hint addresses.
-    address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) &
-                                      ~(alignment - 1));
     base::PageAccessibilityConfiguration config = GetPageConfig(permissions);
     bool commit = (permissions != v8::PageAllocator::Permission::kNoAccess);
     return base::AllocPages(address, length, alignment, config, commit);
   }
 
   bool FreePages(void* address, size_t length) override {
-// V8 doesn't align the size properly on Windows.
-// TODO(bbudge) Remove this when V8 returns the right length on Windows.
-#if defined(OS_WIN)
-    length = base::bits::Align(length, base::kPageAllocationGranularity);
-#endif
     base::FreePages(address, length);
     return true;
   }
