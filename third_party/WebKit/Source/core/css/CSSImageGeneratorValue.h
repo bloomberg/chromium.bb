@@ -121,15 +121,15 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
  protected:
   explicit CSSImageGeneratorValue(ClassType);
 
-  Image* GetImage(const ImageResourceObserver*, const FloatSize&);
-  void PutImage(const FloatSize&, scoped_refptr<Image>);
+  Image* GetImage(const ImageResourceObserver*, const FloatSize&) const;
+  void PutImage(const FloatSize&, scoped_refptr<Image>) const;
   const ClientSizeCountMap& Clients() const { return clients_; }
 
   // A map from LayoutObjects (with entry count) to image sizes.
-  ClientSizeCountMap clients_;
+  mutable ClientSizeCountMap clients_;
 
   // Cached image instances.
-  GeneratedImageCache cached_images_;
+  mutable GeneratedImageCache cached_images_;
 
   // TODO(Oilpan): when/if we can make the layoutObject point directly to the
   // CSSImageGenerator value using a member we don't need to have this hack

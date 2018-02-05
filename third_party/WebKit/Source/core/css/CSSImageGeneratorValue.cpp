@@ -120,7 +120,7 @@ void CSSImageGeneratorValue::RemoveClient(const ImageResourceObserver* client) {
 }
 
 Image* CSSImageGeneratorValue::GetImage(const ImageResourceObserver* client,
-                                        const FloatSize& size) {
+                                        const FloatSize& size) const {
   ClientSizeCountMap::iterator it = clients_.find(client);
   if (it != clients_.end()) {
     DCHECK(keep_alive_);
@@ -141,7 +141,7 @@ Image* CSSImageGeneratorValue::GetImage(const ImageResourceObserver* client,
 }
 
 void CSSImageGeneratorValue::PutImage(const FloatSize& size,
-                                      scoped_refptr<Image> image) {
+                                      scoped_refptr<Image> image) const {
   cached_images_.PutImage(size, std::move(image));
 }
 

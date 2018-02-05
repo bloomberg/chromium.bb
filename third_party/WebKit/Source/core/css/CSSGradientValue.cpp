@@ -106,7 +106,7 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
     const ImageResourceObserver& client,
     const Document& document,
     const ComputedStyle& style,
-    const FloatSize& size) {
+    const FloatSize& size) const {
   if (size.IsEmpty())
     return nullptr;
 
@@ -292,17 +292,16 @@ static Color ResolveStopColor(const CSSValue& stop_color,
 
 void CSSGradientValue::AddDeprecatedStops(GradientDesc& desc,
                                           const Document& document,
-                                          const ComputedStyle& style) {
+                                          const ComputedStyle& style) const {
   DCHECK(gradient_type_ == kCSSDeprecatedLinearGradient ||
          gradient_type_ == kCSSDeprecatedRadialGradient);
 
-  if (!stops_sorted_) {
-    if (stops_.size())
-      std::stable_sort(stops_.begin(), stops_.end(), CompareStops);
-    stops_sorted_ = true;
-  }
+  // Performance here is probably not important because this is for deprecated
+  // gradients.
+  auto stops_sorted = stops_;
+  std::stable_sort(stops_sorted.begin(), stops_sorted.end(), CompareStops);
 
-  for (const auto& stop : stops_) {
+  for (const auto& stop : stops_sorted) {
     float offset;
     if (stop.offset_->IsPercentage())
       offset = stop.offset_->GetFloatValue() / 100;
@@ -457,7 +456,7 @@ void CSSGradientValue::AddStops(
     CSSGradientValue::GradientDesc& desc,
     const CSSToLengthConversionData& conversion_data,
     const Document& document,
-    const ComputedStyle& style) {
+    const ComputedStyle& style) const {
   if (gradient_type_ == kCSSDeprecatedLinearGradient ||
       gradient_type_ == kCSSDeprecatedRadialGradient) {
     AddDeprecatedStops(desc, document, style);
@@ -875,7 +874,7 @@ scoped_refptr<Gradient> CSSLinearGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const FloatSize& size,
     const Document& document,
-    const ComputedStyle& style) {
+    const ComputedStyle& style) const {
   DCHECK(!size.IsEmpty());
 
   FloatPoint first_point;
@@ -1242,7 +1241,7 @@ scoped_refptr<Gradient> CSSRadialGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const FloatSize& size,
     const Document& document,
-    const ComputedStyle& style) {
+    const ComputedStyle& style) const {
   DCHECK(!size.IsEmpty());
 
   FloatPoint first_point =
@@ -1418,7 +1417,7 @@ scoped_refptr<Gradient> CSSConicGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const FloatSize& size,
     const Document& document,
-    const ComputedStyle& style) {
+    const ComputedStyle& style) const {
   DCHECK(!size.IsEmpty());
 
   const float angle = from_angle_ ? from_angle_->ComputeDegrees() : 0;

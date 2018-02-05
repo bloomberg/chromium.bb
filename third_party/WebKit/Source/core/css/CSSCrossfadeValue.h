@@ -57,9 +57,9 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
                                 const Document&,
                                 const ComputedStyle&,
-                                const FloatSize& target_size);
+                                const FloatSize& target_size) const;
   bool IsFixedSize() const { return true; }
-  FloatSize FixedSize(const Document&, const FloatSize&);
+  FloatSize FixedSize(const Document&, const FloatSize&) const;
 
   bool IsPending() const;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
