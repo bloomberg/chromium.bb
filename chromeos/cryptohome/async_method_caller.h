@@ -22,14 +22,6 @@ class Identification;
 // enum (MountError) and referencing ::chromeos::cryptohome and ::cryptohome
 // within the same code is confusing.
 
-// Flags for the AsyncMount method.
-enum MountFlags {
-    MOUNT_FLAGS_NONE = 0,       // Used to explicitly denote that no flags are
-                                // set.
-    CREATE_IF_MISSING = 1,      // Create a cryptohome if it does not exist yet.
-    ENSURE_EPHEMERAL = 1 << 1,  // Ensure that the mount is ephemeral.
-};
-
 // This class manages calls to Cryptohome service's 'async' methods.
 class CHROMEOS_EXPORT AsyncMethodCaller {
  public:
@@ -56,26 +48,6 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
                                const std::string& old_hash,
                                const std::string& new_hash,
                                Callback callback) = 0;
-
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_id| and then mount it using |passhash| to unlock the key.
-  // The |flags| are a combination of |MountFlags|:
-  // * CREATE_IF_MISSING Controls whether or not cryptohomed is asked to create
-  //                     a new cryptohome if one does not exist yet for
-  //                     |user_id|.
-  // * ENSURE_EPHEMERAL  If |true|, the mounted cryptohome will be backed by
-  //                     tmpfs. If |false|, the ephemeral users policy decides
-  //                     whether tmpfs or an encrypted directory is used as the
-  //                     backend.
-  // |callback| will be called with status info on completion.
-  // If the |CREATE_IF_MISSING| flag is not given and no cryptohome exists
-  // for |user_id|, the expected result is
-  // callback.Run(false, kCryptohomeMountErrorUserDoesNotExist). Otherwise,
-  // the normal range of return codes is expected.
-  virtual void AsyncMount(const Identification& user_id,
-                          const std::string& passhash,
-                          int flags,
-                          Callback callback) = 0;
 
   // Asks cryptohomed to asynchronously try to add another |new_passhash| for
   // |user_id| using |passhash| to unlock the key.

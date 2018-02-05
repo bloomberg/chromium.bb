@@ -231,26 +231,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void AsyncMount(const cryptohome::Identification& cryptohome_id,
-                  const std::string& key,
-                  int flags,
-                  AsyncMethodCallback callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeAsyncMount);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
-    writer.AppendString(key);
-    writer.AppendBool(flags & cryptohome::CREATE_IF_MISSING);
-    writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
-    // deprecated_tracked_subdirectories
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  // CryptohomeClient override.
   void AsyncAddKey(const cryptohome::Identification& cryptohome_id,
                    const std::string& key,
                    const std::string& new_key,

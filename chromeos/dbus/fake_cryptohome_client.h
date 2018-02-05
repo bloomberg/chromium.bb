@@ -59,10 +59,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                             DBusMethodCallback<std::string> callback) override;
   std::string BlockingGetSanitizedUsername(
       const cryptohome::Identification& cryptohome_id) override;
-  void AsyncMount(const cryptohome::Identification& cryptohome_id,
-                  const std::string& key,
-                  int flags,
-                  AsyncMethodCallback callback) override;
   void AsyncAddKey(const cryptohome::Identification& cryptohome_id,
                    const std::string& key,
                    const std::string& new_key,
