@@ -12,8 +12,6 @@ blink_modules_sources("screen_orientation") {
     "ScreenOrientation.h",
     "ScreenOrientationControllerImpl.cpp",
     "ScreenOrientationControllerImpl.h",
-    "ScreenOrientationDelegate.cpp",
-    "ScreenOrientationDelegate.h",
     "ScreenOrientationDispatcher.cpp",
     "ScreenOrientationDispatcher.h",
     "ScreenScreenOrientation.cpp",

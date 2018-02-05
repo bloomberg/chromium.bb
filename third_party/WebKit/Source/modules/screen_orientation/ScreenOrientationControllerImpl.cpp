@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "common/associated_interfaces/associated_interface_provider.h"
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
@@ -13,7 +14,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
-#include "modules/screen_orientation/ScreenOrientationDelegate.h"
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScopedOrientationChangeIndicator.h"
@@ -40,12 +40,15 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     : ScreenOrientationController(frame),
       ContextLifecycleObserver(frame.GetDocument()),
       PlatformEventController(frame.GetDocument()),
-      delegate_(std::make_unique<ScreenOrientationDelegate>(
-          frame.GetRemoteNavigationAssociatedInterfaces())),
       dispatch_event_timer_(
           frame.GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
-          &ScreenOrientationControllerImpl::DispatchEventTimerFired) {}
+          &ScreenOrientationControllerImpl::DispatchEventTimerFired) {
+  AssociatedInterfaceProvider* provider =
+      frame.GetRemoteNavigationAssociatedInterfaces();
+  if (provider)
+    provider->GetInterface(&screen_orientation_service_);
+}
 
 // Compute the screen orientation using the orientation angle and the screen
 // width / height.
@@ -105,7 +108,7 @@ void ScreenOrientationControllerImpl::UpdateOrientation() {
 }
 
 bool ScreenOrientationControllerImpl::IsActive() const {
-  return orientation_ && delegate_;
+  return orientation_ && screen_orientation_service_;
 }
 
 bool ScreenOrientationControllerImpl::IsVisible() const {
@@ -184,18 +187,27 @@ void ScreenOrientationControllerImpl::SetOrientation(
 void ScreenOrientationControllerImpl::lock(
     WebScreenOrientationLockType orientation,
     std::unique_ptr<WebLockOrientationCallback> callback) {
-  // When detached, the delegate is no longer valid.
-  if (!delegate_)
+  // When detached, the |screen_orientation_service_| is no longer valid.
+  if (!screen_orientation_service_)
     return;
-  delegate_->LockOrientation(orientation, std::move(callback));
+
+  CancelPendingLocks();
+  pending_callback_ = std::move(callback);
+  screen_orientation_service_->LockOrientation(
+      orientation,
+      WTF::Bind(&ScreenOrientationControllerImpl::OnLockOrientationResult,
+                WrapWeakPersistent(this), ++request_id_));
+
   active_lock_ = true;
 }
 
 void ScreenOrientationControllerImpl::unlock() {
-  // When detached, the delegate is no longer valid.
-  if (!delegate_)
+  // When detached, the |screen_orientation_service_| is no longer valid.
+  if (!screen_orientation_service_)
     return;
-  delegate_->UnlockOrientation();
+
+  CancelPendingLocks();
+  screen_orientation_service_->UnlockOrientation();
   active_lock_ = false;
 }
 
@@ -229,7 +241,7 @@ bool ScreenOrientationControllerImpl::HasLastData() {
 
 void ScreenOrientationControllerImpl::ContextDestroyed(ExecutionContext*) {
   StopUpdating();
-  delegate_.reset();
+  screen_orientation_service_ = nullptr;
   active_lock_ = false;
 }
 
@@ -248,12 +260,50 @@ void ScreenOrientationControllerImpl::Trace(blink::Visitor* visitor) {
 }
 
 void ScreenOrientationControllerImpl::SetScreenOrientationAssociatedPtrForTests(
-    device::mojom::blink::ScreenOrientationAssociatedPtr
-        screen_orientation_associated_ptr) {
-  if (delegate_) {
-    delegate_->SetScreenOrientationAssociatedPtrForTests(
-        std::move(screen_orientation_associated_ptr));
+    ScreenOrientationAssociatedPtr screen_orientation_associated_ptr) {
+  screen_orientation_service_ = std::move(screen_orientation_associated_ptr);
+}
+
+void ScreenOrientationControllerImpl::OnLockOrientationResult(
+    int request_id,
+    ScreenOrientationLockResult result) {
+  if (!pending_callback_ || request_id != request_id_)
+    return;
+
+  switch (result) {
+    case ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS:
+      pending_callback_->OnSuccess();
+      break;
+    case ScreenOrientationLockResult::
+        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE:
+      pending_callback_->OnError(kWebLockOrientationErrorNotAvailable);
+      break;
+    case ScreenOrientationLockResult::
+        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_FULLSCREEN_REQUIRED:
+      pending_callback_->OnError(kWebLockOrientationErrorFullscreenRequired);
+      break;
+    case ScreenOrientationLockResult::
+        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED:
+      pending_callback_->OnError(kWebLockOrientationErrorCanceled);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
+
+  pending_callback_.reset();
+}
+
+void ScreenOrientationControllerImpl::CancelPendingLocks() {
+  if (!pending_callback_)
+    return;
+
+  pending_callback_->OnError(kWebLockOrientationErrorCanceled);
+  pending_callback_.reset();
+}
+
+int ScreenOrientationControllerImpl::GetRequestIdForTests() {
+  return pending_callback_ ? request_id_ : -1;
 }
 
 }  // namespace blink
