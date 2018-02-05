@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import collections
 import contextlib
-import copy
 import datetime
 import itertools
 import os
@@ -1318,7 +1317,7 @@ class PreCQLauncherStage(SyncStage):
       configs_from_options = self._GetPreCQConfigsFromOptions(
           change, union_pre_cq_limit=DEFAULT_UNION_PRE_CQ_LIMIT)
     except ExceedUnionPreCQLimitException as e:
-      pre_cq_configs = copy.copy(e.pre_cq_configs)
+      pre_cq_configs = list(e.pre_cq_configs)
       pre_cq_configs.sort()
       configs_from_options = pre_cq_configs[:DEFAULT_UNION_PRE_CQ_LIMIT]
       logging.info('Unioned Pre-CQs %s for change %s exceed the limit %d. '

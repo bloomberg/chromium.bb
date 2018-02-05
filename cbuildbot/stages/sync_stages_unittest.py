@@ -1453,12 +1453,11 @@ pre-cq-configs: link-pre-cq
                       self.sync_stage._GetPreCQConfigsFromOptions,
                       change, union_pre_cq_limit=2)
 
-  def testConfiguredVerificationsForChange(self):
-    """Test ConfiguredVerificationsForChange."""
+  def testConfiguredVerificationsForChangeTooManyConfigs(self):
+    """Test ConfiguredVerificationsForChange when too many configs requested."""
     change = MockPatch()
     self.PatchObject(cros_patch, 'GetOptionLinesFromCommitMessage')
-    pre_cq_configs = ['pre-cq-%s' % x for x in range(0, 30)]
-    pre_cq_configs.sort(reverse=True)
+    pre_cq_configs = {'pre-cq-%s' % x for x in range(0, 30)}
     exceed_exception = sync_stages.ExceedUnionPreCQLimitException(
         pre_cq_configs, 20)
     self.PatchObject(sync_stages.PreCQLauncherStage,
@@ -1466,8 +1465,11 @@ pre-cq-configs: link-pre-cq
                      side_effect=exceed_exception)
     result = self.sync_stage._ConfiguredVerificationsForChange(change)
 
-    self.assertItemsEqual(
-        result, pre_cq_configs[sync_stages.DEFAULT_UNION_PRE_CQ_LIMIT:])
+    self.assertEqual(len(result), sync_stages.DEFAULT_UNION_PRE_CQ_LIMIT)
+    self.assertLess(
+        result,
+        {'pre-cq-%s' % x for x in range(0, 30)},
+    )
 
 
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
