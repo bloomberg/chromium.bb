@@ -55,6 +55,9 @@ if (enable_pdf) {
       "url_loader_wrapper_impl.h",
     ]
 
+    include_dirs = []
+    defines = []
+
     if (pdf_engine == 0) {
       deps += [
         "//pdf/pdfium/fuzzers",
@@ -77,11 +80,13 @@ if (enable_pdf) {
         "pdfium/pdfium_range.cc",
         "pdfium/pdfium_range.h",
       ]
-    }
 
-    defines = [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
-    if (pdf_enable_xfa) {
-      defines += [ "PDF_ENABLE_XFA" ]
+      include_dirs += [ "//third_party/pdfium" ]
+
+      defines += [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
+      if (pdf_enable_xfa) {
+        defines += [ "PDF_ENABLE_XFA" ]
+      }
     }
   }
 

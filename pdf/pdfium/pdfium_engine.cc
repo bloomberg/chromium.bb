@@ -50,6 +50,7 @@
 #include "ppapi/cpp/var_dictionary.h"
 #include "printing/pdf_transform.h"
 #include "printing/units.h"
+#include "third_party/pdfium/public/cpp/fpdf_deleters.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_attachment.h"
 #include "third_party/pdfium/public/fpdf_catalog.h"
@@ -1461,9 +1462,6 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
 
   const pp::Size& bitmap_size(page_to_print->rect().size());
 
-  FPDF_PAGE temp_page =
-      FPDFPage_New(temp_doc, 0, source_page_width, source_page_height);
-
   pp::ImageData image =
       pp::ImageData(client_->GetPluginInstance(),
                     PP_IMAGEDATAFORMAT_BGRA_PREMUL, bitmap_size, false);
@@ -1506,22 +1504,27 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
     SkPixmap src(info, bitmap_data, FPDFBitmap_GetStride(bitmap));
     encoded = gfx::JPEGCodec::Encode(src, kQuality, &compressed_bitmap_data);
   }
-  if (encoded) {
-    FPDF_FILEACCESS file_access = {};
-    file_access.m_FileLen =
-        static_cast<unsigned long>(compressed_bitmap_data.size());
-    file_access.m_GetBlock = &GetBlockForJpeg;
-    file_access.m_Param = &compressed_bitmap_data;
 
-    FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img, &file_access);
-  } else {
-    FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap);
+  {
+    std::unique_ptr<void, FPDFPageDeleter> temp_page_holder(
+        FPDFPage_New(temp_doc, 0, source_page_width, source_page_height));
+    FPDF_PAGE temp_page = temp_page_holder.get();
+    if (encoded) {
+      FPDF_FILEACCESS file_access = {};
+      file_access.m_FileLen =
+          static_cast<unsigned long>(compressed_bitmap_data.size());
+      file_access.m_GetBlock = &GetBlockForJpeg;
+      file_access.m_Param = &compressed_bitmap_data;
+
+      FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img, &file_access);
+    } else {
+      FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap);
+    }
+
+    FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
+    FPDFPage_InsertObject(temp_page, temp_img);
+    FPDFPage_GenerateContent(temp_page);
   }
-
-  FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
-  FPDFPage_InsertObject(temp_page, temp_img);
-  FPDFPage_GenerateContent(temp_page);
-  FPDF_ClosePage(temp_page);
 
   page_to_print->ClosePrintPage();
   FPDFBitmap_Destroy(bitmap);
