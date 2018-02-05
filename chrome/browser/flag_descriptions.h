@@ -326,6 +326,9 @@ extern const char kEnableOptimizationHintsDescription[];
 extern const char kEnableOutOfBlinkCORSName[];
 extern const char kEnableOutOfBlinkCORSDescription[];
 
+extern const char kVizDisplayCompositorName[];
+extern const char kVizDisplayCompositorDescription[];
+
 extern const char kEnableOutOfProcessHeapProfilingName[];
 extern const char kEnableOutOfProcessHeapProfilingDescription[];
 extern const char kEnableOutOfProcessHeapProfilingModeMinimal[];

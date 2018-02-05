@@ -89,6 +89,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/version_info/version_info.h"
+#include "components/viz/common/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
@@ -3706,6 +3707,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSoleIntegrationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSoleIntegration)},
 #endif  // defined(OS_ANDROID)
+
+    {"enable-viz-display-compositor",
+     flag_descriptions::kVizDisplayCompositorName,
+     flag_descriptions::kVizDisplayCompositorDescription,
+     kOsLinux | kOsWin | kOsMac,
+     FEATURE_VALUE_TYPE(features::kVizDisplayCompositor)},
 
 #if defined(OS_CHROMEOS)
     {"enable-display-zoom-setting",

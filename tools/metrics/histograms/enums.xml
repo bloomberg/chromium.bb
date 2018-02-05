@@ -25427,6 +25427,7 @@ from previous Chrome versions.
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
   <int value="-1780306716"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
+  <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
@@ -25883,6 +25884,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
+  <int value="-621382525" label="VizDisplayCompositor:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-617452890" label="media-router"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
