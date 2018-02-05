@@ -87,6 +87,7 @@ class GitException(Exception):
   """An exception related to git."""
 
 
+# TODO(nxia): crbug.com/809693 make RemoteRef a namedtuple
 class RemoteRef(object):
   """Object representing a remote ref.
 
@@ -95,9 +96,14 @@ class RemoteRef(object):
   name (e.g., 'refs/heads/master').
   """
 
-  def __init__(self, remote, ref):
+  def __init__(self, remote, ref, project_name=None):
     self.remote = remote
     self.ref = ref
+    self.project_name = project_name
+
+  def __str__(self):
+    return ('RemoteRef remote: %s; ref: %s; project_name: %s' %
+            (self.remote, self.ref, self.project_name))
 
 
 def FindRepoDir(path):
@@ -1014,7 +1020,9 @@ def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
       if not revision.startswith('refs/heads/'):
         return None
 
-    return RemoteRef(remote, revision)
+    project_name = checkout.get('name', None)
+
+    return RemoteRef(remote, revision, project_name=project_name)
   except EnvironmentError as e:
     if e.errno != errno.ENOENT:
       raise

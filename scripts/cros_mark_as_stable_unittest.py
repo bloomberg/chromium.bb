@@ -10,7 +10,6 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -116,138 +115,142 @@ class EbuildMock(object):
 
 
 # pylint: disable=protected-access
-class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
-  """Test mark_as_stable in parallel."""
+class MarkAsStableCMDTest(cros_test_lib.MockTempDirTestCase):
+  """Test cros_mark_as_stable commands."""
 
   def setUp(self):
-    self._overlay = 'test-overlay'
     self._manifest = 'manifest'
     self._parser = cros_mark_as_stable.GetParser()
+    self._package_list = ['pkg1']
 
-    self._manager = parallel.Manager()
-    self.ebuild_paths_to_add = self._manager.list()
-    self.ebuild_paths_to_remove = self._manager.list()
-    self.revved_packages = self._manager.list()
-    self.new_package_atoms = self._manager.list()
-    self.messages = self._manager.list()
-    self._manager.__enter__()
+    self._overlays = [os.path.join(self.tempdir, 'overlay_%s' % i)
+                      for i in range(0, 3)]
+
+    self._overlay_remote_ref = {
+        self._overlays[0]: git.RemoteRef('remote', 'ref', 'project_1'),
+        self._overlays[1]: git.RemoteRef('remote', 'ref', 'project_1'),
+        self._overlays[2]: git.RemoteRef('remote', 'ref', 'project_2'),
+    }
+
+    self._git_project_overlays = {}
+    self._overlay_tracking_branch = {}
+    for overlay in self._overlays:
+      self._git_project_overlays.setdefault(
+          self._overlay_remote_ref[overlay], []).append(overlay)
+      self._overlay_tracking_branch[overlay] = (
+          self._overlay_remote_ref[overlay].ref)
 
     self.PatchObject(git, 'GetTrackingBranchViaManifest')
+    self._commit_options = self._parser.parse_args(['commit'])
+    self._push_options = self._parser.parse_args(['push'])
 
-  def tearDown(self):
-    # Mimic exiting a 'with' statement.
-    self._manager.__exit__(None, None, None)
+  def testWorkOnPush(self):
+    """Test _WorkOnPush."""
+    self.PatchObject(parallel, 'RunTasksInProcessPool')
+
+    cros_mark_as_stable._WorkOnPush(
+        self._push_options, self._overlay_tracking_branch,
+        self._git_project_overlays)
+
+  def testPushOverlays(self):
+    """Test _PushOverlays."""
+    self.PatchObject(os.path, 'isdir', return_value=True)
+    mock_push_change = self.PatchObject(cros_mark_as_stable, 'PushChange')
+
+    cros_mark_as_stable._PushOverlays(
+        self._push_options, self._overlays, self._overlay_tracking_branch)
+    self.assertEqual(mock_push_change.call_count, 3)
+
+  def testWorkOnCommit(self):
+    """Test _WorkOnCommit."""
+    self.PatchObject(parallel, 'RunTasksInProcessPool')
+    self.PatchObject(cros_mark_as_stable, '_CommitOverlays')
+    self.PatchObject(cros_mark_as_stable, '_GetOverlayToEbuildsMap',
+                     return_value={})
+
+    cros_mark_as_stable._WorkOnCommit(
+        self._commit_options, self._overlays, self._overlay_tracking_branch,
+        self._git_project_overlays, self._manifest, self._package_list)
+
+  def testGetOverlayToEbuildsMap(self):
+    """Test _GetOverlayToEbuildsMap."""
+    self.PatchObject(portage_util, 'GetOverlayEBuilds', return_value=['ebuild'])
+
+    expected_overlay_dicts = {
+        overlay : ['ebuild'] for overlay in self._overlays}
+    overlay_ebuilds = cros_mark_as_stable._GetOverlayToEbuildsMap(
+        self._commit_options, self._overlays, self._package_list)
+    self.assertItemsEqual(expected_overlay_dicts, overlay_ebuilds)
+
+  def testCommitOverlays(self):
+    """Test _CommitOverlays."""
+    mock_run_process_pool = self.PatchObject(parallel, 'RunTasksInProcessPool')
+    self.PatchObject(os.path, 'isdir', return_value=True)
+    self.PatchObject(git, 'RunGit')
+    self.PatchObject(cros_mark_as_stable, '_WorkOnEbuild', return_value=None)
+    self.PatchObject(git, 'GetGitRepoRevision')
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch')
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists', return_value=True)
+    self.PatchObject(portage_util.EBuild, 'CommitChange')
+
+    overlay_ebuilds = {
+        self._overlays[0]: ['ebuild_1_1', 'ebuild_1_2'],
+        self._overlays[1]: ['ebuild_2_1'],
+        self._overlays[2]: ['ebuild_3_1', 'ebuild_3_2'],
+    }
+
+    cros_mark_as_stable._CommitOverlays(
+        self._commit_options, self._manifest, self._overlays,
+        self._overlay_tracking_branch, overlay_ebuilds, list(), list())
+    self.assertEqual(3, mock_run_process_pool.call_count)
 
   def testWorkOnEbuildWithNewPackage(self):
     """Test _WorkOnEbuild with new packages."""
+    overlay = self._overlays[0]
     ebuild = EbuildMock('ebuild')
-    options = self._parser.parse_args(['commit'])
 
-    cros_mark_as_stable._WorkOnEbuild(
-        self._overlay, ebuild, self._manifest, options,
-        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
-        self.messages, self.revved_packages, self.new_package_atoms)
-    self.assertItemsEqual(self.ebuild_paths_to_add, ['ebuild_new_ebuild'])
-    self.assertItemsEqual(self.ebuild_paths_to_remove, ['ebuild_old_ebuild'])
-    self.assertItemsEqual(self.messages,
-                          [cros_mark_as_stable._GIT_COMMIT_MESSAGE %
-                           'ebuild_package'])
-    self.assertItemsEqual(self.revved_packages, ['ebuild_package'])
-    self.assertItemsEqual(self.new_package_atoms, ['=ebuild_new_package'])
+    with parallel.Manager() as manager:
+      revved_packages = manager.list()
+      new_package_atoms = manager.list()
+
+      messages = manager.list()
+      ebuild_paths_to_add = manager.list()
+      ebuild_paths_to_remove = manager.list()
+
+      cros_mark_as_stable._WorkOnEbuild(
+          overlay, ebuild, self._manifest, self._commit_options,
+          ebuild_paths_to_add, ebuild_paths_to_remove,
+          messages, revved_packages, new_package_atoms)
+      self.assertItemsEqual(ebuild_paths_to_add, ['ebuild_new_ebuild'])
+      self.assertItemsEqual(ebuild_paths_to_remove, ['ebuild_old_ebuild'])
+      self.assertItemsEqual(messages,
+                            [cros_mark_as_stable._GIT_COMMIT_MESSAGE %
+                             'ebuild_package'])
+      self.assertItemsEqual(revved_packages, ['ebuild_package'])
+      self.assertItemsEqual(new_package_atoms, ['=ebuild_new_package'])
 
   def testWorkOnEbuildWithoutNewPackage(self):
     """Test _WorkOnEbuild without new packages."""
     ebuild = EbuildMock('ebuild', new_package=False)
-    options = self._parser.parse_args(['commit'])
+    overlay = self._overlays[0]
 
-    cros_mark_as_stable._WorkOnEbuild(
-        self._overlay, ebuild, self._manifest, options,
-        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
-        self.messages, self.revved_packages, self.new_package_atoms)
-    self.assertEqual(len(self.ebuild_paths_to_add), 0)
-    self.assertEqual(len(self.ebuild_paths_to_remove), 0)
-    self.assertEqual(len(self.messages), 0)
-    self.assertEqual(len(self.revved_packages), 0)
-    self.assertEqual(len(self.new_package_atoms), 0)
+    with parallel.Manager() as manager:
+      revved_packages = manager.list()
+      new_package_atoms = manager.list()
 
-  def testWorkOnOverlayWithPushCmd(self):
-    """Test _WorkOnOverlay with Push command."""
-    ebuild_1 = EbuildMock('ebuild_1')
-    ebuild_2 = EbuildMock('ebuild_2')
-    ebuilds = [ebuild_1, ebuild_2]
-    overlay_ebuilds = {self._overlay: ebuilds}
-    options = self._parser.parse_args(['push'])
+      messages = manager.list()
+      ebuild_paths_to_add = manager.list()
+      ebuild_paths_to_remove = manager.list()
 
-    push_change_mock = self.PatchObject(cros_mark_as_stable, 'PushChange')
-    self.PatchObject(os.path, 'isdir', return_value=True)
-
-    cros_mark_as_stable._WorkOnOverlay(
-        self._overlay, overlay_ebuilds, self._manifest, options,
-        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
-        self.messages, self.revved_packages, self.new_package_atoms)
-
-    push_change_mock.assert_called_once_with(
-        constants.STABLE_EBUILD_BRANCH, mock.ANY,
-        options.dryrun, cwd=self._overlay,
-        staging_branch=options.staging_branch)
-
-  def testWorkOnOverlayWithCommitCmd(self):
-    """Test _WorkOnOverlay with Commit command."""
-    ebuild_1 = EbuildMock('ebuild_1')
-    ebuild_2 = EbuildMock('ebuild_2')
-    ebuilds = [ebuild_1, ebuild_2]
-    overlay_ebuilds = {self._overlay: ebuilds}
-    options = self._parser.parse_args(['commit'])
-
-    self.PatchObject(git, 'GetGitRepoRevision')
-    self.PatchObject(git, 'RunGit')
-    self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch')
-    self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists', return_value=True)
-    self.PatchObject(portage_util.EBuild, 'CommitChange')
-    self.PatchObject(os.path, 'isdir', return_value=True)
-
-    cros_mark_as_stable._WorkOnOverlay(
-        self._overlay, overlay_ebuilds, self._manifest, options,
-        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
-        self.messages, self.revved_packages, self.new_package_atoms)
-
-    self.assertItemsEqual(
-        self.ebuild_paths_to_add,
-        ['ebuild_1_new_ebuild', 'ebuild_2_new_ebuild'])
-    self.assertItemsEqual(
-        self.ebuild_paths_to_remove,
-        ['ebuild_1_old_ebuild', 'ebuild_2_old_ebuild'])
-    self.assertItemsEqual(
-        self.messages,
-        [cros_mark_as_stable._GIT_COMMIT_MESSAGE % 'ebuild_1_package',
-         cros_mark_as_stable._GIT_COMMIT_MESSAGE % 'ebuild_2_package'])
-    self.assertItemsEqual(
-        self.revved_packages,
-        ['ebuild_1_package', 'ebuild_2_package'])
-    self.assertItemsEqual(
-        self.new_package_atoms,
-        ['=ebuild_1_new_package', '=ebuild_2_new_package'])
-
-  def testWorkOnOverlayNoEbuildsWithCommitCmd(self):
-    """Test _WorkOnOverlay without ebuilds with Commit command."""
-    overlay_ebuilds = {self._overlay: []}
-    options = self._parser.parse_args(['commit'])
-
-    self.PatchObject(git, 'GetGitRepoRevision')
-    self.PatchObject(git, 'RunGit')
-    self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch')
-    self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists', return_value=True)
-    self.PatchObject(os.path, 'isdir', return_value=True)
-
-    cros_mark_as_stable._WorkOnOverlay(
-        self._overlay, overlay_ebuilds, self._manifest, options,
-        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
-        self.messages, self.revved_packages, self.new_package_atoms)
-    self.assertItemsEqual(self.ebuild_paths_to_add, [])
-    self.assertItemsEqual(self.ebuild_paths_to_remove, [])
-    self.assertItemsEqual(self.messages, [])
-    self.assertItemsEqual(self.revved_packages, [])
-    self.assertItemsEqual(self.new_package_atoms, [])
+      cros_mark_as_stable._WorkOnEbuild(
+          overlay, ebuild, self._manifest, self._commit_options,
+          ebuild_paths_to_add, ebuild_paths_to_remove, messages,
+          revved_packages, new_package_atoms)
+      self.assertEqual(list(ebuild_paths_to_add), [])
+      self.assertEqual(list(ebuild_paths_to_remove), [])
+      self.assertEqual(list(messages), [])
+      self.assertEqual(list(revved_packages), [])
+      self.assertEqual(list(new_package_atoms), [])
 
 
 class MainTests(cros_build_lib_unittest.RunCommandTestCase,
@@ -256,23 +259,43 @@ class MainTests(cros_build_lib_unittest.RunCommandTestCase,
 
   def setUp(self):
     self.PatchObject(git.ManifestCheckout, 'Cached', return_value='manifest')
-    self.PatchObject(cros_mark_as_stable, 'CleanStalePackages')
-    self.mock_work_on_overlay = self.PatchObject(
-        cros_mark_as_stable, '_WorkOnOverlay')
+    self.mock_work_on_push = self.PatchObject(
+        cros_mark_as_stable, '_WorkOnPush')
+    self.mock_work_on_commit = self.PatchObject(
+        cros_mark_as_stable, '_WorkOnCommit')
 
-  def testMainWithProvidedOverlays(self):
-    """Test Main with overlays provided in options."""
-    overlays = []
+    self._overlays = []
+    remote_refs = []
+    self._overlay_tracking_branch = {}
+    self._git_project_overlays = {}
     for i in range(0, 3):
       overlay = os.path.join(self.tempdir, 'overlay_%s' % i)
       osutils.SafeMakedirs(overlay)
-      overlays.append(overlay)
+      self._overlays.append(overlay)
 
-    self.PatchObject(portage_util, 'GetOverlayEBuilds', return_value=['ebuild'])
+      remote_ref = git.RemoteRef('remote', 'ref', 'project_%s' % i)
+      remote_refs.append(remote_ref)
 
+      self._overlay_tracking_branch[overlay] = remote_ref.ref
+      self._git_project_overlays[remote_ref.project_name] = [overlay]
+
+    self.PatchObject(git, 'GetTrackingBranchViaManifest',
+                     side_effect=remote_refs)
+
+  def testMainWithCommit(self):
+    """Test Main with Commit options."""
     cros_mark_as_stable.main(
-        ['commit', '--all', '--overlays', ':'.join(overlays)])
-    self.assertEqual(self.mock_work_on_overlay.call_count, 3)
+        ['commit', '--all', '--overlays', ':'.join(self._overlays)])
+    self.mock_work_on_commit.assert_called_once_with(
+        mock.ANY, self._overlays, self._overlay_tracking_branch,
+        self._git_project_overlays, 'manifest', None)
+
+  def testMainWithPush(self):
+    """Test Main with Push options."""
+    cros_mark_as_stable.main(
+        ['push', '--all', '--overlays', ':'.join(self._overlays)])
+    self.mock_work_on_push.assert_called_once_with(
+        mock.ANY, self._overlay_tracking_branch, self._git_project_overlays)
 
 
 class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
