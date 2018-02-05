@@ -72,7 +72,7 @@ namespace {
 const int32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
 const SkColorType kColorType = kBGRA_8888_SkColorType;
 #if defined(USE_GBM)
-const GrPixelConfig kGrPixelConfig = kBGRA_8888_GrPixelConfig;
+const GLenum kSizedInternalFormat = GL_BGRA8_EXT;
 #endif
 const size_t kBytesPerPixel = 4;
 
@@ -672,11 +672,13 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     GrGLTextureInfo texture_info;
     texture_info.fID = buffer->texture->get();
     texture_info.fTarget = GL_TEXTURE_2D;
+    texture_info.fFormat = kSizedInternalFormat;
     GrBackendTexture backend_texture(size.width(), size.height(),
-                                     kGrPixelConfig, texture_info);
+                                     GrMipMapped::kNo, texture_info);
     buffer->sk_surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
         gr_context_.get(), backend_texture, kTopLeft_GrSurfaceOrigin,
-        /* sampleCnt */ 0, /* colorSpace */ nullptr, /* props */ nullptr);
+        /* sampleCnt */ 0, kColorType, /* colorSpace */ nullptr,
+        /* props */ nullptr);
     DCHECK(buffer->sk_surface);
 
 #if defined(USE_VULKAN)
