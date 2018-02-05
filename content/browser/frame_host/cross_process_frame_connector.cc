@@ -8,7 +8,6 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -35,7 +34,6 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : FrameConnectorDelegate(IsUseZoomForDSFEnabled()),
       frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
-      view_(nullptr),
       is_scroll_bubbling_(false) {}
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
@@ -284,27 +282,9 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
     return;
   }
 
-  screen_info_ = screen_info;
   last_received_local_frame_size_ = local_frame_size;
-  local_surface_id_ = surface_id.local_surface_id();
-  SetScreenSpaceRect(screen_space_rect);
-  SetLocalFrameSize(local_frame_size);
-
-  if (!view_)
-    return;
-#if defined(USE_AURA)
-  view_->SetFrameSinkId(surface_id.frame_sink_id());
-#endif  // defined(USE_AURA)
-
-  RenderWidgetHostImpl* render_widget_host = view_->GetRenderWidgetHostImpl();
-  DCHECK(render_widget_host);
-
-  if (render_widget_host->auto_resize_enabled()) {
-    render_widget_host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
-    return;
-  }
-
-  render_widget_host->WasResized();
+  UpdateResizeParams(screen_space_rect, local_frame_size, screen_info,
+                     sequence_number, surface_id);
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
@@ -453,6 +433,7 @@ void CrossProcessFrameConnector::ResetScreenSpaceRect() {
   local_surface_id_ = viz::LocalSurfaceId();
   screen_space_rect_in_pixels_ = gfx::Rect();
   screen_space_rect_in_dip_ = gfx::Rect();
+  last_received_local_frame_size_ = gfx::Size();
 }
 
 void CrossProcessFrameConnector::OnUpdateRenderThrottlingStatus(

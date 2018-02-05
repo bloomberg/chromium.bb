@@ -145,9 +145,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // renderer process.
   RenderFrameProxyHost* frame_proxy_in_parent_renderer_;
 
-  // The RenderWidgetHostView for the frame. Initially NULL.
-  RenderWidgetHostViewChildFrame* view_;
-
   bool is_inert_ = false;
 
   bool is_throttled_ = false;

@@ -16,6 +16,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -105,6 +106,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 
     test_frame_connector_ =
         new MockFrameConnectorDelegate(use_zoom_for_device_scale_factor);
+    test_frame_connector_->SetView(view_);
     view_->SetFrameConnectorDelegate(test_frame_connector_);
 
     viz::mojom::CompositorFrameSinkPtr sink;
@@ -354,6 +356,39 @@ TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest, PhysicalBackingSize) {
   EXPECT_EQ(gfx::Point(115, 131), view_->GetViewBounds().origin());
   EXPECT_EQ(gfx::Point(230, 263),
             test_frame_connector_->screen_space_rect_in_pixels().origin());
+}
+
+// Tests that WasResized is called only once and all the parameters change
+// atomically.
+TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
+  MockRenderProcessHost* process =
+      static_cast<MockRenderProcessHost*>(widget_host_->GetProcess());
+  process->Init();
+
+  widget_host_->Init();
+
+  constexpr gfx::Size physical_backing_size(100, 100);
+  constexpr gfx::Rect screen_space_rect(physical_backing_size);
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  viz::LocalSurfaceId local_surface_id = allocator.GenerateId();
+  constexpr viz::FrameSinkId frame_sink_id(1, 1);
+  const viz::SurfaceId surface_id(frame_sink_id, local_surface_id);
+
+  process->sink().ClearMessages();
+
+  test_frame_connector_->UpdateResizeParams(
+      screen_space_rect, physical_backing_size, ScreenInfo(), 1u, surface_id);
+
+  ASSERT_EQ(1u, process->sink().message_count());
+
+  const IPC::Message* resize_msg =
+      process->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID);
+  ASSERT_NE(nullptr, resize_msg);
+  ViewMsg_Resize::Param params;
+  ViewMsg_Resize::Read(resize_msg, &params);
+  EXPECT_EQ(physical_backing_size, std::get<0>(params).physical_backing_size);
+  EXPECT_EQ(screen_space_rect.size(), std::get<0>(params).new_size);
+  EXPECT_EQ(local_surface_id, std::get<0>(params).local_surface_id);
 }
 
 }  // namespace content

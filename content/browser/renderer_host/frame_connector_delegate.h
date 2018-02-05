@@ -50,7 +50,7 @@ class WebCursor;
 // into, and whether the view currently has keyboard focus.
 class CONTENT_EXPORT FrameConnectorDelegate {
  public:
-  virtual void SetView(RenderWidgetHostViewChildFrame* view) {}
+  virtual void SetView(RenderWidgetHostViewChildFrame* view);
 
   // Returns the parent RenderWidgetHostView or nullptr if it doesn't have one.
   virtual RenderWidgetHostViewBase* GetParentRenderWidgetHostView();
@@ -70,6 +70,13 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // its corresponding remote frame in the parent frame's renderer.
   virtual void SendIntrinsicSizingInfoToParent(
       const blink::WebIntrinsicSizingInfo&) {}
+
+  // Sends new resize parameters to the sub-frame's renderer.
+  void UpdateResizeParams(const gfx::Rect& screen_space_rect,
+                          const gfx::Size& local_frame_size,
+                          const ScreenInfo& screen_info,
+                          uint64_t sequence_number,
+                          const viz::SurfaceId& surface_id);
 
   // Return the size of the CompositorFrame to use in the child renderer.
   const gfx::Size& local_frame_size_in_pixels() {
@@ -216,6 +223,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   explicit FrameConnectorDelegate(bool use_zoom_for_device_scale_factor);
 
   virtual ~FrameConnectorDelegate() {}
+
+  // The RenderWidgetHostView for the frame. Initially NULL.
+  RenderWidgetHostViewChildFrame* view_ = nullptr;
 
   // This is here rather than in the implementation class so that
   // ViewportIntersection() can return a reference.

@@ -4,9 +4,15 @@
 
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/content_switches_internal.h"
 
 namespace content {
+
+void FrameConnectorDelegate::SetView(RenderWidgetHostViewChildFrame* view) {
+  view_ = view;
+}
 
 RenderWidgetHostViewBase*
 FrameConnectorDelegate::GetParentRenderWidgetHostView() {
@@ -16,6 +22,35 @@ FrameConnectorDelegate::GetParentRenderWidgetHostView() {
 RenderWidgetHostViewBase*
 FrameConnectorDelegate::GetRootRenderWidgetHostView() {
   return nullptr;
+}
+
+void FrameConnectorDelegate::UpdateResizeParams(
+    const gfx::Rect& screen_space_rect,
+    const gfx::Size& local_frame_size,
+    const ScreenInfo& screen_info,
+    uint64_t sequence_number,
+    const viz::SurfaceId& surface_id) {
+  screen_info_ = screen_info;
+  local_surface_id_ = surface_id.local_surface_id();
+
+  SetScreenSpaceRect(screen_space_rect);
+  SetLocalFrameSize(local_frame_size);
+
+  if (!view_)
+    return;
+#if defined(USE_AURA)
+  view_->SetFrameSinkId(surface_id.frame_sink_id());
+#endif  // defined(USE_AURA)
+
+  RenderWidgetHostImpl* render_widget_host = view_->GetRenderWidgetHostImpl();
+  DCHECK(render_widget_host);
+
+  if (render_widget_host->auto_resize_enabled()) {
+    render_widget_host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
+    return;
+  }
+
+  render_widget_host->WasResized();
 }
 
 gfx::PointF FrameConnectorDelegate::TransformPointToRootCoordSpace(
