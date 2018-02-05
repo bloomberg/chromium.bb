@@ -32,7 +32,6 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       image_horizontal_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_vertical_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_tiling(THEME_BKGRND_IMAGE_NO_REPEAT),
-      image_height(0),
       has_attribution(false),
       logo_alternate(false) {
 }
@@ -52,7 +51,6 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
       image_horizontal_alignment == rhs.image_horizontal_alignment &&
       image_vertical_alignment == rhs.image_vertical_alignment &&
       image_tiling == rhs.image_tiling &&
-      image_height == rhs.image_height &&
       has_attribution == rhs.has_attribution &&
       logo_alternate == rhs.logo_alternate;
 }

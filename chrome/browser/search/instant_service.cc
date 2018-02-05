@@ -27,9 +27,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/image/image_skia.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -335,12 +333,6 @@ void InstantService::BuildThemeInfo() {
         theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT;
         break;
     }
-
-    // Set theme background image height.
-    gfx::ImageSkia* image =
-        theme_provider.GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
-    DCHECK(image);
-    theme_info_->image_height = image->height();
 
     theme_info_->has_attribution =
         theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
