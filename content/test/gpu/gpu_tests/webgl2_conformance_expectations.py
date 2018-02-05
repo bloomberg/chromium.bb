@@ -237,7 +237,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     # Passthrough command decoder / OpenGL
-    self.Flaky('*', ['linux', 'passthrough', 'opengl'], bug=602688)
     self.Fail('conformance/extensions/webgl-compressed-texture-s3tc.html',
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
