@@ -165,6 +165,11 @@ static const arg_def_t verbosearg =
     ARG_DEF("v", "verbose", 0, "Show encoder parameters");
 static const arg_def_t psnrarg =
     ARG_DEF(NULL, "psnr", 0, "Show PSNR in status line");
+#if CONFIG_FILEOPTIONS
+static const arg_def_t use_cfg = ARG_DEF("c", "cfg", 1, "Config file to use");
+static const arg_def_t ext_partition =
+    ARG_DEF(NULL, "ext-partition", 1, "corresponds to CONFIG_EXT_PARTITION");
+#endif
 
 static const struct arg_enum_list test_decode_enum[] = {
   { "off", TEST_DECODE_OFF },
@@ -206,6 +211,9 @@ static const arg_def_t bitdeptharg = ARG_DEF_ENUM(
 static const arg_def_t inbitdeptharg =
     ARG_DEF(NULL, "input-bit-depth", 1, "Bit depth of input");
 static const arg_def_t *main_args[] = { &help,
+#if CONFIG_FILEOPTIONS
+                                        &use_cfg,
+#endif
                                         &debugmode,
                                         &outputfile,
                                         &codecarg,
@@ -915,11 +923,15 @@ static void validate_positive_rational(const char *msg,
   if (!rat->den) die("Error: %s has zero denominator\n", msg);
 }
 
-static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
+static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
+                                char ***argv) {
   char **argi, **argj;
   struct arg arg;
   const int num_encoder = get_aom_encoder_count();
-
+  char **argv_local = (char **)*argv;
+#if CONFIG_FILEOPTIONS
+  int argc_local = *argc;
+#endif
   if (num_encoder < 1) die("Error: no valid encoder available\n");
 
   /* Initialize default parameters */
@@ -928,9 +940,27 @@ static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
   global->passes = 0;
   global->color_type = I420;
 
-  for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
+#if CONFIG_FILEOPTIONS
+  const char *cfg = NULL;
+  int cfg_included = 0;
+#endif
+  for (argi = argj = argv_local; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
 
+#if CONFIG_FILEOPTIONS
+    if (arg_match(&arg, &use_cfg, argi)) {
+      if (cfg_included) continue;
+      cfg = arg.val;
+
+      arg_cfg(&argc_local, &argv_local, cfg);
+
+      *argj = *argi = *argv_local;
+      argj = argi = argv_local;
+      *argv = argv_local;
+      cfg_included = 1;
+      continue;
+    }
+#endif
     if (arg_match(&arg, &help, argi)) {
       show_help(stdout, 0);
       exit(EXIT_SUCCESS);
@@ -1311,6 +1341,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.tile_height_count =
           arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
 #endif
+#if CONFIG_FILEOPTIONS
+    } else if (arg_match(&arg, &ext_partition, argi)) {
+      config->cfg.cfg.ext_partition = !!arg_parse_uint(&arg) > 0;
+#endif
     } else {
       int i, match = 0;
       for (i = 0; ctrl_args[i]; i++) {
@@ -1614,7 +1648,9 @@ static void initialize_encoder(struct stream_state *stream,
 #if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
     const AvxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
-    aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH };
+    aom_codec_dec_cfg_t cfg = {
+      0, 0, 0, CONFIG_LOWBITDEPTH, { CONFIG_EXT_PARTITION }
+    };
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), &cfg, 0);
 
 #if CONFIG_EXT_TILE
@@ -1959,9 +1995,13 @@ int main(int argc, const char **argv_) {
    * codec.
    */
   argv = argv_dup(argc - 1, argv_ + 1);
-  parse_global_config(&global, argv);
+  parse_global_config(&global, &argc, &argv);
 
+#if CONFIG_FILEOPTIONS
+  if (argc < 2) usage_exit();
+#else
   if (argc < 3) usage_exit();
+#endif
 
   switch (global.color_type) {
     case I420: input.fmt = AOM_IMG_FMT_I420; break;

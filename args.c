@@ -34,6 +34,65 @@ struct arg arg_init(char **argv) {
   return a;
 }
 
+char *ignore_front_spaces(const char *str) {
+  while (str[0] == ' ' || str[0] == '\t') ++str;
+  return (char *)str;
+}
+
+void ignore_end_spaces(char *str) {
+  char *end = str + strlen(str);
+  while (end > str && (end[0] == ' ' || end[0] == '\t' || end[0] == '\n' ||
+                       end[0] == '\r' || end[0] == '\0'))
+    --end;
+  if (end >= str) end[1] = '\0';
+}
+
+int arg_cfg(int *argc, char ***argv, const char *file) {
+  char **argv_local = (char **)*argv;
+  char **argv_org = (char **)*argv;
+  char line[1024 * 10];
+  FILE *f = fopen(file, "r");
+  if (!f) return 1;
+
+  while (fgets(line, sizeof(line) - 1, f)) {
+    char *actual_line = ignore_front_spaces(line);
+    char *left, *right, *comment;
+    size_t length = strlen(actual_line);
+
+    if (length == 0 || actual_line[0] == '#') continue;
+    right = strchr(actual_line, ':');
+    if (right == NULL) continue;
+    right[0] = '\0';
+
+    left = ignore_front_spaces(actual_line);
+    right = ignore_front_spaces(right + 1);
+
+    comment = strchr(right, '#');
+    if (comment != NULL) comment[0] = '\0';
+
+    ignore_end_spaces(left);
+    ignore_end_spaces(right);
+
+    char **new_args = argv_dup(*argc, (const char **)argv_local);
+    char *new_line = (char *)malloc(sizeof(*new_line) * 128);
+
+    if (argv_local != argv_org) free(argv_local);
+
+    if (!strcmp(right, "ON"))
+      snprintf(new_line, sizeof(*new_line) * 128, "--%s", left);
+    else
+      snprintf(new_line, sizeof(*new_line) * 128, "--%s=%s", left, right);
+
+    new_args[(*argc) - 1] = new_args[(*argc) - 2];
+    new_args[(*argc) - 2] = new_line;
+    argv_local = new_args;
+    *argv = new_args;
+    (*argc)++;
+  }
+  fclose(f);
+  return 0;
+}
+
 int arg_match(struct arg *arg_, const struct arg_def *def, char **argv) {
   struct arg arg;
 

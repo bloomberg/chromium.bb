@@ -288,9 +288,11 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 #if CONFIG_EXT_PARTITION
   if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_64X64)
     return BLOCK_64X64;
-
-  if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_128X128)
-    return BLOCK_128X128;
+#if CONFIG_FILEOPTIONS
+  if (cpi->common.options && cpi->common.options->ext_partition)
+#endif
+    if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_128X128)
+      return BLOCK_128X128;
 
   assert(cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
@@ -303,7 +305,11 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
                  cpi->common.tile_height % MAX_MIB_SIZE == 0));
 #endif
 
-  // TODO(any): Possibly could improve this with a heuristic.
+// TODO(any): Possibly could improve this with a heuristic.
+#if CONFIG_FILEOPTIONS
+  if (cpi->common.options && !cpi->common.options->ext_partition)
+    return BLOCK_64X64;
+#endif
   return BLOCK_128X128;
 #else
   (void)cpi;
@@ -3153,6 +3159,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #endif
 
   cpi->oxcf = *oxcf;
+  cpi->common.options = oxcf->cfg;
   x->e_mbd.bd = (int)cm->bit_depth;
   x->e_mbd.global_motion = cm->global_motion;
 

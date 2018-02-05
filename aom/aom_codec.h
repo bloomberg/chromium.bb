@@ -499,6 +499,19 @@ typedef enum {
   OBU_METADATA_TYPE_SCALABILITY = 3,
 } OBU_METADATA_TYPE;
 
+/*!\brief Config Options
+ *
+ * This type allows to enumerate and control options defined for control
+ * via config file at runtime.
+ */
+typedef struct cfg_options {
+  /*!\brief Reflects if ext_partition should be enabled
+   *
+   * If this value is non-zero it enabled the feature
+   */
+  unsigned int ext_partition;
+} cfg_options_t;
+
 /*!@} - end defgroup codec*/
 #ifdef __cplusplus
 }

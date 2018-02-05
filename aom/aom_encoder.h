@@ -668,6 +668,11 @@ typedef struct aom_codec_enc_cfg {
    * The number of heights specified is given by tile_height_count
    */
   int tile_heights[MAX_TILE_HEIGHTS];
+
+  /*!\brief Options defined per config file
+   *
+   */
+  cfg_options_t cfg;
 } aom_codec_enc_cfg_t; /**< alias for struct aom_codec_enc_cfg */
 
 /*!\brief Initialize an encoder instance
