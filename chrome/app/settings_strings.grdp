@@ -3746,7 +3746,7 @@
       Clean up computer
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_EXPLANATION" desc="Text that appears below the list of files, programs, and registry entries to be removed by Chrome as part of a cleanup process. 'privacy white paper' is a guide to Chrome's privacy policy and practices. In 'unwanted software protection,' the word 'unwanted' modifies 'software,' i.e. 'protection from unwanted software'.">
-      Items not listed here may also be removed, if needed. Learn more about &lt;a href=&quot;<ph name="URL">$1<ex>https://www.google.com/chrome/browser/privacy/whitepaper.html#unwantedsoftware</ex></ph>&quot;&gt;unwanted software protection&lt;/a&gt; in the Chrome privacy white paper.
+      Items not listed here will also be removed, if needed. Learn more about &lt;a href=&quot;<ph name="URL">$1<ex>https://www.google.com/chrome/browser/privacy/whitepaper.html#unwantedsoftware</ex></ph>&quot;&gt;unwanted software protection&lt;/a&gt; in the Chrome privacy white paper.
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_FILES_AND_PROGRAMS" desc="Introduces a bullet list containing the names of files and programs to be removed by Chrome.">
       Files and programs:
@@ -3765,10 +3765,10 @@
         other {# more}}
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CLEANUP_ERROR" desc="Body of a generic error message that could appear during the cleanup of harmful software. Multiple causes for the error are possible.">
-      An error occurred while Chrome was removing harmful software.
+      An error occurred while Chrome was removing harmful software
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_FIND_AND_REMOVE" desc="Subtitle of the 'Find an remove harmful software' item. Imperative.">
-      Chrome can find harmful software on your computer and remove it.
+      Chrome can find harmful software on your computer and remove it
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_NO_INTERNET_CONNECTION" desc="Body of error message that could appear during the cleanup of harmful software. Imperative instruction to user. This message will only appear on Windows desktop/laptop computers. Imperative.">
       Connect to a network and try again
@@ -3780,7 +3780,7 @@
       Chrome found harmful software on your computer. Chrome can remove it and restore your settings to make your browser work normally again.
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_SCAN_ERROR" desc="Body of error message that could appear during the cleanup of harmful software.">
-      An error occurred while Chrome was searching for harmful software.
+      An error occurred while Chrome was searching for harmful software
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_FIND_BUTTON_LABEL" desc="Button for the 'Find and remove harmful software' item in Chrome Settings. Imperative. On click, Chrome looks for harmful software on the user's computer. Imperative.">
       Find
@@ -3837,7 +3837,7 @@
       Try again
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_LOGS_PERMISSION_EXPLANATION" desc="Description for the 'Report details to Google' option. Subject, 'Details', is omitted. Although the plural subject would indicate usage of the plural verb, here, we use the plural form of the verb, 'includes', to avoid the impression that 'include' is an infinitive verb. 'Includes' is a present tense main verb. ">
-      Includes information about harmful software, system settings, and processes on your computer.
+      Includes information about harmful software, system settings, and processes on your computer
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_TITLE_CLEANUP_UNAVAILABLE" desc="Title of error message that could appear before the cleanup of harmful software because Chrome failed to contact the server. This message will only appear on Windows desktop/laptop computers.">
       Cleanup is currently unavailable
