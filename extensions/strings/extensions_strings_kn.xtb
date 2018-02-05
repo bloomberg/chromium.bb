@@ -53,12 +53,14 @@
 <translation id="677806580227005219">ಮೈಮ್‌ಹ್ಯಾಂಡ್ಲರ್: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">ಈ ವಿಸ್ತರಣೆಯು ತಾನಾಗಿಯೇ ಪದೇ ಪದೇ ಮರು ಲೋಡ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> ಅವರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ</translation>
+<translation id="7068383018033524534">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="7217838517480956708">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME" /> ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ತೆಗೆದುಹಾಕಲು ಅಥವಾ ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="7972881773422714442">ಆಯ್ಕೆಗಳು: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ಬಳಕೆದಾರರಿಗೆ ಮುಖಮಾಡಿದೆ</translation>
 <translation id="8047248493720652249">ಈ ವಿಸ್ತರಣೆಯು "<ph name="ATTEMPTED_FILENAME" />" ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವುದನ್ನು ಹೆಸರಿಸಲು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME" />) ಯು ವಿಭಿನ್ನ ಫೈಲ್‌ ಹೆಸರು "<ph name="ACTUAL_FILENAME" />" ಗೆ ನಿರ್ಧರಿಸಿದೆ.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> ರಿಂದ <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME" />) ವಿಭಿನ್ನ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಗೆ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="8517576857589387417">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಕಾಣದಾಗಿದೆ ಅಥವಾ ಅದನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="8636666366616799973">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ. ವಿವರಗಳು: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME" />) ಇದನ್ನು <ph name="ACTUAL_REDIRECT_DESTINATION" /> ಗೆ ಮರುನಿರ್ದೇಶಿಸಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> ಗೆ ಮರುನಿರ್ದೇಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8712265948125780616">ವಿಸ್ತರಣೆ ಅನ್‌ಪ್ಯಾಕರ್‌‌</translation>

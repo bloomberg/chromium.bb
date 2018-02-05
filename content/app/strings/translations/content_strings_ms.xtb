@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Nilai mestilah <ph name="MAXIMUM_DATE_OR_TIME" /> atau lebih awal.</translation>
+<translation id="1993104285338243655">Beralih kepada pencerminan</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' digunakan pada kedudukan yang salah dalam '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2226276347425096477">Sila pendekkan teks ini menjadi <ph name="MAX_CHARACTERS" /> aksara atau kurang (anda kini menggunakan <ph name="CURRENT_LENGTH" /> aksara).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milisaat</translation>
 <translation id="4151657705144244502">grafik</translation>
 <translation id="4201051445878709314">Tunjukkan bulan sebelumnya</translation>
+<translation id="4205604240201363801">Sekarang dalam mod gambar dalam gambar</translation>
 <translation id="421884353938374759">pemilih warna</translation>
 <translation id="4248100235867064564">bar menu</translation>
 <translation id="4254339807215791271">maklumat kandungan</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Kosongkan</translation>
 <translation id="668171684555832681">Lain-lain...</translation>
 <translation id="6692633176391053278">pelangkah</translation>
+<translation id="6709570249143506788">Mutu main balik teruk</translation>
 <translation id="6755330956360078551">tip alat</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="6820355525329141109">Tidak dapat memuatkan pemalam.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fail</translation>
 <translation id="8451268428117625855">Sila pilih fail.</translation>
 <translation id="8461852803063341183">butang radio</translation>
-<translation id="8511325616783751178">butang lungsur</translation>
 <translation id="8534579021159131403">Minit</translation>
 <translation id="8541249477527128034">kawalan media</translation>
 <translation id="8583702881314752957">senarai takrif</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">mulakan main balik</translation>
 <translation id="8845239796550121995">Menghantar ke TV anda sekarang</translation>
 <translation id="8851136666856101339">utama</translation>
+<translation id="8875657656876809964">Ralat main balik video</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="901493112792887934">masa semasa dalam saat</translation>

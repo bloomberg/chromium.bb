@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> פריטים</translation>
 <translation id="1491277525950327607">הקש פעמיים כדי להחליף את מצב ההגדרה</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
+<translation id="1532451416480227577">‏הצגת כתובות וכרטיסי אשראי מ-Google Pay</translation>
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סרוק קוד QR</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">‏רק ב-Wi-Fi</translation>
 <translation id="2747003861858887689">השדה הקודם</translation>
 <translation id="2780046210906776326">אין חשבונות אימייל</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">‏צא מ-Tab Switcher</translation>
 <translation id="283291358677939992">חפש בדף...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">שירותי אינטרנט</translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3210163015918861891">הסנכרון כבוי</translation>
+<translation id="3224641773458703735">כדי שניתן יהיה לייצא את הסיסמאות, יש להגדיר קוד גישה במכשיר.</translation>
 <translation id="3240426699337459095">הקישור הועתק</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> מתוך <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
-<translation id="533632423981297619">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות גם את הסיסמאות שלך. אין לשתף את הקובץ עם אף אחד.</translation>
 <translation id="5388358297987318779">פתח תמונה</translation>
 <translation id="5409365236829784218">אין יישומים מותקנים שיכולים לפתוח את הקובץ הזה.</translation>
 <translation id="5433691172869980887">שם המשתמש הועתק</translation>
@@ -306,6 +308,7 @@
 <translation id="681368974849482173">הפריט נוצר</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
+<translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6973630695168034713">תיקיות</translation>
 <translation id="7004499039102548441">כרטיסיות אחרונות</translation>

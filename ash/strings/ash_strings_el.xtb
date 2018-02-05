@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Η διαχείριση της συσκευής γίνεται από τον τομέα <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Κάθετα</translation>
 <translation id="2067602449040652523">Φωτεινότητα πληκτρολογίου</translation>
-<translation id="207439088875642105">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζονται οι λογαριασμοί <ph name="FIRST_PARENT_EMAIL" /> και <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Διακοπή μετάδοσης <ph name="TAB_NAME" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Χαμηλή ισχύς φορτιστή</translation>
 <translation id="2144487987174258011">Κάντε επανεκκίνηση για να ενημερώσετε το Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Μονοφωνικός ήχος</translation>
 <translation id="3009178788565917040">Έξοδος</translation>
 <translation id="3019353588588144572">Χρόνος που απομένει μέχρι να φορτιστεί πλήρως η μπαταρία, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζεται ο λογαριασμός <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Κάτω</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Επισήμανση δείκτη ποντικιού</translation>
+<translation id="3513798432020909783">Ο λογαριασμός είναι διαχειριζόμενος από τον χρήστη <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Αλλάξτε το πάλι σε "<ph name="FROM_LOCALE" />" (απαιτείται επανεκκίνηση)</translation>
 <translation id="3582792037806681688">Δεν επιτρέπονται ο πολλαπλές συνδέσεις για έναν χρήστη σε αυτήν την περίοδο σύνδεσης</translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">Ισχυρό σήμα</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
 <translation id="7933084174919150729">Ο Βοηθός Google είναι διαθέσιμος μόνο για το κύριο προφίλ.</translation>
+<translation id="79341161159229895">Ο λογαριασμός είναι διαχειριζόμενος από τους χρήστες <ph name="FIRST_PARENT_EMAIL" /> και <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Αναζήτηση για δίκτυα κινητής τηλεφωνίας…</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
 <translation id="7994370417837006925">Σύνδεση σε πολλούς λογαριασμούς</translation>
@@ -312,6 +312,7 @@
 Ενδέχεται να γίνει διαχωρισμός μεταγενέστερων ειδοποιήσεων, παραθύρων και παραθύρων διαλόγου μεταξύ των επιφανειών εργασίας.</translation>
 <translation id="8825534185036233643">Δεν υποστηρίζεται ο κατοπτρισμός με περισσότερες από δύο οθόνες.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Κουμπί "Πίσω"</translation>
 <translation id="8850991929411075241">Πλήκτρο αναζήτησης+Esc</translation>
 <translation id="8870509716567206129">Η εφαρμογή δεν υποστηρίζει διαχωρισμό οθόνης.</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>

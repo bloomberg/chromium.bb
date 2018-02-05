@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="2067602449040652523">কীবোর্ডের উজ্জ্বলতা</translation>
-<translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> দ্বারা পরিচালিত এটি একটি বাচ্চাদের অ্যাকাউন্ট</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা বন্ধ করুন</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="2144487987174258011">Adobe ফ্ল্যাশ প্লেয়ার আপডেট করার জন্য বন্ধ করে আবার চালু করুন</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">মোনো অডিও</translation>
 <translation id="3009178788565917040">আউটপুট</translation>
 <translation id="3019353588588144572">ব্যাটারি পরিপূর্ণ চার্জ হতে, <ph name="TIME_REMAINING" /> সময় বাকি আছে</translation>
-<translation id="3047477924825107454">এইটি বাচ্চাদের জন্য <ph name="MANAGER_EMAIL" /> দ্বারা পরিচালিত একটি অ্যাকাউন্ট</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">নিচে</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ব্লুটুথ)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">মাউস কার্সার হাইলাইট করুন</translation>
+<translation id="3513798432020909783">অ্যাকাউন্ট <ph name="MANAGER_EMAIL" /> ম্যানেজ করছেন</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
 <translation id="3582792037806681688">একটি ব্যবহারকারীর জন্য এই সেশনে একাধিক প্রবেশ অননুমোদিত হয়েছে</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক প্রবেশ করুন অননুমোদিত করেছেন৷</translation>
 <translation id="7933084174919150729">Google সহায়ক শুধুমাত্র প্রাথমিক প্রোফাইলেই ব্যবহার করা যায়।</translation>
+<translation id="79341161159229895">অ্যাকাউন্ট <ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> ম্যানেজ করছেন</translation>
 <translation id="7977927628060636163">মোবাইল নেটওয়ার্কগুলির জন্য অনুসন্ধান করছে...</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="7994370417837006925">একাধিক সাইন-ইন</translation>
@@ -312,6 +312,7 @@
 পরবর্তী বিজ্ঞপ্তি, উইন্ডো এবং ডায়ালগগুলি ডেস্কটপগুলির মধ্যে বিভক্ত হয়ে যেতে পারে।</translation>
 <translation id="8825534185036233643">দুটির বেশি প্রদর্শনের সাথে মিররিং সমর্থিত নয়।</translation>
 <translation id="8828714802988429505">৯০°</translation>
+<translation id="8841375032071747811">ফিরে যাওয়ার বোতাম</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">অ্যাপ্লিকেশনটি বিভক্ত-স্ক্রীন সমর্থন করে না৷</translation>
 <translation id="8878886163241303700">স্ক্রীন সম্প্রসারণ করা হচ্ছে</translation>

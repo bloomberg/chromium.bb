@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
+<translation id="102763973188675173">Персонализиране и управление на Google Chrome. Налице е актуализация.</translation>
 <translation id="1035334672863811645">Влезте в Chrome</translation>
 <translation id="1065672644894730302">Предпочитанията ви не могат да бъдат прочетени. Възможно е да няма достъп до някои функции и промените в предпочитанията няма да бъдат запазени.</translation>
 <translation id="1088300314857992706">По-рано <ph name="USER_EMAIL_ADDRESS" /> използва Chrome</translation>
@@ -36,6 +37,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Получаване на помощ за използването на Chrome OS</translation>
 <translation id="1795405610103747296">Инсталирайте Chrome на телефона си. Ще ви изпратим SMS на него: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1860536484129686729">Chrome се нуждае от разрешение за достъп до камерата ви за този сайт</translation>
+<translation id="1873233029667955273">Google Chrome не е браузърът ви по подразбиране</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome не е актуален</translation>
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
@@ -55,10 +58,12 @@
 <translation id="2346876346033403680">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Ако това не е профилът ви, създайте нов потребител в браузъра, за да се съхранява отделно информацията ви.
 
 В случай че влезете въпреки това, данните в Chrome като отметки, история и други настройки ще се обединят с/ъс <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
+<translation id="2348335408836342058">Chrome се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт</translation>
 <translation id="2397416548179033562">Показване на менюто на Chrome</translation>
 <translation id="2429317896000329049">Google Chrome не можа да синхронизира данните ви, защото синхронизирането не е налице за домейна ви.</translation>
 <translation id="2446511512801740068">Chrome не е актуален, защото не е бил стартиран отново известно време. Налице е актуализация, която ще бъде приложена веднага, когато рестартирате.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
+<translation id="2534507159460261402">Google Pay (копирано в Chrome)</translation>
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="2586406160782125153">Данните за сърфирането ви ще се изтрият от това устройство. За да ги извлечете по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Лого на Chrome</translation>
@@ -67,6 +72,7 @@
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="2689103672227170538">Това разширение промени страницата, която се показва при стартиране на Chrome.</translation>
 <translation id="2705403826523567092">Влезте в профила си, за да сърфирате персонализирано и активността ви да се синхронизира на всички устройства</translation>
+<translation id="2765403129283291972">Chrome се нуждае от разрешение за достъп до микрофона ви за този сайт</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
 <translation id="2847461019998147611">Показване на Google Chrome на този език</translation>
@@ -93,6 +99,7 @@
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
 <translation id="345171907106878721">Добавяне на вас към Chrome</translation>
 <translation id="3479552764303398839">Не сега</translation>
+<translation id="3503306920980160878">Chrome се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
 <translation id="3612333635265770873">Известно е, че модул със същото име влиза в конфликт с Google Chrome.</translation>
 <translation id="3622797965165704966">Вече е по-лесно да използвате Chrome с профила си в Google и на споделени компютри.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Общи условия<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome OS</translation>
@@ -195,8 +202,8 @@
 <translation id="7106741999175697885">Диспечер на задачите - Google Chrome</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="7164397146364144019">Можете да ни помогнете да направим Chrome по-надежден и по-лесен за използване, като автоматично ни съобщавате подробности за инциденти, свързани със сигурността.</translation>
-<translation id="7185038942300673794">Разширението <ph name="EXTENSION_NAME" /> е добавено към Chrome.</translation>
 <translation id="7242029209006116544">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. По избор можете да създадете нов потребителски профил, за да отделите съществуващите си данни в Chrome. <ph name="LEARN_MORE" /></translation>
+<translation id="7308322188646931570">Chrome се нуждае от достъп до хранилището, за да изтегля файлове</translation>
 <translation id="7330164299247909639">Грешка в сертификата за удостоверяване. Моля, влезте отново в Google Chrome като <ph name="USER_NAME" /> или се свържете с администратора си за повече информация. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="7369650938475876456">Използвайте надеждна парола, генерирана от Chrome</translation>
@@ -209,6 +216,7 @@
 <translation id="7494905215383356681">Лицензи за отворен код за Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Показване на Chrome OS на този език</translation>
+<translation id="7589360514048265910">Занапред този компютър няма да получава актуализации на Google Chrome, защото Mac OS X 10.9 вече не се поддържа.</translation>
 <translation id="7592736734348559088">Google Chrome не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
 <translation id="7747138024166251722">Инсталационната програма не можа да създаде временна директория. Моля, проверете дали има свободно дисково пространство и разрешение за инсталиране на софтуер.</translation>

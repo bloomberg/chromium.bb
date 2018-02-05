@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">ఈ పరికరం <ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతుంది.</translation>
 <translation id="2050339315714019657">నిలువు</translation>
 <translation id="2067602449040652523">కీబోర్డ్ ప్రకాశం</translation>
-<translation id="207439088875642105">ఇది <ph name="FIRST_PARENT_EMAIL" /> మరియు <ph name="SECOND_PARENT_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేయడాన్ని ఆపివేయి</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="2144487987174258011">Adobe Flash Playerని నవీకరించడానికి పున:ప్రారంభించండి</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">మోనో ఆడియో</translation>
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="3019353588588144572">బ్యాటరీ నిండటానికి పట్టే సమయం, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">ఇది <ph name="MANAGER_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (బ్లూటూత్)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">స్క్రీన్ మాగ్నిఫైయర్</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">మౌస్ కర్సర్‌ని హైలైట్ చేయి</translation>
+<translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడింది</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"కు వెనుకకి మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="3582792037806681688">ఈ సెషన్‌లో వినియోగదారు కోసం బహుళ సైన్-ఇన్ అనుమతించబడలేదు</translation>
 <translation id="3595596368722241419">బ్యాటరీ  నిండింది</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">సిగ్నల్ దృఢంగా ఉంది</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
 <translation id="7933084174919150729">ప్రాథమిక ప్రొఫైల్‌కు మాత్రమే Google సహాయకం అందుబాటులో ఉంటుంది.</translation>
+<translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> మరియు <ph name="SECOND_PARENT_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడింది</translation>
 <translation id="7977927628060636163">మొబైల్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="7994370417837006925">బహుళ సైన్-ఇన్</translation>
@@ -312,6 +312,7 @@
 తదుపరి నోటిఫికేషన్‌లు, విండోలు మరియు డైలాగ్‌లు డెస్క్‌టాప్‌ల మధ్య విభజించబడవచ్చు.</translation>
 <translation id="8825534185036233643">రెండింటి కంటే ఎక్కువ డిస్‌ప్లేలతో మిర్రరింగ్ చేయడానికి మద్దతు లేదు.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">వెనుకకు బటన్</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">యాప్‌లో విభజన స్క్రీన్‌కి మద్దతు లేదు.</translation>
 <translation id="8878886163241303700">స్క్రీన్ విస్తరించబడుతోంది</translation>

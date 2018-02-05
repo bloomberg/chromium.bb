@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">This extension reloaded itself too frequently.</translation>
 <translation id="7003844668372540529">Unknown product <ph name="PRODUCT_ID" /> from <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Manifest file is invalid</translation>
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME" /> to be installed. It cannot be removed or modified.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">User-facing</translation>
 <translation id="8047248493720652249">This extension failed to name the download "<ph name="ATTEMPTED_FILENAME" />" because another extension (<ph name="EXTENSION_NAME" />) determined a different filename "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> from <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">This extension failed to provide credentials to a network request because another extension (<ph name="EXTENSION_NAME" />) provided different credentials.</translation>
+<translation id="8517576857589387417">Manifest file is missing or unreadable</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> because another extension (<ph name="EXTENSION_NAME" />) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>

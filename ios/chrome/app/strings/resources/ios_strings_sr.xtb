@@ -34,6 +34,7 @@
 <translation id="145015347812617860">Ставки: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Двапут додирните да бисте укључили/искључили подешавање</translation>
 <translation id="152234381334907219">Никада се не чува</translation>
+<translation id="1532451416480227577">Приказуј адресе и кредитне картице из Google Pay-а</translation>
 <translation id="1540800554400757039">1. ред за адресу</translation>
 <translation id="1545749641540134597">Скенирајте QR кôд</translation>
 <translation id="1580783302095112590">Имејл је послата.</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">Само на Wi-Fi-ју</translation>
 <translation id="2747003861858887689">Претходно поље</translation>
 <translation id="2780046210906776326">Нема налога е-поште</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Изађи из пребацивача картица</translation>
 <translation id="283291358677939992">Пронађи на страници...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">Веб-услуге</translation>
 <translation id="3207960819495026254">Обележено</translation>
 <translation id="3210163015918861891">Синхронизација је искључена</translation>
+<translation id="3224641773458703735">Да бисте извозили лозинке, прво морате да подесите шифру на уређају.</translation>
 <translation id="3240426699337459095">Линк је копиран</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> од <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5327248766486351172">Назив</translation>
-<translation id="533632423981297619">Лозинке ће бити видљиве свима који могу да виде извезену датотеку. Не делите ову датотеку ни са ким.</translation>
 <translation id="5388358297987318779">Отвори слику</translation>
 <translation id="5409365236829784218">Није инсталирана ниједна апликација за отварање ове датотеке.</translation>
 <translation id="5433691172869980887">Корисничко име је копирано</translation>
@@ -306,6 +308,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="681368974849482173">Ставка је направљена</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6903907808598579934">Укључи синхронизацију</translation>
+<translation id="6914783257214138813">Лозинке ће бити видљиве свима који могу да виде извезену датотеку.</translation>
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6973630695168034713">Директоријуми</translation>
 <translation id="7004499039102548441">Недавне картице</translation>

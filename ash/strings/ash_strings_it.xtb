@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2067602449040652523">Luminosità della tastiera</translation>
-<translation id="207439088875642105">Si tratta di un account di minori gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Interrompi la trasmissione di <ph name="TAB_NAME" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2144487987174258011">Riavvia per aggiornare Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Audio in formato mono</translation>
 <translation id="3009178788565917040">Uscita</translation>
 <translation id="3019353588588144572">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Si tratta di un account di minori gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">maiusc</translation>
 <translation id="3087734570205094154">In basso</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="3477079411857374384">CTRL + MAIUSC + barra spaziatrice</translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
+<translation id="3513798432020909783">Account gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
 <translation id="3582792037806681688">L'accesso simultaneo è stato vietato per un utente di questa sessione</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
@@ -276,6 +275,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7829386189513694949">Segnale forte</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
+<translation id="79341161159229895">Account gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Ricerca di reti mobili...</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="7994370417837006925">Accesso simultaneo</translation>
@@ -312,6 +312,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
 <translation id="8825534185036233643">Il mirroring con più di due display non è supportato.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Pulsante Indietro</translation>
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>
 <translation id="8870509716567206129">L'app non supporta la modalità Schermo diviso.</translation>
 <translation id="8878886163241303700">Estensione schermo</translation>

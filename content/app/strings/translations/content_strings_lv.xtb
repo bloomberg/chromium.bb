@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">statuss</translation>
 <translation id="1938124657309484470">Vērtībai ir jābūt “<ph name="MAXIMUM_DATE_OR_TIME" />” vai agrākam datumam vai laikam.</translation>
+<translation id="1993104285338243655">Mainīts uz spoguļošanu</translation>
 <translation id="2060505056492490888">Punkts (<ph name="DOT" />) atrodas nepareizā vietā (<ph name="INVALIDDOMAIN" />).</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2226276347425096477">Lūdzu, saīsiniet šo tekstu līdz <ph name="MAX_CHARACTERS" /> vai mazāk zīmēm (pašreiz tas ietver <ph name="CURRENT_LENGTH" /> rakstzīmes).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Milisekundes</translation>
 <translation id="4151657705144244502">grafiskais elements</translation>
 <translation id="4201051445878709314">Rādīt iepriekšējo mēnesi</translation>
+<translation id="4205604240201363801">Notiek atskaņošana režīmā “Attēls attēlā”</translation>
 <translation id="421884353938374759">krāsu izvēle</translation>
 <translation id="4248100235867064564">izvēļņu josla</translation>
 <translation id="4254339807215791271">satura informācija</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="668171684555832681">Cits</translation>
 <translation id="6692633176391053278">pārslēdzējs</translation>
+<translation id="6709570249143506788">Slikta atskaņošanas kvalitāte</translation>
 <translation id="6755330956360078551">rīka padoms</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6820355525329141109">Nevarēja ielādēt spraudni.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> faili</translation>
 <translation id="8451268428117625855">Lūdzu, atlasiet failu.</translation>
 <translation id="8461852803063341183">radiopoga</translation>
-<translation id="8511325616783751178">nolaižamās izvēlnes poga</translation>
 <translation id="8534579021159131403">Minūtes</translation>
 <translation id="8541249477527128034">multivides vadība</translation>
 <translation id="8583702881314752957">definīciju saraksts</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">sākt atskaņošanu</translation>
 <translation id="8845239796550121995">Pašlaik notiek apraide uz jūsu TV</translation>
 <translation id="8851136666856101339">galvenais</translation>
+<translation id="8875657656876809964">Videoklipa atskaņošanas kļūda</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="901493112792887934">pašreizējais laiks sekundēs</translation>

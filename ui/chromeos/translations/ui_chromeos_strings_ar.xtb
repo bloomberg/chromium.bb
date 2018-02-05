@@ -14,15 +14,18 @@
 <translation id="1337036551624197047">لوحة المفاتيح التشيكية</translation>
 <translation id="1352103415082130575">‏لوحة المفاتيح التايلاندية (Pattachote)</translation>
 <translation id="1358032944105037487">لوحة المفاتيح اليابانية</translation>
+<translation id="1383876407941801731">البحث</translation>
 <translation id="1399648040768741453">لوحة المفاتيح التيلوغوية (صوتية)</translation>
 <translation id="1441841714100794440">‏لوحة المفاتيح الفيتنامية (Telex)</translation>
 <translation id="1455548678241328678">لوحة المفاتيح النرويجية</translation>
 <translation id="148466539719134488">السويسرية</translation>
+<translation id="1510238584712386396">المشغّل</translation>
 <translation id="1547964879613821194">الإنجليزية الكندية</translation>
 <translation id="158809615184981282">لوحة مفاتيح فاروية</translation>
 <translation id="1646136617204068573">لوحة المفاتيح المجرية</translation>
 <translation id="164729547906544836">‏لوحة المفاتيح التاميلية (itrans)</translation>
 <translation id="164969095109328410">‏جهاز Chrome</translation>
+<translation id="169515659049020177">Shift</translation>
 <translation id="1829129547161959350">بطريق</translation>
 <translation id="184633654410729720">‏لوحة المفاتيح التايلاندية (Kedmanee)</translation>
 <translation id="1921986354447415460">‏لوحة مفاتيح Turkish-F</translation>
@@ -44,6 +47,7 @@
 <translation id="2468402215065996499">تماغوتشي</translation>
 <translation id="247772113373397749">لوحة المفاتيح الكندية متعددة اللغات</translation>
 <translation id="2494837236724268445">لوحة المفاتيح الغوغاراتية (صوتية)</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2529133382850673012">لوحة المفاتيح الأمريكية</translation>
 <translation id="255937426064304553">الأمريكية الدولية</translation>
 <translation id="2563185590376525700">ضفدع</translation>
@@ -66,6 +70,7 @@
 <translation id="3064388234319122767">‏التحويل الصوتي (ذدرافو ← здраво)</translation>
 <translation id="3088034400796962477">‏التحويل الصوتي (سلام ← salam)</translation>
 <translation id="3116361045094675131">لوحة المفاتيح البريطانية</translation>
+<translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157729859914172001">لوحة المفاتيح (الكمبيوتر الشخصي) الأمريكية الدولية</translation>
 <translation id="3187212781151025377">لوحة المفاتيح العبرية</translation>
 <translation id="3197563288998582412">‏البريطانية Dvorak</translation>
@@ -195,6 +200,7 @@
 <translation id="6937152069980083337">‏أسلوب الإدخال باللغة اليابانية لـ Google (للوحة المفاتيح بالولايات المتحدة)</translation>
 <translation id="6939777852457331078">‏لوحة مفاتيح US Workman</translation>
 <translation id="6970230597523682626">البلغارية</translation>
+<translation id="6981982820502123353">إمكانية الدخول</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">‏التحويل الصوتي (سلام ← ሰላም)</translation>
 <translation id="7172053773111046550">لوحة المفاتيح الإستونية</translation>

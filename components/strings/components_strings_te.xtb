@@ -259,6 +259,7 @@
 <translation id="2835170189407361413">ఫారమ్‌ను తుడిచివేయి</translation>
 <translation id="2851634818064021665">ఈ సైట్‌ను సందర్శించడానికి మీకు అనుమతి అవసరం</translation>
 <translation id="2856444702002559011">హ్యాకర్‌లు <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> నుండి మీ సమాచారాన్ని దొంగిలించడానికి ప్రయత్నిస్తూ ఉండవచ్చు (ఉదాహరణకు, పాస్‌వర్డ్‌లు, సందేశాలు లేదా క్రెడిట్ కార్డ్‌లు). <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2881276955470682203">కార్డ్‌ను సేవ్ చేయాలా?</translation>
 <translation id="2909946352844186028">నెట్‌వర్క్ మార్పు గుర్తించబడింది.</translation>
 <translation id="2916038427272391327">ఇతర ప్రోగ్రామ్‌లను మూసివేయండి</translation>
 <translation id="2922350208395188000">సర్వర్ యొక్క ప్రమాణపత్రం తనిఖీ చెయ్యబడదు.</translation>
@@ -998,6 +999,7 @@
 <translation id="874846938927089722">ఆమోదించే క్రెడిట్ మరియు ప్రీపెయిడ్ కార్డ్‌లు</translation>
 <translation id="8759274551635299824">ఈ కార్డ్ గడువు ముగిసింది</translation>
 <translation id="8761567432415473239">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో <ph name="BEGIN_LINK" />హానికర ప్రోగ్రామ్‍లను కనుగొనింది<ph name="END_LINK" />.</translation>
+<translation id="8763927697961133303">USB పరికరం</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8800988563907321413">మీ సమీపంలోని సూచనలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
@@ -1074,4 +1076,5 @@
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />"ని అన్ఇన్‌స్టాల్ చేయడానికి లేదా నిలిపివేయడానికి ప్రయత్నించండి&lt;/li&gt;
     &lt;li&gt;మరో నెట్‌వర్క్‌కు కనెక్ట్ చేయడానికి ప్రయత్నించండి&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="997986563973421916">Google Pay నుండి</translation>
 </translationbundle>

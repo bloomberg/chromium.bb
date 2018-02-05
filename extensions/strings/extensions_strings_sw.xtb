@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Kishikilio cha Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Kiendelezi hiki kilijipakia chenyewe upya kila mara.</translation>
 <translation id="7003844668372540529">Bidhaa isiyojulikana <ph name="PRODUCT_ID" /> kutoka kwa <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Faili ya maelezo si sahihi</translation>
 <translation id="7217838517480956708">Msimamizi wa mashine haya anahitaji <ph name="EXTENSION_NAME" /> kisakinishwe. Hakiwezi kuondolewa au kurekebishwa.</translation>
 <translation id="7972881773422714442">Chaguzi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Kamera ya mbele</translation>
 <translation id="8047248493720652249">Kiendelezi hiki kimeshindwa kukipa kipakuliwa jina "<ph name="ATTEMPTED_FILENAME" />" kwa sababu kipakuliwa kingine (<ph name="EXTENSION_NAME" />) kimechagua jina tofauti la faili "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> kutoka <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Kiendelezi hiki kimeshindwa kutoa vitambulisho kwenye ombi la mtandao kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimetoa vitambulisho tofauti.</translation>
+<translation id="8517576857589387417">Faili ya maelezo haipatikani au haisomeki</translation>
 <translation id="8636666366616799973">Furushi ni batili. Maelezo: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Kipakuaji cha Viendelezi</translation>

@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">nn</translation>
 <translation id="1930711995431081526">állapot</translation>
 <translation id="1938124657309484470">Az érték <ph name="MAXIMUM_DATE_OR_TIME" /> vagy azt megelőző kell, hogy legyen.</translation>
+<translation id="1993104285338243655">Átváltott tükrözésre</translation>
 <translation id="2060505056492490888">A „<ph name="DOT" />” rossz helyen van a(z) „<ph name="INVALIDDOMAIN" />” címben.</translation>
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2226276347425096477">Kérjük, rövidítse le a szöveget legfeljebb <ph name="MAX_CHARACTERS" /> karakterre (jelenleg <ph name="CURRENT_LENGTH" /> karaktert használ).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Ezredmásodperc</translation>
 <translation id="4151657705144244502">grafika</translation>
 <translation id="4201051445878709314">Az előző hónap megjelenítése</translation>
+<translation id="4205604240201363801">Most kép a képben módban van</translation>
 <translation id="421884353938374759">színválasztó</translation>
 <translation id="4248100235867064564">menüsor</translation>
 <translation id="4254339807215791271">tartalominformáció</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="668171684555832681">Egyéb...</translation>
 <translation id="6692633176391053278">léptető</translation>
+<translation id="6709570249143506788">Gyenge lejátszási minőség</translation>
 <translation id="6755330956360078551">elemleírás</translation>
 <translation id="6790428901817661496">Játék</translation>
 <translation id="6820355525329141109">Nem sikerült betölteni a beépülő modult.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fájl</translation>
 <translation id="8451268428117625855">Válasszon egy fájlt.</translation>
 <translation id="8461852803063341183">választógomb</translation>
-<translation id="8511325616783751178">legördülő gomb</translation>
 <translation id="8534579021159131403">Perc</translation>
 <translation id="8541249477527128034">médiavezérlő</translation>
 <translation id="8583702881314752957">definíciós lista</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">lejátszás indítása</translation>
 <translation id="8845239796550121995">Átküldés a tévére folyamatban</translation>
 <translation id="8851136666856101339">fő</translation>
+<translation id="8875657656876809964">Videólejátszási hiba</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">hónap</translation>
 <translation id="901493112792887934">jelenlegi idő másodpercben</translation>

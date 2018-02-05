@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> आयटम</translation>
 <translation id="1491277525950327607">सेटिंग टॉगल करण्यासाठी दोनदा टॅप करा</translation>
 <translation id="152234381334907219">कधीही जतन न केलेले</translation>
+<translation id="1532451416480227577">Google Pay वरील पत्ते आणि क्रेडिट कार्ड दाखवा</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">केवळ Wi-Fi वर</translation>
 <translation id="2747003861858887689">मागील फील्ड</translation>
 <translation id="2780046210906776326">ईमेल खाती नाहीत</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">टॅब स्विचर सोडा</translation>
 <translation id="283291358677939992">पृष्ठामध्ये शोधा...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">वेब सेवा</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3210163015918861891">संकालन बंद आहे</translation>
+<translation id="3224641773458703735">पासवर्ड निर्यात करण्यासाठी, तुम्ही प्रथम तुमच्या डिव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
 <translation id="3240426699337459095">दुवा कॉपी केला</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> पैकी <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
@@ -219,7 +222,6 @@
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5327248766486351172">नाव</translation>
-<translation id="533632423981297619">निर्यात केलेली फाइल पाहू शकणार्‍यांना तुमचे पासवर्ड दिसतील. ही फाइल कुणाशीही शेअर करू नका.</translation>
 <translation id="5388358297987318779">प्रतिमा उघडा</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अॅप्लिकेशन इंस्टॉल केलेले नाहीत.</translation>
 <translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
@@ -307,6 +309,7 @@
 <translation id="681368974849482173">तयार केलेला आयटम</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
 <translation id="6903907808598579934">संकालन चालू करा</translation>
+<translation id="6914783257214138813">निर्यात करण्यात आलेली फाइल दिसणार्‍या प्रत्येकाला, तुमचा पासवर्ड दिसेल.</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
 <translation id="7004499039102548441">अलीकडील टॅब</translation>

@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Gestor MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Aquesta extensió s'ha tornat a carregar massa vegades.</translation>
 <translation id="7003844668372540529">Producte desconegut <ph name="PRODUCT_ID" /> de: <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">El fitxer de manifest no és vàlid</translation>
 <translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME" />. No es pot eliminar o modificar.</translation>
 <translation id="7972881773422714442">Opcions: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Càmera frontal</translation>
 <translation id="8047248493720652249">Aquesta extensió no ha pogut posar nom a la baixada "<ph name="ATTEMPTED_FILENAME" />" perquè una altra extensió (<ph name="EXTENSION_NAME" />) ha indicat un nom de fitxer diferent "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> proporcionat per <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Aquesta extensió no ha pogut proporcionar credencials a una sol·licitud de xarxa perquè una altra extensió (<ph name="EXTENSION_NAME" />) ha proporcionat unes credencials diferents.</translation>
+<translation id="8517576857589387417">Falta el fitxer de manifest o no es pot llegir</translation>
 <translation id="8636666366616799973">El paquet no és vàlid. Detalls: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Aquesta extensió no ha pogut redirigir una sol·licitud de xarxa a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perquè una altra extensió (<ph name="EXTENSION_NAME" />) l'ha redirigida a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Eina per desempaquetar extensions</translation>

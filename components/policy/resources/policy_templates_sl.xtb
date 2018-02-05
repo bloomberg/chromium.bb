@@ -26,6 +26,7 @@
 
       Če je ta pravilnik nastavljen, bo zaslon za prijavo vedno prikazan v jeziku, ki ga posreduje prva vrednost tega pravilnika (pravilnik je opredeljen kot seznam za združljivost vnaprej). Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je zaslon za prijavo prikazan v jeziku zadnje uporabniške seje. Če je ta pravilnik nastavljen na vrednost, ki ni veljaven jezik, bo zaslon za prijavo prikazan v rezervnem jeziku (trenutno je to ameriška angleščina, en-US).</translation>
 <translation id="1062011392452772310">Omogoči oddaljeno potrditev naprave</translation>
+<translation id="1062407476771304334">Zamenjaj</translation>
 <translation id="1093082332347834239">Če je ta nastavitev omogočena, se gostitelj za oddaljeno pomoč izvaja v procesu z dovoljenji <ph name="UIACCESS_PERMISSION_NAME" />. Tako lahko oddaljeni uporabniki uporabljajo okna s skrbniškimi pravicami na namizju lokalnega uporabnika.
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, se gostitelj za oddaljeno pomoč izvaja v uporabnikovem kontekstu in oddaljeni uporabniki ne morejo uporabljati oken s skrbniškimi pravicami na namizju.</translation>
@@ -89,12 +90,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
-<translation id="1420281424655200442">Nadzira, kateri tiskalniki iz pravilnika <ph name="DEVICE_PRINTERS_POLICY" /> so na voljo uporabnikom.
-
-      Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu. Če je izbrana možnost <ph name="PRINTERS_ALLOW_ALL" />, so prikazani vsi tiskalniki. Če je izbrana možnost <ph name="PRINTERS_BLACKLIST" />, se omeji dostop do določenih tiskalnikov s pravilnikom <ph name="DEVICE_PRINTERS_BLACKLIST" />. Če je izbrana možnost <ph name="PRINTERS_WHITELIST" />, pravilnik <ph name="DEVICE_PRINTERS_WHITELIST" /> določa samo tiste tiskalnike, ki jih je mogoče izbrati.
-
-      Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
@@ -284,12 +279,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="203096360153626918">Ta pravilnika ne vpliva na aplikacije za Android. Tudi če je ta pravilnik nastavljen na <ph name="FALSE" />, bodo aplikacije lahko preklopile v celozaslonski način.</translation>
 <translation id="2043770014371753404">Onemogočeni tiskalniki v podjetjih</translation>
-<translation id="2063380907529983889">Nadzira, kateri tiskalniki iz pravilnika <ph name="BULK_PRINTERS_POLICY" /> so na voljo uporabnikom.
-
-      Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu. Če je izbrana možnost <ph name="PRINTERS_ALLOW_ALL" />, so prikazani vsi tiskalniki. Če je izbrana možnost <ph name="PRINTERS_BLACKLIST" />, se omeji dostop do določenih tiskalnikov s pravilnikom <ph name="BULK_PRINTERS_BLACKLIST" />. Če je izbrana možnost <ph name="PRINTERS_WHITELIST" />, pravilnik <ph name="BULK_PRINTERS_WHITELIST" /> določa samo tiste tiskalnike, ki jih je mogoče izbrati.
-
-      Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Določa, katere načine preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME" />.
 
           Možne vrednosti so »basic«, »digest«, »ntlm« in »negotiate«. Več vrednosti ločite z vejicami.
@@ -475,6 +464,9 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2466131534462628618">Prestrezni portal za preverjanje pristnosti prezre strežnik proxy</translation>
 <translation id="2482676533225429905">Izvorno pošiljanje sporočil</translation>
 <translation id="2483146640187052324">Predvidevaj omrežna dejanja v kateri koli omrežni povezavi</translation>
+<translation id="2485721741875148980">Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno. Po omogočanju tega pravilnika bodo obstoječi nedodeljeni profili zaklenjeni in nedostopni. Če želite več informacij, preberite članek centra za pomoč.
+
+      Če je ta pravilnik onemogočen ali ni konfiguriran, lahko uporabnik uporablja brskalnik brez prijave v brskalnik <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Onemogoča uveljavljanje zahtev pravilnika o preglednosti potrdila za navedene URL-je.
 
       Ta pravilnik omogoča, da potrdila za imena gostiteljev v navedenih URL-jih niso razkrita na podlagi pravilnika o preglednosti potrdila. To omogoča nadaljnjo uporabo potrdil, ki bi bila sicer obravnavana, kot da niso zaupanja vredna, ker niso bila ustrezno javno razkrita, vendar otežuje odkrivanje neustrezno izdanih potrdil za te gostitelje.
@@ -789,6 +781,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
+<translation id="3587482841069643663">Vse</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
 <translation id="3627678165642179114">Omogoči ali onemogoči spletno storitev preverjanja črkovanja</translation>
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
@@ -1240,6 +1233,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="489803897780524242">Parameter, ki nadzira umestitev iskalnega izraza za privzetega ponudnika iskanja</translation>
 <translation id="4899708173828500852">Omogoči varno brskanje</translation>
 <translation id="4906194810004762807">Osveži oceno za pravilnik za naprave</translation>
+<translation id="4917385247580444890">Močan</translation>
 <translation id="494613465159630803">Sprejemnik za Google Cast</translation>
 <translation id="4962262530309732070">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> dovoli dodajanje osebe v upravitelju uporabnikov.
 
@@ -1654,13 +1648,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>
 <translation id="6161405879872578475">Omogoča napravo <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Opozorilo: podpora za SSLv3 bo iz brskalnika <ph name="PRODUCT_NAME" /> v celoti odstranjena po različici 43 (približno julija 2015). Istočasno bo odstranjen tudi ta pravilnik.
-
-      Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporablja privzeto najmanjšo dovoljeno različico, ki je SSLv3 v brskalniku <ph name="PRODUCT_NAME" /> 39 ter TLS 1.0 v poznejših različicah.
-
-      V nasprotnem primeru je morda nastavljen na eno od naslednjih vrednosti: »sslv3«, »tls1«, »tls1.1« ali »tls1.2«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne uporablja različic SSL/TLS, ki so nižje od določene različice. Neprepoznana vrednost bo prezrta.
-
-      Kljub številki je »sslv3« starejša različica kot »tls1«.</translation>
 <translation id="6181608880636987460">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je onemogočeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
@@ -2080,6 +2067,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če to nastavitev omogočite, <ph name="PRODUCT_NAME" /> uporabi nastavljene območne nastavitve. Če nastavljene območne nastavitve niso podprte, bo uporabljena nastavitev »en-US«.
 
      Če to nastavitev onemogočite ali je ne nastavite, <ph name="PRODUCT_NAME" /> uporabi prednostne območne nastavitve, ki jih izbere uporabnik (če so nastavljene), sistemske območne nastavitve ali rezervne območne nastavitve (»en-US«).</translation>
+<translation id="7643883929273267746">Omejitev računov, ki so vidni v storitvi <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Določa, ali je podatkovno gostovanje za napravo omogočeno. Če je pravilnik omogočen, je podatkovno gostovanje omogočeno. Če ni nastavljen ali je onemogočen, podatkovno gostovanje ni na voljo.</translation>
 <translation id="7683777542468165012">Dinamična osvežitev pravilnika</translation>
 <translation id="7694807474048279351">Načrtovanje samodejnega vnovičnega zagona po namestitvi posodobitve za <ph name="PRODUCT_OS_NAME" />.
@@ -2193,7 +2181,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta pravilnik ni več podprt.
           Omogoča uporabo strežnikov STUN in posredovalnih strežnikov pri povezovanju z oddaljenim odjemalcem.
 
@@ -2413,6 +2400,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
           Če pravilnik ni nastavljen, se uporabi privzeta vrednost prilagoditve.
 
           Vrednost prilagoditve mora biti najmanj 100 %. Vrednosti, ki bi povzročile, da je časovni zamik zatemnitve zaslona v načinu predstavitve krajši od običajnega časovnega zamika zatemnitve zaslona, niso dovoljene.</translation>
+<translation id="8798099450830957504">Privzeto</translation>
 <translation id="8818173863808665831">Prijava zemljepisne lokacije naprave.
 
       Če pravilnik ni nastavljen ali je nastavljen na »False«, lokacija ne bo prijavljena.</translation>

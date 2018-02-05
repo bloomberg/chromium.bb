@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Šo ierīci pārvalda vietne <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrets</translation>
 <translation id="2067602449040652523">Tastatūras spilgtums</translation>
-<translation id="207439088875642105">Šis ir bērniem paredzēts konts, ko pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Apturēt “<ph name="TAB_NAME" />” apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="2144487987174258011">Restartējiet, lai atjauninātu Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Izvade</translation>
 <translation id="3019353588588144572">Pilnīgais uzlādei nepieciešamais laiks: <ph name="TIME_REMAINING" />.</translation>
-<translation id="3047477924825107454">Šis ir bērniem paredzēts konts, ko pārvalda <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Apakšā</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Ekrāna lupa</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Izcelt peles kursoru</translation>
+<translation id="3513798432020909783">Kontu pārvalda <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
 <translation id="3582792037806681688">Lietotāja vairākkārtēja pierakstīšanās šajā sesijā tika aizliegta.</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
@@ -276,6 +275,7 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7829386189513694949">Spēcīgs signāls</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7933084174919150729">Google asistents ir pieejams tikai galvenajam profilam.</translation>
+<translation id="79341161159229895">Kontu pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Notiek mobilo tīklu meklēšana...</translation>
 <translation id="7982789257301363584">Tīkls</translation>
 <translation id="7994370417837006925">Vairākkārtēja pierakstīšanās</translation>
@@ -312,6 +312,7 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 Turpmākie paziņojumi, logi un dialoglodziņi var tikt sadalīti pa darbvirsmām.</translation>
 <translation id="8825534185036233643">Spoguļošana ar vairāk nekā diviem ekrāniem netiek atbalstīta.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Poga Atpakaļ</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Lietotnē netiek atbalstīta ekrāna sadalīšana.</translation>
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>

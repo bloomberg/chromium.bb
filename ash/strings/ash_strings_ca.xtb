@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Aquest dispositiu està gestionat per <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillantor del teclat</translation>
-<translation id="207439088875642105">Aquest és un compte infantil gestionat per <ph name="FIRST_PARENT_EMAIL" /> i per <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Deixa d'emetre <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="2144487987174258011">Reinicia per actualitzar Adobe Flash Player</translation>
@@ -75,7 +74,7 @@
 <translation id="2675319268637823299">Un administrador ha desactivat l'inici de sessió múltiple per a <ph name="USER_EMAIL" />.
     Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" /> i es tancarà.</translation>
-<translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la pujada de la bateria no sigui fiable.</translation>
+<translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">S'està tornant a connectar a la xarxa <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Cerca</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Àudio mono</translation>
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Aquest és un compte infantil gestionat per <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3477079411857374384">Control+Maj+espai</translation>
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
+<translation id="3513798432020909783">Compte gestionat per <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
 <translation id="3582792037806681688">S'ha desactivat l'inici de sessió múltiple en aquesta sessió a causa d'un usuari.</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
@@ -150,7 +149,7 @@
 <translation id="4481530544597605423">Dispositius desvinculats</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: s'està connectant...</translation>
 <translation id="4527045527269911712">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se.</translation>
-<translation id="453661520163887813"><ph name="TIME" /> per completar la pujada</translation>
+<translation id="453661520163887813"><ph name="TIME" /> per completar la càrrega</translation>
 <translation id="4544944664594876241">La drecera per bloquejar la pantalla ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">S'ha activat ChromeVox</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -276,6 +275,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7829386189513694949">Senyal potent</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7933084174919150729">L'Assistent de Google només està disponible per al perfil principal.</translation>
+<translation id="79341161159229895">Compte gestionat per <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">S'estan cercant xarxes mòbils…</translation>
 <translation id="7982789257301363584">Xarxa</translation>
 <translation id="7994370417837006925">Inici de sessió múltiple</translation>
@@ -312,6 +312,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 És possible que les notificacions, les finestres i els quadres de diàleg següents es divideixin entre els escriptoris.</translation>
 <translation id="8825534185036233643">No es pot projectar amb més de dues pantalles.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Botó Enrere</translation>
 <translation id="8850991929411075241">Cerca + Esc</translation>
 <translation id="8870509716567206129">L'aplicació no admet la pantalla dividida.</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>

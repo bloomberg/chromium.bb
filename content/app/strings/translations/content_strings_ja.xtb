@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">ステータス</translation>
 <translation id="1938124657309484470"><ph name="MAXIMUM_DATE_OR_TIME" /> 以前の値を指定する必要があります。</translation>
+<translation id="1993104285338243655">ミラーリングに切り替わりました</translation>
 <translation id="2060505056492490888">「<ph name="INVALIDDOMAIN" />」内の「<ph name="DOT" />」の位置が間違っています。</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2226276347425096477">このテキストを半角 <ph name="MAX_CHARACTERS" /> 文字以下にしてください（現時点で半角 <ph name="CURRENT_LENGTH" /> 文字です）。</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">ミリ秒</translation>
 <translation id="4151657705144244502">グラフィック</translation>
 <translation id="4201051445878709314">前の月を表示</translation>
+<translation id="4205604240201363801">ピクチャー イン ピクチャー モードで表示中です</translation>
 <translation id="421884353938374759">色の選択</translation>
 <translation id="4248100235867064564">メニューバー</translation>
 <translation id="4254339807215791271">コンテンツ情報</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">クリア</translation>
 <translation id="668171684555832681">その他...</translation>
 <translation id="6692633176391053278">ステッパー</translation>
+<translation id="6709570249143506788">低再生画質</translation>
 <translation id="6755330956360078551">ツールチップ</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="6820355525329141109">プラグインを読み込むことができませんでした。</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ファイル</translation>
 <translation id="8451268428117625855">ファイルを選択してください。</translation>
 <translation id="8461852803063341183">ラジオボタン</translation>
-<translation id="8511325616783751178">プルダウン ボタン</translation>
 <translation id="8534579021159131403">分</translation>
 <translation id="8541249477527128034">メディア管理</translation>
 <translation id="8583702881314752957">定義リスト</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">再生を開始</translation>
 <translation id="8845239796550121995">テレビにキャストしています</translation>
 <translation id="8851136666856101339">本文</translation>
+<translation id="8875657656876809964">動画再生エラー</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">現在の時間（秒単位）</translation>

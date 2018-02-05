@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">ቀቀ</translation>
 <translation id="1930711995431081526">ሁኔታ</translation>
 <translation id="1938124657309484470">ዋጋ <ph name="MAXIMUM_DATE_OR_TIME" /> ወይም ከዚያ በፊት መሆን አለበት።</translation>
+<translation id="1993104285338243655">ወደ ማንጸባረቅ ተቀይሯል</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» በ«<ph name="INVALIDDOMAIN" />» ውስጥ በተሳሳተ ቦታ ላይ ነው የገባው።</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2226276347425096477">እባክዎ ይህ ጽሑፍ ወደ <ph name="MAX_CHARACTERS" /> ወይም ከዚያ በታች ቁምፊዎች ያሳጥሩት (በአሁኑ ጊዜ <ph name="CURRENT_LENGTH" /> ቁምፊዎችን እየተጠቀሙ ነዎት)።</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">ሚሊሰኮንዶች</translation>
 <translation id="4151657705144244502">ግራፊክ</translation>
 <translation id="4201051445878709314">ቀዳሚውን ወር አሳይ</translation>
+<translation id="4205604240201363801">አሁን ስዕል በስዕል ሁነታ ውስጥ</translation>
 <translation id="421884353938374759">color picker</translation>
 <translation id="4248100235867064564">የምናሌ አሞሌ</translation>
 <translation id="4254339807215791271">የይዘት መረጃ</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="668171684555832681">ሌላ…</translation>
 <translation id="6692633176391053278">አስኪያጅ</translation>
+<translation id="6709570249143506788">ደካማ የመልሶ ማጫወት ጥራት</translation>
 <translation id="6755330956360078551">ጠቃሚ የመሣሪያ ምክር</translation>
 <translation id="6790428901817661496">አጫውት</translation>
 <translation id="6820355525329141109">ተሰኪን መጫን አልተቻለም።</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ፋይሎች</translation>
 <translation id="8451268428117625855">እባክዎ ፋይል ይምረጡ።</translation>
 <translation id="8461852803063341183">የሬዲዮ አዝራር</translation>
-<translation id="8511325616783751178">የተቆልቋይ አዝራር</translation>
 <translation id="8534579021159131403">ደቂቃዎች</translation>
 <translation id="8541249477527128034">የማህደረ መረጃ ቁጥጥር</translation>
 <translation id="8583702881314752957">የብየና ዝርዝር</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">መልሶ ማጫወት ይጀምሩ</translation>
 <translation id="8845239796550121995">አሁን ወደ የእርስዎ ቴሌቪዥን cast በማድረግ ላይ</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8875657656876809964">የቪዲዮ መልሶ ማጫወት ስህተት</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> ኪባ</translation>
 <translation id="8987927404178983737">ወር</translation>
 <translation id="901493112792887934">የአሁኑ ጊዜ በሰከንዶች</translation>

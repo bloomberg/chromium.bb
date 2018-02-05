@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">วว</translation>
 <translation id="1930711995431081526">สถานะ</translation>
 <translation id="1938124657309484470">ค่าต้องเป็น <ph name="MAXIMUM_DATE_OR_TIME" /> หรือก่อนหน้านั้น</translation>
+<translation id="1993104285338243655">เปลี่ยนเป็นการมิเรอร์</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" ถูกใช้งานในตำแหน่งที่ไม่ถูกต้องใน "<ph name="INVALIDDOMAIN" />"</translation>
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="2226276347425096477">โปรดย่อข้อความนี้ให้เหลือไม่เกิน <ph name="MAX_CHARACTERS" /> อักขระ (ขณะนี้ข้อความของคุณมี <ph name="CURRENT_LENGTH" /> อักขระ)</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">มิลลิวินาที</translation>
 <translation id="4151657705144244502">กราฟิก</translation>
 <translation id="4201051445878709314">แสดงเดือนที่ผ่านมา</translation>
+<translation id="4205604240201363801">ขณะนี้อยู่ในโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="421884353938374759">ตัวเลือกสี</translation>
 <translation id="4248100235867064564">แถบเมนู</translation>
 <translation id="4254339807215791271">ข้อมูลเนื้อหา</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="668171684555832681">อื่นๆ...</translation>
 <translation id="6692633176391053278">ตัวเพิ่ม/ลดระดับเสียง</translation>
+<translation id="6709570249143506788">คุณภาพการเล่นต่ำ</translation>
 <translation id="6755330956360078551">เคล็ดลับเครื่องมือ</translation>
 <translation id="6790428901817661496">เล่น</translation>
 <translation id="6820355525329141109">ไม่สามารถโหลดปลั๊กอิน</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ไฟล์</translation>
 <translation id="8451268428117625855">โปรดเลือกไฟล์</translation>
 <translation id="8461852803063341183">ปุ่มตัวเลือก</translation>
-<translation id="8511325616783751178">ปุ่มแบบเลื่อนลง</translation>
 <translation id="8534579021159131403">นาที</translation>
 <translation id="8541249477527128034">การควบคุมสื่อ</translation>
 <translation id="8583702881314752957">รายการคำจำกัดความ</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">เริ่มเล่น</translation>
 <translation id="8845239796550121995">ตอนนี้กำลังแคสต์ไปยัง TV</translation>
 <translation id="8851136666856101339">หลัก</translation>
+<translation id="8875657656876809964">ข้อผิดพลาดในการเล่นวิดีโอ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="901493112792887934">เวลาปัจจุบันเป็นวินาที</translation>

@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">일</translation>
 <translation id="1930711995431081526">상태</translation>
 <translation id="1938124657309484470">값은 <ph name="MAXIMUM_DATE_OR_TIME" /> 이전이어야 합니다.</translation>
+<translation id="1993104285338243655">미러링으로 전환됨</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'에서 '<ph name="DOT" />'의 위치가 잘못되었습니다.</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2226276347425096477">이 텍스트를 <ph name="MAX_CHARACTERS" />자 이하로 줄이세요(현재 <ph name="CURRENT_LENGTH" />자 사용 중).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">밀리초</translation>
 <translation id="4151657705144244502">그래픽</translation>
 <translation id="4201051445878709314">이전 달 표시</translation>
+<translation id="4205604240201363801">PIP 모드입니다</translation>
 <translation id="421884353938374759">color picker</translation>
 <translation id="4248100235867064564">메뉴 표시줄</translation>
 <translation id="4254339807215791271">콘텐츠 정보</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">삭제</translation>
 <translation id="668171684555832681">기타...</translation>
 <translation id="6692633176391053278">증감자</translation>
+<translation id="6709570249143506788">재생 품질 나쁨</translation>
 <translation id="6755330956360078551">도움말</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="6820355525329141109">플러그인을 로드할 수 없습니다.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423">파일 <ph name="NUMBER_OF_FILES" />개</translation>
 <translation id="8451268428117625855">파일을 선택하세요.</translation>
 <translation id="8461852803063341183">라디오 버튼</translation>
-<translation id="8511325616783751178">드롭다운 버튼</translation>
 <translation id="8534579021159131403">분</translation>
 <translation id="8541249477527128034">미디어 컨트롤</translation>
 <translation id="8583702881314752957">정의 목록</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">재생 시작</translation>
 <translation id="8845239796550121995">TV로 전송 중</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8875657656876809964">동영상 재생 오류</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />KB</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="901493112792887934">현재 시간(초)</translation>

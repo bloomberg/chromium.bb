@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> ንጥሎች</translation>
 <translation id="1491277525950327607">ቅንብርን ለመቀያየር ሁለቴ መታ ያድርጉ</translation>
 <translation id="152234381334907219">በጭራሽ አልተቀመጠም</translation>
+<translation id="1532451416480227577">አድራሻዎችን እና ክሬዲት ካርዶችን ከGoogle Pay አሳይ</translation>
 <translation id="1540800554400757039">አድራሻ 1</translation>
 <translation id="1545749641540134597">የኪውአር ኮድ ይቃኙ</translation>
 <translation id="1580783302095112590">መልዕክት ተልኳል።</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">በWi-Fi ላይ ብቻ</translation>
 <translation id="2747003861858887689">ቀዳሚ መስክ</translation>
 <translation id="2780046210906776326">ምንም የኢሜይል መለያዎች የሉም</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ከየትር መቀያየሪያ ውጣ</translation>
 <translation id="283291358677939992">በዚህ ገጽ ውስጥ አግኝ...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />፣ <ph name="STATE" />፣ <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">የድር አገልግሎቶች</translation>
 <translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
 <translation id="3210163015918861891">አመሳስል ጠፍቷል</translation>
+<translation id="3224641773458703735">የይለፍ ቃላትን ወደ ውጭ ለመላክ በመጀመሪያ በመሣሪያዎ ላይ የይለፍ ኮድ ማዘጋጀት አለብዎት።</translation>
 <translation id="3240426699337459095">አገናኝ ተቀድቷል</translation>
 <translation id="3244271242291266297">ወወ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />፣ <ph name="ADDITIONAL_INFO" />፣ <ph name="INDEX" /> ከ<ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5327248766486351172">ስም</translation>
-<translation id="533632423981297619">የእርስዎ ይለፍ ቃላት ወደ ውጭ የተላከውን ፋይል መመልከት ለሚችል ማንኛውም ሰው የሚታዩ ይሆናሉ። ፋይሉን ለማንም አይጋሩት።</translation>
 <translation id="5388358297987318779">ምስል ክፈት</translation>
 <translation id="5409365236829784218">ይህን ፋይል መክፈት የሚችሉ መተግበሪያዎች አልተጫኑም።</translation>
 <translation id="5433691172869980887">የተጠቃሚ ስም ተቀድቷል</translation>
@@ -306,6 +308,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="681368974849482173">ንጥል ተፈጥሯል</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
+<translation id="6914783257214138813">የእርስዎ የይለፍ ቃላት ወደ ውጭ የተላከውን ፋይልን መመልከት ለሚችል ማንኛውም ሰው የሚታዩ ይሆናሉ።</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6973630695168034713">አቃፊዎች</translation>
 <translation id="7004499039102548441">የቅርብ ጊዜ ትሮች</translation>

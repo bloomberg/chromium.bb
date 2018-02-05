@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Den här enheten hanteras av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Ljusstyrka för tangentbordet</translation>
-<translation id="207439088875642105">Det här är ett konto för barn som hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Sluta casta <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
 <translation id="2144487987174258011">Starta om för att uppdatera Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monoljud</translation>
 <translation id="3009178788565917040">Utgång</translation>
 <translation id="3019353588588144572">Tid som återstår tills batteriet är fulladdat: <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Det här är ett konto för barn som hanteras av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">skift</translation>
 <translation id="3087734570205094154">Nederst</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Skärmförstorare</translation>
 <translation id="3477079411857374384">Ctrl-Skift-Mellanslag</translation>
 <translation id="3510164367642747937">Markera muspekaren</translation>
+<translation id="3513798432020909783">Kontot hanteras av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Byt tillbaka till "<ph name="FROM_LOCALE" />" (kräver omstart)</translation>
 <translation id="3582792037806681688">Multiinloggning tillåts inte för en användare i den här sessionen</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
@@ -276,6 +275,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7829386189513694949">stark signal</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
 <translation id="7933084174919150729">Endast den primära profilen har tillgång till Google Assistent.</translation>
+<translation id="79341161159229895">Kontot hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Söker efter mobilnätverk …</translation>
 <translation id="7982789257301363584">Nätverk</translation>
 <translation id="7994370417837006925">Multiinloggning</translation>
@@ -312,6 +312,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivbord.</translation>
 <translation id="8825534185036233643">Det finns inte stöd för spegling på fler än två skärmar.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Bakåtknapp</translation>
 <translation id="8850991929411075241">Sök+Escape</translation>
 <translation id="8870509716567206129">Appen har inte stöd för delad skärm.</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>

@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="2067602449040652523">Näppäimistön kirkkaus</translation>
-<translation id="207439088875642105">Tämä on lapsen tili, jota hallinnoivat <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Lopeta suoratoisto: <ph name="TAB_NAME" />, <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
 <translation id="2144487987174258011">Päivitä Adobe Flash Player käynnistämällä uudelleen.</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Monoääni</translation>
 <translation id="3009178788565917040">Äänentoisto</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING" /> kuluttua</translation>
-<translation id="3047477924825107454">Tämä on lapsen tili, jota hallinnoi <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="3477079411857374384">Ctrl + vaihto + välilyönti</translation>
 <translation id="3510164367642747937">Korosta hiiren osoitin</translation>
+<translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> hallinnoi tiliä</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="3582792037806681688">Useisiin tileihin kirjautuminen on kielletty yhdeltä tämän istunnon käyttäjistä</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
@@ -276,6 +275,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7829386189513694949">Vahva signaali</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="7933084174919150729">Google Assistant on käytettävissä vain ensisijaisella profiililla.</translation>
+<translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /> hallinnoivat tiliä</translation>
 <translation id="7977927628060636163">Haetaan mobiiliverkkoja…</translation>
 <translation id="7982789257301363584">Verkko</translation>
 <translation id="7994370417837006925">Kirjautuminen useaan tiliin</translation>
@@ -312,6 +312,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien välillä.</translation>
 <translation id="8825534185036233643">Peilaamista yli kahdelle näytölle ei tueta.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Takaisin-painike</translation>
 <translation id="8850991929411075241">Haku+Esc</translation>
 <translation id="8870509716567206129">Sovellus ei tue jaetun näytön tilaa.</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>

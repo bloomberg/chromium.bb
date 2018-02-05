@@ -26,6 +26,7 @@
 
       Si es defineix aquesta política, la pantalla d'inici de sessió sempre es mostrarà en la configuració regional que indiqui el primer valor d'aquesta política (que es defineix com una llista que permet la compatibilitat amb versions posteriors). Si aquesta política no es defineix o es defineix en una llista buida, la pantalla d'inici de sessió es mostrarà en la configuració regional de la darrera sessió de l'usuari. Si aquesta política es defineix en un valor que no és una configuració regional vàlida, la pantalla d'inici de sessió es mostrarà en una configuració regional alternativa (actualment, en-US).</translation>
 <translation id="1062011392452772310">Activa el testimoni remot per al dispositiu.</translation>
+<translation id="1062407476771304334">Substitueix</translation>
 <translation id="1093082332347834239">Si s'activa aquesta opció de configuració, l'amfitrió d'assistència remota s'executarà en un procés amb permisos <ph name="UIACCESS_PERMISSION_NAME" />. Això permetrà que els usuaris remots interaccionin amb les finestres amb privilegis restringits a l'ordinador de l'usuari local.
 
           Si es desactiva o no es configura, l'amfitrió d'assistència remota s'executarà al context de l'usuari i els usuaris remots no podran interaccionar amb les finestres amb privilegis restringits a l'ordinador.</translation>
@@ -89,12 +90,6 @@
 <translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
-<translation id="1420281424655200442">Controla quines impressores de la política <ph name="DEVICE_PRINTERS_POLICY" /> tenen disponibles els usuaris.
-
-      Determina quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, es mostren totes les impressores. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, s'utilitza <ph name="DEVICE_PRINTERS_BLACKLIST" /> per restringir l'accés a les impressores especificades. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> només mostra les impressores disponibles.
-
-      Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
 <translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
@@ -272,12 +267,6 @@
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="203096360153626918">Aquesta política no té cap efecte a les aplicacions per a Android. Podran activar el mode de pantalla completa encara que aquesta política s'estableixi en "<ph name="FALSE" />".</translation>
 <translation id="2043770014371753404">Impressores d'empresa desactivades</translation>
-<translation id="2063380907529983889">Controla quines impressores de la política <ph name="BULK_PRINTERS_POLICY" /> tenen disponibles els usuaris.
-
-      Determina quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, es mostren totes les impressores. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, s'utilitza <ph name="BULK_PRINTERS_BLACKLIST" /> per restringir l'accés a les impressores especificades. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> només mostra les impressores disponibles.
-
-      Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_BLACKLIST" />.
-      </translation>
 <translation id="206623763829450685">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME" />.
 
           Els valors possibles són "basic", "digest", "ntlm" i "negotiate". Separeu els diversos valors amb comes.
@@ -456,6 +445,9 @@
 <translation id="2466131534462628618">L'autenticació de portals captius ignora el servidor intermediari</translation>
 <translation id="2482676533225429905">Missatgeria nativa</translation>
 <translation id="2483146640187052324">Prediu accions de xarxa en qualsevol connexió de xarxa</translation>
+<translation id="2485721741875148980">Si aquesta política es defineix com a "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled es definirà com a "false". Tingues en compte que, després d'activar aquesta política, els perfils existents en què no s'hagi iniciat la sessió es bloquejaran i no s'hi podrà accedir. Per obtenir més informació, consulta l'article del centre d'ajuda.
+
+      Si aquesta política es defineix com a "false" o no es configura, l'usuari pot utilitzar el navegador sense iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Desactiva l'aplicació dels requisits de Transparència de certificats als URL esmentats.
 
       Aquesta política permet que els certificats dels noms d'amfitrió dels URL que especifiquis no es divulguin mitjançant Transparència de certificats. Això permet que es puguin continuar utilitzant certificats que, en cas contrari, podrien no ser de confiança perquè no s'han divulgat públicament de la manera adequada, però fa que sigui més difícil detectar l'emissió inadequada de certificats per a aquests amfitrions.
@@ -749,6 +741,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
+<translation id="3587482841069643663">Tots</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
@@ -1171,6 +1164,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="489803897780524242">Paràmetre que controla l'emplaçament del terme de cerca del proveïdor de cerca predeterminat</translation>
 <translation id="4899708173828500852">Activa Navegació segura</translation>
 <translation id="4906194810004762807">Freqüència d'actualització de la política de dispositiu</translation>
+<translation id="4917385247580444890">Forta</translation>
 <translation id="494613465159630803">Receptor de Cast</translation>
 <translation id="4962262530309732070">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà l'opció Afegeix una persona des del gestor d'usuaris.
 
@@ -1543,13 +1537,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
 <translation id="6161405879872578475">Activa <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Advertiment: un cop publicada la versió 43 (cap a juliol de 2015), <ph name="PRODUCT_NAME" /> ja no admetrà SSLv3 i aquesta política se suprimirà simultàniament.
-
-      Si aquesta política no es configura, en versions posteriors <ph name="PRODUCT_NAME" /> utilitza una versió mínima predeterminada (SSLv3) a <ph name="PRODUCT_NAME" /> 39 i a TLS 1.0.
-
-      En cas contrari, es pot establir un d'aquests valors: sslv3, tls1, tls1.1 o tls1.2. Quan s'estableixi, <ph name="PRODUCT_NAME" /> no utilitzarà versions de SSL/TLS anteriors a la versió especificada.  S'ignoraran els valors que no es reconeguin.
-
-      Tingueu en compte que, al contrari del que sembla, sslv3 és una versió anterior a tls1.</translation>
 <translation id="6181608880636987460">Permet definir una llista de patrons d'URL que especifiquin llocs que no poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -1929,6 +1916,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
+<translation id="7643883929273267746">Restringeix els comptes que es poden veure a <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determina si cal activar la itinerància de dades per al dispositiu. Si es defineix a «true» (cert), es permet la itinerància de dades. Si es deixa sense configurar o es defineix a «false» (fals), la itinerància de dades no estarà disponible.</translation>
 <translation id="7683777542468165012">Actualització de la política dinàmica</translation>
 <translation id="7694807474048279351">Programa un reinici automàtic un cop s'hagi aplicat una actualització de <ph name="PRODUCT_OS_NAME" />.
@@ -2034,13 +2022,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Per veure exemples detallats, aneu a:
           <ph name="PROXY_HELP_URL" />.</translation>
-<translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la pujada útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
+<translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
 <translation id="793473937901685727">Estableix la disponibilitat de certificats per a aplicacions ARC</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
 <translation id="7976157349247117979">Nom de la destinació per a <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Sense restriccions especials</translation>
@@ -2249,6 +2236,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
           Si no s'estableix aquesta política, es fa servir un factor d'ajust predeterminat.
 
           El factor d'ajust ha de ser de 100% o més. No es permeten valors que puguin reduir el temps d'espera d'inactivitat de la pantalla en mode de presentació més enllà del seu valor habitual.</translation>
+<translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8818173863808665831">Informeu de la ubicació geogràfica d'un dispositiu.
 
       Si no definiu la política, o bé si la definiu com a falsa, no s'informarà de la ubicació.</translation>

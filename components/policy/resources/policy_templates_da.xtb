@@ -26,6 +26,7 @@
 
 Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er angivet af den første værdi i denne politik (politikken er defineret som en liste til fremadrettet kompatibilitet). Hvis politikken ikke er angivet eller er angivet som en tom liste, vises loginskærmen i den landestandard, der blev anvendt i den forrige brugersession. Hvis denne politik er angivet med en værdi, der ikke er en gyldig landestandard, vises loginskærmen i en reservelandestandard (som i øjeblikket er en-US).</translation>
 <translation id="1062011392452772310">Aktivér fjernattestering for enheden</translation>
+<translation id="1062407476771304334">Erstat</translation>
 <translation id="1093082332347834239">Hvis denne indstilling er aktiveret, køres den eksterne hjælpehost i en proces med <ph name="UIACCESS_PERMISSION_NAME" />-tilladelser. Dette giver eksterne brugere mulighed for at interagere med vinduer med administratorrettigheder på den lokale brugers skrivebord.
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, køres den eksterne hjælpehost i brugerens kontekst, og eksterne brugere kan ikke interagere med vinduer med administratorrettigheder på skrivebordet.</translation>
@@ -89,12 +90,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1363275621236827384">Aktivér forespørgsler til Quirks Server om hardwareprofiler</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
-<translation id="1420281424655200442">Bestemmer, hvilke printere fra <ph name="DEVICE_PRINTERS_POLICY" /> der kan anvendes af brugerne.
-
-      Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle printere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, anvendes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til at begrænse adgangen til de angivne printere. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angiver <ph name="DEVICE_PRINTERS_WHITELIST" /> kun de printere, der kan vælges.
-
-      Hvis denne politik ikke er angivet, anvendes <ph name="PRINTERS_BLACKLIST" /> som standard.
-      </translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
@@ -276,12 +271,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="203096360153626918">Denne politik påvirker ikke Android-apps. De kan åbnes i fuldskærmstilstand, selv hvis denne politik angives som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverede virksomhedsprintere</translation>
-<translation id="2063380907529983889">Bestemmer, hvilke printere fra <ph name="BULK_PRINTERS_POLICY" /> der kan anvendes af brugerne.
-
-      Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle printere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, anvendes <ph name="BULK_PRINTERS_BLACKLIST" /> til at begrænse adgangen til de angivne printere. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angiver <ph name="BULK_PRINTERS_WHITELIST" /> kun de printere, der kan vælges.
-
-      Hvis denne politik ikke er angivet, anvendes <ph name="PRINTERS_BLACKLIST" /> som standard.
-      </translation>
 <translation id="206623763829450685">Angiver, hvilke skemaer for HTTP-godkendelse der understøttes af <ph name="PRODUCT_NAME" />.
 
           Mulige værdier er "grundlæggende", "sammenfatning", "NTLM" og "forhandling". Flere værdier adskilles med kommaer.
@@ -459,6 +448,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2466131534462628618">Captive portal-godkendelse ignorerer proxy</translation>
 <translation id="2482676533225429905">Indbyggede beskedhosts</translation>
 <translation id="2483146640187052324">Forudse netværkshandlinger på enhver netværksforbindelse</translation>
+<translation id="2485721741875148980">Hvis denne politik er angivet som sand, skal brugeren logge ind i <ph name="PRODUCT_NAME" /> med sin profil, inden browseren anvendes. Standardværdien for BrowserGuestModeEnabled angives dermed til falsk. Bemærk, at eksisterende profiler, der ikke er logget ind, vil blive låst og ikke længere vil være tilgængelige efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp.
+
+      Hvis denne politik er angivet som falsk eller ikke er konfigureret, kan brugeren benytte browseren uden at logge ind i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Deaktiverer håndhævelse af krav vedrørende Certifikatsgennemsigtighed for de angivne webadresser.
 
       Denne politik tillader, at certifikater til hostnames i de angivne webadresser ikke fremvises via Certifikatsgennemsigtighed. Dette tillader, at certifikater, der ellers ville være usikre, fordi de ikke blev fremvist korrekt offentligt, fortsat kan bruges. Det gør det dog sværere at registrere certifikater, der er udstedt ved en fejl, for disse hosts.
@@ -754,6 +746,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3577251398714997599">Annonceindstilling for websites med påtrængende annoncer</translation>
+<translation id="3587482841069643663">Alle</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
 <translation id="3646859102161347133">Indstil type af lup</translation>
@@ -1189,6 +1182,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="489803897780524242">Parameter, der styrer placeringen af søgeterm i standardsøgemaskinen</translation>
 <translation id="4899708173828500852">Aktiver Beskyttet browsing</translation>
 <translation id="4906194810004762807">Opdateringsfrekvens for enhedspolitik</translation>
+<translation id="4917385247580444890">Stærk</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Hvis denne politik er indstillet til sand eller ikke konfigureret, tillader <ph name="PRODUCT_NAME" /> tilføjelse af personer fra brugeradministration.
 
@@ -1557,13 +1551,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6157537876488211233">Kommasepareret liste over regler for omgåelse af proxy</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
 <translation id="6161405879872578475">Aktiverer <ph name="PRODUCT_NAME" /></translation>
-<translation id="6167074305866468481">Advarsel! Understøttelse af SSLv3 forsvinder helt fra <ph name="PRODUCT_NAME" /> efter version 43 (cirka juli 2015), og denne politik fjernes på samme tidspunkt.
-
-      Hvis denne politik ikke konfigureres, benytter <ph name="PRODUCT_NAME" /> en standard minimumversion, som er SSLv3 i <ph name="PRODUCT_NAME" /> 39 og TLS 1.0 i senere versioner.
-
-      Alternativt kan den angives til én af følgende værdier: "sslv3", "tls1", "tls1.1" eller "tls1.2". Når den er angivet, benytter <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er ældre end den angivne version. En ukendt værdi ignoreres.
-
-      Bemærk, at "sslv3" på trods af tallet er en ældre version end "tls1".</translation>
 <translation id="6181608880636987460">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som ikke har tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites enten fra politikken "DefaultPluginsSetting", hvis denne er angivet, og ellers fra brugerens personlige konfiguration.</translation>
@@ -1942,6 +1929,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7625444193696794922">Angiver den udgivelseskanal, som denne enhed skal være låst til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME" /> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges "en-US" i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME" /> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden "en-US".</translation>
+<translation id="7643883929273267746">Begræns konti, der er synlige i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Bestemmer, om dataroaming skal aktiveres for enheden. Hvis den er indstillet til sand, tillades dataroaming. Hvis den ikke er konfigureret eller er angivet til falsk, vil dataroaming ikke være tilgængelig.</translation>
 <translation id="7683777542468165012">Dynamisk opdatering af politikker</translation>
 <translation id="7694807474048279351">Planlæg en automatisk genstart efter opdatering af <ph name="PRODUCT_OS_NAME" />
@@ -2056,7 +2044,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
-<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
 <translation id="7976157349247117979">Navnet på destinationen for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Ingen særlige begrænsninger</translation>
@@ -2258,6 +2245,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
           Hvis denne politik ikke indstilles, anvendes der en skaleringsfaktor.
 
           Skaleringsfaktoren skal være 100 % eller mere. Værdier, der forkorter nedtoningsforsinkelsen på skærmen i præsentationstilstand i forhold til den normale nedtoningsforsinkelse, er ikke tilladt.</translation>
+<translation id="8798099450830957504">Standard</translation>
 <translation id="8818173863808665831">Rapportér enhedens geografiske placering.
 
       Hvis politikken ikke er angivet eller angivet til falsk, rapporteres placeringen ikke.</translation>

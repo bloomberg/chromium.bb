@@ -47,7 +47,6 @@
 <translation id="2049639323467105390"><ph name="DOMAIN" /> याद्वारे हे डिव्हाइस व्यवस्‍थापित केले जाते.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2067602449040652523">कीबोर्डची चमक</translation>
-<translation id="207439088875642105">हे खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> द्वारे व्यवस्थापित केलेल्या मुलांसाठी आहे</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> वर <ph name="TAB_NAME" /> कास्ट करणे थांबवा</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="2144487987174258011">Adobe Flash Player अपडेट करण्यासाठी पुन्हा सुरू करा</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">मोनो ऑडिओ</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बॅटरी पूर्णपणे चार्ज होईपर्यंत उर्वरित वेळ, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">हे मुलांसाठी असलेले खाते <ph name="MANAGER_EMAIL" /> द्वारे व्‍यवस्‍थापित केले</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
+<translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="3582792037806681688">या सत्रात वापरकर्त्यासाठी एकाधिक साइन इनची अनुमती रद्द केली गेली आहे</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
+<translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क शोधत आहे...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="7994370417837006925">एकाधिक साइन-इन</translation>
@@ -312,6 +312,7 @@
 नंतरच्या सूचना, विंडो आणि संवाद हे डेस्कटॉपच्या दरम्यान विभाजित केले जाऊ शकतात.</translation>
 <translation id="8825534185036233643">दोन पेक्षा जास्त प्रदर्शनासाठी मि‍ररिंग समर्थित नाही.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">मागे जा बटण</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">अॅप विभाजित-स्क्रीनला सपोर्ट करत नाही.</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>

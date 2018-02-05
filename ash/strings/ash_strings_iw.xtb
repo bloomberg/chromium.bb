@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">לאורך</translation>
 <translation id="2067602449040652523">בהירות מקלדת</translation>
-<translation id="207439088875642105">זהו חשבון עבור ילדים, המנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">הפסק להעביר את <ph name="TAB_NAME" /> אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="2144487987174258011">‏הפעל מחדש כדי לעדכן את Adobe Flash Player</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3019353588588144572">הזמן שנותר עד לטעינה מלאה של הסוללה, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">זהו חשבון לילדים, המנוהל על-ידי <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">תחתית</translation>
 <translation id="3105990244222795498">‏<ph name="DEVICE_NAME" />‏ (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="3477079411857374384">‏Control+‏Shift+מקש הרווח</translation>
 <translation id="3510164367642747937">הדגשה של סמן העכבר</translation>
+<translation id="3513798432020909783">החשבון מנוהל על-ידי <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">שנה בחזרה ל"<ph name="FROM_LOCALE" />" (דורש הפעלה מחדש)</translation>
 <translation id="3582792037806681688">בוטלה הרשאת הכניסה עם מספר חשבונות למשתמש בהפעלה זו</translation>
 <translation id="3595596368722241419">סוללה מלאה</translation>
@@ -276,6 +275,7 @@
 <translation id="7829386189513694949">אות חזק</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="7933084174919150729">‏Google Assistant זמין רק לפרופיל ראשי.</translation>
+<translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">מחפש רשתות סלולריות...</translation>
 <translation id="7982789257301363584">רשת</translation>
 <translation id="7994370417837006925">כניסה עם מספר חשבונות</translation>
@@ -312,6 +312,7 @@
 ייתכן שהודעות, חלונות ותיבות דו-שיח יתפצלו בהמשך בין שולחנות עבודה.</translation>
 <translation id="8825534185036233643">אין תמיכה בשיקוף מסך עם יותר משני מסכים.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">לחצן 'הקודם'</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">האפליקציה אינה תומכת במסך מפוצל.</translation>
 <translation id="8878886163241303700">מסך מתרחב</translation>

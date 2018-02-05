@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">स्थिति</translation>
 <translation id="1938124657309484470">मान <ph name="MAXIMUM_DATE_OR_TIME" /> या पहले का होना चाहिए.</translation>
+<translation id="1993104285338243655">स्क्रीन शेयर करने पर स्विच किया गया</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' का '<ph name="INVALIDDOMAIN" />' में गलत स्थान पर उपयोग किया गया है.</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2226276347425096477">कृपया इस टेक्स्ट को <ph name="MAX_CHARACTERS" /> वर्णों या कम तक छोटा करें (वर्तमान में आप <ph name="CURRENT_LENGTH" /> वर्णों का उपयोग कर रहे हैं).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">मिलीसेकंड</translation>
 <translation id="4151657705144244502">ग्राफ़‍िक</translation>
 <translation id="4201051445878709314">पिछला माह दिखाएं</translation>
+<translation id="4205604240201363801">अब पिक्चर में पिक्चर मोड में</translation>
 <translation id="421884353938374759">रंग पिकर</translation>
 <translation id="4248100235867064564">मेनू बार</translation>
 <translation id="4254339807215791271">सामग्री की जानकारी</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="668171684555832681">अन्य...</translation>
 <translation id="6692633176391053278">स्टेपर</translation>
+<translation id="6709570249143506788">खराब वीडियो क्वालिटी</translation>
 <translation id="6755330956360078551">टूलटिप</translation>
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6820355525329141109">प्लग इन लोड नहीं किया जा सका.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> फ़ाइल</translation>
 <translation id="8451268428117625855">कृपया किसी फ़ाइल को चुनें.</translation>
 <translation id="8461852803063341183">रेडियो बटन</translation>
-<translation id="8511325616783751178">ड्रॉप डाउन बटन</translation>
 <translation id="8534579021159131403">मिनट</translation>
 <translation id="8541249477527128034">मीडिया नियंत्रण</translation>
 <translation id="8583702881314752957">परिभाषा सूची</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">प्लेबैक शुरू करें</translation>
 <translation id="8845239796550121995">अब आपके टीवी पर कास्ट हो रहा है</translation>
 <translation id="8851136666856101339">मुख्य</translation>
+<translation id="8875657656876809964">वीडियो चलाने में गड़बड़ी</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">माह</translation>
 <translation id="901493112792887934">वर्तमान समय, सेकंड में</translation>

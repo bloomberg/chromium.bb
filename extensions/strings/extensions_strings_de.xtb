@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Diese Erweiterung hat sich selbst zu häufig neu geladen.</translation>
 <translation id="7003844668372540529">Unbekanntes Produkt <ph name="PRODUCT_ID" /> von <ph name="VENDOR_NAME" /></translation>
+<translation id="7068383018033524534">Manifest-Datei ist ungültig</translation>
 <translation id="7217838517480956708">Der Administrator dieses Computers schreibt die Installation von <ph name="EXTENSION_NAME" /> vor. Die Erweiterung kann nicht entfernt oder geändert werden.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht "<ph name="ATTEMPTED_FILENAME" />" nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME" />) einen anderen Dateinamen "<ph name="ACTUAL_FILENAME" />" festgelegt hat.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> von <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Die Erweiterung konnte die Anmeldeinformationen für eine Netzwerkanfrage nicht bereitstellen, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) andere Anmeldeinformationen übermittelt hat.</translation>
+<translation id="8517576857589387417">Manifest-Datei fehlt oder ist nicht lesbar</translation>
 <translation id="8636666366616799973">Paket ist ungültig. Details: "<ph name="ERROR_MESSAGE" />"</translation>
 <translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) sie an <ph name="ACTUAL_REDIRECT_DESTINATION" /> weitergeleitet hat.</translation>
 <translation id="8712265948125780616">Erweiterungsentpacker</translation>

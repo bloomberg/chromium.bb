@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">jj</translation>
 <translation id="1930711995431081526">état</translation>
 <translation id="1938124657309484470">La date ou l'heure doit être égale ou antérieure à "<ph name="MAXIMUM_DATE_OR_TIME" />".</translation>
+<translation id="1993104285338243655">Passage à la duplication d'écran</translation>
 <translation id="2060505056492490888">L'emplacement du caractère "<ph name="DOT" />" est incorrect dans "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2226276347425096477">Veuillez réduire ce texte à <ph name="MAX_CHARACTERS" /> caractères maximum (il compte actuellement <ph name="CURRENT_LENGTH" /> caractères).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Millisecondes</translation>
 <translation id="4151657705144244502">élément graphique</translation>
 <translation id="4201051445878709314">Afficher le mois précédent</translation>
+<translation id="4205604240201363801">Mode PIP (Picture-in-Picture) activé</translation>
 <translation id="421884353938374759">palette couleurs</translation>
 <translation id="4248100235867064564">barre de menu</translation>
 <translation id="4254339807215791271">infos sur le contenu</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="668171684555832681">Autre...</translation>
 <translation id="6692633176391053278">curseur</translation>
+<translation id="6709570249143506788">Mauvaise qualité de lecture</translation>
 <translation id="6755330956360078551">info-bulle</translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6820355525329141109">Impossible de charger le plug-in.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fichiers</translation>
 <translation id="8451268428117625855">Veuillez sélectionner un fichier.</translation>
 <translation id="8461852803063341183">case d'option</translation>
-<translation id="8511325616783751178">bouton déroulant</translation>
 <translation id="8534579021159131403">Minutes</translation>
 <translation id="8541249477527128034">commande multimédia</translation>
 <translation id="8583702881314752957">liste de définitions</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">commencer la lecture</translation>
 <translation id="8845239796550121995">En cours de diffusion sur votre téléviseur</translation>
 <translation id="8851136666856101339">principal</translation>
+<translation id="8875657656876809964">Erreur lors de la lecture de la vidéo</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> Ko</translation>
 <translation id="8987927404178983737">Mois</translation>
 <translation id="901493112792887934">durée actuelle en secondes</translation>

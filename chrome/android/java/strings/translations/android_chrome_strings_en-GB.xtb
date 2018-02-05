@@ -75,7 +75,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remove 1 selected item}other{Remove # selected items}}</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="164269334534774161">You are viewing an offline copy of this page from <ph name="CREATION_TIME" /></translation>
-<translation id="1643702317193804718">Translating page to <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1647391597548383849">Access your camera</translation>
 <translation id="1660204651932907780">Allow sites to play sound (recommended)</translation>
@@ -86,7 +85,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1729516292547892356">To view virtual reality content, update Google VR Services</translation>
-<translation id="1742134235943978220">Translated to <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Sync your bookmarks</translation>
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1756600373018374892">Tap this button for quick access to your tabs.</translation>
@@ -96,6 +94,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1832521218263067499">Security incidents</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1880072593381090678">Popular pages from Chrome</translation>
+<translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Close navigation drawer</translation>
 <translation id="1897409700584096124">Website is broadcasting</translation>
@@ -108,6 +107,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1946005195648379376">Control how Google uses your browsing history to personalise Search and other Google services.</translation>
 <translation id="1952172573699511566">Websites will show text in your preferred language, when possible.</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
+<translation id="196723829409668860">People also viewed</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984937141057606926">Allowed, except third-party</translation>
 <translation id="1989112275319619282">Browse</translation>
@@ -174,8 +174,10 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2536728043171574184">Viewing an offline copy of this page</translation>
 <translation id="2546283357679194313">Cookies and site data</translation>
 <translation id="2567385386134582609">IMAGE</translation>
+<translation id="2570922361219980984">Location access is also off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Expanded – click to collapse.</translation>
 <translation id="2581165646603367611">This will clear cookies, cache and other data of sites Chrome doesn't think is important.</translation>
+<translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">Card number</translation>
@@ -229,7 +231,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3148434565183091099">To get your bookmarks on all your devices, sign in to Chrome.</translation>
 <translation id="3157842584138209013">See how much data that you've saved from the More Options button</translation>
 <translation id="3166827708714933426">Tab and window shortcuts</translation>
-<translation id="3177909033752230686">Page language:</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
@@ -342,7 +343,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
-<translation id="4254813446494774748">Translation language:</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Sync error occurred, tap to get details.</translation>
@@ -386,7 +386,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
 <translation id="4684427112815847243">Sync everything</translation>
-<translation id="4686372254213217147">Original size</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
 <translation id="4698034686595694889">View offline in <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Critical functionality required to run Chrome is missing; either your Chrome installation is incomplete or not compatible with this version of Android.</translation>
@@ -406,7 +405,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4807963036345170158">Data Saver is off</translation>
 <translation id="4811736444948656478">Navigation panel opened at half height</translation>
 <translation id="4816465935029283692">Data types</translation>
-<translation id="482201002591920174">Primary storage</translation>
 <translation id="4837753911714442426">Open options to print page</translation>
 <translation id="4842092870884894799">Showing password generation pop-up</translation>
 <translation id="4850886885716139402">View</translation>
@@ -440,11 +438,9 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="510275257476243843">1 hour left</translation>
 <translation id="5127805178023152808">Sync is off</translation>
 <translation id="5129038482087801250">Install web app</translation>
-<translation id="5138299137310274655">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Clear stored data</translation>
 <translation id="5152843274749979095">No supported apps installed</translation>
 <translation id="5161254044473106830">Title required</translation>
-<translation id="5164482624172255778">Would you like Google Chrome to offer to translate <ph name="LANGUAGE" /> pages from this site next time?</translation>
 <translation id="5168917394043976756">Open navigation drawer</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5199929503336119739">Work profile</translation>
@@ -492,13 +488,13 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5534640966246046842">Site copied</translation>
 <translation id="5537099431952529648">You and your parents can manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Reload</translation>
+<translation id="5561549206367097665">Waiting for network…</translation>
 <translation id="557283862590186398">Chrome needs permission to access your microphone for this site.</translation>
 <translation id="55737423895878184">Location and notifications are allowed</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
 <translation id="5585019845078534178">Cards</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
-<translation id="5620655347161642930">Export passwords…</translation>
 <translation id="5620928963363755975">Find your files and pages in Downloads from the More Options button</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Allow all sites</translation>
@@ -536,6 +532,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5858741533101922242">Chrome is unable to turn on Bluetooth adaptor</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="5864419784173784555">Waiting for another download…</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5878455346526065919">Block ads from sites that tend to show intrusive ads</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
@@ -572,6 +569,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="618555311922999635">Navigation panel opened at full height</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
+<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Options</translation>
 <translation id="6221633008163990886">Unlock to export your passwords</translation>
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
@@ -613,7 +611,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6556716549745717622">Block if site tends to show intrusive ads (recommended)</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
 <translation id="6566259936974865419">Chrome has saved you <ph name="GIGABYTES" /> GB</translation>
-<translation id="656628257199996201">Always translate <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
 <translation id="6575643671698722332">Reset failed. Ensure that your device is online and try again.</translation>
 <translation id="6583199322650523874">Bookmark the current page</translation>
@@ -654,8 +651,8 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6910211073230771657">Deleted</translation>
+<translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
 <translation id="6945221475159498467">Select</translation>
-<translation id="6959661084585705671">Secondary storage</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
@@ -671,6 +668,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7022756207310403729">Open in browser</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031882061095297553">Sync to</translation>
+<translation id="7034608350006174882">Cards and addresses using Google Pay</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7062545763355031412">Accept and switch accounts</translation>
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
@@ -697,7 +695,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
 <translation id="7374228672268453233">Data used:</translation>
 <translation id="7375125077091615385">Type:</translation>
-<translation id="7378627244592794276">Nope</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome First Run Experience</translation>
 <translation id="7423098979219808738">Ask first</translation>
@@ -721,7 +718,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>
-<translation id="7600965453749440009">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
@@ -736,6 +732,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="7754704193130578113">Ask where to save each file before downloading</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7769602470925380267">Accept and sign out</translation>
@@ -774,7 +771,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8063895661287329888">Failed to add bookmark.</translation>
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8068648041423924542">Unable to select certificate.</translation>
-<translation id="8069239273282989646">After compression</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084114998886531721">Saved password</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
@@ -832,7 +828,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8712637175834984815">Got it</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
-<translation id="8725066075913043281">Try again</translation>
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8748850008226585750">Contents hidden</translation>
@@ -862,6 +857,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google account.</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
+<translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9060538597317784206">View app <ph name="APP_NAME" /> on the Play Store.  Rating: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Turn off Request desktop site</translation>
@@ -870,11 +866,10 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9071742570345586758">To view virtual reality content, install Google VR Services</translation>
 <translation id="9086455579313502267">Unable to access the network</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB downloaded</translation>
-<translation id="9099292894781394535">Data savings</translation>
+<translation id="9100505651305367705">Offer to show articles in simplified view, when supported</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9133515669113036225">Reset device credentials</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
-<translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
@@ -887,7 +882,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="945632385593298557">Access your microphone</translation>
 <translation id="951339005376969845">Delete existing data. You can retrieve it by switching back to <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome can use <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> for search in China. You can change this in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
-<translation id="969096075394517431">Change languages</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> mins left</translation>
 <translation id="974555521953189084">Enter your passphrase to start sync</translation>
 <translation id="981121421437150478">Offline</translation>

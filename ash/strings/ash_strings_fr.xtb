@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
-<translation id="207439088875642105">Il s'agit d'un compte pour enfants géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Arrêter de diffuser <ph name="TAB_NAME" /> sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2144487987174258011">Redémarrez pour mettre Adobe Flash Player à jour</translation>
@@ -93,7 +92,6 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING" />.</translation>
-<translation id="3047477924825107454">Il s'agit d'un compte pour enfants géré par <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@
 <translation id="3473479545200714844">Loupe</translation>
 <translation id="3477079411857374384">Ctrl+Maj+Espace</translation>
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
+<translation id="3513798432020909783">Compte géré par <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
 <translation id="3582792037806681688">La connexion multicompte a été désactivée pour un utilisateur de cette session.</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
@@ -276,6 +275,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7829386189513694949">Signal de forte intensité</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
+<translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Recherche de réseaux mobiles…</translation>
 <translation id="7982789257301363584">Réseau</translation>
 <translation id="7994370417837006925">Connexion multicompte</translation>
@@ -312,6 +312,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 Suite à cette opération, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="8825534185036233643">La duplication d'écran avec plus de deux écrans n'est pas acceptée.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Bouton Retour</translation>
 <translation id="8850991929411075241">Recherche+Échap</translation>
 <translation id="8870509716567206129">Application incompatible avec l'écran partagé.</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>

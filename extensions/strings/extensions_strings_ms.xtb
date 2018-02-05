@@ -53,12 +53,14 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">Sambungan ini terlalu kerap memuat semula sendiri.</translation>
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID" /> daripada <ph name="VENDOR_NAME" /> tidak diketahui</translation>
+<translation id="7068383018033524534">Fail manifes tidak sah</translation>
 <translation id="7217838517480956708">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME" /> dipasang. Sambungan ini tidak boleh dialih keluar atau diubah suai.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Menghadap pengguna</translation>
 <translation id="8047248493720652249">Sambungan ini gagal menamakan muat turun "<ph name="ATTEMPTED_FILENAME" />" kerana sambungan lain (<ph name="EXTENSION_NAME" />) menetapkan nama fail lain "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> daripada <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Sambungan ini gagal memberikan bukti kelayakan kepada permintaan rangkaian kerana sambungan lain (<ph name="EXTENSION_NAME" />) memberikan bukti kelayakan yang berbeza.</translation>
+<translation id="8517576857589387417">Fail manifes hilang atau tidak dapat dibaca</translation>
 <translation id="8636666366616799973">Pakej adalah tidak sah. Butiran: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Sambungan ini gagal mengubah hala permintaan rangkaian ke <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kerana sambungan lain (<ph name="EXTENSION_NAME" />) mengubah halanya ke <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Penyahpadat Sambungan</translation>

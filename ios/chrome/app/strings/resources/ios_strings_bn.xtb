@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" />টি আইটেম</translation>
 <translation id="1491277525950327607">সেটিং টগল করতে দুবার আলতো চাপুন</translation>
 <translation id="152234381334907219">কখনও সংরক্ষিত হয়নি</translation>
+<translation id="1532451416480227577">Google Pay তে সেভ থাকা ঠিকানা এবং ক্রেডিট কার্ডগুলি দেখুন</translation>
 <translation id="1540800554400757039">ঠিকানা ১</translation>
 <translation id="1545749641540134597">QR কোড স্ক্যান করুন</translation>
 <translation id="1580783302095112590">মেল পাঠানো হয়েছে৷</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">শুধুমাত্র ওয়াই-ফাই এ</translation>
 <translation id="2747003861858887689">পূর্ববর্তী ফিল্ড</translation>
 <translation id="2780046210906776326">কোনো ইমেল অ্যাকাউন্ট নেই</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
 <translation id="283291358677939992">পৃষ্ঠাতে খুঁজুন...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
 <translation id="3210163015918861891">সিঙ্ক বন্ধ রয়েছে</translation>
+<translation id="3224641773458703735">পাসওয়ার্ড এক্সপোর্ট করার জন্য আপনার ডিভাইসে আপনাকে অবশ্যই একটি পাসকোড সেট করতে হবে।</translation>
 <translation id="3240426699337459095">লিঙ্ক অনুলিপি করা হয়েছে</translation>
 <translation id="3244271242291266297">মিমি</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> এর <ph name="INDEX" /></translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
-<translation id="533632423981297619">এক্সপোর্ট করা ফাইল যারা দেখতে পাবেন তারা আপনার পাসওয়ার্ডগুলিও দেখতে পাবেন। ফাইলটি কারও সাথে শেয়ার করবেন না।</translation>
 <translation id="5388358297987318779">ছবি খুলুন</translation>
 <translation id="5409365236829784218">এই ফাউলটি খুলতে পারে এমন কোনো অ্যাপ্লিকেশন এখানে ডাউনলোড করা নেই৷</translation>
 <translation id="5433691172869980887">ইউজারনেম কপি করা হয়েছে</translation>
@@ -307,6 +309,7 @@
 <translation id="681368974849482173">আইটেম তৈরি করা হয়েছে</translation>
 <translation id="6896758677409633944">অনুলিপি</translation>
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
+<translation id="6914783257214138813">এক্সপোর্ট করা ফাইল যারা দেখতে পান তারা আপনার পাসওয়ার্ডগুলিও দেখতে পাবেন।</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6973630695168034713">ফোল্ডারগুলি</translation>
 <translation id="7004499039102548441">সাম্প্রতিক ট্যাবগুলি</translation>

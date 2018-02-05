@@ -53,12 +53,14 @@
 <translation id="677806580227005219">মাইমহ্যান্ডলার: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">এই এক্সটেনশানটি খুব ঘন ঘন নিজের থেকে পুনরায় লোড হয়৷</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>
+<translation id="7068383018033524534">ম্যানিফেস্ট ফাইলটি ভুল</translation>
 <translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME" /> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
 <translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ব্যবহারকারীর দিকে মুখ করা</translation>
 <translation id="8047248493720652249">এই এক্সটেনশানটি ডাউনলোড "<ph name="ATTEMPTED_FILENAME" />" এর নাম দিতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশান (<ph name="EXTENSION_NAME" />) একটি ভিন্ন ফাইল নাম "<ph name="ACTUAL_FILENAME" />" নির্ধারণ করেছে৷</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> এর <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের শংসাপত্রগুলি প্রদান করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) ভিন্ন শংসাপত্রগুলি প্রদান করেছে৷</translation>
+<translation id="8517576857589387417">ম্যানিফেস্ট ফাইলটি নেই অথবা পড়া যাবে না</translation>
 <translation id="8636666366616799973">প্যাকেজটি অবৈধ৷ বিশদ বিবরণ: '<ph name="ERROR_MESSAGE" />'৷</translation>
 <translation id="8670869118777164560">এই এক্সটেনশনটি <ph name="ATTEMPTED_REDIRECT_DESTINATION" />এ একটি নেটওয়ার্কের পুনঃনির্দেশ অনুরোধ করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) এটিকে <ph name="ACTUAL_REDIRECT_DESTINATION" /> এ পুনঃনির্দেশ করেছে৷</translation>
 <translation id="8712265948125780616">এক্সটেনশান আনপ্যাকার</translation>

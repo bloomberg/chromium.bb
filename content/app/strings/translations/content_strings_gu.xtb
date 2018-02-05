@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">સ્થિતિ</translation>
 <translation id="1938124657309484470">મૂલ્ય <ph name="MAXIMUM_DATE_OR_TIME" /> અથવા પહેલાંનું હોવું આવશ્યક છે.</translation>
+<translation id="1993104285338243655">મીરરીંગ પર સ્વિચ કર્યુંં</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' નો ઉપયોગ '<ph name="INVALIDDOMAIN" />' માં ખોટી જગ્યાએ થયો છે.</translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2226276347425096477">કૃપા કરીને આ ટેક્સ્ટને <ph name="MAX_CHARACTERS" /> અક્ષર અથવા તેથી ઓછા સુધી નાનો કરો (તમે હાલમાં <ph name="CURRENT_LENGTH" /> અક્ષરોનો ઉપયોગ કરી રહ્યા છો).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">મીલીસેકન્ડ</translation>
 <translation id="4151657705144244502">ગ્રાફિક</translation>
 <translation id="4201051445878709314">પહેલાનો મહિનો દર્શાવો</translation>
+<translation id="4205604240201363801">હમણાં ચિત્રમાં ચિત્ર મોડ</translation>
 <translation id="421884353938374759">રંગ ચૂંટનાર</translation>
 <translation id="4248100235867064564">મેનૂ બાર</translation>
 <translation id="4254339807215791271">સામગ્રી માહિતી</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="668171684555832681">અન્ય...</translation>
 <translation id="6692633176391053278">સ્ટેપર</translation>
+<translation id="6709570249143506788">ખરાબ પ્લેબૅક ક્વૉલિટી</translation>
 <translation id="6755330956360078551">ટૂલટીપ</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6820355525329141109">પ્લગિન લોડ કરી શક્યાં નથી.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ફાઇલો</translation>
 <translation id="8451268428117625855">કૃપા કરીને કોઈ ફાઇલ પસંદ કરો.</translation>
 <translation id="8461852803063341183">રેડિઓ બટન</translation>
-<translation id="8511325616783751178">ડ્રોપ ડાઉન બટન</translation>
 <translation id="8534579021159131403">મિનિટ</translation>
 <translation id="8541249477527128034">મીડિયાનું નિયંત્રણ</translation>
 <translation id="8583702881314752957">વિવરણ સૂચિ</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">પ્લેબૅક શરૂ કરો</translation>
 <translation id="8845239796550121995">હમણાં તમારા TV પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="8851136666856101339">મુખ્ય</translation>
+<translation id="8875657656876809964">વીડિઓ પ્લેબૅક ભૂલ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">મહિનો</translation>
 <translation id="901493112792887934">સેકન્ડ્સમાં વર્તમાન સમય</translation>

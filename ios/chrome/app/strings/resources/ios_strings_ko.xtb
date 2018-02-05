@@ -34,6 +34,7 @@
 <translation id="145015347812617860">항목 <ph name="COUNT" />개</translation>
 <translation id="1491277525950327607">설정을 전환하려면 두 번 탭하세요.</translation>
 <translation id="152234381334907219">저장되지 않음</translation>
+<translation id="1532451416480227577">Google Pay에 저장된 주소와 신용카드 표시</translation>
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1580783302095112590">메일이 전송되었습니다.</translation>
@@ -96,6 +97,7 @@
 <translation id="2718352093833049315">Wi-Fi 연결 시</translation>
 <translation id="2747003861858887689">이전 필드</translation>
 <translation id="2780046210906776326">이메일 계정이 없음</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">탭 전환 종료</translation>
 <translation id="283291358677939992">페이지에서 찾기...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@
 <translation id="3175081911749765310">웹 서비스</translation>
 <translation id="3207960819495026254">북마크됨</translation>
 <translation id="3210163015918861891">동기화 사용 안함</translation>
+<translation id="3224641773458703735">비밀번호를 내보내려면 먼저 기기에 비밀번호를 설정해야 합니다.</translation>
 <translation id="3240426699337459095">링크 복사됨</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
-<translation id="533632423981297619">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다. 누구와도 파일을 공유하지 마세요.</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
@@ -306,6 +308,7 @@
 <translation id="681368974849482173">북마크가 생성되었습니다.</translation>
 <translation id="6896758677409633944">복사</translation>
 <translation id="6903907808598579934">동기화 사용 설정</translation>
+<translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6973630695168034713">폴더</translation>
 <translation id="7004499039102548441">최근 탭</translation>

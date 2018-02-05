@@ -14,15 +14,18 @@
 <translation id="1337036551624197047">Teclado checo</translation>
 <translation id="1352103415082130575">Teclado tailandés (Pattachote)</translation>
 <translation id="1358032944105037487">Teclado japonés</translation>
+<translation id="1383876407941801731">Buscar</translation>
 <translation id="1399648040768741453">Teclado télugu (fonético)</translation>
 <translation id="1441841714100794440">Teclado vietnamita (Télex)</translation>
 <translation id="1455548678241328678">Teclado noruego </translation>
 <translation id="148466539719134488">Suizo</translation>
+<translation id="1510238584712386396">Selector</translation>
 <translation id="1547964879613821194">Inglés (Canadá)</translation>
 <translation id="158809615184981282">Teclado feroés</translation>
 <translation id="1646136617204068573">Teclado húngaro</translation>
 <translation id="164729547906544836">Teclado tamil (ITRANS)</translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
+<translation id="169515659049020177">Shift</translation>
 <translation id="1829129547161959350">Pingüino</translation>
 <translation id="184633654410729720">Teclado tailandés (Kedmanee)</translation>
 <translation id="1921986354447415460">Teclado turco-F</translation>
@@ -44,6 +47,7 @@
 <translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="247772113373397749">Teclado multilingüe canadiense</translation>
 <translation id="2494837236724268445">Teclado guyaratí (fonético)</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2529133382850673012">Teclado en inglés de EE.UU.</translation>
 <translation id="255937426064304553">Inglés (Estados Unidos; internacional)</translation>
 <translation id="2563185590376525700">Rana</translation>
@@ -66,6 +70,7 @@
 <translation id="3064388234319122767">Transliteración (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Transliteración (salam ← سلام)</translation>
 <translation id="3116361045094675131">Teclado en inglés del Reino Unido</translation>
+<translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157729859914172001">Teclado internacional de EE.UU. (PC)</translation>
 <translation id="3187212781151025377">Teclado hebreo</translation>
 <translation id="3197563288998582412">Inglés (Reino Unido; Dvorak)</translation>
@@ -195,6 +200,7 @@
 <translation id="6937152069980083337">Entrada en japonés de Google (para teclado estadounidense)</translation>
 <translation id="6939777852457331078">Teclado Workman (EE. UU.)</translation>
 <translation id="6970230597523682626">Búlgaro</translation>
+<translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteración (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclado estonio</translation>

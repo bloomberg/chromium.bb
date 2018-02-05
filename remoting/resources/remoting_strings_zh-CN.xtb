@@ -102,6 +102,7 @@
 <translation id="3106379468611574572">远程计算机没有对连接请求做出响应。请确保其在线，然后重试。</translation>
 <translation id="310979712355504754">全部删除</translation>
 <translation id="3150823315463303127">主机无法读取政策。</translation>
+<translation id="3171922709365450819">该客户端不支持此设备，因为此设备要求进行第三方身份验证。</translation>
 <translation id="3194245623920924351">Chrome远程桌面</translation>
 <translation id="3197730452537982411">远程桌面</translation>
 <translation id="324272851072175193">通过电子邮件发送这些说明</translation>

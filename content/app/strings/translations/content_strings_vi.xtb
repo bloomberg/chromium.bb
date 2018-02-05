@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">trạng thái</translation>
 <translation id="1938124657309484470">Giá trị phải là <ph name="MAXIMUM_DATE_OR_TIME" /> hoặc sớm hơn.</translation>
+<translation id="1993104285338243655">Đã chuyển sang chế độ phản chiếu</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' bị sử dụng sai vị trí trong '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2226276347425096477">Hãy cắt ngắn văn bản này thành <ph name="MAX_CHARACTERS" /> ký tự hoặc ít hơn (bạn hiện đang sử dụng <ph name="CURRENT_LENGTH" /> ký tự).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Mili giây</translation>
 <translation id="4151657705144244502">hình ảnh</translation>
 <translation id="4201051445878709314">Hiển thị tháng trước</translation>
+<translation id="4205604240201363801">Đang ở chế độ hình trong hình</translation>
 <translation id="421884353938374759">công cụ chọn màu</translation>
 <translation id="4248100235867064564">thanh menu</translation>
 <translation id="4254339807215791271">thông tin nội dung</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="668171684555832681">Khác...</translation>
 <translation id="6692633176391053278">điều khiển tăng/giảm</translation>
+<translation id="6709570249143506788">Chất lượng phát lại kém</translation>
 <translation id="6755330956360078551">chú giải công cụ</translation>
 <translation id="6790428901817661496">Phát</translation>
 <translation id="6820355525329141109">Không thể tải plugin.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> tệp</translation>
 <translation id="8451268428117625855">Vui lòng chọn một tệp.</translation>
 <translation id="8461852803063341183">nút radio</translation>
-<translation id="8511325616783751178">nút thả xuống</translation>
 <translation id="8534579021159131403">Phút</translation>
 <translation id="8541249477527128034">kiểm soát phương tiện</translation>
 <translation id="8583702881314752957">danh sách định nghĩa</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">bắt đầu phát lại</translation>
 <translation id="8845239796550121995">Hiện đang truyền tới TV của bạn</translation>
 <translation id="8851136666856101339">chính</translation>
+<translation id="8875657656876809964">Lỗi phát lại video</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="901493112792887934">thời gian hiện tại bằng giây</translation>

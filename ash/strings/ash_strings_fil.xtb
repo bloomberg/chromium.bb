@@ -47,7 +47,6 @@
 <translation id="2049639323467105390">Pinamamahalaan ng <ph name="DOMAIN" /> ang device na ito.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Liwanag ng keyboard</translation>
-<translation id="207439088875642105">Isa itong account para sa mga bata na pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Ihinto ang pag-cast ng <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="2144487987174258011">I-restart upang i-update ang Adobe Flash Player</translation>
@@ -93,7 +92,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Natitirang oras bago ganap na ma-charge ang baterya, <ph name="TIME_REMAINING" /></translation>
-<translation id="3047477924825107454">Isa itong account para sa mga bata na pinamamahalaan ni <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Sa ilalim</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -114,6 +112,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">I-highlight ang cursor ng mouse</translation>
+<translation id="3513798432020909783">Pinamamahalaan ni/ng <ph name="MANAGER_EMAIL" /> ang account</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
 <translation id="3582792037806681688">Hindi pinayagan ang multiple na pag-sign in para sa isang user sa session na ito</translation>
 <translation id="3595596368722241419">Puno na ang baterya</translation>
@@ -276,6 +275,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="7829386189513694949">Malakas ang signal</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7933084174919150729">Available lang ang Google Assistant para sa pangunahing profile.</translation>
+<translation id="79341161159229895">Pinamamahalaan nina/ng <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>
 <translation id="7977927628060636163">Naghahanap ng mga mobile network...</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="7994370417837006925">Multiple na pag-sign in</translation>
@@ -312,6 +312,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 Maaaring hatiin ang mga kasunod na notification, window at dialog sa pagitan ng mga desktop.</translation>
 <translation id="8825534185036233643">Hindi sinusuportahan ang pagmi-mirror sa mahigit sa dalawang display.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8841375032071747811">Button na Bumalik</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Hindi sinusuportahan ng app ang split-screen.</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>

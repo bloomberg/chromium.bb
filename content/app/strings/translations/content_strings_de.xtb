@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">tt</translation>
 <translation id="1930711995431081526">Status</translation>
 <translation id="1938124657309484470">Verwenden Sie <ph name="MAXIMUM_DATE_OR_TIME" /> oder einen früheren Wert.</translation>
+<translation id="1993104285338243655">Zu 1:1-Wiedergabe gewechselt</translation>
 <translation id="2060505056492490888">Das Punktzeichen "<ph name="DOT" />" steht in "<ph name="INVALIDDOMAIN" />" an einer falschen Stelle.</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2226276347425096477">Kürzen Sie diesen Text auf max. <ph name="MAX_CHARACTERS" /> Zeichen. Zurzeit verwenden Sie <ph name="CURRENT_LENGTH" /> Zeichen.</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">Millisekunden</translation>
 <translation id="4151657705144244502">Grafik</translation>
 <translation id="4201051445878709314">Vorherigen Monat anzeigen</translation>
+<translation id="4205604240201363801">Jetzt im Bild-in-Bild-Modus</translation>
 <translation id="421884353938374759">color picker</translation>
 <translation id="4248100235867064564">Menüleiste</translation>
 <translation id="4254339807215791271">Inhaltsinformationen</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="668171684555832681">Andere...</translation>
 <translation id="6692633176391053278">Stepper</translation>
+<translation id="6709570249143506788">Schlechte Wiedergabequalität</translation>
 <translation id="6755330956360078551">Kurzinfo</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6820355525329141109">Plug-in konnte nicht geladen werden.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> Dateien</translation>
 <translation id="8451268428117625855">Wählen Sie eine Datei aus.</translation>
 <translation id="8461852803063341183">Optionsfeld</translation>
-<translation id="8511325616783751178">Drop-down-Schaltfläche</translation>
 <translation id="8534579021159131403">Minuten</translation>
 <translation id="8541249477527128034">Mediensteuerung</translation>
 <translation id="8583702881314752957">Definitionsliste</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">Wiedergabe starten</translation>
 <translation id="8845239796550121995">Wird gerade auf Ihren Fernseher gestreamt</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8875657656876809964">Videowiedergabefehler</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Monat</translation>
 <translation id="901493112792887934">Aktuelle Dauer in Sekunden</translation>

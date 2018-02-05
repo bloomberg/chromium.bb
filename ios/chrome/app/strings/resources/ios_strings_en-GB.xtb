@@ -34,6 +34,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Double tap to toggle setting</translation>
 <translation id="152234381334907219">Never Saved</translation>
+<translation id="1532451416480227577">Show addresses and credit cards from Google Pay</translation>
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1580783302095112590">Mail sent.</translation>
@@ -96,6 +97,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2718352093833049315">Only on Wi-Fi</translation>
 <translation id="2747003861858887689">Previous field</translation>
 <translation id="2780046210906776326">No Email Accounts</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Leave Tab Switcher</translation>
 <translation id="283291358677939992">Find in Page...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
@@ -121,6 +123,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3210163015918861891">Sync is Off</translation>
+<translation id="3224641773458703735">To export passwords, you must first set a passcode on your device.</translation>
 <translation id="3240426699337459095">Link copied</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> of <ph name="NUM_SUGGESTIONS" /></translation>
@@ -218,7 +221,6 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5300589172476337783">Show</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="533632423981297619">Your passwords will be visible to anyone who can see the exported file. Do not share this file with anyone.</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="5433691172869980887">Username copied</translation>
@@ -306,6 +308,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="681368974849482173">Item created</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
+<translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6973630695168034713">Folders</translation>
 <translation id="7004499039102548441">Recent tabs</translation>

@@ -25,6 +25,7 @@
 <translation id="1921819250265091946">يوم</translation>
 <translation id="1930711995431081526">الحالة</translation>
 <translation id="1938124657309484470">يجب أن تكون القيمة <ph name="MAXIMUM_DATE_OR_TIME" /> أو قبل ذلك.</translation>
+<translation id="1993104285338243655">تم التبديل إلى النسخ المطابق.</translation>
 <translation id="2060505056492490888">تم استخدام "<ph name="DOT" />" في موضع خاطئ في "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2226276347425096477">يُرجى اختصار هذا النص حتى يصل إلى <ph name="MAX_CHARACTERS" /> من الحروف أو أقل (أنت الآن تستخدم <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
@@ -74,6 +75,7 @@
 <translation id="4103419683916926126">مللي ثانية</translation>
 <translation id="4151657705144244502">الرسم</translation>
 <translation id="4201051445878709314">عرض الشهر السابق</translation>
+<translation id="4205604240201363801">الآن في وضع نافذة ضمن النافذة</translation>
 <translation id="421884353938374759">علبة الألوان</translation>
 <translation id="4248100235867064564">شريط قوائم</translation>
 <translation id="4254339807215791271">معلومات المحتوى</translation>
@@ -128,6 +130,7 @@
 <translation id="6643016212128521049">محو</translation>
 <translation id="668171684555832681">ملف تعريف آخر...</translation>
 <translation id="6692633176391053278">تخطي</translation>
+<translation id="6709570249143506788">جودة التشغيل ضعيفة.</translation>
 <translation id="6755330956360078551">تلميح</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6820355525329141109">تعذر تحميل المكوّن الإضافي.</translation>
@@ -166,7 +169,6 @@
 <translation id="8444882422881193423">عدد الملفات: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="8451268428117625855">يُرجى تحديد ملف.</translation>
 <translation id="8461852803063341183">زر الاختيار</translation>
-<translation id="8511325616783751178">زر القائمة المنسدلة</translation>
 <translation id="8534579021159131403">دقائق</translation>
 <translation id="8541249477527128034">التحكم في الوسائط</translation>
 <translation id="8583702881314752957">قائمة تعريف</translation>
@@ -176,6 +178,7 @@
 <translation id="8785498733064193001">بدء التشغيل</translation>
 <translation id="8845239796550121995">يتم الآن الإرسال إلى جهاز التلفزيون</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8875657656876809964">خطأ في تشغيل الفيديو.</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>
 <translation id="8987927404178983737">شهر</translation>
 <translation id="901493112792887934">المدة الحالية بالثواني</translation>
