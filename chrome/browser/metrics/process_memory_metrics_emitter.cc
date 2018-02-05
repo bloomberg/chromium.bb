@@ -159,6 +159,22 @@ void EmitRendererMemoryMetrics(
   builder.SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
                                   1024);
 #endif
+  base::Optional<uint64_t> number_of_documents =
+      pmd.GetMetric("blink_objects/Document", "object_count");
+  if (number_of_documents.has_value())
+    builder.SetNumberOfDocuments(number_of_documents.value());
+  base::Optional<uint64_t> number_of_layout_objects =
+      pmd.GetMetric("blink_objects/LayoutObject", "object_count");
+  if (number_of_layout_objects.has_value())
+    builder.SetNumberOfLayoutObjects(number_of_layout_objects.value());
+  base::Optional<uint64_t> number_of_nodes =
+      pmd.GetMetric("blink_objects/Node", "object_count");
+  if (number_of_nodes.has_value())
+    builder.SetNumberOfNodes(number_of_nodes.value());
+  base::Optional<uint64_t> number_of_frames =
+      pmd.GetMetric("blink_objects/Frame", "object_count");
+  if (number_of_frames.has_value())
+    builder.SetNumberOfFrames(number_of_frames.value());
 
   if (!page_info.is_null()) {
     builder.SetIsVisible(page_info->is_visible);
@@ -225,7 +241,9 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   auto callback =
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedMemoryDump, this);
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDump(callback);
+      ->RequestGlobalDump({"blink_objects/Document", "blink_objects/Frame",
+                           "blink_objects/LayoutObject", "blink_objects/Node"},
+                          callback);
 
   // The callback keeps this object alive until the callback is invoked.
   if (IsResourceCoordinatorEnabled()) {

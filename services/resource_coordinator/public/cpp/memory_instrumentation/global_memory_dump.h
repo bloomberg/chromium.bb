@@ -15,7 +15,7 @@ namespace memory_instrumentation {
 // service containing dumps for each process.
 class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT GlobalMemoryDump {
  public:
-  class ProcessDump {
+  class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ProcessDump {
    public:
     ProcessDump(mojom::ProcessMemoryDumpPtr process_memory_dump);
     ~ProcessDump();
@@ -24,7 +24,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT GlobalMemoryDump {
     // GetMetric("blink", "size") would return the aggregated sze of the
     // "blink/" dump.
     base::Optional<uint64_t> GetMetric(const std::string& dump_name,
-                                       const std::string& metric_name);
+                                       const std::string& metric_name) const;
 
     base::ProcessId pid() const { return raw_dump_->pid; }
     mojom::ProcessType process_type() const { return raw_dump_->process_type; }

@@ -1377,10 +1377,30 @@ be describing additional metrics about the same event.
       Measure of memory allocated by malloc.
     </summary>
   </metric>
+  <metric name="NumberOfDocuments">
+    <summary>
+      The number of documents that the associated renderer owns.
+    </summary>
+  </metric>
   <metric name="NumberOfExtensions">
     <summary>
       The number of extensions that are served from the associated renderer
       process.
+    </summary>
+  </metric>
+  <metric name="NumberOfFrames">
+    <summary>
+      The number of frames that the associated renderer owns.
+    </summary>
+  </metric>
+  <metric name="NumberOfLayoutObjects">
+    <summary>
+      The number of layout objects that the associated renderer owns.
+    </summary>
+  </metric>
+  <metric name="NumberOfNodes">
+    <summary>
+      The number of nodes that the associated renderer owns.
     </summary>
   </metric>
   <metric name="PartitionAlloc">
