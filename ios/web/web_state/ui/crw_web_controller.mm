@@ -4258,6 +4258,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
+  if (!allowLoad) {
+    // Loading was started for user initiated navigations and should be stopped
+    // because no other WKWebView callbacks are called. TODO(crbug.com/767092):
+    // Loading should not start until webView.loading is changed to YES.
+    _webStateImpl->SetIsLoading(false);
+  }
+
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
                             : WKNavigationActionPolicyCancel);
 }

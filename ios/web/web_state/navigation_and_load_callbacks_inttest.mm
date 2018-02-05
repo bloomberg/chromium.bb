@@ -1012,4 +1012,16 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
   }));
 }
 
+// Tests rejecting the navigation from ShouldAllowRequest. The load should stop,
+// but no other callbacks are called.
+TEST_F(NavigationAndLoadCallbacksTest, DisallowRequest) {
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  web::test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+}
+
 }  // namespace web
