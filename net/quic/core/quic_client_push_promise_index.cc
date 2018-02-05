@@ -33,7 +33,7 @@ QuicAsyncStatus QuicClientPushPromiseIndex::Try(
     const SpdyHeaderBlock& request,
     QuicClientPushPromiseIndex::Delegate* delegate,
     TryHandle** handle) {
-  string url(SpdyUtils::GetPromisedUrlFromHeaders(request));
+  string url(SpdyUtils::GetPromisedUrlFromHeaderBlock(request));
   QuicPromisedByUrlMap::iterator it = promised_by_url_.find(url);
   if (it != promised_by_url_.end()) {
     QuicClientPromisedInfo* promised = it->second;

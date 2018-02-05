@@ -39,15 +39,15 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
   // :path headers of a PUSH_PROMISE. Returns empty string if the headers do not
   // conform to HTTP/2 spec or if the ":method" header contains a forbidden
   // method for PUSH_PROMISE.
-  static std::string GetPromisedUrlFromHeaders(const SpdyHeaderBlock& headers);
-
-  // Returns hostname, or empty string if missing.
-  static std::string GetPromisedHostNameFromHeaders(
+  static std::string GetPromisedUrlFromHeaderBlock(
       const SpdyHeaderBlock& headers);
 
-  // Returns true if result of |GetPromisedUrlFromHeaders()| is non-empty and is
-  // a well-formed URL.
-  static bool PromisedUrlIsValid(const SpdyHeaderBlock& headers);
+  // Returns hostname, or empty string if missing.
+  static std::string GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers);
+
+  // Returns true if result of |GetPromisedUrlFromHeaderBlock()| is non-empty
+  // and is a well-formed URL.
+  static bool UrlIsValid(const SpdyHeaderBlock& headers);
 
   // Populates the fields of |headers| to make a GET request of |url|,
   // which must be fully-qualified.
