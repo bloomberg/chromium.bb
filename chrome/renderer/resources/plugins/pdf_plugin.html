@@ -2,87 +2,35 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="viewport"
+      content="initial-scale=1, minimum-scale=1, width=device-width">
+    <link rel="stylesheet" href="../../../../components/security_interstitials/core/common/resources/interstitial_core.css">
+    <link rel="stylesheet" href="../../../../components/security_interstitials/core/common/resources/interstitial_common.css">
+    <link rel="stylesheet" href="../../../../components/security_interstitials/core/browser/resources/interstitial_webview_quiet.css">
     <style>
-      html,
-      body {
-        height: 100%;
-        width: 100%;
-      }
-
-      body {
-        background-color: #f5f5f5;  /* google-grey-100 */
-        margin: 0;
-      }
-
-      svg {
-        height: 40px;
-        width: 40px;
-      }
-
       path {
-        fill: #bdbdbd;  /* google-grey-400 */
+        fill-opacity: 0.2;
       }
 
-      #icon-container {
-        align-items: center;
-        display: flex;
-        height: 100%;
-        justify-content: center;
-        width: 100%;
+      .icon {
+        background-image: none;
       }
-
-      #footer {
-        align-items: center;
-        background-color: #4285f4;  /* google-blue-500 */
-        border-radius: 2px;
-        bottom: 0;
-        color: white;
-        display: flex;
-        font-size: 14px;
-        justify-content: space-between;
-        left: 0;
-        max-height: 52px;
-        min-height: 20px;
-        padding: 14px 24px;
-        position: absolute;
-        right: 0;
-      }
-
-      p,
-      a {
-        line-height: 20px;
-      }
-
-      p {
-        font-family: Roboto;
-        margin: 0;
-      }
-
-      a {
-        font-family: Roboto Medium;
-        margin-left: 48px;
-        text-transform: uppercase;
-      }
-
-      a:link,
-      a:visited {
-        color: white;
-        text-decoration: none;
-      }
-
     </style>
   </head>
-  <body>
-    <div id="icon-container">
-      <!-- Material Design PDF icon -->
-      <svg viewbox="0 0 24 24">
-        <path d="M7 11.5h1v-1H7v1zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5V9H8c.83 0 1.5.67 1.5 1.5v1zm10-1H17v1h1.5V13H17v2h-1.5V9h4v1.5zm-5 3c0 .83-.67 1.5-1.5 1.5h-2.5V9H13c.83 0 1.5.67 1.5 1.5v3zm-2.5 0h1v-3h-1v3z"></path>
-      </svg>
-    </div>
-    <div id="footer" i18n-values="title:name">
-      <p>$i18n{fileName}</p>
-      <a href="#" onclick="plugin.openPDF()">View PDF</a>
+  <body class="pdf">
+    <div class="interstitial-wrapper">
+      <div id="main-content">
+        <div class="icon">
+          <!-- Material Design PDF icon -->
+          <svg viewBox="0 0 24 24">
+            <path d="M7 11.5h1v-1H7v1zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5V9H8c.83 0 1.5.67 1.5 1.5v1zm10-1H17v1h1.5V13H17v2h-1.5V9h4v1.5zm-5 3c0 .83-.67 1.5-1.5 1.5h-2.5V9H13c.83 0 1.5.67 1.5 1.5v3zm-2.5 0h1v-3h-1v3z"></path>
+          </svg>
+        </div>
+        <div id="main-message">
+          <h1>$i18n{fileName}</h1>
+        </div>
+        <button onclick="plugin.openPDF()">$i18n{open}</a>
+      </div>
     </div>
   </body>
 </html>

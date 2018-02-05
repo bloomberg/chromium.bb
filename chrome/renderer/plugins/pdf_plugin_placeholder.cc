@@ -7,10 +7,13 @@
 #include "chrome/common/pdf_uma.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/renderer_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "ui/base/webui/web_ui_util.h"
 
 gin::WrapperInfo PDFPluginPlaceholder::kWrapperInfo = {gin::kEmbedderNativeGin};
 
@@ -24,12 +27,16 @@ PDFPluginPlaceholder::~PDFPluginPlaceholder() {}
 PDFPluginPlaceholder* PDFPluginPlaceholder::CreatePDFPlaceholder(
     content::RenderFrame* render_frame,
     const blink::WebPluginParams& params) {
-  const base::StringPiece template_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PDF_PLUGIN_HTML));
+  std::string template_html = ui::ResourceBundle::GetSharedInstance()
+                                  .GetRawDataResource(IDR_PDF_PLUGIN_HTML)
+                                  .as_string();
+  webui::AppendWebUiCssTextDefaults(&template_html);
+
   base::DictionaryValue values;
   values.SetString("fileName", GURL(params.url).ExtractFileName());
+  values.SetString("open", l10n_util::GetStringUTF8(IDS_ACCNAME_OPEN));
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
+
   return new PDFPluginPlaceholder(render_frame, params, html_data);
 }
 
