@@ -7,9 +7,7 @@
 namespace gcm {
 
 GCMClient::ChromeBuildInfo::ChromeBuildInfo()
-    : platform(PLATFORM_UNKNOWN),
-      channel(CHANNEL_UNKNOWN) {
-}
+    : platform(PLATFORM_UNSPECIFIED), channel(CHANNEL_UNKNOWN) {}
 
 GCMClient::ChromeBuildInfo::~ChromeBuildInfo() {
 }
