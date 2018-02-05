@@ -1798,7 +1798,8 @@ const char kChromeHomeSwipeLogicVelocity[] = "Velocity suppression model";
 
 const char kChromeModernDesignName[] = "Chrome Modern Design";
 const char kChromeModernDesignDescription[] =
-    "Enable modern design for Chrome.";
+    "Enable modern design for Chrome. Chrome must be restarted twice for this "
+    "flag to take effect.";
 
 const char kChromeMemexName[] = "Chrome Memex";
 const char kChromeMemexDescription[] =

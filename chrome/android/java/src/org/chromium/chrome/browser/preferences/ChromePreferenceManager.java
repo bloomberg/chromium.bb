@@ -45,6 +45,7 @@ public class ChromePreferenceManager {
             "chrome_home_opt_out_snackbar_shown";
 
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
+    private static final String CHROME_MODERN_DESIGN_ENABLED_KEY = "chrome_modern_design_enabled";
 
     private static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
 
@@ -384,6 +385,21 @@ public class ChromePreferenceManager {
     /** Sets whether the user has triggered a snippet impression after viewing the animation. */
     public void setCardsImpressionAfterAnimation(boolean isScrolled) {
         writeBoolean(CARDS_IMPRESSION_AFTER_ANIMATION, isScrolled);
+    }
+
+    /**
+     * Set whether or not Chrome modern design is enabled.
+     * @param isEnabled Whether the feature is enabled.
+     */
+    public void setChromeModernDesignEnabled(boolean isEnabled) {
+        writeBoolean(CHROME_MODERN_DESIGN_ENABLED_KEY, isEnabled);
+    }
+
+    /**
+     * @return Whether Chrome modern design is enabled.
+     */
+    public boolean isChromeModernDesignEnabled() {
+        return mSharedPreferences.getBoolean(CHROME_MODERN_DESIGN_ENABLED_KEY, false);
     }
 
     /**
