@@ -68,6 +68,10 @@
         "specifiers": ["Mac10.12", "Release"],
         "is_try_builder": true
     },
+    "mac10.13_blink_rel": {
+        "port_name": "mac-mac10.13",
+        "specifiers": ["Mac10.13", "Release"]
+    },
     "win7_blink_rel": {
         "port_name": "win-win7",
         "specifiers": ["Win7", "Release"],
