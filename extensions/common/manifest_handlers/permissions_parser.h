@@ -6,8 +6,6 @@
 #define EXTENSIONS_COMMON_MANIFEST_HANDLERS_PERMISSIONS_PARSER_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/strings/string16.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -15,7 +13,6 @@
 
 namespace extensions {
 
-class APIPermissionSet;
 class Extension;
 class URLPatternSet;
 
@@ -36,20 +33,6 @@ class PermissionsParser {
   // extension.
   void Finalize(Extension* extension);
 
-  // A utility method to parse host permissions from a list of match patterns.
-  // Also returns match patterns which couldn't be parsed as |malformed_hosts|
-  // and hosts with invalid schemes as |invalid_scheme_hosts|. These must be
-  // non-null.
-  // TODO(crbug.com/777714): Provide an option to tweak behavior for chrome
-  // scheme hosts.
-  static void ParseHostPermissions(
-      Extension* extension,
-      const std::vector<std::string>& host_data,
-      const APIPermissionSet& api_permissions,
-      URLPatternSet* host_permissions,
-      std::vector<std::string>* malformed_hosts,
-      std::vector<std::string>* invalid_scheme_hosts);
-
   // Modify the manifest permissions. These methods should only be used
   // during initialization and will DCHECK() for safety.
   static void AddAPIPermission(Extension* extension,
@@ -57,13 +40,8 @@ class PermissionsParser {
   static void AddAPIPermission(Extension* extension, APIPermission* permission);
   static bool HasAPIPermission(const Extension* extension,
                                APIPermission::ID permission);
-  static const APIPermissionSet& GetRequiredAPIPermissions(
-      const Extension* extension);
   static void SetScriptableHosts(Extension* extension,
                                  const URLPatternSet& scriptable_hosts);
-  // Sets host permissions for the Declarative Net Request API.
-  static void SetHostPermissionsForDNR(Extension* extension,
-                                       URLPatternSet dnr_hosts);
 
   // Return the extension's manifest-specified permissions. In no cases should
   // these permissions be used to determine if an action is allowed. Instead,
