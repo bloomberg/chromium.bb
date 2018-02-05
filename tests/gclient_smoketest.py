@@ -678,6 +678,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  # src -> src/repo2 -> foo/bar',
         '  "foo/bar": {',
         '    "url": "/repo_3",',
+        '    "condition": \'true_str_var\',',
         '  },',
         '',
         '  # src',
@@ -689,7 +690,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "src/repo2": {',
         '    "url": "{git_base}repo_2@%s",' % (
                  self.githash('repo_2', 1)[:7]),
-        '    "condition": \'True\',',
+        '    "condition": \'true_str_var\',',
         '  },',
         '',
         '  # src -> src/repo4',
@@ -840,6 +841,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
+    self.maxDiff = None
     self.assertEqual([
         'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
@@ -852,6 +854,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  # src -> src/repo2 -> foo/bar',
         '  "foo/bar": {',
         '    "url": "/repo_3@%s",' % (self.githash('repo_3', 2)),
+        '    "condition": \'true_str_var\',',
         '  },',
         '',
         '  # src',
@@ -864,7 +867,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "src/repo2": {',
         '    "url": "{git_base}repo_2@%s",' % (
                  self.githash('repo_2', 1)),
-        '    "condition": \'True\',',
+        '    "condition": \'true_str_var\',',
         '  },',
         '',
         '  # src -> src/repo4',

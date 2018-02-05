@@ -159,14 +159,19 @@ class Hook(object):
     self._verbose = verbose
 
   @staticmethod
-  def from_dict(d, variables=None, verbose=False):
+  def from_dict(d, variables=None, verbose=False, conditions=None):
     """Creates a Hook instance from a dict like in the DEPS file."""
+    # Merge any local and inherited conditions.
+    if conditions and d.get('condition'):
+      condition = '(%s) and (%s)' % (conditions, d['condition'])
+    else:
+      condition = conditions or d.get('condition')
     return Hook(
         d['action'],
         d.get('pattern'),
         d.get('name'),
         d.get('cwd'),
-        d.get('condition'),
+        condition,
         variables=variables,
         # Always print the header if not printing to a TTY.
         verbose=verbose or not setup_color.IS_TTY)
@@ -628,6 +633,24 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for d in self.custom_deps:
       if d not in deps:
         deps[d] = self.custom_deps[d]
+    # Make child deps conditional on any parent conditions. This ensures that,
+    # when flattened, recursed entries have the correct restrictions, even if
+    # not explicitly set in the recursed DEPS file. For instance, if
+    # "src/ios_foo" is conditional on "checkout_ios=True", then anything
+    # recursively included by "src/ios_foo/DEPS" should also require
+    # "checkout_ios=True".
+    if self.condition:
+      for dname, dval in deps.iteritems():
+        if isinstance(dval, basestring):
+          dval = {'url': dval}
+          deps[dname] = dval
+        else:
+          assert isinstance(dval, collections.Mapping)
+        if dval.get('condition'):
+          dval['condition'] = '(%s) and (%s)' % (
+              dval['condition'], self.condition)
+        else:
+          dval['condition'] = self.condition
 
     if rel_prefix:
       logging.warning('use_relative_paths enabled.')
@@ -848,7 +871,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # Keep original contents of hooks_os for flatten.
       for hook_os, os_hooks in hooks_os.iteritems():
         self._os_deps_hooks[hook_os] = [
-            Hook.from_dict(hook, variables=self.get_vars(), verbose=True)
+            Hook.from_dict(hook, variables=self.get_vars(), verbose=True,
+                           conditions=self.condition)
             for hook in os_hooks]
 
       # Specifically append these to ensure that hooks_os run after hooks.
@@ -864,7 +888,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if self.recursion_limit:
       self._pre_deps_hooks = [
-          Hook.from_dict(hook, variables=self.get_vars(), verbose=True)
+          Hook.from_dict(hook, variables=self.get_vars(), verbose=True,
+                         conditions=self.condition)
           for hook in local_scope.get('pre_deps_hooks', [])
       ]
 
@@ -884,7 +909,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     self._mark_as_parsed([
         Hook.from_dict(
-            h, variables=self.get_vars(), verbose=self.root._options.verbose)
+            h, variables=self.get_vars(), verbose=self.root._options.verbose,
+            conditions=self.condition)
         for h in hooks
     ])
 

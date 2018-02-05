@@ -507,7 +507,7 @@ allowed_hosts = [
 deps = {
   'src/repo2': {
     'url': Var('git_base') + 'repo_2@%(hash)s',
-    'condition': 'True',
+    'condition': 'true_str_var',
   },
   'src/repo4': {
     'url': '/repo_4',
