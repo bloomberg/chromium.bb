@@ -1461,9 +1461,7 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
     EXPECT_TRUE([button action]);
   }
 
-  // This should dealloc. In production code, this is typically achieved more
-  // reliably by using -[HasWeakBrowserPointer browserWillBeDestroyed].
-  bar_.reset();
+  [bar_ browserWillBeDestroyed];
 
   // Make sure that everything is cleared.
   for (BookmarkButton* button in buttons.get()) {
