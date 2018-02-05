@@ -3264,6 +3264,9 @@ crbug.com/806748 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gestur
 # Flaky on Linux
 crbug.com/806017 [ Linux ] virtual/gpu/fast/canvas/canvas-strokePath-shadow.html [ Pass Timeout ]
 
+# Sheriff failures 2018-02-05
+crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
+
 # These pass on bots with proprietary codecs (most CQ bots) while failing on bots without.
 crbug.com/807110 external/wpt/html/semantics/embedded-content/media-elements/mime-types/canPlayType.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-addsourcebuffer.html [ Failure Pass ]
