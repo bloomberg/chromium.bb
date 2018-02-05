@@ -449,13 +449,16 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
                           const MV_REF *prev_frame_mvs_base,
                           const MACROBLOCKD *xd, int mi_row, int mi_col,
                           MV_REFERENCE_FRAME ref_frame, int blk_row,
-                          int blk_col, uint8_t *refmv_count,
-                          CANDIDATE_MV *ref_mv_stack, int16_t *mode_context) {
+                          int blk_col, int_mv *gm_mv_candidates,
+                          uint8_t *refmv_count, CANDIDATE_MV *ref_mv_stack,
+                          int16_t *mode_context) {
   (void)prev_frame_mvs_base;
   POSITION mi_pos;
   int idx;
   int coll_blk_count = 0;
   const int weight_unit = 1;  // mi_size_wide[BLOCK_8X8];
+
+  (void)gm_mv_candidates;
 
 #if CONFIG_MV_COMPRESS
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
@@ -494,10 +497,17 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
 #endif
 
+#if CONFIG_OPT_REF_MV
+        if (blk_row == 0 && blk_col == 0)
+          if (abs(this_refmv.as_mv.row - gm_mv_candidates[0].as_mv.row) >= 16 ||
+              abs(this_refmv.as_mv.col - gm_mv_candidates[0].as_mv.col) >= 16)
+            mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
+#else
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row) >= 16 ||
               abs(this_refmv.as_mv.col) >= 16)
             mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
+#endif
 
         for (idx = 0; idx < *refmv_count; ++idx)
           if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
@@ -549,12 +559,22 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
         lower_mv_precision(&comp_refmv.as_mv, cm->allow_high_precision_mv);
 #endif
+
+#if CONFIG_OPT_REF_MV
+        if (blk_row == 0 && blk_col == 0)
+          if (abs(this_refmv.as_mv.row - gm_mv_candidates[0].as_mv.row) >= 16 ||
+              abs(this_refmv.as_mv.col - gm_mv_candidates[0].as_mv.col) >= 16 ||
+              abs(comp_refmv.as_mv.row - gm_mv_candidates[1].as_mv.row) >= 16 ||
+              abs(comp_refmv.as_mv.col - gm_mv_candidates[1].as_mv.col) >= 16)
+            mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
+#else
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row) >= 16 ||
               abs(this_refmv.as_mv.col) >= 16 ||
               abs(comp_refmv.as_mv.row) >= 16 ||
               abs(comp_refmv.as_mv.col) >= 16)
             mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
+#endif
 
         for (idx = 0; idx < *refmv_count; ++idx)
           if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
@@ -785,7 +805,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         // Can be modified the same way.
         int is_available = add_tpl_ref_mv(
             cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
-            blk_col, refmv_count, ref_mv_stack, mode_context);
+            blk_col, gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
         if (blk_row == 0 && blk_col == 0) coll_blk_count = is_available;
       }
     }
@@ -799,9 +819,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
       // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
       // Can be modified the same way.
-      coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
-                                       mi_col, ref_frame, blk_row, blk_col,
-                                       refmv_count, ref_mv_stack, mode_context);
+      coll_blk_count += add_tpl_ref_mv(
+          cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
+          blk_col, gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
     }
   }
 #else
