@@ -13,6 +13,7 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -82,6 +83,11 @@ MediaEngagementService* MediaEngagementService::Get(Profile* profile) {
 void MediaEngagementService::CreateWebContentsObserver(
     content::WebContents* web_contents) {
   DCHECK(IsEnabled());
+
+  // Ignore WebContents that are used for prerender/prefetch.
+  if (prerender::PrerenderContents::FromWebContents(web_contents))
+    return;
+
   MediaEngagementService* service =
       Get(Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (!service)

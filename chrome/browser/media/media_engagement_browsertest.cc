@@ -14,6 +14,12 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_test_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -242,6 +248,10 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
 
   void CloseBrowser() { CloseAllBrowsers(); }
 
+  MediaEngagementService* GetService() {
+    return MediaEngagementService::Get(browser()->profile());
+  }
+
  private:
   void InjectTimerTaskRunner() {
     if (!injected_clock_) {
@@ -251,10 +261,6 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
 
     for (auto observer : GetService()->contents_observers_)
       observer.second->SetTaskRunnerForTest(task_runner_);
-  }
-
-  MediaEngagementService* GetService() {
-    return MediaEngagementService::Get(browser()->profile());
   }
 
   bool injected_clock_ = false;
@@ -606,4 +612,50 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementPreloadBrowserTest,
 
   // The list should be loaded now.
   EXPECT_TRUE(MediaEngagementPreloadedList::GetInstance()->loaded());
+}
+
+class MediaEngagementPrerenderBrowserTest : public MediaEngagementBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    MediaEngagementBrowserTest::SetUpOnMainThread();
+
+    prerender::PrerenderManager::SetOmniboxMode(
+        prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementPrerenderBrowserTest, Ignored) {
+  const GURL& url = http_server().GetURL("/engagement_test.html");
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(prerender_manager);
+
+  prerender::test_utils::TestPrerenderContentsFactory*
+      prerender_contents_factory =
+          new prerender::test_utils::TestPrerenderContentsFactory();
+  prerender_manager->SetPrerenderContentsFactoryForTest(
+      prerender_contents_factory);
+
+  content::SessionStorageNamespace* storage_namespace =
+      GetWebContents()->GetController().GetDefaultSessionStorageNamespace();
+  ASSERT_TRUE(storage_namespace);
+
+  std::unique_ptr<prerender::test_utils::TestPrerender> test_prerender =
+      prerender_contents_factory->ExpectPrerenderContents(
+          prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle =
+      prerender_manager->AddPrerenderFromOmnibox(url, storage_namespace,
+                                                 gfx::Size(640, 480));
+
+  ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
+
+  EXPECT_EQ(nullptr, GetService()->GetContentsObserverFor(
+                         test_prerender->contents()->web_contents()));
+
+  test_prerender->WaitForStop();
+
+  ExpectScores(0, 0, 0, 0);
 }
