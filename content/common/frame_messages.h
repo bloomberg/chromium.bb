@@ -56,6 +56,7 @@
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/platform/WebIntrinsicSizingInfo.h"
@@ -419,9 +420,6 @@ IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
   // WebSerializedScriptValue in the renderer process.
   IPC_STRUCT_MEMBER(bool, is_data_raw_string)
 
-  // The serialized script value.
-  IPC_STRUCT_MEMBER(base::string16, data)
-
   // When sent to the browser, this is the routing ID of the source frame in
   // the source process.  The browser replaces it with the routing ID of the
   // equivalent frame proxy in the destination process.
@@ -433,8 +431,10 @@ IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
   // The origin for the message's target.
   IPC_STRUCT_MEMBER(base::string16, target_origin)
 
-  // Information about the MessagePorts this message contains.
-  IPC_STRUCT_MEMBER(std::vector<blink::MessagePortChannel>, message_ports)
+  // The encoded data, and any extra properties such as transfered ports or
+  // blobs.
+  IPC_STRUCT_MEMBER(
+      scoped_refptr<base::RefCountedData<blink::TransferableMessage>>, message)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SourceLocation)

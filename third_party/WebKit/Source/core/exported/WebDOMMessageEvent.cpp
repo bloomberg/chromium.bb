@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/messaging/BlinkTransferableMessage.h"
 #include "core/messaging/MessagePort.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDocument.h"
@@ -57,10 +58,6 @@ WebDOMMessageEvent::WebDOMMessageEvent(
     Document* core_document = target_document;
     ports = MessagePort::EntanglePorts(*core_document, std::move(channels));
   }
-  // Use an empty array for |ports| when it is null because this function
-  // is used to implement postMessage().
-  if (!ports)
-    ports = new MessagePortArray;
   // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
   // right?
   Unwrap<MessageEvent>()->initMessageEvent("message", false, false,
@@ -68,17 +65,36 @@ WebDOMMessageEvent::WebDOMMessageEvent(
                                            "" /*lastEventId*/, window, ports);
 }
 
-WebSerializedScriptValue WebDOMMessageEvent::Data() const {
-  return WebSerializedScriptValue(
-      ConstUnwrap<MessageEvent>()->DataAsSerializedScriptValue());
+WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
+                                       const WebString& origin,
+                                       const WebFrame* source_frame,
+                                       const WebDocument& target_document)
+    : WebDOMMessageEvent(MessageEvent::Create()) {
+  DOMWindow* window = nullptr;
+  if (source_frame)
+    window = WebFrame::ToCoreFrame(*source_frame)->DomWindow();
+  BlinkTransferableMessage msg = ToBlinkTransferableMessage(std::move(message));
+  MessagePortArray* ports = nullptr;
+  if (!target_document.IsNull()) {
+    Document* core_document = target_document;
+    ports = MessagePort::EntanglePorts(*core_document, std::move(msg.ports));
+  }
+  // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
+  // right?
+  Unwrap<MessageEvent>()->initMessageEvent("message", false, false,
+                                           std::move(msg.message), origin,
+                                           "" /*lastEventId*/, window, ports);
 }
 
 WebString WebDOMMessageEvent::Origin() const {
   return WebString(ConstUnwrap<MessageEvent>()->origin());
 }
 
-WebVector<MessagePortChannel> WebDOMMessageEvent::ReleaseChannels() {
-  return Unwrap<MessageEvent>()->ReleaseChannels();
+TransferableMessage WebDOMMessageEvent::AsMessage() {
+  BlinkTransferableMessage msg;
+  msg.message = Unwrap<MessageEvent>()->DataAsSerializedScriptValue();
+  msg.ports = Unwrap<MessageEvent>()->ReleaseChannels();
+  return ToTransferableMessage(std::move(msg));
 }
 
 }  // namespace blink

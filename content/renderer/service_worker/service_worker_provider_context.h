@@ -199,10 +199,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void SetController(mojom::ControllerServiceWorkerInfoPtr controller_info,
                      const std::vector<blink::mojom::WebFeature>& used_features,
                      bool should_notify_controllerchange) override;
-  void PostMessageToClient(
-      blink::mojom::ServiceWorkerObjectInfoPtr source,
-      const base::string16& message,
-      std::vector<mojo::ScopedMessagePipeHandle> message_pipes) override;
+  void PostMessageToClient(blink::mojom::ServiceWorkerObjectInfoPtr source,
+                           blink::TransferableMessage message) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
 
   // For service worker clients. Keeps the mapping from registration_id to

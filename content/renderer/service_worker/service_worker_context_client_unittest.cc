@@ -117,17 +117,15 @@ class MockWebServiceWorkerContextProxy
   }
   void DispatchExtendableMessageEvent(
       int event_id,
-      const blink::WebString& message,
+      blink::TransferableMessage message,
       const blink::WebSecurityOrigin& source_origin,
-      blink::WebVector<blink::MessagePortChannel>,
       const blink::WebServiceWorkerClientInfo&) override {
     NOTREACHED();
   }
   void DispatchExtendableMessageEvent(
       int event_id,
-      const blink::WebString& message,
+      blink::TransferableMessage message,
       const blink::WebSecurityOrigin& source_origin,
-      blink::WebVector<blink::MessagePortChannel>,
       std::unique_ptr<blink::WebServiceWorker::Handle>) override {
     NOTREACHED();
   }

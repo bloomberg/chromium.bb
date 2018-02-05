@@ -35,11 +35,11 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 #include "third_party/WebKit/common/service_worker/service_worker_state.mojom-shared.h"
 
 namespace blink {
 
-class MessagePortChannel;
 class WebSecurityOrigin;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProxy;
@@ -70,12 +70,11 @@ class WebServiceWorker {
     return mojom::ServiceWorkerState::kUnknown;
   }
 
-  // Callee receives ownership of the passed vector.
-  // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
+  // The message is only valid during this method call, unless callee calls
+  // EnsureDataIsOwned on the message.
   virtual void PostMessageToWorker(WebServiceWorkerProvider*,
-                                   const WebString&,
-                                   const WebSecurityOrigin&,
-                                   WebVector<MessagePortChannel>) = 0;
+                                   TransferableMessage,
+                                   const WebSecurityOrigin&) = 0;
 
   virtual void Terminate() {}
 };

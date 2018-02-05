@@ -545,16 +545,13 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
 
 void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
-    const base::string16& message,
-    const std::vector<blink::MessagePortChannel>& sent_message_ports) {
+    blink::TransferableMessage message) {
   DCHECK(IsProviderForClient());
   if (!dispatcher_host_)
     return;
 
-  auto message_pipes =
-      blink::MessagePortChannel::ReleaseHandles(sent_message_ports);
   container_->PostMessageToClient(GetOrCreateServiceWorkerHandle(version),
-                                  message, std::move(message_pipes));
+                                  std::move(message));
 }
 
 void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {

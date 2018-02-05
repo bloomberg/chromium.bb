@@ -39,12 +39,12 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom-shared.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-class MessagePortChannel;
 struct WebPaymentHandlerResponse;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
@@ -290,12 +290,10 @@ class WebServiceWorkerContextClient {
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
 
-  // Callee receives ownership of the passed vector.
-  // TODO(mek): Blob refs should be passed to maintain ref counts.
-  // crbug.com/351753
+  // The message is only valid during this method call, unless callee calls
+  // EnsureDataIsOwned on the message.
   virtual void PostMessageToClient(const WebString& uuid,
-                                   const WebString&,
-                                   WebVector<MessagePortChannel>) = 0;
+                                   TransferableMessage) = 0;
 
   // For WindowClient#focus(). Requests the embedder to focus a window.
   virtual void Focus(const WebString& uuid,

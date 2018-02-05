@@ -93,8 +93,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   void SetController(std::unique_ptr<WebServiceWorker::Handle>,
                      bool should_notify_controller_change) override;
   void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
-                            const WebString& message,
-                            WebVector<MessagePortChannel>) override;
+                            TransferableMessage) override;
   void CountFeature(mojom::WebFeature) override;
 
   // EventTarget overrides.

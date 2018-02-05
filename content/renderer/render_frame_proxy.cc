@@ -645,12 +645,11 @@ void RenderFrameProxy::ForwardPostMessage(
 
   FrameMsg_PostMessage_Params params;
   params.is_data_raw_string = false;
-  params.data = event.Data().ToString().Utf16();
+  params.message =
+      new base::RefCountedData<blink::TransferableMessage>(event.AsMessage());
   params.source_origin = event.Origin().Utf16();
   if (!target_origin.IsNull())
     params.target_origin = target_origin.ToString().Utf16();
-
-  params.message_ports = event.ReleaseChannels().ReleaseVector();
 
   // Include the routing ID for the source frame (if one exists), which the
   // browser process will translate into the routing ID for the equivalent

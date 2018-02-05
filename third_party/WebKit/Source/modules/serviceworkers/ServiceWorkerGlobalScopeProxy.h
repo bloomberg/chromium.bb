@@ -96,15 +96,13 @@ class ServiceWorkerGlobalScopeProxy final
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
   void DispatchExtendableMessageEvent(
       int event_id,
-      const WebString& message,
+      TransferableMessage,
       const WebSecurityOrigin& source_origin,
-      WebVector<MessagePortChannel>,
       const WebServiceWorkerClientInfo&) override;
   void DispatchExtendableMessageEvent(
       int event_id,
-      const WebString& message,
+      TransferableMessage,
       const WebSecurityOrigin& source_origin,
-      WebVector<MessagePortChannel>,
       std::unique_ptr<WebServiceWorker::Handle>) override;
   void DispatchFetchEvent(int fetch_event_id,
                           const WebServiceWorkerRequest&,

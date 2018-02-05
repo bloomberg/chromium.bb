@@ -49,10 +49,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace blink {
-class MessagePortChannel;
-}
-
 namespace net {
 class HttpResponseInfo;
 }
@@ -650,8 +646,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnPostMessageToClient(
       const std::string& client_uuid,
-      const base::string16& message,
-      const std::vector<blink::MessagePortChannel>& sent_message_ports);
+      const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
+          message);
   void OnFocusClient(int request_id, const std::string& client_uuid);
   void OnNavigateClient(int request_id,
                         const std::string& client_uuid,

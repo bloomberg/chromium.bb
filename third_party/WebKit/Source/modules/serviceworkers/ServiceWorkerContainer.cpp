@@ -45,6 +45,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/messaging/BlinkTransferableMessage.h"
 #include "core/messaging/MessagePort.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
@@ -464,19 +465,17 @@ void ServiceWorkerContainer::SetController(
 
 void ServiceWorkerContainer::DispatchMessageEvent(
     std::unique_ptr<WebServiceWorker::Handle> handle,
-    const WebString& message,
-    WebVector<MessagePortChannel> channels) {
+    TransferableMessage message) {
   if (!GetExecutionContext() || !GetExecutionContext()->ExecutingWindow())
     return;
-
+  auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
-      MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
-  scoped_refptr<SerializedScriptValue> value =
-      SerializedScriptValue::Create(message);
+      MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
   ServiceWorker* source =
       ServiceWorker::From(GetExecutionContext(), std::move(handle));
   DispatchEvent(MessageEvent::Create(
-      ports, value, GetExecutionContext()->GetSecurityOrigin()->ToString(),
+      ports, std::move(msg.message),
+      GetExecutionContext()->GetSecurityOrigin()->ToString(),
       String() /* lastEventId */, source, String() /* suborigin */));
 }
 

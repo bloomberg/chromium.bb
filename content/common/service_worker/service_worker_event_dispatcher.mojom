@@ -10,6 +10,7 @@ import "mojo/common/time.mojom";
 import "services/network/public/interfaces/url_loader.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_app.mojom";
+import "third_party/WebKit/common/message_port/message_port.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_client.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_event_status.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_object.mojom";
@@ -44,9 +45,8 @@ struct FetchEventPreloadHandle {
 };
 
 struct ExtendableMessageEvent {
-  mojo_base.mojom.String16 message;
+  blink.mojom.TransferableMessage message;
   url.mojom.Origin source_origin;
-  array<handle<message_pipe>> message_ports;
   // Exactly one of |source_info_for_client| and
   // |source_info_for_service_worker| should be non-null.
   blink.mojom.ServiceWorkerClientInfo? source_info_for_client;

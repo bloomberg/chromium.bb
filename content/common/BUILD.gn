@@ -604,7 +604,7 @@ mojom("mojo_bindings") {
     "//services/video_capture/public/interfaces",
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
-    "//third_party/WebKit/common:mojo_platform_bindings",
+    "//third_party/WebKit/common:mojo_bindings",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/base/mojo:mojo_bindings",
     "//ui/gfx/geometry/mojo",
@@ -613,7 +613,7 @@ mojom("mojo_bindings") {
     "//url/mojom:url_mojom_origin",
   ]
 
-  overridden_deps = [ "//third_party/WebKit/common:mojo_platform_bindings" ]
+  overridden_deps = [ "//third_party/WebKit/common:mojo_bindings" ]
   component_deps = [ "//third_party/WebKit/common:blink_common" ]
 
   component_output_prefix = "content_common_mojo_bindings"

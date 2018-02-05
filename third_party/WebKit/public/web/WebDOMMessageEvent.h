@@ -35,6 +35,7 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 
 #if INSIDE_BLINK
 #include "core/events/MessageEvent.h"
@@ -55,12 +56,19 @@ class WebDOMMessageEvent : public WebDOMEvent {
       const WebFrame* source_frame = nullptr,
       const WebDocument& target_document = WebDocument(),
       WebVector<MessagePortChannel> ports = WebVector<MessagePortChannel>());
+  BLINK_EXPORT WebDOMMessageEvent(
+      TransferableMessage,
+      const WebString& origin = WebString(),
+      const WebFrame* source_frame = nullptr,
+      const WebDocument& target_document = WebDocument());
   WebDOMMessageEvent() = default;
 
-  BLINK_EXPORT WebSerializedScriptValue Data() const;
   BLINK_EXPORT WebString Origin() const;
 
-  BLINK_EXPORT WebVector<MessagePortChannel> ReleaseChannels();
+  // The |encoded_message| in the returned message is only valid as long as this
+  // WebDOMMessageEvent is still valid, unless EnsureDataIsOwned is called on
+  // the returned message.
+  BLINK_EXPORT TransferableMessage AsMessage();
 
 #if INSIDE_BLINK
   explicit WebDOMMessageEvent(MessageEvent* e) : WebDOMEvent(e) {}

@@ -35,14 +35,13 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/web_feature.mojom-shared.h"
+#include "third_party/WebKit/common/message_port/transferable_message.h"
 
 #include <memory>
 
 namespace blink {
 
-class MessagePortChannel;
 class WebServiceWorker;
-class WebString;
 
 // See WebServiceWorkerProvider for full documentation.
 //
@@ -57,8 +56,7 @@ class WebServiceWorkerProviderClient {
                              bool should_notify_controller_change) = 0;
 
   virtual void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
-                                    const WebString& message,
-                                    WebVector<MessagePortChannel>) = 0;
+                                    TransferableMessage) = 0;
   virtual void CountFeature(mojom::WebFeature) = 0;
 };
 

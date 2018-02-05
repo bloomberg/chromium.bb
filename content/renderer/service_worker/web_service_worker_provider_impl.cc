@@ -208,18 +208,15 @@ void WebServiceWorkerProviderImpl::SetController(
 
 void WebServiceWorkerProviderImpl::PostMessageToClient(
     blink::mojom::ServiceWorkerObjectInfoPtr source,
-    const base::string16& message,
-    std::vector<mojo::ScopedMessagePipeHandle> message_pipes) {
+    blink::TransferableMessage message) {
   if (!provider_client_)
     return;
 
   scoped_refptr<WebServiceWorkerImpl> source_worker =
       GetDispatcher()->GetOrCreateServiceWorker(std::move(source));
-  auto message_ports =
-      blink::MessagePortChannel::CreateFromHandles(std::move(message_pipes));
   provider_client_->DispatchMessageEvent(
       WebServiceWorkerImpl::CreateHandle(std::move(source_worker)),
-      blink::WebString::FromUTF16(message), std::move(message_ports));
+      std::move(message));
 }
 
 void WebServiceWorkerProviderImpl::CountFeature(

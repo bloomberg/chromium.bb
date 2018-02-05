@@ -83,13 +83,13 @@ blink::mojom::ServiceWorkerState WebServiceWorkerImpl::GetState() const {
 
 void WebServiceWorkerImpl::PostMessageToWorker(
     blink::WebServiceWorkerProvider* provider,
-    const WebString& message,
-    const WebSecurityOrigin& source_origin,
-    blink::WebVector<blink::MessagePortChannel> channels) {
+    blink::TransferableMessage message,
+    const WebSecurityOrigin& source_origin) {
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
       info_->handle_id,
       static_cast<WebServiceWorkerProviderImpl*>(provider)->provider_id(),
-      message.Utf16(), url::Origin(source_origin), channels.ReleaseVector()));
+      new base::RefCountedData<blink::TransferableMessage>(std::move(message)),
+      url::Origin(source_origin)));
 }
 
 void WebServiceWorkerImpl::Terminate() {
