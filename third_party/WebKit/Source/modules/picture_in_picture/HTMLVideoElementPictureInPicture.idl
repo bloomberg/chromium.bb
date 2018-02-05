@@ -11,9 +11,8 @@ partial interface HTMLVideoElement {
     // TODO(crbug.com/806249): Promise should return a PiPWindow.
     [CallWith=ScriptState] Promise<void> requestPictureInPicture();
 
-    // TODO(crbug.com/806249): Implement PiP video events.
     attribute EventHandler onenterpictureinpicture;
-    //attribute EventHandler onleavepictureinpicture;
+    attribute EventHandler onleavepictureinpicture;
 
     [CEReactions, Reflect] attribute boolean disablePictureInPicture;
 

@@ -1085,6 +1085,7 @@ html element video
     property networkState
     property onencrypted
     property onenterpictureinpicture
+    property onleavepictureinpicture
     property onwaitingforkey
     property pause
     property paused
