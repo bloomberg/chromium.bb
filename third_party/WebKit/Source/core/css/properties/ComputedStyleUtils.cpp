@@ -2310,4 +2310,11 @@ CSSValue* ComputedStyleUtils::ScrollCustomizationFlagsToCSSValue(
   return list;
 }
 
+CSSValue* ComputedStyleUtils::ValueForGapLength(const GapLength& gap_length,
+                                                const ComputedStyle& style) {
+  if (gap_length.IsNormal())
+    return CSSIdentifierValue::Create(CSSValueNormal);
+  return ZoomAdjustedPixelValueForLength(gap_length.GetLength(), style);
+}
+
 }  // namespace blink

@@ -136,6 +136,7 @@ fontVariantLigatures
 fontVariantNumeric
 fontVariationSettings
 fontWeight
+gap
 getPropertyPriority
 getPropertyValue
 grid
@@ -249,6 +250,7 @@ removeProperty
 resize
 right
 rotate
+rowGap
 rx
 ry
 scale

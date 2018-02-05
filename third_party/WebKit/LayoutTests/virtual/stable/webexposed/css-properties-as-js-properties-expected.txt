@@ -134,6 +134,7 @@ fontVariantLigatures
 fontVariantNumeric
 fontVariationSettings
 fontWeight
+gap
 getPropertyPriority
 getPropertyValue
 grid
@@ -241,6 +242,7 @@ r
 removeProperty
 resize
 right
+rowGap
 rx
 ry
 scrollBehavior
