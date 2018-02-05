@@ -218,6 +218,7 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
       notification_->set_accent_color(
           message_center::kSystemNotificationColorWarning);
       notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
+      break;
     case CupsPrintJob::State::STATE_NONE:
       break;
   }
