@@ -4,13 +4,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
+#include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge_views.h"
 
 #include "base/logging.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
+#include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace autofill {
@@ -63,6 +65,9 @@ void AutofillPopupViewBridge::OnSuggestionsChanged() {
 
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
+  if (chrome::ShowAllDialogsWithViewsToolkit())
+    return AutofillPopupViewViews::Create(controller);
+
   return new AutofillPopupViewBridge(controller);
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_native_views.h"
@@ -15,6 +16,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -256,21 +258,30 @@ void AutofillPopupViewViews::CreateChildViews() {
   }
 }
 
-AutofillPopupView* AutofillPopupView::Create(
+AutofillPopupView* AutofillPopupViewViews::Create(
     AutofillPopupController* controller) {
   views::Widget* observing_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
           controller->container_view());
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   // If the top level widget can't be found, cancel the popup since we can't
   // fully set it up.
   if (!observing_widget)
     return NULL;
+#endif
 
   if (base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews))
     return new AutofillPopupViewNativeViews(controller, observing_widget);
 
   return new AutofillPopupViewViews(controller, observing_widget);
 }
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+AutofillPopupView* AutofillPopupView::Create(
+    AutofillPopupController* controller) {
+  return AutofillPopupViewViews::Create(controller);
+}
+#endif
 
 }  // namespace autofill
