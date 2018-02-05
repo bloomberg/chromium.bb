@@ -94,7 +94,7 @@ class TestImage : public Image {
 TEST(ImageLayerChromiumTest, imageLayerContentReset) {
   FakeGraphicsLayerClient client;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer =
-      WTF::WrapUnique(new FakeGraphicsLayer(&client));
+      WTF::WrapUnique(new FakeGraphicsLayer(client));
   ASSERT_TRUE(graphics_layer.get());
 
   ASSERT_FALSE(graphics_layer->HasContentsLayer());
@@ -116,7 +116,7 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset) {
 TEST(ImageLayerChromiumTest, opaqueImages) {
   FakeGraphicsLayerClient client;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer =
-      WTF::WrapUnique(new FakeGraphicsLayer(&client));
+      WTF::WrapUnique(new FakeGraphicsLayer(client));
   ASSERT_TRUE(graphics_layer.get());
 
   bool opaque = true;

@@ -27,16 +27,15 @@ class CompositedLayerMappingTest
 
  protected:
   IntRect RecomputeInterestRect(const GraphicsLayer* graphics_layer) {
-    return static_cast<CompositedLayerMapping*>(graphics_layer->Client())
-        ->RecomputeInterestRect(graphics_layer);
+    return static_cast<CompositedLayerMapping&>(graphics_layer->Client())
+        .RecomputeInterestRect(graphics_layer);
   }
 
   IntRect ComputeInterestRect(
-      const CompositedLayerMapping* composited_layer_mapping,
       GraphicsLayer* graphics_layer,
       IntRect previous_interest_rect) {
-    return composited_layer_mapping->ComputeInterestRect(
-        graphics_layer, previous_interest_rect);
+    return static_cast<CompositedLayerMapping&>(graphics_layer->Client())
+        .ComputeInterestRect(graphics_layer, previous_interest_rect);
   }
 
   bool ShouldFlattenTransform(const GraphicsLayer& layer) const {
@@ -182,8 +181,7 @@ TEST_P(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect) {
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
   EXPECT_EQ(
       IntRect(0, 0, 200, 10000),
-      ComputeInterestRect(paint_layer->GetCompositedLayerMapping(),
-                          paint_layer->GraphicsLayerBacking(), IntRect()));
+      ComputeInterestRect(paint_layer->GraphicsLayerBacking(), IntRect()));
 }
 
 TEST_P(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {

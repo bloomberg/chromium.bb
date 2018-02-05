@@ -1078,7 +1078,7 @@ void PaintLayerCompositor::UpdateOverflowControlsLayers() {
 
   if (RequiresHorizontalScrollbarLayer()) {
     if (!layer_for_horizontal_scrollbar_) {
-      layer_for_horizontal_scrollbar_ = GraphicsLayer::Create(this);
+      layer_for_horizontal_scrollbar_ = GraphicsLayer::Create(*this);
     }
 
     if (layer_for_horizontal_scrollbar_->Parent() != controls_parent) {
@@ -1103,7 +1103,7 @@ void PaintLayerCompositor::UpdateOverflowControlsLayers() {
 
   if (RequiresVerticalScrollbarLayer()) {
     if (!layer_for_vertical_scrollbar_) {
-      layer_for_vertical_scrollbar_ = GraphicsLayer::Create(this);
+      layer_for_vertical_scrollbar_ = GraphicsLayer::Create(*this);
     }
 
     if (layer_for_vertical_scrollbar_->Parent() != controls_parent) {
@@ -1128,7 +1128,7 @@ void PaintLayerCompositor::UpdateOverflowControlsLayers() {
 
   if (RequiresScrollCornerLayer()) {
     if (!layer_for_scroll_corner_)
-      layer_for_scroll_corner_ = GraphicsLayer::Create(this);
+      layer_for_scroll_corner_ = GraphicsLayer::Create(*this);
 
     if (layer_for_scroll_corner_->Parent() != controls_parent)
       controls_parent->AddChild(layer_for_scroll_corner_.get());
@@ -1161,7 +1161,7 @@ void PaintLayerCompositor::EnsureRootLayer() {
       !RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 
   if (should_create_own_layers && !root_content_layer_) {
-    root_content_layer_ = GraphicsLayer::Create(this);
+    root_content_layer_ = GraphicsLayer::Create(*this);
     IntRect overflow_rect = layout_view_.PixelSnappedLayoutOverflowRect();
     root_content_layer_->SetSize(
         FloatSize(overflow_rect.MaxX(), overflow_rect.MaxY()));
@@ -1176,15 +1176,15 @@ void PaintLayerCompositor::EnsureRootLayer() {
 
     // Create a layer to host the clipping layer and the overflow controls
     // layers.
-    overflow_controls_host_layer_ = GraphicsLayer::Create(this);
+    overflow_controls_host_layer_ = GraphicsLayer::Create(*this);
 
     // Clip iframe's overflow controls layer.
     bool container_masks_to_bounds = !layout_view_.GetFrame()->IsLocalRoot();
     overflow_controls_host_layer_->SetMasksToBounds(container_masks_to_bounds);
 
     // Create a clipping layer if this is an iframe or settings require to clip.
-    container_layer_ = GraphicsLayer::Create(this);
-    scroll_layer_ = GraphicsLayer::Create(this);
+    container_layer_ = GraphicsLayer::Create(*this);
+    scroll_layer_ = GraphicsLayer::Create(*this);
     scroll_layer_->SetIsContainerForFixedPositionLayers(true);
 
     // In RLS mode, LayoutView scrolling contents layer gets this element ID (in

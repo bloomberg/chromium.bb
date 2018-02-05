@@ -79,11 +79,11 @@
 namespace blink {
 
 std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
-    GraphicsLayerClient* client) {
+    GraphicsLayerClient& client) {
   return WTF::WrapUnique(new GraphicsLayer(client));
 }
 
-GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
+GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
       background_color_(Color::kTransparent),
       opacity_(1),
@@ -109,8 +109,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       scrollable_area_(nullptr),
       rendering_context3d_(0) {
 #if DCHECK_IS_ON()
-  if (client_)
-    client_->VerifyNotPainting();
+  client.VerifyNotPainting();
 #endif
   layer_ = Platform::Current()->CompositorSupport()->CreateContentLayer(this);
   layer_->Layer()->SetDrawsContent(draws_content_ && contents_visible_);
@@ -125,8 +124,7 @@ GraphicsLayer::~GraphicsLayer() {
   link_highlights_.clear();
 
 #if DCHECK_IS_ON()
-  if (client_)
-    client_->VerifyNotPainting();
+  client_.VerifyNotPainting();
 #endif
 
   RemoveAllChildren();
@@ -285,8 +283,7 @@ void GraphicsLayer::SetOffsetDoubleFromLayoutObject(
 
 LayoutSize GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation()
     const {
-  return LayoutSize(OffsetFromLayoutObject()) +
-         Client()->SubpixelAccumulation();
+  return LayoutSize(OffsetFromLayoutObject()) + client_.SubpixelAccumulation();
 }
 
 IntRect GraphicsLayer::InterestRect() {
@@ -373,8 +370,6 @@ bool GraphicsLayer::PaintWithoutCommit(
     GraphicsContext::DisabledMode disabled_mode) {
   DCHECK(DrawsContent());
 
-  if (!client_)
-    return false;
   if (FirstPaintInvalidationTracking::IsEnabled())
     debug_info_.ClearAnnotatedInvalidateRects();
   IncrementPaintCount();
@@ -382,12 +377,12 @@ bool GraphicsLayer::PaintWithoutCommit(
   IntRect new_interest_rect;
   if (!interest_rect) {
     new_interest_rect =
-        client_->ComputeInterestRect(this, previous_interest_rect_);
+        client_.ComputeInterestRect(this, previous_interest_rect_);
     interest_rect = &new_interest_rect;
   }
 
   if (!GetPaintController().SubsequenceCachingIsDisabled() &&
-      !client_->NeedsRepaint(*this) &&
+      !client_.NeedsRepaint(*this) &&
       !GetPaintController().CacheIsAllInvalid() &&
       previous_interest_rect_ == *interest_rect) {
     return false;
@@ -401,7 +396,7 @@ bool GraphicsLayer::PaintWithoutCommit(
   }
 
   previous_interest_rect_ = *interest_rect;
-  client_->PaintContents(this, context, painting_phase_, *interest_rect);
+  client_.PaintContents(this, context, painting_phase_, *interest_rect);
   return true;
 }
 
@@ -554,13 +549,13 @@ CompositedLayerRasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
     raster_invalidator_ = std::make_unique<CompositedLayerRasterInvalidator>(
         [this](const IntRect& r) { SetNeedsDisplayInRectInternal(r); });
     raster_invalidator_->SetTracksRasterInvalidations(
-        client_->IsTrackingRasterInvalidations());
+        client_.IsTrackingRasterInvalidations());
   }
   return *raster_invalidator_;
 }
 
 void GraphicsLayer::UpdateTrackingRasterInvalidations() {
-  bool should_track = client_->IsTrackingRasterInvalidations();
+  bool should_track = client_.IsTrackingRasterInvalidations();
   if (should_track)
     EnsureRasterInvalidator().SetTracksRasterInvalidations(true);
   else if (raster_invalidator_)
@@ -770,7 +765,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     json->SetString("backfaceVisibility", "hidden");
 
   if (flags & kLayerTreeIncludesDebugInfo)
-    json->SetString("client", PointerAsString(client_));
+    json->SetString("client", PointerAsString(&client_));
 
   if (background_color_.Alpha()) {
     json->SetString("backgroundColor",
@@ -789,7 +784,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
   }
 
   if ((flags & kLayerTreeIncludesPaintInvalidations) &&
-      client_->IsTrackingRasterInvalidations() &&
+      client_.IsTrackingRasterInvalidations() &&
       GetRasterInvalidationTracking())
     GetRasterInvalidationTracking()->AsJSON(json.get());
 
@@ -928,29 +923,21 @@ static const cc::Layer* CcLayerForWebLayer(const WebLayer* web_layer) {
 }
 
 String GraphicsLayer::DebugName(cc::Layer* layer) const {
-  String name;
-  if (!client_)
-    return name;
+  if (layer->id() == contents_layer_id_)
+    return "ContentsLayer for " + client_.DebugName(this);
 
-  String highlight_debug_name;
   for (size_t i = 0; i < link_highlights_.size(); ++i) {
     if (layer == CcLayerForWebLayer(link_highlights_[i]->Layer())) {
-      highlight_debug_name = "LinkHighlight[" + String::Number(i) + "] for " +
-                             client_->DebugName(this);
-      break;
+      return "LinkHighlight[" + String::Number(i) + "] for " +
+             client_.DebugName(this);
     }
   }
 
-  if (layer->id() == contents_layer_id_) {
-    name = "ContentsLayer for " + client_->DebugName(this);
-  } else if (!highlight_debug_name.IsEmpty()) {
-    name = highlight_debug_name;
-  } else if (layer == CcLayerForWebLayer(layer_->Layer())) {
-    name = client_->DebugName(this);
-  } else {
-    NOTREACHED();
-  }
-  return name;
+  if (layer == CcLayerForWebLayer(layer_->Layer()))
+    return client_.DebugName(this);
+
+  NOTREACHED();
+  return "";
 }
 
 void GraphicsLayer::SetCompositingReasons(CompositingReasons reasons) {
@@ -1301,7 +1288,7 @@ PaintController& GraphicsLayer::GetPaintController() const {
     paint_controller_ = PaintController::Create();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       paint_controller_->SetTracksRasterInvalidations(
-          client_->IsTrackingRasterInvalidations());
+          client_.IsTrackingRasterInvalidations());
     }
   }
   return *paint_controller_;
@@ -1369,7 +1356,7 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
                                                    kSubsequenceCachingDisabled);
 
   if (painting_control == kPartialInvalidation)
-    client_->InvalidateTargetElementForTesting();
+    client_.InvalidateTargetElementForTesting();
 
   // We also disable caching when Painting or Construction are disabled. In both
   // cases we would like to compare assuming the full cost of recording, not the

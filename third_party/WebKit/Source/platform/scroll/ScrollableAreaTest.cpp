@@ -101,7 +101,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
       MockScrollableArea::Create(ScrollOffset(0, 100));
   FakeGraphicsLayerClient graphics_layer_client;
   graphics_layer_client.SetIsTrackingRasterInvalidations(true);
-  FakeGraphicsLayer graphics_layer(&graphics_layer_client);
+  FakeGraphicsLayer graphics_layer(graphics_layer_client);
   graphics_layer.SetDrawsContent(true);
   graphics_layer.SetSize(FloatSize(111, 222));
 
@@ -185,10 +185,10 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // (e.g. if the track changes appearance when the thumb reaches the end).
   FakeGraphicsLayerClient graphics_layer_client;
   graphics_layer_client.SetIsTrackingRasterInvalidations(true);
-  FakeGraphicsLayer layer_for_horizontal_scrollbar(&graphics_layer_client);
+  FakeGraphicsLayer layer_for_horizontal_scrollbar(graphics_layer_client);
   layer_for_horizontal_scrollbar.SetDrawsContent(true);
   layer_for_horizontal_scrollbar.SetSize(FloatSize(10, 10));
-  FakeGraphicsLayer layer_for_vertical_scrollbar(&graphics_layer_client);
+  FakeGraphicsLayer layer_for_vertical_scrollbar(graphics_layer_client);
   layer_for_vertical_scrollbar.SetDrawsContent(true);
   layer_for_vertical_scrollbar.SetSize(FloatSize(10, 10));
   EXPECT_CALL(*scrollable_area, LayerForHorizontalScrollbar())

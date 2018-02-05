@@ -348,13 +348,13 @@ void VisualViewport::CreateLayerTree() {
          !inner_viewport_container_layer_);
 
   // FIXME: The root transform layer should only be created on demand.
-  root_transform_layer_ = GraphicsLayer::Create(this);
-  inner_viewport_container_layer_ = GraphicsLayer::Create(this);
-  overscroll_elasticity_layer_ = GraphicsLayer::Create(this);
-  page_scale_layer_ = GraphicsLayer::Create(this);
-  inner_viewport_scroll_layer_ = GraphicsLayer::Create(this);
-  overlay_scrollbar_horizontal_ = GraphicsLayer::Create(this);
-  overlay_scrollbar_vertical_ = GraphicsLayer::Create(this);
+  root_transform_layer_ = GraphicsLayer::Create(*this);
+  inner_viewport_container_layer_ = GraphicsLayer::Create(*this);
+  overscroll_elasticity_layer_ = GraphicsLayer::Create(*this);
+  page_scale_layer_ = GraphicsLayer::Create(*this);
+  inner_viewport_scroll_layer_ = GraphicsLayer::Create(*this);
+  overlay_scrollbar_horizontal_ = GraphicsLayer::Create(*this);
+  overlay_scrollbar_vertical_ = GraphicsLayer::Create(*this);
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
