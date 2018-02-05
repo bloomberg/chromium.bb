@@ -546,8 +546,17 @@ void LocationBarView::Layout() {
 
   const int edge_thickness = GetHorizontalEdgeThickness();
 
+  // Add some padding to prevent text or Views displayed at the end of
+  // LocationBarView going too close to the ending border. This is also a
+  // compromise to avoid having to clip the corners of |omnibox_view_| when
+  // LocationBarView is a pill-shape.
+  constexpr int kRoundedPaddingHeightFactor = 3;
+  const int end_padding = BackgroundWith1PxBorder::IsRounded()
+                              ? location_height / kRoundedPaddingHeightFactor
+                              : 0;
+
   // Perform layout.
-  int full_width = width() - (2 * edge_thickness);
+  int full_width = width() - (2 * edge_thickness) - end_padding;
 
   int entry_width = full_width;
   leading_decorations.LayoutPass1(&entry_width);
@@ -1019,16 +1028,8 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
   if (show_focus_rect_ && omnibox_view_->HasFocus()) {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::NativeTheme::kColorId_FocusedBorderColor));
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setStrokeWidth(1);
-    gfx::RectF focus_rect(GetLocalBounds());
-    focus_rect.Inset(gfx::InsetsF(0.5f));
-    canvas->DrawRoundRect(focus_rect,
-                          BackgroundWith1PxBorder::kCornerRadius + 0.5f, flags);
+    static_cast<BackgroundWith1PxBorder*>(background())
+        ->PaintFocusRing(canvas, GetNativeTheme(), GetLocalBounds());
   }
 }
 
