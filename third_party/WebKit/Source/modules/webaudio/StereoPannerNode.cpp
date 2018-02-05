@@ -173,7 +173,7 @@ StereoPannerNode* StereoPannerNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->pan()->setInitialValue(options.pan());
+  node->pan()->setValue(options.pan());
 
   return node;
 }

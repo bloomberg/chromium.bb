@@ -173,15 +173,6 @@ String DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
       function, milestoneString(milestone), allow_string);
 }
 
-String DeprecatedWebAudioDezippering(const char* audio_param_name) {
-  return String::Format(
-      "%s.value setter smoothing is deprecated and will be removed in %s. "
-      "Please use setTargetAtTime() instead if smoothing is needed. "
-      "See https://www.chromestatus.com/features/5287995770929152 for more "
-      "details.",
-      audio_param_name, milestoneString(M64));
-}
-
 String DeprecatedWebAudioValueSetterBehavior() {
   return String::Format(
       "AudioParam value setter will become equivalent to "
@@ -555,33 +546,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                                     "HTMLMediaElement.srcObject", M68,
                                     "5618491470118912")};
 
-    case WebFeature::kWebAudioDezipperGainNodeGain:
-      return {"WebAudioDezipperGainNodeGain", Unknown,
-              DeprecatedWebAudioDezippering("GainNode.gain")};
-    case WebFeature::kWebAudioDezipperStereoPannerNodePan:
-      return {"WebAudioDezipperStereoPannerNodePan", Unknown,
-              DeprecatedWebAudioDezippering("StereoPannerNode.pan")};
-    case WebFeature::kWebAudioDezipperDelayNodeDelayTime:
-      return {"WebAudioDezipperDelayNodeDelayTime", Unknown,
-              DeprecatedWebAudioDezippering("DelayNode.delayTime")};
-    case WebFeature::kWebAudioDezipperOscillatorNodeFrequency:
-      return {"WebAudioDezipperOscillatorNodeFrequency", Unknown,
-              DeprecatedWebAudioDezippering("OscillatorNode.frequency")};
-    case WebFeature::kWebAudioDezipperOscillatorNodeDetune:
-      return {"WebAudioDezipperOscillatorNodeDetune", Unknown,
-              DeprecatedWebAudioDezippering("OscillatorNode.detune")};
-    case WebFeature::kWebAudioDezipperBiquadFilterNodeFrequency:
-      return {"WebAudioDezipperBiquadFilterNodeFrequency", Unknown,
-              DeprecatedWebAudioDezippering("BiquadFilterNode.frequency")};
-    case WebFeature::kWebAudioDezipperBiquadFilterNodeDetune:
-      return {"WebAudioDezipperBiquadFilterNodeDetune", Unknown,
-              DeprecatedWebAudioDezippering("BiquadFilterNode.detune")};
-    case WebFeature::kWebAudioDezipperBiquadFilterNodeQ:
-      return {"WebAudioDezipperBiquadFilterNodeQ", Unknown,
-              DeprecatedWebAudioDezippering("BiquadFilterNode.Q")};
-    case WebFeature::kWebAudioDezipperBiquadFilterNodeGain:
-      return {"WebAudioDezipperBiquadFilterNodeGain", Unknown,
-              DeprecatedWebAudioDezippering("BiquadFilterNode.gain")};
     case WebFeature::kWebAudioValueSetterIsSetValue:
       return {"WebAudioValueSetterIsSetValue", Unknown,
               DeprecatedWebAudioValueSetterBehavior()};
