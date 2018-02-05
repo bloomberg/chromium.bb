@@ -2899,8 +2899,6 @@ split_static_library("browser") {
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "first_run/upgrade_util.cc",
-      "notifications/mock_itoastnotification.cc",
-      "notifications/mock_itoastnotification.h",
       "notifications/notification_image_retainer.cc",
       "notifications/notification_image_retainer.h",
       "notifications/notification_template_builder.cc",
@@ -4755,6 +4753,13 @@ static_library("test_support") {
     sources += [
       "chooser_controller/mock_chooser_controller.cc",
       "chooser_controller/mock_chooser_controller.h",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "notifications/mock_itoastnotification.cc",
+      "notifications/mock_itoastnotification.h",
     ]
   }
 
