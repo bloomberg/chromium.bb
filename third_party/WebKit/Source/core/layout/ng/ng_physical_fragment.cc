@@ -309,11 +309,29 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset()
 }
 
 String NGPhysicalFragment::ToString() const {
-  return String::Format(
-      "Type: '%d' Size: '%s' Offset: '%s' Placed: '%d', BoxType: '%s'", Type(),
+  StringBuilder output;
+  output.Append(String::Format(
+      "Type: '%d' Size: '%s' Offset: '%s' Placed: '%d'", Type(),
       Size().ToString().Ascii().data(),
-      is_placed_ ? Offset().ToString().Ascii().data() : "no offset", IsPlaced(),
-      StringForBoxType(*this).Ascii().data());
+      is_placed_ ? Offset().ToString().Ascii().data() : "no offset",
+      IsPlaced()));
+  switch (Type()) {
+    case kFragmentBox:
+      output.Append(String::Format(", BoxType: '%s'",
+                                   StringForBoxType(*this).Ascii().data()));
+      break;
+    case kFragmentText: {
+      const NGPhysicalTextFragment& text = ToNGPhysicalTextFragment(*this);
+      output.Append(String::Format(", Text: (%u,%u) \"", text.StartOffset(),
+                                   text.EndOffset()));
+      output.Append(text.Text());
+      output.Append("\"");
+      break;
+    }
+    case kFragmentLineBox:
+      break;
+  }
+  return output.ToString();
 }
 
 String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags,
