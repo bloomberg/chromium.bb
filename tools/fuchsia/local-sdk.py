@@ -34,7 +34,8 @@ def EnsureEmptyDir(path):
 def BuildForArch(project, arch):
   Run('scripts/build-zircon.sh', '-p', project)
   Run('build/gn/gen.py', '--target_cpu=' + arch,
-      '--packages=garnet/packages/sdk','--ignore-skia', '--release')
+      '--packages=garnet/packages/sdk', '--release',
+      '--args=bootfs_packages=true')
   Run('buildtools/ninja', '-C', 'out/release-' + arch)
 
 
