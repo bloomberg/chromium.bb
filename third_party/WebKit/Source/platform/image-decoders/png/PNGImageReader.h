@@ -33,6 +33,8 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
+
+#define PNG_SET_OPTION_SUPPORTED
 #include "png.h"
 
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
