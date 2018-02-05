@@ -42,12 +42,14 @@ void TabDialogsViews::ShowCollectedCookies() {
   new CollectedCookiesViews(web_contents_);
 }
 
-void TabDialogsViews::ShowHungRendererDialog() {
-  HungRendererDialogView::Show(web_contents_);
+void TabDialogsViews::ShowHungRendererDialog(
+    content::RenderWidgetHost* render_widget_host) {
+  HungRendererDialogView::Show(web_contents_, render_widget_host);
 }
 
-void TabDialogsViews::HideHungRendererDialog() {
-  HungRendererDialogView::Hide(web_contents_);
+void TabDialogsViews::HideHungRendererDialog(
+    content::RenderWidgetHost* render_widget_host) {
+  HungRendererDialogView::Hide(web_contents_, render_widget_host);
 }
 
 bool TabDialogsViews::IsShowingHungRendererDialog() {

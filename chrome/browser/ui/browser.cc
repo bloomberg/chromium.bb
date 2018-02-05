@@ -1675,13 +1675,15 @@ void Browser::RendererUnresponsive(
   if (tab_strip_model_->IsTabBlocked(index))
     return;
 
-  TabDialogs::FromWebContents(source)->ShowHungRendererDialog();
+  TabDialogs::FromWebContents(source)->ShowHungRendererDialog(
+      render_widget_host);
 }
 
 void Browser::RendererResponsive(
     WebContents* source,
     content::RenderWidgetHost* render_widget_host) {
-  TabDialogs::FromWebContents(source)->HideHungRendererDialog();
+  TabDialogs::FromWebContents(source)->HideHungRendererDialog(
+      render_widget_host);
 }
 
 void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {

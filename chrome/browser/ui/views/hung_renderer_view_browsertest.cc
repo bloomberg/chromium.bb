@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 
 // Interactive UI tests for the hung renderer (aka page unresponsive) dialog.
@@ -36,7 +37,8 @@ class HungRendererDialogViewBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-    HungRendererDialogView::Show(web_contents);
+    HungRendererDialogView::Show(
+        web_contents, web_contents->GetRenderViewHost()->GetWidget());
 
     if (name == "MultiplePages") {
       auto* web_contents2 = chrome::DuplicateTabAt(browser(), 0);
