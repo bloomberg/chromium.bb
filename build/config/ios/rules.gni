@@ -1274,7 +1274,9 @@ template("ios_framework_bundle") {
       deps = []
     }
     deps += [ ":$_arch_shared_library_source" ]
-
+    if (_has_public_headers) {
+      deps += [ ":$_framework_headers_target($default_toolchain)" ]
+    }
     if (!defined(ldflags)) {
       ldflags = []
     }
@@ -1399,8 +1401,10 @@ template("ios_framework_bundle") {
         forward_variables_from(invoker, [ "testonly" ])
         deps = [
           ":$_compile_headers_map_target",
-          ":$_copy_public_headers_target",
           ":$_create_module_map_target",
+        ]
+        public_deps = [
+          ":$_copy_public_headers_target",
         ]
       }
     }
@@ -1633,7 +1637,9 @@ template("ios_xctest_bundle") {
       if (ios_automatically_manage_certs) {
         # Use a fixed bundle identifier for EarlGrey tests when using Xcode to
         # manage the certificates as the number of free certs is limited.
-        extra_substitutions = [ "MODULE_BUNDLE_ID=gtest.${ios_generic_test_bundle_id_suffix}-module" ]
+        extra_substitutions = [
+          "MODULE_BUNDLE_ID=gtest.${ios_generic_test_bundle_id_suffix}-module",
+        ]
       } else {
         extra_substitutions = [ "MODULE_BUNDLE_ID=gtest.$_output_name" ]
       }

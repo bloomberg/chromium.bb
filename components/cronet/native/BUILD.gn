@@ -12,9 +12,29 @@ config("cronet_native_include_config") {
   ]
 }
 
+source_set("cronet_native_headers") {
+  deps = [
+    "//base",
+  ]
+
+  configs += [ ":cronet_native_include_config" ]
+  public_configs = [ ":cronet_native_include_config" ]
+
+  public = [
+    "include/cronet_c.h",
+    "include/cronet_export.h",
+
+    # Generated from cronet.idl.
+    "generated/cronet.idl_c.h",
+    "generated/cronet.idl_impl_interface.h",
+    "generated/cronet.idl_impl_struct.h",
+  ]
+}
+
 # Cronet native API implementation.
 source_set("cronet_native_impl") {
   deps = [
+    ":cronet_native_headers",
     "//base",
     "//components/cronet:cronet_common",
     "//components/cronet:cronet_version_header",
@@ -23,21 +43,20 @@ source_set("cronet_native_impl") {
 
   configs += [ ":cronet_native_include_config" ]
   public_configs = [ ":cronet_native_include_config" ]
+  public_deps = [
+    ":cronet_native_headers",
+  ]
 
   sources = [
     "buffer.cc",
     "engine.cc",
     "engine.h",
-    "include/cronet_c.h",
     "runnables.cc",
     "runnables.h",
 
     # Generated from cronet.idl.
-    "generated/cronet.idl_c.h",
     "generated/cronet.idl_impl_interface.cc",
-    "generated/cronet.idl_impl_interface.h",
     "generated/cronet.idl_impl_struct.cc",
-    "generated/cronet.idl_impl_struct.h",
   ]
 }
 
@@ -46,6 +65,7 @@ source_set("cronet_native_testutil") {
   testonly = true
 
   deps = [
+    ":cronet_native_headers",
     "//base",
   ]
 
@@ -86,6 +106,7 @@ source_set("cronet_native_tests") {
   testonly = true
 
   deps = [
+    ":cronet_native_headers",
     ":cronet_native_testutil",
     "//base",
     "//base/test:test_support",
