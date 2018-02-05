@@ -197,6 +197,7 @@ class ComputedStyleUtils {
                                                 bool allow_visited_style);
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
       ScrollCustomization::ScrollDirection);
+  static CSSValue* ValueForGapLength(const GapLength&, const ComputedStyle&);
 };
 
 }  // namespace blink

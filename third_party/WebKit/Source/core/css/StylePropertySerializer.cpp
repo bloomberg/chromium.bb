@@ -331,7 +331,7 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:
     case CSSPropertyGridArea:
-    case CSSPropertyGridGap:
+    case CSSPropertyGap:
     case CSSPropertyListStyle:
     case CSSPropertyOffset:
     case CSSPropertyTextDecoration:
@@ -458,8 +458,8 @@ String StylePropertySerializer::GetPropertyValue(
       return GetShorthandValue(gridRowShorthand(), " / ");
     case CSSPropertyGridArea:
       return GetShorthandValue(gridAreaShorthand(), " / ");
-    case CSSPropertyGridGap:
-      return GetShorthandValue(gridGapShorthand());
+    case CSSPropertyGap:
+      return GetShorthandValue(gapShorthand());
     case CSSPropertyPlaceContent:
       return GetAlignmentShorthandValue(placeContentShorthand());
     case CSSPropertyPlaceItems:

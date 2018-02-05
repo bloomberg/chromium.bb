@@ -35,6 +35,7 @@ ValueRange LengthPropertyFunctions::GetValueRange(const CSSProperty& property) {
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyColumnGap:
+    case CSSPropertyRowGap:
     case CSSPropertyColumnWidth:
     case CSSPropertyWidth:
       return kValueRangeNonNegative;
@@ -255,6 +256,11 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
     case CSSPropertyWebkitBorderVerticalSpacing:
       result = Length(style.VerticalBorderSpacing(), kFixed);
       return true;
+    case CSSPropertyRowGap:
+      if (style.RowGap().IsNormal())
+        return false;
+      result = style.RowGap().GetLength();
+      return true;
     case CSSPropertyColumnGap:
       if (style.ColumnGap().IsNormal())
         return false;
@@ -435,6 +441,7 @@ bool LengthPropertyFunctions::SetLength(const CSSProperty& property,
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyColumnGap:
+    case CSSPropertyRowGap:
     case CSSPropertyColumnRuleWidth:
     case CSSPropertyColumnWidth:
     case CSSPropertyWebkitTransformOriginZ:

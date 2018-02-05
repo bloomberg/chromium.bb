@@ -295,6 +295,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.ColumnCount() == b.ColumnCount();
     case CSSPropertyColumnGap:
       return a.ColumnGap() == b.ColumnGap();
+    case CSSPropertyRowGap:
+      return a.RowGap() == b.RowGap();
     case CSSPropertyColumnRuleColor:
       return a.ColumnRuleColor() == b.ColumnRuleColor() &&
              a.VisitedLinkColumnRuleColor() == b.VisitedLinkColumnRuleColor();

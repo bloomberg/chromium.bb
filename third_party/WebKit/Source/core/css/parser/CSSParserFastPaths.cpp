@@ -33,8 +33,6 @@ static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
     case CSSPropertyMinBlockSize:
     case CSSPropertyMinInlineSize:
     case CSSPropertyFontSize:
-    case CSSPropertyGridColumnGap:
-    case CSSPropertyGridRowGap:
     case CSSPropertyHeight:
     case CSSPropertyWidth:
     case CSSPropertyMinHeight:

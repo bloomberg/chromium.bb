@@ -135,6 +135,7 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange&,
 CSSValue* ConsumeColumnCount(CSSParserTokenRange&);
 CSSValue* ConsumeColumnWidth(CSSParserTokenRange&);
 bool ConsumeColumnWidthOrCount(CSSParserTokenRange&, CSSValue*&, CSSValue*&);
+CSSValue* ConsumeGapLength(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeCounter(CSSParserTokenRange&, int);
 

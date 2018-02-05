@@ -206,10 +206,8 @@ All changes to this list should go through Blink's feature review process: http:
     grid-auto-flow
     grid-auto-rows
     grid-column-end
-    grid-column-gap
     grid-column-start
     grid-row-end
-    grid-row-gap
     grid-row-start
     grid-template-areas
     grid-template-columns
@@ -286,6 +284,7 @@ All changes to this list should go through Blink's feature review process: http:
     resize
     right
     rotate
+    row-gap
     rx
     ry
     scale
@@ -545,6 +544,9 @@ All changes to this list should go through Blink's feature review process: http:
         font-variant-east-asian
         font-variant-ligatures
         font-variant-numeric
+    gap
+        column-gap
+        row-gap
     grid
         grid-auto-columns
         grid-auto-flow
@@ -560,12 +562,16 @@ All changes to this list should go through Blink's feature review process: http:
     grid-column
         grid-column-end
         grid-column-start
+    grid-column-gap
+        column-gap
     grid-gap
-        grid-column-gap
-        grid-row-gap
+        column-gap
+        row-gap
     grid-row
         grid-row-end
         grid-row-start
+    grid-row-gap
+        row-gap
     grid-template
         grid-template-areas
         grid-template-columns

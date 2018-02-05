@@ -1436,14 +1436,6 @@
       converter: "ConvertGridPosition",
     },
     {
-      name: "grid-column-gap",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "<length>",
-      default_value: "Length(kFixed)",
-      converter: "ConvertLength",
-    },
-    {
       name: "grid-column-start",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
@@ -1462,14 +1454,6 @@
       default_value: "GridPosition()",
       type_name: "GridPosition",
       converter: "ConvertGridPosition",
-    },
-    {
-      name: "grid-row-gap",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "<length>",
-      default_value: "Length(kFixed)",
-      converter: "ConvertLength",
     },
     {
       name: "grid-row-start",
@@ -3022,6 +3006,17 @@
       converter: "ConvertGapLength",
     },
     {
+      name: "row-gap",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      interpolable: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["core/style/GapLength.h"],
+      default_value: "GapLength()",
+      type_name: "GapLength",
+      converter: "ConvertGapLength",
+    },
+    {
       name: "column-rule-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
@@ -3984,8 +3979,23 @@
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
+      name: "grid-column-gap",
+      longhands: ["column-gap"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+    },
+    {
+      name: "grid-row-gap",
+      longhands: ["row-gap"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+    },
+    {
+      name: "gap",
+      longhands: ["row-gap", "column-gap"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+    },
+    {
       name: "grid-gap",
-      longhands: ["grid-row-gap", "grid-column-gap"],
+      longhands: ["row-gap", "column-gap"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {

@@ -214,9 +214,10 @@ bool LayoutGrid::NamedGridLinesDefinitionDidChange(
 Optional<LayoutUnit> LayoutGrid::AvailableSpaceForGutters(
     GridTrackSizingDirection direction) const {
   bool is_row_axis = direction == kForColumns;
-  const Length& gap =
-      is_row_axis ? StyleRef().GridColumnGap() : StyleRef().GridRowGap();
-  if (!gap.IsPercent())
+
+  const GapLength& gap =
+      is_row_axis ? StyleRef().ColumnGap() : StyleRef().RowGap();
+  if (!gap.IsNormal() && !gap.GetLength().IsPercent())
     return WTF::nullopt;
 
   return is_row_axis ? AvailableLogicalWidth()
@@ -405,24 +406,31 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 
 LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction,
                                Optional<LayoutUnit> available_size) const {
-  const Length& gap = direction == kForColumns ? StyleRef().GridColumnGap()
-                                               : StyleRef().GridRowGap();
-  return ValueForLength(gap, available_size.value_or(LayoutUnit()));
+  const GapLength& gap =
+      direction == kForColumns ? StyleRef().ColumnGap() : StyleRef().RowGap();
+  if (gap.IsNormal())
+    return LayoutUnit();
+
+  return ValueForLength(gap.GetLength(), available_size.value_or(LayoutUnit()));
 }
 
 LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction) const {
   LayoutUnit available_size;
   bool is_row_axis = direction == kForColumns;
-  const Length& gap =
-      is_row_axis ? StyleRef().GridColumnGap() : StyleRef().GridRowGap();
-  if (gap.IsPercent())
+
+  const GapLength& gap =
+      is_row_axis ? StyleRef().ColumnGap() : StyleRef().RowGap();
+  if (gap.IsNormal())
+    return LayoutUnit();
+
+  if (gap.GetLength().IsPercent())
     available_size = is_row_axis
                          ? AvailableLogicalWidth()
                          : AvailableLogicalHeightForPercentageComputation();
 
   // TODO(rego): Maybe we could cache the computed percentage as a performance
   // improvement.
-  return ValueForLength(gap, available_size);
+  return ValueForLength(gap.GetLength(), available_size);
 }
 
 LayoutUnit LayoutGrid::GuttersSize(const Grid& grid,

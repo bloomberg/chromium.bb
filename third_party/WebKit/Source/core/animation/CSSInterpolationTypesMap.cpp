@@ -134,6 +134,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyColumnGap:
+    case CSSPropertyRowGap:
     case CSSPropertyColumnRuleWidth:
     case CSSPropertyColumnWidth:
     case CSSPropertyWebkitPerspectiveOriginX:

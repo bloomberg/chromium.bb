@@ -10,6 +10,4 @@ grid-template-columns: none;
 grid-template-rows: none;
 grid-row-end: auto;
 grid-row-start: auto;
-grid-column-gap: 0px;
-grid-row-gap: 0px;
 

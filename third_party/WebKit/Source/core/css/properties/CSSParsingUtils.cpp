@@ -1347,6 +1347,14 @@ bool ConsumeColumnWidthOrCount(CSSParserTokenRange& range,
   return column_count;
 }
 
+CSSValue* ConsumeGapLength(CSSParserTokenRange& range,
+                           const CSSParserContext& context) {
+  if (range.Peek().Id() == CSSValueNormal)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, context.Mode(), kValueRangeNonNegative);
+}
+
 CSSValue* ConsumeCounter(CSSParserTokenRange& range, int default_value) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
