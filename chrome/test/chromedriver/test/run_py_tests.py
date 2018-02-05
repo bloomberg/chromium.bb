@@ -316,6 +316,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
                                        android_activity=android_activity,
                                        android_process=android_process,
                                        download_dir=download_dir,
+                                       test_name=self.id(),
                                        **kwargs)
     self._drivers += [driver]
     return driver
