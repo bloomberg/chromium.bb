@@ -530,6 +530,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     return;
 
   const FillLayerInfo info = GetFillLayerInfo(color, bg_layer, bleed_avoidance);
+  // If we're not actually going to paint anything, abort early.
+  if (!info.should_paint_image && !info.should_paint_color)
+    return;
 
   GraphicsContextStateSaver clip_with_scrolling_state_saver(
       context, info.is_clipped_with_local_scrolling);

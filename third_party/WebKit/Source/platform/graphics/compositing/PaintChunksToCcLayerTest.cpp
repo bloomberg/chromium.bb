@@ -129,13 +129,22 @@ struct TestChunks {
   Vector<PaintChunk> chunks;
   DisplayItemList items = DisplayItemList(0);
 
+  // Add a paint chunk with a non-empty paint record and given property nodes.
   void AddChunk(const TransformPaintPropertyNode* t,
                 const ClipPaintPropertyNode* c,
                 const EffectPaintPropertyNode* e) {
-    size_t i = items.size();
     auto record = sk_make_sp<PaintRecord>();
     record->push<cc::DrawRectOp>(SkRect::MakeXYWH(0, 0, 100, 100),
                                  cc::PaintFlags());
+    AddChunk(std::move(record), t, c, e);
+  }
+
+  // Add a paint chunk with a given paint record and property nodes.
+  void AddChunk(sk_sp<PaintRecord> record,
+                const TransformPaintPropertyNode* t,
+                const ClipPaintPropertyNode* c,
+                const EffectPaintPropertyNode* e) {
+    size_t i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(
         DefaultId().client, DefaultId().type, std::move(record));
     chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));
@@ -546,6 +555,104 @@ TEST_F(PaintChunksToCcLayerTest, NoncompositedClipPath) {
                    cc::PaintOpType::ClipPath,     // <clip_path>
                    cc::PaintOpType::DrawRecord,   // <p0/>
                    cc::PaintOpType::Restore})));  // </clip_path>
+}
+
+TEST_F(PaintChunksToCcLayerTest, EmptyClipsAreElided) {
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  scoped_refptr<ClipPaintPropertyNode> c1c2 = ClipPaintPropertyNode::Create(
+      c1.get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  scoped_refptr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+
+  TestChunks chunks;
+  chunks.AddChunk(nullptr, t0(), c1.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1c2.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1c2.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1c2.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1.get(), e0());
+  // D1
+  chunks.AddChunk(t0(), c2.get(), e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  // Note that c1 and c1c2 are elided.
+  EXPECT_THAT(output, Pointee(PaintRecordMatcher::Make({
+                          cc::PaintOpType::Save,        //
+                          cc::PaintOpType::ClipRect,    // <c2>
+                          cc::PaintOpType::DrawRecord,  // D1
+                          cc::PaintOpType::Restore,     // </c2>
+                      })));
+}
+
+TEST_F(PaintChunksToCcLayerTest, NonEmptyClipsAreStored) {
+  scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  scoped_refptr<ClipPaintPropertyNode> c1c2 = ClipPaintPropertyNode::Create(
+      c1.get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  scoped_refptr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+
+  TestChunks chunks;
+  chunks.AddChunk(nullptr, t0(), c1.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1c2.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1c2.get(), e0());
+  // D1
+  chunks.AddChunk(t0(), c1c2.get(), e0());
+  chunks.AddChunk(nullptr, t0(), c1.get(), e0());
+  // D2
+  chunks.AddChunk(t0(), c2.get(), e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  EXPECT_THAT(output, Pointee(PaintRecordMatcher::Make({
+                          cc::PaintOpType::Save,        //
+                          cc::PaintOpType::ClipRect,    // <c1>
+                          cc::PaintOpType::Save,        //
+                          cc::PaintOpType::ClipRect,    // <c2>
+                          cc::PaintOpType::DrawRecord,  // D1
+                          cc::PaintOpType::Restore,     // </c2>
+                          cc::PaintOpType::Restore,     // </c1>
+                          cc::PaintOpType::Save,        //
+                          cc::PaintOpType::ClipRect,    // <c2>
+                          cc::PaintOpType::DrawRecord,  // D2
+                          cc::PaintOpType::Restore,     // </c2>
+                      })));
+}
+
+TEST_F(PaintChunksToCcLayerTest, EmptyEffectsAreStored) {
+  scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+      e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver);
+
+  TestChunks chunks;
+  chunks.AddChunk(nullptr, t0(), c0(), e0());
+  chunks.AddChunk(nullptr, t0(), c0(), e1.get());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  // TODO(vmpstr): Ideally this would change to be one save layer if possible.
+  EXPECT_THAT(output, Pointee(PaintRecordMatcher::Make({
+                          cc::PaintOpType::SaveLayer,  // <e1>
+                          cc::PaintOpType::SaveLayer,  //
+                          cc::PaintOpType::Restore,    //
+                          cc::PaintOpType::Restore,    // </e1>
+                      })));
 }
 
 }  // namespace
