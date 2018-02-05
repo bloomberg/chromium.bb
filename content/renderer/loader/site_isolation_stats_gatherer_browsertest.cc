@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
   // access, the XHR requests should succeed, but the UMA histograms should
   // record that they would have been blocked. This test is only possible since
   // we run the browser without the same origin policy.
-  GURL foo("http://foo.com/cross_site_document_request.html");
+  GURL foo("http://foo.com/cross_site_document_blocking/request.html");
 
   EXPECT_TRUE(NavigateToURL(shell(), foo));
 
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
 
   // TODO(nick): Split up these cases, and add positive assertions here about
   // what actually happens in these various resource-block cases.
-  GURL foo("http://foo.com/cross_site_document_request_target.html");
+  GURL foo("http://foo.com/cross_site_document_blocking/request_target.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo));
 }
 

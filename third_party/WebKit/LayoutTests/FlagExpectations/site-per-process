@@ -1,10 +1,6 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/803672: Test expects cross-origin XHR to work!?
-# https://crbug.com/736308: Test also disabled in LayoutTests/TestExpectations
-crbug.com/803672 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Timeout ]
-
 # https://crbug.com/794631: Recent regression.
 crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
 crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-allowed-by-feature-policy.https.sub.html [ Failure ]

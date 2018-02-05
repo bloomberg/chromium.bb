@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
@@ -22,6 +23,65 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
+
+namespace {
+
+// Ensure the correct histograms are incremented for blocking events.
+// Assumes the resource type is XHR.
+void InspectHistograms(const base::HistogramTester& histograms,
+                       bool should_be_blocked,
+                       bool should_be_sniffed,
+                       const std::string& resource_name,
+                       ResourceType resource_type) {
+  std::string bucket;
+  if (base::MatchPattern(resource_name, "*.html")) {
+    bucket = "HTML";
+  } else if (base::MatchPattern(resource_name, "*.xml")) {
+    bucket = "XML";
+  } else if (base::MatchPattern(resource_name, "*.json")) {
+    bucket = "JSON";
+  } else if (base::MatchPattern(resource_name, "*.txt")) {
+    bucket = "Plain";
+  } else {
+    bucket = "Others";
+  }
+
+  // Determine the appropriate histograms, including a start and end action
+  // (which are verified in unit tests), a read size if it was sniffed, and
+  // additional blocked metrics if it was blocked.
+  base::HistogramTester::CountsMap expected_counts;
+  std::string base = "SiteIsolation.XSD.Browser";
+  expected_counts[base + ".Action"] = 2;
+  if ((base::MatchPattern(resource_name, "*prefixed*") || bucket == "Others") &&
+      should_be_blocked) {
+    expected_counts[base + ".BlockedForParserBreaker"] = 1;
+  }
+  if (should_be_sniffed)
+    expected_counts[base + ".BytesReadForSniffing"] = 1;
+  if (should_be_blocked) {
+    expected_counts[base + ".Blocked"] = 1;
+    expected_counts[base + ".Blocked." + bucket] = 1;
+  }
+
+  // Make sure that the expected metrics, and only those metrics, were
+  // incremented.
+  EXPECT_THAT(histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser"),
+              testing::ContainerEq(expected_counts))
+      << "For resource_name=" << resource_name
+      << ", should_be_blocked=" << should_be_blocked;
+
+  // Determine if the bucket for the resource type (XHR) was incremented.
+  if (should_be_blocked) {
+    EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
+                testing::ElementsAre(base::Bucket(resource_type, 1)))
+        << "The wrong Blocked bucket was incremented.";
+    EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
+                testing::ElementsAre(base::Bucket(resource_type, 1)))
+        << "The wrong Blocked bucket was incremented.";
+  }
+}
+
+}  // namespace
 
 // These tests verify that the browser process blocks cross-site HTML, XML,
 // JSON, and some plain text responses when they are not otherwise permitted
@@ -71,62 +131,6 @@ class CrossSiteDocumentBlockingBaseTest : public ContentBrowserTest {
     embedded_test_server()->StartAcceptingConnections();
   }
 
-  // Ensure the correct histograms are incremented for blocking events.
-  // Assumes the resource type is XHR.
-  void InspectHistograms(const base::HistogramTester& histograms,
-                         bool should_be_blocked,
-                         bool should_be_sniffed,
-                         const std::string& resource_name,
-                         ResourceType resource_type) {
-    std::string bucket;
-    if (base::MatchPattern(resource_name, "*.html")) {
-      bucket = "HTML";
-    } else if (base::MatchPattern(resource_name, "*.xml")) {
-      bucket = "XML";
-    } else if (base::MatchPattern(resource_name, "*.json")) {
-      bucket = "JSON";
-    } else if (base::MatchPattern(resource_name, "*.txt")) {
-      bucket = "Plain";
-    } else {
-      bucket = "Others";
-    }
-
-    // Determine the appropriate histograms, including a start and end action
-    // (which are verified in unit tests), a read size if it was sniffed, and
-    // additional blocked metrics if it was blocked.
-    base::HistogramTester::CountsMap expected_counts;
-    std::string base = "SiteIsolation.XSD.Browser";
-    expected_counts[base + ".Action"] = 2;
-    if ((base::MatchPattern(resource_name, "*prefixed*") ||
-         bucket == "Others") &&
-        should_be_blocked) {
-      expected_counts[base + ".BlockedForParserBreaker"] = 1;
-    }
-    if (should_be_sniffed)
-      expected_counts[base + ".BytesReadForSniffing"] = 1;
-    if (should_be_blocked) {
-      expected_counts[base + ".Blocked"] = 1;
-      expected_counts[base + ".Blocked." + bucket] = 1;
-    }
-
-    // Make sure that the expected metrics, and only those metrics, were
-    // incremented.
-    EXPECT_THAT(histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser"),
-                testing::ContainerEq(expected_counts))
-        << "For resource_name=" << resource_name
-        << ", should_be_blocked=" << should_be_blocked;
-
-    // Determine if the bucket for the resource type (XHR) was incremented.
-    if (should_be_blocked) {
-      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
-                  testing::ElementsAre(base::Bucket(resource_type, 1)))
-          << "The wrong Blocked bucket was incremented.";
-      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
-                  testing::ElementsAre(base::Bucket(resource_type, 1)))
-          << "The wrong Blocked bucket was incremented.";
-    }
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingBaseTest);
 };
@@ -154,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
   // possible since we run the browser without the same origin policy, allowing
   // it to see the response body if it makes it to the renderer (even if the
   // renderer would normally block access to it).
-  GURL foo_url("http://foo.com/cross_site_document_request.html");
+  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   // The following are files under content/test/data/site_isolation. All
@@ -258,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
 // be a problem for script files mislabeled as HTML/XML/JSON/text (i.e., the
 // reason for sniffing), since script tags won't send Range headers.
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, RangeRequest) {
-  GURL foo_url("http://foo.com/cross_site_document_request.html");
+  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   {
@@ -310,12 +314,201 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockForVariousTargets) {
 
   // TODO(nick): Split up these cases, and add positive assertions here about
   // what actually happens in these various resource-block cases.
-  GURL foo("http://foo.com/cross_site_document_request_target.html");
+  GURL foo("http://foo.com/cross_site_document_blocking/request_target.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo));
-  WaitForLoadStop(shell()->web_contents());
 
   // TODO(creis): Wait for all the subresources to load and ensure renderer
   // process is still alive.
+}
+
+// This test class sets up a service worker that can be used to try to respond
+// to same-origin requests with cross-origin responses.
+class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
+ public:
+  CrossSiteDocumentBlockingServiceWorkerTest()
+      : service_worker_https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        cross_origin_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~CrossSiteDocumentBlockingServiceWorkerTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+
+    // To test that the renderer process does not receive blocked documents, we
+    // disable the same origin policy to let it see cross-origin fetches if they
+    // are received.
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
+
+    ContentBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    SetupCrossSiteRedirector(embedded_test_server());
+
+    service_worker_https_server_.ServeFilesFromSourceDirectory(
+        "content/test/data");
+    ASSERT_TRUE(service_worker_https_server_.Start());
+
+    cross_origin_https_server_.ServeFilesFromSourceDirectory(
+        "content/test/data");
+    cross_origin_https_server_.SetSSLConfig(
+        net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+    ASSERT_TRUE(cross_origin_https_server_.Start());
+
+    // Sanity check of test setup - the 2 https servers should be cross-site
+    // (the second server should have a different hostname because of the call
+    // to SetSSLConfig with CERT_COMMON_NAME_IS_DOMAIN argument).
+    ASSERT_FALSE(SiteInstance::IsSameWebSite(
+        shell()->web_contents()->GetBrowserContext(),
+        GetURLOnServiceWorkerServer("/"), GetURLOnCrossOriginServer("/")));
+  }
+
+  GURL GetURLOnServiceWorkerServer(const std::string& path) {
+    return service_worker_https_server_.GetURL(path);
+  }
+
+  GURL GetURLOnCrossOriginServer(const std::string& path) {
+    return cross_origin_https_server_.GetURL(path);
+  }
+
+  void StopCrossOriginServer() {
+    EXPECT_TRUE(cross_origin_https_server_.ShutdownAndWaitUntilComplete());
+  }
+
+  void SetUpServiceWorker() {
+    GURL url = GetURLOnServiceWorkerServer(
+        "/cross_site_document_blocking/request.html");
+    ASSERT_TRUE(NavigateToURL(shell(), url));
+
+    bool is_script_done;
+    std::string script = R"(
+        navigator.serviceWorker
+            .register('/cross_site_document_blocking/service_worker.js')
+            .then(registration => navigator.serviceWorker.ready)
+            .then(function(r) { domAutomationController.send(true); })
+            .catch(function(e) {
+                console.log('error: ' + e);
+                domAutomationController.send(false);
+            }); )";
+    ASSERT_TRUE(ExecuteScriptAndExtractBool(shell(), script, &is_script_done));
+    ASSERT_TRUE(is_script_done);
+  }
+
+ private:
+  // The test requires 2 https servers, because:
+  // 1. Service workers are only supported on secure origins.
+  // 2. One of tests requires fetching cross-origin resources from the
+  //    original page and/or service worker - the target of the fetch needs to
+  //    be a https server to avoid hitting the mixed content error.
+  net::EmbeddedTestServer service_worker_https_server_;
+  net::EmbeddedTestServer cross_origin_https_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingServiceWorkerTest);
+};
+
+// Issue a cross-origin request that will be handled entirely within a service
+// worker (without reaching the network - the cross-origin response will be
+// "faked" within the same-origin service worker, because the service worker
+// used by the test recognizes the "data_from_service_worker" suffix in the
+// URL).  This testcase is designed to hit the case in
+// CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders where
+// |response_type_via_service_worker| is equal to |kDefault|.  See also
+// https://crbug.com/803672.
+//
+// TODO(lukasza): https://crbug.com/715640: This test might become invalid
+// after servicification of service workers.
+IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest, NoNetwork) {
+  SetUpServiceWorker();
+
+  base::HistogramTester histograms;
+  std::string response;
+  std::string script = R"(
+      // Any cross-origin URL ending with .../data_from_service_worker can be
+      // used here - it will be intercepted by the service worker and will never
+      // go to the network.
+      fetch('https://bar.com/data_from_service_worker')
+          .then(response => response.text())
+          .then(responseText => {
+              domAutomationController.send(responseText);
+          })
+          .catch(error => {
+              var errorMessage = 'error: ' + error;
+              console.log(errorMessage);
+              domAutomationController.send(errorMessage);
+          }); )";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &response));
+
+  // Verify that XSDB didn't block the response (since it was "faked" within the
+  // service worker and didn't cross any security boundaries).
+  EXPECT_EQ("Response created by service worker", response);
+  InspectHistograms(histograms, false /* should_be_blocked */,
+                    false /* should_be_sniffed */, "blah.html",
+                    RESOURCE_TYPE_XHR);
+}
+
+IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
+                       NetworkAndOpaqueResponse) {
+  SetUpServiceWorker();
+
+  // Build a script for XHR-ing a cross-origin, nosniff HTML document.
+  GURL cross_origin_url =
+      GetURLOnCrossOriginServer("/site_isolation/nosniff.html");
+  const char* script_template = R"(
+      fetch('%s', { mode: 'no-cors' })
+          .then(response => response.text())
+          .then(responseText => {
+              domAutomationController.send(responseText);
+          })
+          .catch(error => {
+              var errorMessage = 'error: ' + error;
+              domAutomationController.send(errorMessage);
+          }); )";
+  std::string script =
+      base::StringPrintf(script_template, cross_origin_url.spec().c_str());
+
+  {
+    // The first time the request reaches the service worker, it will be
+    // forwarded to the network, but a response will be intercepted by the
+    // service worker and replaced with a new, artificial error.
+    base::HistogramTester histograms;
+    std::string response;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &response));
+
+    // Verify that XSDB blocked the response from the network (from
+    // |cross_origin_https_server_|) to the service worker.
+    InspectHistograms(histograms, true /* should_be_blocked */,
+                      false /* should_be_sniffed */, "nosniff.html",
+                      RESOURCE_TYPE_XHR);
+
+    // Verify that the service worker replied with an expected error.
+    // Replying with an error means that XSDB is only active once (for the
+    // initial, real network request) and therefore the test doesn't get
+    // confused (second successful response would have added noise to the
+    // histograms captured by the test).
+    EXPECT_EQ("error: TypeError: Failed to fetch", response);
+  }
+
+  // TODO(lukasza): https://crbug.com/715640: The remainder of this test might
+  // become invalid after servicification of service workers.
+  {
+    // Stop the server, to make sure the response below comes back from the
+    // service worker (and not from the network).
+    StopCrossOriginServer();
+
+    // The second time the request reaches the service worker, it will return
+    // the previously cached response from the network.  This should hit the
+    // case in CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders where
+    // |response_type_via_service_worker| is equal to |kOpaque|.
+    base::HistogramTester histograms;
+    std::string response;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &response));
+
+    // Verify that XSDB blocked the cached/opaque service worker response from
+    // reaching a cross-origin page.
+    EXPECT_EQ("", response);
+    InspectHistograms(histograms, true /* should_be_blocked */,
+                      false /* should_be_sniffed */, "nosniff.html",
+                      RESOURCE_TYPE_XHR);
+  }
 }
 
 class CrossSiteDocumentBlockingKillSwitchTest
@@ -339,7 +532,7 @@ class CrossSiteDocumentBlockingKillSwitchTest
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingKillSwitchTest,
                        NoBlockingWithKillSwitch) {
   // Load a page that issues illegal cross-site document requests to bar.com.
-  GURL foo_url("http://foo.com/cross_site_document_request.html");
+  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   bool was_blocked;
@@ -356,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingBaseTest,
     return;
 
   // Load a page that issues illegal cross-site document requests to bar.com.
-  GURL foo_url("http://foo.com/cross_site_document_request.html");
+  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   bool was_blocked;
@@ -389,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingIsolatedOriginTest,
 
   // Load a page that issues illegal cross-site document requests to the
   // isolated origin.
-  GURL foo_url("http://foo.com/cross_site_document_request.html");
+  GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   bool was_blocked;
