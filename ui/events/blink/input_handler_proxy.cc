@@ -737,6 +737,12 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   DCHECK(expect_scroll_update_end_);
 #endif
 
+  gfx::Vector2dF scroll_delta(-gesture_event.data.scroll_update.delta_x,
+                              -gesture_event.data.scroll_update.delta_y);
+  TRACE_EVENT_INSTANT2("input", "InputHandlerProxy::HandleGestureScrollUpdate",
+                       TRACE_EVENT_SCOPE_THREAD, "dx", scroll_delta.x(), "dy",
+                       scroll_delta.y());
+
   if (scroll_sequence_ignored_)
     return DROP_EVENT;
 
@@ -745,8 +751,6 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   gfx::Point scroll_point(gesture_event.x, gesture_event.y);
-  gfx::Vector2dF scroll_delta(-gesture_event.data.scroll_update.delta_x,
-                              -gesture_event.data.scroll_update.delta_y);
 
   if (ShouldAnimate(gesture_event.data.scroll_update.delta_units !=
                     blink::WebGestureEvent::ScrollUnits::kPixels)) {
