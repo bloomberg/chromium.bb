@@ -419,7 +419,7 @@ public class ExternalNavigationHandler {
         // handlers. If webkit can't handle it internally, we need to call
         // startActivityIfNeeded or startActivity.
         if (!isExternalProtocol) {
-            if (!mDelegate.isSpecializedHandlerAvailable(resolvingInfos)) {
+            if (mDelegate.countSpecializedHandlers(resolvingInfos) == 0) {
                 if (incomingIntentRedirect && mDelegate.maybeLaunchInstantApp(
                         params.getTab(), params.getUrl(), params.getReferrerUrl(), true)) {
                     if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Instant Apps redirect");

@@ -30,12 +30,6 @@ interface ExternalNavigationDelegate {
     boolean willChromeHandleIntent(Intent intent);
 
     /**
-     * Search for intent handlers that are specific to this URL aka, specialized apps like
-     * google maps or youtube
-     */
-    boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos);
-
-    /**
      * Returns true if the current activity is a webapp and {@params url} lies within the scope of
      * that webapp.
      */
