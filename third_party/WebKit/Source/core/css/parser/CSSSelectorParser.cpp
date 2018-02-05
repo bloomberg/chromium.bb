@@ -31,10 +31,8 @@ CSSSelectorList CSSSelectorParser::ParseSelector(
 
   parser.RecordUsageAndDeprecations(result);
 
-  if (RuntimeEnabledFeatures::CSSMatchesEnabled()) {
-    if (result.HasPseudoMatches())
-      return result.TransformForPseudoMatches();
-  }
+  if (result.HasPseudoMatches())
+    return result.TransformForPseudoMatches();
   return result;
 }
 
@@ -49,10 +47,8 @@ CSSSelectorList CSSSelectorParser::ConsumeSelector(
   CSSSelectorList result = parser.ConsumeComplexSelectorList(stream, observer);
   parser.RecordUsageAndDeprecations(result);
 
-  if (RuntimeEnabledFeatures::CSSMatchesEnabled()) {
-    if (result.HasPseudoMatches())
-      return result.TransformForPseudoMatches();
-  }
+  if (result.HasPseudoMatches())
+    return result.TransformForPseudoMatches();
   return result;
 }
 
@@ -935,8 +931,8 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           feature = WebFeature::kCSSSelectorPseudoAny;
           break;
         case CSSSelector::kPseudoMatches:
-          if (RuntimeEnabledFeatures::CSSMatchesEnabled())
-            feature = WebFeature::kCSSSelectorPseudoMatches;
+          DCHECK(RuntimeEnabledFeatures::CSSMatchesEnabled());
+          feature = WebFeature::kCSSSelectorPseudoMatches;
           break;
         case CSSSelector::kPseudoAnyLink:
           feature = WebFeature::kCSSSelectorPseudoAnyLink;
