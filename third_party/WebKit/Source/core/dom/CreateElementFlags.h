@@ -13,6 +13,8 @@ class CreateElementFlags {
  public:
   bool IsCreatedByParser() const { return created_by_parser_; }
   bool IsAsyncCustomElements() const { return async_custom_elements_; }
+  bool IsCustomElementsV1() const { return custom_elements_v1_; }
+  bool IsCustomElementsV0() const { return custom_elements_v0_; }
 
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
   static CreateElementFlags ByParser() {
@@ -29,6 +31,12 @@ class CreateElementFlags {
 
   // https://dom.spec.whatwg.org/#dom-document-createelement
   static CreateElementFlags ByCreateElement() { return CreateElementFlags(); }
+  static CreateElementFlags ByCreateElementV1() {
+    return CreateElementFlags().SetCustomElementsV1Only();
+  }
+  static CreateElementFlags ByCreateElementV0() {
+    return CreateElementFlags().SetCustomElementsV0Only();
+  }
 
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
   static CreateElementFlags ByFragmentParser() {
@@ -37,7 +45,10 @@ class CreateElementFlags {
 
  private:
   CreateElementFlags()
-      : created_by_parser_(false), async_custom_elements_(false) {}
+      : created_by_parser_(false),
+        async_custom_elements_(false),
+        custom_elements_v1_(true),
+        custom_elements_v0_(true) {}
 
   CreateElementFlags& SetCreatedByParser() {
     created_by_parser_ = true;
@@ -49,8 +60,22 @@ class CreateElementFlags {
     return *this;
   }
 
+  CreateElementFlags& SetCustomElementsV1Only() {
+    custom_elements_v1_ = true;
+    custom_elements_v0_ = false;
+    return *this;
+  }
+
+  CreateElementFlags& SetCustomElementsV0Only() {
+    custom_elements_v0_ = true;
+    custom_elements_v1_ = false;
+    return *this;
+  }
+
   bool created_by_parser_ : 1;
   bool async_custom_elements_ : 1;
+  bool custom_elements_v1_ : 1;
+  bool custom_elements_v0_ : 1;
 };
 
 #endif  // CreateElementFlags_h

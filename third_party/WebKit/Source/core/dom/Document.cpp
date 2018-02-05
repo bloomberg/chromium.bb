@@ -977,7 +977,9 @@ Element* Document::createElement(const AtomicString& local_name,
 
   // 5. Let element be the result of creating an element given ...
   Element* element =
-      CreateElement(q_name, is_v1, should_create_builtin ? is : g_null_atom);
+      CreateElement(q_name, should_create_builtin ? is : g_null_atom,
+                    is_v1 ? CreateElementFlags::ByCreateElementV1()
+                          : CreateElementFlags::ByCreateElementV0());
 
   // 8. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty())
@@ -1049,7 +1051,9 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   // 3. Let element be the result of creating an element
   Element* element =
-      CreateElement(q_name, is_v1, should_create_builtin ? is : g_null_atom);
+      CreateElement(q_name, should_create_builtin ? is : g_null_atom,
+                    is_v1 ? CreateElementFlags::ByCreateElementV1()
+                          : CreateElementFlags::ByCreateElementV0());
 
   // 4. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty())
@@ -1060,15 +1064,12 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
 // Entry point of "create an element".
 // https://dom.spec.whatwg.org/#concept-create-element
-// TODO(tkent): Add synchronous custom element flag.
-// TODO(tkent): Update or remove |is_v1| argument. At this moment, this
-// function is called only by createElement*() with string_or_options
-// argument. So we can determine v0 or v1 precisely.
 Element* Document::CreateElement(const QualifiedName& q_name,
-                                 bool is_v1,
-                                 const AtomicString& is) {
+                                 const AtomicString& is,
+                                 const CreateElementFlags flags) {
   CustomElementDefinition* definition = nullptr;
-  if (is_v1 && q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
+  if (flags.IsCustomElementsV1() &&
+      q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
     const CustomElementDescriptor desc(is.IsEmpty() ? q_name.LocalName() : is,
                                        q_name.LocalName());
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
@@ -1079,12 +1080,18 @@ Element* Document::CreateElement(const QualifiedName& q_name,
   Element* element;
 
   if (definition) {
-    element = CustomElement::CreateCustomElementSync(*this, q_name, definition);
+    // TODO(tkent): Branch async/sync in blink::CustomElement.
+    if (flags.IsAsyncCustomElements()) {
+      element = definition->CreateElementAsync(*this, q_name, flags);
+    } else {
+      element =
+          CustomElement::CreateCustomElementSync(*this, q_name, definition);
+    }
   } else if (V0CustomElement::IsValidName(q_name.LocalName()) &&
              RegistrationContext()) {
     element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
   } else {
-    element = CreateRawElement(q_name, CreateElementFlags::ByCreateElement());
+    element = CreateRawElement(q_name, flags);
     // 7.3. If namespace is the HTML namespace, and either localName is
     // a valid custom element name or is is non-null, then set result’s
     // custom element state to "undefined".
@@ -1092,7 +1099,7 @@ Element* Document::CreateElement(const QualifiedName& q_name,
         (CustomElement::IsValidName(q_name.LocalName()) || !is.IsEmpty()))
       element->SetCustomElementState(CustomElementState::kUndefined);
 
-    if (!is.IsEmpty() && !is_v1)
+    if (!is.IsEmpty() && flags.IsCustomElementsV0())
       V0CustomElementRegistrationContext::SetTypeExtension(element, is);
   }
   return element;
