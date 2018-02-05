@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -147,7 +147,9 @@ class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
 
 class WebrtcTransportTest : public testing::Test {
  public:
-  WebrtcTransportTest() {
+  WebrtcTransportTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
     network_settings_ =
         NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
@@ -293,7 +295,7 @@ class WebrtcTransportTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   NetworkSettings network_settings_;
