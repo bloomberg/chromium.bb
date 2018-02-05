@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -124,6 +125,14 @@ bool SessionCrashedBubble::Show(Browser* browser) {
         base::Bind(&SessionCrashedBubbleView::ShowForReal,
                    base::Passed(&browser_observer)));
   } else {
+#if defined(OS_MACOSX)
+    // SessionCrashedBubbleView doesn't support being hosted by a Cocoa browser
+    // window, so return false here so StartupBrowserCreator will fall back to
+    // the infobar.
+    // TODO(ellyjones): Make SessionCrashedBubbleView support a Cocoa host.
+    if (views_mode_controller::IsViewsBrowserCocoa())
+      return false;
+#endif
     SessionCrashedBubbleView::ShowForReal(std::move(browser_observer), false);
   }
   return true;
