@@ -3208,6 +3208,11 @@ split_static_library("ui") {
         # needed when Views isn't used on Mac.
         sources -=
             [ "media_router/presentation_receiver_window_factory_mac.cc" ]
+
+        # This source file is compiled out on Mac because there is a
+        # Mac-specific implementation of it that works on mac_views_browser
+        # builds as well:
+        sources -= [ "views/permission_bubble/permission_prompt_impl_views.cc" ]
       }
 
       if (!is_chromeos) {

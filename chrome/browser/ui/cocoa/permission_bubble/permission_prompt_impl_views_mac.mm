@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "build/buildflag.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -11,6 +12,8 @@
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
+#include "chrome/browser/ui/views_mode_controller.h"
+#include "ui/base/ui_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -28,6 +31,12 @@ views::BubbleDialogDelegateView* BubbleForWindow(gfx::NativeWindow window) {
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents,
     Delegate* delegate) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa()) {
+    return base::WrapUnique(new PermissionPromptImpl(
+        chrome::FindBrowserWithWebContents(web_contents), delegate));
+  }
+#endif
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   auto prompt = std::make_unique<PermissionPromptImpl>(browser, delegate);
   // Note the PermissionPromptImpl constructor always shows the bubble, which
