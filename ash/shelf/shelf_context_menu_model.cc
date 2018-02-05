@@ -188,6 +188,7 @@ void ShelfContextMenuModel::AddItems(ui::SimpleMenuModel* model,
         break;
       case ui::MenuModel::TYPE_BUTTON_ITEM:
         NOTREACHED() << "TYPE_BUTTON_ITEM is not yet supported.";
+        break;
       case ui::MenuModel::TYPE_SUBMENU:
         if (item->submenu.has_value()) {
           std::unique_ptr<ui::MenuModel> submenu =
