@@ -120,7 +120,7 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-      <part file="ksv/keyboard_shortcut_viewer_strings.grdp" />
+      <part file="keyboard_shortcut_viewer_strings.grdp" />
 
       <!-- Default user profile images. -->
       <!-- User Image default image accessible descriptions -->
