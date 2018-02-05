@@ -119,4 +119,72 @@ bool AomContentAxTree::GetIntAttributeForAXNode(int32_t ax_id,
   return node->data().GetIntAttribute(ax_attr, out_param);
 }
 
+bool AomContentAxTree::GetParentIdForAXNode(int32_t ax_id, int32_t* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node || !node->parent())
+    return false;
+  *out_param = node->parent()->id();
+  return true;
+}
+
+bool AomContentAxTree::GetFirstChildIdForAXNode(int32_t ax_id,
+                                                int32_t* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node || !node->child_count())
+    return false;
+
+  ui::AXNode* child = node->ChildAtIndex(0);
+  DCHECK(child);
+  *out_param = child->id();
+  return true;
+}
+
+bool AomContentAxTree::GetLastChildIdForAXNode(int32_t ax_id,
+                                               int32_t* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node || !node->child_count())
+    return false;
+
+  ui::AXNode* child = node->ChildAtIndex(node->child_count() - 1);
+  DCHECK(child);
+  *out_param = child->id();
+  return true;
+}
+
+bool AomContentAxTree::GetPreviousSiblingIdForAXNode(int32_t ax_id,
+                                                     int32_t* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+  int index_in_parent = node->index_in_parent();
+
+  // Assumption: only when this node is the first child, does it not have a
+  // previous sibling.
+  if (index_in_parent == 0)
+    return false;
+
+  ui::AXNode* sibling = node->parent()->ChildAtIndex(index_in_parent - 1);
+  DCHECK(sibling);
+  *out_param = sibling->id();
+  return true;
+}
+
+bool AomContentAxTree::GetNextSiblingIdForAXNode(int32_t ax_id,
+                                                 int32_t* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+  int index_in_parent = node->index_in_parent();
+
+  // Assumption: When this node is the last child, it does not have a next
+  // sibling.
+  if (index_in_parent == (node->parent()->child_count() - 1))
+    return false;
+
+  ui::AXNode* sibling = node->parent()->ChildAtIndex(index_in_parent + 1);
+  DCHECK(sibling);
+  *out_param = sibling->id();
+  return true;
+}
+
 }  // namespace content

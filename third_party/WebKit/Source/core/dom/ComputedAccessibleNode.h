@@ -47,6 +47,12 @@ class ComputedAccessibleNode : public ScriptWrappable {
   int32_t rowSpan(bool& is_null) const;
   int32_t setSize(bool& is_null) const;
 
+  ComputedAccessibleNode* parent() const;
+  ComputedAccessibleNode* firstChild() const;
+  ComputedAccessibleNode* lastChild() const;
+  ComputedAccessibleNode* previousSibling() const;
+  ComputedAccessibleNode* nextSibling() const;
+
  private:
   explicit ComputedAccessibleNode(Element*);
 
@@ -55,6 +61,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
+  ComputedAccessibleNode* GetRelationFromCache(AXID) const;
 
   Member<Element> element_;
   Member<AXObjectCache> cache_;

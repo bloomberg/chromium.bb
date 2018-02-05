@@ -22,13 +22,20 @@ class AomContentAxTree : public blink::WebComputedAXTree {
 
   // blink::WebComputedAXTree implementation.
   bool ComputeAccessibilityTree() override;
-  bool GetRoleForAXNode(int32_t axID, blink::WebString* out_param) override;
+  bool GetRoleForAXNode(int32_t ax_id, blink::WebString* out_param) override;
   bool GetStringAttributeForAXNode(int32_t,
                                    blink::WebAOMStringAttribute,
                                    blink::WebString* out_param) override;
   bool GetIntAttributeForAXNode(int32_t ax_id,
                                 blink::WebAOMIntAttribute,
                                 int32_t* out_param) override;
+
+  bool GetParentIdForAXNode(int32_t ax_id, int32_t* out_param) override;
+  bool GetFirstChildIdForAXNode(int32_t ax_id, int32_t* out_param) override;
+  bool GetLastChildIdForAXNode(int32_t ax_id, int32_t* out_param) override;
+  bool GetPreviousSiblingIdForAXNode(int32_t ax_id,
+                                     int32_t* out_param) override;
+  bool GetNextSiblingIdForAXNode(int32_t ax_id, int32_t* out_param) override;
 
  private:
   ui::AXTree tree_;
