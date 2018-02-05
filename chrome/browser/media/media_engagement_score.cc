@@ -36,7 +36,7 @@ const int kScoreMinVisitsParamDefault = 20;
 const double kHighScoreLowerThresholdParamDefault = 0.2;
 const double kHighScoreUpperThresholdParamDefault = 0.3;
 
-std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
+std::unique_ptr<base::DictionaryValue> GetMediaEngagementScoreDictForSettings(
     const HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
@@ -78,9 +78,10 @@ int MediaEngagementScore::GetScoreMinVisits() {
 MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
                                            const GURL& origin,
                                            HostContentSettingsMap* settings)
-    : MediaEngagementScore(clock,
-                           origin,
-                           GetScoreDictForSettings(settings, origin)) {
+    : MediaEngagementScore(
+          clock,
+          origin,
+          GetMediaEngagementScoreDictForSettings(settings, origin)) {
   settings_map_ = settings;
 }
 
