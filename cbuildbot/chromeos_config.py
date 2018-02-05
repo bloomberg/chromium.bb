@@ -1245,9 +1245,10 @@ def GeneralTemplates(site_config, ge_build_config):
                                           test_suite='gce-smoke')],
   )
 
-  # No GCE tests for lakitu-nc.
+  # No GCE tests for lakitu-nc; Enable 'hsm' profile by default.
   site_config.AddTemplate(
-      'lakitu_nc_test_customizations',
+      'lakitu_nc_customizations',
+      profile='hsm',
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                         test_suite='smoke')],
       vm_tests_override=None,
@@ -3629,7 +3630,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.lakitu_test_customizations,
 
       'lakitu-nc-pre-cq':
-          site_config.templates.lakitu_nc_test_customizations,
+          site_config.templates.lakitu_nc_customizations,
 
       'lakitu-st-pre-cq':
           site_config.templates.lakitu_test_customizations,
@@ -3669,7 +3670,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       ),
 
       'lakitu-nc-release': config_lib.BuildConfig().apply(
-          site_config.templates.lakitu_nc_test_customizations,
+          site_config.templates.lakitu_nc_customizations,
           site_config.templates.lakitu_notification_emails,
           signer_tests=False,
       ),

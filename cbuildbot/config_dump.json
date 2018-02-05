@@ -30663,6 +30663,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "profile": "hsm",
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
@@ -30695,6 +30696,7 @@
             "recovery",
             "test"
         ],
+        "profile": "hsm",
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
@@ -30732,6 +30734,7 @@
             "test"
         ],
         "paygen": false,
+        "profile": "hsm",
         "push_image": false,
         "signer_tests": false,
         "sync_chrome": false,
