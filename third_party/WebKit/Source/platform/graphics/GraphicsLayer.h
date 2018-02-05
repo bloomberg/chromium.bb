@@ -77,11 +77,11 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   USING_FAST_MALLOC(GraphicsLayer);
 
  public:
-  static std::unique_ptr<GraphicsLayer> Create(GraphicsLayerClient*);
+  static std::unique_ptr<GraphicsLayer> Create(GraphicsLayerClient&);
 
   ~GraphicsLayer() override;
 
-  GraphicsLayerClient* Client() const { return client_; }
+  GraphicsLayerClient& Client() const { return client_; }
 
   GraphicsLayerDebugInfo& DebugInfo();
 
@@ -274,7 +274,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   WebContentLayerClient& WebContentLayerClientForTesting() { return *this; }
 
   // DisplayItemClient methods
-  String DebugName() const final { return client_->DebugName(this); }
+  String DebugName() const final { return client_.DebugName(this); }
   LayoutRect VisualRect() const override;
 
   void SetHasWillChangeTransformHint(bool);
@@ -295,7 +295,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   String DebugName(cc::Layer*) const;
   bool ShouldFlattenTransform() const { return should_flatten_transform_; }
 
-  explicit GraphicsLayer(GraphicsLayerClient*);
+  explicit GraphicsLayer(GraphicsLayerClient&);
 
   friend class CompositedLayerMappingTest;
   friend class PaintControllerPaintTestBase;
@@ -351,7 +351,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   CompositedLayerRasterInvalidator& EnsureRasterInvalidator();
   void SetNeedsDisplayInRectInternal(const IntRect&);
 
-  GraphicsLayerClient* client_;
+  GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject
   DoubleSize offset_from_layout_object_;

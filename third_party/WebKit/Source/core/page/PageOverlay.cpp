@@ -70,7 +70,7 @@ void PageOverlay::Update() {
     return;
 
   if (!layer_) {
-    layer_ = GraphicsLayer::Create(this);
+    layer_ = GraphicsLayer::Create(*this);
     layer_->SetDrawsContent(true);
 
     // This is required for contents of overlay to stay in sync with the page

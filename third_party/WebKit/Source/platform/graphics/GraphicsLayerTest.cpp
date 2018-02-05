@@ -56,10 +56,10 @@ namespace blink {
 class GraphicsLayerTest : public ::testing::Test {
  public:
   GraphicsLayerTest() {
-    clip_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
-    scroll_elasticity_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
-    page_scale_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
-    graphics_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
+    clip_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
+    scroll_elasticity_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
+    page_scale_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
+    graphics_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
     graphics_layer_->SetDrawsContent(true);
     clip_layer_->AddChild(scroll_elasticity_layer_.get());
     scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
