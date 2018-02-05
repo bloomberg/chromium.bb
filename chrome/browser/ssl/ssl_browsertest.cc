@@ -4134,6 +4134,40 @@ IN_PROC_BROWSER_TEST_P(SSLUITestCommitted, ProceedLinkOverridable) {
   ASSERT_NO_FATAL_FAILURE(CheckProceedLinkExists(tab));
 }
 
+// Checks that interstitials are not used for subframe SSL errors. Regression
+// test for https://crbug.com/808797.
+IN_PROC_BROWSER_TEST_P(SSLUITestCommitted, SubframeCertError) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  // Insert a broken-HTTPS iframe on the page and check that a generic net
+  // error, not a certificate error page, is shown.
+  content::TestNavigationObserver observer(tab, 1);
+  std::string insert_frame = base::StringPrintf(
+      "var i = document.createElement('iframe');"
+      "i.src = '%s';"
+      "document.body.appendChild(i);",
+      https_server_expired_.GetURL("/ssl/google.html").spec().c_str());
+  EXPECT_TRUE(content::ExecuteScript(tab, insert_frame));
+  observer.Wait();
+
+  content::RenderFrameHost* child =
+      content::ChildFrameAt(tab->GetMainFrame(), 0);
+  ASSERT_TRUE(child);
+  int result = security_interstitials::CMD_ERROR;
+  const std::string javascript = base::StringPrintf(
+      "domAutomationController.send("
+      "(document.querySelector(\"#proceed-link\") === null) "
+      "? (%d) : (%d))",
+      security_interstitials::CMD_TEXT_NOT_FOUND,
+      security_interstitials::CMD_TEXT_FOUND);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(child, javascript, &result));
+  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND, result);
+}
+
 // Verifies that a non-overridable interstitial does not have a proceed link.
 IN_PROC_BROWSER_TEST_P(SSLUITestHSTS, TestInterstitialOptionsNonOverridable) {
   ASSERT_TRUE(https_server_expired_.Start());
