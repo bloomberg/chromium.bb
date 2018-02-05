@@ -151,7 +151,7 @@ class SupervisedUserCreationControllerNew
     std::unique_ptr<SupervisedUserRegistrationUtility> registration_utility;
   };
 
-  // SupervisedUserAuthenticator::StatusConsumer overrides.
+  // ExtendedAuthenticator::NewAuthStatusConsumer overrides.
   void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error) override;
 
   // Authenticator success callbacks.
