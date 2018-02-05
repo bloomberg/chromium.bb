@@ -65,6 +65,8 @@ STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kGyroscope,
                    ::blink::mojom::FeaturePolicyFeature::kGyroscope);
 STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kMagnetometer,
                    ::blink::mojom::FeaturePolicyFeature::kMagnetometer);
+STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kUnsizedMedia,
+                   ::blink::mojom::FeaturePolicyFeature::kUnsizedMedia);
 STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kPictureInPicture,
                    ::blink::mojom::FeaturePolicyFeature::kPictureInPicture);
 
