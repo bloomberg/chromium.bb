@@ -218,7 +218,51 @@ TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_OverriddenByCommandlineFlag) {
   EXPECT_FALSE(safe_seed_manager.ShouldRunInSafeMode());
 }
 
-// TODO(isherman): Add more tests for ShouldRunInSafeMode() once thresholds are
-// selected and implemented.
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_NoCrashes_NoFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 0);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
+
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_FALSE(safe_seed_manager.ShouldRunInSafeMode());
+}
+
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_NoPrefs) {
+  // Don't explicitly set either of the prefs. The implicit/default values
+  // should be zero.
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_FALSE(safe_seed_manager.ShouldRunInSafeMode());
+}
+
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_FewCrashes_FewFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 2);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 2);
+
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_FALSE(safe_seed_manager.ShouldRunInSafeMode());
+}
+
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_ManyCrashes_NoFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 3);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
+
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_TRUE(safe_seed_manager.ShouldRunInSafeMode());
+}
+
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_NoCrashes_ManyFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 0);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 50);
+
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_TRUE(safe_seed_manager.ShouldRunInSafeMode());
+}
+
+TEST_F(SafeSeedManagerTest, ShouldRunInSafeMode_ManyCrashes_ManyFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 3);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 50);
+
+  SafeSeedManager safe_seed_manager(true, &prefs_);
+  EXPECT_TRUE(safe_seed_manager.ShouldRunInSafeMode());
+}
 
 }  // namespace variations

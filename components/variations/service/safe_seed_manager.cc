@@ -17,6 +17,53 @@
 
 namespace variations {
 
+// As of the time of this writing, January 2018, users at the 99.5th percentile,
+// across all platforms, tend to experience fewer than 3 consecutive crashes:
+// [1], [2], [3], [4]. Note, however, that this is less true for the less-stable
+// channels on some platforms.
+// [1] All platforms, stable channel (consistently stable):
+//     https://uma.googleplex.com/timeline_v2?sid=90ac80f4573249fb341a8e49501bfcfd
+// [2] Most platforms, all channels (consistently stable other than occasional
+//     spikes on Canary):
+//     https://uma.googleplex.com/timeline_v2?sid=7af5ba1969db76689a401f982a1db539
+// [3] A less stable platform, all channels:
+//     https://uma.googleplex.com/timeline_v2?sid=07dbc8e4fa9f08e332fb609309a21882
+// [4] Another less stable platform, all channels:
+//     https://uma.googleplex.com/timeline_v2?sid=a7b529ef5d52863fae2d216e963c4cbc
+// Overall, the only {platform, channel} combinations that spike above 3
+// consecutive crashes are ones with very few users, plus Canary. It's probably
+// not realistic to avoid false positives for these less-stable configurations.
+constexpr int kCrashStreakThreshold = 3;
+
+// Consecutive seed fetch failures are, unfortunately, a bit more common. As of
+// January 2018, users at the 99.5th percentile tend to see fewer than 4
+// consecutive fetch failures on mobile platforms; and users at the 99th
+// percentile tend to see fewer than 5 or 6 consecutive failures on desktop
+// platforms. It makes sense that the characteristics differ on mobile
+// vs. desktop platforms, given that the two use different scheduling algorithms
+// for the fetches. Graphs:
+// [1] Android, all channels (consistently connected):
+//     https://uma.googleplex.com/timeline_v2?sid=99d1d4c2490c60bcbde7afeb77c12a28
+// [2] High-connectivity platforms, Stable and Beta channel (consistently
+//     connected):
+//     https://uma.googleplex.com/timeline_v2?sid=2db5b7278dad41cbf349f5f2cb30efd9
+// [3] Other platforms, Stable and Beta channel (slightly less connected):
+//     https://uma.googleplex.com/timeline_v2?sid=d4ba2f3751d211898f8e69214147c2ec
+// [4] All platforms, Dev (even less connected):
+//     https://uma.googleplex.com/timeline_v2?sid=5740fb22b17faa823822adfd8e00ec1a
+// [5] All platforms, Canary (actually fairly well-connected!):
+//     https://uma.googleplex.com/timeline_v2?sid=3e14d3e4887792bb614db9f3f2c1d48c
+// Note the all of the graphs show a spike on a particular day, presumably due
+// to server-side instability. Moreover, the Dev channel on desktop is an
+// outlier – users on the Dev channel can experience just shy of 9 consecutive
+// failures on some platforms.
+// Decision: There is not an obvious threshold that both achieves a low
+// false-positive rate and provides good coverage for true positives. For now,
+// set a threshold that should minimize false-positives.
+// TODO(isherman): Check in with the networking team about their thoughts on how
+// to find a better balance here.
+constexpr int kFetchFailureStreakThreshold = 25;
+
 SafeSeedManager::SafeSeedManager(bool did_previous_session_exit_cleanly,
                                  PrefService* local_state)
     : local_state_(local_state) {
@@ -57,9 +104,11 @@ bool SafeSeedManager::ShouldRunInSafeMode() const {
     return false;
   }
 
-  // TODO(isherman): Choose reasonable thresholds for the crash and fetch
-  // failure streaks, and return true or false based on those.
-  return false;
+  int num_crashes = local_state_->GetInteger(prefs::kVariationsCrashStreak);
+  int num_failed_fetches =
+      local_state_->GetInteger(prefs::kVariationsFailedToFetchSeedStreak);
+  return num_crashes >= kCrashStreakThreshold ||
+         num_failed_fetches >= kFetchFailureStreakThreshold;
 }
 
 void SafeSeedManager::SetActiveSeedState(
