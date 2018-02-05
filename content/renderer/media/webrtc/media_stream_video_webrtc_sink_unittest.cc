@@ -11,6 +11,7 @@
 #include "content/renderer/media/video_track_adapter.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 namespace {
@@ -57,7 +58,9 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
 
 TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
   SetVideoTrack();
-  MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
+  MediaStreamVideoWebRtcSink my_sink(
+      track_, &dependency_factory_,
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   EXPECT_TRUE(my_sink.webrtc_video_track());
   EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());
 }

@@ -167,7 +167,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalVideoTrack(
             blink::WebMediaStreamSource::kTypeVideo);
   web_track_ = web_track;
   local_track_video_sink_.reset(
-      new MediaStreamVideoWebRtcSink(web_track_, factory_));
+      new MediaStreamVideoWebRtcSink(web_track_, factory_, main_thread_));
   webrtc_track_ = local_track_video_sink_->webrtc_video_track();
   DCHECK(webrtc_track_);
   is_initialized_ = true;

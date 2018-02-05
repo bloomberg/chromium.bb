@@ -13,6 +13,10 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 class MediaStreamVideoTrack;
@@ -29,8 +33,10 @@ class PeerConnectionDependencyFactory;
 // created it.
 class CONTENT_EXPORT MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
  public:
-  MediaStreamVideoWebRtcSink(const blink::WebMediaStreamTrack& track,
-                             PeerConnectionDependencyFactory* factory);
+  MediaStreamVideoWebRtcSink(
+      const blink::WebMediaStreamTrack& track,
+      PeerConnectionDependencyFactory* factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MediaStreamVideoWebRtcSink() override;
 
   webrtc::VideoTrackInterface* webrtc_video_track() {
