@@ -100,7 +100,7 @@ void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
   WasResized(cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
-bool DelegatedFrameHost::HasSavedFrame() {
+bool DelegatedFrameHost::HasSavedFrame() const {
   return frame_evictor_->HasFrame();
 }
 
@@ -977,6 +977,10 @@ void DelegatedFrameHost::DidNavigate() {
   first_parent_sequence_number_after_navigation_ =
       client_->GetLocalSurfaceId().parent_sequence_number();
   received_frame_after_navigation_ = false;
+}
+
+bool DelegatedFrameHost::IsPrimarySurfaceEvicted() const {
+  return local_surface_id_ == client_->GetLocalSurfaceId() && !HasSavedFrame();
 }
 
 }  // namespace content
