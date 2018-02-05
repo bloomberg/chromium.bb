@@ -44,8 +44,6 @@ static constexpr char const* kFragmentShader = SHADER(
 
 GltfController::GltfController() {
   SetName(kController);
-  set_hit_testable(false);
-  SetVisible(true);
 }
 
 GltfController::~GltfController() = default;

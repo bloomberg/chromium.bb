@@ -1193,4 +1193,12 @@ TEST_F(UiTest, RepositionButton) {
   EXPECT_EQ(kRepositionButtonMinOpacity, button->GetTargetOpacity());
 }
 
+// No element in the controller root's subtree should be hit testable.
+TEST_F(UiTest, ControllerHitTest) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  auto* controller = scene_->GetUiElementByName(kControllerRoot);
+  for (auto& child : *controller)
+    EXPECT_FALSE(child.IsHitTestable());
+}
+
 }  // namespace vr

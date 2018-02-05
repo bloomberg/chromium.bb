@@ -59,6 +59,7 @@ enum UiElementName {
   kOmniboxSuggestions,
   kOmniboxSuggestionsOuterLayout,
   kOmniboxOuterLayout,
+  kOmniboxOuterLayoutSpacer,
   kOmniboxShadow,
   k2dBrowsingVisibiltyControlForVoice,
   k2dBrowsingVisibiltyControlForSiteInfoPrompt,
@@ -124,7 +125,9 @@ enum UiElementName {
   kControllerTrackpadRepositionLabel,
   kControllerExitButtonLabel,
   kControllerBackButtonLabel,
+  kContentRepositionLabel,
   kContentRepositionHitPlane,
+  kContentRepositionVisibilityToggle,
 
   // This must be last.
   kNumUiElementNames,

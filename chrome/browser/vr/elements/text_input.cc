@@ -23,7 +23,6 @@ TextInput::TextInput(float font_height_meters,
   auto text = std::make_unique<Text>(font_height_meters);
   text->SetType(kTypeTextInputHint);
   text->SetDrawPhase(kPhaseForeground);
-  text->set_hit_testable(false);
   text->set_focusable(false);
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
@@ -52,7 +51,6 @@ TextInput::TextInput(float font_height_meters,
   cursor->SetVisible(false);
   cursor->SetType(kTypeTextInputCursor);
   cursor->SetDrawPhase(kPhaseForeground);
-  cursor->set_hit_testable(false);
   cursor->set_focusable(false);
   cursor->set_x_anchoring(LEFT);
   cursor->set_y_anchoring(BOTTOM);

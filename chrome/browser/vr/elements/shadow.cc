@@ -121,7 +121,6 @@ static constexpr float kYShadowOffset = 0.06f;
 
 Shadow::Shadow() {
   set_bounds_contain_children(true);
-  set_hit_testable(false);
 }
 
 Shadow::~Shadow() {}

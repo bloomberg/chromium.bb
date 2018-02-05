@@ -201,8 +201,6 @@ UiScene::Elements UiScene::GetPotentiallyVisibleElements() const {
 UiScene::UiScene() {
   root_element_ = std::make_unique<UiElement>();
   root_element_->SetName(kRoot);
-  root_element_->SetDrawPhase(kPhaseNone);
-  root_element_->set_hit_testable(false);
 }
 
 UiScene::~UiScene() = default;

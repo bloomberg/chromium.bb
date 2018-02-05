@@ -141,7 +141,6 @@ float RemapLatitude(float t) {
 }  // namespace
 
 Background::Background() {
-  set_hit_testable(false);
   SetTransitionedProperties(
       {NORMAL_COLOR_FACTOR, INCOGNITO_COLOR_FACTOR, FULLSCREEN_COLOR_FACTOR});
   SetTransitionDuration(base::TimeDelta::FromMilliseconds(2500));

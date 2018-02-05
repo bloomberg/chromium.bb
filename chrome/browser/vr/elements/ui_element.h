@@ -463,7 +463,7 @@ class UiElement : public cc::AnimationTarget {
   int id_ = -1;
 
   // If false, the reticle will not hit the element, even if visible.
-  bool hit_testable_ = true;
+  bool hit_testable_ = false;
 
   // If false, clicking on the element doesn't give it focus.
   bool focusable_ = true;

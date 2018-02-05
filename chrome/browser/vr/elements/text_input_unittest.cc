@@ -87,7 +87,6 @@ class TextInputSceneTest : public UiTest {
         base::Unretained(text_input_model));
     text_input->set_event_handlers(event_handlers);
     text_input->SetDrawPhase(kPhaseNone);
-    text_input->set_hit_testable(false);
     text_input->SetTextInputDelegate(text_input_delegate);
     text_input->AddBinding(std::make_unique<Binding<TextInputInfo>>(
         VR_BIND_LAMBDA([](TextInputInfo* info) { return *info; },

@@ -17,10 +17,7 @@ constexpr float kSnapThresholdDegrees = 10.0f;
 
 }  // namespace
 
-Repositioner::Repositioner() {
-  set_hit_testable(false);
-}
-
+Repositioner::Repositioner() = default;
 Repositioner::~Repositioner() = default;
 
 gfx::Transform Repositioner::LocalTransform() const {

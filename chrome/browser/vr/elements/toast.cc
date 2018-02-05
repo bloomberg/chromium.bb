@@ -21,12 +21,10 @@ Toast::Toast() {
   auto background = std::make_unique<Rect>();
   background->SetType(kTypeToastBackground);
   background->set_contributes_to_parent_bounds(false);
-  background->set_hit_testable(false);
   background_ = background.get();
 
   auto container = std::make_unique<LinearLayout>(LinearLayout::kRight);
   container->SetType(kTypeToastContainer);
-  container->set_hit_testable(false);
   container_ = container.get();
 
   AddChild(std::move(background));
@@ -44,7 +42,6 @@ void Toast::AddIcon(const gfx::VectorIcon& icon,
   DCHECK(!icon_);
   auto vector_icon = std::make_unique<VectorIcon>(width_pixels);
   vector_icon->SetType(kTypeToastIcon);
-  vector_icon->set_hit_testable(false);
   vector_icon->SetDrawPhase(draw_phase());
   vector_icon->SetIcon(icon);
   vector_icon->SetSize(icon_size, icon_size);
@@ -60,7 +57,6 @@ void Toast::AddText(const base::string16& text,
   DCHECK(!text_);
   auto text_element = std::make_unique<Text>(font_height_dmm);
   text_element->SetType(kTypeToastText);
-  text_element->set_hit_testable(false);
   text_element->SetDrawPhase(draw_phase());
   text_element->SetText(text);
   text_element->SetLayoutMode(text_layout_mode);

@@ -253,7 +253,6 @@ void AddSquare(size_t num_rings,
 
 Controller::Controller() {
   SetName(kController);
-  set_hit_testable(false);
   SetVisible(true);
 }
 
