@@ -216,7 +216,7 @@ AudioWorkletNode::AudioWorkletNode(
     if (options.hasParameterData()) {
       for (const auto& key_value_pair : options.parameterData()) {
         if (key_value_pair.first == param_name)
-          audio_param->setInitialValue(key_value_pair.second);
+          audio_param->setValue(key_value_pair.second);
       }
     }
   }

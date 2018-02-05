@@ -98,7 +98,7 @@ DelayNode* DelayNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->delayTime()->setInitialValue(options.delayTime());
+  node->delayTime()->setValue(options.delayTime());
 
   return node;
 }
