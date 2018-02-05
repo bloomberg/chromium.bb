@@ -441,3 +441,25 @@ bool CanLaunchViaEvent(const extensions::Extension* extension) {
       extensions::FeatureProvider::GetAPIFeature("app.runtime");
   return feature && feature->IsAvailableToExtension(extension).is_available();
 }
+
+void ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
+                                       const extensions::Extension* extension) {
+  Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  // Incognito tabs reparent correctly, but remain incognito without any
+  // indication to the user, so disallow it.
+  DCHECK(!profile->IsOffTheRecord());
+
+  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
+      web_app::GenerateApplicationNameFromExtensionId(extension->id()),
+      true /* trusted_source */, gfx::Rect(), profile,
+      true /* user_gesture */));
+  Browser* target_browser = new Browser(browser_params);
+
+  TabStripModel* source_tabstrip = source_browser->tab_strip_model();
+  target_browser->tab_strip_model()->AppendWebContents(
+      source_tabstrip->DetachWebContentsAt(
+          source_tabstrip->GetIndexOfWebContents(contents)),
+      true);
+  target_browser->window()->Show();
+}

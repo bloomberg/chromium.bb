@@ -36,4 +36,8 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
 // chrome.app.runtime.onLaunched event.
 bool CanLaunchViaEvent(const extensions::Extension* extension);
 
+// Reparents |contents| into a new app browser for |extension|.
+void ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
+                                       const extensions::Extension* extension);
+
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
