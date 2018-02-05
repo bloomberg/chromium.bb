@@ -28,11 +28,6 @@
 
 using content::BrowserThread;
 
-// Known browsers which we collect details for.
-enum BrowserProcess {
-  CHROME_BROWSER = 0,
-};
-
 MemoryDetails::MemoryDetails() {
   base::FilePath browser_process_path;
   PathService::Get(base::FILE_EXE, &browser_process_path);
