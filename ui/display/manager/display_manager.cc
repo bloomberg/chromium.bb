@@ -1983,8 +1983,8 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
 #if defined(OS_CHROMEOS)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(::switches::kUseMonitorColorSpace))
+  // TODO(mcasas): remove this check, http://crbug.com/771345.
+  if (base::FeatureList::IsEnabled(features::kUseMonitorColorSpace))
     new_display.set_color_space(display_info.color_space());
 #else
   new_display.set_color_space(display_info.color_space());
