@@ -82,8 +82,9 @@ static bool ShouldTypeOnlyIncludeDirectChildren(CollectionType type) {
   return false;
 }
 
-static NodeListRootType RootTypeFromCollectionType(const ContainerNode& owner,
-                                                   CollectionType type) {
+static NodeListSearchRoot SearchRootFromCollectionType(
+    const ContainerNode& owner,
+    CollectionType type) {
   switch (type) {
     case kDocImages:
     case kDocApplets:
@@ -109,12 +110,12 @@ static NodeListRootType RootTypeFromCollectionType(const ContainerNode& owner,
     case kSelectedOptions:
     case kDataListOptions:
     case kMapAreas:
-      return NodeListRootType::kNode;
+      return NodeListSearchRoot::kOwnerNode;
     case kFormControls:
       if (IsHTMLFieldSetElement(owner))
-        return NodeListRootType::kNode;
+        return NodeListSearchRoot::kOwnerNode;
       DCHECK(IsHTMLFormElement(owner));
-      return NodeListRootType::kTreeScope;
+      return NodeListSearchRoot::kTreeScope;
     case kNameNodeListType:
     case kRadioNodeListType:
     case kRadioImgNodeListType:
@@ -122,7 +123,7 @@ static NodeListRootType RootTypeFromCollectionType(const ContainerNode& owner,
       break;
   }
   NOTREACHED();
-  return NodeListRootType::kNode;
+  return NodeListSearchRoot::kOwnerNode;
 }
 
 static NodeListInvalidationType InvalidationTypeExcludingIdAndNameAttributes(
@@ -177,7 +178,7 @@ HTMLCollection::HTMLCollection(ContainerNode& owner_node,
                                CollectionType type,
                                ItemAfterOverrideType item_after_override_type)
     : LiveNodeListBase(owner_node,
-                       RootTypeFromCollectionType(owner_node, type),
+                       SearchRootFromCollectionType(owner_node, type),
                        InvalidationTypeExcludingIdAndNameAttributes(type),
                        type),
       overrides_item_after_(item_after_override_type == kOverridesItemAfter),
