@@ -271,7 +271,7 @@ TEST_F(RasterFormatTest, BeginRasterCHROMIUM) {
   EXPECT_EQ(static_cast<GLuint>(13), cmd.msaa_sample_count);
   EXPECT_EQ(static_cast<GLboolean>(14), cmd.can_use_lcd_text);
   EXPECT_EQ(static_cast<GLboolean>(15), cmd.use_distance_field_text);
-  EXPECT_EQ(static_cast<GLint>(16), cmd.pixel_config);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.color_type);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

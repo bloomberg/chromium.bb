@@ -5327,7 +5327,7 @@ TEST_F(GLES2FormatTest, BeginRasterCHROMIUM) {
   EXPECT_EQ(static_cast<GLuint>(13), cmd.msaa_sample_count);
   EXPECT_EQ(static_cast<GLboolean>(14), cmd.can_use_lcd_text);
   EXPECT_EQ(static_cast<GLboolean>(15), cmd.use_distance_field_text);
-  EXPECT_EQ(static_cast<GLint>(16), cmd.pixel_config);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.color_type);
   EXPECT_EQ(static_cast<GLuint>(17), cmd.color_space_transfer_cache_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }

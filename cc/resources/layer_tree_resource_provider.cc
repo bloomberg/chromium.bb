@@ -827,9 +827,8 @@ LayerTreeResourceProvider::ScopedWriteLockGpu::~ScopedWriteLockGpu() {
   resource_provider_->UnlockForWrite(resource);
 }
 
-GrPixelConfig LayerTreeResourceProvider::ScopedWriteLockGpu::PixelConfig()
-    const {
-  return ToGrPixelConfig(format_);
+SkColorType LayerTreeResourceProvider::ScopedWriteLockGpu::ColorType() const {
+  return ResourceFormatToClosestSkColorType(format_);
 }
 
 void LayerTreeResourceProvider::ScopedWriteLockGpu::CreateMailbox() {
@@ -1005,8 +1004,9 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
   GrGLTextureInfo texture_info;
   texture_info.fID = texture_id;
   texture_info.fTarget = texture_target;
+  texture_info.fFormat = TextureStorageFormat(format);
   GrBackendTexture backend_texture(size.width(), size.height(),
-                                   ToGrPixelConfig(format), texture_info);
+                                   GrMipMapped::kNo, texture_info);
   uint32_t flags =
       use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
   // Use unknown pixel geometry to disable LCD text.
@@ -1018,7 +1018,7 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
   }
   surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
-      nullptr, &surface_props);
+      ResourceFormatToClosestSkColorType(format), nullptr, &surface_props);
 }
 
 LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {

@@ -387,7 +387,7 @@ void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
     GLboolean use_distance_field_text,
-    GLint pixel_config,
+    GLint color_type,
     const cc::RasterColorSpace& raster_color_space) {
   TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(support_);
   if (!transfer_cache_serialize_helper.LockEntry(
@@ -402,7 +402,7 @@ void RasterImplementationGLES::BeginRasterCHROMIUM(
 
   gl_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
                            can_use_lcd_text, use_distance_field_text,
-                           pixel_config, raster_color_space.color_space_id);
+                           color_type, raster_color_space.color_space_id);
   transfer_cache_serialize_helper.FlushEntries();
 };
 

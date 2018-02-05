@@ -110,7 +110,7 @@ class OopPixelTest : public testing::Test {
     int msaa_sample_count = 0;
     bool use_lcd_text = false;
     bool use_distance_field_text = false;
-    GrPixelConfig pixel_config = kRGBA_8888_GrPixelConfig;
+    SkColorType color_type = kRGBA_8888_SkColorType;
     gfx::Rect bitmap_rect;
     gfx::Rect playback_rect;
     gfx::Vector2dF post_translate = {0.f, 0.f};
@@ -127,7 +127,7 @@ class OopPixelTest : public testing::Test {
   }
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
-                  RasterOptions& options) {
+                  const RasterOptions& options) {
     gpu::gles2::GLES2Interface* gl = context_->GetImplementation();
     int width = options.bitmap_rect.width();
     int height = options.bitmap_rect.height();
@@ -149,7 +149,7 @@ class OopPixelTest : public testing::Test {
     raster_implementation_->BeginRasterCHROMIUM(
         raster_texture_id, options.background_color, options.msaa_sample_count,
         options.use_lcd_text, options.use_distance_field_text,
-        options.pixel_config,
+        options.color_type,
         RasterColorSpace(options.color_space, ++color_space_id_));
     raster_implementation_->RasterCHROMIUM(
         display_item_list.get(), &image_provider_,

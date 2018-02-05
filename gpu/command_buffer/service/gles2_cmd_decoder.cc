@@ -1995,7 +1995,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
                              GLboolean use_distance_field_text,
-                             GLint pixel_config,
+                             GLint color_type,
                              GLuint color_space_transfer_cache_id);
   void DoRasterCHROMIUM(GLsizeiptr size, const void* list);
   void DoEndRasterCHROMIUM();
@@ -20344,7 +20344,7 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
     GLboolean use_distance_field_text,
-    GLint pixel_config,
+    GLint color_type,
     GLuint color_space_transfer_cache_id) {
   if (!gr_context_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
@@ -20395,32 +20395,39 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
     return;
   }
 
-  switch (pixel_config) {
-    case kRGBA_4444_GrPixelConfig:
-    case kRGBA_8888_GrPixelConfig:
-    case kSRGBA_8888_GrPixelConfig:
-      if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
+  // texture_info.fFormat must always be a sized internal format.
+  switch (color_type) {
+    case kARGB_4444_SkColorType:
+      texture_info.fFormat = GL_RGBA4;
+      if (internal_format != GL_RGBA4 && internal_format != GL_RGBA) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                           "pixel config mismatch");
+                           "color type mismatch");
         return;
       }
       break;
-    case kBGRA_8888_GrPixelConfig:
-    case kSBGRA_8888_GrPixelConfig:
+    case kRGBA_8888_SkColorType:
+      texture_info.fFormat = GL_RGBA8_OES;
+      if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                           "color type mismatch");
+        return;
+      }
+      break;
+    case kBGRA_8888_SkColorType:
+      texture_info.fFormat = GL_BGRA8_EXT;
       if (internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                           "pixel config mismatch");
+                           "color type mismatch");
         return;
       }
       break;
     default:
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                         "unsupported pixel config");
+                         "unsupported color type");
       return;
   }
 
-  GrBackendTexture gr_texture(
-      width, height, static_cast<GrPixelConfig>(pixel_config), texture_info);
+  GrBackendTexture gr_texture(width, height, GrMipMapped::kNo, texture_info);
 
   uint32_t flags =
       use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
@@ -20432,12 +20439,14 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
 
+  SkColorType sk_color_type = static_cast<SkColorType>(color_type);
   // Resolve requested msaa samples with GrGpu capabilities.
-  int final_msaa_count = gr_context_->caps()->getSampleCount(
-      msaa_sample_count, static_cast<GrPixelConfig>(pixel_config));
+  int final_msaa_count =
+      std::min(static_cast<int>(msaa_sample_count),
+               gr_context_->maxSurfaceSampleCountForColorType(sk_color_type));
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context_.get(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
-      nullptr, &surface_props);
+      sk_color_type, nullptr, &surface_props);
 
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
