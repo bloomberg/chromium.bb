@@ -636,8 +636,8 @@ void WebSettingsImpl::SetEmbeddedMediaExperienceEnabled(bool enabled) {
   settings_->SetEmbeddedMediaExperienceEnabled(enabled);
 }
 
-void WebSettingsImpl::SetPagePopupsSuppressed(bool suppressed) {
-  settings_->SetPagePopupsSuppressed(suppressed);
+void WebSettingsImpl::SetImmersiveModeEnabled(bool enabled) {
+  settings_->SetImmersiveModeEnabled(enabled);
 }
 
 void WebSettingsImpl::SetViewportEnabled(bool enabled) {
