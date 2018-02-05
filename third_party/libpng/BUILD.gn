@@ -62,7 +62,7 @@ source_set("libpng_sources") {
     "pngwutil.c",
   ]
 
-  defines = []
+  defines = [ "PNG_SET_OPTION_SUPPORTED" ]
   cflags = []
 
   if (current_cpu == "x86" || current_cpu == "x64") {
