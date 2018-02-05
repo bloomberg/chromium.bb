@@ -393,6 +393,10 @@ class BASE_EXPORT FieldTrialList {
  public:
   typedef SharedPersistentMemoryAllocator FieldTrialAllocator;
 
+  // Type for function pointer passed to |AllParamsToString| used to escape
+  // special characters from |input|.
+  typedef std::string (*EscapeDataFunc)(const std::string& input);
+
   // Year that is guaranteed to not be expired when instantiating a field trial
   // via |FactoryGetFieldTrial()|.  Set to two years from the build date.
   static int kNoExpirationYear;
@@ -509,6 +513,16 @@ class BASE_EXPORT FieldTrialList {
   // activated trials have their name prefixed with "*". This string is parsed
   // by |CreateTrialsFromString()|.
   static void AllStatesToString(std::string* output, bool include_expired);
+
+  // Creates a persistent representation of all FieldTrial params for
+  // resurrection in another process. The returned string contains the trial
+  // name and group name pairs of all registered FieldTrials including disabled
+  // based on |include_expired| separated by '.'. The pair is followed by ':'
+  // separator and list of param name and values separated by '/'. It also takes
+  // |encode_data_func| function pointer for encodeing special charactors.
+  // This string is parsed by |AssociateParamsFromString()|.
+  static std::string AllParamsToString(bool include_expired,
+                                       EscapeDataFunc encode_data_func);
 
   // Fills in the supplied vector |active_groups| (which must be empty when
   // called) with a snapshot of all registered FieldTrials for which the group
@@ -722,6 +736,9 @@ class BASE_EXPORT FieldTrialList {
   // This method also AddRef's the indicated trial.
   // This should always be called after creating a new FieldTrial instance.
   static void Register(FieldTrial* trial);
+
+  // Returns all the registered trials.
+  static RegistrationMap GetRegisteredTrials();
 
   static FieldTrialList* global_;  // The singleton of this class.
 
