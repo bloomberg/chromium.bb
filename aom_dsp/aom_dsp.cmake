@@ -49,6 +49,7 @@ set(AOM_DSP_COMMON_INTRIN_SSE2
     "${AOM_ROOT}/aom_dsp/x86/loopfilter_sse2.c"
     "${AOM_ROOT}/aom_dsp/x86/lpf_common_sse2.h"
     "${AOM_ROOT}/aom_dsp/x86/mem_sse2.h"
+    "${AOM_ROOT}/aom_dsp/x86/transpose_sse2.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h")
 
 set(AOM_DSP_COMMON_ASM_SSSE3
