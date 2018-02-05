@@ -2065,10 +2065,12 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
 
   *supports_disable_msaa = caps.multisample_compatibility;
   if (!caps.msaa_is_slow && !caps.avoid_stencil_buffers) {
-    // Skia may blacklist MSAA independently of Chrome. Query skia for the
-    // requested sample count. This will return 0 if MSAA is unsupported.
-    *max_msaa_samples = gr_context->caps()->getSampleCount(
-        caps.max_samples, ToGrPixelConfig(settings_.preferred_tile_format));
+    // Skia may blacklist MSAA independently of Chrome. Query Skia for its max
+    // supported sample count.
+    SkColorType color_type =
+        ResourceFormatToClosestSkColorType(settings_.preferred_tile_format);
+    *max_msaa_samples =
+        gr_context->maxSurfaceSampleCountForColorType(color_type);
   }
 }
 

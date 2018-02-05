@@ -165,7 +165,7 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
       return color_space_;
     }
 
-    GrPixelConfig PixelConfig() const;
+    SkColorType ColorType() const;
 
     void set_allocated() { allocated_ = true; }
 

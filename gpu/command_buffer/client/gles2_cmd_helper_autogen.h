@@ -3259,14 +3259,13 @@ void BeginRasterCHROMIUM(GLuint texture_id,
                          GLuint msaa_sample_count,
                          GLboolean can_use_lcd_text,
                          GLboolean use_distance_field_text,
-                         GLint pixel_config,
+                         GLint color_type,
                          GLuint color_space_transfer_cache_id) {
   gles2::cmds::BeginRasterCHROMIUM* c =
       GetCmdSpace<gles2::cmds::BeginRasterCHROMIUM>();
   if (c) {
     c->Init(texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
-            use_distance_field_text, pixel_config,
-            color_space_transfer_cache_id);
+            use_distance_field_text, color_type, color_space_transfer_cache_id);
   }
 }
 

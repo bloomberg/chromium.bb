@@ -247,7 +247,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
                              GLboolean use_distance_field_text,
-                             GLint pixel_config) {
+                             GLint color_type) {
     NOTIMPLEMENTED();
   }
   void DoRasterCHROMIUM(GLsizeiptr size, const void* list) { NOTIMPLEMENTED(); }

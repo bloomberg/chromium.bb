@@ -626,13 +626,15 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     GrGLTextureInfo texture_info;
     texture_info.fID = resource->gl_id;
     texture_info.fTarget = resource->target;
-    GrBackendTexture backend_texture(
-        resource->size.width(), resource->size.height(),
-        ToGrPixelConfig(resource->format), texture_info);
+    texture_info.fFormat = TextureStorageFormat(resource->format);
+    GrBackendTexture backend_texture(resource->size.width(),
+                                     resource->size.height(), GrMipMapped::kNo,
+                                     texture_info);
     sk_image_ = SkImage::MakeFromTexture(
         resource_provider->compositor_context_provider_->GrContext(),
-        backend_texture, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-        nullptr);
+        backend_texture, kTopLeft_GrSurfaceOrigin,
+        ResourceFormatToClosestSkColorType(resource->format),
+        kPremul_SkAlphaType, nullptr);
   } else if (resource->pixels) {
     SkBitmap sk_bitmap;
     resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
