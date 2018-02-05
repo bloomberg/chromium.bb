@@ -188,6 +188,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       jlong j_offline_id,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
+  jboolean IsShowingTrustedOfflinePage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
  private:
   void GetPageByOfflineIdDone(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,

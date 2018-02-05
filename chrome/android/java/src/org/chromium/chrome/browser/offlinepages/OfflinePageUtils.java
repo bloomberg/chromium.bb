@@ -89,11 +89,19 @@ public class OfflinePageUtils {
         boolean isConnected();
 
         /**
-         * Checks if an offline page is shown for the tab.
+         * Checks if an offline page is shown for the tab. This page could be either trusted or
+         * untrusted.
          * @param tab The tab to be reloaded.
          * @return True if the offline page is opened.
          */
         boolean isOfflinePage(Tab tab);
+
+        /**
+         * Returns whether the tab is showing trusted offline page.
+         * @param tab The current tab.
+         * @return True if a trusted offline page is shown in the tab.
+         */
+        boolean isShowingTrustedOfflinePage(Tab tab);
 
         /**
          * Returns whether the tab is showing offline preview.
@@ -158,6 +166,18 @@ public class OfflinePageUtils {
                             .setAction(context.getString(R.string.reload), tabId);
             snackbar.setDuration(sSnackbarDurationMs);
             snackbarManager.showSnackbar(snackbar);
+        }
+
+        @Override
+        public boolean isShowingTrustedOfflinePage(Tab tab) {
+            if (tab == null) return false;
+
+            WebContents webContents = tab.getWebContents();
+            if (webContents == null) return false;
+
+            OfflinePageBridge offlinePageBridge = getOfflinePageBridge(tab.getProfile());
+            if (offlinePageBridge == null) return false;
+            return offlinePageBridge.isShowingTrustedOfflinePage(tab.getWebContents());
         }
     }
 
@@ -433,6 +453,15 @@ public class OfflinePageUtils {
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
         if (offlinePageBridge == null) return null;
         return offlinePageBridge.getOfflinePage(webContents);
+    }
+
+    /**
+     * Returns whether the tab is showing a trusted offline page.
+     * @param tab The current tab.
+     * @return True if the tab is showing a trusted offline page.
+     */
+    public static boolean isShowingTrustedOfflinePage(Tab tab) {
+        return getInstance().isShowingTrustedOfflinePage(tab);
     }
 
     /**
