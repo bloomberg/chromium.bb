@@ -68,8 +68,7 @@ std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
     return std::unique_ptr<base::Value>();
   }
 
-  const Schema& schema = g_browser_process
-                             ->browser_policy_connector()
+  const Schema& schema = g_browser_process->browser_policy_connector()
                              ->GetChromeSchema()
                              .GetKnownProperty(policy_name);
 
@@ -99,11 +98,8 @@ std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
 
 std::unique_ptr<base::Value> DecodeConnectionType(int value) {
   static const char* const kConnectionTypes[] = {
-    shill::kTypeEthernet,
-    shill::kTypeWifi,
-    shill::kTypeWimax,
-    shill::kTypeBluetooth,
-    shill::kTypeCellular,
+      shill::kTypeEthernet,  shill::kTypeWifi,     shill::kTypeWimax,
+      shill::kTypeBluetooth, shill::kTypeCellular,
   };
 
   if (value < 0 || value >= static_cast<int>(arraysize(kConnectionTypes)))
@@ -448,6 +444,16 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::make_unique<base::Value>(hostname), nullptr);
   }
+
+  if (policy.has_device_kerberos_encryption_types()) {
+    const em::DeviceKerberosEncryptionTypesProto& container(
+        policy.device_kerberos_encryption_types());
+    if (container.has_types()) {
+      policies->Set(key::kDeviceKerberosEncryptionTypes, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(container.types()), nullptr);
+    }
+  }
 }
 
 void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -558,8 +564,8 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
       // have to pass the channel in here, only ping the update engine to tell
       // it to fetch the channel from the policy.
-      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
-          SetChannel(channel, false);
+      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->SetChannel(
+          channel, false);
     }
     if (container.has_release_channel_delegated()) {
       policies->Set(
@@ -654,8 +660,8 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
 void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                                  PolicyMap* policies) {
   if (policy.has_accessibility_settings()) {
-    const em::AccessibilitySettingsProto&
-        container(policy.accessibility_settings());
+    const em::AccessibilitySettingsProto& container(
+        policy.accessibility_settings());
 
     if (container.has_login_screen_default_large_cursor_enabled()) {
       policies->Set(key::kDeviceLoginScreenDefaultLargeCursorEnabled,
@@ -993,7 +999,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         std::make_unique<base::Value>(container.unaffiliated_arc_allowed()),
         nullptr);
   }
+
+  if (policy.has_device_user_policy_loopback_processing_mode()) {
+    const em::DeviceUserPolicyLoopbackProcessingModeProto& container(
+        policy.device_user_policy_loopback_processing_mode());
+    if (container.has_mode()) {
+      policies->Set(key::kDeviceUserPolicyLoopbackProcessingMode,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, DecodeIntegerValue(container.mode()),
+                    nullptr);
+    }
+  }
 }
+
 }  // namespace
 
 void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,

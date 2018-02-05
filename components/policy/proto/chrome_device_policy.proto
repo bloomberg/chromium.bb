@@ -1045,5 +1045,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceKerberosEncryptionTypesProto device_kerberos_encryption_types =
       65;
   optional DeviceUserPolicyLoopbackProcessingModeProto
-      device_user_policy_loopback_processing_mode_proto = 66;
+      device_user_policy_loopback_processing_mode = 66;
 }
