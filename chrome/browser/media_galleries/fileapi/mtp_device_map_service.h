@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
+namespace storage {
+class FileSystemURL;
+}
+
 class MTPDeviceAsyncDelegate;
 
 // This class provides media transfer protocol (MTP) device delegate to
@@ -22,12 +26,12 @@ class MTPDeviceMapService {
  public:
   static MTPDeviceMapService* GetInstance();
 
-  // Gets the media device delegate associated with |filesystem_id|.
-  // Return NULL if the |filesystem_id| is no longer valid (e.g. because the
+  // Gets the media device delegate associated with |url|'s filesystem
+  // id.  Return NULL if |url| is no longer valid (e.g. because the
   // corresponding device is detached, etc).
   // Called on the IO thread.
   MTPDeviceAsyncDelegate* GetMTPDeviceAsyncDelegate(
-      const std::string& filesystem_id);
+      const storage::FileSystemURL& url);
 
   // Register that an MTP filesystem is in use for the given |device_location|.
   void RegisterMTPFileSystem(const base::FilePath::StringType& device_location,

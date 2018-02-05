@@ -37,12 +37,6 @@ namespace {
 
 const char kDeviceMediaAsyncFileUtilTempDir[] = "DeviceMediaFileSystem";
 
-MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(const FileSystemURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(
-      url.filesystem_id());
-}
-
 // Called when GetFileInfo method call failed to get the details of file
 // specified by the requested url. |callback| is invoked to notify the
 // caller about the file |error|.
@@ -218,7 +212,8 @@ void OnSnapshotFileCreatedRunTask(
     OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_FAILED);
     return;
   }
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -297,7 +292,8 @@ std::unique_ptr<DeviceMediaAsyncFileUtil> DeviceMediaAsyncFileUtil::Create(
 bool DeviceMediaAsyncFileUtil::SupportsStreaming(
     const storage::FileSystemURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate)
     return false;
   return delegate->IsStreaming();
@@ -339,7 +335,8 @@ void DeviceMediaAsyncFileUtil::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnCreateDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -361,7 +358,8 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
     int /* flags */,
     const GetFileInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnGetFileInfoError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -379,7 +377,8 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnReadDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -423,7 +422,8 @@ void DeviceMediaAsyncFileUtil::CopyFileLocal(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(dest_url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(dest_url);
   if (!delegate) {
     OnCopyFileLocalError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -450,7 +450,8 @@ void DeviceMediaAsyncFileUtil::MoveFileLocal(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(dest_url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(dest_url);
   if (!delegate) {
     OnMoveFileLocalError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -475,7 +476,8 @@ void DeviceMediaAsyncFileUtil::CopyInForeignFile(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(dest_url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(dest_url);
   if (!delegate) {
     OnCopyInForeignFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -498,7 +500,8 @@ void DeviceMediaAsyncFileUtil::DeleteFile(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* const delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnDeleteFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -520,7 +523,8 @@ void DeviceMediaAsyncFileUtil::DeleteDirectory(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* const delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnDeleteDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -549,7 +553,8 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
     const FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -569,7 +574,8 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
     int64_t offset,
     const base::Time& expected_modification_time,
     storage::FileSystemContext* context) {
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate)
     return std::unique_ptr<storage::FileStreamReader>();
 
@@ -586,7 +592,8 @@ void DeviceMediaAsyncFileUtil::AddWatcher(
     const storage::WatcherManager::StatusCallback& callback,
     const storage::WatcherManager::NotificationCallback&
         notification_callback) {
-  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* const delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     callback.Run(base::File::FILE_ERROR_FAILED);
     return;
@@ -600,7 +607,8 @@ void DeviceMediaAsyncFileUtil::RemoveWatcher(
     const storage::FileSystemURL& url,
     const bool recursive,
     const storage::WatcherManager::StatusCallback& callback) {
-  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* const delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     callback.Run(base::File::FILE_ERROR_FAILED);
     return;
