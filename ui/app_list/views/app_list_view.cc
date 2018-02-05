@@ -991,7 +991,7 @@ void AppListView::Layout() {
 
 void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(state_announcement_);
-  node_data->role = ax::mojom::Role::kDesktop;
+  node_data->role = ax::mojom::Role::kAlert;
 }
 
 void AppListView::OnKeyEvent(ui::KeyEvent* event) {
