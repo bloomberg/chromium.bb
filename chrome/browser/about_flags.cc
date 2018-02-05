@@ -3692,7 +3692,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          security_state::features::kMarkHttpAsFeature,
          kMarkHttpAsFeatureVariations,
-         "MarkHttpAs")},
+         "HTTPBadPhase3")},
 
 #if !defined(OS_ANDROID)
     {"enable-web-authentication-api",
