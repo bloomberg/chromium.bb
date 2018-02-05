@@ -2446,7 +2446,6 @@ split_static_library("ui") {
       # MacViews sources that we still want to keep behind a compile-time flag.
       # TODO(jackhou): Move items to general views sources out of here.
       sources += [
-        "cocoa/browser_window_views_mac.mm",
         "views/apps/chrome_app_window_client_views_mac.mm",
         "views/certificate_viewer_mac_views.mm",
         "views/dropdown_bar_host_mac.mm",
