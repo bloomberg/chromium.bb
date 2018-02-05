@@ -26,7 +26,9 @@ namespace blink {
 namespace scheduler {
 namespace internal {
 
-class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
+class PLATFORM_EXPORT ThreadControllerImpl
+    : public ThreadController,
+      public base::RunLoop::NestingObserver {
  public:
   ~ThreadControllerImpl() override;
 
@@ -35,9 +37,12 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
       base::TickClock* time_source);
 
   // ThreadController:
+  void SetWorkBatchSize(int work_batch_size) override;
+  void DidQueueTask(const base::PendingTask& pending_task) override;
   void ScheduleWork() override;
-  void ScheduleDelayedWork(base::TimeDelta delay) override;
-  void CancelDelayedWork() override;
+  void ScheduleDelayedWork(base::TimeTicks now,
+                           base::TimeTicks run_timy) override;
+  void CancelDelayedWork(base::TimeTicks run_time) override;
   void SetSequence(Sequence* sequence) override;
   bool RunsTasksInCurrentSequence() override;
   base::TickClock* GetClock() override;
@@ -46,6 +51,10 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
   void RestoreDefaultTaskRunner() override;
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
+
+  // base::RunLoop::NestingObserver:
+  void OnBeginNestedRunLoop() override;
+  void OnExitNestedRunLoop() override;
 
  protected:
   ThreadControllerImpl(base::MessageLoop* message_loop,
@@ -57,10 +66,51 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
   base::MessageLoop* message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  base::RunLoop::NestingObserver* nesting_observer_ = nullptr;
+
  private:
   void DoWork(Sequence::WorkType work_type);
 
+  struct AnySequence {
+    AnySequence() = default;
+
+    int do_work_running_count = 0;
+    int nesting_depth = 0;
+    bool immediate_do_work_posted = false;
+  };
+
+  mutable base::Lock any_sequence_lock_;
+  AnySequence any_sequence_;
+
+  struct AnySequence& any_sequence() {
+    any_sequence_lock_.AssertAcquired();
+    return any_sequence_;
+  }
+  const struct AnySequence& any_sequence() const {
+    any_sequence_lock_.AssertAcquired();
+    return any_sequence_;
+  }
+
+  struct MainSequenceOnly {
+    MainSequenceOnly() = default;
+
+    int do_work_running_count = 0;
+    int nesting_depth = 0;
+    int work_batch_size_ = 1;
+
+    base::TimeTicks next_delayed_do_work = base::TimeTicks::Max();
+  };
+
   SEQUENCE_CHECKER(sequence_checker_);
+  MainSequenceOnly main_sequence_only_;
+  MainSequenceOnly& main_sequence_only() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return main_sequence_only_;
+  }
+  const MainSequenceOnly& main_sequence_only() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return main_sequence_only_;
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> message_loop_task_runner_;
   base::TickClock* time_source_;
