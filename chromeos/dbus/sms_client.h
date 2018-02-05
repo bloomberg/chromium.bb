@@ -28,7 +28,8 @@ namespace chromeos {
 // DBusThreadManager instance.
 class CHROMEOS_EXPORT SMSClient : public DBusClient {
  public:
-  typedef base::Callback<void(const base::DictionaryValue& sms)> GetAllCallback;
+  using GetAllCallback =
+      base::OnceCallback<void(const base::DictionaryValue& sms)>;
 
   static const char kSMSPropertyState[];
   static const char kSMSPropertyNumber[];
@@ -44,7 +45,7 @@ class CHROMEOS_EXPORT SMSClient : public DBusClient {
   // Calls GetAll method.  |callback| is called after the method call succeeds.
   virtual void GetAll(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
-                      const GetAllCallback& callback) = 0;
+                      GetAllCallback callback) = 0;
 
  protected:
   // Create() should be used instead.

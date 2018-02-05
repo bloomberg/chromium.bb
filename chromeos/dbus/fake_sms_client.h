@@ -7,9 +7,7 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/sms_client.h"
 
 namespace chromeos {
@@ -19,16 +17,13 @@ class FakeSMSClient : public SMSClient {
   FakeSMSClient();
   ~FakeSMSClient() override;
 
+  // SMSClient overrides.
   void Init(dbus::Bus* bus) override;
-
   void GetAll(const std::string& service_name,
               const dbus::ObjectPath& object_path,
-              const GetAllCallback& callback) override;
+              GetAllCallback callback) override;
 
  private:
-  void OnGetAll(base::DictionaryValue* sms, const GetAllCallback& callback);
-
-  base::WeakPtrFactory<FakeSMSClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSMSClient);
 };
