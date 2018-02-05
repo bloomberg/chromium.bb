@@ -283,9 +283,10 @@ class CAPTURE_EXPORT VideoCaptureDevice
                                SetPhotoOptionsCallback callback);
 
   // Asynchronously takes a photo, possibly reconfiguring the capture objects
-  // and/or interrupting the capture flow. Runs |callback| on the thread
-  // where TakePhoto() is called, if the photo was successfully taken. On
-  // failure, drops callback without invoking it.
+  // and/or interrupting the capture flow. Runs |callback|, if the photo was
+  // successfully taken. On failure, drops callback without invoking it.
+  // Note that |callback| may be runned on a thread different than the thread
+  // where TakePhoto() was called.
   using TakePhotoCallback = base::OnceCallback<void(mojom::BlobPtr blob)>;
   virtual void TakePhoto(TakePhotoCallback callback);
 

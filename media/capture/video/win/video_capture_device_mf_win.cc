@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
+#include "media/capture/mojo/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/win/capability_list_win.h"
 #include "media/capture/video/win/sink_filter_win.h"
@@ -774,7 +775,7 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
     return;
   }
 
-  auto photo_capabilities = mojom::PhotoState::New();
+  auto photo_capabilities = mojo::CreateEmptyPhotoState();
   gfx::Size current_size;
   GetFrameSizeFromMediaType(current_media_type.Get(), &current_size);
 
@@ -790,17 +791,6 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
   photo_capabilities->width = mojom::Range::New(
       max_size.width(), min_size.width(), current_size.width(), 1);
 
-  photo_capabilities->exposure_compensation = mojom::Range::New();
-  photo_capabilities->color_temperature = mojom::Range::New();
-  photo_capabilities->iso = mojom::Range::New();
-  photo_capabilities->brightness = mojom::Range::New();
-  photo_capabilities->contrast = mojom::Range::New();
-  photo_capabilities->saturation = mojom::Range::New();
-  photo_capabilities->sharpness = mojom::Range::New();
-  photo_capabilities->zoom = mojom::Range::New();
-  photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
-
-  photo_capabilities->torch = false;
   std::move(callback).Run(std::move(photo_capabilities));
 }
 

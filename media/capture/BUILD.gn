@@ -10,6 +10,7 @@ group("capture") {
   public_deps = [
     ":capture_lib",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:image_capture_types",
     "//media/capture/mojo:video_capture",
     "//services/service_manager/public/cpp",
   ]
@@ -60,6 +61,8 @@ source_set("capture_device_specific") {
     "content/thread_safe_capture_oracle.h",
     "content/video_capture_oracle.cc",
     "content/video_capture_oracle.h",
+    "video/blob_utils.cc",
+    "video/blob_utils.h",
     "video/fake_video_capture_device.cc",
     "video/fake_video_capture_device.h",
     "video/fake_video_capture_device_factory.cc",
@@ -74,6 +77,7 @@ source_set("capture_device_specific") {
     "video/video_capture_device_factory.cc",
     "video/video_capture_device_factory.h",
   ]
+
   public_deps = [
     ":capture_base",
   ]
@@ -83,7 +87,9 @@ source_set("capture_device_specific") {
     "//gpu/command_buffer/client",
     "//media",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:image_capture_types",
     "//media/mojo/interfaces:interfaces",
+    "//third_party/libyuv",
     "//ui/gfx",
   ]
 }
@@ -163,6 +169,7 @@ component("capture_lib") {
     "//base:i18n",
     "//media",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:image_capture_types",
     "//media/capture/mojo:video_capture",
     "//media/mojo/interfaces:interfaces",
     "//services/service_manager/public/cpp",
@@ -212,13 +219,6 @@ component("capture_lib") {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 
-  if (is_linux || is_chromeos || is_win) {
-    sources += [
-      "video/blob_utils.cc",
-      "video/blob_utils.h",
-    ]
-  }
-
   if (is_chromeos) {
     sources += [
       "video/chromeos/camera_buffer_factory.cc",
@@ -253,6 +253,7 @@ source_set("test_support") {
     "//base/test:test_support",
     "//media:test_support",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:image_capture_types",
     "//testing/gmock",
     "//ui/gfx:test_support",
   ]
@@ -268,6 +269,7 @@ test("capture_unittests") {
     "content/video_capture_oracle_unittest.cc",
     "run_all_unittests.cc",
     "video/fake_video_capture_device_unittest.cc",
+    "video/file_video_capture_device_unittest.cc",
     "video/linux/camera_config_chromeos_unittest.cc",
     "video/linux/v4l2_capture_delegate_unittest.cc",
     "video/mac/video_capture_device_factory_mac_unittest.mm",
@@ -277,12 +279,17 @@ test("capture_unittests") {
     "video_capture_types_unittest.cc",
   ]
 
+  data = [
+    "//media/test/data/bear.mjpeg",
+  ]
+
   deps = [
     ":capture",
     ":test_support",
     "//base/test:test_support",
     "//media:test_support",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:image_capture_types",
     "//mojo/edk/system",
     "//testing/gmock",
     "//testing/gtest",

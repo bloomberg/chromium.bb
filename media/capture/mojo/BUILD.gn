@@ -22,3 +22,14 @@ mojom("image_capture") {
     "image_capture.mojom",
   ]
 }
+
+source_set("image_capture_types") {
+  sources = [
+    "image_capture_types.cc",
+    "image_capture_types.h",
+  ]
+
+  deps = [
+    "//media/capture/mojo:image_capture",
+  ]
+}

@@ -15,6 +15,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/capture/mojo/image_capture_types.h"
+#include "media/capture/video/blob_utils.h"
 #include "media/capture/video_capture_types.h"
 #include "media/filters/jpeg_parser.h"
 
@@ -331,6 +333,56 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
   capture_thread_.Stop();
 }
 
+void FileVideoCaptureDevice::GetPhotoState(GetPhotoStateCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto photo_capabilities = mojo::CreateEmptyPhotoState();
+
+  int height = capture_format_.frame_size.height();
+  photo_capabilities->height = mojom::Range::New(height, height, height, 0);
+  int width = capture_format_.frame_size.width();
+  photo_capabilities->width = mojom::Range::New(width, width, width, 0);
+
+  std::move(callback).Run(std::move(photo_capabilities));
+}
+
+void FileVideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                                             SetPhotoOptionsCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (settings->has_height &&
+      settings->height != capture_format_.frame_size.height()) {
+    return;
+  }
+
+  if (settings->has_width &&
+      settings->width != capture_format_.frame_size.width()) {
+    return;
+  }
+
+  if (settings->has_torch && settings->torch)
+    return;
+
+  if (settings->has_red_eye_reduction && settings->red_eye_reduction)
+    return;
+
+  if (settings->has_exposure_compensation || settings->has_color_temperature ||
+      settings->has_iso || settings->has_brightness || settings->has_contrast ||
+      settings->has_saturation || settings->has_sharpness ||
+      settings->has_zoom || settings->has_fill_light_mode) {
+    return;
+  }
+
+  std::move(callback).Run(true);
+}
+
+void FileVideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
+
+  take_photo_callbacks_.push(std::move(callback));
+}
+
 void FileVideoCaptureDevice::OnAllocateAndStart(
     const VideoCaptureParams& params,
     std::unique_ptr<VideoCaptureDevice::Client> client) {
@@ -365,6 +417,7 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   DCHECK(capture_thread_.task_runner()->BelongsToCurrentThread());
   if (!client_)
     return;
+  base::AutoLock lock(lock_);
 
   // Give the captured frame to the client.
   int frame_size = 0;
@@ -376,6 +429,19 @@ void FileVideoCaptureDevice::OnCaptureTask() {
     first_ref_time_ = current_time;
   client_->OnIncomingCapturedData(frame_ptr, frame_size, capture_format_, 0,
                                   current_time, current_time - first_ref_time_);
+
+  // Process waiting photo callbacks
+  while (!take_photo_callbacks_.empty()) {
+    auto cb = std::move(take_photo_callbacks_.front());
+    take_photo_callbacks_.pop();
+
+    mojom::BlobPtr blob = Blobify(frame_ptr, frame_size, capture_format_);
+    if (!blob)
+      continue;
+
+    std::move(cb).Run(std::move(blob));
+  }
+
   // Reschedule next CaptureTask.
   const base::TimeDelta frame_interval =
       base::TimeDelta::FromMicroseconds(1E6 / capture_format_.frame_rate);

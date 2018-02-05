@@ -15,6 +15,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/capture/mojo/image_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -22,22 +23,6 @@
 namespace content {
 
 namespace {
-
-media::mojom::PhotoStatePtr MakeEmptyCapabilities() {
-  media::mojom::PhotoStatePtr empty_capabilities =
-      media::mojom::PhotoState::New();
-  empty_capabilities->iso = media::mojom::Range::New();
-  empty_capabilities->width = media::mojom::Range::New();
-  empty_capabilities->height = media::mojom::Range::New();
-  empty_capabilities->zoom = media::mojom::Range::New();
-  empty_capabilities->exposure_compensation = media::mojom::Range::New();
-  empty_capabilities->color_temperature = media::mojom::Range::New();
-  empty_capabilities->brightness = media::mojom::Range::New();
-  empty_capabilities->contrast = media::mojom::Range::New();
-  empty_capabilities->saturation = media::mojom::Range::New();
-  empty_capabilities->sharpness = media::mojom::Range::New();
-  return empty_capabilities;
-}
 
 void GetPhotoStateOnIOThread(const std::string& source_id,
                              MediaStreamManager* media_stream_manager,
@@ -109,7 +94,7 @@ void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
   GetPhotoStateCallback scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           media::BindToCurrentLoop(std::move(callback)),
-          MakeEmptyCapabilities());
+          mojo::CreateEmptyPhotoState());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&GetPhotoStateOnIOThread, source_id,
