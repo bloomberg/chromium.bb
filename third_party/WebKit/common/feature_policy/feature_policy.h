@@ -93,6 +93,8 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
                                  bool matches_all_origins,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
+  ParsedFeaturePolicyDeclaration& operator=(
+      const ParsedFeaturePolicyDeclaration& rhs);
   ~ParsedFeaturePolicyDeclaration();
 
   FeaturePolicyFeature feature;

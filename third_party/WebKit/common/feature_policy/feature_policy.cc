@@ -40,6 +40,9 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     const ParsedFeaturePolicyDeclaration& rhs) = default;
 
+ParsedFeaturePolicyDeclaration& ParsedFeaturePolicyDeclaration::operator=(
+    const ParsedFeaturePolicyDeclaration& rhs) = default;
+
 ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() = default;
 
 bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
