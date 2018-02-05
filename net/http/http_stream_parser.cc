@@ -280,7 +280,8 @@ int HttpStreamParser::SendRequest(
     uint64_t todo = request_->upload_data_stream->size();
     while (todo) {
       int consumed = request_->upload_data_stream->Read(
-          request_headers_.get(), static_cast<int>(todo), CompletionCallback());
+          request_headers_.get(), static_cast<int>(todo),
+          CompletionOnceCallback());
       // Read() must succeed synchronously if not chunked and in memory.
       DCHECK_GT(consumed, 0);
       request_headers_->DidConsume(consumed);
@@ -521,9 +522,10 @@ int HttpStreamParser::DoSendBody() {
 
   request_body_read_buf_->Clear();
   io_state_ = STATE_SEND_REQUEST_READ_BODY_COMPLETE;
-  return request_->upload_data_stream->Read(request_body_read_buf_.get(),
-                                            request_body_read_buf_->capacity(),
-                                            io_callback_);
+  return request_->upload_data_stream->Read(
+      request_body_read_buf_.get(), request_body_read_buf_->capacity(),
+      base::BindOnce(&HttpStreamParser::OnIOComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 int HttpStreamParser::DoSendBodyComplete(int result) {

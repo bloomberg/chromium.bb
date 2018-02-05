@@ -597,7 +597,8 @@ int QuicHttpStream::DoReadRequestBody() {
   next_state_ = STATE_READ_REQUEST_BODY_COMPLETE;
   return request_body_stream_->Read(
       raw_request_body_buf_.get(), raw_request_body_buf_->size(),
-      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicHttpStream::OnIOComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 int QuicHttpStream::DoReadRequestBodyComplete(int rv) {

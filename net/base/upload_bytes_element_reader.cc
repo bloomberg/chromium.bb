@@ -22,7 +22,7 @@ UploadBytesElementReader::AsBytesReader() const {
   return this;
 }
 
-int UploadBytesElementReader::Init(const CompletionCallback& callback) {
+int UploadBytesElementReader::Init(CompletionOnceCallback callback) {
   offset_ = 0;
   return OK;
 }
@@ -41,7 +41,7 @@ bool UploadBytesElementReader::IsInMemory() const {
 
 int UploadBytesElementReader::Read(IOBuffer* buf,
                                    int buf_length,
-                                   const CompletionCallback& callback) {
+                                   CompletionOnceCallback callback) {
   DCHECK_LT(0, buf_length);
 
   const int num_bytes_to_read = static_cast<int>(

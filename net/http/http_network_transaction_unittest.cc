@@ -10511,23 +10511,23 @@ TEST_F(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
     FakeUploadElementReader() = default;
     ~FakeUploadElementReader() override = default;
 
-    const CompletionCallback& callback() const { return callback_; }
+    CompletionOnceCallback TakeCallback() { return std::move(callback_); }
 
     // UploadElementReader overrides:
-    int Init(const CompletionCallback& callback) override {
-      callback_ = callback;
+    int Init(CompletionOnceCallback callback) override {
+      callback_ = std::move(callback);
       return ERR_IO_PENDING;
     }
     uint64_t GetContentLength() const override { return 0; }
     uint64_t BytesRemaining() const override { return 0; }
     int Read(IOBuffer* buf,
              int buf_length,
-             const CompletionCallback& callback) override {
+             CompletionOnceCallback callback) override {
       return ERR_FAILED;
     }
 
    private:
-    CompletionCallback callback_;
+    CompletionOnceCallback callback_;
   };
 
   FakeUploadElementReader* fake_reader = new FakeUploadElementReader;
@@ -10553,11 +10553,12 @@ TEST_F(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   base::RunLoop().RunUntilIdle();
 
   // Transaction is pending on request body initialization.
-  ASSERT_FALSE(fake_reader->callback().is_null());
+  CompletionOnceCallback init_callback = fake_reader->TakeCallback();
+  ASSERT_FALSE(init_callback.is_null());
 
   // Return Init()'s result after the transaction gets destroyed.
   trans.reset();
-  fake_reader->callback().Run(OK);  // Should not crash.
+  std::move(init_callback).Run(OK);  // Should not crash.
 }
 
 // Tests that changes to Auth realms are treated like auth rejections.

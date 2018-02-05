@@ -12,6 +12,7 @@
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "ipc/ipc_channel.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -473,8 +474,8 @@ class ProxyUploadElementReader : public net::UploadElementReader {
   ~ProxyUploadElementReader() override {}
 
   // net::UploadElementReader overrides:
-  int Init(const net::CompletionCallback& callback) override {
-    return reader_->Init(callback);
+  int Init(net::CompletionOnceCallback callback) override {
+    return reader_->Init(std::move(callback));
   }
 
   uint64_t GetContentLength() const override {
@@ -487,8 +488,8 @@ class ProxyUploadElementReader : public net::UploadElementReader {
 
   int Read(net::IOBuffer* buf,
            int buf_length,
-           const net::CompletionCallback& callback) override {
-    return reader_->Read(buf, buf_length, callback);
+           net::CompletionOnceCallback callback) override {
+    return reader_->Read(buf, buf_length, std::move(callback));
   }
 
  private:

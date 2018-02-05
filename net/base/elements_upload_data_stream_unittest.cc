@@ -75,13 +75,23 @@ class MockUploadElementReader : public UploadElementReader {
   ~MockUploadElementReader() override = default;
 
   // UploadElementReader overrides.
-  MOCK_METHOD1(Init, int(const CompletionCallback& callback));
+  int Init(CompletionOnceCallback callback) override {
+    // This is a back to get around Gmock's lack of support for move-only types.
+    return Init(&callback);
+  }
+  MOCK_METHOD1(Init, int(CompletionOnceCallback* callback));
   uint64_t GetContentLength() const override { return content_length_; }
   uint64_t BytesRemaining() const override { return bytes_remaining_; }
   bool IsInMemory() const override { return is_in_memory_; }
-  MOCK_METHOD3(Read, int(IOBuffer* buf,
-                         int buf_length,
-                         const CompletionCallback& callback));
+  int Read(IOBuffer* buf,
+           int buf_length,
+           CompletionOnceCallback callback) override {
+    return Read(buf, buf_length, &callback);
+  }
+  MOCK_METHOD3(Read,
+               int(IOBuffer* buf,
+                   int buf_length,
+                   CompletionOnceCallback* callback));
 
   // Sets expectation to return the specified result from Init() asynchronously.
   void SetAsyncInitExpectation(int result) {
@@ -99,21 +109,19 @@ class MockUploadElementReader : public UploadElementReader {
   }
 
  private:
-  void OnInit(const CompletionCallback& callback) {
+  void OnInit(CompletionOnceCallback* callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, init_result_));
+        FROM_HERE, base::BindOnce(std::move(*callback), init_result_));
   }
 
-  int OnRead(IOBuffer* buf,
-             int buf_length,
-             const CompletionCallback& callback) {
+  int OnRead(IOBuffer* buf, int buf_length, CompletionOnceCallback* callback) {
     if (read_result_ > 0)
       bytes_remaining_ = std::max(0, bytes_remaining_ - read_result_);
     if (IsInMemory()) {
       return read_result_;
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, read_result_));
+          FROM_HERE, base::BindOnce(std::move(*callback), read_result_));
       return ERR_IO_PENDING;
     }
   }

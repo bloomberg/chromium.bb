@@ -1150,7 +1150,10 @@ int HttpNetworkTransaction::DoInitRequestBody() {
   next_state_ = STATE_INIT_REQUEST_BODY_COMPLETE;
   int rv = OK;
   if (request_->upload_data_stream)
-    rv = request_->upload_data_stream->Init(io_callback_, net_log_);
+    rv = request_->upload_data_stream->Init(
+        base::BindOnce(&HttpNetworkTransaction::OnIOComplete,
+                       base::Unretained(this)),
+        net_log_);
   return rv;
 }
 

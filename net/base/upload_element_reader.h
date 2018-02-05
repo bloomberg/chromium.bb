@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -41,7 +41,7 @@ class NET_EXPORT UploadElementReader {
   // initialization aynschronously, returns ERR_IO_PENDING and runs callback.
   // Calling this method again after a Init() success results in resetting the
   // state.
-  virtual int Init(const CompletionCallback& callback) = 0;
+  virtual int Init(CompletionOnceCallback callback) = 0;
 
   // Returns the byte-length of the element. For files that do not exist, 0
   // is returned. This is done for consistency with Mozilla.
@@ -59,7 +59,7 @@ class NET_EXPORT UploadElementReader {
   // and runs |callback| with the result. |buf_length| must be greater than 0.
   virtual int Read(IOBuffer* buf,
                    int buf_length,
-                   const CompletionCallback& callback) = 0;
+                   CompletionOnceCallback callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UploadElementReader);

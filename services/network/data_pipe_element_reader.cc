@@ -24,7 +24,7 @@ DataPipeElementReader::DataPipeElementReader(
 
 DataPipeElementReader::~DataPipeElementReader() {}
 
-int DataPipeElementReader::Init(const net::CompletionCallback& callback) {
+int DataPipeElementReader::Init(net::CompletionOnceCallback callback) {
   DCHECK(callback);
 
   // Init rewinds the stream. Throw away current state.
@@ -63,7 +63,7 @@ uint64_t DataPipeElementReader::BytesRemaining() const {
 
 int DataPipeElementReader::Read(net::IOBuffer* buf,
                                 int buf_length,
-                                const net::CompletionCallback& callback) {
+                                net::CompletionOnceCallback callback) {
   DCHECK(callback);
   DCHECK(!read_callback_);
   DCHECK(!init_callback_);

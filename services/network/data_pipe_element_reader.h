@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/upload_element_reader.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
@@ -39,12 +39,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeElementReader
   ~DataPipeElementReader() override;
 
   // net::UploadElementReader implementation:
-  int Init(const net::CompletionCallback& callback) override;
+  int Init(net::CompletionOnceCallback callback) override;
   uint64_t GetContentLength() const override;
   uint64_t BytesRemaining() const override;
   int Read(net::IOBuffer* buf,
            int buf_length,
-           const net::CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
 
  private:
   // Callback invoked by DataPipeGetter::Read.
@@ -75,8 +75,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeElementReader
   uint64_t size_ = 0;
 
   uint64_t bytes_read_ = 0;
-  net::CompletionCallback init_callback_;
-  net::CompletionCallback read_callback_;
+  net::CompletionOnceCallback init_callback_;
+  net::CompletionOnceCallback read_callback_;
 
   base::WeakPtrFactory<DataPipeElementReader> weak_factory_;
 

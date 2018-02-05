@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/upload_progress.h"
 #include "net/log/net_log_with_source.h"
@@ -44,7 +44,7 @@ class NET_EXPORT UploadDataStream {
   // Returns OK on success. Returns ERR_UPLOAD_FILE_CHANGED if the expected
   // file modification time is set (usually not set, but set for sliced
   // files) and the target file is changed.
-  int Init(const CompletionCallback& callback, const NetLogWithSource& net_log);
+  int Init(CompletionOnceCallback callback, const NetLogWithSource& net_log);
 
   // When possible, reads up to |buf_len| bytes synchronously from the upload
   // data stream to |buf| and returns the number of bytes read; otherwise,
@@ -58,7 +58,7 @@ class NET_EXPORT UploadDataStream {
   // size() bytes can be read, which can happen for TYPE_FILE payloads.
   //
   // TODO(mmenke):  Investigate letting reads fail.
-  int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
+  int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
 
   // Returns the total size of the data stream and the current position.
   // When the data is chunked, always returns zero. Must always return the same
@@ -139,7 +139,7 @@ class NET_EXPORT UploadDataStream {
 
   bool is_eof_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   NetLogWithSource net_log_;
 

@@ -29,13 +29,13 @@ class NET_EXPORT UploadBytesElementReader : public UploadElementReader {
 
   // UploadElementReader overrides:
   const UploadBytesElementReader* AsBytesReader() const override;
-  int Init(const CompletionCallback& callback) override;
+  int Init(CompletionOnceCallback callback) override;
   uint64_t GetContentLength() const override;
   uint64_t BytesRemaining() const override;
   bool IsInMemory() const override;
   int Read(IOBuffer* buf,
            int buf_length,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
 
  private:
   const char* const bytes_;
