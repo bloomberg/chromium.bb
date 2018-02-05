@@ -19,22 +19,6 @@ namespace blink {
 
 namespace {
 
-void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
-                                          cc::DisplayItemList& list,
-                                          const IntRect& visual_rect_in_layer) {
-  DCHECK(display_item.IsDrawing());
-
-  list.StartPaint();
-  if (auto record =
-          static_cast<const DrawingDisplayItem&>(display_item).GetPaintRecord())
-    list.push<cc::DrawRecordOp>(std::move(record));
-  // StartPaint() and EndPaintOfUnpaired() are called regardless of whether the
-  // record is null to ensure we'll set correct visual rects for the enclosing
-  // paired display items. This is especially important for filters that draw
-  // content by themselves but don't enclose any non-empty DrawingDisplayItem.
-  list.EndPaintOfUnpaired(visual_rect_in_layer);
-}
-
 void AppendRestore(cc::DisplayItemList& list, size_t n) {
   list.StartPaint();
   while (n--)
@@ -352,33 +336,76 @@ void ConversionContext::SwitchToEffect(
 
 void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
                                 const DisplayItemList& display_items) {
+  bool translated = false;
+  bool need_translate = !layer_offset_.IsZero();
+  // This functor adjust the translation of the whole display list relative to
+  // layer offset. It's only called if we actually paint anything.
+  auto translate_once = [this, &translated, need_translate] {
+    if (translated || !need_translate)
+      return;
+    cc_list_.StartPaint();
+    cc_list_.push<cc::SaveOp>();
+    cc_list_.push<cc::TranslateOp>(-layer_offset_.x(), -layer_offset_.y());
+    cc_list_.EndPaintOfPairedBegin();
+    translated = true;
+  };
+
   for (auto chunk_it = paint_chunks.begin(); chunk_it != paint_chunks.end();
        chunk_it++) {
     const PaintChunk& chunk = **chunk_it;
     const PropertyTreeState& chunk_state =
         chunk.properties.property_tree_state.GetPropertyTreeState();
-    SwitchToEffect(chunk_state.Effect());
-    SwitchToClip(chunk_state.Clip());
-    bool transformed = chunk_state.Transform() != current_transform_;
-    if (transformed) {
-      cc_list_.StartPaint();
-      cc_list_.push<cc::SaveOp>();
-      cc_list_.push<cc::ConcatOp>(
-          static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
-              GeometryMapper::SourceToDestinationProjection(
-                  chunk_state.Transform(), current_transform_))));
-      cc_list_.EndPaintOfPairedBegin();
-    }
+    bool transformed = false;
+    bool properties_adjusted = false;
+    // This functor adjusts the properties for the current effect and clip once.
+    // It's called if a DrawingDisplayItem draws content or is under an effect
+    // that may draw content.
+    auto adjust_properties_once = [this, &chunk_state, &transformed,
+                                   &properties_adjusted] {
+      if (properties_adjusted)
+        return;
+      SwitchToEffect(chunk_state.Effect());
+      SwitchToClip(chunk_state.Clip());
+      if (chunk_state.Transform() != current_transform_) {
+        transformed = true;
+        cc_list_.StartPaint();
+        cc_list_.push<cc::SaveOp>();
+        cc_list_.push<cc::ConcatOp>(
+            static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
+                GeometryMapper::SourceToDestinationProjection(
+                    chunk_state.Transform(), current_transform_))));
+        cc_list_.EndPaintOfPairedBegin();
+      }
+      properties_adjusted = true;
+    };
+
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
-      AppendDisplayItemToCcDisplayItemList(
-          item, cc_list_,
-          PaintChunksToCcLayer::MapRectFromChunkToLayer(
-              FloatRect(item.VisualRect()), chunk, layer_state_,
-              layer_offset_));
+      DCHECK(item.IsDrawing());
+      auto record =
+          static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
+      // If we have an empty paint record, then we would prefer not to draw it.
+      // However, if we also have a non-root effect, it means that the filter
+      // applied might draw something even if the record is empty. We need to
+      // "draw" this record in order to ensure that the effect has correct
+      // visual rects.
+      if ((!record || record->size() == 0) &&
+          chunk_state.Effect() == EffectPaintPropertyNode::Root()) {
+        continue;
+      }
+
+      translate_once();
+      adjust_properties_once();
+      cc_list_.StartPaint();
+      if (record && record->size() != 0)
+        cc_list_.push<cc::DrawRecordOp>(std::move(record));
+      cc_list_.EndPaintOfUnpaired(PaintChunksToCcLayer::MapRectFromChunkToLayer(
+          FloatRect(item.VisualRect()), chunk, layer_state_, layer_offset_));
     }
     if (transformed)
       AppendRestore(cc_list_, 1);
   }
+  if (translated)
+    AppendRestore(cc_list_, 1);
 }
 
 }  // unnamed namespace
@@ -389,19 +416,8 @@ void PaintChunksToCcLayer::ConvertInto(
     const gfx::Vector2dF& layer_offset,
     const DisplayItemList& display_items,
     cc::DisplayItemList& cc_list) {
-  bool need_translate = !layer_offset.IsZero();
-  if (need_translate) {
-    cc_list.StartPaint();
-    cc_list.push<cc::SaveOp>();
-    cc_list.push<cc::TranslateOp>(-layer_offset.x(), -layer_offset.y());
-    cc_list.EndPaintOfPairedBegin();
-  }
-
   ConversionContext(layer_state, layer_offset, cc_list)
       .Convert(paint_chunks, display_items);
-
-  if (need_translate)
-    AppendRestore(cc_list, 1);
 }
 
 scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
