@@ -280,6 +280,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
                           weak_ptr_factory_.GetWeakPtr()));
   ui_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnUiFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+  webvr_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
+      &VrShellGl::OnWebVRFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
 
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
