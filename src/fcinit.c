@@ -44,7 +44,7 @@ FcInitFallbackConfig (const FcChar8 *sysroot)
     if (!config)
 	goto bail0;
     FcConfigSetSysRoot (config, sysroot);
-    if (!FcConfigAddDir (config, (FcChar8 *) FC_DEFAULT_FONTS))
+    if (!FcConfigAddFontDir (config, (FcChar8 *) FC_DEFAULT_FONTS))
 	goto bail1;
     if (!FcConfigAddCacheDir (config, (FcChar8 *) FC_CACHEDIR))
 	goto bail1;
