@@ -245,8 +245,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // State for service workers.
   std::unique_ptr<ProviderStateForServiceWorker> state_for_service_worker_;
 
-  // NOTE: New members should usually be added to either service_worker_state_
-  // or client_state_. Not here!
+  // NOTE: New members should usually be added to either
+  // |state_for_service_worker_| or |state_for_client_|. Not here!
 
   base::WeakPtrFactory<ServiceWorkerProviderContext> weak_factory_;
 

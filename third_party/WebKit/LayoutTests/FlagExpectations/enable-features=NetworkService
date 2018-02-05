@@ -1,4 +1,4 @@
-# These tests currently fail when run with --enable-network-service
+# These tests currently fail when run with --enable-features=NetworkSerivce
 # See https://crbug.com/729849
 
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]

@@ -29,7 +29,7 @@ class URLLoaderRequestHandler;
 struct GlobalRequestID;
 
 // This is an implementation of NavigationURLLoader used when
-// --enable-network-service is used.
+// --enable-features=NetworkService is used.
 class CONTENT_EXPORT NavigationURLLoaderNetworkService
     : public NavigationURLLoader {
  public:

@@ -18,9 +18,10 @@ class ServiceWorkerVersion;
 
 // This class is a helper to support having
 // ServiceWorkerControlleeRequestHandler work with both URLRequestJobs and
-// network::mojom::URLLoaders (that is, both with and without
-// --enable-network-service). It wraps either a ServiceWorkerURLRequestJob or a
-// callback for URLLoader and forwards to the underlying implementation.
+// network::mojom::URLLoaders (that is, both for S13nServiceWorker and
+// non-S13nServiceWorker). It wraps either a
+// ServiceWorkerURLRequestJob or a callback for URLLoader and forwards to the
+// underlying implementation.
 class ServiceWorkerURLJobWrapper {
  public:
   // A helper used by the ServiceWorkerURLLoaderJob or
@@ -52,11 +53,11 @@ class ServiceWorkerURLJobWrapper {
     virtual void MainResourceLoadFailed() {}
   };
 
-  // Non-network service case.
+  // Non-S13nServiceWorker.
   explicit ServiceWorkerURLJobWrapper(
       base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job);
 
-  // With --enable-network-service.
+  // S13nServiceWorker.
   explicit ServiceWorkerURLJobWrapper(
       std::unique_ptr<ServiceWorkerURLLoaderJob> url_loader_job);
 
