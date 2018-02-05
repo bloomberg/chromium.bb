@@ -35,6 +35,9 @@ test_with_window((w) => {
   assert_equals(w.document.createElement('div', {is: 'a-a'}).constructor,
                 w.HTMLDivElement,
                 'V1 createElement syntax does not work with V0 registerElement');
+  assert_equals(w.document.createElementNS('http://www.w3.org/1999/xhtml', 'div', {is: 'a-a'}).constructor,
+                w.HTMLDivElement,
+                'V1 createElementNS syntax does not work with V0 registerElement');
 
   class B extends w.HTMLDivElement {
     constructor() {

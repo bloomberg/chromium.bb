@@ -979,14 +979,8 @@ Element* Document::createElement(const AtomicString& local_name,
       CreateElement(q_name, is_v1, should_create_builtin ? is : g_null_atom);
 
   // 8. If 'is' is non-null, set 'is' attribute
-  if (!is.IsEmpty()) {
-    if (string_or_options.IsString()) {
-      V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
-          element, is);
-    } else if (string_or_options.IsDictionary()) {
-      element->setAttribute(HTMLNames::isAttr, is);
-    }
-  }
+  if (!is.IsEmpty())
+    element->setAttribute(HTMLNames::isAttr, is);
 
   return element;
 }
@@ -1057,14 +1051,8 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
       CreateElement(q_name, is_v1, should_create_builtin ? is : g_null_atom);
 
   // 4. If 'is' is non-null, set 'is' attribute
-  if (!is.IsEmpty()) {
-    if (element->GetCustomElementState() != CustomElementState::kCustom) {
-      V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
-          element, is);
-    } else if (string_or_options.IsDictionary()) {
-      element->setAttribute(HTMLNames::isAttr, is);
-    }
-  }
+  if (!is.IsEmpty())
+    element->setAttribute(HTMLNames::isAttr, is);
 
   return element;
 }
@@ -1102,6 +1090,9 @@ Element* Document::CreateElement(const QualifiedName& q_name,
     if (q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI &&
         (CustomElement::IsValidName(q_name.LocalName()) || !is.IsEmpty()))
       element->SetCustomElementState(CustomElementState::kUndefined);
+
+    if (!is.IsEmpty() && !is_v1)
+      V0CustomElementRegistrationContext::SetTypeExtension(element, is);
   }
   return element;
 }
