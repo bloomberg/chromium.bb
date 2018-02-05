@@ -9,7 +9,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.os.Build;
-import android.service.notification.StatusBarNotification;
 
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
@@ -112,8 +111,8 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
         return key;
     }
 
-    // The following methods are not implemented because a naive implementation would
-    // have compatibility issues (this functionality is new in O), and we currently don't need them
+    // The following Channel methods are not implemented because a naive implementation would
+    // have compatibility issues (NotificationChannel is new in O), and we currently don't need them
     // where the MockNotificationManagerProxy is used in tests.
 
     @TargetApi(Build.VERSION_CODES.O)
@@ -148,9 +147,4 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
 
     @Override
     public void deleteNotificationChannelGroup(String groupId) {}
-
-    @Override
-    public StatusBarNotification[] getActiveNotifications() {
-        return new StatusBarNotification[0];
-    }
 }
