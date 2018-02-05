@@ -230,15 +230,12 @@
       initial: false,
     },
 
-    // This is used when page popups should not be presented at all from time
-    // to time in the life of a renderer. This is different than the runtime
-    // enabled feature to enable page popups which remains fixed for the
-    // lifetime of a render and semantically means that an alternative UI
-    // should be shown. An example of when this might be used is in an
-    // embedder than cannot render these popups (in VR mode, say).
+    // This is true when the page is being displayed in a 3D context (eg, a VR
+    // headset).
     {
-      name: "pagePopupsSuppressed",
+      name: "immersiveModeEnabled",
       initial: false,
+      invalidate: "MediaQuery",
     },
 
     {

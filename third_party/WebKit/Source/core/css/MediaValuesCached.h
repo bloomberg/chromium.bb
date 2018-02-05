@@ -30,6 +30,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     int available_hover_types;
     int default_font_size;
     bool three_d_enabled;
+    bool immersive_mode;
     bool strict_mode;
     String media_type;
     WebDisplayMode display_mode;
@@ -54,6 +55,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.available_hover_types = available_hover_types;
       data.default_font_size = default_font_size;
       data.three_d_enabled = three_d_enabled;
+      data.immersive_mode = immersive_mode;
       data.strict_mode = strict_mode;
       data.media_type = media_type.IsolatedCopy();
       data.display_mode = display_mode;
@@ -85,6 +87,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   HoverType PrimaryHoverType() const override;
   int AvailableHoverTypes() const override;
   bool ThreeDEnabled() const override;
+  bool InImmersiveMode() const override;
   bool StrictMode() const override;
   Document* GetDocument() const override;
   bool HasValues() const override;

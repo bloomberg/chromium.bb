@@ -811,6 +811,7 @@ message MfName {
     SCAN = 43;
     SHAPE = 44;
     INVALID_NAME = 45;
+    IMMERSIVE = 46;
   }
   required ValueId id = 1;
 }

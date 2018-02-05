@@ -62,6 +62,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     available_hover_types = MediaValues::CalculateAvailableHoverTypes(frame);
     default_font_size = MediaValues::CalculateDefaultFontSize(frame);
     three_d_enabled = MediaValues::CalculateThreeDEnabled(frame);
+    immersive_mode = MediaValues::CalculateInImmersiveMode(frame);
     strict_mode = MediaValues::CalculateStrictMode(frame);
     display_mode = MediaValues::CalculateDisplayMode(frame);
     media_type = MediaValues::CalculateMediaType(frame);
@@ -150,6 +151,10 @@ int MediaValuesCached::AvailableHoverTypes() const {
 
 bool MediaValuesCached::ThreeDEnabled() const {
   return data_.three_d_enabled;
+}
+
+bool MediaValuesCached::InImmersiveMode() const {
+  return data_.immersive_mode;
 }
 
 bool MediaValuesCached::StrictMode() const {
