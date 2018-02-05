@@ -18,6 +18,9 @@ cast_source_set("media") {
   ]
 
   public_configs = [ ":public_headers" ]
+  public_deps = [
+    "//chromecast/public",
+  ]
 }
 
 # Any target which includes headers in ":media" should include it in its deps
