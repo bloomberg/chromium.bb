@@ -53,12 +53,8 @@ const char kScreenConfig[] = "screen-config";
 const char kUseFirstDisplayAsInternal[] = "use-first-display-as-internal";
 
 #if defined(OS_CHROMEOS)
-
 // Enables unified desktop mode.
 const char kEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
-
-// Enables using the monitor's provided color space information when rendering.
-const char kUseMonitorColorSpace[] = "use-monitor-color-space";
 #endif
 
 }  // namespace switches
@@ -67,5 +63,12 @@ namespace features {
 
 const base::Feature kHighDynamicRange{"HighDynamicRange",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+// Enables using the monitor's provided color space information when rendering.
+// TODO(mcasas): remove this flag http://crbug.com/771345.
+const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features

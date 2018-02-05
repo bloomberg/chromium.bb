@@ -26,7 +26,6 @@ DISPLAY_EXPORT extern const char kUseFirstDisplayAsInternal[];
 
 #if defined(OS_CHROMEOS)
 DISPLAY_EXPORT extern const char kEnableUnifiedDesktop[];
-DISPLAY_EXPORT extern const char kUseMonitorColorSpace[];
 #endif
 
 }  // namespace switches
@@ -34,6 +33,10 @@ DISPLAY_EXPORT extern const char kUseMonitorColorSpace[];
 namespace features {
 
 DISPLAY_EXPORT extern const base::Feature kHighDynamicRange;
+
+#if defined(OS_CHROMEOS)
+DISPLAY_EXPORT extern const base::Feature kUseMonitorColorSpace;
+#endif
 
 }  // namespace features
 

@@ -25381,6 +25381,7 @@ from previous Chrome versions.
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>
   <int value="-1875383510" label="UseGoogleLocalNtp:disabled"/>
+  <int value="-1875168316" label="UseMonitorColorSpace:disabled"/>
   <int value="-1874908826" label="enable-instant-search-clicks"/>
   <int value="-1874141108" label="NewOmniboxAnswerTypes:enabled"/>
   <int value="-1872989945" label="enable-webview-based-signin"/>
@@ -25857,6 +25858,7 @@ from previous Chrome versions.
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
+  <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
