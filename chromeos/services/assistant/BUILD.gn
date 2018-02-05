@@ -1,0 +1,69 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chromeos/assistant/assistant.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
+
+assert(is_chromeos)
+assert(enable_cros_assistant)
+
+source_set("lib") {
+  sources = [
+    "assistant_manager_service.h",
+    "service.cc",
+    "service.h",
+  ]
+
+  if (enable_cros_libassistant) {
+    sources += [
+      "assistant_manager_service_impl.cc",
+      "assistant_manager_service_impl.h",
+      "platform_api_impl.cc",
+      "platform_api_impl.h",
+    ]
+
+    deps = [
+      "//chromeos/assistant/internal",
+      "//libassistant/contrib/core",
+      "//libassistant/contrib/platform/audio",
+      "//libassistant/contrib/platform/auth",
+      "//libassistant/contrib/platform/file",
+      "//libassistant/contrib/platform/net",
+      "//libassistant/contrib/platform/resources",
+      "//libassistant/contrib/platform/system",
+      "//libassistant/internal/assistant/controller:libassistant_static",
+      "//libassistant/shared/internal_api/c:api_wrappers_for_caller_no_chromium",
+      "//libassistant/shared/proto:assistant_proto",
+      "//libassistant/shared/public",
+      "//libassistant/shared/public:export",
+    ]
+
+    include_dirs = [
+      "//libassistant/contrib",
+      "//libassistant/shared",
+    ]
+  } else {
+    sources += [
+      "fake_assistant_manager_service_impl.cc",
+      "fake_assistant_manager_service_impl.h",
+    ]
+  }
+}
+
+service_manifest("manifest") {
+  name = "assistant"
+  source = "manifest.json"
+}
+
+service("assistant") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//services/service_manager/public/cpp",
+  ]
+}
