@@ -35,6 +35,9 @@ struct MITMSoftwareType {
 struct DynamicInterstitialInfo {
   DynamicInterstitialInfo(
       const std::unordered_set<std::string>& spki_hashes,
+      const std::string& issuer_common_name_regex,
+      const std::string& issuer_organization_regex,
+      const std::string& mitm_software_name,
       chrome_browser_ssl::DynamicInterstitial::InterstitialPageType
           interstitial_type,
       int cert_error,
@@ -45,6 +48,9 @@ struct DynamicInterstitialInfo {
   ~DynamicInterstitialInfo();
 
   const std::unordered_set<std::string> spki_hashes;
+  const std::string issuer_common_name_regex;
+  const std::string issuer_organization_regex;
+  const std::string mitm_software_name;
   const chrome_browser_ssl::DynamicInterstitial::InterstitialPageType
       interstitial_type;
   const int cert_error;
