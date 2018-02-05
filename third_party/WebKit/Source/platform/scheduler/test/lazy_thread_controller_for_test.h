@@ -29,8 +29,9 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
   bool RunsTasksInCurrentSequence() override;
   void ScheduleWork() override;
-  void ScheduleDelayedWork(base::TimeDelta delta) override;
-  void CancelDelayedWork() override;
+  void ScheduleDelayedWork(base::TimeTicks now,
+                           base::TimeTicks run_time) override;
+  void CancelDelayedWork(base::TimeTicks run_time) override;
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;
@@ -41,7 +42,7 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
 
   base::PlatformThreadRef thread_ref_;
 
-  base::RunLoop::NestingObserver* pending_observer_ = nullptr;
+  bool pending_observer_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> pending_default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(LazyThreadControllerForTest);
