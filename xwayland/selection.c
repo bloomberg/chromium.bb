@@ -681,6 +681,8 @@ weston_wm_selection_init(struct weston_wm *wm)
 	struct weston_seat *seat;
 	uint32_t values[1], mask;
 
+	wl_list_init(&wm->selection_listener.link);
+
 	wm->selection_request.requestor = XCB_NONE;
 
 	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
