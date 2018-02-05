@@ -40,6 +40,11 @@ enum RequestPriority {
 
 // Destroying a URLLoader will cancel the associated request.
 interface URLLoader {
+  // If a disconnection is initiated by the client side, it may send the
+  // following disconnection reason, along with an application-defined string
+  // description, to notify the service side.
+  const uint32 kClientDisconnectReason = 1;
+
   // If the associated request has |auto_follow_redirects| set to false,
   // then upon receiving an URLResponse with a non-NULL |redirect_url| field,
   // |FollowRedirect| may be called to load the URL indicated by the redirect.
@@ -84,7 +89,6 @@ interface URLLoader {
 // clean up the corresponding temporary file.
 interface DownloadedTempFile {
 };
-
 
 interface URLLoaderClient {
   // Called when the response head is received.

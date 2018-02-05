@@ -322,6 +322,10 @@ bool ResourceRequestInfoImpl::CanceledByDevTools() const {
   return canceled_by_devtools_;
 }
 
+base::StringPiece ResourceRequestInfoImpl::GetCustomCancelReason() const {
+  return custom_cancel_reason_;
+}
+
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   request->SetUserData(kResourceRequestInfoImplKey, base::WrapUnique(this));
   int render_process_id;

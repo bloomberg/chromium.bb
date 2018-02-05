@@ -32,7 +32,8 @@ class BaseParallelResourceThrottle::URLLoaderThrottleHolder
   uint32_t inside_delegate_calls() const { return inside_delegate_calls_; }
 
   // content::URLLoaderThrottle::Delegate implementation:
-  void CancelWithError(int error_code) override {
+  void CancelWithError(int error_code,
+                       base::StringPiece custom_reason) override {
     if (!owner_)
       return;
 
