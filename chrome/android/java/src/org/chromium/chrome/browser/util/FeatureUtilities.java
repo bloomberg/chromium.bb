@@ -52,6 +52,8 @@ public class FeatureUtilities {
     private static String sChromeHomeSwipeLogicType;
 
     private static Boolean sIsSoleEnabled;
+    private static Boolean sIsChromeModernDesignEnabled;
+
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
      * is handled by any {@link android.app.Activity}s in the system.  The result will be cached for
@@ -155,6 +157,7 @@ public class FeatureUtilities {
         cacheChromeHomeEnabled();
         cacheSoleEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
+        cacheChromeModernDesignEnabled();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend
@@ -171,6 +174,18 @@ public class FeatureUtilities {
             return false;
         }
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
+    }
+
+    /**
+     * Cache whether or not modern design is enabled so on next startup, the value can be made
+     * available immediately.
+     */
+    public static void cacheChromeModernDesignEnabled() {
+        boolean isModernEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MODERN_DESIGN);
+
+        ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
+        manager.setChromeModernDesignEnabled(isModernEnabled);
     }
 
     /**
@@ -291,8 +306,15 @@ public class FeatureUtilities {
     @CalledByNative
     public static boolean isChromeModernDesignEnabled() {
         if (isChromeHomeEnabled()) return true;
-        return ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MODERN_DESIGN);
+
+        if (sIsChromeModernDesignEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                sIsChromeModernDesignEnabled = prefManager.isChromeModernDesignEnabled();
+            }
+        }
+
+        return sIsChromeModernDesignEnabled;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);
