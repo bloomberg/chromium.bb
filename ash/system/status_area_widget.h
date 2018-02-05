@@ -28,14 +28,20 @@ class TrayBackgroundView;
 class VirtualKeyboardTray;
 class WebNotificationTray;
 
+// Widget showing the system tray, notification tray, and other tray views in
+// the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
+// so that it can be shown in cases where the rest of the shelf is hidden (e.g.
+// on secondary monitors at the login screen).
 class ASH_EXPORT StatusAreaWidget : public views::Widget,
                                     public ShelfBackgroundAnimatorObserver {
  public:
   StatusAreaWidget(aura::Window* status_container, Shelf* shelf);
   ~StatusAreaWidget() override;
 
-  // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.
-  void CreateTrayViews();
+  // Creates the child tray views, initializes them, and shows the widget. Not
+  // part of the constructor because some child views call back into this object
+  // during construction.
+  void Initialize();
 
   // Destroys the system tray and web notification tray. Called before
   // tearing down the windows to avoid shutdown ordering issues.
@@ -111,16 +117,18 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   void AddImeMenuTray();
   void AddOverviewButtonTray();
 
-  // Weak pointers to View classes that are parented to StatusAreaWidget:
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
-  OverviewButtonTray* overview_button_tray_;
-  SystemTray* system_tray_;
-  WebNotificationTray* web_notification_tray_;
-  LogoutButtonTray* logout_button_tray_;
-  PaletteTray* palette_tray_;
-  VirtualKeyboardTray* virtual_keyboard_tray_;
-  ImeMenuTray* ime_menu_tray_;
-  LoginStatus login_status_;
+
+  // Child views owned by views hierarchy.
+  OverviewButtonTray* overview_button_tray_ = nullptr;
+  SystemTray* system_tray_ = nullptr;
+  WebNotificationTray* web_notification_tray_ = nullptr;
+  LogoutButtonTray* logout_button_tray_ = nullptr;
+  PaletteTray* palette_tray_ = nullptr;
+  VirtualKeyboardTray* virtual_keyboard_tray_ = nullptr;
+  ImeMenuTray* ime_menu_tray_ = nullptr;
+
+  LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 
   Shelf* shelf_;
 

@@ -120,14 +120,6 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
 
 void StatusAreaWidgetDelegate::DeleteDelegate() {}
 
-void StatusAreaWidgetDelegate::AddTray(views::View* tray) {
-  // Reset layout manager before adding a child.
-  SetLayoutManager(nullptr);
-  AddChildView(tray);
-  // Set the layout manager with the new list of children.
-  UpdateLayout();
-}
-
 void StatusAreaWidgetDelegate::UpdateLayout() {
   // Use a grid layout so that the trays can be centered in each cell, and
   // so that the widget gets laid out correctly when tray sizes change.
