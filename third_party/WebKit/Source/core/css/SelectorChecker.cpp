@@ -880,11 +880,6 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     }
     case CSSSelector::kPseudoTarget:
       return element == element.GetDocument().CssTarget();
-    case CSSSelector::kPseudoMatches: {
-      if (!RuntimeEnabledFeatures::CSSMatchesEnabled())
-        return false;
-      NOTREACHED();
-    } break;
     case CSSSelector::kPseudoAny: {
       SelectorCheckingContext sub_context(context);
       sub_context.is_sub_selector = true;
@@ -1103,6 +1098,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoCornerPresent:
       return false;
     case CSSSelector::kPseudoUnknown:
+    case CSSSelector::kPseudoMatches:
     default:
       NOTREACHED();
       break;
