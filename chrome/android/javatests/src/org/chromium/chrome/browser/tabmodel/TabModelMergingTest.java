@@ -140,6 +140,9 @@ public class TabModelMergingTest {
                         TabLaunchType.FROM_CHROME_UI, null);
                 mActivity2.getTabCreator(false).createNewTab(new LoadUrlParams(TEST_URL_4),
                         TabLaunchType.FROM_CHROME_UI, null);
+
+                mActivity1.saveState();
+                mActivity2.saveState();
             }
         });
 
