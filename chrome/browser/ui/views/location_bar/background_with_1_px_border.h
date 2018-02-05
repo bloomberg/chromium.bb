@@ -22,15 +22,34 @@ class View;
 // that the border is one pixel regardless of display scaling.
 class BackgroundWith1PxBorder : public views::Background {
  public:
-  // Corner radius of the inside edge of the roundrect border stroke.
-  static constexpr int kCornerRadius = 2;
-
   // The thickness of the location bar's border in DIP.
   static constexpr int kLocationBarBorderThicknessDip = 1;
 
   BackgroundWith1PxBorder(SkColor background, SkColor border);
 
+  // Whether the OmniboxBackgroundBorder is a pill shape.
+  static bool IsRounded();
+
+  // Paints a blue focus ring that draws over the top of the existing border.
+  void PaintFocusRing(gfx::Canvas* canvas,
+                      ui::NativeTheme* theme,
+                      const gfx::Rect& local_bounds);
+
+  // views::Background:
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
+
+ protected:
+  // Returns the amount of border radius to use for the inside edge of the
+  // border stroke for this background.
+  float GetBorderRadius(int height_in_px) const;
+
+  // Paints the background. |inner_border_radius| is the border radius of the
+  // inside of the stroke.
+  static void Paint(gfx::Canvas* canvas,
+                    SkColor background,
+                    SkColor border,
+                    float inner_border_radius,
+                    const gfx::Rect& bounds);
 
  private:
   // Color for the one pixel border.
