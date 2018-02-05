@@ -30,11 +30,6 @@ Browser* ChromeAsyncExtensionFunction::GetCurrentBrowser() {
   return chrome_details_.GetCurrentBrowser();
 }
 
-extensions::WindowController*
-ChromeAsyncExtensionFunction::GetExtensionWindowController() {
-  return chrome_details_.GetExtensionWindowController();
-}
-
 void ChromeAsyncExtensionFunction::SetError(const std::string& error) {
   error_ = error;
 }

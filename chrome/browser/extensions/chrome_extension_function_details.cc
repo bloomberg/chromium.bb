@@ -32,7 +32,6 @@ Profile* ChromeExtensionFunctionDetails::GetProfile() const {
   return Profile::FromBrowserContext(function_->browser_context());
 }
 
-// TODO(stevenjb): Replace this with GetExtensionWindowController().
 Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   // If the delegate has an associated browser, return it.
   if (function_->dispatcher()) {
@@ -69,20 +68,6 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   // TODO(rafaelw): Delay creation of background_page until the browser
   // is available. http://code.google.com/p/chromium/issues/detail?id=13284
   return NULL;
-}
-
-extensions::WindowController*
-ChromeExtensionFunctionDetails::GetExtensionWindowController() const {
-  // If the delegate has an associated window controller, return it.
-  if (function_->dispatcher()) {
-    extensions::WindowController* window_controller =
-        function_->dispatcher()->GetExtensionWindowController();
-    if (window_controller)
-      return window_controller;
-  }
-
-  return extensions::WindowControllerList::GetInstance()
-      ->CurrentWindowForFunction(function_);
 }
 
 content::WebContents*
