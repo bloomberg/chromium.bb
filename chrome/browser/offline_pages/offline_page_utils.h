@@ -161,6 +161,9 @@ class OfflinePageUtils {
   // exists.
   static std::string ExtractOfflineHeaderValueFromNavigationEntry(
       const content::NavigationEntry& entry);
+
+  // Returns true if |web_contents| is showing a trusted offline page.
+  static bool IsShowingTrustedOfflinePage(content::WebContents* web_contents);
 };
 
 }  // namespace offline_pages

@@ -222,6 +222,11 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     }
 
     @Override
+    public boolean isShowingUntrustedOfflinePage() {
+        return isOfflinePage() && !OfflinePageUtils.isShowingTrustedOfflinePage(mTab);
+    }
+
+    @Override
     public boolean shouldShowGoogleG(String urlBarText) {
         LocaleManager localeManager = LocaleManager.getInstance();
         if (localeManager.hasCompletedSearchEnginePromo()

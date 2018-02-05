@@ -664,6 +664,15 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Checks if the web contents is showing a trusted offline page.
+     * @param webContents Web contents shown.
+     * @return True if a trusted offline page is shown.
+     */
+    public boolean isShowingTrustedOfflinePage(WebContents webContents) {
+        return nativeIsShowingTrustedOfflinePage(mNativeOfflinePageBridge, webContents);
+    }
+
+    /**
      * Allows setting the offline bookmarks feature as enabled or disabled for testing. This is
      * required for tests that don't load the native binary otherwise UnsatisfiedLinkError sadness
      * will occur.
@@ -798,4 +807,6 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, long freshnessTimeMillis, Callback<String> callback);
     private native void nativeGetLaunchUrlByOfflineId(
             long nativeOfflinePageBridge, long offlineId, Callback<String> callback);
+    private native boolean nativeIsShowingTrustedOfflinePage(
+            long nativeOfflinePageBridge, WebContents webContents);
 }

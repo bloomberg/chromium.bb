@@ -1047,6 +1047,9 @@ public class LocationBarLayout extends FrameLayout
         updateNavigationButton();
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
+            if (mToolbarDataProvider.isShowingUntrustedOfflinePage()) {
+                setUrlBarText("", null);
+            }
             mUrlBar.deEmphasizeUrl();
         } else {
             mUrlFocusedFromFakebox = false;

@@ -178,10 +178,6 @@ const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
   const OfflinePageItem* offline_page = tab_helper->offline_page();
   if (!offline_page)
     return nullptr;
-  // TODO(jianli): Remove this when the UI knows how to handle untrusted
-  // offline pages.
-  if (!tab_helper->IsShowingTrustedOfflinePage())
-    return nullptr;
 
   // If a pending navigation that hasn't committed yet, don't return the cached
   // offline page that was set at the last commit time. This is to prevent
@@ -354,6 +350,14 @@ std::string OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(
     return std::string();
 
   return header_value;
+}
+
+// static
+bool OfflinePageUtils::IsShowingTrustedOfflinePage(
+    content::WebContents* web_contents) {
+  OfflinePageTabHelper* tab_helper =
+      OfflinePageTabHelper::FromWebContents(web_contents);
+  return tab_helper && tab_helper->IsShowingTrustedOfflinePage();
 }
 
 }  // namespace offline_pages

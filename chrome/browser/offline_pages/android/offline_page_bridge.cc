@@ -23,6 +23,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/prefetch/prefetched_pages_notifier.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
@@ -806,6 +807,18 @@ void OfflinePageBridge::GetLaunchUrlByOfflineId(
   offline_page_model_->GetPageByOfflineId(
       j_offline_id, base::Bind(&OfflinePageBridge::GetPageByOfflineIdDone,
                                weak_ptr_factory_.GetWeakPtr(), j_callback_ref));
+}
+
+jboolean OfflinePageBridge::IsShowingTrustedOfflinePage(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents)
+    return false;
+  return offline_pages::OfflinePageUtils::IsShowingTrustedOfflinePage(
+      web_contents);
 }
 
 void OfflinePageBridge::GetPageByOfflineIdDone(
