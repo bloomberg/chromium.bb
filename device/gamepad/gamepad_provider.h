@@ -110,8 +110,9 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
 
   void OnGamepadConnectionChange(bool connected, int index, const Gamepad& pad);
 
-  // Checks the gamepad state to see if the user has interacted with it.
-  void CheckForUserGesture();
+  // Checks the gamepad state to see if the user has interacted with it. Returns
+  // true if any user gesture observers were notified.
+  bool CheckForUserGesture();
 
   enum { kDesiredSamplingIntervalMs = 16 };
 

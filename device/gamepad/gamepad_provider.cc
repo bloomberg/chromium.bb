@@ -286,7 +286,10 @@ void GamepadProvider::DoPoll() {
     devices_changed_ = false;
   }
 
-  // Loop through each registered data fetcher and poll it's gamepad data.
+  for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i)
+    pad_states_.get()[i].is_active = false;
+
+  // Loop through each registered data fetcher and poll its gamepad data.
   // It's expected that GetGamepadData will mark each gamepad as active (via
   // GetPadState). If a gamepad is not marked as active during the calls to
   // GetGamepadData then it's assumed to be disconnected.
@@ -302,7 +305,8 @@ void GamepadProvider::DoPoll() {
     for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
 
-      if (!state.active_state && state.source != GAMEPAD_SOURCE_NONE) {
+      if (!state.is_newly_active && !state.is_active &&
+          state.source != GAMEPAD_SOURCE_NONE) {
         auto pad = buffer->items[i];
         pad.connected = false;
         OnGamepadConnectionChange(false, i, pad);
@@ -329,24 +333,25 @@ void GamepadProvider::DoPoll() {
     for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
 
-      if (state.active_state) {
-        if (state.active_state == GAMEPAD_NEWLY_ACTIVE &&
-            buffer->items[i].connected) {
-          OnGamepadConnectionChange(true, i, buffer->items[i]);
-        }
+      if (state.is_newly_active && buffer->items[i].connected) {
+        state.is_newly_active = false;
+        OnGamepadConnectionChange(true, i, buffer->items[i]);
       }
     }
   }
 
-  CheckForUserGesture();
+  bool did_notify = CheckForUserGesture();
 
-  // Avoid double-notifying for connected gamepads when the initial user gesture
-  // is received. The call to CheckForUserGesture should notify any consumers
-  // that were waiting for a user gesture. If we don't clear active_state here,
-  // we'll notify again on the next poll.
-  if (ever_had_user_gesture_) {
+  // Avoid double-notifying gamepad connection observers when a gamepad is
+  // connected in the same polling cycle as the initial user gesture.
+  //
+  // If a gamepad is connected in the same polling cycle as the initial user
+  // gesture, the user gesture will trigger a gamepadconnected event during the
+  // CheckForUserGesture call above. If we don't clear |is_newly_active| here,
+  // we will notify again for the same gamepad on the next polling cycle.
+  if (did_notify) {
     for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i)
-      pad_states_.get()[i].active_state = GAMEPAD_INACTIVE;
+      pad_states_.get()[i].is_newly_active = false;
   }
 
   // Schedule our next interval of polling.
@@ -377,10 +382,10 @@ void GamepadProvider::OnGamepadConnectionChange(bool connected,
     connection_change_client_->OnGamepadConnectionChange(connected, index, pad);
 }
 
-void GamepadProvider::CheckForUserGesture() {
+bool GamepadProvider::CheckForUserGesture() {
   base::AutoLock lock(user_gesture_lock_);
   if (user_gesture_observers_.empty() && ever_had_user_gesture_)
-    return;
+    return false;
 
   const Gamepads* pads = gamepad_shared_buffer_->buffer();
   if (GamepadsHaveUserGesture(*pads)) {
@@ -390,7 +395,9 @@ void GamepadProvider::CheckForUserGesture() {
           FROM_HERE, user_gesture_observers_[i].closure);
     }
     user_gesture_observers_.clear();
+    return true;
   }
+  return false;
 }
 
 }  // namespace device

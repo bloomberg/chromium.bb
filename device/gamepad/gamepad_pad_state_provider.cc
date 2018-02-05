@@ -34,8 +34,7 @@ PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
     PadState& state = pad_states_.get()[i];
     if (state.source == source && state.source_id == source_id) {
       // Retrieving the pad state marks this gamepad as active.
-      if (state.active_state == GAMEPAD_INACTIVE)
-        state.active_state = GAMEPAD_ACTIVE;
+      state.is_active = true;
       return &state;
     }
     if (!empty_slot && state.source == GAMEPAD_SOURCE_NONE)
@@ -44,7 +43,9 @@ PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
   if (empty_slot) {
     empty_slot->source = source;
     empty_slot->source_id = source_id;
-    empty_slot->active_state = GAMEPAD_NEWLY_ACTIVE;
+    empty_slot->is_active = true;
+    empty_slot->is_newly_active = true;
+    empty_slot->is_initialized = false;
   }
   return empty_slot;
 }

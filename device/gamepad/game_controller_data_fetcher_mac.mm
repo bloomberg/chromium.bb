@@ -85,7 +85,8 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
     // This first time we encounter a gamepad, set its name, mapping, and
     // axes/button counts. This information is static, so it only needs to be
     // done once.
-    if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+    if (!state->is_initialized) {
+      state->is_initialized = true;
       NSString* vendorName = [controller vendorName];
       NSString* ident =
           [NSString stringWithFormat:@"%@ (STANDARD GAMEPAD)",
