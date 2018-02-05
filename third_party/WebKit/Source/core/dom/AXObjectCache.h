@@ -120,6 +120,7 @@ class CORE_EXPORT AXObjectCache
   virtual void OnTouchAccessibilityHover(const IntPoint&) = 0;
 
   virtual AXID GetAXID(Node*) = 0;
+  virtual Element* GetElementFromAXID(AXID) = 0;
 
   typedef AXObjectCache* (*AXObjectCacheCreateFunction)(Document&);
   static void Init(AXObjectCacheCreateFunction);
