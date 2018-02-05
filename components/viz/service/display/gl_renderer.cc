@@ -665,13 +665,20 @@ static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
   GrGLTextureInfo texture_info;
   texture_info.fTarget = target;
   texture_info.fID = texture_id;
+  if (kN32_SkColorType == kRGBA_8888_SkColorType) {
+    texture_info.fFormat = GL_RGBA8_OES;
+  } else {
+    DCHECK(kN32_SkColorType == kBGRA_8888_SkColorType);
+    texture_info.fFormat = GL_BGRA8_EXT;
+  }
   GrBackendTexture backend_texture(size.width(), size.height(),
-                                   kSkia8888_GrPixelConfig, texture_info);
+                                   GrMipMapped::kNo, texture_info);
   GrSurfaceOrigin origin =
       flip_texture ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
 
   return SkImage::MakeFromTexture(context, backend_texture, origin,
-                                  kPremul_SkAlphaType, nullptr);
+                                  kN32_SkColorType, kPremul_SkAlphaType,
+                                  nullptr);
 }
 
 static sk_sp<SkImage> ApplyImageFilter(
