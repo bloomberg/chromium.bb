@@ -701,10 +701,6 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   typedef base::Callback<void(std::vector<std::unique_ptr<CanonicalCookie>>)>
       LoadedCallback;
 
-  // TODO(erikchen): Depending on the results of the cookie monster Finch
-  // experiment, update the name and description of this method. The behavior
-  // of this method doesn't change, but it has different semantics for the two
-  // different logic paths. See http://crbug.com/473483.
   // Initializes the store and retrieves the existing cookies. This will be
   // called only once at startup. The callback will return all the cookies
   // that are not yet returned to CookieMonster by previous priority loads.
