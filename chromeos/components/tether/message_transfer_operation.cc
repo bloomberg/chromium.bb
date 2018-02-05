@@ -202,7 +202,7 @@ void MessageTransferOperation::HandleDeviceDisconnection(
       PA_LOG(ERROR) << "State transitioned to DISCONNECTED, but no "
                     << "StateChangeDetail was provided. Treating this as a "
                     << "failure to discover the device.";
-    // Note: Intentional fall-through to next case.
+      FALLTHROUGH;
     case BleConnectionManager::StateChangeDetail::
         STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION:
       ++attempts_for_device.empty_scan_attempts;
