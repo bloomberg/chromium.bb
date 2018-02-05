@@ -126,8 +126,12 @@ bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
                         bool force_check,
                         std::vector<Err>* errors) {
   FileMap files_to_check;
-  for (auto* check : to_check)
-    AddTargetToFileMap(check, &files_to_check);
+  for (auto* check : to_check) {
+    // This function will get called with all target types, but check only
+    // applies to binary targets.
+    if (check->IsBinary())
+      AddTargetToFileMap(check, &files_to_check);
+  }
   RunCheckOverFiles(files_to_check, force_check);
 
   if (errors_.empty())
