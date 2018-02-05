@@ -287,15 +287,19 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
 
     case 5:
       PushResponse(net::HTTP_OK).set_content(GetPolicyResponse());
+      FALLTHROUGH;
 
     case 4:
       PushResponse(net::HTTP_OK).set_content(GetRegisterResponse());
+      FALLTHROUGH;
 
     case 3:
       PushResponse(net::HTTP_OK).set_content(kOAuth2AccessTokenData);
+      FALLTHROUGH;
 
     case 2:
       PushResponse(net::HTTP_OK).set_content(kOAuth2TokenPairData);
+      FALLTHROUGH;
 
     case 1:
       PushResponse(net::HTTP_OK)
