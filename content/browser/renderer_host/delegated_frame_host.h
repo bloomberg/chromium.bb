@@ -145,7 +145,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);
   void WasResized(const cc::DeadlinePolicy& deadline_policy);
-  bool HasSavedFrame();
+  bool HasSavedFrame() const;
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
   void ResetCompositor();
@@ -215,6 +215,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   }
 
   void DidNavigate();
+
+  bool IsPrimarySurfaceEvicted() const;
 
  private:
   friend class DelegatedFrameHostClient;

@@ -6236,6 +6236,24 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
 }
 
+// If a tab is evicted, allocate a new LocalSurfaceId next time it's shown.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       AllocateLocalSurfaceIdOnEviction) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->Show();
+  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
+  view_->Hide();
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
+      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
+  view_->ClearCompositorFrame();
+  view_->Show();
+  viz::LocalSurfaceId id2 = view_->GetLocalSurfaceId();
+  EXPECT_NE(id1, id2);
+}
+
 // This class provides functionality to test a RenderWidgetHostViewAura
 // instance which has been hooked up to a test RenderViewHost instance and
 // a WebContents instance.
