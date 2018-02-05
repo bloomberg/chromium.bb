@@ -321,9 +321,6 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     }
     builder.Set("imageTiling", tiling);
 
-    // The theme background image height is only valid if |imageUrl| is valid.
-    builder.Set("imageHeight", static_cast<int>(theme_info.image_height));
-
     // The attribution URL is only valid if the theme has attribution logo.
     if (theme_info.has_attribution) {
       builder.Set("attributionUrl",

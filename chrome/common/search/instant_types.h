@@ -99,10 +99,6 @@ struct ThemeBackgroundInfo {
   // The theme background image tiling is only valid if |theme_id| is valid.
   ThemeBackgroundImageTiling image_tiling;
 
-  // The theme background image height.
-  // Value is only valid if |theme_id| is valid.
-  uint16_t image_height;
-
   // True if theme has attribution logo.
   // Value is only valid if |theme_id| is valid.
   bool has_attribution;
