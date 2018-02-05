@@ -23,9 +23,10 @@ class _ThreadTimes(perf_benchmark.PerfBenchmark):
     return 'thread_times'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, _):
+  def ShouldAddValue(cls, name, from_first_story_run):
+    del from_first_story_run  # unused
     # Default to only reporting per-frame metrics.
-    return 'per_second' not in value.name
+    return 'per_second' not in name
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForThreadTimes(options)
@@ -114,9 +115,10 @@ class ThreadTimesKeyIdlePowerCases(_ThreadTimes):
     return 'thread_times.key_idle_power_cases'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, _):
+  def ShouldAddValue(cls, name, from_first_story_run):
+    del from_first_story_run  # unused
     # Only report per-second metrics.
-    return 'per_frame' not in value.name and 'mean_frame' not in value.name
+    return 'per_frame' not in name and 'mean_frame' not in name
 
 
 class ThreadTimesKeyNoOpCases(_ThreadTimes):
@@ -130,9 +132,10 @@ class ThreadTimesKeyNoOpCases(_ThreadTimes):
     return 'thread_times.key_noop_cases'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, _):
+  def ShouldAddValue(cls, name, from_first_story_run):
+    del from_first_story_run  # unused
     # Only report per-second metrics.
-    return 'per_frame' not in value.name and 'mean_frame' not in value.name
+    return 'per_frame' not in name and 'mean_frame' not in name
 
 
 @benchmark.Owner(emails=['tdresser@chromium.org'])

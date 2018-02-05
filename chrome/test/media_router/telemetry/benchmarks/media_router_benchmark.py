@@ -56,9 +56,9 @@ class TraceEventCastBenckmark(_BaseCastBenchmark):
     return 'media_router.dialog.latency.tracing'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+  def ShouldAddValue(cls, _, from_first_story_run):
     """Only drops the first result."""
-    return not is_first_result
+    return not from_first_story_run
 
 
 class HistogramCastBenckmark(_BaseCastBenchmark):
@@ -72,9 +72,9 @@ class HistogramCastBenckmark(_BaseCastBenchmark):
     return 'media_router.dialog.latency.histogram'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+  def ShouldAddValue(cls, _, from_first_story_run):
     """Only drops the first result."""
-    return not is_first_result
+    return not from_first_story_run
 
 
 class CPUMemoryCastBenckmark(_BaseCastBenchmark):
