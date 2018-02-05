@@ -21,14 +21,7 @@
 
 namespace base {
 
-#if defined(ADDRESS_SANITIZER) && defined(OS_ANDROID)
-// On ASAN builds, the working directory for the test is /, which is not
-// readable. See crbug.com/804348.
-#define MAYBE_Read DISABLED_Read
-#else
-#define MAYBE_Read Read
-#endif  // defined(ADDRESS_SANITIZER)
-TEST(DirReaderPosixUnittest, MAYBE_Read) {
+TEST(DirReaderPosixUnittest, Read) {
   static const unsigned kNumFiles = 100;
 
   if (DirReaderPosix::IsFallback())
@@ -40,13 +33,7 @@ TEST(DirReaderPosixUnittest, MAYBE_Read) {
   ASSERT_TRUE(dir);
 
   char wdbuf[PATH_MAX];
-  if (getcwd(wdbuf, PATH_MAX))
-    LOG(ERROR) << "Current directory: " << wdbuf;
-  else
-    PLOG(ERROR) << "getcwd() failed with ";
-  const int prev_wd = open(".", O_RDONLY | O_DIRECTORY);
-  PLOG_IF(ERROR, prev_wd < 0) << "opening . failed with ";
-  DCHECK_GE(prev_wd, 0);
+  PCHECK(getcwd(wdbuf, PATH_MAX));
 
   PCHECK(chdir(dir) == 0);
 
@@ -97,8 +84,7 @@ TEST(DirReaderPosixUnittest, MAYBE_Read) {
 
   PCHECK(rmdir(dir) == 0);
 
-  PCHECK(fchdir(prev_wd) == 0);
-  PCHECK(close(prev_wd) == 0);
+  PCHECK(chdir(wdbuf) == 0);
 
   EXPECT_TRUE(seen_dot);
   EXPECT_TRUE(seen_dotdot);
