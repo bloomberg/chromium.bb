@@ -188,6 +188,8 @@ struct drm_backend {
 
 	void *repaint_data;
 
+	bool state_invalid;
+
 	/* Connector and CRTC IDs not used by any enabled output. */
 	struct wl_array unused_connectors;
 	struct wl_array unused_crtcs;
@@ -350,8 +352,6 @@ struct drm_output {
 
 	enum dpms_enum dpms;
 	struct backlight *backlight;
-
-	bool state_invalid;
 
 	int vblank_pending;
 	int page_flip_pending;
@@ -1751,7 +1751,7 @@ drm_output_repaint(struct weston_output *output_base,
 	assert(scanout_state->dest_h == scanout_state->src_h >> 16);
 
 	mode = to_drm_mode(output->base.current_mode);
-	if (output->state_invalid || !scanout_plane->state_cur->fb ||
+	if (backend->state_invalid || !scanout_plane->state_cur->fb ||
 	    scanout_plane->state_cur->fb->stride != scanout_state->fb->stride) {
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
 				     scanout_state->fb->fb_id,
@@ -1763,8 +1763,6 @@ drm_output_repaint(struct weston_output *output_base,
 			goto err;
 		}
 		output_base->set_dpms(output_base, WESTON_DPMS_ON);
-
-		output->state_invalid = false;
 	}
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id,
@@ -1872,7 +1870,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	/* Need to smash all state in from scratch; current timings might not
 	 * be what we want, page flip might not work, etc.
 	 */
-	if (output->state_invalid)
+	if (backend->state_invalid)
 		goto finish_frame;
 
 	assert(scanout_plane->state_cur->output == output);
@@ -2036,11 +2034,25 @@ drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
 	struct drm_backend *b = to_drm_backend(compositor);
 	struct drm_pending_state *pending_state = repaint_data;
 	struct drm_output_state *output_state, *tmp;
+	uint32_t *unused;
+
+	if (b->state_invalid) {
+		/* If we need to reset all our state (e.g. because we've
+		 * just started, or just been VT-switched in), explicitly
+		 * disable all the CRTCs we aren't using. This also disables
+		 * all connectors on these CRTCs, so we don't need to do that
+		 * separately with the pre-atomic API. */
+		wl_array_for_each(unused, &b->unused_crtcs)
+			drmModeSetCrtc(b->drm.fd, *unused, 0, 0, 0, NULL, 0,
+				       NULL);
+	}
 
 	wl_list_for_each_safe(output_state, tmp, &pending_state->output_list,
 			      link) {
 		drm_output_assign_state(output_state, DRM_STATE_APPLY_ASYNC);
 	}
+
+	b->state_invalid = false;
 
 	drm_pending_state_free(pending_state);
 	b->repaint_data = NULL;
@@ -2662,7 +2674,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	 *      sledgehammer modeswitch first, and only later showing new
 	 *      content.
 	 */
-	output->state_invalid = true;
+	b->state_invalid = true;
 
 	if (b->use_pixman) {
 		drm_output_fini_pixman(output);
@@ -4003,8 +4015,6 @@ drm_output_enable(struct weston_output *base)
 				    output->connector->count_modes == 0 ?
 				    ", built-in" : "");
 
-	output->state_invalid = true;
-
 	return 0;
 
 err:
@@ -4523,10 +4533,7 @@ session_notify(struct wl_listener *listener, void *data)
 		weston_log("activating session\n");
 		weston_compositor_wake(compositor);
 		weston_compositor_damage_all(compositor);
-
-		wl_list_for_each(output, &compositor->output_list, base.link)
-			output->state_invalid = true;
-
+		b->state_invalid = true;
 		udev_input_enable(&b->input);
 	} else {
 		weston_log("deactivating session\n");
@@ -4938,6 +4945,7 @@ drm_backend_create(struct weston_compositor *compositor,
 	if (b == NULL)
 		return NULL;
 
+	b->state_invalid = true;
 	b->drm.fd = -1;
 	wl_array_init(&b->unused_crtcs);
 	wl_array_init(&b->unused_connectors);
