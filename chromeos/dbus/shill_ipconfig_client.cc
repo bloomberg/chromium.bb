@@ -131,6 +131,7 @@ void ShillIPConfigClientImpl::SetProperty(const dbus::ObjectPath& ipconfig_path,
       }
       variant_writer.CloseContainer(&array_writer);
       writer.CloseContainer(&variant_writer);
+      break;
     }
     case base::Value::Type::BOOLEAN:
     case base::Value::Type::INTEGER:
