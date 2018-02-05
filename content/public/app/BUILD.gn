@@ -216,22 +216,22 @@ service_manifest("plugin_manifest") {
   source = "mojo/content_plugin_manifest.json"
 }
 
-service_manifest("context_snapshot_manifest") {
-  source = "mojo/context_snapshot_manifest.json"
+service_manifest("snapshot_manifest") {
+  if (use_v8_context_snapshot) {
+    source = "mojo/context_snapshot_manifest.json"
+  } else {
+    source = "mojo/snapshot_blob_manifest.json"
+  }
 }
 
 service_manifest("renderer_manifest") {
   name = "content_renderer"
   source = "mojo/content_renderer_manifest.json"
-  if (use_v8_context_snapshot) {
-    overlays = [ ":context_snapshot_manifest" ]
-  }
+  overlays = [ ":snapshot_manifest" ]
 }
 
 service_manifest("utility_manifest") {
   name = "content_utility"
   source = "mojo/content_utility_manifest.json"
-  if (use_v8_context_snapshot) {
-    overlays = [ ":context_snapshot_manifest" ]
-  }
+  overlays = [ ":snapshot_manifest" ]
 }
