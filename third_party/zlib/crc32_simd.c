@@ -126,7 +126,7 @@ uint32_t ZLIB_INTERNAL crc32_sse42_simd_(  /* SSE4.2+PCLMUL */
      * Fold 128-bits to 64-bits.
      */
     x2 = _mm_clmulepi64_si128(x1, x0, 0x10);
-    x3 = _mm_set_epi32(0, ~0, 0, ~0);
+    x3 = _mm_setr_epi32(~0, 0, ~0, 0);
     x1 = _mm_srli_si128(x1, 8);
     x1 = _mm_xor_si128(x1, x2);
 
