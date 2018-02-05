@@ -1361,6 +1361,7 @@ class CipdWrapper(SCMWrapper):
 
   Currently only supports chrome-infra-packages.appspot.com.
   """
+  name = 'cipd'
 
   def __init__(self, url=None, root_dir=None, relpath=None, out_fh=None,
                out_cb=None, root=None, package=None):
