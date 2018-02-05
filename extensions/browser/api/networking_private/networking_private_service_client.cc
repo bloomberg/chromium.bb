@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/networking_private/networking_private_service_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -347,7 +348,7 @@ void NetworkingPrivateServiceClient::SelectCellularMobileNetwork(
 
 std::unique_ptr<base::ListValue>
 NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
-  std::unique_ptr<base::ListValue> network_list;
+  auto network_list = std::make_unique<base::ListValue>();
   network_list->AppendString(::onc::network_type::kWiFi);
   return network_list;
 }
