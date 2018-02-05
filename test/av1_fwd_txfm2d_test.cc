@@ -207,4 +207,77 @@ TEST(AV1FwdTxfm2d, CfgTest) {
   }
 }
 
+#if HAVE_SSE2 && defined(__SSE2__)
+#include "av1/common/x86/av1_txfm_sse2.h"
+Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
+  { NULL, NULL },  // TX_4X4
+  { av1_fwd_txfm2d_8x8_c,
+    av1_fwd_txfm2d_8x8_sse2 },  // TX_8X8    // 8x8 transform
+  { NULL, NULL },               // TX_16X16
+  { NULL, NULL },               // TX_32X32
+#if CONFIG_TX64X64
+  { NULL, NULL },  // TX_64X64
+#endif             // CONFIG_TX64X64
+  { NULL, NULL },  // TX_4X8
+  { NULL, NULL },  // TX_8X4
+  { NULL, NULL },  // TX_8X16
+  { NULL, NULL },  // TX_16X8
+  { NULL, NULL },  // TX_16X32
+  { NULL, NULL },  // TX_32X16
+#if CONFIG_TX64X64
+  { NULL, NULL },  // TX_32X64
+  { NULL, NULL },  // TX_64X32
+#endif             // CONFIG_TX64X64
+  { NULL, NULL },  // TX_4X16
+  { NULL, NULL },  // TX_16X4
+  { NULL, NULL },  // TX_8X32
+  { NULL, NULL },  // TX_32X8
+#if CONFIG_TX64X64
+  { NULL, NULL },  // TX_16X64
+  { NULL, NULL },  // TX_64X16
+#endif             // CONFIG_TX64X64
+};
+
+TEST(av1_fwd_txfm2d_sse2, match) {
+  const int bd = 8;
+  for (int tx_size = TX_4X4; tx_size < TX_SIZES_ALL; ++tx_size) {
+    for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
+      Fwd_Txfm2d_Func ref_func = fwd_func_sse2_list[tx_size][0];
+      Fwd_Txfm2d_Func target_func = fwd_func_sse2_list[tx_size][1];
+      if (ref_func != NULL && target_func != NULL) {
+        int16_t input[64 * 64] = { 0 };
+        int32_t output[64 * 64] = { 0 };
+        int32_t ref_output[64 * 64] = { 0 };
+        int input_stride = 64;
+        ACMRandom rnd(ACMRandom::DeterministicSeed());
+        int rows = tx_size_high[tx_size];
+        int cols = tx_size_wide[tx_size];
+        for (int cnt = 0; cnt < 500; ++cnt) {
+          if (cnt == 0) {
+            for (int r = 0; r < rows; ++r) {
+              for (int c = 0; c < cols; ++c) {
+                input[r * input_stride + c] = (1 << bd) - 1;
+              }
+            }
+          } else {
+            for (int r = 0; r < rows; ++r) {
+              for (int c = 0; c < cols; ++c) {
+                input[r * input_stride + c] = rnd.Rand16() % (1 << bd);
+              }
+            }
+          }
+          ref_func(input, ref_output, input_stride, (TX_TYPE)tx_type, bd);
+          target_func(input, output, input_stride, (TX_TYPE)tx_type, bd);
+          for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+              ASSERT_EQ(ref_output[r * cols + c], output[r * cols + c]);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+#endif  // HAVE_SSE2
+
 }  // namespace

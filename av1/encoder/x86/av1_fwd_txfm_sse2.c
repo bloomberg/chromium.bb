@@ -10,6 +10,7 @@
  */
 
 #include "av1/common/x86/av1_txfm_sse2.h"
+#include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 
 void fdct4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
@@ -1572,4 +1573,51 @@ void fadst16_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   output[13] = x8[2];
   output[14] = x8[15];
   output[15] = x8[0];
+}
+
+void av1_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output, int stride,
+                             TX_TYPE tx_type, int bd) {
+  (void)stride;
+  (void)bd;
+  __m128i buf[8];
+  const int8_t *shift = fwd_txfm_shift_ls[TX_8X8];
+  const int txw_idx = get_txw_idx(TX_8X8);
+  const int txh_idx = get_txh_idx(TX_8X8);
+  const int cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int buf_size = 8;
+  static const transform_2d_sse2 txfm_arr[] = {
+    { fdct8_new_sse2, fdct8_new_sse2 },    // DCT_DCT
+    { fadst8_new_sse2, fdct8_new_sse2 },   // ADST_DCT
+    { fdct8_new_sse2, fadst8_new_sse2 },   // DCT_ADST
+    { fadst8_new_sse2, fadst8_new_sse2 },  // ADST_ADST
+    { NULL, NULL },                        // FLIPADST_DCT
+    { NULL, NULL },                        // DCT_FLIPADST
+    { NULL, NULL },                        // FLIPADST_FLIPADST
+    { NULL, NULL },                        // ADST_FLIPADST
+    { NULL, NULL },                        // FLIPADST_ADST
+    { NULL, NULL },                        // IDTX
+    { NULL, NULL },                        // V_DCT
+    { NULL, NULL },                        // H_DCT
+    { NULL, NULL },                        // V_ADST
+    { NULL, NULL },                        // H_ADST
+    { NULL, NULL },                        // V_FLIPADST
+    { NULL, NULL },                        // H_FLIPADST
+  };
+
+  const transform_1d_sse2 col_txfm = txfm_arr[tx_type].col;
+  const transform_1d_sse2 row_txfm = txfm_arr[tx_type].row;
+  if (col_txfm != NULL && row_txfm != NULL) {
+    load_buffer_16bit_to_16bit(input, stride, buf, buf_size);
+    round_shift_16bit(buf, 8, shift[0]);
+    col_txfm(buf, buf, cos_bit_col);
+    round_shift_16bit(buf, 8, shift[1]);
+    transpose_16bit_8x8(buf, buf);
+    row_txfm(buf, buf, cos_bit_row);
+    round_shift_16bit(buf, 8, shift[2]);
+    transpose_16bit_8x8(buf, buf);
+    store_buffer_16bit_to_32bit_8x8(buf, output);
+  } else {
+    av1_fwd_txfm2d_8x8_c(input, output, stride, tx_type, bd);
+  }
 }

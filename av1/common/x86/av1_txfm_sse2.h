@@ -14,7 +14,9 @@
 #include <emmintrin.h>  // SSE2
 
 #include "./aom_config.h"
+#include "./av1_rtcd.h"
 #include "aom/aom_integer.h"
+#include "aom_dsp/x86/transpose_sse2.h"
 #include "av1/common/av1_txfm.h"
 
 #ifdef __cplusplus
@@ -48,6 +50,79 @@ extern "C" {
     out1 = _mm_packs_epi32(d0, d1);               \
   }
 
+static INLINE __m128i load_16bit_to_16bit(const int16_t *a) {
+  return _mm_load_si128((const __m128i *)a);
+}
+
+static INLINE __m128i load_32bit_to_16bit(const int32_t *a) {
+  const __m128i a_low = _mm_load_si128((const __m128i *)a);
+  return _mm_packs_epi32(a_low, *(const __m128i *)(a + 4));
+}
+
+// Store 8 16 bit values. If the destination is 32 bits then sign extend the
+// values by multiplying by 1.
+static INLINE void store_16bit_to_32bit(__m128i a, int32_t *b) {
+  const __m128i one = _mm_set1_epi16(1);
+  const __m128i a_hi = _mm_mulhi_epi16(a, one);
+  const __m128i a_lo = _mm_mullo_epi16(a, one);
+  const __m128i a_1 = _mm_unpacklo_epi16(a_lo, a_hi);
+  const __m128i a_2 = _mm_unpackhi_epi16(a_lo, a_hi);
+  _mm_store_si128((__m128i *)(b), a_1);
+  _mm_store_si128((__m128i *)(b + 4), a_2);
+}
+
+static INLINE void load_buffer_16bit_to_16bit(const int16_t *in, int stride,
+                                              __m128i *out, int out_size) {
+  for (int i = 0; i < out_size; ++i) {
+    out[i] = load_16bit_to_16bit(in + i * stride);
+  }
+}
+
+static INLINE void load_buffer_32bit_to_16bit(const int32_t *in, int stride,
+                                              __m128i *out, int out_size) {
+  for (int i = 0; i < out_size; ++i) {
+    out[i] = load_32bit_to_16bit(in + i * stride);
+  }
+}
+
+static INLINE void store_buffer_16bit_to_32bit_8x8(const __m128i *in,
+                                                   int32_t *out) {
+  for (int i = 0; i < 8; ++i) {
+    store_16bit_to_32bit(in[i], out + i * 8);
+  }
+}
+
+static INLINE void store_buffer_16bit_to_16bit_8x8(const __m128i *in,
+                                                   int16_t *out) {
+  for (int i = 0; i < 8; ++i) {
+    _mm_store_si128((__m128i *)(out + i * 8), in[i]);
+  }
+}
+
+static INLINE void round_shift_16bit(__m128i *in, int size, int bit) {
+  if (bit < 0) {
+    bit = -bit;
+    __m128i rounding = _mm_set1_epi16(1 << (bit - 1));
+    for (int i = 0; i < size; ++i) {
+      in[i] = _mm_adds_epi16(in[i], rounding);
+      in[i] = _mm_srai_epi16(in[i], bit);
+    }
+  } else if (bit > 0) {
+    for (int i = 0; i < size; ++i) {
+      in[i] = _mm_slli_epi16(in[i], bit);
+    }
+  }
+}
+
+void av1_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output, int stride,
+                             TX_TYPE tx_type, int bd);
+
+typedef void (*transform_1d_sse2)(const __m128i *input, __m128i *output,
+                                  int8_t cos_bit);
+
+typedef struct {
+  transform_1d_sse2 col, row;  // vertical and horizontal
+} transform_2d_sse2;
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
