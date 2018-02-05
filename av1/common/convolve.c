@@ -401,7 +401,6 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst0,
     for (int x = 0; x < w; ++x) {
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
       for (int k = 0; k < filter_params_x->taps; ++k) {
-        assert((x_filter[k] % 2) == 0);
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -419,7 +418,6 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst0,
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
-        assert((y_filter[k] % 2) == 0);
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -456,7 +454,6 @@ void av1_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_y->taps; ++k) {
-        assert((y_filter[k] % 2) == 0);
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
       res *= (1 << bits);
@@ -490,7 +487,6 @@ void av1_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst0,
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_x->taps; ++k) {
-        assert((x_filter[k] % 2) == 0);
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
       }
       res = (1 << bits) * ROUND_POWER_OF_TWO(res, conv_params->round_0);
@@ -554,7 +550,6 @@ void av1_convolve_2d_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
     for (int x = 0; x < w; ++x) {
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
       for (int k = 0; k < filter_params_x->taps; ++k) {
-        assert((x_filter[k] % 2) == 0);
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -572,7 +567,6 @@ void av1_convolve_2d_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
-        assert((y_filter[k] % 2) == 0);
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -602,7 +596,6 @@ void av1_convolve_y_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_y->taps; ++k) {
-        assert((y_filter[k] % 2) == 0);
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
       dst[y * dst_stride + x] =
@@ -630,7 +623,6 @@ void av1_convolve_x_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_x->taps; ++k) {
-        assert((x_filter[k] % 2) == 0);
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
       }
       res = ROUND_POWER_OF_TWO(res, conv_params->round_0);

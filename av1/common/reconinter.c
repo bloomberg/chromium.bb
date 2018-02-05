@@ -740,7 +740,7 @@ void av1_make_masked_inter_predictor(
 // CONFIG_HIGHBITDEPTH or just 8 otherwise.
 #define INTER_PRED_BYTES_PER_PIXEL 4
 
-  DECLARE_ALIGNED(16, uint8_t,
+  DECLARE_ALIGNED(32, uint8_t,
                   tmp_buf[INTER_PRED_BYTES_PER_PIXEL * MAX_SB_SQUARE]);
 #undef INTER_PRED_BYTES_PER_PIXEL
 
@@ -988,7 +988,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       for (idx = 0; idx < b8_w; idx += b4_w) {
         MB_MODE_INFO *this_mbmi = &xd->mi[row * xd->mi_stride + col]->mbmi;
         is_compound = has_second_ref(this_mbmi);
-        DECLARE_ALIGNED(16, int32_t, tmp_dst[8 * 8]);
+        DECLARE_ALIGNED(32, int32_t, tmp_dst[8 * 8]);
         int tmp_dst_stride = 8;
         assert(w <= 8 && h <= 8);
         ConvolveParams conv_params = get_conv_params_no_round(
@@ -1124,7 +1124,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
     uint8_t *pre[2];
     SubpelParams subpel_params[2];
-    DECLARE_ALIGNED(16, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
+    DECLARE_ALIGNED(32, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_INTRABC

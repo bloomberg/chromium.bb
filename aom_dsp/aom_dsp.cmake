@@ -81,6 +81,7 @@ set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/intrapred_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
+    "${AOM_ROOT}/aom_dsp/x86/convolve_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_common_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h")
 
