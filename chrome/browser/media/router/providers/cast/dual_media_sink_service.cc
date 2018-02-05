@@ -43,6 +43,18 @@ void DualMediaSinkService::StartMdnsDiscovery() {
     cast_media_sink_service_->StartMdnsDiscovery();
 }
 
+void DualMediaSinkService::RegisterMediaSinksObserver(
+    MediaSinksObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  dial_media_sink_service_->RegisterMediaSinksObserver(observer);
+}
+
+void DualMediaSinkService::UnregisterMediaSinksObserver(
+    MediaSinksObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  dial_media_sink_service_->UnregisterMediaSinksObserver(observer);
+}
+
 DualMediaSinkService::DualMediaSinkService() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       g_browser_process->system_request_context();
@@ -59,8 +71,8 @@ DualMediaSinkService::DualMediaSinkService() {
   if (cast_media_sink_service_)
     dial_sink_added_cb = cast_media_sink_service_->GetDialSinkAddedCallback();
 
-  dial_media_sink_service_ = std::make_unique<DialMediaSinkService>(
-      g_browser_process->system_request_context());
+  dial_media_sink_service_ =
+      std::make_unique<DialMediaSinkService>(request_context);
   dial_media_sink_service_->Start(
       base::BindRepeating(&DualMediaSinkService::OnSinksDiscovered,
                           base::Unretained(this), "dial"),

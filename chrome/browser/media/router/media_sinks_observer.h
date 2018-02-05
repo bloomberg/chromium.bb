@@ -41,8 +41,9 @@ class MediaSinksObserver {
   // If |origins| is empty or contains |origin_|, then |OnSinksReceived(sinks)|
   // will be invoked with |sinks|. Otherwise, it will be invoked with an empty
   // list.
-  void OnSinksUpdated(const std::vector<MediaSink>& sinks,
-                      const std::vector<url::Origin>& origins);
+  // Marked virtual for tests.
+  virtual void OnSinksUpdated(const std::vector<MediaSink>& sinks,
+                              const std::vector<url::Origin>& origins);
 
   const MediaSource& source() const { return source_; }
 

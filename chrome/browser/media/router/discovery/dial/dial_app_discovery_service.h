@@ -32,7 +32,7 @@ class DialAppInfoFetcher;
 class SafeDialAppInfoParser;
 
 // Represents DIAL app status on receiver device.
-enum SinkAppStatus { kAvailable, kUnavailable, kUnknown };
+enum SinkAppStatus { kUnknown = 0, kAvailable, kUnavailable };
 
 // This class provides an API to fetch DIAL app info XML from an app URL and
 // parse the XML into a DialAppInfo object. Actual parsing happens in a

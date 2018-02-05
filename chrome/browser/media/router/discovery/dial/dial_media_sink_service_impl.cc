@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 
+#include <algorithm>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +22,7 @@ DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     std::unique_ptr<service_manager::Connector> connector,
     const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
     const OnDialSinkAddedCallback& dial_sink_added_cb,
+    const OnAvailableSinksUpdatedCallback& available_sinks_updated_callback,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : MediaSinkServiceBase(on_sinks_discovered_cb),
@@ -30,7 +33,13 @@ DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
                      base::Unretained(this)),
           base::Bind(&DialMediaSinkServiceImpl::OnDeviceDescriptionError,
                      base::Unretained(this)))),
+      app_discovery_service_(std::make_unique<DialAppDiscoveryService>(
+          connector_.get(),
+          base::BindRepeating(
+              &DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
+              base::Unretained(this)))),
       dial_sink_added_cb_(dial_sink_added_cb),
+      available_sinks_updated_callback_(available_sinks_updated_callback),
       request_context_(request_context),
       task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -73,6 +82,26 @@ void DialMediaSinkServiceImpl::OnUserGesture() {
     for (const auto& sink_it : current_sinks_)
       dial_sink_added_cb_.Run(sink_it.second);
   }
+
+  RescanAppInfo();
+}
+
+void DialMediaSinkServiceImpl::StartMonitoringAvailableSinksForApp(
+    const std::string& app_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!registered_apps_.insert(app_name).second)
+    return;
+
+  // Start checking if |app_name| is available on existing sinks.
+  for (const auto& dial_sink_it : current_sinks_)
+    FetchAppInfoForSink(dial_sink_it.second, app_name);
+}
+
+void DialMediaSinkServiceImpl::StopMonitoringAvailableSinksForApp(
+    const std::string& app_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  registered_apps_.erase(app_name);
 }
 
 void DialMediaSinkServiceImpl::SetDialRegistryForTest(
@@ -84,6 +113,17 @@ void DialMediaSinkServiceImpl::SetDialRegistryForTest(
 void DialMediaSinkServiceImpl::SetDescriptionServiceForTest(
     std::unique_ptr<DeviceDescriptionService> description_service) {
   description_service_ = std::move(description_service);
+}
+
+void DialMediaSinkServiceImpl::SetAppDiscoveryServiceForTest(
+    std::unique_ptr<DialAppDiscoveryService> app_discovery_service) {
+  app_discovery_service_ = std::move(app_discovery_service);
+}
+
+void DialMediaSinkServiceImpl::OnDiscoveryComplete() {
+  MediaSinkServiceBase::OnDiscoveryComplete();
+  for (const auto& app_name : registered_apps_)
+    MaybeNotifySinkObservers(app_name);
 }
 
 void DialMediaSinkServiceImpl::OnDialDeviceEvent(
@@ -131,6 +171,10 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
   if (dial_sink_added_cb_)
     dial_sink_added_cb_.Run(dial_sink);
 
+  // Start checking if all registered apps are available on |dial_sink|.
+  for (const auto& app_name : registered_apps_)
+    FetchAppInfoForSink(dial_sink, app_name);
+
   // Start fetch timer again if device description comes back after
   // |finish_timer_| fires.
   MediaSinkServiceBase::RestartTimer();
@@ -143,10 +187,92 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionError(
   DVLOG(2) << "OnDeviceDescriptionError [message]: " << error_message;
 }
 
+void DialMediaSinkServiceImpl::OnAppInfoParseCompleted(
+    const std::string& sink_id,
+    const std::string& app_name,
+    SinkAppStatus app_status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!base::ContainsKey(registered_apps_, app_name)) {
+    DVLOG(2) << "App name not registered: " << app_name;
+    return;
+  }
+
+  SinkAppStatus old_status = GetAppStatus(sink_id, app_name);
+  SetAppStatus(sink_id, app_name, app_status);
+
+  if (old_status != app_status)
+    MaybeNotifySinkObservers(app_name);
+}
+
+void DialMediaSinkServiceImpl::MaybeNotifySinkObservers(
+    const std::string& app_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::flat_set<MediaSinkInternal> sinks = GetAvailableSinks(app_name);
+  auto& last_known_sinks = last_known_available_sinks_[app_name];
+  if (sinks == last_known_sinks)
+    return;
+
+  DVLOG(2) << "NotifySinkObservers " << app_name << " has [" << sinks.size()
+           << "] sinks";
+  available_sinks_updated_callback_.Run(
+      app_name, std::vector<MediaSinkInternal>(sinks.begin(), sinks.end()));
+
+  last_known_sinks.swap(sinks);
+}
+
+void DialMediaSinkServiceImpl::FetchAppInfoForSink(
+    const MediaSinkInternal& dial_sink,
+    const std::string& app_name) {
+  std::string sink_id = dial_sink.sink().id();
+  SinkAppStatus app_status = GetAppStatus(sink_id, app_name);
+  if (app_status != SinkAppStatus::kUnknown)
+    return;
+
+  app_discovery_service_->FetchDialAppInfo(dial_sink, app_name,
+                                           request_context_.get());
+}
+
+void DialMediaSinkServiceImpl::RescanAppInfo() {
+  for (const auto& dial_sink_it : current_sinks_) {
+    for (const auto& app_name : registered_apps_) {
+      FetchAppInfoForSink(dial_sink_it.second, app_name);
+    }
+  }
+}
+
+SinkAppStatus DialMediaSinkServiceImpl::GetAppStatus(
+    const std::string& sink_id,
+    const std::string& app_name) const {
+  std::string key = sink_id + ':' + app_name;
+  auto status_it = app_statuses_.find(key);
+  return status_it == app_statuses_.end() ? SinkAppStatus::kUnknown
+                                          : status_it->second;
+}
+
+void DialMediaSinkServiceImpl::SetAppStatus(const std::string& sink_id,
+                                            const std::string& app_name,
+                                            SinkAppStatus app_status) {
+  std::string key = sink_id + ':' + app_name;
+  app_statuses_[key] = app_status;
+}
+
 void DialMediaSinkServiceImpl::RecordDeviceCounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   metrics_.RecordDeviceCountsIfNeeded(current_sinks_.size(),
                                       current_devices_.size());
+}
+
+base::flat_set<MediaSinkInternal> DialMediaSinkServiceImpl::GetAvailableSinks(
+    const std::string& app_name) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<MediaSinkInternal> sinks;
+  for (const auto& sink_it : current_sinks_) {
+    std::string sink_id = sink_it.second.sink().id();
+    if (GetAppStatus(sink_id, app_name) == SinkAppStatus::kAvailable)
+      sinks.insert(sink_it.second);
+  }
+  return sinks;
 }
 
 }  // namespace media_router
