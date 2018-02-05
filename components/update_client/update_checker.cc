@@ -20,6 +20,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/persisted_data.h"
@@ -118,8 +119,16 @@ void UpdateCheckerImpl::CheckForUpdates(
 
 // This function runs on the blocking pool task runner.
 void UpdateCheckerImpl::ReadUpdaterStateAttributes() {
-  const bool is_machine_install = !config_->IsPerUserInstall();
-  updater_state_attributes_ = UpdaterState::GetState(is_machine_install);
+#if defined(OS_WIN)
+  // On Windows, the Chrome and the updater install modes are matched by design.
+  updater_state_attributes_ =
+      UpdaterState::GetState(!config_->IsPerUserInstall());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  // MacOS ignores this value in the current implementation but this may change.
+  updater_state_attributes_ = UpdaterState::GetState(false);
+#else
+// Other platforms don't have updaters.
+#endif  // OS_WIN
 }
 
 void UpdateCheckerImpl::CheckForUpdatesHelper(

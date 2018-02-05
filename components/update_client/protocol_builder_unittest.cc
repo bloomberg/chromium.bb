@@ -43,6 +43,7 @@ TEST(UpdateClientUtils, BuildProtocolRequestUpdaterStateAttributes) {
   EXPECT_EQ(std::string::npos, request.find("<updater"));
 
   UpdaterState::Attributes attributes;
+  attributes["ismachine"] = "1";
   attributes["domainjoined"] = "1";
   attributes["name"] = "Omaha";
   attributes["version"] = "1.2.3.4";
@@ -55,7 +56,7 @@ TEST(UpdateClientUtils, BuildProtocolRequestUpdaterStateAttributes) {
       std::make_unique<UpdaterState::Attributes>(attributes));
   EXPECT_NE(std::string::npos, request.find(" domainjoined=\"1\""));
   const std::string updater_element =
-      "<updater autoupdatecheckenabled=\"0\" "
+      "<updater autoupdatecheckenabled=\"0\" ismachine=\"1\" "
       "lastchecked=\"2\" laststarted=\"1\" name=\"Omaha\" "
       "updatepolicy=\"-1\" version=\"1.2.3.4\"/>";
 #if defined(GOOGLE_CHROME_BUILD)

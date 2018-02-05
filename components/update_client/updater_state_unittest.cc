@@ -43,12 +43,19 @@ TEST_F(UpdaterStateTest, Serialize) {
   EXPECT_STREQ("1", attributes.at("updatepolicy").c_str());
 
 #if defined(GOOGLE_CHROME_BUILD)
-  #if defined(OS_WIN)
-    // The name of the Windows updater for Chrome.
-    EXPECT_STREQ("Omaha", UpdaterState::GetState(false)->at("name").c_str());
+#if defined(OS_WIN)
+  // The value of "ismachine".
+  EXPECT_STREQ("0", UpdaterState::GetState(false)->at("ismachine").c_str());
+  EXPECT_STREQ("1", UpdaterState::GetState(true)->at("ismachine").c_str());
+
+  // The name of the Windows updater for Chrome.
+  EXPECT_STREQ("Omaha", UpdaterState::GetState(false)->at("name").c_str());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
+  // MacOS does not serialize "ismachine".
+  EXPECT(0, UpdaterState::GetState(false).count("ismachine"));
+  EXPECT(0, UpdaterState::GetState(true).count("ismachine"));
   EXPECT_STREQ("Keystone", UpdaterState::GetState(false)->at("name").c_str());
-#endif
+#endif  // OS_WIN
 #endif  // GOOGLE_CHROME_BUILD
 
   // Tests some of the remaining values.
