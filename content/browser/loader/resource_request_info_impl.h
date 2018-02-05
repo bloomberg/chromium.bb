@@ -104,6 +104,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool ShouldReportRawHeaders() const;
   NavigationUIData* GetNavigationUIData() const override;
   bool CanceledByDevTools() const override;
+  base::StringPiece GetCustomCancelReason() const override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
@@ -218,6 +219,10 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     blocked_cross_site_document_ = value;
   }
 
+  void set_custom_cancel_reason(base::StringPiece reason) {
+    custom_cancel_reason_ = reason.as_string();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -266,6 +271,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // and remote endpoint. This callback will be removed once PlzNavigate is
   // shipped.
   TransferCallback on_transfer_;
+
+  std::string custom_cancel_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };
