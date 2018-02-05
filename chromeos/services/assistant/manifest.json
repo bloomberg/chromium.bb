@@ -1,0 +1,10 @@
+{
+  "name": "assistant",
+  "display_name": "Assistant Service",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+      }
+    }
+  }
+}
