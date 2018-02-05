@@ -7,42 +7,46 @@
 
 #include "base/macros.h"
 #include "core/css/cssom/CSSStyleImageValue.h"
-#include "platform/bindings/ScriptState.h"
 
 namespace blink {
+
+class ScriptState;
+class CSSImageValue;
 
 class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSURLImageValue* Create(ScriptState* script_state,
+  static CSSURLImageValue* Create(ScriptState*,
                                   const AtomicString& url,
-                                  ExceptionState& exception_state) {
-    const auto* execution_context = ExecutionContext::From(script_state);
-    DCHECK(execution_context);
-    KURL parsed_url = execution_context->CompleteURL(url);
-    if (!parsed_url.IsValid()) {
-      exception_state.ThrowTypeError("Failed to parse URL from " + url);
-      return nullptr;
-    }
-    // Use absolute URL for CSSImageValue but keep relative URL for
-    // getter and serialization.
-    return new CSSURLImageValue(
-        CSSImageValue::Create(url, parsed_url, Referrer()));
-  }
-  static CSSURLImageValue* Create(const CSSImageValue* image_value) {
-    return new CSSURLImageValue(image_value);
-  }
+                                  ExceptionState&);
 
-  StyleValueType GetType() const override { return kURLImageType; }
+  static CSSURLImageValue* FromCSSValue(const CSSImageValue&);
 
-  const CSSValue* ToCSSValue() const override { return CssImageValue(); }
+  const String& url() const;
 
-  const String& url() const { return CssImageValue()->RelativeUrl(); }
+  // CSSStyleImageValue
+  WTF::Optional<IntSize> IntrinsicSize() const final;
+
+  // CanvasImageSource
+  ResourceStatus Status() const final;
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               AccelerationHint,
+                                               const FloatSize&) final;
+  bool IsAccelerated() const final;
+
+  // CSSStyleValue
+  StyleValueType GetType() const final { return kURLImageType; }
+  const CSSValue* ToCSSValue() const final;
+
+  virtual void Trace(blink::Visitor*);
 
  private:
-  explicit CSSURLImageValue(const CSSImageValue* image_value)
-      : CSSStyleImageValue(image_value) {}
+  explicit CSSURLImageValue(const CSSImageValue& value) : value_(value) {}
+
+  scoped_refptr<Image> GetImage() const;
+
+  Member<const CSSImageValue> value_;
   DISALLOW_COPY_AND_ASSIGN(CSSURLImageValue);
 };
 
