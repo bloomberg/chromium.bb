@@ -9,7 +9,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.os.Build;
-import android.service.notification.StatusBarNotification;
 
 import java.util.List;
 
@@ -45,7 +44,4 @@ public interface NotificationManagerProxy {
 
     @TargetApi(Build.VERSION_CODES.O)
     void deleteNotificationChannelGroup(String groupId);
-
-    @TargetApi(Build.VERSION_CODES.M)
-    StatusBarNotification[] getActiveNotifications();
 }

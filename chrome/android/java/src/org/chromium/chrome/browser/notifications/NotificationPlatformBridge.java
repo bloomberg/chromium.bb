@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -16,7 +15,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.service.notification.StatusBarNotification;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -48,8 +46,6 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
@@ -731,31 +727,6 @@ public class NotificationPlatformBridge {
             WebApkServiceClient.getInstance().cancelNotification(
                     webApkPackage, notificationId, PLATFORM_ID);
         }
-    }
-
-    /**
-     * Returns the list of Notification Ids belonging to all active notifications, according to
-     * the OS.
-     *
-     * Even though the getActiveNotifications() API from NotificationManager class is available
-     * on Android M onwards, the data provided by Android is only used on Android O and above
-     * because earlier versions were subject to a race condition briefly after showing or closing a
-     * notification, during which, this data would be incorrect.
-     */
-    @TargetApi(Build.VERSION_CODES.O)
-    @CalledByNative
-    private String[] getActiveNotificationsIds() {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        StatusBarNotification[] activeNotifications = mNotificationManager.getActiveNotifications();
-        if (activeNotifications == null) return null;
-        List<String> result = new ArrayList<>();
-        for (StatusBarNotification activeNotification : activeNotifications) {
-            String tag = activeNotification.getTag();
-
-            // Notifications shown by other systems may skip setting a tag.
-            if (tag != null) result.add(tag);
-        }
-        return result.toArray(new String[result.size()]);
     }
 
     /**
