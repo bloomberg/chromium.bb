@@ -146,33 +146,60 @@ base::flat_map<const char*, int64_t> GetExpectedBrowserMetrics() {
       base::KEEP_FIRST_OF_DUPES);
 }
 
-void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
-                             base::flat_map<const char*, int64_t>& metrics_mb,
-                             base::ProcessId pid) {
+void SetAllocatorDumpMetric(ProcessMemoryDumpPtr& pmd,
+                            const std::string& dump_name,
+                            const std::string& metric_name,
+                            uint64_t value) {
+  auto it = pmd->chrome_dump->entries_for_allocator_dumps.find(dump_name);
+  if (it == pmd->chrome_dump->entries_for_allocator_dumps.end()) {
+    memory_instrumentation::mojom::AllocatorMemDumpPtr amd(
+        memory_instrumentation::mojom::AllocatorMemDump::New());
+    amd->numeric_entries.insert(std::make_pair(metric_name, value));
+    pmd->chrome_dump->entries_for_allocator_dumps.insert(
+        std::make_pair(dump_name, std::move(amd)));
+  } else {
+    it->second->numeric_entries.insert(std::make_pair(metric_name, value));
+  }
+}
+
+void PopulateRendererMetrics(
+    GlobalMemoryDumpPtr& global_dump,
+    base::flat_map<const char*, int64_t>& metrics_mb_or_count,
+    base::ProcessId pid) {
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::RENDERER;
   pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
 #if !defined(OS_WIN)
-  pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
+  pmd->chrome_dump->malloc_total_kb = metrics_mb_or_count["Malloc"] * 1024;
 #endif
   pmd->chrome_dump->partition_alloc_total_kb =
-      metrics_mb["PartitionAlloc"] * 1024;
-  pmd->chrome_dump->blink_gc_total_kb = metrics_mb["BlinkGC"] * 1024;
-  pmd->chrome_dump->v8_total_kb = metrics_mb["V8"] * 1024;
-  OSMemDumpPtr os_dump =
-      GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
-                       metrics_mb["PrivateMemoryFootprint"] * 1024,
-                       metrics_mb["SharedMemoryFootprint"] * 1024,
+      metrics_mb_or_count["PartitionAlloc"] * 1024;
+  pmd->chrome_dump->blink_gc_total_kb = metrics_mb_or_count["BlinkGC"] * 1024;
+  pmd->chrome_dump->v8_total_kb = metrics_mb_or_count["V8"] * 1024;
+
+  SetAllocatorDumpMetric(pmd, "blink_objects/Document", "object_count",
+                         metrics_mb_or_count["NumberOfDocuments"]);
+  SetAllocatorDumpMetric(pmd, "blink_objects/Frame", "object_count",
+                         metrics_mb_or_count["NumberOfFrames"]);
+  SetAllocatorDumpMetric(pmd, "blink_objects/LayoutObject", "object_count",
+                         metrics_mb_or_count["NumberOfLayoutObjects"]);
+  SetAllocatorDumpMetric(pmd, "blink_objects/Node", "object_count",
+                         metrics_mb_or_count["NumberOfNodes"]);
+
+  OSMemDumpPtr os_dump = GetFakeOSMemDump(
+      metrics_mb_or_count["Resident"] * 1024,
+      metrics_mb_or_count["PrivateMemoryFootprint"] * 1024,
+      metrics_mb_or_count["SharedMemoryFootprint"] * 1024,
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-                       // accessing PrivateSwapFootprint on other OSes will
-                       // modify metrics_mb to create the value, which leads to
-                       // expectation failures.
-                       metrics_mb["PrivateSwapFootprint"] * 1024
+      // accessing PrivateSwapFootprint on other OSes will
+      // modify metrics_mb_or_count to create the value, which leads to
+      // expectation failures.
+      metrics_mb_or_count["PrivateSwapFootprint"] * 1024
 #else
-                       0
+      0
 #endif
-                       );
+      );
   pmd->os_dump = std::move(os_dump);
   pmd->pid = pid;
   global_dump->process_dumps.push_back(std::move(pmd));
@@ -192,6 +219,8 @@ base::flat_map<const char*, int64_t> GetExpectedRendererMetrics() {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
+            {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
+            {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
       },
       base::KEEP_FIRST_OF_DUPES);
 }

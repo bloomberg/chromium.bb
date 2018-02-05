@@ -21,6 +21,7 @@ namespace {
 const char* const kDumpProviderWhitelist[] = {
     "android::ResourceManagerImpl",
     "BlinkGC",
+    "BlinkObjectCounters",
     "ClientDiscardableSharedMemoryManager",
     "DOMStorage",
     "DiscardableSharedMemoryManager",
@@ -55,6 +56,7 @@ const char* const kDumpProviderWhitelist[] = {
 // The names of dump providers whitelisted for summary tracing.
 const char* const kDumpProviderSummaryWhitelist[] = {
     "BlinkGC",
+    "BlinkObjectCounters",
     "gpu::BufferManager",
     "gpu::RenderbufferManager",
     "gpu::TextureManager",
@@ -71,6 +73,21 @@ const char* const kDumpProviderSummaryWhitelist[] = {
 const char* const kAllocatorDumpNameWhitelist[] = {
     "blink_gc",
     "blink_gc/allocated_objects",
+    "blink_objects/AudioHandler",
+    "blink_objects/Document",
+    "blink_objects/Frame",
+    "blink_objects/JSEventListener",
+    "blink_objects/LayoutObject",
+    "blink_objects/MediaKeySession",
+    "blink_objects/MediaKeys",
+    "blink_objects/Node",
+    "blink_objects/Resource",
+    "blink_objects/RTCPeerConnection",
+    "blink_objects/ScriptPromise",
+    "blink_objects/PausableObject",
+    "blink_objects/V8PerContextData",
+    "blink_objects/WorkerGlobalScope",
+    "blink_objects/UACSSResource",
     "discardable",
     "discardable/child_0x?",
     "extensions/value_store/Extensions.Database.Open.Settings/0x?",

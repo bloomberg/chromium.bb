@@ -320,6 +320,15 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
     CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfExtensionsName,
                               true, metric_count);
     CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
+
+    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfDocumentsName, true,
+                              metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfFramesName, true,
+                              metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfLayoutObjectsName,
+                              true, metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfNodesName, true,
+                              metric_count);
   }
 
   void CheckUkmBrowserSource(ukm::SourceId source_id,
