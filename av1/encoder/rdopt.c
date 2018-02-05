@@ -1817,6 +1817,26 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 }
 
 #if CONFIG_TXK_SEL
+static void update_txk_array(TX_TYPE *txk_type, int blk_row, int blk_col,
+                             TX_SIZE tx_size, TX_TYPE tx_type) {
+  txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = tx_type;
+
+  const int txw = tx_size_wide_unit[tx_size];
+  const int txh = tx_size_high_unit[tx_size];
+  // The 16x16 unit is due to the constraint from tx_64x64 which sets the
+  // maximum tx size for chroma as 32x32. Coupled with 4x1 transform block
+  // size, the constraint takes effect in 32x16 / 16x32 size too. To solve
+  // the intricacy, cover all the 16x16 units inside a 64 level transform.
+  if (txw == tx_size_wide_unit[TX_64X64] ||
+      txh == tx_size_high_unit[TX_64X64]) {
+    const int tx_unit = tx_size_wide_unit[TX_16X16];
+    for (int idy = 0; idy < txh; idy += tx_unit)
+      for (int idx = 0; idx < txw; idx += tx_unit)
+        txk_type[((blk_row + idy) << MAX_MIB_SIZE_LOG2) + (blk_col + idx)] =
+            tx_type;
+  }
+}
+
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
@@ -1910,7 +1930,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   if (best_eob == 0) best_tx_type = DCT_DCT;
 
   if (plane == 0)
-    mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = best_tx_type;
+    update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, best_tx_type);
+
   x->plane[plane].txb_entropy_ctx[block] = best_txb_ctx;
   x->plane[plane].eobs[block] = best_eob;
 
@@ -3968,7 +3989,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       x->blk_skip[plane][blk_row * bw + blk_col] = 1;
       p->eobs[block] = 0;
 #if CONFIG_TXK_SEL
-      mbmi->txk_type[txk_idx] = DCT_DCT;
+      update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, DCT_DCT);
 #endif
     } else {
       x->blk_skip[plane][blk_row * bw + blk_col] = 0;
@@ -4165,7 +4186,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
     mbmi->tx_size = tx_size_selected;
 #if CONFIG_TXK_SEL
-    mbmi->txk_type[txk_idx] = best_tx_type;
+    update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, best_tx_type);
 #endif
     if (this_rd == INT64_MAX) *is_cost_valid = 0;
     x->blk_skip[plane][blk_row * bw + blk_col] = rd_stats->skip;
