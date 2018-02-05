@@ -20,14 +20,6 @@ using storage::FileStreamReader;
 
 namespace {
 
-// Called on the IO thread.
-MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
-    const storage::FileSystemURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(
-      url.filesystem_id());
-}
-
 void CallCompletionCallbackWithPlatformFileError(
     const net::CompletionCallback& callback,
     base::File::Error file_error) {
@@ -47,7 +39,8 @@ void ReadBytes(
     int buf_len,
     const MTPDeviceAsyncDelegate::ReadBytesSuccessCallback& success_callback,
     const net::CompletionCallback& error_callback) {
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
     error_callback.Run(net::ERR_FAILED);
     return;
@@ -84,7 +77,8 @@ int MTPFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                               const net::CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url_);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url_);
   if (!delegate)
     return net::ERR_FAILED;
 
@@ -124,7 +118,8 @@ int64_t MTPFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url_);
+  MTPDeviceAsyncDelegate* delegate =
+      MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url_);
   if (!delegate)
     return net::ERR_FAILED;
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace {
 
@@ -115,10 +116,11 @@ MTPDeviceMapService::AsyncDelegateKey MTPDeviceMapService::GetAsyncDelegateKey(
 }
 
 MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
-    const std::string& filesystem_id) {
+    const storage::FileSystemURL& filesystem_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(!filesystem_id.empty());
+  DCHECK(!filesystem_url.filesystem_id().empty());
 
+  const std::string& filesystem_id = filesystem_url.filesystem_id();
   // File system may be already revoked on ExternalMountPoints side, we check
   // here that the file system is still valid.
   base::FilePath device_path;
