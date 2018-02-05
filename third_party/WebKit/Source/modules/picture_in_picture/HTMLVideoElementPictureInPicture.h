@@ -29,6 +29,7 @@ class MODULES_EXPORT HTMLVideoElementPictureInPicture {
                                   bool);
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(enterpictureinpicture);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(leavepictureinpicture);
 };
 
 }  // namespace blink

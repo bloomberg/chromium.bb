@@ -148,6 +148,7 @@
     "keystatuseschange",
     "keyup",
     "languagechange",
+    "leavepictureinpicture",
     "levelchange",
     "load",
     "loadeddata",
