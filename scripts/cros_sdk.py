@@ -1094,12 +1094,13 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
     logging.PrintBuildbotStepText(sdk_version)
 
   # Based on selections, determine the tarball to fetch.
-  if options.sdk_url:
-    urls = [options.sdk_url]
-  elif options.bootstrap:
-    urls = GetStage3Urls(sdk_version)
-  else:
-    urls = GetArchStageTarballs(sdk_version)
+  if options.download:
+    if options.sdk_url:
+      urls = [options.sdk_url]
+    elif options.bootstrap:
+      urls = GetStage3Urls(sdk_version)
+    else:
+      urls = GetArchStageTarballs(sdk_version)
 
   # Get URLs for the toolchains overlay, if one is to be used.
   toolchains_overlay_urls = None
