@@ -1300,7 +1300,7 @@ hooks = [
   {
     'name': 'vr_assets',
     'pattern': '.',
-    'condition': 'checkout_src_internal',
+    'condition': 'checkout_src_internal and checkout_android',
     'action': ['python',
                'src/third_party/depot_tools/download_from_google_storage.py',
                '--bucket', 'chrome-vr-assets',
