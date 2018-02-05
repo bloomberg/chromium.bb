@@ -240,6 +240,11 @@ interface FrameHost {
       DidCommitProvisionalLoadParams params,
       service_manager.mojom.InterfaceProvider&? interface_provider_request);
 
+  // Sent by the renderer to indicate that a same document navigation
+  // committed in the renderer process.
+  DidCommitSameDocumentNavigation(
+      DidCommitProvisionalLoadParams params);
+
   // Sent by the renderer to request a navigation.
   BeginNavigation(
       CommonNavigationParams common_params,

@@ -426,13 +426,13 @@ bool NavigatorImpl::NavigateNewChildFrame(
 void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    std::unique_ptr<NavigationHandleImpl> navigation_handle) {
+    std::unique_ptr<NavigationHandleImpl> navigation_handle,
+    bool was_within_same_document) {
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
   FrameTree* frame_tree = frame_tree_node->frame_tree();
 
   bool is_same_document_navigation = controller_->IsURLSameDocumentNavigation(
-      params.url, params.origin, params.was_within_same_document,
-      render_frame_host);
+      params.url, params.origin, was_within_same_document, render_frame_host);
 
   // If a frame claims the navigation was same-document, it must be the current
   // frame, not a pending one.
@@ -457,7 +457,7 @@ void NavigatorImpl::DidNavigate(
         // want same-document navigations to be super fast, and taking a
         // screenshot currently blocks GPU for a longer time than we are willing
         // to tolerate in this use case.
-        if (!params.was_within_same_document)
+        if (!was_within_same_document)
           controller_->TakeScreenshot();
       }
 

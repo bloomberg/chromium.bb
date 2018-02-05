@@ -138,7 +138,6 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.gesture = NavigationGestureUser;
   params.method = "GET";
   params.post_id = 0;
-  params.was_within_same_document = was_within_same_document;
   params.http_status_code = 200;
   params.url_is_unreachable = false;
   if (item_sequence_number != -1 && document_sequence_number != -1) {
@@ -159,7 +158,7 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
 
-  rfh->SendNavigateWithParams(&params);
+  rfh->SendNavigateWithParams(&params, was_within_same_document);
 }
 
 const std::string& TestWebContents::GetSaveFrameHeaders() {

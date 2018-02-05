@@ -1160,16 +1160,6 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   }
 }
 
-namespace {
-void SetWithinSameDocument(
-    const GURL& url,
-    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  params->was_within_same_document = true;
-  params->url = url;
-  params->origin = url::Origin::Create(url);
-}
-}
-
 // A renderer process might try and claim that a cross site navigation was
 // within the same document by setting was_within_same_document = true in
 // FrameHostMsg_DidCommitProvisionalLoad_Params. Such case should be detected on
@@ -1178,17 +1168,14 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteClaimWithinPage) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
-  contents()->NavigateAndCommit(kUrl1);
-  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kUrl1);
 
-  // Navigate to a different site.
-  int entry_id = RequestNavigation(node, kUrl2);
-  main_test_rfh()->PrepareForCommit();
-
-  // Claim that the navigation was within same page.
+  // Navigate to a different site and claim that the navigation was within same
+  // page.
   int bad_msg_count = process()->bad_msg_count();
-  GetSpeculativeRenderFrameHost(node)->SendNavigateWithModificationCallback(
-      entry_id, true, kUrl2, base::Bind(SetWithinSameDocument, kUrl1));
+  auto simulator =
+      NavigationSimulator::CreateRendererInitiated(kUrl2, main_test_rfh());
+  simulator->CommitSameDocument();
   EXPECT_EQ(process()->bad_msg_count(), bad_msg_count + 1);
 }
 
@@ -1323,7 +1310,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, FeaturePolicyNewChild) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   InitNavigateParams(&params, 1, false, kUrl2,
                      ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  subframe_rfh->SendNavigateWithParams(&params);
+  subframe_rfh->SendNavigateWithParams(&params, false);
 
   blink::FeaturePolicy* subframe_feature_policy =
       subframe_rfh->feature_policy();

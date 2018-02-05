@@ -81,7 +81,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      std::unique_ptr<NavigationHandleImpl> navigation_handle) {}
+      std::unique_ptr<NavigationHandleImpl> navigation_handle,
+      bool was_within_same_document) {}
 
   // Called by the NavigationController to cause the Navigator to navigate
   // to the current pending entry. The NavigationController should be called

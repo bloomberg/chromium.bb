@@ -473,7 +473,6 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   params.searchable_form_encoding = std::string();
   params.did_create_new_entry = false;
   params.gesture = NavigationGestureUser;
-  params.was_within_same_document = false;
   params.method = "GET";
   params.page_state = PageState::CreateFromURL(url);
   params.contents_mime_type = std::string("text/html");

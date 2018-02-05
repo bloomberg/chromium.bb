@@ -443,6 +443,16 @@ void WebFrameTestClient::DidCommitProvisionalLoad(
   }
 }
 
+void WebFrameTestClient::DidNavigateWithinPage(
+    const blink::WebHistoryItem& history_item,
+    blink::WebHistoryCommitType history_type,
+    bool content_initiated) {
+  if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
+    delegate_->PrintMessage(" - didCommitLoadForFrame\n");
+  }
+}
+
 void WebFrameTestClient::DidReceiveTitle(const blink::WebString& title,
                                          blink::WebTextDirection direction) {
   if (test_runner()->shouldDumpFrameLoadCallbacks() &&
