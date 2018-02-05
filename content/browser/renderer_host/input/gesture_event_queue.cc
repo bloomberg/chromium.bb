@@ -95,6 +95,10 @@ bool GestureEventQueue::FlingCancellationIsDeferred() const {
   return fling_controller_.FlingCancellationIsDeferred();
 }
 
+bool GestureEventQueue::TouchscreenFlingInProgress() const {
+  return fling_controller_.TouchscreenFlingInProgress();
+}
+
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
   // When the GFS is processed by the fling_controller_ the controller handles

@@ -245,8 +245,13 @@ void PassthroughTouchEventQueue::SendTouchEventImmediately(
       touch->event.GetType() != WebInputEvent::kTouchStart)
     touch->event.dispatch_type = WebInputEvent::kEventNonBlocking;
 
-  if (touch->event.GetType() == WebInputEvent::kTouchStart)
+  if (touch->event.GetType() == WebInputEvent::kTouchStart) {
     touch->event.touch_start_or_first_touch_move = true;
+    // Touch start events should be uncancelable during an active touchscreen
+    // fling.
+    if (client_->TouchscreenFlingInProgress())
+      touch->event.dispatch_type = WebInputEvent::kEventNonBlocking;
+  }
 
   // For touchmove events, compare touch points position from current event
   // to last sent event and update touch points state.

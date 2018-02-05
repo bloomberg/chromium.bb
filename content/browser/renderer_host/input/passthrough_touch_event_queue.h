@@ -33,6 +33,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueueClient {
 
   virtual void OnFilteringTouchEvent(
       const blink::WebTouchEvent& touch_event) = 0;
+
+  virtual bool TouchscreenFlingInProgress() = 0;
 };
 
 // A queue that processes a touch-event and forwards it on to the
