@@ -1,4 +1,15 @@
 [INTERFACES]
+interface AbortController
+    attribute @@toStringTag
+    getter signal
+    method abort
+    method constructor
+interface AbortSignal : EventTarget
+    attribute @@toStringTag
+    getter aborted
+    getter onabort
+    method constructor
+    setter onabort
 interface Blob
     attribute @@toStringTag
     getter size

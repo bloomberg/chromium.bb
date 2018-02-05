@@ -3360,3 +3360,13 @@ crbug.com/808112 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keyd
 ################################################################################
 # End of Root Layer Scrolling expectations
 ################################################################################
+
+# TODO(ricea): Remove these once fetch abort implementation is complete
+crbug.com/750599 external/wpt/fetch/api/abort/general-serviceworker.https.html [ Timeout ]
+crbug.com/750599 external/wpt/fetch/api/abort/general-sharedworker.html [ Timeout ]
+crbug.com/750599 external/wpt/fetch/api/abort/general.any.html [ Timeout ]
+crbug.com/750599 external/wpt/fetch/api/abort/general.any.worker.html [ Timeout ]
+crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general-serviceworker.https.html [ Timeout ]
+crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general-sharedworker.html [ Timeout ]
+crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.html [ Timeout ]
+crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.worker.html [ Timeout ]
