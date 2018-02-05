@@ -250,19 +250,25 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
 }
 
 TEST_F(UseCounterTest, CSSSelectorPseudoAnyLink) {
-  UseCounter use_counter;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorPseudoAnyLink;
-  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
-  use_counter.Count(GetDocument(), feature);
-  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>:any-link { color: red; }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
 TEST_F(UseCounterTest, CSSSelectorPseudoWebkitAnyLink) {
-  UseCounter use_counter;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
-  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
-  use_counter.Count(GetDocument(), feature);
-  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>:-webkit-any-link { color: red; }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
 TEST_F(UseCounterTest, CSSTypedOMStylePropertyMap) {

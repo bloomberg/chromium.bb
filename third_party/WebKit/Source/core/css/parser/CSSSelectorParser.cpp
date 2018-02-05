@@ -938,6 +938,12 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           if (RuntimeEnabledFeatures::CSSMatchesEnabled())
             feature = WebFeature::kCSSSelectorPseudoMatches;
           break;
+        case CSSSelector::kPseudoAnyLink:
+          feature = WebFeature::kCSSSelectorPseudoAnyLink;
+          break;
+        case CSSSelector::kPseudoWebkitAnyLink:
+          feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
+          break;
         case CSSSelector::kPseudoUnresolved:
           feature = WebFeature::kCSSSelectorPseudoUnresolved;
           break;
