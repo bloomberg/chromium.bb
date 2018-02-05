@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_DEVICE_QUEUE_H_
 #define CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_DEVICE_QUEUE_H_
 
-#include <deque>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chromeos/components/tether/connection_priority.h"
@@ -56,11 +56,26 @@ class BleAdvertisementDeviceQueue {
   size_t GetSize() const;
 
  private:
+  // Inserts each of |prioritized_ids| into |priority_to_device_ids_map_|.
+  // Elements of |prioritized_ids| which already exist in the map remain.
+  // Returns whether any device IDs were added (i.e., if all elements of
+  // |prioritized_ids| were already present in the map, false is returned).
+  bool InsertPrioritizedDeviceIdsIfNecessary(
+      const std::vector<PrioritizedDeviceId>& prioritized_ids);
+
+  // Removes entries from |priority_to_device_ids_map_| which do not appear in
+  // |prioritized_ids|. Returns whether any device IDs were removed (i.e., if
+  // all of the elements in the map are present in |prioritized_ids|, false is
+  // returned).
+  bool RemoveMapEntriesIfNecessary(
+      const std::vector<PrioritizedDeviceId>& prioritized_ids);
+
   void AddDevicesToVectorForPriority(
       ConnectionPriority connection_priority,
       std::vector<std::string>* device_ids_out) const;
 
-  std::map<ConnectionPriority, std::deque<std::string>> priority_to_deque_map_;
+  std::map<ConnectionPriority, std::vector<std::string>>
+      priority_to_device_ids_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BleAdvertisementDeviceQueue);
 };
