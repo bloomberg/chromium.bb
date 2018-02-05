@@ -67,6 +67,9 @@ def _import_fuchsia_runner():
     # pylint: disable=redefined-outer-name
 
 
+# Path to the content shell package relative to the build directory.
+CONTENT_SHELL_PACKAGE_PATH = 'gen/content/shell/content_shell/content_shell.far'
+
 # HTTP path prefix for the HTTP server.
 PERF_TEST_PATH_PREFIX = '/all-perf-tests'
 LAYOUT_TEST_PATH_PREFIX = '/all-tests'
@@ -130,7 +133,8 @@ class _TargetHost(object):
         # forwarding in SSH, but that feature is currently broken on Fuchsia,
         # see ZX-1555. Remove layout_test_proxy once that SSH bug is fixed.
         self._target.PutFile(
-            os.path.join(build_path, 'package/layout_test_proxy.far'),
+            os.path.join(build_path, 'gen/build/fuchsia/layout_test_proxy/' +
+                         'layout_test_proxy/layout_test_proxy.far'),
             '/tmp')
         command = ['run', '/tmp/layout_test_proxy.far',
                    '--remote-address=' + qemu_target.HOST_IP_ADDRESS,
@@ -141,7 +145,7 @@ class _TargetHost(object):
 
         # Copy content_shell package to the device.
         self._target.PutFile(
-            os.path.join(build_path, 'package/content_shell.far'), '/tmp')
+            os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH), '/tmp')
 
         # Currently dynamic library loading is not implemented for packaged
         # apps. Copy libosmesa.so to /system/lib as a workaround.
@@ -209,7 +213,7 @@ class FuchsiaPort(base.Port):
         return ChromiumFuchsiaDriver
 
     def _path_to_driver(self, target=None):
-        return self._build_path_with_target(target, 'package/content_shell.far')
+        return self._build_path_with_target(target, CONTENT_SHELL_PACKAGE_PATH)
 
     def __del__(self):
         if self._zircon_logger:
