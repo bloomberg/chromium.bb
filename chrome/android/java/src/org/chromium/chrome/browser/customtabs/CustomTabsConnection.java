@@ -16,7 +16,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
@@ -32,6 +31,7 @@ import org.json.JSONObject;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
@@ -70,7 +70,10 @@ import org.chromium.net.GURLUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -120,6 +123,12 @@ public class CustomTabsConnection {
     private static final String EFFECTIVE_CONNECTION_TYPE = "effectiveConnectionType";
     private static final String HTTP_RTT_MS = "httpRttMs";
     private static final String TRANSPORT_RTT_MS = "transportRttMs";
+
+    // "/bg_non_interactive" is from L MR1, "/apps/bg_non_interactive" before,
+    // and "background" from O.
+    @VisibleForTesting
+    static final Set<String> BACKGROUND_GROUPS = new HashSet<>(
+            Arrays.asList("/bg_non_interactive", "/apps/bg_non_interactive", "/background"));
 
     // For testing only, DO NOT USE.
     @VisibleForTesting
@@ -1166,40 +1175,29 @@ public class CustomTabsConnection {
      */
     @VisibleForTesting
     static String getSchedulerGroup(int pid) {
-        // Android uses two cgroups for the processes: the root cgroup, and the
-        // "/bg_non_interactive" one for background processes. The list of
-        // cgroups a process is part of can be queried by reading
-        // /proc/<pid>/cgroup, which is world-readable.
+        // Android uses several cgroups for processes, depending on their priority. The list of
+        // cgroups a process is part of can be queried by reading /proc/<pid>/cgroup, which is
+        // world-readable.
         String cgroupFilename = "/proc/" + pid + "/cgroup";
+        String controllerName = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? "cpuset" : "cpu";
         // Reading from /proc does not cause disk IO, but strict mode doesn't like it.
         // crbug.com/567143
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            FileReader fileReader = new FileReader(cgroupFilename);
-            BufferedReader reader = new BufferedReader(fileReader);
-            try {
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    // line format: 2:cpu:/bg_non_interactive
-                    String fields[] = line.trim().split(":");
-                    if (fields.length == 3 && fields[1].equals("cpu")) return fields[2];
-                }
-            } finally {
-                reader.close();
+        try (StrictModeContext ctx = StrictModeContext.allowDiskReads();
+                BufferedReader reader = new BufferedReader(new FileReader(cgroupFilename))) {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                // line format: 2:cpu:/bg_non_interactive
+                String fields[] = line.trim().split(":");
+                if (fields.length == 3 && fields[1].equals(controllerName)) return fields[2];
             }
         } catch (IOException e) {
             return null;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
         return null;
     }
 
     private static boolean isBackgroundProcess(int pid) {
-        String schedulerGroup = getSchedulerGroup(pid);
-        // "/bg_non_interactive" is from L MR1, "/apps/bg_non_interactive" before.
-        return "/bg_non_interactive".equals(schedulerGroup)
-                || "/apps/bg_non_interactive".equals(schedulerGroup);
+        return BACKGROUND_GROUPS.contains(getSchedulerGroup(pid));
     }
 
     /**
