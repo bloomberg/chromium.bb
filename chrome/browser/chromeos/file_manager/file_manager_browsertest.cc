@@ -180,9 +180,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     QuickView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openQuickView"),
-                      TestParameter(NOT_IN_GUEST_MODE, "closeQuickView"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "openQuickViewForFoldersAfterClose")));
+                      TestParameter(NOT_IN_GUEST_MODE, "closeQuickView")));
+// Disabled due to strong flakyness (crbug.com/798772):
+//                      TestParameter(NOT_IN_GUEST_MODE,
+//                                    "openQuickViewForFoldersAfterClose")
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_DirectoryTreeContextMenu DISABLED_DirectoryTreeContextMenu
