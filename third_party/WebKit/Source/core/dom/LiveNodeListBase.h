@@ -34,22 +34,22 @@
 
 namespace blink {
 
-enum class NodeListRootType {
-  kNode,
+enum class NodeListSearchRoot {
+  kOwnerNode,
   kTreeScope,
 };
 
 class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
  public:
   LiveNodeListBase(ContainerNode& owner_node,
-                   NodeListRootType root_type,
+                   NodeListSearchRoot search_root,
                    NodeListInvalidationType invalidation_type,
                    CollectionType collection_type)
       : owner_node_(owner_node),
-        root_type_(static_cast<unsigned>(root_type)),
+        search_root_(static_cast<unsigned>(search_root)),
         invalidation_type_(invalidation_type),
         collection_type_(collection_type) {
-    DCHECK_EQ(root_type_, static_cast<unsigned>(root_type));
+    DCHECK_EQ(search_root_, static_cast<unsigned>(search_root));
     DCHECK_EQ(invalidation_type_, static_cast<unsigned>(invalidation_type));
     DCHECK_EQ(collection_type_, static_cast<unsigned>(collection_type));
   }
@@ -60,7 +60,8 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
 
   void DidMoveToDocument(Document& old_document, Document& new_document);
   ALWAYS_INLINE bool IsRootedAtTreeScope() const {
-    return root_type_ == static_cast<unsigned>(NodeListRootType::kTreeScope);
+    return search_root_ ==
+           static_cast<unsigned>(NodeListSearchRoot::kTreeScope);
   }
   ALWAYS_INLINE NodeListInvalidationType InvalidationType() const {
     return static_cast<NodeListInvalidationType>(invalidation_type_);
@@ -81,8 +82,8 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
  protected:
   Document& GetDocument() const { return owner_node_->GetDocument(); }
 
-  ALWAYS_INLINE NodeListRootType RootType() const {
-    return static_cast<NodeListRootType>(root_type_);
+  ALWAYS_INLINE NodeListSearchRoot SearchRoot() const {
+    return static_cast<NodeListSearchRoot>(search_root_);
   }
 
   template <typename MatchFunc>
@@ -102,7 +103,7 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
 
  private:
   Member<ContainerNode> owner_node_;  // Cannot be null.
-  const unsigned root_type_ : 1;
+  const unsigned search_root_ : 1;
   const unsigned invalidation_type_ : 4;
   const unsigned collection_type_ : 5;
 };
