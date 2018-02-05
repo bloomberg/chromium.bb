@@ -14,7 +14,22 @@
         "id": "WindowType",
         "type": "string",
         "description": "The type of browser window this is. Under some circumstances a Window may not be assigned type property, for example when querying closed windows from the $(ref:sessions) API.",
-        "enum": ["normal", "popup", "panel", "app", "devtools"]
+        "enum": [{
+          "name": "normal",
+          "description": "A normal browser window."
+        }, {
+          "name": "popup",
+          "description": "A browser popup window."
+        }, {
+          "name": "panel",
+          "description": "<i>Deprecated in this API.</i> A Chrome App panel-style window. Extensions can only see their own panel windows."
+        }, {
+          "name": "app",
+          "description": "<i>Deprecated in this API.</i> A Chrome App window. Extensions can only see their app own windows."
+        }, {
+          "name": "devtools",
+          "description": "A devtools window."
+        }]
       },
       {
         "id": "WindowState",
@@ -102,7 +117,7 @@
             "description": "",
             "properties": {
               "populate": {"type": "boolean", "optional": true, "description": "If true, the $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." },
-              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows." }
+              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['normal', 'popup']</code>."}
             }
           },
           {
@@ -128,7 +143,7 @@
             "description": "",
             "properties": {
               "populate": {"type": "boolean", "optional": true, "description": "If true, the $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." },
-              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows." }
+              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['normal', 'popup']</code>."}
             }
           },
           {
@@ -154,7 +169,7 @@
             "description": "",
             "properties": {
               "populate": {"type": "boolean", "optional": true, "description": "If true, the $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." },
-              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows." }
+              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['normal', 'popup']</code>."}
             }
           },
           {
@@ -180,7 +195,7 @@
             "description": "",
             "properties": {
               "populate": {"type": "boolean", "optional": true, "description": "If true, each $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects for that window. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." },
-              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows." }
+              "windowTypes": {"type": "array", "items": { "$ref": "WindowType" }, "optional": true, "description": "If set, the $(ref:windows.Window) returned will be filtered based on its type. If unset the default filter is set to <code>['normal', 'popup']</code>."}
             }
           },
           {
@@ -304,7 +319,7 @@
             "name": "windowTypes",
             "type": "array",
             "items": { "$ref": "WindowType" },
-            "description": "Conditions that the window's type being created must satisfy. By default it will satisfy <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows."
+            "description": "Conditions that the window's type being created must satisfy. By default it will satisfy <code>['normal', 'popup']</code>."
           }
         ],
         "parameters": [
@@ -324,7 +339,7 @@
             "name": "windowTypes",
             "type": "array",
             "items": { "$ref": "WindowType" },
-            "description": "Conditions that the window's type being removed must satisfy. By default it will satisfy <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows."
+            "description": "Conditions that the window's type being removed must satisfy. By default it will satisfy <code>['normal', 'popup']</code>."
           }
         ],
         "parameters": [
@@ -340,7 +355,7 @@
             "name": "windowTypes",
             "type": "array",
             "items": { "$ref": "WindowType" },
-            "description": "Conditions that the window's type being removed must satisfy. By default it will satisfy <code>['app', 'normal', 'panel', 'popup']</code>, with <code>'app'</code> and <code>'panel'</code> window types limited to the extension's own windows."
+            "description": "Conditions that the window's type being removed must satisfy. By default it will satisfy <code>['normal', 'popup']</code>."
           }
         ],
         "parameters": [
