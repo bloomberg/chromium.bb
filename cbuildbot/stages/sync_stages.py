@@ -90,7 +90,7 @@ class ExceedUnionPreCQLimitException(Exception):
     """Initialize a ExceedUnionPreCQLimitException.
 
     Args:
-      pre_cq_configs: A list Pre-CQ configs (strings) which exceed the limit.
+      pre_cq_configs: A set of Pre-CQ configs (strings) which exceeds the limit.
       limit: The limit for the size of the Pre-CQ configs.
       message: An error message (optional).
     """
