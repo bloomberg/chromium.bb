@@ -599,6 +599,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
         Move(WindowSelector::RIGHT, true);
         break;
       }
+      FALLTHROUGH;
     case ui::VKEY_LEFT:
       num_key_presses_++;
       Move(WindowSelector::LEFT, true);
