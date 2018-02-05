@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/untrusted_authority_certs_cache.h"
+#include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -11,26 +11,26 @@
 
 namespace policy {
 
-UntrustedAuthorityCertsCache::UntrustedAuthorityCertsCache(
-    const std::vector<std::string>& x509_authority_certs) {
-  for (const auto& x509_authority_cert : x509_authority_certs) {
-    net::ScopedCERTCertificate x509_cert =
-        chromeos::onc::DecodePEMCertificate(x509_authority_cert);
-    if (!x509_cert) {
+TempCertsCacheNSS::TempCertsCacheNSS(
+    const std::vector<std::string>& x509_certs) {
+  for (const auto& x509_cert : x509_certs) {
+    net::ScopedCERTCertificate temp_cert =
+        chromeos::onc::DecodePEMCertificate(x509_cert);
+    if (!temp_cert) {
       LOG(ERROR) << "Unable to create untrusted authority certificate from PEM "
                     "encoding";
       continue;
     }
 
-    untrusted_authority_certs_.push_back(std::move(x509_cert));
+    temp_certs_.push_back(std::move(temp_cert));
   }
 }
 
-UntrustedAuthorityCertsCache::~UntrustedAuthorityCertsCache() {}
+TempCertsCacheNSS::~TempCertsCacheNSS() {}
 
 // static
 std::vector<std::string>
-UntrustedAuthorityCertsCache::GetUntrustedAuthoritiesFromDeviceOncPolicy() {
+TempCertsCacheNSS::GetUntrustedAuthoritiesFromDeviceOncPolicy() {
   return g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->GetDeviceNetworkConfigurationUpdater()
