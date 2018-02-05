@@ -16,10 +16,6 @@ namespace content {
 class WebContents;
 }
 
-namespace extensions {
-class WindowController;
-}  // namespace extensions
-
 // Provides Chrome-specific details to UIThreadExtensionFunction
 // implementations.
 class ChromeExtensionFunctionDetails {
@@ -49,11 +45,10 @@ class ChromeExtensionFunctionDetails {
   // happen if only incognito windows are open, or early in startup or shutdown
   // shutdown when there are no active windows.
   //
-  // TODO(stevenjb): Replace this with GetExtensionWindowController().
+  // TODO(devlin): This method is incredibly non-deterministic (sometimes just
+  // returning "any" browser), and almost never the right thing to use. Instead,
+  // use ExtensionFunction::GetSenderWebContents(). We should get rid of this.
   Browser* GetCurrentBrowser() const;
-
-  // Same as above but uses WindowControllerList instead of BrowserList.
-  extensions::WindowController* GetExtensionWindowController() const;
 
   // Gets the "current" web contents if any. If there is no associated web
   // contents then defaults to the foremost one.

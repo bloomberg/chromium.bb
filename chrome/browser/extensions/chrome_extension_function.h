@@ -16,10 +16,6 @@ namespace content {
 class WebContents;
 }
 
-namespace extensions {
-class WindowController;
-}
-
 // A chrome specific analog to AsyncExtensionFunction. This has access to a
 // chrome Profile.
 //
@@ -49,11 +45,10 @@ class ChromeAsyncExtensionFunction : public UIThreadExtensionFunction {
   // happen if only incognito windows are open, or early in startup or shutdown
   // shutdown when there are no active windows.
   //
-  // TODO(stevenjb): Replace this with GetExtensionWindowController().
+  // TODO(devlin): This method is incredibly non-deterministic (sometimes just
+  // returning "any" browser), and almost never the right thing to use. Instead,
+  // use ExtensionFunction::GetSenderWebContents(). We should get rid of this.
   Browser* GetCurrentBrowser();
-
-  // Same as above but uses WindowControllerList instead of BrowserList.
-  extensions::WindowController* GetExtensionWindowController();
 
   void SetError(const std::string& error);
 
