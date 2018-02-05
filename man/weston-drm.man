@@ -113,6 +113,11 @@ instead of using the current tty.
 .SH ENVIRONMENT
 .
 .TP
+.B WESTON_LIBINPUT_LOG_PRIORITY
+The minimum libinput verbosity level to be printed to Weston's log.
+Valid values are
+.BR debug ", " info ", and " error ". Default is " info .
+.TP
 .B WESTON_TTY_FD
 The file descriptor (integer) of the opened tty where
 .B weston
