@@ -80,4 +80,28 @@
   [ChromeEarlGrey waitForWebViewContainingText:responses[destinationURL]];
 }
 
+// Tests the fix for the regression reported in https://crbug.com/801165.  The
+// bug was triggered by opening an HTML file picker and then dismissing it.
+- (void)testFixForCrbug801165 {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no action sheet on tablet)");
+  }
+
+  std::map<GURL, std::string> responses;
+  const GURL testURL = web::test::HttpServer::MakeUrl("http://origin");
+  responses[testURL] = "File Picker Test <input id=\"file\" type=\"file\">";
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Load the test page.
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForWebViewContainingText:"File Picker Test"];
+
+  // Invoke the file picker and tap on the "Cancel" button to dismiss the file
+  // picker.
+  [ChromeEarlGrey tapWebViewElementWithID:@"file"];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 @end
