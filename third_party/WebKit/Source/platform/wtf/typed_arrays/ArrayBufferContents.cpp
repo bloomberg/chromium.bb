@@ -34,6 +34,7 @@
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/allocator/Partitions.h"
 namespace WTF {
@@ -48,17 +49,17 @@ typedef std::unique_ptr<base::PartitionAllocatorGeneric> PartitionPtr;
 typedef std::pair<void*, PartitionPtr> PartitionEntry;
 typedef WTF::Vector<PartitionEntry, kMaxPartitions> PartitionVector;
 
-base::PartitionRootGeneric* FindOrCreatePartition(void* partition_key) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(PartitionVector, partitions, ());
-  for (auto& entry : partitions) {
+base::PartitionRootGeneric* FindOrCreatePartition(void* partition_key,
+                                                  PartitionVector* partitions) {
+  for (auto& entry : *partitions) {
     if (entry.first == partition_key) {
       return entry.second->root();
     }
   }
-  if (partitions.size() < kMaxPartitions) {
-    partitions.emplace_back(std::make_pair(
+  if (partitions->size() < kMaxPartitions) {
+    partitions->emplace_back(std::make_pair(
         partition_key, PartitionPtr(new base::PartitionAllocatorGeneric)));
-    auto& partition = partitions.back().second;
+    auto& partition = partitions->back().second;
     partition->init();
     return partition->root();
   }
@@ -170,8 +171,19 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
 void* ArrayBufferContents::AllocateMemoryOrNull(void* partition_key,
                                                 size_t size,
                                                 InitializationPolicy policy) {
-  return AllocateMemoryWithFlags(FindOrCreatePartition(partition_key), size,
-                                 policy, base::PartitionAllocReturnNull);
+  // The main thread gets a partition map; all other threads share another map.
+  base::PartitionRootGeneric* partition_root;
+  if (IsMainThread()) {
+    DEFINE_STATIC_LOCAL(PartitionVector, partitions, ());
+    partition_root = FindOrCreatePartition(partition_key, &partitions);
+  } else {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(PartitionVector, worker_partitions, ());
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::Mutex, mutex, ());
+    WTF::MutexLocker locker(mutex);
+    partition_root = FindOrCreatePartition(partition_key, &worker_partitions);
+  }
+  return AllocateMemoryWithFlags(partition_root, size, policy,
+                                 base::PartitionAllocReturnNull);
 }
 
 // This method is used by V8's WebAssembly implementation to reserve a large
