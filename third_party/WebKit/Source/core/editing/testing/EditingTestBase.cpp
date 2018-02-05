@@ -25,8 +25,8 @@ Element* GetOrCreateElement(ContainerNode* parent,
       tag_name.NamespaceURI(), tag_name.LocalName());
   if (!elements->IsEmpty())
     return elements->item(0);
-  return parent->ownerDocument()->CreateRawElement(tag_name,
-                                                   kCreatedByCreateElement);
+  return parent->ownerDocument()->CreateRawElement(
+      tag_name, CreateElementFlags::ByCreateElement());
 }
 
 }  // namespace
@@ -39,7 +39,7 @@ void EditingTestBase::InsertStyleElement(const std::string& style_rules) {
   Element* const head = GetOrCreateElement(&GetDocument(), HTMLNames::headTag);
   DCHECK_EQ(head, GetOrCreateElement(&GetDocument(), HTMLNames::headTag));
   Element* const style = GetDocument().CreateRawElement(
-      HTMLNames::styleTag, kCreatedByCreateElement);
+      HTMLNames::styleTag, CreateElementFlags::ByCreateElement());
   style->setTextContent(String(style_rules.data(), style_rules.size()));
   head->appendChild(style);
 }

@@ -964,8 +964,8 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
                           prefix_to_namespace_map_, exception_state);
 
   QualifiedName q_name(prefix, local_name, adjusted_uri);
-  Element* new_element =
-      current_node_->GetDocument().createElement(q_name, kCreatedByParser);
+  Element* new_element = current_node_->GetDocument().createElement(
+      q_name, CreateElementFlags::ByParser());
   if (!new_element) {
     StopParsing();
     return;

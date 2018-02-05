@@ -1,52 +1,56 @@
-/*
- * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- *           (C) 2001 Dirk Mueller (mueller@kde.org)
- *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
- * rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
- * (http://www.torchmobile.com/)
- * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2011 Google Inc. All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
- *
- */
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CreateElementFlags_h
 #define CreateElementFlags_h
 
-enum CreateElementFlags {
-  kCreatedByParser = 1 << 0,
-  // Synchronous custom elements flag:
-  // https://dom.spec.whatwg.org/#concept-create-element
-  // TODO(kojii): Remove these flags, add an option not to queue upgrade, and
-  // let parser/DOM methods to upgrade synchronously when necessary.
-  kSynchronousCustomElements = 0 << 1,
-  kAsynchronousCustomElements = 1 << 1,
+#include "platform/wtf/Allocator.h"
 
-  // Aliases by callers.
-  // Clone a node: https://dom.spec.whatwg.org/#concept-node-clone
-  kCreatedByCloneNode = kAsynchronousCustomElements,
-  kCreatedByImportNode = kCreatedByCloneNode,
-  // https://dom.spec.whatwg.org/#dom-document-createelement
-  kCreatedByCreateElement = kSynchronousCustomElements,
+class CreateElementFlags {
+  STACK_ALLOCATED();
+
+ public:
+  bool IsCreatedByParser() const { return created_by_parser_; }
+  bool IsAsyncCustomElements() const { return async_custom_elements_; }
+
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
-  kCreatedByFragmentParser = kCreatedByParser | kAsynchronousCustomElements,
+  static CreateElementFlags ByParser() {
+    return CreateElementFlags().SetCreatedByParser();
+  }
+
+  // https://dom.spec.whatwg.org/#concept-node-clone
+  static CreateElementFlags ByCloneNode() {
+    return CreateElementFlags().SetAsyncCustomElements();
+  }
+
+  // https://dom.spec.whatwg.org/#dom-document-importnode
+  static CreateElementFlags ByImportNode() { return ByCloneNode(); }
+
+  // https://dom.spec.whatwg.org/#dom-document-createelement
+  static CreateElementFlags ByCreateElement() { return CreateElementFlags(); }
+
+  // https://html.spec.whatwg.org/#create-an-element-for-the-token
+  static CreateElementFlags ByFragmentParser() {
+    return CreateElementFlags().SetCreatedByParser().SetAsyncCustomElements();
+  }
+
+ private:
+  CreateElementFlags()
+      : created_by_parser_(false), async_custom_elements_(false) {}
+
+  CreateElementFlags& SetCreatedByParser() {
+    created_by_parser_ = true;
+    return *this;
+  }
+
+  CreateElementFlags& SetAsyncCustomElements() {
+    async_custom_elements_ = true;
+    return *this;
+  }
+
+  bool created_by_parser_ : 1;
+  bool async_custom_elements_ : 1;
 };
 
 #endif  // CreateElementFlags_h

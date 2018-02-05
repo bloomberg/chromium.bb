@@ -836,7 +836,8 @@ void HTMLConstructionSite::TakeAllChildren(
 }
 
 CreateElementFlags HTMLConstructionSite::GetCreateElementFlags() const {
-  return is_parsing_fragment_ ? kCreatedByFragmentParser : kCreatedByParser;
+  return is_parsing_fragment_ ? CreateElementFlags::ByFragmentParser()
+                              : CreateElementFlags::ByParser();
 }
 
 inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {

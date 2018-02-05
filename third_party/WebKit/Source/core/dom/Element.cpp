@@ -280,7 +280,8 @@ Element* Element::CloneElementWithoutChildren() {
 }
 
 Element* Element::CloneElementWithoutAttributesAndChildren() {
-  auto* element = GetDocument().createElement(TagQName(), kCreatedByCloneNode);
+  auto* element = GetDocument().createElement(
+      TagQName(), CreateElementFlags::ByCloneNode());
   const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
     V0CustomElementRegistrationContext::SetTypeExtension(element, is);
