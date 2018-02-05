@@ -444,11 +444,10 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
   }
 
   // Read the data from the request body stream.
-  const int rv = request_info_->upload_data_stream
-      ->Read(request_body_buf_.get(),
-             request_body_buf_->size(),
-             base::Bind(&SpdyHttpStream::OnRequestBodyReadCompleted,
-                        weak_factory_.GetWeakPtr()));
+  const int rv = request_info_->upload_data_stream->Read(
+      request_body_buf_.get(), request_body_buf_->size(),
+      base::BindOnce(&SpdyHttpStream::OnRequestBodyReadCompleted,
+                     weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING)
     OnRequestBodyReadCompleted(rv);

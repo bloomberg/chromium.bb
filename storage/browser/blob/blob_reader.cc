@@ -88,20 +88,20 @@ BlobReader::BlobReader(const BlobDataHandle* blob_handle)
 
 BlobReader::~BlobReader() = default;
 
-BlobReader::Status BlobReader::CalculateSize(
-    const net::CompletionCallback& done) {
+BlobReader::Status BlobReader::CalculateSize(net::CompletionOnceCallback done) {
   DCHECK(!total_size_calculated_);
   DCHECK(size_callback_.is_null());
   if (!blob_handle_.get() || blob_handle_->IsBroken()) {
     return ReportError(net::ERR_FILE_NOT_FOUND);
   }
   if (blob_handle_->IsBeingBuilt()) {
-    blob_handle_->RunOnConstructionComplete(base::Bind(
-        &BlobReader::AsyncCalculateSize, weak_factory_.GetWeakPtr(), done));
+    blob_handle_->RunOnConstructionComplete(
+        base::BindOnce(&BlobReader::AsyncCalculateSize,
+                       weak_factory_.GetWeakPtr(), std::move(done)));
     return Status::IO_PENDING;
   }
   blob_data_ = blob_handle_->CreateSnapshot();
-  return CalculateSizeImpl(done);
+  return CalculateSizeImpl(&done);
 }
 
 bool BlobReader::has_side_data() const {
@@ -192,7 +192,7 @@ BlobReader::Status BlobReader::SetReadRange(uint64_t offset, uint64_t length) {
 BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
                                     size_t dest_size,
                                     int* bytes_read,
-                                    net::CompletionCallback done) {
+                                    net::CompletionOnceCallback done) {
   DCHECK(bytes_read);
   DCHECK_GE(remaining_bytes_, 0ul);
   DCHECK(read_callback_.is_null());
@@ -227,7 +227,7 @@ BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
 
   Status status = ReadLoop(bytes_read);
   if (status == Status::IO_PENDING)
-    read_callback_ = done;
+    read_callback_ = std::move(done);
   return status;
 }
 
@@ -252,13 +252,13 @@ bool BlobReader::IsInMemory() const {
 }
 
 void BlobReader::InvalidateCallbacksAndDone(int net_error,
-                                            net::CompletionCallback done) {
+                                            net::CompletionOnceCallback done) {
   net_error_ = net_error;
   weak_factory_.InvalidateWeakPtrs();
   size_callback_.Reset();
   read_callback_.Reset();
   read_buf_ = nullptr;
-  done.Run(net_error);
+  std::move(done).Run(net_error);
 }
 
 BlobReader::Status BlobReader::ReportError(int net_error) {
@@ -266,29 +266,32 @@ BlobReader::Status BlobReader::ReportError(int net_error) {
   return Status::NET_ERROR;
 }
 
-void BlobReader::AsyncCalculateSize(const net::CompletionCallback& done,
+void BlobReader::AsyncCalculateSize(net::CompletionOnceCallback done,
                                     BlobStatus status) {
   if (BlobStatusIsError(status)) {
-    InvalidateCallbacksAndDone(ConvertBlobErrorToNetError(status), done);
+    InvalidateCallbacksAndDone(ConvertBlobErrorToNetError(status),
+                               std::move(done));
     return;
   }
   DCHECK(!blob_handle_->IsBroken()) << "Callback should have returned false.";
   blob_data_ = blob_handle_->CreateSnapshot();
-  Status size_status = CalculateSizeImpl(done);
+  Status size_status = CalculateSizeImpl(&done);
   switch (size_status) {
     case Status::NET_ERROR:
-      InvalidateCallbacksAndDone(net_error_, done);
+      InvalidateCallbacksAndDone(net_error_, std::move(done));
       return;
     case Status::DONE:
-      done.Run(net::OK);
+      std::move(done).Run(net::OK);
       return;
     case Status::IO_PENDING:
+      // CalculateSizeImpl() should have taken ownership of |done|.
+      DCHECK(!done);
       return;
   }
 }
 
 BlobReader::Status BlobReader::CalculateSizeImpl(
-    const net::CompletionCallback& done) {
+    net::CompletionOnceCallback* done) {
   DCHECK(!total_size_calculated_);
   DCHECK(size_callback_.is_null());
 
@@ -334,7 +337,7 @@ BlobReader::Status BlobReader::CalculateSizeImpl(
     return Status::DONE;
   }
   // Note: We only set the callback if we know that we're an async operation.
-  size_callback_ = done;
+  size_callback_ = std::move(*done);
   return Status::IO_PENDING;
 }
 
@@ -384,7 +387,7 @@ void BlobReader::DidGetFileItemLength(size_t index, int64_t result) {
   if (result == net::ERR_UPLOAD_FILE_CHANGED)
     result = net::ERR_FILE_NOT_FOUND;
   if (result < 0) {
-    InvalidateCallbacksAndDone(result, size_callback_);
+    InvalidateCallbacksAndDone(result, std::move(size_callback_));
     return;
   }
 
@@ -393,11 +396,12 @@ void BlobReader::DidGetFileItemLength(size_t index, int64_t result) {
   const BlobDataItem& item = *items.at(index);
   uint64_t length;
   if (!ResolveFileItemLength(item, result, &length)) {
-    InvalidateCallbacksAndDone(net::ERR_FILE_NOT_FOUND, size_callback_);
+    InvalidateCallbacksAndDone(net::ERR_FILE_NOT_FOUND,
+                               std::move(size_callback_));
     return;
   }
   if (!AddItemLength(index, length)) {
-    InvalidateCallbacksAndDone(net::ERR_FAILED, size_callback_);
+    InvalidateCallbacksAndDone(net::ERR_FAILED, std::move(size_callback_));
     return;
   }
 
@@ -410,11 +414,8 @@ void BlobReader::DidCountSize() {
   total_size_calculated_ = true;
   remaining_bytes_ = total_size_;
   // This is set only if we're async.
-  if (!size_callback_.is_null()) {
-    net::CompletionCallback done = size_callback_;
-    size_callback_.Reset();
-    done.Run(net::OK);
-  }
+  if (!size_callback_.is_null())
+    std::move(size_callback_).Run(net::OK);
 }
 
 BlobReader::Status BlobReader::ReadLoop(int* bytes_read) {
@@ -542,14 +543,11 @@ void BlobReader::ContinueAsyncReadLoop() {
   int bytes_read = 0;
   Status read_status = ReadLoop(&bytes_read);
   switch (read_status) {
-    case Status::DONE: {
-      net::CompletionCallback done = read_callback_;
-      read_callback_.Reset();
-      done.Run(bytes_read);
+    case Status::DONE:
+      std::move(read_callback_).Run(bytes_read);
       return;
-    }
     case Status::NET_ERROR:
-      InvalidateCallbacksAndDone(net_error_, read_callback_);
+      InvalidateCallbacksAndDone(net_error_, std::move(read_callback_));
       return;
     case Status::IO_PENDING:
       return;
@@ -597,7 +595,7 @@ void BlobReader::DidReadItem(int result) {
   DCHECK(io_pending_) << "Asynchronous IO completed while IO wasn't pending?";
   io_pending_ = false;
   if (result <= 0) {
-    InvalidateCallbacksAndDone(result, read_callback_);
+    InvalidateCallbacksAndDone(result, std::move(read_callback_));
     return;
   }
   AdvanceBytesRead(result);

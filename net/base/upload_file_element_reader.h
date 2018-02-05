@@ -66,12 +66,12 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
 
   // UploadElementReader overrides:
   const UploadFileElementReader* AsFileReader() const override;
-  int Init(const CompletionCallback& callback) override;
+  int Init(CompletionOnceCallback callback) override;
   uint64_t GetContentLength() const override;
   uint64_t BytesRemaining() const override;
   int Read(IOBuffer* buf,
            int buf_length,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
 
  private:
   enum class State {
@@ -125,7 +125,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   base::File::Info file_info_;
 
   State next_state_;
-  CompletionCallback pending_callback_;
+  CompletionOnceCallback pending_callback_;
   // True if Init() was called while an async operation was in progress.
   bool init_called_while_operation_pending_;
 

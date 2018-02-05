@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/upload_element_reader.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -31,7 +31,7 @@ class STORAGE_EXPORT UploadBlobElementReader : public net::UploadElementReader {
   explicit UploadBlobElementReader(std::unique_ptr<BlobDataHandle> handle);
   ~UploadBlobElementReader() override;
 
-  int Init(const net::CompletionCallback& callback) override;
+  int Init(net::CompletionOnceCallback callback) override;
 
   uint64_t GetContentLength() const override;
 
@@ -41,7 +41,7 @@ class STORAGE_EXPORT UploadBlobElementReader : public net::UploadElementReader {
 
   int Read(net::IOBuffer* buf,
            int buf_length,
-           const net::CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
 
   const std::string& uuid() const;
 

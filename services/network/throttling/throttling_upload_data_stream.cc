@@ -38,8 +38,8 @@ int ThrottlingUploadDataStream::InitInternal(
     const net::NetLogWithSource& net_log) {
   throttled_byte_count_ = 0;
   int result = upload_data_stream_->Init(
-      base::Bind(&ThrottlingUploadDataStream::StreamInitCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&ThrottlingUploadDataStream::StreamInitCallback,
+                     base::Unretained(this)),
       net_log);
   if (result == net::OK && !is_chunked())
     SetSize(upload_data_stream_->size());
@@ -55,8 +55,8 @@ void ThrottlingUploadDataStream::StreamInitCallback(int result) {
 int ThrottlingUploadDataStream::ReadInternal(net::IOBuffer* buf, int buf_len) {
   int result = upload_data_stream_->Read(
       buf, buf_len,
-      base::Bind(&ThrottlingUploadDataStream::StreamReadCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ThrottlingUploadDataStream::StreamReadCallback,
+                     base::Unretained(this)));
   return ThrottleRead(result);
 }
 

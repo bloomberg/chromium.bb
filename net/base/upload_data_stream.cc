@@ -4,7 +4,6 @@
 
 #include "net/base/upload_data_stream.h"
 
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"
@@ -50,7 +49,7 @@ UploadDataStream::UploadDataStream(bool is_chunked, int64_t identifier)
 
 UploadDataStream::~UploadDataStream() = default;
 
-int UploadDataStream::Init(const CompletionCallback& callback,
+int UploadDataStream::Init(CompletionOnceCallback callback,
                            const NetLogWithSource& net_log) {
   Reset();
   DCHECK(!initialized_successfully_);
@@ -62,7 +61,7 @@ int UploadDataStream::Init(const CompletionCallback& callback,
   int result = InitInternal(net_log_);
   if (result == ERR_IO_PENDING) {
     DCHECK(!IsInMemory());
-    callback_ = callback;
+    callback_ = std::move(callback);
   } else {
     OnInitCompleted(result);
   }
@@ -72,7 +71,7 @@ int UploadDataStream::Init(const CompletionCallback& callback,
 
 int UploadDataStream::Read(IOBuffer* buf,
                            int buf_len,
-                           const CompletionCallback& callback) {
+                           CompletionOnceCallback callback) {
   DCHECK(!callback.is_null() || IsInMemory());
   DCHECK(initialized_successfully_);
   DCHECK_GT(buf_len, 0);
@@ -86,7 +85,7 @@ int UploadDataStream::Read(IOBuffer* buf,
 
   if (result == ERR_IO_PENDING) {
     DCHECK(!IsInMemory());
-    callback_ = callback;
+    callback_ = std::move(callback);
   } else {
     OnReadCompleted(result);
   }
@@ -163,7 +162,7 @@ void UploadDataStream::OnInitCompleted(int result) {
       base::Bind(&NetLogInitEndInfoCallback, result, total_size_, is_chunked_));
 
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
 }
 
 void UploadDataStream::OnReadCompleted(int result) {
@@ -184,7 +183,7 @@ void UploadDataStream::OnReadCompleted(int result) {
                                     result);
 
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
 }
 
 UploadProgress UploadDataStream::GetUploadProgress() const {
