@@ -352,8 +352,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* CreateRawElement(const QualifiedName&, const CreateElementFlags);
   // "create an element" defined in DOM standard.
   Element* CreateElement(const QualifiedName&,
-                         bool is_v1,
-                         const AtomicString& is);
+                         const AtomicString& is,
+                         const CreateElementFlags);
 
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;

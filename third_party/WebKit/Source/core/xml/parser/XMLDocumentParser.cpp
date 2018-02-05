@@ -962,24 +962,23 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
 
   HandleElementAttributes(prefixed_attributes, libxml_attributes, nb_attributes,
                           prefix_to_namespace_map_, exception_state);
+  AtomicString is;
+  for (const auto& attr : prefixed_attributes) {
+    if (attr.GetName() == isAttr) {
+      is = attr.Value();
+      break;
+    }
+  }
 
   QualifiedName q_name(prefix, local_name, adjusted_uri);
-  Element* new_element = current_node_->GetDocument().createElement(
-      q_name, CreateElementFlags::ByParser());
+  Element* new_element = current_node_->GetDocument().CreateElement(
+      q_name, is,
+      parsing_fragment_ ? CreateElementFlags::ByFragmentParser()
+                        : CreateElementFlags::ByParser());
   if (!new_element) {
     StopParsing();
     return;
   }
-  for (const auto& attr : prefixed_attributes) {
-    if (attr.GetName() == isAttr) {
-      if (!V0CustomElement::IsValidName(local_name)) {
-        V0CustomElementRegistrationContext::SetTypeExtension(new_element,
-                                                             attr.Value());
-      }
-      break;
-    }
-  }
-  // TODO(tkent): Support V1 custom built-in elements. crbug.com/808302
 
   SetAttributes(new_element, prefixed_attributes, GetParserContentPolicy());
   if (exception_state.HadException()) {
