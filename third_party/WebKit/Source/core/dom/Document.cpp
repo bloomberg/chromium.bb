@@ -907,7 +907,7 @@ Element* Document::createElement(const AtomicString& name,
           QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI));
     }
     if (Element* element = HTMLElementFactory::CreateRawHTMLElement(
-            local_name, *this, kCreatedByCreateElement))
+            local_name, *this, CreateElementFlags::ByCreateElement()))
       return element;
     QualifiedName q_name(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI);
     if (RegistrationContext() && V0CustomElement::IsValidName(local_name))
@@ -1014,7 +1014,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
       CreateQualifiedName(namespace_uri, qualified_name, exception_state));
   if (q_name == QualifiedName::Null())
     return nullptr;
-  return createElement(q_name, kCreatedByCreateElement);
+  return createElement(q_name, CreateElementFlags::ByCreateElement());
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
@@ -1083,7 +1083,7 @@ Element* Document::CreateElement(const QualifiedName& q_name,
              RegistrationContext()) {
     element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
   } else {
-    element = CreateRawElement(q_name, kCreatedByCreateElement);
+    element = CreateRawElement(q_name, CreateElementFlags::ByCreateElement());
     // 7.3. If namespace is the HTML namespace, and either localName is
     // a valid custom element name or is is non-null, then set result’s
     // custom element state to "undefined".
@@ -1280,8 +1280,8 @@ Node* Document::importNode(Node* imported_node,
             kNamespaceError, "The imported node has an invalid namespace.");
         return nullptr;
       }
-      Element* new_element =
-          createElement(old_element->TagQName(), kCreatedByImportNode);
+      Element* new_element = createElement(old_element->TagQName(),
+                                           CreateElementFlags::ByImportNode());
       const AtomicString& is = old_element->FastGetAttribute(HTMLNames::isAttr);
       if (!is.IsNull() &&
           !V0CustomElement::IsValidName(new_element->localName()))
@@ -1438,7 +1438,7 @@ Element* Document::createElement(const QualifiedName& q_name,
       // reporting ExceptionState, and "v0" custom elements have been
       // removed, consolidate custom element creation into one place.
       if (CustomElement::ShouldCreateCustomElement(local_name)) {
-        if (flags & kAsynchronousCustomElements) {
+        if (flags.IsAsyncCustomElements()) {
           element =
               CustomElement::CreateCustomElementAsync(*this, q_name, flags);
         } else {

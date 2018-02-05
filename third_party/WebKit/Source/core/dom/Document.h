@@ -347,9 +347,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Creates an element with autonomous custom element processing. If
   // LocalName of the specified qualified name doesn't contain '-', this
   // function is equivalent to CreateRawElement().
-  Element* createElement(const QualifiedName&, CreateElementFlags);
+  Element* createElement(const QualifiedName&, const CreateElementFlags);
   // Creates an element without custom element processing.
-  Element* CreateRawElement(const QualifiedName&, CreateElementFlags);
+  Element* CreateRawElement(const QualifiedName&, const CreateElementFlags);
   // "create an element" defined in DOM standard.
   Element* CreateElement(const QualifiedName&,
                          bool is_v1,

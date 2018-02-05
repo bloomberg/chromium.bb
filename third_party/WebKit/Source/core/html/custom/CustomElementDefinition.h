@@ -57,7 +57,7 @@ class CORE_EXPORT CustomElementDefinition
   virtual HTMLElement* CreateElementSync(Document&, const QualifiedName&) = 0;
   HTMLElement* CreateElementAsync(Document&,
                                   const QualifiedName&,
-                                  CreateElementFlags);
+                                  const CreateElementFlags);
 
   void Upgrade(Element*);
 

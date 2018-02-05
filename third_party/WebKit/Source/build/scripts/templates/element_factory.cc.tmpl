@@ -19,7 +19,7 @@ namespace blink {
 
 typedef {{namespace}}Element* (*{{namespace}}ConstructorFunction)(
     Document&,
-    CreateElementFlags);
+    const CreateElementFlags);
 
 typedef HashMap<AtomicString, {{namespace}}ConstructorFunction> {{namespace}}FunctionMap;
 
@@ -28,7 +28,7 @@ static {{namespace}}FunctionMap* g_{{namespace}}_constructors = 0;
 {% for tag in tags|sort if not tag.noConstructor %}
 static {{namespace}}Element* {{namespace}}{{tag|symbol}}Constructor(
     Document& document,
-    CreateElementFlags flags) {
+    const CreateElementFlags flags) {
   {% if tag.runtimeEnabled %}
   if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
     return {{fallback_interface}}::Create({{namespace}}Names::{{tag|symbol}}Tag, document);
@@ -36,7 +36,7 @@ static {{namespace}}Element* {{namespace}}{{tag|symbol}}Constructor(
   return {{tag.interface}}::Create(
       {%- if tag.multipleTagNames %}{{namespace}}Names::{{tag|symbol}}Tag, {% endif -%}
       document
-      {%- if tag.constructorNeedsCreatedByParser %}, flags & kCreatedByParser{% endif -%}
+      {%- if tag.constructorNeedsCreatedByParser %}, flags.IsCreatedByParser(){% endif -%}
   );
 }
 {% endfor %}
@@ -63,7 +63,7 @@ static void create{{namespace}}FunctionMap() {
 {{namespace}}Element* {{namespace}}ElementFactory::CreateRaw{{namespace}}Element(
     const AtomicString& localName,
     Document& document,
-    CreateElementFlags flags) {
+    const CreateElementFlags flags) {
   if (!g_{{namespace}}_constructors)
     create{{namespace}}FunctionMap();
   if ({{namespace}}ConstructorFunction function = g_{{namespace}}_constructors->at(localName))

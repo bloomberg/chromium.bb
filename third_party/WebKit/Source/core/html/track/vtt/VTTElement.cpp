@@ -87,32 +87,32 @@ HTMLElement* VTTElement::CreateEquivalentHTMLElement(Document& document) {
     case kVTTNodeTypeClass:
     case kVTTNodeTypeLanguage:
     case kVTTNodeTypeVoice:
-      html_element =
-          document.CreateRawElement(HTMLNames::spanTag, kCreatedByParser);
+      html_element = document.CreateRawElement(HTMLNames::spanTag,
+                                               CreateElementFlags::ByParser());
       html_element->setAttribute(HTMLNames::titleAttr,
                                  getAttribute(VoiceAttributeName()));
       html_element->setAttribute(HTMLNames::langAttr,
                                  getAttribute(LangAttributeName()));
       break;
     case kVTTNodeTypeItalic:
-      html_element =
-          document.CreateRawElement(HTMLNames::iTag, kCreatedByParser);
+      html_element = document.CreateRawElement(HTMLNames::iTag,
+                                               CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeBold:
-      html_element =
-          document.CreateRawElement(HTMLNames::bTag, kCreatedByParser);
+      html_element = document.CreateRawElement(HTMLNames::bTag,
+                                               CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeUnderline:
-      html_element =
-          document.CreateRawElement(HTMLNames::uTag, kCreatedByParser);
+      html_element = document.CreateRawElement(HTMLNames::uTag,
+                                               CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeRuby:
-      html_element =
-          document.CreateRawElement(HTMLNames::rubyTag, kCreatedByParser);
+      html_element = document.CreateRawElement(HTMLNames::rubyTag,
+                                               CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeRubyText:
-      html_element =
-          document.CreateRawElement(HTMLNames::rtTag, kCreatedByParser);
+      html_element = document.CreateRawElement(HTMLNames::rtTag,
+                                               CreateElementFlags::ByParser());
       break;
     default:
       NOTREACHED();
