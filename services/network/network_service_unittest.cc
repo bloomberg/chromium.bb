@@ -390,9 +390,9 @@ class NetworkChangeTest : public testing::Test {
   std::unique_ptr<NetworkService> service_;
 };
 
-// mojom:NetworkChangeManager currently doesn't support ChromeOS,
-// which has a different code path to set up net::NetworkChangeNotifier.
-#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+// mojom:NetworkChangeManager isn't supported on these platforms.
+// See the same ifdef in CreateNetworkChangeNotifierIfNeeded.
+#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA) || defined(OS_IOS)
 #define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
 #else
 #define MAYBE_NetworkChangeManagerRequest NetworkChangeManagerRequest
