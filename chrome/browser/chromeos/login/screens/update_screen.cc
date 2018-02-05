@@ -199,8 +199,8 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
         case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
         case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
           DCHECK(!HasCriticalUpdate());
-        // Noncritical update, just exit screen as if there is no update.
-        // no break
+          // Noncritical update, just exit screen as if there is no update.
+          FALLTHROUGH;
         case UpdateEngineClient::UPDATE_STATUS_IDLE:
           Finish(ScreenExitCode::UPDATE_NOUPDATE);
           break;
@@ -325,7 +325,7 @@ void UpdateScreen::UpdateStatusChanged(
         // It is first IDLE status that is sent before we initiated the check.
         break;
       }
-    // else no break
+      FALLTHROUGH;
     case UpdateEngineClient::UPDATE_STATUS_ERROR:
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
     case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
