@@ -25,6 +25,7 @@ button {
 .main-frame-blocked button,
 .neterror button,
 .offline button,
+.pdf button,
 .ssl button {
   background: rgb(66, 133, 244);
 }

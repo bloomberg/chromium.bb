@@ -299,6 +299,9 @@
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>
+      <message name="IDS_ACCNAME_OPEN" desc="The accessible name for the Open button.">
+        Open
+      </message>
       <message name="IDS_ACCNAME_PREVIOUS" desc="The accessible name for the previous button.">
         Previous
       </message>
