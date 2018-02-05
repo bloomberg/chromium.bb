@@ -902,9 +902,10 @@ Element* Document::createElement(const AtomicString& name,
     // converted to ASCII lowercase.
     AtomicString local_name = ConvertLocalName(name);
     if (CustomElement::ShouldCreateCustomElement(local_name)) {
-      return CustomElement::CreateCustomElementSync(
+      return CustomElement::CreateCustomElement(
           *this,
-          QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI));
+          QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI),
+          CreateElementFlags::ByCreateElement());
     }
     if (Element* element = HTMLElementFactory::CreateRawHTMLElement(
             local_name, *this, CreateElementFlags::ByCreateElement()))
@@ -1438,12 +1439,7 @@ Element* Document::createElement(const QualifiedName& q_name,
       // reporting ExceptionState, and "v0" custom elements have been
       // removed, consolidate custom element creation into one place.
       if (CustomElement::ShouldCreateCustomElement(local_name)) {
-        if (flags.IsAsyncCustomElements()) {
-          element =
-              CustomElement::CreateCustomElementAsync(*this, q_name, flags);
-        } else {
-          element = CustomElement::CreateCustomElementSync(*this, q_name);
-        }
+        element = CustomElement::CreateCustomElement(*this, q_name, flags);
       } else if (RegistrationContext() &&
                  V0CustomElement::IsValidName(local_name)) {
         element = RegistrationContext()->CreateCustomTagElement(*this, q_name);

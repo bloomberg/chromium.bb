@@ -68,13 +68,14 @@ class CORE_EXPORT CustomElement {
       const AtomicString& local_name);
   static bool ShouldCreateCustomizedBuiltinElement(const QualifiedName&);
 
-  static HTMLElement* CreateCustomElementSync(Document&, const QualifiedName&);
+  // Look up a definition, and create an autonomous custom element if
+  // it's found.
+  static HTMLElement* CreateCustomElement(Document&,
+                                          const QualifiedName&,
+                                          const CreateElementFlags);
   static HTMLElement* CreateCustomElementSync(Document&,
                                               const QualifiedName&,
                                               CustomElementDefinition*);
-  static HTMLElement* CreateCustomElementAsync(Document&,
-                                               const QualifiedName&,
-                                               const CreateElementFlags);
 
   static HTMLElement* CreateFailedElement(Document&, const QualifiedName&);
 

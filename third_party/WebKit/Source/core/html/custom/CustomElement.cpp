@@ -91,18 +91,6 @@ static CustomElementDefinition* DefinitionFor(
   return nullptr;
 }
 
-HTMLElement* CustomElement::CreateCustomElementSync(
-    Document& document,
-    const QualifiedName& tag_name) {
-  CustomElementDefinition* definition = nullptr;
-  CustomElementRegistry* registry = CustomElement::Registry(document);
-  if (registry) {
-    definition = registry->DefinitionFor(
-        CustomElementDescriptor(tag_name.LocalName(), tag_name.LocalName()));
-  }
-  return CreateCustomElementSync(document, tag_name, definition);
-}
-
 // https://dom.spec.whatwg.org/#concept-create-element
 HTMLElement* CustomElement::CreateCustomElementSync(
     Document& document,
@@ -127,10 +115,9 @@ HTMLElement* CustomElement::CreateCustomElementSync(
   return element;
 }
 
-HTMLElement* CustomElement::CreateCustomElementAsync(
-    Document& document,
-    const QualifiedName& tag_name,
-    CreateElementFlags flags) {
+HTMLElement* CustomElement::CreateCustomElement(Document& document,
+                                                const QualifiedName& tag_name,
+                                                CreateElementFlags flags) {
   DCHECK(ShouldCreateCustomElement(tag_name));
 
   // To create an element:
@@ -138,9 +125,12 @@ HTMLElement* CustomElement::CreateCustomElementAsync(
   // 6. If definition is non-null, then:
   // 6.2. If the synchronous custom elements flag is not set:
   if (CustomElementDefinition* definition = DefinitionFor(
-          document,
-          CustomElementDescriptor(tag_name.LocalName(), tag_name.LocalName())))
-    return definition->CreateElementAsync(document, tag_name, flags);
+          document, CustomElementDescriptor(tag_name.LocalName(),
+                                            tag_name.LocalName()))) {
+    if (flags.IsAsyncCustomElements())
+      return definition->CreateElementAsync(document, tag_name, flags);
+    return definition->CreateElementSync(document, tag_name);
+  }
 
   return CreateUndefinedElement(document, tag_name);
 }
