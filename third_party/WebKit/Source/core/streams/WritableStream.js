@@ -68,8 +68,8 @@
 
   const Promise = global.Promise;
   const thenPromise = v8.uncurryThis(Promise.prototype.then);
-  const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
-  const Promise_reject = v8.simpleBind(Promise.reject, Promise);
+  const Promise_resolve = Promise.resolve.bind(Promise);
+  const Promise_reject = Promise.reject.bind(Promise);
 
   // From CommonOperations.js
   const {

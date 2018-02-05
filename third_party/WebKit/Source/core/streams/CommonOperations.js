@@ -171,8 +171,8 @@
   const callFunction = v8.uncurryThis(global.Function.prototype.call);
   const errTmplMustBeFunctionOrUndefined = name =>
         `${name} must be a function or undefined`;
-  const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
-  const Promise_reject = v8.simpleBind(Promise.reject, Promise);
+  const Promise_resolve = Promise.resolve.bind(Promise);
+  const Promise_reject = Promise.reject.bind(Promise);
 
   function resolveMethod(O, P, nameForError) {
     const method = O[P];
