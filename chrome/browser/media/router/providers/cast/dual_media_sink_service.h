@@ -15,12 +15,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "chrome/common/media_router/media_source.h"
+#include "url/origin.h"
 
 namespace media_router {
 
 class CastMediaSinkService;
-class DialMediaSinkService;
 
 // This class uses DialMediaSinkService and CastMediaSinkService to discover
 // sinks used by the Cast MediaRouteProvider. It also encapsulates the setup
@@ -59,6 +61,8 @@ class DualMediaSinkService {
   // Starts mDNS discovery on |cast_media_sink_service_| if it is not already
   // started.
   void StartMdnsDiscovery();
+  void RegisterMediaSinksObserver(MediaSinksObserver* observer);
+  void UnregisterMediaSinksObserver(MediaSinksObserver* observer);
 
  private:
   friend class DualMediaSinkServiceTest;
