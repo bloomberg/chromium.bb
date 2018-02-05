@@ -836,6 +836,7 @@ void CryptohomeAuthenticator::Resolve() {
       break;
     case CREATE_NEW:
       create_if_nonexistent = true;
+      FALLTHROUGH;
     case RECOVER_MOUNT:
       current_state_->ResetCryptohomeStatus();
       StartMount(current_state_->AsWeakPtr(),
@@ -854,10 +855,10 @@ void CryptohomeAuthenticator::Resolve() {
       break;
     case OFFLINE_LOGIN:
       VLOG(2) << "Offline login";
-    // Fall through.
+      FALLTHROUGH;
     case UNLOCK:
       VLOG(2) << "Unlock";
-    // Fall through.
+      FALLTHROUGH;
     case ONLINE_LOGIN:
       VLOG(2) << "Online login";
       task_runner_->PostTask(
