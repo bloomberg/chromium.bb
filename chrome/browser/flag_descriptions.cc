@@ -494,6 +494,11 @@ const char kEnableOutOfBlinkCORSName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCORSDescription[] =
     "CORS handling logic is moved out of blink.";
 
+const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
+const char kVizDisplayCompositorDescription[] =
+    "If enabled, the display compositor runs as part of the viz service in the"
+    "GPU process.";
+
 const char kEnableOutOfProcessHeapProfilingName[] =
     "Out of process heap profiling start mode.";
 const char kEnableOutOfProcessHeapProfilingDescription[] =
