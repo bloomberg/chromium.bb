@@ -164,6 +164,11 @@ constexpr NSTimeInterval kAnimationDelay = 1.5;
     severity_ = severity;
     type_ = type;
 
+    [self setToolTip:severity_ == AppMenuIconController::Severity::NONE
+                         ? l10n_util::GetNSString(IDS_APPMENU_TOOLTIP)
+                         : l10n_util::GetNSString(
+                               IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE)];
+
     if (animatedIcon_) {
       [self updateAnimatedIconColor];
       [self animateIfPossibleWithDelay:YES];
