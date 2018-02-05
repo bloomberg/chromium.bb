@@ -203,7 +203,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
       txfm_func_row(input, buf_ptr, cos_bit_row, stage_range_row);
     }
     av1_round_shift_array(buf_ptr, txfm_size_col, -shift[0]);
-    clamp_buf(buf_ptr, txfm_size_col, bd + 8);
+    clamp_buf(buf_ptr, txfm_size_col, AOMMAX(bd + 6, 16));
     input += txfm_size_col;
     buf_ptr += txfm_size_col;
   }
