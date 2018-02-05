@@ -68,9 +68,6 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   // if SSL error overriding is allowed by policy.
   static bool IsOverridable(int options_mask);
 
-  void SetSSLCertReporterForTesting(
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
-
  protected:
   friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
   friend class SSLUITestBase;

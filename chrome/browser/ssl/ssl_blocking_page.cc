@@ -188,12 +188,6 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
-void SSLBlockingPage::SetSSLCertReporterForTesting(
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
-  cert_report_helper()->SetSSLCertReporterForTesting(
-      std::move(ssl_cert_reporter));
-}
-
 // This handles the commands sent from the interstitial JavaScript.
 void SSLBlockingPage::CommandReceived(const std::string& command) {
   if (command == "\"pageLoadComplete\"") {

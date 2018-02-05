@@ -52,9 +52,6 @@ class MITMSoftwareBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate method:
   InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
-  void SetSSLCertReporterForTesting(
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
-
  protected:
   // InterstitialPageDelegate implementation:
   void CommandReceived(const std::string& command) override;
