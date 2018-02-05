@@ -8,6 +8,7 @@
 #import <QuartzCore/CAMediaTimingFunction.h>
 
 #include "base/logging.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/toolbar/clean/toolbar_button_tints.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
@@ -24,9 +25,9 @@ const CGFloat kDotOffsetYVertical = 18;
 const CGFloat kVerticalSpaceBetweenDots = 6;
 
 // *** Constants for the adaptive toolbar, 3 horizontal dots. ***
-// Position of the left most dot.
-const CGFloat kDotOffsetXHorizontal = 22;
-const CGFloat kDotOffsetYHorizontal = 18;
+// Position of the leftmost dot.
+const CGFloat kDotOffsetXHorizontal = 18;
+const CGFloat kDotOffsetYHorizontal = 28;
 // Horizontal space between dots.
 const CGFloat kHorizontalSpaceBetweenDots = 6;
 
@@ -266,8 +267,11 @@ const CGFloat kLineWidthAtApogee = 3;
   // Add four animations for each stroke.
   for (int i = 0; i < kNumberOfDots; i++) {
     CAShapeLayer* pathLayer = pathLayers_[i];
-    const int frameStart =
-        (kNumberOfDots - i) * kFramesBetweenAnimationOfEachDot;
+    int dotToAnimate = kNumberOfDots - i;
+    if (UseRTLLayout()) {
+      dotToAnimate = i;
+    }
+    const int frameStart = dotToAnimate * kFramesBetweenAnimationOfEachDot;
 
     // Start of the stroke animation.
     CAAnimation* strokeStartAnimation =
