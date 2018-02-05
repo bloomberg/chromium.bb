@@ -146,12 +146,10 @@ void AddCmaKeySystems(
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
-      codecs,                     // Regular codecs.
-      Robustness::HW_SECURE_ALL,  // Max audio robustness.
-      Robustness::HW_SECURE_ALL,  // Max video robustness.
-      enable_persistent_license_support
-          ? EmeSessionTypeSupport::SUPPORTED
-          : EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+      codecs,                                // Regular codecs.
+      Robustness::HW_SECURE_ALL,             // Max audio robustness.
+      Robustness::HW_SECURE_ALL,             // Max video robustness.
+      EmeSessionTypeSupport::SUPPORTED,      // persistent-license.
       EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
