@@ -15,6 +15,17 @@ function returnVariationInfo(variationsList) {
 }
 
 /**
+ * Callback from the backend with the variations formatted as command line
+ * input. This call will build the variations-cmd section of the version page
+ * if needed.
+ * @param {string} variationsCmd The variations info in command line format.
+ */
+function returnVariationCmd(variationsCmd) {
+  $('variations-cmd-section').hidden = !variationsCmd;
+  $('variations-cmd').textContent = variationsCmd;
+}
+
+/**
  * Callback from the backend with the executable and profile paths to display.
  * @param {string} execPath The executable path to display.
  * @param {string} profilePath The profile path to display.

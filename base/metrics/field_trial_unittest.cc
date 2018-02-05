@@ -75,6 +75,10 @@ class TestFieldTrialObserver : public FieldTrialList::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestFieldTrialObserver);
 };
 
+std::string MockEscapeQueryParamValue(const std::string& input) {
+  return input;
+}
+
 }  // namespace
 
 class FieldTrialTest : public ::testing::Test {
@@ -1405,5 +1409,37 @@ TEST(FieldTrialListTest, CheckReadOnlySharedMemoryHandle) {
   ASSERT_TRUE(CheckReadOnlySharedMemoryHandleForTesting(handle));
 }
 #endif  // !OS_NACL && !OS_WIN && !OS_FUCHSIA
+
+TEST_F(FieldTrialTest, TestAllParamsToString) {
+  std::string exptected_output = "t1.g1:p1/v1/p2/v2";
+
+  // Create study with one group and two params.
+  std::map<std::string, std::string> params;
+  params["p1"] = "v1";
+  params["p2"] = "v2";
+  FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+      "t1", "g1", params);
+  EXPECT_EQ(
+      "", FieldTrialList::AllParamsToString(false, &MockEscapeQueryParamValue));
+
+  scoped_refptr<FieldTrial> trial1 =
+      CreateFieldTrial("t1", 100, "Default", nullptr);
+  trial1->AppendGroup("g1", 100);
+  trial1->group();
+  EXPECT_EQ(exptected_output, FieldTrialList::AllParamsToString(
+                                  false, &MockEscapeQueryParamValue));
+
+  // Create study with two groups and params that don't belog to the assigned
+  // group. This should be in the output.
+  FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+      "t2", "g2", params);
+  scoped_refptr<FieldTrial> trial2 =
+      CreateFieldTrial("t2", 100, "Default", nullptr);
+  trial2->AppendGroup("g1", 100);
+  trial2->AppendGroup("g2", 0);
+  trial2->group();
+  EXPECT_EQ(exptected_output, FieldTrialList::AllParamsToString(
+                                  false, &MockEscapeQueryParamValue));
+}
 
 }  // namespace base
