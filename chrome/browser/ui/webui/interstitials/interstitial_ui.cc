@@ -421,7 +421,7 @@ std::string InterstitialHTMLSource::GetSource() const {
 
 std::string InterstitialHTMLSource::GetContentSecurityPolicyScriptSrc() const {
   // 'unsafe-inline' is added to script-src.
-  return "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline';";
+  return "script-src chrome://resources 'self' 'unsafe-inline';";
 }
 
 std::string InterstitialHTMLSource::GetContentSecurityPolicyStyleSrc() const {
