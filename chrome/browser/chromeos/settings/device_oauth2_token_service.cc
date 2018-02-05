@@ -82,7 +82,7 @@ void DeviceOAuth2TokenService::FetchOAuth2Token(
     case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_PENDING:
       // If this is the first request for a token, start validation.
       GetDeviceDelegate()->StartValidation();
-      // fall through.
+      FALLTHROUGH;
     case DeviceOAuth2TokenServiceDelegate::STATE_LOADING:
     case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_STARTED:
       // Add a pending request that will be satisfied once validation completes.
