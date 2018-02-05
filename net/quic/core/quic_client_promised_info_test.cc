@@ -84,7 +84,7 @@ class QuicClientPromisedInfoTest : public QuicTest {
     push_promise_[":method"] = "GET";
     push_promise_[":scheme"] = "https";
 
-    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
 
     client_request_ = push_promise_.Clone();
     promise_id_ =

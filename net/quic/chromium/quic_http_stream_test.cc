@@ -339,7 +339,7 @@ class QuicHttpStreamTest
     promised_response_[":version"] = "HTTP/1.1";
     promised_response_["content-type"] = "text/plain";
 
-    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
   }
 
   void SetRequest(const string& method,
@@ -1873,7 +1873,7 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
   // packet, but does it matter?
 
   push_promise_[":authority"] = "mail.example.org";
-  promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+  promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
 
   ReceivePromise(promise_id_);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -1942,7 +1942,7 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginFail) {
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
   // packet, but does it matter?
   push_promise_[":authority"] = "www.notexample.org";
-  promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+  promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
 
   ReceivePromise(promise_id_);
   // The promise will have been rejected because the cert doesn't

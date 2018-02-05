@@ -96,7 +96,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
     push_promise_[":version"] = "HTTP/1.1";
     push_promise_[":method"] = "GET";
     push_promise_[":scheme"] = "https";
-    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
     promised_stream_id_ =
         QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, 0);
     associated_stream_id_ =
@@ -502,7 +502,7 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
     session_->HandlePromised(associated_stream_id_, id, push_promise_);
 
     // Verify that the promise is in the unclaimed streams map.
-    string promise_url(SpdyUtils::GetPromisedUrlFromHeaders(push_promise_));
+    string promise_url(SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
     EXPECT_NE(session_->GetPromisedByUrl(promise_url), nullptr);
     EXPECT_NE(session_->GetPromisedById(id), nullptr);
   }
@@ -521,7 +521,7 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
   session_->HandlePromised(associated_stream_id_, id, push_promise_);
 
   // Verify that the promise was not created.
-  string promise_url(SpdyUtils::GetPromisedUrlFromHeaders(push_promise_));
+  string promise_url(SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
   EXPECT_EQ(session_->GetPromisedById(id), nullptr);
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url), nullptr);
 }

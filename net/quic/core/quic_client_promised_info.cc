@@ -55,14 +55,13 @@ void QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
     Reset(QUIC_INVALID_PROMISE_METHOD);
     return;
   }
-  if (!SpdyUtils::PromisedUrlIsValid(headers)) {
+  if (!SpdyUtils::UrlIsValid(headers)) {
     QUIC_DVLOG(1) << "Promise for stream " << id_ << " has invalid URL "
                   << url_;
     Reset(QUIC_INVALID_PROMISE_URL);
     return;
   }
-  if (!session_->IsAuthorized(
-          SpdyUtils::GetPromisedHostNameFromHeaders(headers))) {
+  if (!session_->IsAuthorized(SpdyUtils::GetHostNameFromHeaderBlock(headers))) {
     Reset(QUIC_UNAUTHORIZED_PROMISE_URL);
     return;
   }
