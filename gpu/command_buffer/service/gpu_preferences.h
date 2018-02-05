@@ -59,9 +59,6 @@ struct GPU_EXPORT GpuPreferences {
   // Starts the GPU sandbox before creating a GL context.
   bool gpu_sandbox_start_early = false;
 
-  // Disables HW encode acceleration for WebRTC.
-  bool disable_web_rtc_hw_encoding = false;
-
   // Enables experimental hardware acceleration for VP8/VP9 video decoding.
   // Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all. Windows only.
   VpxDecodeVendors enable_accelerated_vpx_decode = VPX_VENDOR_MICROSOFT;

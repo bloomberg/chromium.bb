@@ -92,8 +92,7 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
   vea_factory_functions.push_back(&CreateVaapiVEA);
 #endif
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
-  if (!gpu_preferences.disable_web_rtc_hw_encoding)
-    vea_factory_functions.push_back(&CreateAndroidVEA);
+  vea_factory_functions.push_back(&CreateAndroidVEA);
 #endif
 #if defined(OS_MACOSX)
   vea_factory_functions.push_back(&CreateVTVEA);
