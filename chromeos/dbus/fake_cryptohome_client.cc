@@ -153,14 +153,6 @@ std::string FakeCryptohomeClient::BlockingGetSanitizedUsername(
                                : std::string();
 }
 
-void FakeCryptohomeClient::AsyncMount(
-    const cryptohome::Identification& cryptohome_id,
-    const std::string& key,
-    int flags,
-    AsyncMethodCallback callback) {
-  ReturnAsyncMethodResult(std::move(callback));
-}
-
 void FakeCryptohomeClient::AsyncAddKey(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key,

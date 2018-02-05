@@ -197,15 +197,6 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual std::string BlockingGetSanitizedUsername(
       const cryptohome::Identification& cryptohome_id) = 0;
 
-  // Calls the AsyncMount method to asynchronously mount the cryptohome for
-  // |username|, using |key| to unlock it. For supported |flags|, see the
-  // documentation of AsyncMethodCaller::AsyncMount().
-  // |callback| is called after the method call succeeds.
-  virtual void AsyncMount(const cryptohome::Identification& cryptohome_id,
-                          const std::string& key,
-                          int flags,
-                          AsyncMethodCallback callback) = 0;
-
   // Calls the AsyncAddKey method to asynchronously add another |new_key| for
   // |username|, using |key| to unlock it first.
   // |callback| is called after the method call succeeds.

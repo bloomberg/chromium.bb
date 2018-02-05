@@ -56,17 +56,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
                    "Couldn't initiate aync migration of user's key"));
   }
 
-  void AsyncMount(const Identification& cryptohome_id,
-                  const std::string& passhash,
-                  int flags,
-                  Callback callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->AsyncMount(
-        cryptohome_id, passhash, flags,
-        base::Bind(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback,
-                   "Couldn't initiate async mount of cryptohome."));
-  }
-
   void AsyncAddKey(const Identification& cryptohome_id,
                    const std::string& passhash,
                    const std::string& new_passhash,

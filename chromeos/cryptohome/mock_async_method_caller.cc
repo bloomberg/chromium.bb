@@ -32,9 +32,6 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
   ON_CALL(*this, AsyncMigrateKey(_, _, _, _))
       .WillByDefault(
           WithArgs<3>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
-  ON_CALL(*this, AsyncMount(_, _, _, _))
-      .WillByDefault(
-          WithArgs<3>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
   ON_CALL(*this, AsyncAddKey(_, _, _, _))
       .WillByDefault(
           WithArgs<3>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
