@@ -219,12 +219,11 @@ void RenderWidgetHostViewChildFrame::InitAsChild(gfx::NativeView parent_view) {
 }
 
 void RenderWidgetHostViewChildFrame::SetSize(const gfx::Size& size) {
-  host_->WasResized();
+  // Resizing happens in CrossProcessFrameConnector for child frames.
 }
 
 void RenderWidgetHostViewChildFrame::SetBounds(const gfx::Rect& rect) {
-  SetSize(rect.size());
-
+  // Resizing happens in CrossProcessFrameConnector for child frames.
   if (rect != last_screen_rect_) {
     last_screen_rect_ = rect;
     host_->SendScreenRects();
