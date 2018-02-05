@@ -15,6 +15,7 @@ class Browser;
 class Profile;
 
 namespace content {
+class RenderWidgetHost;
 class WebContents;
 }
 
@@ -42,8 +43,10 @@ class TabDialogs : public base::SupportsUserData::Data {
   virtual void ShowCollectedCookies() = 0;
 
   // Shows or hides the hung renderer dialog.
-  virtual void ShowHungRendererDialog() = 0;
-  virtual void HideHungRendererDialog() = 0;
+  virtual void ShowHungRendererDialog(
+      content::RenderWidgetHost* render_widget_host) = 0;
+  virtual void HideHungRendererDialog(
+      content::RenderWidgetHost* render_widget_host) = 0;
   virtual bool IsShowingHungRendererDialog() = 0;
 
   // Shows a dialog asking the user to confirm linking to a managed account.

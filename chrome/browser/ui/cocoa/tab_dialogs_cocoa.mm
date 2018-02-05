@@ -52,12 +52,16 @@ void TabDialogsCocoa::ShowCollectedCookies() {
   new CollectedCookiesMac(web_contents_);
 }
 
-void TabDialogsCocoa::ShowHungRendererDialog() {
-  [HungRendererController showForWebContents:web_contents_];
+void TabDialogsCocoa::ShowHungRendererDialog(
+    content::RenderWidgetHost* render_widget_host) {
+  [HungRendererController showForWebContents:web_contents_
+                            renderWidgetHost:render_widget_host];
 }
 
-void TabDialogsCocoa::HideHungRendererDialog() {
-  [HungRendererController endForWebContents:web_contents_];
+void TabDialogsCocoa::HideHungRendererDialog(
+    content::RenderWidgetHost* render_widget_host) {
+  [HungRendererController endForWebContents:web_contents_
+                           renderWidgetHost:render_widget_host];
 }
 
 bool TabDialogsCocoa::IsShowingHungRendererDialog() {

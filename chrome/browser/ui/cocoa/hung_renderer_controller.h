@@ -24,9 +24,10 @@
 #import "base/mac/scoped_nsobject.h"
 
 @class MultiKeyEquivalentButton;
-class HungRendererWebContentsObserverBridge;
+class HungRendererObserverBridge;
 
 namespace content {
+class RenderWidgetHost;
 class WebContents;
 }
 
@@ -38,12 +39,13 @@ class WebContents;
   IBOutlet NSImageView* imageView_;
   IBOutlet NSTextField* messageView_;
 
-  // The WebContents for which this dialog is open.  Should never be
-  // NULL while this dialog is open.
+  // The WebContents and RenderWidgetHost for which this dialog is open.
+  // Should never be null while this dialog is open.
   content::WebContents* hungContents_;
+  content::RenderWidgetHost* hungWidget_;
 
   // Observes |hungContents_| in case it closes while the panel is up.
-  std::unique_ptr<HungRendererWebContentsObserverBridge> hungContentsObserver_;
+  std::unique_ptr<HungRendererObserverBridge> hungContentsObserver_;
 
   // Backing data for |tableView_|.  Titles of each WebContents that
   // shares a renderer process with |hungContents_|.
@@ -55,14 +57,16 @@ class WebContents;
 }
 
 // Shows or hides the hung renderer dialog for the given WebContents.
-+ (void)showForWebContents:(content::WebContents*)contents;
-+ (void)endForWebContents:(content::WebContents*)contents;
++ (void)showForWebContents:(content::WebContents*)contents
+          renderWidgetHost:(content::RenderWidgetHost*)renderWidget;
++ (void)endForWebContents:(content::WebContents*)contents
+         renderWidgetHost:(content::RenderWidgetHost*)renderWidget;
 + (bool)isShowing;
 
-// Kills the hung renderers.
+// Kills the hung render process.
 - (IBAction)kill:(id)sender;
 
-// Waits longer for the renderers to respond.
+// Waits longer for the render process to respond.
 - (IBAction)wait:(id)sender;
 
 @end  // HungRendererController

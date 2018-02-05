@@ -1361,6 +1361,8 @@ split_static_library("ui") {
       "global_error/global_error_service.h",
       "global_error/global_error_service_factory.cc",
       "global_error/global_error_service_factory.h",
+      "hung_renderer/hung_renderer_core.cc",
+      "hung_renderer/hung_renderer_core.h",
       "infobar_container_delegate.cc",
       "infobar_container_delegate.h",
       "javascript_dialogs/javascript_dialog_views.cc",

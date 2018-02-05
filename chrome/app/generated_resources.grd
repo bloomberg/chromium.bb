@@ -5494,6 +5494,9 @@ the Bookmarks menu.">
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_INFOBAR" desc="The text of the infobar notifying the user that the renderer is unresponsive.">
         The page has become unresponsive. You can wait for it to become responsive or close it.
       </message>
+      <message name="IDS_BROWSER_HANGMONITOR_IFRAME_TITLE" desc="The text of a row of the 'Hung Page' dialog when a page is not hung but contains an iframe that is hung.">
+        <ph name="HUNG_IFRAME_URL">$1<ex>google.com</ex></ph>, in <ph name="PAGE_TITLE">$2<ex>YouTube</ex></ph>.
+      </message>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_INFOBAR_END" desc="The label of the 'close' button for the hung renderer infobar">
         Close
       </message>
