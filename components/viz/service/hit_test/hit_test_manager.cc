@@ -5,7 +5,6 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 
 namespace viz {
@@ -16,8 +15,8 @@ namespace {
 constexpr uint32_t kMaxRegionsPerSurface = 1024;
 }  // namespace
 
-HitTestManager::HitTestManager(FrameSinkManagerImpl* frame_sink_manager)
-    : frame_sink_manager_(frame_sink_manager) {}
+HitTestManager::HitTestManager(SurfaceManager* surface_manager)
+    : surface_manager_(surface_manager) {}
 
 HitTestManager::~HitTestManager() = default;
 
@@ -89,7 +88,9 @@ void HitTestManager::OnSurfaceActivated(
   if (search == hit_test_region_lists_.end())
     return;
 
-  uint64_t frame_index = frame_sink_manager_->GetActiveFrameIndex(surface_id);
+  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+  DCHECK(surface);
+  uint64_t frame_index = surface->GetActiveFrameIndex();
 
   auto& frame_index_map = search->second;
   for (auto it = frame_index_map.begin(); it != frame_index_map.end();) {
@@ -106,7 +107,9 @@ const mojom::HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
   if (search == hit_test_region_lists_.end())
     return nullptr;
 
-  uint64_t frame_index = frame_sink_manager_->GetActiveFrameIndex(surface_id);
+  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+  DCHECK(surface);
+  uint64_t frame_index = surface->GetActiveFrameIndex();
 
   auto& frame_index_map = search->second;
   auto search2 = frame_index_map.find(frame_index);

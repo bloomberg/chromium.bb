@@ -149,9 +149,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       uint64_t frame_index,
       mojom::HitTestRegionListPtr hit_test_region_list);
 
-  // This method is virtual so the implementation can be modified in unit tests.
-  virtual uint64_t GetActiveFrameIndex(const SurfaceId& surface_id);
-
   // Instantiates |video_detector_| for tests where we simulate the passage of
   // time.
   VideoDetector* CreateVideoDetectorForTesting(
