@@ -89,6 +89,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       mojom::VideoDetectorObserverPtr observer) override;
   void CreateVideoCapturer(
       mojom::FrameSinkVideoCapturerRequest request) override;
+  void EvictSurfaces(const std::vector<SurfaceId>& surface_ids) override;
 
   // SurfaceObserver implementation.
   void OnSurfaceCreated(const SurfaceId& surface_id) override;

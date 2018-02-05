@@ -632,6 +632,11 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   if (!HasFallbackSurface())
     return;
 
+  std::vector<viz::SurfaceId> surface_ids = {
+      *client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId()};
+
+  GetHostFrameSinkManager()->EvictSurfaces(surface_ids);
+
   if (enable_surface_synchronization_) {
     client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
         viz::SurfaceId());
@@ -640,12 +645,6 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
     resize_lock_.reset();
     UpdateGutters();
   }
-
-  // TODO(samans): Ensure that with VizDisplayCompositor enabled the latest
-  // frame is evicted and that DelegatedFrameHost updates the SurfaceLayer when
-  // the frame becomes visible again.
-  if (!enable_viz_)
-    support_->EvictCurrentSurface();
 
   frame_evictor_->DiscardedFrame();
 }

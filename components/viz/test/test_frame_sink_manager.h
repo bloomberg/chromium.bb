@@ -50,6 +50,7 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       mojom::VideoDetectorObserverPtr observer) override {}
   void CreateVideoCapturer(
       mojom::FrameSinkVideoCapturerRequest request) override {}
+  void EvictSurfaces(const std::vector<SurfaceId>& surface_ids) override {}
 
   mojo::Binding<mojom::FrameSinkManager> binding_;
   mojom::FrameSinkManagerClientPtr client_;

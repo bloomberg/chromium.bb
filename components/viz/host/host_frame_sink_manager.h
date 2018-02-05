@@ -131,6 +131,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Creates a FrameSinkVideoCapturer instance.
   void CreateVideoCapturer(mojom::FrameSinkVideoCapturerRequest request);
 
+  // Marks the given SurfaceIds for destruction.
+  void EvictSurfaces(const std::vector<SurfaceId>& surface_ids);
+
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,

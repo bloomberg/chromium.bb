@@ -229,6 +229,11 @@ void HostFrameSinkManager::CreateVideoCapturer(
   frame_sink_manager_->CreateVideoCapturer(std::move(request));
 }
 
+void HostFrameSinkManager::EvictSurfaces(
+    const std::vector<SurfaceId>& surface_ids) {
+  frame_sink_manager_->EvictSurfaces(surface_ids);
+}
+
 std::unique_ptr<CompositorFrameSinkSupport>
 HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     mojom::CompositorFrameSinkClient* client,

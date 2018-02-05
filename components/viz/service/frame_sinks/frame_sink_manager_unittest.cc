@@ -5,9 +5,11 @@
 #include <stddef.h>
 
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_source_test.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -310,6 +312,36 @@ TEST_F(FrameSinkManagerTest,
   // Unregister all registered hierarchy.
   manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
   manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdC);
+}
+
+// Verifies that the SurfaceIds passed to EvictSurfaces will be destroyed in the
+// next garbage collection.
+TEST_F(FrameSinkManagerTest, EvictSurfaces) {
+  FrameSinkId frame_sink_id1(1, 1);
+  FrameSinkId frame_sink_id2(1, 2);
+  ParentLocalSurfaceIdAllocator allocator;
+  LocalSurfaceId local_surface_id1 = allocator.GenerateId();
+  LocalSurfaceId local_surface_id2 = allocator.GenerateId();
+  SurfaceId surface_id1(frame_sink_id1, local_surface_id1);
+  SurfaceId surface_id2(frame_sink_id2, local_surface_id2);
+
+  // Create two frame sinks. Each create a surface.
+  auto sink1 = CreateCompositorFrameSinkSupport(frame_sink_id1);
+  auto sink2 = CreateCompositorFrameSinkSupport(frame_sink_id2);
+  sink1->SubmitCompositorFrame(local_surface_id1, MakeDefaultCompositorFrame());
+  sink2->SubmitCompositorFrame(local_surface_id2, MakeDefaultCompositorFrame());
+
+  // |surface_id1| and |surface_id2| should remain alive after garbage
+  // collection because they're not marked for destruction.
+  manager_.surface_manager()->GarbageCollectSurfaces();
+  EXPECT_TRUE(manager_.surface_manager()->GetSurfaceForId(surface_id1));
+  EXPECT_TRUE(manager_.surface_manager()->GetSurfaceForId(surface_id2));
+
+  // Call EvictSurfaces. Now the garbage collector can destroy the surfaces.
+  manager_.EvictSurfaces({surface_id1, surface_id2});
+  manager_.surface_manager()->GarbageCollectSurfaces();
+  EXPECT_FALSE(manager_.surface_manager()->GetSurfaceForId(surface_id1));
+  EXPECT_FALSE(manager_.surface_manager()->GetSurfaceForId(surface_id2));
 }
 
 namespace {
