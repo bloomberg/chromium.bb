@@ -4292,7 +4292,8 @@ drm_output_destroy(struct weston_output *base)
 		 */
 		if (output->cursor_plane)
 			drm_plane_destroy(output->cursor_plane);
-		drm_plane_destroy(output->scanout_plane);
+		if (output->scanout_plane)
+			drm_plane_destroy(output->scanout_plane);
 	}
 
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
@@ -4436,12 +4437,12 @@ create_output_for_connector(struct drm_backend *b,
 	i = find_crtc_for_connector(b, resources, connector);
 	if (i < 0) {
 		weston_log("No usable crtc/encoder pair for connector.\n");
-		goto err;
+		goto err_init;
 	}
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
-		goto err;
+		goto err_init;
 
 	output->connector = connector;
 	output->crtc_id = resources->crtcs[i];
@@ -4468,7 +4469,7 @@ create_output_for_connector(struct drm_backend *b,
 					   DRM_MODE_OBJECT_CONNECTOR);
 	if (!props) {
 		weston_log("failed to get connector properties\n");
-		goto err;
+		goto err_output;
 	}
 	drm_property_info_populate(b, connector_props, output->props_conn,
 				   WDRM_CONNECTOR__COUNT, props);
@@ -4493,8 +4494,8 @@ create_output_for_connector(struct drm_backend *b,
 	for (i = 0; i < output->connector->count_modes; i++) {
 		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
 		if (!drm_mode) {
-			drm_output_destroy(&output->base);
-			return -1;
+			weston_log("failed to add mode\n");
+			goto err_output;
 		}
 	}
 
@@ -4504,8 +4505,7 @@ create_output_for_connector(struct drm_backend *b,
 	if (!output->scanout_plane) {
 		weston_log("Failed to find primary plane for output %s\n",
 			   output->base.name);
-		drm_output_destroy(&output->base);
-		return -1;
+		goto err_output;
 	}
 
 	/* Failing to find a cursor plane is not fatal, as we'll fall back
@@ -4518,9 +4518,13 @@ create_output_for_connector(struct drm_backend *b,
 
 	return 0;
 
-err:
-	drmModeFreeConnector(connector);
+err_output:
+	drm_output_destroy(&output->base);
+	return -1;
+	/* no fallthrough! */
 
+err_init:
+	drmModeFreeConnector(connector);
 	return -1;
 }
 
