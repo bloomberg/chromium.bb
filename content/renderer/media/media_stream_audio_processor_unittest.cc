@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -233,7 +233,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 #endif
   }
 
-  base::MessageLoop main_thread_message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   media::AudioParameters params_;
 };
 
