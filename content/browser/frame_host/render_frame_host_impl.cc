@@ -363,10 +363,8 @@ void NotifyResourceSchedulerOfNavigation(
   // TODO(csharrison): This isn't quite right for OOPIF, as we *do* want to
   // propagate OnNavigate to the client associated with the OOPIF's RVH. This
   // should not result in show-stopping bugs, just poorer loading performance.
-  if (!ui::PageTransitionIsMainFrame(params.transition) ||
-      params.was_within_same_document) {
+  if (!ui::PageTransitionIsMainFrame(params.transition))
     return;
-  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -1563,10 +1561,6 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                validated_params->url.possibly_invalid_spec());
 
-  // Sanity-check the page transition for frame type.
-  DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
-            !GetParent());
-
   // Notify the resource scheduler of the navigation committing.
   NotifyResourceSchedulerOfNavigation(process->GetID(), *validated_params);
 
@@ -1599,16 +1593,8 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   //   the document of the previously committed navigation.
   DCHECK(document_scoped_interface_provider_binding_.is_bound());
 
-  if (validated_params->was_within_same_document) {
-    // The security origin never changes for same-document navigations, the
-    // RenderFrame is expected to keep using the existing interface connection.
-    if (interface_provider_request.is_pending()) {
-      bad_message::ReceivedBadMessage(
-          process, bad_message::RFH_INTERFACE_PROVIDER_SUPERFLUOUS);
-      return;
-    }
-  } else if (interface_provider_request.is_pending()) {
-    // Otherwise, as a general rule, expect the RenderFrame to have supplied the
+  if (interface_provider_request.is_pending()) {
+    // As a general rule, expect the RenderFrame to have supplied the
     // request end of a new InterfaceProvider connection that will be used by
     // the new document to issue interface requests to access RenderFrameHost
     // services.
@@ -1635,100 +1621,9 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     // therefore the global object is not replaced.
   }
 
-  if (validated_params->report_type ==
-      FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Navigation.UI_OnCommitProvisionalLoad.Link",
-        base::TimeTicks::Now() - validated_params->ui_timestamp,
-        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(10),
-        100);
-  } else if (validated_params->report_type ==
-             FrameMsg_UILoadMetricsReportType::REPORT_INTENT) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Navigation.UI_OnCommitProvisionalLoad.Intent",
-        base::TimeTicks::Now() - validated_params->ui_timestamp,
-        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(10),
-        100);
-  }
-
-  // Attempts to commit certain off-limits URL should be caught more strictly
-  // than our FilterURL checks below.  If a renderer violates this policy, it
-  // should be killed.
-  if (!CanCommitURL(validated_params->url)) {
-    VLOG(1) << "Blocked URL " << validated_params->url.spec();
-    // Kills the process.
-    bad_message::ReceivedBadMessage(process,
-                                    bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
+  if (!DidCommitNavigationInternal(validated_params.get(),
+                                   false /* is_same_document_navigation */))
     return;
-  }
-
-  // Verify that the origin passed from the renderer process is valid and can
-  // be allowed to commit in this RenderFrameHost.
-  if (!CanCommitOrigin(validated_params->origin, validated_params->url)) {
-    DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
-    return;
-  }
-
-  // Without this check, an evil renderer can trick the browser into creating
-  // a navigation entry for a banned URL.  If the user clicks the back button
-  // followed by the forward button (or clicks reload, or round-trips through
-  // session restore, etc), we'll think that the browser commanded the
-  // renderer to load the URL and grant the renderer the privileges to request
-  // the URL.  To prevent this attack, we block the renderer from inserting
-  // banned URLs into the navigation controller in the first place.
-  //
-  // TODO(crbug.com/172694): Currently, when FilterURL detects a bad URL coming
-  // from the renderer, it overwrites that URL to about:blank, which requires
-  // |validated_params| to be mutable. Once we kill the renderer instead, the
-  // signature of RenderFrameHostImpl::DidCommitProvisionalLoad can be modified
-  // to take |validated_params| by const reference.
-  process->FilterURL(false, &validated_params->url);
-  process->FilterURL(true, &validated_params->referrer.url);
-  for (std::vector<GURL>::iterator it(validated_params->redirects.begin());
-       it != validated_params->redirects.end(); ++it) {
-    process->FilterURL(false, &(*it));
-  }
-  process->FilterURL(true, &validated_params->searchable_form_url);
-
-  // Without this check, the renderer can trick the browser into using
-  // filenames it can't access in a future session restore.
-  if (!CanAccessFilesOfPageState(validated_params->page_state)) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
-    return;
-  }
-
-  if (!navigation_request_) {
-    // The browser has not been notified about the start of the load in this
-    // renderer yet (e.g., for same-document navigations that start in the
-    // renderer). Do it now.
-    if (!is_loading()) {
-      bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
-      is_loading_ = true;
-      frame_tree_node()->DidStartLoading(true, was_loading);
-    }
-    pending_commit_ = false;
-  }
-
-  // Find the appropriate NavigationHandle for this navigation.
-  std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      TakeNavigationHandleForCommit(*validated_params);
-  DCHECK(navigation_handle);
-
-  // Update the site url if the navigation was successful and the page is not an
-  // interstitial.
-  if (validated_params->url_is_unreachable ||
-      delegate_->GetAsInterstitialPage()) {
-    SetLastCommittedSiteUrl(GURL());
-  } else {
-    SetLastCommittedSiteUrl(validated_params->url);
-  }
-
-  accessibility_reset_count_ = 0;
-  frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
-                                              std::move(navigation_handle));
 
   // Since we didn't early return, it's safe to keep the commit state.
   commit_state_resetter.disable();
@@ -1740,11 +1635,41 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   // compositor output (possibly because of script deliberately creating this
   // situation) then we clear it after a while anyway.
   // See https://crbug.com/497588.
-  if (frame_tree_node_->IsMainFrame() && GetView() &&
-      !validated_params->was_within_same_document) {
+  if (frame_tree_node_->IsMainFrame() && GetView()) {
     RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
         ->DidNavigate(validated_params->content_source_id);
   }
+}
+
+void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+        validated_params) {
+  ScopedActiveURL scoped_active_url(
+      validated_params->url,
+      frame_tree_node()->frame_tree()->root()->current_origin());
+  ScopedCommitStateResetter commit_state_resetter(this);
+
+  // If we're waiting for an unload ack from this renderer and we receive a
+  // Navigate message, then the renderer was navigating before it received the
+  // unload request.  It will either respond to the unload request soon or our
+  // timer will expire.  Either way, we should ignore this message, because we
+  // have already committed to closing this renderer.
+  // TODO(ahemery): Investigate to see if this can be removed when the
+  // NavigationClient interface is implemented.
+  if (IsWaitingForUnloadACK())
+    return;
+
+  TRACE_EVENT2("navigation",
+               "RenderFrameHostImpl::DidCommitSameDocumentNavigation",
+               "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
+               validated_params->url.possibly_invalid_spec());
+
+  if (!DidCommitNavigationInternal(validated_params.get(),
+                                   true /* is_same_document_navigation*/))
+    return;
+
+  // Since we didn't early return, it's safe to keep the commit state.
+  commit_state_resetter.disable();
 }
 
 void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
@@ -4460,51 +4385,54 @@ void RenderFrameHostImpl::GetInterface(
 }
 
 std::unique_ptr<NavigationHandleImpl>
-RenderFrameHostImpl::TakeNavigationHandleForCommit(
+RenderFrameHostImpl::TakeNavigationHandleForSameDocumentCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   bool is_browser_initiated = (params.nav_entry_id != 0);
 
   NavigationHandleImpl* navigation_handle = GetNavigationHandle();
 
-  if (params.was_within_same_document) {
-    // A NavigationHandle is created for browser-initiated same-document
-    // navigation. Try to take it if it's still available and matches the
-    // current navigation.
-    if (is_browser_initiated && navigation_handle &&
-        navigation_handle->IsSameDocument() &&
-        navigation_handle->GetURL() == params.url) {
-      std::unique_ptr<NavigationHandleImpl> result_navigation_handle =
-          navigation_request()->TakeNavigationHandle();
-      navigation_request_.reset();
-      return result_navigation_handle;
-    }
-
-    // No existing NavigationHandle has been found. Create a new one, but don't
-    // reset any NavigationHandle tracking an ongoing navigation, since this may
-    // lead to the cancellation of the navigation.
-    // First, determine if the navigation corresponds to the pending navigation
-    // entry. This is the case for a browser-initiated same-document navigation,
-    // which does not cause a NavigationHandle to be created because it does not
-    // go through DidStartProvisionalLoad.
-    bool is_renderer_initiated = true;
-    int pending_nav_entry_id = 0;
-    NavigationEntryImpl* pending_entry =
-        NavigationEntryImpl::FromNavigationEntry(
-            frame_tree_node()->navigator()->GetController()->GetPendingEntry());
-    if (pending_entry && pending_entry->GetUniqueID() == params.nav_entry_id) {
-      pending_nav_entry_id = params.nav_entry_id;
-      is_renderer_initiated = pending_entry->is_renderer_initiated();
-    }
-
-    return NavigationHandleImpl::Create(
-        params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
-        params.was_within_same_document, base::TimeTicks::Now(),
-        pending_nav_entry_id,
-        false,                  // started_from_context_menu
-        CSPDisposition::CHECK,  // should_check_main_world_csp
-        false,                  // is_form_submission
-        base::nullopt);         // suggested_filename
+  // A NavigationHandle is created for browser-initiated same-document
+  // navigation. Try to take it if it's still available and matches the
+  // current navigation.
+  if (is_browser_initiated && navigation_handle &&
+      navigation_handle->GetURL() == params.url) {
+    std::unique_ptr<NavigationHandleImpl> result_navigation_handle =
+        navigation_request()->TakeNavigationHandle();
+    navigation_request_.reset();
+    return result_navigation_handle;
   }
+
+  // No existing NavigationHandle has been found. Create a new one, but don't
+  // reset any NavigationHandle tracking an ongoing navigation, since this may
+  // lead to the cancellation of the navigation.
+  // First, determine if the navigation corresponds to the pending navigation
+  // entry. This is the case if the NavigationHandle for a browser-initiated
+  // same-document navigation was erased due to a race condition.
+  // TODO(ahemery): Remove when the full mojo interface is in place.
+  // (https://bugs.chromium.org/p/chromium/issues/detail?id=784904)
+  bool is_renderer_initiated = true;
+  int pending_nav_entry_id = 0;
+  NavigationEntryImpl* pending_entry = NavigationEntryImpl::FromNavigationEntry(
+      frame_tree_node()->navigator()->GetController()->GetPendingEntry());
+  if (pending_entry && pending_entry->GetUniqueID() == params.nav_entry_id) {
+    pending_nav_entry_id = params.nav_entry_id;
+    is_renderer_initiated = pending_entry->is_renderer_initiated();
+  }
+
+  return NavigationHandleImpl::Create(
+      params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
+      true /* was_within_same_document */, base::TimeTicks::Now(),
+      pending_nav_entry_id,
+      false,                  // started_from_context_menu
+      CSPDisposition::CHECK,  // should_check_main_world_csp
+      false,                  // is_form_submission
+      base::nullopt);         // suggested_filename
+}
+
+std::unique_ptr<NavigationHandleImpl>
+RenderFrameHostImpl::TakeNavigationHandleForCommit(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  NavigationHandleImpl* navigation_handle = GetNavigationHandle();
 
   // Determine if the current NavigationHandle can be used.
   if (navigation_handle && navigation_handle->GetURL() == params.url) {
@@ -4553,7 +4481,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   // navigation loaded via LoadDataWithBaseURL, propagate the entry id.
   return NavigationHandleImpl::Create(
       params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
-      params.was_within_same_document, base::TimeTicks::Now(),
+      false /* was_within_same_document */, base::TimeTicks::Now(),
       entry_id_for_data_nav,
       false,                  // started_from_context_menu
       CSPDisposition::CHECK,  // should_check_main_world_csp
@@ -4695,6 +4623,136 @@ mojom::FrameNavigationControl* RenderFrameHostImpl::GetNavigationControl() {
   if (!navigation_control_)
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_control_);
   return navigation_control_.get();
+}
+
+bool RenderFrameHostImpl::ValidateDidCommitParams(
+    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) {
+  RenderProcessHost* process = GetProcess();
+
+  // Attempts to commit certain off-limits URL should be caught more strictly
+  // than our FilterURL checks.  If a renderer violates this policy, it
+  // should be killed.
+  if (!CanCommitURL(validated_params->url)) {
+    VLOG(1) << "Blocked URL " << validated_params->url.spec();
+    // Kills the process.
+    bad_message::ReceivedBadMessage(process,
+                                    bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
+    return false;
+  }
+
+  // Verify that the origin passed from the renderer process is valid and can
+  // be allowed to commit in this RenderFrameHost.
+  if (!CanCommitOrigin(validated_params->origin, validated_params->url)) {
+    DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+    bad_message::ReceivedBadMessage(process,
+                                    bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
+    return false;
+  }
+
+  // Without this check, an evil renderer can trick the browser into creating
+  // a navigation entry for a banned URL.  If the user clicks the back button
+  // followed by the forward button (or clicks reload, or round-trips through
+  // session restore, etc), we'll think that the browser commanded the
+  // renderer to load the URL and grant the renderer the privileges to request
+  // the URL.  To prevent this attack, we block the renderer from inserting
+  // banned URLs into the navigation controller in the first place.
+  //
+  // TODO(https://crbug.com/172694): Currently, when FilterURL detects a bad URL
+  // coming from the renderer, it overwrites that URL to about:blank, which
+  // requires |validated_params| to be mutable. Once we kill the renderer
+  // instead, the signature of RenderFrameHostImpl::DidCommitProvisionalLoad can
+  // be modified to take |validated_params| by const reference.
+  process->FilterURL(false, &validated_params->url);
+  process->FilterURL(true, &validated_params->referrer.url);
+  for (std::vector<GURL>::iterator it(validated_params->redirects.begin());
+       it != validated_params->redirects.end(); ++it) {
+    process->FilterURL(false, &(*it));
+  }
+  process->FilterURL(true, &validated_params->searchable_form_url);
+
+  // Without this check, the renderer can trick the browser into using
+  // filenames it can't access in a future session restore.
+  if (!CanAccessFilesOfPageState(validated_params->page_state)) {
+    bad_message::ReceivedBadMessage(
+        process, bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
+    return false;
+  }
+
+  return true;
+}
+
+void RenderFrameHostImpl::UMACommitReport(
+    FrameMsg_UILoadMetricsReportType::Value report_type,
+    const base::TimeTicks& ui_timestamp) {
+  if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnCommitProvisionalLoad.Link",
+                               base::TimeTicks::Now() - ui_timestamp,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromMinutes(10), 100);
+  } else if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_INTENT) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnCommitProvisionalLoad.Intent",
+                               base::TimeTicks::Now() - ui_timestamp,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromMinutes(10), 100);
+  }
+}
+
+void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
+                                        bool url_is_unreachable) {
+  if (url_is_unreachable || delegate_->GetAsInterstitialPage()) {
+    SetLastCommittedSiteUrl(GURL());
+  } else {
+    SetLastCommittedSiteUrl(url);
+  }
+}
+
+bool RenderFrameHostImpl::DidCommitNavigationInternal(
+    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    bool is_same_document_navigation) {
+  // Sanity-check the page transition for frame type.
+  DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
+            !GetParent());
+
+  UMACommitReport(validated_params->report_type,
+                  validated_params->ui_timestamp);
+
+  if (!ValidateDidCommitParams(validated_params))
+    return false;
+
+  if (!navigation_request_) {
+    // The browser has not been notified about the start of the
+    // load in this renderer yet (e.g., for same-document navigations that start
+    // in the renderer). Do it now.
+    // TODO(ahemery): This should never be true for cross-document navigation
+    // apart from race conditions. Move to same navigation specific code when
+    // the full mojo interface is in place.
+    // (https://bugs.chromium.org/p/chromium/issues/detail?id=784904)
+    if (!is_loading()) {
+      bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
+      is_loading_ = true;
+      frame_tree_node()->DidStartLoading(true, was_loading);
+    }
+    pending_commit_ = false;
+  }
+
+  // Find the appropriate NavigationHandle for this navigation.
+  std::unique_ptr<NavigationHandleImpl> navigation_handle;
+
+  if (is_same_document_navigation)
+    navigation_handle =
+        TakeNavigationHandleForSameDocumentCommit(*validated_params);
+  else
+    navigation_handle = TakeNavigationHandleForCommit(*validated_params);
+  DCHECK(navigation_handle);
+
+  UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
+
+  accessibility_reset_count_ = 0;
+  frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
+                                              std::move(navigation_handle),
+                                              is_same_document_navigation);
+
+  return true;
 }
 
 }  // namespace content

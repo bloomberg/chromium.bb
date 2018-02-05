@@ -371,7 +371,8 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   InitNavigateParams(&params, 0, true, GURL(url::kAboutBlankURL),
                      ui::PAGE_TRANSITION_TYPED);
 
-  main_test_rfh()->SendNavigateWithParams(&params);
+  main_test_rfh()->SendNavigateWithParams(&params,
+                                          false /* was_within_same_document */);
 
   contents()->UpdateTitle(main_test_rfh(),
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
@@ -448,7 +449,8 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
       FrameHostMsg_DidStartProvisionalLoad(1, kRewrittenURL,
                                            std::vector<GURL>(),
                                            base::TimeTicks::Now()));
-  main_test_rfh()->SendNavigateWithParams(&params);
+  main_test_rfh()->SendNavigateWithParams(&params,
+                                          false /* was_within_same_document */);
 
   // This is the virtual URL.
   EXPECT_EQ(base::ASCIIToUTF16("view-source:chrome://blah"),

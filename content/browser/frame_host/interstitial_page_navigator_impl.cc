@@ -41,7 +41,8 @@ void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
 void InterstitialPageNavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,
-    std::unique_ptr<NavigationHandleImpl> navigation_handle) {
+    std::unique_ptr<NavigationHandleImpl> navigation_handle,
+    bool was_within_same_document) {
   // Do not proceed if the interstitial itself has been disabled.
   if (!enabled_)
     return;

@@ -53,10 +53,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                             const GURL& url,
                             int error_code,
                             const base::string16& error_description) override;
-  void DidNavigate(
-      RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      std::unique_ptr<NavigationHandleImpl> navigation_handle) override;
+  void DidNavigate(RenderFrameHostImpl* render_frame_host,
+                   const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+                   std::unique_ptr<NavigationHandleImpl> navigation_handle,
+                   bool was_within_same_document) override;
   bool NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
                               const FrameNavigationEntry& frame_entry,
                               ReloadType reload_type,

@@ -232,14 +232,14 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   // This approach to determining whether a navigation is to be treated as
   // same document is not robust, as it will not handle pushState type
   // navigation. Do not use elsewhere!
-  params.was_within_same_document =
+  bool was_within_same_document =
       (GetLastCommittedURL().is_valid() && !last_commit_was_error_page_ &&
        url.ReplaceComponents(replacements) ==
            GetLastCommittedURL().ReplaceComponents(replacements));
 
   params.page_state = PageState::CreateForTesting(url, false, nullptr, nullptr);
 
-  SendNavigateWithParams(&params);
+  SendNavigateWithParams(&params, was_within_same_document);
 }
 
 void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
@@ -283,11 +283,10 @@ void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   params.url = GetNavigationHandle()->GetURL();
   params.transition = GetParent() ? ui::PAGE_TRANSITION_MANUAL_SUBFRAME
                                   : ui::PAGE_TRANSITION_LINK;
-  params.was_within_same_document = false;
   params.url_is_unreachable = true;
   params.page_state = PageState::CreateForTesting(
       GetNavigationHandle()->GetURL(), false, nullptr, nullptr);
-  SendNavigateWithParams(&params);
+  SendNavigateWithParams(&params, false /* was_within_same_document */);
 }
 
 void TestRenderFrameHost::SimulateNavigationStop() {
@@ -446,7 +445,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // This approach to determining whether a navigation is to be treated as
   // same document is not robust, as it will not handle pushState type
   // navigation. Do not use elsewhere!
-  params.was_within_same_document =
+  bool was_within_same_document =
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) &&
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
       (GetLastCommittedURL().is_valid() && !last_commit_was_error_page_ &&
@@ -461,23 +460,25 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   if (!callback.is_null())
     callback.Run(&params);
 
-  SendNavigateWithParams(&params);
+  SendNavigateWithParams(&params, was_within_same_document);
 }
 
 void TestRenderFrameHost::SendNavigateWithParams(
-    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+    FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+    bool was_within_same_document) {
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   service_manager::mojom::InterfaceProviderRequest interface_provider_request;
-  if (!params->was_within_same_document)
+  if (!was_within_same_document)
     interface_provider_request = mojo::MakeRequest(&interface_provider);
 
   SendNavigateWithParamsAndInterfaceProvider(
-      params, std::move(interface_provider_request));
+      params, std::move(interface_provider_request), was_within_same_document);
 }
 
 void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceProvider(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-    service_manager::mojom::InterfaceProviderRequest request) {
+    service_manager::mojom::InterfaceProviderRequest request,
+    bool was_within_same_document) {
   if (GetNavigationHandle()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
@@ -485,9 +486,16 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceProvider(
                                 contents_mime_type_);
     GetNavigationHandle()->set_response_headers_for_testing(response_headers);
   }
-  DidCommitProvisionalLoad(
-      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params),
-      std::move(request));
+
+  if (was_within_same_document) {
+    DidCommitSameDocumentNavigation(
+        std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(
+            *params));
+  } else {
+    DidCommitProvisionalLoad(
+        std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params),
+        std::move(request));
+  }
   last_commit_was_error_page_ = params->url_is_unreachable;
 }
 

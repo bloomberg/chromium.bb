@@ -424,7 +424,6 @@ void NavigationSimulator::Commit() {
   params.http_status_code = 200;
   params.history_list_was_cleared = false;
   params.original_request_url = navigation_url_;
-  params.was_within_same_document = same_document_;
 
   // Simulate Blink assigning an item and document sequence number to the
   // navigation.
@@ -435,11 +434,11 @@ void NavigationSimulator::Commit() {
       navigation_url_, params.item_sequence_number,
       params.document_sequence_number);
 
-  if (params.was_within_same_document)
+  if (same_document_)
     interface_provider_request_ = nullptr;
 
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, std::move(interface_provider_request_));
+      &params, std::move(interface_provider_request_), same_document_);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -522,7 +521,6 @@ void NavigationSimulator::CommitErrorPage() {
   params.url = navigation_url_;
   params.referrer = referrer_;
   params.transition = transition_;
-  params.was_within_same_document = false;
   params.url_is_unreachable = true;
 
   // Simulate Blink assigning an item and document sequence number to the
@@ -535,7 +533,8 @@ void NavigationSimulator::CommitErrorPage() {
       params.document_sequence_number);
 
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, std::move(interface_provider_request_));
+      &params, std::move(interface_provider_request_),
+      false /* was_same_document */);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -577,13 +576,12 @@ void NavigationSimulator::CommitSameDocument() {
   params.http_status_code = 200;
   params.history_list_was_cleared = false;
   params.original_request_url = navigation_url_;
-  params.was_within_same_document = true;
   params.page_state =
       PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
 
   interface_provider_request_ = nullptr;
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, nullptr /* interface_provider_request */);
+      &params, nullptr /* interface_provider_request */, true);
 
   state_ = FINISHED;
 
