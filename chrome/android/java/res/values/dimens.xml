@@ -274,8 +274,8 @@
     <dimen name="bottom_location_bar_content_vertical_inset">4dp</dimen>
 
     <!-- Modern toolbar background dimensions -->
-    <dimen name="modern_toolbar_background_size">36dp</dimen>
-    <dimen name="modern_toolbar_background_corner_radius">18dp</dimen>
+    <dimen name="modern_toolbar_background_size">40dp</dimen>
+    <dimen name="modern_toolbar_background_corner_radius">20dp</dimen>
     <dimen name="modern_toolbar_background_lateral_inset">2dp</dimen>
 
     <!-- Omnibox suggestions -->
@@ -338,6 +338,11 @@
     <dimen name="ntp_search_box_shadow_width">4dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="ntp_search_box_logo_padding">8dp</dimen>
+    <dimen name="ntp_search_box_voice_search_margin_end_modern">6dp</dimen>
+    <!-- Lateral offset added to the search box bounds when modern is enabled. 8dp is added to both
+         the top and bottom bounds to bring the 40dp modern_toolbar_background_size to 56dp
+         (matches toolbar_height_no_shadow). -->
+    <dimen name="ntp_search_box_bounds_lateral_offset_modern">8dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
