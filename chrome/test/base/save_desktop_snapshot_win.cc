@@ -8,12 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,16 +22,10 @@
 
 namespace {
 
-// A worker that captures a single frame from a webrtc::DesktopCapturer and then
-// runs a callback when done.
-class CaptureWorker : public webrtc::DesktopCapturer::Callback {
+// A callback that holds the last frame catpured by a webrtc::DesktopCapturer.
+class FrameHolder : public webrtc::DesktopCapturer::Callback {
  public:
-  CaptureWorker(std::unique_ptr<webrtc::DesktopCapturer> capturer,
-                base::Closure on_done)
-      : capturer_(std::move(capturer)), on_done_(std::move(on_done)) {
-    capturer_->Start(this);
-    capturer_->CaptureFrame();
-  }
+  FrameHolder() = default;
 
   // Returns the frame that was captured or null in case of failure.
   std::unique_ptr<webrtc::DesktopFrame> TakeFrame() {
@@ -46,13 +38,10 @@ class CaptureWorker : public webrtc::DesktopCapturer::Callback {
                        std::unique_ptr<webrtc::DesktopFrame> frame) override {
     if (result == webrtc::DesktopCapturer::Result::SUCCESS)
       frame_ = std::move(frame);
-    on_done_.Run();
   }
 
-  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
-  base::Closure on_done_;
   std::unique_ptr<webrtc::DesktopFrame> frame_;
-  DISALLOW_COPY_AND_ASSIGN(CaptureWorker);
+  DISALLOW_COPY_AND_ASSIGN(FrameHolder);
 };
 
 // Captures and returns a snapshot of the screen, or an empty bitmap in case of
@@ -66,16 +55,10 @@ SkBitmap CaptureScreen() {
       webrtc::DesktopCapturer::CreateScreenCapturer(options));
 
   // Grab a single frame.
-  std::unique_ptr<webrtc::DesktopFrame> frame;
-  {
-    // While webrtc::DesktopCapturer seems to be synchronous, comments in its
-    // implementation seem to indicate that it may require a UI message loop on
-    // its thread.
-    base::RunLoop run_loop;
-    CaptureWorker worker(std::move(capturer), run_loop.QuitClosure());
-    run_loop.Run();
-    frame = worker.TakeFrame();
-  }
+  FrameHolder frame_holder;
+  capturer->Start(&frame_holder);
+  capturer->CaptureFrame();
+  std::unique_ptr<webrtc::DesktopFrame> frame(frame_holder.TakeFrame());
 
   if (!frame)
     return SkBitmap();
