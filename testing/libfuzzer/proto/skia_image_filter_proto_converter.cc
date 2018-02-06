@@ -195,10 +195,10 @@ const uint8_t Converter::kCountNibBits[] = {0, 1, 1, 2, 1, 2, 2, 3,
                                             1, 2, 2, 3, 2, 3, 3, 4};
 
 // The rest of the Converter attributes are not copied from skia.
-const int Converter::kFlattenableDepthLimit = 4;
+const int Converter::kFlattenableDepthLimit = 3;
 const int Converter::kColorTableBufferLength = 256;
 uint8_t Converter::kColorTableBuffer[kColorTableBufferLength];
-const int Converter::kNumBound = 50;
+const int Converter::kNumBound = 20;
 const uint8_t Converter::kMutateEnumDenominator = 40;
 
 // Does not include SkSumPathEffect, SkComposePathEffect or SkRegion
