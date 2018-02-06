@@ -16,8 +16,13 @@
         display: inline-flex;
       }
 
+      /* When settings-dropdown-menu is start-aligned, we probably want policy
+       * indicator to be be displayed after the dropdown.
+       * Setting --settings-dropdown-menu-policy-order to 1 will do the job.
+       */
       cr-policy-pref-indicator {
         margin: 0 var(--settings-controlled-by-spacing);
+        order: var(--settings-dropdown-menu-policy-order, 0);
       }
 
       /* Hide "Custom" value when unselectable. */
