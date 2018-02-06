@@ -1046,15 +1046,22 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       </if>
 
       <!-- Upgrade recovery bubble -->
-      <message name="IDS_RUN_RECOVERY" desc="Text for the button the user clicks to recover chromium and its updater.">
-        Update Chromium
-      </message>
-      <message name="IDS_DECLINE_RECOVERY" desc="Text for the button the user clicks to decline recovery request.">
-        No, thanks
-      </message>
-      <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="Text for the title of the chrome recovery bubble view.">
-        Chromium is out of date
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_RUN_RECOVERY" desc="In Title Case: Text for the button the user clicks to recover chromium and its updater.">
+          Update Chromium
+        </message>
+        <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="In Title Case: Text for the title of the chrome recovery bubble view.">
+          Chromium is Out of Date
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_RUN_RECOVERY" desc="Text for the button the user clicks to recover chromium and its updater.">
+          Update Chromium
+        </message>
+        <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="Text for the title of the chrome recovery bubble view.">
+          Chromium is out of date
+        </message>
+      </if>
       <message name="IDS_RECOVERY_BUBBLE_TEXT" desc="Text for the chrome recovery bubble view full description.">
         Important security improvements and new features are available in the latest version.
       </message>
