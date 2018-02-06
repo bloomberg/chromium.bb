@@ -208,6 +208,10 @@ unsigned Character::ExpansionOpportunityCount(const UChar* characters,
 }
 
 bool Character::CanTextDecorationSkipInk(UChar32 codepoint) {
+  if (codepoint == kSolidusCharacter || codepoint == kReverseSolidusCharacter ||
+      codepoint == kLowLineCharacter)
+    return false;
+
   if (Character::IsCJKIdeographOrSymbol(codepoint))
     return false;
 
