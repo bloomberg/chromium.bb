@@ -9,6 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,7 +23,6 @@
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "url/gurl.h"
@@ -61,21 +63,14 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
     chromeos::ProfileHelper::Get()->SetActiveUserIdForTesting(kProfileName);
 #endif
     BrowserList::SetLastActive(browser());
-
-#if !defined(OS_CHROMEOS)
-    message_center::MessageCenter::Initialize();
-#endif
-    message_center_ = message_center::MessageCenter::Get();
-    ASSERT_TRUE(message_center_ != nullptr);
+    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+        SystemNotificationHelper::GetProfileForTesting());
 
     web_usb_detector_.reset(new WebUsbDetector());
   }
 
   void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
-#if !defined(OS_CHROMEOS)
-    message_center::MessageCenter::Shutdown();
-#endif
     web_usb_detector_.reset(nullptr);
   }
 
@@ -83,11 +78,11 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
 
  protected:
   device::MockDeviceClient device_client_;
-  message_center::MessageCenter* message_center_;
+  std::unique_ptr<WebUsbDetector> web_usb_detector_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetectorTest);
-  std::unique_ptr<WebUsbDetector> web_usb_detector_;
 };
 
 TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {
@@ -100,9 +95,9 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {
   Initialize();
 
   device_client_.usb_service()->AddDevice(device);
-  message_center::Notification* notification =
-      message_center_->FindVisibleNotificationById(guid);
-  ASSERT_TRUE(notification != nullptr);
+  base::Optional<message_center::Notification> notification =
+      display_service_->GetNotification(guid);
+  ASSERT_TRUE(notification);
   base::string16 expected_title =
       base::ASCIIToUTF16("Google Product A detected");
   EXPECT_EQ(expected_title, notification->title());
@@ -112,9 +107,8 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {
   EXPECT_TRUE(notification->delegate() != nullptr);
 
   device_client_.usb_service()->RemoveDevice(device);
-  // Device is removed, so notification should be removed from the
-  // message_center too.
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  // Device is removed, so notification should be removed too.
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
@@ -128,10 +122,10 @@ TEST_F(WebUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
 
   device_client_.usb_service()->AddDevice(device);
   // For device without product name, no notification is generated.
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 
   device_client_.usb_service()->RemoveDevice(device);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceWithoutLandingPageAddedAndRemoved) {
@@ -144,10 +138,10 @@ TEST_F(WebUsbDetectorTest, UsbDeviceWithoutLandingPageAddedAndRemoved) {
 
   device_client_.usb_service()->AddDevice(device);
   // For device without landing page, no notification is generated.
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 
   device_client_.usb_service()->RemoveDevice(device);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceWasThereBeforeAndThenRemoved) {
@@ -158,12 +152,12 @@ TEST_F(WebUsbDetectorTest, UsbDeviceWasThereBeforeAndThenRemoved) {
 
   // USB device was added before web_usb_detector was created.
   device_client_.usb_service()->AddDevice(device);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 
   Initialize();
 
   device_client_.usb_service()->RemoveDevice(device);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid));
 }
 
 TEST_F(
@@ -190,18 +184,18 @@ TEST_F(
   // Three usb devices were added and removed before web_usb_detector was
   // created.
   device_client_.usb_service()->AddDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   device_client_.usb_service()->AddDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
   device_client_.usb_service()->AddDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_3));
 
   device_client_.usb_service()->RemoveDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   device_client_.usb_service()->RemoveDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
   device_client_.usb_service()->RemoveDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_3));
 
   WebUsbDetector web_usb_detector;
   web_usb_detector.Initialize();
@@ -230,20 +224,20 @@ TEST_F(
 
   // Three usb devices were added before web_usb_detector was created.
   device_client_.usb_service()->AddDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   device_client_.usb_service()->AddDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
   device_client_.usb_service()->AddDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_3));
 
   Initialize();
 
   device_client_.usb_service()->RemoveDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   device_client_.usb_service()->RemoveDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
   device_client_.usb_service()->RemoveDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_3));
 }
 
 TEST_F(WebUsbDetectorTest,
@@ -268,19 +262,19 @@ TEST_F(WebUsbDetectorTest,
 
   // Two usb devices were added before web_usb_detector was created.
   device_client_.usb_service()->AddDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
-  device_client_.usb_service()->AddDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+  device_client_.usb_service()->AddDevice(device_2);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
 
   Initialize();
 
   device_client_.usb_service()->RemoveDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
 
   device_client_.usb_service()->AddDevice(device_2);
-  message_center::Notification* notification =
-      message_center_->FindVisibleNotificationById(guid_2);
-  ASSERT_TRUE(notification != nullptr);
+  base::Optional<message_center::Notification> notification =
+      display_service_->GetNotification(guid_2);
+  ASSERT_TRUE(notification);
   base::string16 expected_title =
       base::ASCIIToUTF16("Google Product B detected");
   EXPECT_EQ(expected_title, notification->title());
@@ -289,11 +283,8 @@ TEST_F(WebUsbDetectorTest,
   EXPECT_EQ(expected_message, notification->message());
   EXPECT_TRUE(notification->delegate() != nullptr);
 
-  device_client_.usb_service()->RemoveDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
-
   device_client_.usb_service()->RemoveDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
 }
 
 TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
@@ -318,9 +309,9 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
   Initialize();
 
   device_client_.usb_service()->AddDevice(device_1);
-  message_center::Notification* notification_1 =
-      message_center_->FindVisibleNotificationById(guid_1);
-  ASSERT_TRUE(notification_1 != nullptr);
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
   base::string16 expected_title_1 =
       base::ASCIIToUTF16("Google Product A detected");
   EXPECT_EQ(expected_title_1, notification_1->title());
@@ -330,12 +321,12 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
   EXPECT_TRUE(notification_1->delegate() != nullptr);
 
   device_client_.usb_service()->RemoveDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
 
   device_client_.usb_service()->AddDevice(device_2);
-  message_center::Notification* notification_2 =
-      message_center_->FindVisibleNotificationById(guid_2);
-  ASSERT_TRUE(notification_2 != nullptr);
+  base::Optional<message_center::Notification> notification_2 =
+      display_service_->GetNotification(guid_2);
+  ASSERT_TRUE(notification_2);
   base::string16 expected_title_2 =
       base::ASCIIToUTF16("Google Product B detected");
   EXPECT_EQ(expected_title_2, notification_2->title());
@@ -345,12 +336,12 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
   EXPECT_TRUE(notification_2->delegate() != nullptr);
 
   device_client_.usb_service()->RemoveDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
 
   device_client_.usb_service()->AddDevice(device_3);
-  message_center::Notification* notification_3 =
-      message_center_->FindVisibleNotificationById(guid_3);
-  ASSERT_TRUE(notification_3 != nullptr);
+  base::Optional<message_center::Notification> notification_3 =
+      display_service_->GetNotification(guid_3);
+  ASSERT_TRUE(notification_3);
   base::string16 expected_title_3 =
       base::ASCIIToUTF16("Google Product C detected");
   EXPECT_EQ(expected_title_3, notification_3->title());
@@ -360,7 +351,7 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
   EXPECT_TRUE(notification_3->delegate() != nullptr);
 
   device_client_.usb_service()->RemoveDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_3));
 }
 
 TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
@@ -385,9 +376,9 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
   Initialize();
 
   device_client_.usb_service()->AddDevice(device_1);
-  message_center::Notification* notification_1 =
-      message_center_->FindVisibleNotificationById(guid_1);
-  ASSERT_TRUE(notification_1 != nullptr);
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
   base::string16 expected_title_1 =
       base::ASCIIToUTF16("Google Product A detected");
   EXPECT_EQ(expected_title_1, notification_1->title());
@@ -397,9 +388,9 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
   EXPECT_TRUE(notification_1->delegate() != nullptr);
 
   device_client_.usb_service()->AddDevice(device_2);
-  message_center::Notification* notification_2 =
-      message_center_->FindVisibleNotificationById(guid_2);
-  ASSERT_TRUE(notification_2 != nullptr);
+  base::Optional<message_center::Notification> notification_2 =
+      display_service_->GetNotification(guid_2);
+  ASSERT_TRUE(notification_2);
   base::string16 expected_title_2 =
       base::ASCIIToUTF16("Google Product B detected");
   EXPECT_EQ(expected_title_2, notification_2->title());
@@ -409,12 +400,12 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
   EXPECT_TRUE(notification_2->delegate() != nullptr);
 
   device_client_.usb_service()->RemoveDevice(device_2);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_2) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_2));
 
   device_client_.usb_service()->AddDevice(device_3);
-  message_center::Notification* notification_3 =
-      message_center_->FindVisibleNotificationById(guid_3);
-  ASSERT_TRUE(notification_3 != nullptr);
+  base::Optional<message_center::Notification> notification_3 =
+      display_service_->GetNotification(guid_3);
+  ASSERT_TRUE(notification_3);
   base::string16 expected_title_3 =
       base::ASCIIToUTF16("Google Product C detected");
   EXPECT_EQ(expected_title_3, notification_3->title());
@@ -424,10 +415,10 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
   EXPECT_TRUE(notification_3->delegate() != nullptr);
 
   device_client_.usb_service()->RemoveDevice(device_1);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
 
   device_client_.usb_service()->RemoveDevice(device_3);
-  EXPECT_TRUE(message_center_->FindVisibleNotificationById(guid_3) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_3));
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceAddedWhileActiveTabUrlIsLandingPage) {
@@ -441,7 +432,7 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAddedWhileActiveTabUrlIsLandingPage) {
   AddTab(browser(), landing_page_1);
 
   device_client_.usb_service()->AddDevice(device_1);
-  ASSERT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceAddedBeforeActiveTabUrlIsLandingPage) {
@@ -454,10 +445,10 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAddedBeforeActiveTabUrlIsLandingPage) {
   Initialize();
 
   device_client_.usb_service()->AddDevice(device_1);
-  ASSERT_TRUE(message_center_->FindVisibleNotificationById(guid_1) != nullptr);
+  EXPECT_TRUE(display_service_->GetNotification(guid_1));
 
   AddTab(browser(), landing_page_1);
-  ASSERT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 3, 1);
 }
 
@@ -477,9 +468,9 @@ TEST_F(WebUsbDetectorTest,
   AddTab(browser(), landing_page_2);
 
   device_client_.usb_service()->AddDevice(device_1);
-  message_center::Notification* notification_1 =
-      message_center_->FindVisibleNotificationById(guid_1);
-  ASSERT_TRUE(notification_1 != nullptr);
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
   EXPECT_EQ(2, tab_strip_model->count());
 
   notification_1->Click();
@@ -487,7 +478,7 @@ TEST_F(WebUsbDetectorTest,
   content::WebContents* web_contents =
       tab_strip_model->GetWebContentsAt(tab_strip_model->active_index());
   EXPECT_EQ(landing_page_1, web_contents->GetURL());
-  ASSERT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 2, 1);
 }
 
@@ -503,9 +494,9 @@ TEST_F(WebUsbDetectorTest, NotificationClickedWhileNoTabUrlIsLandingPage) {
   Initialize();
 
   device_client_.usb_service()->AddDevice(device_1);
-  message_center::Notification* notification_1 =
-      message_center_->FindVisibleNotificationById(guid_1);
-  ASSERT_TRUE(notification_1 != nullptr);
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
   EXPECT_EQ(0, tab_strip_model->count());
 
   notification_1->Click();
@@ -513,8 +504,7 @@ TEST_F(WebUsbDetectorTest, NotificationClickedWhileNoTabUrlIsLandingPage) {
   content::WebContents* web_contents =
       tab_strip_model->GetWebContentsAt(tab_strip_model->active_index());
   EXPECT_EQ(landing_page_1, web_contents->GetURL());
-  ASSERT_TRUE(message_center_->FindVisibleNotificationById(guid_1) == nullptr);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
   histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 2, 1);
 }
-
 #endif  // !OS_WIN

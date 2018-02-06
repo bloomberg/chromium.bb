@@ -12,7 +12,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
@@ -68,8 +68,8 @@ void LowDiskNotification::LowDiskSpace(uint64_t free_disk_bytes) {
   if (severity != last_notification_severity_ ||
       (severity == HIGH &&
        now - last_notification_time_ > notification_interval_)) {
-    NotificationDisplayService::GetForSystemNotifications()->Display(
-        NotificationHandler::Type::TRANSIENT, *CreateNotification(severity));
+    SystemNotificationHelper::GetInstance()->Display(
+        *CreateNotification(severity));
     last_notification_time_ = now;
     last_notification_severity_ = severity;
   }
