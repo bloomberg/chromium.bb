@@ -187,7 +187,13 @@ void RandomBitCorrelation(int random_bit) {
   }
 }
 
-TEST(AddressSpaceRandomizationTest, Random) {
+// TODO(crbug.com/809367): Flaky on Linux TSAN.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_Random DISABLED_Random
+#else
+#define MAYBE_Random Random
+#endif
+TEST(AddressSpaceRandomizationTest, MAYBE_Random) {
   uintptr_t mask = GetMask();
   if (!mask)
     return;
