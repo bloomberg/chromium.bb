@@ -750,11 +750,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         });
     }
 
-    @Override
-    public void onItemsAvailable() {
-        // TODO(dimich): This signal is not used, remove from interface.
-    }
-
     private void recordOfflineItemCountHistograms() {
         int[] itemCounts = new int[OfflineItemFilter.FILTER_BOUNDARY];
         for (DownloadHistoryItemWrapper item : mOfflineItems) {

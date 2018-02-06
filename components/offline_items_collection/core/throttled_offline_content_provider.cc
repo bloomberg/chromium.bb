@@ -38,10 +38,6 @@ ThrottledOfflineContentProvider::~ThrottledOfflineContentProvider() {
   wrapped_provider_->RemoveObserver(this);
 }
 
-bool ThrottledOfflineContentProvider::AreItemsAvailable() {
-  return wrapped_provider_->AreItemsAvailable();
-}
-
 void ThrottledOfflineContentProvider::OpenItem(const ContentId& id) {
   wrapped_provider_->OpenItem(id);
   FlushUpdates();
@@ -108,25 +104,11 @@ void ThrottledOfflineContentProvider::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
-  if (!wrapped_provider_->AreItemsAvailable())
-    return;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThrottledOfflineContentProvider::NotifyItemsAvailable,
-                 weak_ptr_factory_.GetWeakPtr(), base::Unretained(observer)));
 }
 
 void ThrottledOfflineContentProvider::RemoveObserver(
     OfflineContentProvider::Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void ThrottledOfflineContentProvider::OnItemsAvailable(
-    OfflineContentProvider* provider) {
-  DCHECK_EQ(provider, wrapped_provider_);
-  for (auto& observer : observers_)
-    observer.OnItemsAvailable(this);
 }
 
 void ThrottledOfflineContentProvider::OnItemsAdded(
@@ -164,13 +146,6 @@ void ThrottledOfflineContentProvider::OnItemUpdated(const OfflineItem& item) {
       base::Bind(&ThrottledOfflineContentProvider::FlushUpdates,
                  weak_ptr_factory_.GetWeakPtr()),
       delay_between_updates_ - current_delay);
-}
-
-void ThrottledOfflineContentProvider::NotifyItemsAvailable(
-    OfflineContentProvider::Observer* observer) {
-  if (!observers_.HasObserver(observer))
-    return;
-  observer->OnItemsAvailable(this);
 }
 
 void ThrottledOfflineContentProvider::UpdateItemIfPresent(

@@ -63,7 +63,6 @@ class RecentTabSuggestionsProvider : public ContentSuggestionsProvider,
   friend class RecentTabSuggestionsProviderTestNoLoad;
 
   // OfflineContentProvider::Observer implementation.
-  void OnItemsAvailable(OfflineContentProvider* provider) override;
   void OnItemsAdded(const std::vector<OfflineItem>& items) override;
   void OnItemRemoved(const ContentId& id) override;
   void OnItemUpdated(const OfflineItem& item) override;

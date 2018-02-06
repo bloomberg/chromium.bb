@@ -71,9 +71,6 @@ public class OfflineContentAggregatorNotificationBridgeUi
 
     // OfflineContentProvider.Observer implementation.
     @Override
-    public void onItemsAvailable() {}
-
-    @Override
     public void onItemsAdded(ArrayList<OfflineItem> items) {
         for (int i = 0; i < items.size(); i++) {
             OfflineItem item = items.get(i);

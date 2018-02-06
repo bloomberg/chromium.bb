@@ -12,8 +12,7 @@ namespace offline_items_collection {
 MockOfflineContentProvider::MockObserver::MockObserver() = default;
 MockOfflineContentProvider::MockObserver::~MockObserver() = default;
 
-MockOfflineContentProvider::MockOfflineContentProvider()
-    : items_available_(false) {}
+MockOfflineContentProvider::MockOfflineContentProvider() {}
 MockOfflineContentProvider::~MockOfflineContentProvider() = default;
 
 bool MockOfflineContentProvider::HasObserver(Observer* observer) {
@@ -22,12 +21,6 @@ bool MockOfflineContentProvider::HasObserver(Observer* observer) {
 
 void MockOfflineContentProvider::SetItems(const OfflineItemList& items) {
   items_ = items;
-}
-
-void MockOfflineContentProvider::NotifyOnItemsAvailable() {
-  items_available_ = true;
-  for (auto& observer : observers_)
-    observer.OnItemsAvailable(this);
 }
 
 void MockOfflineContentProvider::NotifyOnItemsAdded(
@@ -44,10 +37,6 @@ void MockOfflineContentProvider::NotifyOnItemRemoved(const ContentId& id) {
 void MockOfflineContentProvider::NotifyOnItemUpdated(const OfflineItem& item) {
   for (auto& observer : observers_)
     observer.OnItemUpdated(item);
-}
-
-bool MockOfflineContentProvider::AreItemsAvailable() {
-  return items_available_;
 }
 
 void MockOfflineContentProvider::GetAllItems(MultipleItemCallback callback) {

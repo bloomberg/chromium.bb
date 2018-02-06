@@ -99,7 +99,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
             }
         };
 
-        bridge.onItemsAvailable();
         bridge.onItemsAdded(items);
 
         InOrder order = inOrder(mProvider);
@@ -136,7 +135,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
             }
         };
 
-        bridge.onItemsAvailable();
         for (int i = 0; i < items.size(); i++) bridge.onItemUpdated(items.get(i));
 
         verify(mProvider, times(1)).getVisualsForItem(items.get(0).id, bridge);
@@ -184,7 +182,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
         OfflineItemVisuals visuals1 = new OfflineItemVisuals();
         visuals1.icon = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8);
 
-        bridge.onItemsAvailable();
         bridge.onItemUpdated(item1);
         bridge.onItemUpdated(item2);
 
@@ -217,7 +214,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
 
         ContentId id = new ContentId("1", "A");
 
-        bridge.onItemsAvailable();
         bridge.onItemRemoved(id);
         verify(mNotifier, times(1)).notifyDownloadCanceled(id);
 
@@ -233,7 +229,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
 
         OfflineItem item = buildOfflineItem(new ContentId("1", "A"), OfflineItemState.IN_PROGRESS);
 
-        bridge.onItemsAvailable();
         bridge.onItemUpdated(item);
         verify(mProvider, times(1)).getVisualsForItem(item.id, bridge);
 
@@ -255,7 +250,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
 
         OfflineItem item = buildOfflineItem(new ContentId("1", "A"), OfflineItemState.IN_PROGRESS);
 
-        bridge.onItemsAvailable();
         bridge.onItemUpdated(item);
         bridge.onItemUpdated(item);
         verify(mProvider, times(1)).getVisualsForItem(item.id, bridge);
@@ -285,8 +279,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
                 add(buildOfflineItem(new ContentId("6", "F"), OfflineItemState.FAILED));
             }
         };
-
-        bridge.onItemsAvailable();
 
         for (int i = 0; i < interestingItems.size(); i++) {
             OfflineItem item = interestingItems.get(i);
@@ -322,7 +314,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
         OfflineItem item2 = buildOfflineItem(id, OfflineItemState.FAILED);
         OfflineItem item3 = buildOfflineItem(id, OfflineItemState.IN_PROGRESS);
 
-        bridge.onItemsAvailable();
         bridge.onItemUpdated(item1);
         bridge.onVisualsAvailable(item1.id, new OfflineItemVisuals());
         bridge.onItemUpdated(item2);

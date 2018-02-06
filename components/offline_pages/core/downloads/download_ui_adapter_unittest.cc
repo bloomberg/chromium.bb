@@ -183,7 +183,6 @@ class DownloadUIAdapterTest : public testing::Test,
   void SetUp() override;
 
   // DownloadUIAdapter::Observer
-  void OnItemsAvailable(OfflineContentProvider* provider) override;
   void OnItemsAdded(const std::vector<OfflineItem>& items) override;
   void OnItemUpdated(const OfflineItem& item) override;
   void OnItemRemoved(const ContentId& id) override;
@@ -239,10 +238,6 @@ void DownloadUIAdapterTest::SetUp() {
   adapter->AddObserver(this);
 }
 
-void DownloadUIAdapterTest::OnItemsAvailable(OfflineContentProvider* provider) {
-  // TODO(dimich): remove this event.
-}
-
 void DownloadUIAdapterTest::OnItemsAdded(
     const std::vector<OfflineItem>& items) {
   for (const OfflineItem& item : items) {
@@ -288,11 +283,6 @@ int64_t DownloadUIAdapterTest::AddInitialRequest(const GURL& url,
   adapter->GetAllItems(base::BindOnce(&GetAllItemsAndIgnoreResult));
   PumpLoop();
   return id;
-}
-
-// TODO(dimich): Remove this flag and OnItemsAvailable from interface.
-TEST_F(DownloadUIAdapterTest, ItemsAvailableIsAlwaysTrue) {
-  EXPECT_TRUE(adapter->AreItemsAvailable());
 }
 
 TEST_F(DownloadUIAdapterTest, InitialLoad) {

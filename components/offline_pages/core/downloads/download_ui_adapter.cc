@@ -106,14 +106,6 @@ void DownloadUIAdapter::AddObserver(
   if (observers_.HasObserver(observer))
     return;
   observers_.AddObserver(observer);
-  // If the items are already loaded, post the notification right away.
-  // Don't just invoke it from here to avoid reentrancy in the client.
-  if (state_ == State::LOADED) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&DownloadUIAdapter::NotifyItemsLoaded,
-                   weak_ptr_factory_.GetWeakPtr(), base::Unretained(observer)));
-  }
 }
 
 void DownloadUIAdapter::RemoveObserver(
@@ -270,10 +262,6 @@ void DownloadUIAdapter::GetItemById(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), offline_item));
-}
-
-bool DownloadUIAdapter::AreItemsAvailable() {
-  return true;
 }
 
 void DownloadUIAdapter::OpenItem(const ContentId& id) {
@@ -442,8 +430,6 @@ void DownloadUIAdapter::OnRequestsLoaded(
   state_ = State::LOADED;
   TRACE_EVENT_ASYNC_BEGIN1("offline_pages", "DownloadUIAdapter: items cached",
                            this, "initial count", items_.size());
-  for (auto& observer : observers_)
-    observer.OnItemsAvailable(this);
 
   // If there are callers waiting for GetAllItems callback, call them.
   for (auto& callback : postponed_callbacks_) {
@@ -457,12 +443,6 @@ void DownloadUIAdapter::OnRequestsLoaded(
     std::move(operation).Run();
   }
   postponed_operations_.clear();
-}
-
-void DownloadUIAdapter::NotifyItemsLoaded(
-    OfflineContentProvider::Observer* observer) {
-  if (observer && observers_.HasObserver(observer))
-    observer->OnItemsAvailable(this);
 }
 
 void DownloadUIAdapter::OnDeletePagesDone(DeletePageResult result) {

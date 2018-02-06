@@ -100,12 +100,6 @@ OfflineContentAggregatorBridge::~OfflineContentAggregatorBridge() {
                                                         java_ref_);
 }
 
-jboolean OfflineContentAggregatorBridge::AreItemsAvailable(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jobj) {
-  return provider_->AreItemsAvailable();
-}
-
 void OfflineContentAggregatorBridge::OpenItem(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,
@@ -189,15 +183,6 @@ void OfflineContentAggregatorBridge::GetVisualsForItem(
                                                          j_id),
       base::Bind(&GetVisualsForItemHelperCallback,
                  ScopedJavaGlobalRef<jobject>(env, j_callback)));
-}
-
-void OfflineContentAggregatorBridge::OnItemsAvailable(
-    OfflineContentProvider* provider) {
-  if (java_ref_.is_null())
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  Java_OfflineContentAggregatorBridge_onItemsAvailable(env, java_ref_);
 }
 
 void OfflineContentAggregatorBridge::OnItemsAdded(
