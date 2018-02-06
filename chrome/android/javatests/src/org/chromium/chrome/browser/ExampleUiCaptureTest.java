@@ -31,7 +31,6 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // Tab switcher button only exists on phones.
-@ScreenShooter.Directory("Example")
 public class ExampleUiCaptureTest {
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -53,7 +52,6 @@ public class ExampleUiCaptureTest {
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("TabSwitcher")
     public void testCaptureTabSwitcher() throws IOException, InterruptedException {
         mScreenShooter.shoot("NTP", ScreenShooter.TagsEnum.UiCatalogueExample);
         Espresso.onView(ViewMatchers.withId(R.id.tab_switcher_button)).perform(ViewActions.click());

@@ -94,7 +94,6 @@ public class NewTabPageUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "UiCatalogue"})
-    @ScreenShooter.Directory("New Tab Page")
     public void testCaptureNewTabPage() {
         assertThat(ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MODERN_LAYOUT),
                 is(mEnableNTPModernLayout));
