@@ -5215,14 +5215,16 @@ TEST_F(NavigationControllerTest, MultipleNavigationsAndReload) {
 
   // Test 4.
   // A navigation to url_1 while the previous navigation to url_1 is pending
-  // should be marked as reload.
+  // should not be marked as reload. Even though the URL is the same as the
+  // previous navigation, the previous navigation did not commit. We can only
+  // reload navigations that committed. See https://crbug.com/809040.
   controller.LoadURL(url_1, Referrer(), ui::PAGE_TRANSITION_TYPED,
                      std::string());
 
   EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
   main_test_rfh()->SimulateNavigationStart(url_1);
   EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(ReloadType::NORMAL, last_reload_type_);
+  EXPECT_EQ(ReloadType::NONE, last_reload_type_);
 
   main_test_rfh()->SimulateNavigationCommit(initial_url);
 

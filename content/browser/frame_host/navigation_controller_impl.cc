@@ -131,37 +131,86 @@ bool ShouldKeepOverride(const NavigationEntry* last_entry) {
   return last_entry && last_entry->GetIsOverridingUserAgent();
 }
 
-// Returns true if the PageTransition in the |entry| require this navigation to
-// be treated as a reload. For e.g. navigating to the last committed url via
-// the address bar or clicking on a link which results in a navigation to the
-// last committed or pending navigation, etc.
-bool ShouldTreatNavigationAsReload(const NavigationEntry* entry) {
-  if (!entry)
+// Returns true this navigation should be treated as a reload. For e.g.
+// navigating to the last committed url via the address bar or clicking on a
+// link which results in a navigation to the last committed or pending
+// navigation, etc.
+// |url|, |virtual_url|, |base_url_for_data_url|, |transition_type| correspond
+// to the new navigation (i.e. the pending NavigationEntry).
+// |last_committed_entry| is the last navigation that committed.
+bool ShouldTreatNavigationAsReload(
+    const GURL& url,
+    const GURL& virtual_url,
+    const GURL& base_url_for_data_url,
+    ui::PageTransition transition_type,
+    bool is_main_frame,
+    bool is_post,
+    bool is_reload,
+    bool is_navigation_to_existing_entry,
+    bool has_interstitial,
+    const NavigationEntryImpl* last_committed_entry) {
+  // Don't convert when an interstitial is showing.
+  if (has_interstitial)
+    return false;
+
+  // Only convert main frame navigations to a new entry.
+  if (!is_main_frame || is_reload || is_navigation_to_existing_entry)
+    return false;
+
+  // Only convert to reload if at least one navigation committed.
+  if (!last_committed_entry)
     return false;
 
   // Skip navigations initiated by external applications.
-  if (entry->GetTransitionType() & ui::PAGE_TRANSITION_FROM_API)
+  if (transition_type & ui::PAGE_TRANSITION_FROM_API)
     return false;
 
   // We treat (PAGE_TRANSITION_RELOAD | PAGE_TRANSITION_FROM_ADDRESS_BAR),
   // PAGE_TRANSITION_TYPED or PAGE_TRANSITION_LINK transitions as navigations
   // which should be treated as reloads.
-  if ((ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
-                                    ui::PAGE_TRANSITION_RELOAD) &&
-       (entry->GetTransitionType() & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR))) {
-    return true;
+  bool transition_type_can_be_converted = false;
+  if (ui::PageTransitionCoreTypeIs(transition_type,
+                                   ui::PAGE_TRANSITION_RELOAD) &&
+      (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+    transition_type_can_be_converted = true;
   }
-
-  if (ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
+  if (ui::PageTransitionCoreTypeIs(transition_type,
                                    ui::PAGE_TRANSITION_TYPED)) {
-    return true;
+    transition_type_can_be_converted = true;
+  }
+  if (ui::PageTransitionCoreTypeIs(transition_type, ui::PAGE_TRANSITION_LINK))
+    transition_type_can_be_converted = true;
+  if (!transition_type_can_be_converted)
+    return false;
+
+  // This check is required for cases like view-source:, etc. Here the URL of
+  // the navigation entry would contain the url of the page, while the virtual
+  // URL contains the full URL including the view-source prefix.
+  if (virtual_url != last_committed_entry->GetVirtualURL())
+    return false;
+
+  // Check that the URL match.
+  if (url != last_committed_entry->GetURL())
+    return false;
+
+  // This check is required for Android WebView loadDataWithBaseURL. Apps
+  // can pass in anything in the base URL and we need to ensure that these
+  // match before classifying it as a reload.
+  if (url.SchemeIs(url::kDataScheme) && base_url_for_data_url.is_valid()) {
+    if (base_url_for_data_url != last_committed_entry->GetBaseURLForDataURL())
+      return false;
   }
 
-  if (ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
-                                   ui::PAGE_TRANSITION_LINK)) {
-    return true;
-  }
-  return false;
+  // Skip entries with SSL errors.
+  if (last_committed_entry->ssl_error())
+    return false;
+
+  // Don't convert to a reload when the last navigation was a POST or the new
+  // navigation is a POST.
+  if (last_committed_entry->GetHasPostData() || is_post)
+    return false;
+
+  return true;
 }
 
 // See replaced_navigation_entry_data.h for details: this information is meant
@@ -256,13 +305,10 @@ NavigationControllerImpl::NavigationControllerImpl(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
       pending_entry_(nullptr),
-      last_pending_entry_(nullptr),
       failed_pending_entry_id_(0),
       last_committed_entry_index_(-1),
       pending_entry_index_(-1),
       transient_entry_index_(-1),
-      last_pending_entry_index_(-1),
-      last_transient_entry_index_(-1),
       delegate_(delegate),
       ssl_manager_(this),
       needs_reload_(false),
@@ -456,16 +502,8 @@ NavigationControllerImpl::GetEntryWithUniqueID(int nav_entry_id) const {
 
 void NavigationControllerImpl::LoadEntry(
     std::unique_ptr<NavigationEntryImpl> entry) {
-  // Remember the last pending entry for which we haven't received a response
-  // yet. This will be deleted in the NavigateToPendingEntry() function.
-  DCHECK_EQ(nullptr, last_pending_entry_);
-  DCHECK_EQ(-1, last_pending_entry_index_);
-  last_pending_entry_ = pending_entry_;
-  last_pending_entry_index_ = pending_entry_index_;
-  last_transient_entry_index_ = transient_entry_index_;
+  DiscardPendingEntry(false);
 
-  pending_entry_ = nullptr;
-  pending_entry_index_ = -1;
   // When navigating to a new page, we don't know for sure if we will actually
   // end up leaving the current page.  The new page load could for example
   // result in a download or a 'no content' response (e.g., a mailto: URL).
@@ -1998,53 +2036,19 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
         ->CancelForNavigation();
   }
 
-  // The last navigation is the last pending navigation which hasn't been
-  // committed yet, or the last committed navigation.
-  NavigationEntryImpl* last_navigation =
-      last_pending_entry_ ? last_pending_entry_ : GetLastCommittedEntry();
-
-  // Convert Enter-in-omnibox to a reload. This is what Blink does in
-  // FrameLoader, but we want to handle it here so that if the navigation is
-  // redirected or handled purely on the browser side in PlzNavigate we have the
-  // same behaviour as Blink would.
-  if (reload_type == ReloadType::NONE && last_navigation &&
-      // When |pending_entry_index_| is different from -1, it means this is an
-      // history navigation. History navigation mustn't be converted to a
-      // reload.
-      pending_entry_index_ == -1 &&
-      // Please refer to the ShouldTreatNavigationAsReload() function for info
-      // on which navigations are treated as reloads. In general navigating to
-      // the last committed or pending entry via the address bar, clicking on
-      // a link, etc would be treated as reloads.
-      ShouldTreatNavigationAsReload(pending_entry_) &&
-      // Skip entries with SSL errors.
-      !last_navigation->ssl_error() &&
-      // Ignore interstitial pages
-      last_transient_entry_index_ == -1 &&
-      pending_entry_->frame_tree_node_id() == -1 &&
-      pending_entry_->GetURL() == last_navigation->GetURL() &&
-      !pending_entry_->GetHasPostData() && !last_navigation->GetHasPostData() &&
-      // This check is required for cases like view-source:, etc. Here the URL
-      // of the navigation entry would contain the url of the page, while the
-      // virtual URL contains the full URL including the view-source prefix.
-      last_navigation->GetVirtualURL() == pending_entry_->GetVirtualURL() &&
-      // This check is required for Android WebView loadDataWithBaseURL. Apps
-      // can pass in anything in the base URL and we need to ensure that these
-      // match before classifying it as a reload.
-      (pending_entry_->GetURL().SchemeIs(url::kDataScheme) &&
-               pending_entry_->GetBaseURLForDataURL().is_valid()
-           ? pending_entry_->GetBaseURLForDataURL() ==
-                 last_navigation->GetBaseURLForDataURL()
-           : true)) {
+  // Convert navigations to the current URL to a reload.
+  if (ShouldTreatNavigationAsReload(
+          pending_entry_->GetURL(), pending_entry_->GetVirtualURL(),
+          pending_entry_->GetBaseURLForDataURL(),
+          pending_entry_->GetTransitionType(),
+          pending_entry_->frame_tree_node_id() == -1 /* is_main_frame */,
+          pending_entry_->GetHasPostData() /* is _post */,
+          reload_type != ReloadType::NONE /* is_reload */,
+          pending_entry_index_ != -1 /* is_navigation_to_existing_entry */,
+          transient_entry_index_ != -1 /* has_interstitial */,
+          GetLastCommittedEntry())) {
     reload_type = ReloadType::NORMAL;
   }
-
-  if (last_pending_entry_index_ == -1 && last_pending_entry_)
-    delete last_pending_entry_;
-
-  last_transient_entry_index_ = -1;
-  last_pending_entry_ = nullptr;
-  last_pending_entry_index_ = -1;
 
   // Any renderer-side debug URLs or javascript: URLs should be ignored if the
   // renderer process is not live, unless it is the initial navigation of the
