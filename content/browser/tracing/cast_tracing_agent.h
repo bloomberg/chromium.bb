@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chromecast/tracing/system_tracer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
 
 namespace service_manager {
@@ -22,7 +22,7 @@ class SystemTracer;
 
 namespace content {
 
-class CastTracingAgent : public tracing::mojom::Agent {
+class CastTracingAgent : public tracing::BaseAgent {
  public:
   explicit CastTracingAgent(service_manager::Connector* connector);
   ~CastTracingAgent() override;
@@ -33,12 +33,7 @@ class CastTracingAgent : public tracing::mojom::Agent {
                     base::TimeTicks coordinator_time,
                     const Agent::StartTracingCallback& callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      const Agent::RequestClockSyncMarkerCallback& callback) override;
   void GetCategories(const Agent::GetCategoriesCallback& callback) override;
-  void RequestBufferStatus(
-      const Agent::RequestBufferStatusCallback& callback) override;
 
   void StartTracingOnIO(scoped_refptr<base::TaskRunner> reply_task_runner,
                         const std::string& categories);
@@ -53,7 +48,6 @@ class CastTracingAgent : public tracing::mojom::Agent {
                        std::string trace_data);
   void CleanupOnIO();
 
-  mojo::Binding<tracing::mojom::Agent> binding_;
   Agent::StartTracingCallback start_tracing_callback_;
   tracing::mojom::RecorderPtr recorder_;
 

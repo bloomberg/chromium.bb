@@ -5,18 +5,31 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/posix/unix_domain_socket.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "base/trace_event/trace_config.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 
 namespace {
+
+// The maximum size used to store one trace event. The ad hoc trace format for
+// atrace is 1024 bytes. Here we add additional size as we're using JSON and
+// have additional data fields.
+constexpr size_t kArcTraceMessageLength = 1024 + 512;
+
+constexpr char kChromeTraceEventLabel[] = "traceEvents";
 
 // The prefix of the categories to be shown on the trace selection UI.
 // The space at the end of the string is intentional as the separator between
@@ -59,13 +72,17 @@ ArcTracingBridge* ArcTracingBridge::GetForBrowserContext(
 
 ArcTracingBridge::ArcTracingBridge(content::BrowserContext* context,
                                    ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), weak_ptr_factory_(this) {
+    : BaseAgent(
+          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+          kChromeTraceEventLabel,
+          tracing::mojom::TraceDataType::ARRAY,
+          false /* supports_explicit_clock_sync */),
+      arc_bridge_service_(bridge_service),
+      weak_ptr_factory_(this) {
   arc_bridge_service_->tracing()->AddObserver(this);
-  content::ArcTracingAgent::GetInstance()->SetDelegate(this);
 }
 
 ArcTracingBridge::~ArcTracingBridge() {
-  content::ArcTracingAgent::GetInstance()->SetDelegate(nullptr);
   arc_bridge_service_->tracing()->RemoveObserver(this);
 }
 
@@ -75,7 +92,7 @@ void ArcTracingBridge::OnConnectionReady() {
       arc_bridge_service_->tracing(), QueryAvailableCategories);
   if (!tracing_instance)
     return;
-  tracing_instance->QueryAvailableCategories(base::Bind(
+  tracing_instance->QueryAvailableCategories(base::BindOnce(
       &ArcTracingBridge::OnCategoriesReady, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -95,11 +112,25 @@ void ArcTracingBridge::OnCategoriesReady(
   }
 }
 
-bool ArcTracingBridge::StartTracing(
-    const base::trace_event::TraceConfig& trace_config,
-    base::ScopedFD write_fd,
-    const StartTracingCallback& callback) {
+void ArcTracingBridge::StartTracing(
+    const std::string& config,
+    base::TimeTicks coordinator_time,
+    const Agent::StartTracingCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::trace_event::TraceConfig trace_config(config);
+
+  base::ScopedFD write_fd, read_fd;
+  bool success =
+      trace_config.IsSystraceEnabled() && CreateSocketPair(&read_fd, &write_fd);
+
+  if (!success) {
+    // Use PostTask as the convention of TracingAgent. The caller expects
+    // callback to be called after this function returns.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, false /* success */));
+    return;
+  }
 
   mojom::TracingInstance* tracing_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->tracing(), StartTracing);
@@ -108,7 +139,7 @@ bool ArcTracingBridge::StartTracing(
     // callback to be called after this function returns.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, false));
-    return false;
+    return;
   }
 
   std::vector<std::string> selected_categories;
@@ -121,20 +152,125 @@ bool ArcTracingBridge::StartTracing(
                                  mojo::WrapPlatformFile(write_fd.release()),
                                  callback);
 
-  return true;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ArcTracingReader::StartTracing, reader_.GetWeakPtr(),
+                     base::Passed(&read_fd)));
 }
 
-void ArcTracingBridge::StopTracing(const StopTracingCallback& callback) {
+void ArcTracingBridge::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (is_stopping_) {
+    DLOG(WARNING) << "Already working on stopping ArcTracingAgent.";
+    return;
+  }
+  is_stopping_ = true;
+  recorder_ = std::move(recorder);
 
   mojom::TracingInstance* tracing_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->tracing(), StopTracing);
   if (!tracing_instance) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+    OnArcTracingStopped(false);
     return;
   }
-  tracing_instance->StopTracing(callback);
+  tracing_instance->StopTracing(base::BindOnce(
+      &ArcTracingBridge::OnArcTracingStopped, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcTracingBridge::OnArcTracingStopped(bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success) {
+    DLOG(WARNING) << "Failed to stop ARC tracing.";
+    is_stopping_ = false;
+    return;
+  }
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ArcTracingReader::StopTracing, reader_.GetWeakPtr(),
+                     base::BindOnce(&ArcTracingBridge::OnTracingReaderStopped,
+                                    weak_ptr_factory_.GetWeakPtr())));
+}
+
+void ArcTracingBridge::OnTracingReaderStopped(const std::string& data) {
+  recorder_->AddChunk(data);
+  recorder_.reset();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  is_stopping_ = false;
+}
+
+ArcTracingBridge::ArcTracingReader::ArcTracingReader()
+    : weak_ptr_factory_(this) {}
+
+ArcTracingBridge::ArcTracingReader::~ArcTracingReader() {
+  DCHECK(!fd_watcher_);
+}
+
+void ArcTracingBridge::ArcTracingReader::StartTracing(base::ScopedFD read_fd) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  read_fd_ = std::move(read_fd);
+  // We don't use the weak pointer returned by |GetWeakPtr| to avoid using it
+  // on different task runner. Instead, we use |base::Unretained| here as
+  // |fd_watcher_| is always destroyed before |this| is destroyed.
+  fd_watcher_ = base::FileDescriptorWatcher::WatchReadable(
+      read_fd_.get(),
+      base::BindRepeating(&ArcTracingReader::OnTraceDataAvailable,
+                          base::Unretained(this)));
+}
+
+void ArcTracingBridge::ArcTracingReader::OnTraceDataAvailable() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  char buf[kArcTraceMessageLength];
+  std::vector<base::ScopedFD> unused_fds;
+  ssize_t n = base::UnixDomainSocket::RecvMsg(
+      read_fd_.get(), buf, kArcTraceMessageLength, &unused_fds);
+  if (n < 0) {
+    DPLOG(WARNING) << "Unexpected error while reading trace from client.";
+    // Do nothing here as StopTracing will do the clean up and the existing
+    // trace logs will be returned.
+    return;
+  }
+
+  if (n == 0) {
+    // When EOF is reached, stop listening for changes since there's never
+    // going to be any more data to be read. The rest of the cleanup will be
+    // done in StopTracing.
+    fd_watcher_.reset();
+    return;
+  }
+
+  if (n > static_cast<ssize_t>(kArcTraceMessageLength)) {
+    DLOG(WARNING) << "Unexpected data size when reading trace from client.";
+    return;
+  }
+  ring_buffer_.SaveToBuffer(std::string(buf, n));
+}
+
+void ArcTracingBridge::ArcTracingReader::StopTracing(
+    base::OnceCallback<void(const std::string&)> callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  fd_watcher_.reset();
+  read_fd_.reset();
+
+  bool append_comma = false;
+  std::string data;
+  for (auto it = ring_buffer_.Begin(); it; ++it) {
+    if (append_comma)
+      data.append(",");
+    else
+      append_comma = true;
+    data.append(**it);
+  }
+  ring_buffer_.Clear();
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::BindOnce(std::move(callback), data));
+}
+
+base::WeakPtr<ArcTracingBridge::ArcTracingReader>
+ArcTracingBridge::ArcTracingReader::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace arc

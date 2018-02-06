@@ -19,7 +19,6 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -45,19 +44,13 @@ std::string GuidToString(const GUID& guid) {
 }  // namespace
 
 EtwTracingAgent::EtwTracingAgent(service_manager::Connector* connector)
-    : binding_(this), thread_("EtwConsumerThread"), is_tracing_(false) {
+    : BaseAgent(connector,
+                kETWTraceLabel,
+                tracing::mojom::TraceDataType::OBJECT,
+                false /* supports_explicit_clock_sync */),
+      thread_("EtwConsumerThread"),
+      is_tracing_(false) {
   DCHECK(!g_etw_tracing_agent);
-  // Connect to the agent registry interface.
-  tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           &agent_registry);
-
-  // Register this agent.
-  tracing::mojom::AgentPtr agent;
-  binding_.Bind(mojo::MakeRequest(&agent));
-  agent_registry->RegisterAgent(std::move(agent), kETWTraceLabel,
-                                tracing::mojom::TraceDataType::OBJECT,
-                                false /* supports_explicit_clock_sync */);
   g_etw_tracing_agent = this;
 }
 
@@ -102,22 +95,6 @@ void EtwTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
   thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&EtwTracingAgent::FlushOnThread, base::Unretained(this)));
-}
-
-void EtwTracingAgent::RequestClockSyncMarker(
-    const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
-  NOTREACHED();
-}
-
-void EtwTracingAgent::GetCategories(
-    const Agent::GetCategoriesCallback& callback) {
-  callback.Run("");
-}
-
-void EtwTracingAgent::RequestBufferStatus(
-    const Agent::RequestBufferStatusCallback& callback) {
-  callback.Run(0, 0);
 }
 
 void EtwTracingAgent::OnStopSystemTracingDone(const std::string& output) {

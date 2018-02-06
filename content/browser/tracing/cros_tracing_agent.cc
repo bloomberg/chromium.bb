@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_config.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -25,19 +24,10 @@ const char kCrOSTraceLabel[] = "systemTraceEvents";
 }  // namespace
 
 CrOSTracingAgent::CrOSTracingAgent(service_manager::Connector* connector)
-    : binding_(this) {
-  // Connecto to the agent registry interface.
-  tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           &agent_registry);
-
-  // Register this agent.
-  tracing::mojom::AgentPtr agent;
-  binding_.Bind(mojo::MakeRequest(&agent));
-  agent_registry->RegisterAgent(std::move(agent), kCrOSTraceLabel,
-                                tracing::mojom::TraceDataType::STRING,
-                                false /* supports_explicit_clock_sync */);
-}
+    : BaseAgent(connector,
+                kCrOSTraceLabel,
+                tracing::mojom::TraceDataType::STRING,
+                false /* supports_explicit_clock_sync */) {}
 
 CrOSTracingAgent::~CrOSTracingAgent() = default;
 
@@ -66,22 +56,6 @@ void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
   recorder_ = std::move(recorder);
   debug_daemon_->StopAgentTracing(base::BindRepeating(
       &CrOSTracingAgent::RecorderProxy, base::Unretained(this)));
-}
-
-void CrOSTracingAgent::RequestClockSyncMarker(
-    const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
-  NOTREACHED();
-}
-
-void CrOSTracingAgent::GetCategories(
-    const Agent::GetCategoriesCallback& callback) {
-  callback.Run("" /* categories */);
-}
-
-void CrOSTracingAgent::RequestBufferStatus(
-    const Agent::RequestBufferStatusCallback& callback) {
-  callback.Run(0 /* capacity */, 0 /* count */);
 }
 
 void CrOSTracingAgent::StartTracingCallbackProxy(const std::string& agent_name,

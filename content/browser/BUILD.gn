@@ -1726,8 +1726,6 @@ jumbo_source_set("browser") {
     sources += [
       "memory/memory_monitor_chromeos.cc",
       "memory/memory_monitor_chromeos.h",
-      "tracing/arc_tracing_agent_impl.cc",
-      "tracing/arc_tracing_agent_impl.h",
       "tracing/cros_tracing_agent.cc",
       "tracing/cros_tracing_agent.h",
     ]

@@ -42,6 +42,8 @@ component("resource_coordinator_cpp") {
     "resource_coordinator_features.cc",
     "resource_coordinator_features.h",
     "resource_coordinator_interface.h",
+    "tracing/base_agent.cc",
+    "tracing/base_agent.h",
     "tracing/chrome_trace_event_agent.cc",
     "tracing/chrome_trace_event_agent.h",
   ]
