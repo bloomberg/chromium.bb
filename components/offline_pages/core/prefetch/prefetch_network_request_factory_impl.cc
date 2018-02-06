@@ -6,16 +6,25 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
 
 namespace {
+// Max size of all articles archives to be generated from a single request. This
+// 20 MiB value matches the current daily download limit.
 constexpr int kMaxBundleSizeBytes = 20 * 1024 * 1024;  // 20 MB
+
+// Max size of all articles archives to be generated from a single request when
+// limitless prefetching is enabled. The 200 MiB value allows for 100 URLs (the
+// maximum allowed in a single request) with 2 MiB articles (approximately
+// double the average article size).
+constexpr int kMaxBundleSizeForLimitlessBytes = 200 * 1024 * 1024;  // 200 MB
 
 // Max concurrent outstanding requests. If more requests asked to be created,
 // the requests are silently not created (considered failed). This is used
 // as emergency limit that should rarely be encountered in normal operations.
-const int kMaxConcurrentRequests = 10;
+constexpr int kMaxConcurrentRequests = 10;
 }  // namespace
 
 namespace offline_pages {
@@ -55,10 +64,13 @@ void PrefetchNetworkRequestFactoryImpl::MakeGeneratePageBundleRequest(
     const PrefetchRequestFinishedCallback& callback) {
   if (!AddConcurrentRequest())
     return;
+  int max_bundle_size = IsLimitlessPrefetchingEnabled()
+                            ? kMaxBundleSizeForLimitlessBytes
+                            : kMaxBundleSizeBytes;
   uint64_t request_id = GetNextRequestId();
   generate_page_bundle_requests_[request_id] =
       std::make_unique<GeneratePageBundleRequest>(
-          user_agent_, gcm_registration_id, kMaxBundleSizeBytes, url_strings,
+          user_agent_, gcm_registration_id, max_bundle_size, url_strings,
           channel_, request_context_.get(),
           base::Bind(
               &PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone,
