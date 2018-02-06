@@ -271,6 +271,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
+#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
@@ -464,6 +465,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   component_updater::RegisterPrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterLocalPrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
+  ProblematicProgramsUpdater::RegisterLocalStatePrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)

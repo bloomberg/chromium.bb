@@ -71,6 +71,8 @@ void ModuleInspector::StartInspectingModule() {
 void ModuleInspector::OnInspectionFinished(
     const ModuleInfoKey& module_key,
     std::unique_ptr<ModuleInspectionResult> inspection_result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Pop first, because the callback may want to know if there is any work left
   // to be done, which is caracterized by a non-empty queue.
   queue_.pop();
