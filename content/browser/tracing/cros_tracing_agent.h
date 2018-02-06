@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
 
 namespace base {
@@ -25,7 +25,7 @@ class Connector;
 
 namespace content {
 
-class CrOSTracingAgent : public tracing::mojom::Agent {
+class CrOSTracingAgent : public tracing::BaseAgent {
  public:
   explicit CrOSTracingAgent(service_manager::Connector* connector);
 
@@ -39,19 +39,12 @@ class CrOSTracingAgent : public tracing::mojom::Agent {
                     base::TimeTicks coordinator_time,
                     const Agent::StartTracingCallback& callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      const Agent::RequestClockSyncMarkerCallback& callback) override;
-  void GetCategories(const Agent::GetCategoriesCallback& callback) override;
-  void RequestBufferStatus(
-      const Agent::RequestBufferStatusCallback& callback) override;
 
   void StartTracingCallbackProxy(const std::string& agent_name, bool success);
   void RecorderProxy(const std::string& event_name,
                      const std::string& events_label,
                      const scoped_refptr<base::RefCountedString>& events);
 
-  mojo::Binding<tracing::mojom::Agent> binding_;
   chromeos::DebugDaemonClient* debug_daemon_ = nullptr;
   Agent::StartTracingCallback start_tracing_callback_;
   tracing::mojom::RecorderPtr recorder_;

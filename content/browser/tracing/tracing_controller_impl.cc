@@ -50,7 +50,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "content/browser/tracing/arc_tracing_agent_impl.h"
 #include "content/browser/tracing/cros_tracing_agent.h"
 #endif
 
@@ -142,7 +141,6 @@ void TracingControllerImpl::AddAgents() {
 
 #if defined(OS_CHROMEOS)
   agents_.push_back(std::make_unique<CrOSTracingAgent>(connector));
-  agents_.push_back(std::make_unique<ArcTracingAgentImpl>(connector));
 #elif defined(CAST_TRACING_AGENT)
   agents_.push_back(std::make_unique<CastTracingAgent>(connector));
 #elif defined(OS_WIN)

@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
+#include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
 
 namespace base {
@@ -28,7 +28,7 @@ class Connector;
 namespace tracing {
 
 class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
-    : public mojom::Agent {
+    : public BaseAgent {
  public:
   using MetadataGeneratorFunction =
       base::RepeatingCallback<std::unique_ptr<base::DictionaryValue>()>;
@@ -50,9 +50,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
                     base::TimeTicks coordinator_time,
                     const StartTracingCallback& callback) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      const RequestClockSyncMarkerCallback& callback) override;
   void RequestBufferStatus(
       const RequestBufferStatusCallback& callback) override;
   void GetCategories(const GetCategoriesCallback& callback) override;
@@ -60,7 +57,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
   void OnTraceLogFlush(const scoped_refptr<base::RefCountedString>& events_str,
                        bool has_more_events);
 
-  mojo::Binding<mojom::Agent> binding_;
   uint8_t enabled_tracing_modes_;
   mojom::RecorderPtr recorder_;
   std::vector<MetadataGeneratorFunction> metadata_generator_functions_;

@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_config.h"
 #include "chromecast/tracing/system_tracing_common.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -43,20 +42,10 @@ std::string GetAllTracingCategories() {
 }  // namespace
 
 CastTracingAgent::CastTracingAgent(service_manager::Connector* connector)
-    : binding_(this) {
-  // Connecto to the agent registry interface.
-  tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           &agent_registry);
-
-  // Register this agent.
-  tracing::mojom::AgentPtr agent;
-  binding_.Bind(mojo::MakeRequest(&agent));
-  static const char kFtraceLabel[] = "systemTraceEvents";
-  agent_registry->RegisterAgent(std::move(agent), kFtraceLabel,
-                                tracing::mojom::TraceDataType::STRING,
-                                false /* supports_explicit_clock_sync */);
-
+    : BaseAgent(connector,
+                "systemTraceEvents",
+                tracing::mojom::TraceDataType::STRING,
+                false /* supports_explicit_clock_sync */) {
   task_runner_ =
       base::TaskScheduler::GetInstance()->CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
@@ -97,20 +86,9 @@ void CastTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
                                         base::ThreadTaskRunnerHandle::Get()));
 }
 
-void CastTracingAgent::RequestClockSyncMarker(
-    const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
-  NOTREACHED();
-}
-
 void CastTracingAgent::GetCategories(
     const Agent::GetCategoriesCallback& callback) {
   callback.Run(GetAllTracingCategories());
-}
-
-void CastTracingAgent::RequestBufferStatus(
-    const Agent::RequestBufferStatusCallback& callback) {
-  callback.Run(0 /* capacity */, 0 /* count */);
 }
 
 void CastTracingAgent::StartTracingOnIO(

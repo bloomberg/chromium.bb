@@ -125,6 +125,7 @@ source_set("chromeos") {
     "//components/ukm/content",
     "//components/user_manager",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//third_party/fontconfig",
     "//third_party/metrics_proto",
 
