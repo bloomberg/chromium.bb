@@ -67,8 +67,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // |parent_transform_relative_to_root| is the transform of |window->parent()|
   // relative to the root window. |clipped_bounds| is an optional mask for the
   // bounds of |window| and its descendants. |occluded_region| is a region
-  // covered by windows which are on top of |window|.
-  void RecomputeOcclusionImpl(
+  // covered by windows which are on top of |window|. Returns true if at least
+  // one window in the hierarchy starting at |window| is NOT_OCCLUDED.
+  bool RecomputeOcclusionImpl(
       Window* window,
       const gfx::Transform& parent_transform_relative_to_root,
       const SkIRect* clipped_bounds,

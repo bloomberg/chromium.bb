@@ -88,12 +88,26 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     // The window's occlusion state isn't tracked
     // (WindowOcclusionTracker::Track) or hasn't been computed yet.
     UNKNOWN,
-    // The window is occluded, i.e. one of these conditions is true:
-    // - The window is hidden (Window::IsVisible() is true).
-    // - The bounds of the window are completely covered by opaque windows.
-    OCCLUDED,
-    // The window is not occluded.
+    // The window or one of its descendants IsVisible() [1] and:
+    // - Its bounds aren't completely covered by fully opaque windows [2], or,
+    // - Its transform, bounds or opacity is animated.
     NOT_OCCLUDED,
+    // The window and all its descendants are either !IsVisible() [1] or:
+    // - Have bounds are completely covered by fully opaque windows [2], and,
+    // - Have no transform, bounds or opacity animation.
+    OCCLUDED,
+    //
+    // [1] A window can only be IsVisible() if all its parent are IsVisible().
+    // [2] A window is "fully opaque" if:
+    // - It's visible (IsVisible()).
+    // - It's not transparent (transparent()).
+    // - It's transform, bounds and opacity aren't animated.
+    // - Its combined opacity is 1 (GetCombinedOpacity()).
+    // - The type of its layer is not ui::LAYER_NOT_DRAWN.
+    //
+    // TODO(fdoray): Split OCCLUDED into OCCLUDED and HIDDEN.
+    // TODO(fdoray): A window that clips its children shouldn't be VISIBLE just
+    // because it has an animated child.
   };
 
   typedef std::vector<Window*> Windows;
@@ -167,10 +181,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // account the visibility of the layer and ancestors, where as this tracks
   // whether Show() without a Hide() has been invoked.
   bool TargetVisibility() const { return visible_; }
-  // Returns the occlusion state of this window. Will be UNKNOWN if the
-  // occlusion state of this window isn't tracked
-  // (WindowOcclusionTracker::Track). Will be stale if called within the scope
-  // of a WindowOcclusionTracker::ScopedPauseOcclusionTracking.
+  // Returns the occlusion state of this window. Is UNKNOWN if the occlusion
+  // state of this window isn't tracked (WindowOcclusionTracker::Track) or
+  // hasn't been computed yet. Is stale if called within the scope of a
+  // WindowOcclusionTracker::ScopedPauseOcclusionTracking.
   OcclusionState occlusion_state() const { return occlusion_state_; }
 
   // Returns the window's bounds in root window's coordinates.
