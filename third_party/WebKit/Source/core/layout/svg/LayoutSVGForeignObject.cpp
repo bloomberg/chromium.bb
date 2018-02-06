@@ -121,7 +121,7 @@ void LayoutSVGForeignObject::UpdateLayout() {
 
   // Invalidate all resources of this client if our layout changed.
   if (layout_changed)
-    SVGResourcesCache::ClientLayoutChanged(this);
+    SVGResourcesCache::ClientLayoutChanged(*this);
 }
 
 bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,

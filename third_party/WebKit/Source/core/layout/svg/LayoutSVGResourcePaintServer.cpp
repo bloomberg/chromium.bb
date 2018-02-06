@@ -133,7 +133,7 @@ static SVGPaintDescription RequestPaint(const LayoutObject& object,
 
   LayoutSVGResourcePaintServer* uri_resource = nullptr;
   if (SVGResources* resources =
-          SVGResourcesCache::CachedResourcesForLayoutObject(&object))
+          SVGResourcesCache::CachedResourcesForLayoutObject(object))
     uri_resource = apply_to_fill ? resources->Fill() : resources->Stroke();
 
   // If the requested resource is not available, return the color resource or

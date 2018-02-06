@@ -40,10 +40,9 @@ void LayoutSVGResourceGradient::RemoveAllClientsFromCache(
 }
 
 void LayoutSVGResourceGradient::RemoveClientFromCache(
-    LayoutObject* client,
+    LayoutObject& client,
     bool mark_for_invalidation) {
-  DCHECK(client);
-  gradient_map_.erase(client);
+  gradient_map_.erase(&client);
   MarkClientForInvalidation(client, mark_for_invalidation
                                         ? kPaintInvalidation
                                         : kParentOnlyInvalidation);

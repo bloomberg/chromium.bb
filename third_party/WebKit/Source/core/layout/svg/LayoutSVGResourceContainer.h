@@ -43,7 +43,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   ~LayoutSVGResourceContainer() override;
 
   virtual void RemoveAllClientsFromCache(bool mark_for_invalidation = true) = 0;
-  virtual void RemoveClientFromCache(LayoutObject*,
+  virtual void RemoveClientFromCache(LayoutObject&,
                                      bool mark_for_invalidation = true) = 0;
 
   void UpdateLayout() override;
@@ -87,7 +87,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   // Used from the invalidateClient/invalidateClients methods from classes,
   // inheriting from us.
   void MarkAllClientsForInvalidation(InvalidationMode);
-  void MarkClientForInvalidation(LayoutObject*, InvalidationMode);
+  void MarkClientForInvalidation(LayoutObject&, InvalidationMode);
 
   void NotifyContentChanged();
   SVGElementProxySet* ElementProxySet();
@@ -98,8 +98,8 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
  private:
   friend class SVGResourcesCache;
-  void AddClient(LayoutObject*);
-  bool RemoveClient(LayoutObject*);
+  void AddClient(LayoutObject&);
+  bool RemoveClient(LayoutObject&);
 
   // Track global (markAllClientsForInvalidation) invalidations to avoid
   // redundant crawls.

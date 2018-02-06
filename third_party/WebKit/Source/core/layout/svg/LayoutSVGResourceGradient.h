@@ -44,7 +44,7 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
   explicit LayoutSVGResourceGradient(SVGGradientElement*);
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) final;
-  void RemoveClientFromCache(LayoutObject*,
+  void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) final;
 
   SVGPaintServer PreparePaintServer(const LayoutObject&) final;

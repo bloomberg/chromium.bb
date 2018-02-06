@@ -174,7 +174,7 @@ void LayoutSVGRoot::UpdateLayout() {
   did_screen_scale_factor_change_ =
       transform_change == SVGTransformChange::kFull;
 
-  SVGLayoutSupport::LayoutResourcesIfNeeded(this);
+  SVGLayoutSupport::LayoutResourcesIfNeeded(*this);
 
   // selfNeedsLayout() will cover changes to one (or more) of viewBox,
   // current{Scale,Translate}, decorations and 'overflow'.
@@ -248,7 +248,7 @@ void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
 }
 
 void LayoutSVGRoot::WillBeDestroyed() {
-  SVGResourcesCache::ClientDestroyed(this);
+  SVGResourcesCache::ClientDestroyed(*this);
   LayoutReplaced::WillBeDestroyed();
 }
 
@@ -302,7 +302,7 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
     IntrinsicSizingInfoChanged();
 
   LayoutReplaced::StyleDidChange(diff, old_style);
-  SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());
+  SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
 }
 
 bool LayoutSVGRoot::IsChildAllowed(LayoutObject* child,
@@ -312,7 +312,7 @@ bool LayoutSVGRoot::IsChildAllowed(LayoutObject* child,
 
 void LayoutSVGRoot::AddChild(LayoutObject* child, LayoutObject* before_child) {
   LayoutReplaced::AddChild(child, before_child);
-  SVGResourcesCache::ClientWasAddedToTree(child, child->StyleRef());
+  SVGResourcesCache::ClientWasAddedToTree(*child, child->StyleRef());
 
   bool should_isolate_descendants =
       (child->IsBlendingAllowed() && child->Style()->HasBlendMode()) ||
@@ -322,7 +322,7 @@ void LayoutSVGRoot::AddChild(LayoutObject* child, LayoutObject* before_child) {
 }
 
 void LayoutSVGRoot::RemoveChild(LayoutObject* child) {
-  SVGResourcesCache::ClientWillBeRemovedFromTree(child);
+  SVGResourcesCache::ClientWillBeRemovedFromTree(*child);
   LayoutReplaced::RemoveChild(child);
 
   bool had_non_isolated_descendants =
@@ -357,11 +357,11 @@ void LayoutSVGRoot::DescendantIsolationRequirementsChanged(
 
 void LayoutSVGRoot::InsertedIntoTree() {
   LayoutReplaced::InsertedIntoTree();
-  SVGResourcesCache::ClientWasAddedToTree(this, StyleRef());
+  SVGResourcesCache::ClientWasAddedToTree(*this, StyleRef());
 }
 
 void LayoutSVGRoot::WillBeRemovedFromTree() {
-  SVGResourcesCache::ClientWillBeRemovedFromTree(this);
+  SVGResourcesCache::ClientWillBeRemovedFromTree(*this);
   LayoutReplaced::WillBeRemovedFromTree();
 }
 

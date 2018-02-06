@@ -279,7 +279,7 @@ void LayoutSVGText::UpdateLayout() {
 
   // Invalidate all resources of this client if our layout changed.
   if (EverHadLayout() && SelfNeedsLayout())
-    SVGResourcesCache::ClientLayoutChanged(this);
+    SVGResourcesCache::ClientLayoutChanged(*this);
 
   // If our bounds changed, notify the parents.
   if (update_parent_boundaries)
@@ -396,7 +396,7 @@ FloatRect LayoutSVGText::StrokeBoundingBox() const {
 
 FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
   FloatRect visual_rect = StrokeBoundingBox();
-  SVGLayoutSupport::AdjustVisualRectWithResources(this, visual_rect);
+  SVGLayoutSupport::AdjustVisualRectWithResources(*this, visual_rect);
 
   if (const ShadowList* text_shadow = Style()->TextShadow())
     text_shadow->AdjustRectForShadow(visual_rect);
@@ -418,12 +418,12 @@ bool LayoutSVGText::IsObjectBoundingBoxValid() const {
 void LayoutSVGText::AddChild(LayoutObject* child, LayoutObject* before_child) {
   LayoutSVGBlock::AddChild(child, before_child);
 
-  SVGResourcesCache::ClientWasAddedToTree(child, child->StyleRef());
+  SVGResourcesCache::ClientWasAddedToTree(*child, child->StyleRef());
   SubtreeChildWasAdded();
 }
 
 void LayoutSVGText::RemoveChild(LayoutObject* child) {
-  SVGResourcesCache::ClientWillBeRemovedFromTree(child);
+  SVGResourcesCache::ClientWillBeRemovedFromTree(*child);
   SubtreeChildWillBeRemoved();
 
   LayoutSVGBlock::RemoveChild(child);

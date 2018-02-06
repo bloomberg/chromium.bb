@@ -66,7 +66,7 @@ void LayoutSVGBlock::AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
 }
 
 void LayoutSVGBlock::WillBeDestroyed() {
-  SVGResourcesCache::ClientDestroyed(this);
+  SVGResourcesCache::ClientDestroyed(*this);
   LayoutBlockFlow::WillBeDestroyed();
 }
 
@@ -93,7 +93,7 @@ void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
   }
 
   LayoutBlock::StyleDidChange(diff, old_style);
-  SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());
+  SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
 }
 
 void LayoutSVGBlock::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,

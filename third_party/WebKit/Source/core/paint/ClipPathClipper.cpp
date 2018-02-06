@@ -47,7 +47,7 @@ LayoutSVGResourceClipper* ResolveElementReference(
     // SVGResources::buildResources, so we can just use the LayoutObject's
     // SVGResources.
     SVGResources* resources =
-        SVGResourcesCache::CachedResourcesForLayoutObject(&layout_object);
+        SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
     return resources ? resources->Clipper() : nullptr;
   }
   // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)

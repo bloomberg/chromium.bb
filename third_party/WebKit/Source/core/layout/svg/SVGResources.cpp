@@ -184,11 +184,9 @@ static inline SVGResources& EnsureResources(
 }
 
 std::unique_ptr<SVGResources> SVGResources::BuildResources(
-    const LayoutObject* object,
+    const LayoutObject& object,
     const ComputedStyle& computed_style) {
-  DCHECK(object);
-
-  Node* node = object->GetNode();
+  Node* node = object.GetNode();
   DCHECK(node);
   SECURITY_DCHECK(node->IsSVGElement());
 
@@ -205,7 +203,7 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
 
   std::unique_ptr<SVGResources> resources;
   if (ClipperFilterMaskerTags().Contains(tag_name)) {
-    if (computed_style.ClipPath() && !object->IsSVGRoot()) {
+    if (computed_style.ClipPath() && !object.IsSVGRoot()) {
       ClipPathOperation* clip_path_operation = computed_style.ClipPath();
       if (clip_path_operation->GetType() == ClipPathOperation::REFERENCE) {
         const ReferenceClipPathOperation& clip_path_reference =
@@ -218,7 +216,7 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
       }
     }
 
-    if (computed_style.HasFilter() && !object->IsSVGRoot()) {
+    if (computed_style.HasFilter() && !object.IsSVGRoot()) {
       const FilterOperations& filter_operations = computed_style.Filter();
       if (filter_operations.size() == 1) {
         const FilterOperation& filter_operation = *filter_operations.at(0);
@@ -330,19 +328,19 @@ void SVGResources::LayoutIfNeeded() {
 }
 
 void SVGResources::RemoveClientFromCacheAffectingObjectBounds(
-    LayoutObject* object,
+    LayoutObject& client,
     bool mark_for_invalidation) const {
   if (!clipper_filter_masker_data_)
     return;
   if (LayoutSVGResourceClipper* clipper = clipper_filter_masker_data_->clipper)
-    clipper->RemoveClientFromCache(object, mark_for_invalidation);
+    clipper->RemoveClientFromCache(client, mark_for_invalidation);
   if (LayoutSVGResourceFilter* filter = clipper_filter_masker_data_->filter)
-    filter->RemoveClientFromCache(object, mark_for_invalidation);
+    filter->RemoveClientFromCache(client, mark_for_invalidation);
   if (LayoutSVGResourceMasker* masker = clipper_filter_masker_data_->masker)
-    masker->RemoveClientFromCache(object, mark_for_invalidation);
+    masker->RemoveClientFromCache(client, mark_for_invalidation);
 }
 
-void SVGResources::RemoveClientFromCache(LayoutObject* object,
+void SVGResources::RemoveClientFromCache(LayoutObject& client,
                                          bool mark_for_invalidation) const {
   if (!HasResourceData())
     return;
@@ -351,30 +349,30 @@ void SVGResources::RemoveClientFromCache(LayoutObject* object,
     DCHECK(!clipper_filter_masker_data_);
     DCHECK(!marker_data_);
     DCHECK(!fill_stroke_data_);
-    linked_resource_->RemoveClientFromCache(object, mark_for_invalidation);
+    linked_resource_->RemoveClientFromCache(client, mark_for_invalidation);
     return;
   }
 
-  RemoveClientFromCacheAffectingObjectBounds(object, mark_for_invalidation);
+  RemoveClientFromCacheAffectingObjectBounds(client, mark_for_invalidation);
 
   if (marker_data_) {
     if (marker_data_->marker_start)
-      marker_data_->marker_start->RemoveClientFromCache(object,
+      marker_data_->marker_start->RemoveClientFromCache(client,
                                                         mark_for_invalidation);
     if (marker_data_->marker_mid)
-      marker_data_->marker_mid->RemoveClientFromCache(object,
+      marker_data_->marker_mid->RemoveClientFromCache(client,
                                                       mark_for_invalidation);
     if (marker_data_->marker_end)
-      marker_data_->marker_end->RemoveClientFromCache(object,
+      marker_data_->marker_end->RemoveClientFromCache(client,
                                                       mark_for_invalidation);
   }
 
   if (fill_stroke_data_) {
     if (fill_stroke_data_->fill)
-      fill_stroke_data_->fill->RemoveClientFromCache(object,
+      fill_stroke_data_->fill->RemoveClientFromCache(client,
                                                      mark_for_invalidation);
     if (fill_stroke_data_->stroke)
-      fill_stroke_data_->stroke->RemoveClientFromCache(object,
+      fill_stroke_data_->stroke->RemoveClientFromCache(client,
                                                        mark_for_invalidation);
   }
 }

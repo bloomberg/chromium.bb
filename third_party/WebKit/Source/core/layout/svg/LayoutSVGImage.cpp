@@ -114,7 +114,7 @@ void LayoutSVGImage::UpdateLayout() {
 
   // Invalidate all resources of this client if our layout changed.
   if (EverHadLayout() && SelfNeedsLayout())
-    SVGResourcesCache::ClientLayoutChanged(this);
+    SVGResourcesCache::ClientLayoutChanged(*this);
 
   UpdateBoundingBox();
 
@@ -129,7 +129,7 @@ void LayoutSVGImage::UpdateLayout() {
 
   if (needs_boundaries_update_) {
     local_visual_rect_ = object_bounding_box_;
-    SVGLayoutSupport::AdjustVisualRectWithResources(this, local_visual_rect_);
+    SVGLayoutSupport::AdjustVisualRectWithResources(*this, local_visual_rect_);
     needs_boundaries_update_ = false;
     update_parent_boundaries = true;
   }

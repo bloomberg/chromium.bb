@@ -695,7 +695,7 @@ static bool NeedsEffect(const LayoutObject& object) {
 
   if (object.IsSVGChild()) {
     if (SVGResources* resources =
-            SVGResourcesCache::CachedResourcesForLayoutObject(&object)) {
+            SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
       if (resources->Masker())
         return true;
     }

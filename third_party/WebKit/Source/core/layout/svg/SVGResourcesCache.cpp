@@ -33,10 +33,9 @@ SVGResourcesCache::SVGResourcesCache() = default;
 SVGResourcesCache::~SVGResourcesCache() = default;
 
 void SVGResourcesCache::AddResourcesFromLayoutObject(
-    LayoutObject* object,
+    LayoutObject& object,
     const ComputedStyle& style) {
-  DCHECK(object);
-  DCHECK(!cache_.Contains(object));
+  DCHECK(!cache_.Contains(&object));
 
   // Build a list of all resources associated with the passed LayoutObject.
   std::unique_ptr<SVGResources> new_resources =
@@ -45,14 +44,14 @@ void SVGResourcesCache::AddResourcesFromLayoutObject(
     return;
 
   // The new resource may cause new paint property nodes.
-  object->SetNeedsPaintPropertyUpdate();
+  object.SetNeedsPaintPropertyUpdate();
 
   // Put object in cache.
   SVGResources* resources =
-      cache_.Set(object, std::move(new_resources)).stored_value->value.get();
+      cache_.Set(&object, std::move(new_resources)).stored_value->value.get();
 
   // Run cycle-detection _afterwards_, so self-references can be caught as well.
-  SVGResourcesCycleSolver solver(object, resources);
+  SVGResourcesCycleSolver solver(&object, resources);
   solver.ResolveCycles();
 
   // Walk resources and register the layout object as a client of each resource.
@@ -63,13 +62,13 @@ void SVGResourcesCache::AddResourcesFromLayoutObject(
     resource_container->AddClient(object);
 }
 
-void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject* object) {
-  std::unique_ptr<SVGResources> resources = cache_.Take(object);
+void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject& object) {
+  std::unique_ptr<SVGResources> resources = cache_.Take(&object);
   if (!resources)
     return;
 
   // Removal of the resource may cause removal of paint property nodes.
-  object->SetNeedsPaintPropertyUpdate();
+  object.SetNeedsPaintPropertyUpdate();
 
   // Walk resources and unregister the layout object as a client of each
   // resource.
@@ -82,7 +81,7 @@ void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject* object) {
 
   // Remove any registrations that became empty after the above.
   if (did_empty_client_set)
-    SVGResources::RemoveUnreferencedResources(*object);
+    SVGResources::RemoveUnreferencedResources(object);
 }
 
 static inline SVGResourcesCache& ResourcesCache(Document& document) {
@@ -90,54 +89,51 @@ static inline SVGResourcesCache& ResourcesCache(Document& document) {
 }
 
 SVGResources* SVGResourcesCache::CachedResourcesForLayoutObject(
-    const LayoutObject* layout_object) {
-  DCHECK(layout_object);
-  return ResourcesCache(layout_object->GetDocument()).cache_.at(layout_object);
+    const LayoutObject& layout_object) {
+  return ResourcesCache(layout_object.GetDocument()).cache_.at(&layout_object);
 }
 
-void SVGResourcesCache::ClientLayoutChanged(LayoutObject* object) {
+void SVGResourcesCache::ClientLayoutChanged(LayoutObject& object) {
   SVGResources* resources = CachedResourcesForLayoutObject(object);
   if (!resources)
     return;
 
   // Invalidate the resources if either the LayoutObject itself changed,
   // or we have filter resources, which could depend on the layout of children.
-  if (object->SelfNeedsLayout() || resources->Filter())
+  if (object.SelfNeedsLayout() || resources->Filter())
     resources->RemoveClientFromCache(object);
 }
 
-static inline bool LayoutObjectCanHaveResources(LayoutObject* layout_object) {
-  DCHECK(layout_object);
-  return layout_object->GetNode() && layout_object->GetNode()->IsSVGElement() &&
-         !layout_object->IsSVGInlineText();
+static inline bool LayoutObjectCanHaveResources(
+    const LayoutObject& layout_object) {
+  return layout_object.GetNode() && layout_object.GetNode()->IsSVGElement() &&
+         !layout_object.IsSVGInlineText();
 }
 
 static inline bool IsLayoutObjectOfResourceContainer(
-    LayoutObject* layout_object) {
-  LayoutObject* current = layout_object;
+    const LayoutObject& layout_object) {
+  const LayoutObject* current = &layout_object;
   while (current) {
-    if (current->IsSVGResourceContainer()) {
+    if (current->IsSVGResourceContainer())
       return true;
-    }
     current = current->Parent();
   }
   return false;
 }
 
-void SVGResourcesCache::ClientStyleChanged(LayoutObject* layout_object,
+void SVGResourcesCache::ClientStyleChanged(LayoutObject& layout_object,
                                            StyleDifference diff,
                                            const ComputedStyle& new_style) {
-  DCHECK(layout_object);
-  DCHECK(layout_object->GetNode());
-  DCHECK(layout_object->GetNode()->IsSVGElement());
+  DCHECK(layout_object.GetNode());
+  DCHECK(layout_object.GetNode()->IsSVGElement());
 
-  if (!diff.HasDifference() || !layout_object->Parent())
+  if (!diff.HasDifference() || !layout_object.Parent())
     return;
 
   // In this case the proper SVGFE*Element will decide whether the modified CSS
   // properties require
   // a relayout or paintInvalidation.
-  if (layout_object->IsSVGResourceFilterPrimitive() && !diff.NeedsLayout())
+  if (layout_object.IsSVGResourceFilterPrimitive() && !diff.NeedsLayout())
     return;
 
   // Dynamic changes of CSS properties like 'clip-path' may require us to
@@ -146,7 +142,7 @@ void SVGResourcesCache::ClientStyleChanged(LayoutObject* layout_object,
   // oldStyle/newStyle to see which resources changed to be able to selectively
   // rebuild individual resources, instead of all of them.
   if (LayoutObjectCanHaveResources(layout_object)) {
-    SVGResourcesCache& cache = ResourcesCache(layout_object->GetDocument());
+    SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
     cache.RemoveResourcesFromLayoutObject(layout_object);
     cache.AddResourcesFromLayoutObject(layout_object, new_style);
   }
@@ -158,7 +154,7 @@ void SVGResourcesCache::ClientStyleChanged(LayoutObject* layout_object,
                       IsLayoutObjectOfResourceContainer(layout_object);
 
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-      layout_object, needs_layout);
+      &layout_object, needs_layout);
 }
 
 void SVGResourcesCache::ResourceReferenceChanged(LayoutObject& layout_object) {
@@ -171,49 +167,47 @@ void SVGResourcesCache::ResourceReferenceChanged(LayoutObject& layout_object) {
 
   // Only LayoutObjects that can actually have resources should be pending and
   // hence be able to call this method.
-  DCHECK(LayoutObjectCanHaveResources(&layout_object));
+  DCHECK(LayoutObjectCanHaveResources(layout_object));
 
   SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
-  cache.RemoveResourcesFromLayoutObject(&layout_object);
-  cache.AddResourcesFromLayoutObject(&layout_object, layout_object.StyleRef());
+  cache.RemoveResourcesFromLayoutObject(layout_object);
+  cache.AddResourcesFromLayoutObject(layout_object, layout_object.StyleRef());
 
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
       &layout_object, true);
 }
 
-void SVGResourcesCache::ClientWasAddedToTree(LayoutObject* layout_object,
+void SVGResourcesCache::ClientWasAddedToTree(LayoutObject& layout_object,
                                              const ComputedStyle& new_style) {
-  if (!layout_object->GetNode())
+  if (!layout_object.GetNode())
     return;
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-      layout_object, false);
+      &layout_object, false);
 
   if (!LayoutObjectCanHaveResources(layout_object))
     return;
-  SVGResourcesCache& cache = ResourcesCache(layout_object->GetDocument());
+  SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
   cache.AddResourcesFromLayoutObject(layout_object, new_style);
 }
 
 void SVGResourcesCache::ClientWillBeRemovedFromTree(
-    LayoutObject* layout_object) {
-  if (!layout_object->GetNode())
+    LayoutObject& layout_object) {
+  if (!layout_object.GetNode())
     return;
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-      layout_object, false);
+      &layout_object, false);
 
   if (!LayoutObjectCanHaveResources(layout_object))
     return;
-  SVGResourcesCache& cache = ResourcesCache(layout_object->GetDocument());
+  SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
   cache.RemoveResourcesFromLayoutObject(layout_object);
 }
 
-void SVGResourcesCache::ClientDestroyed(LayoutObject* layout_object) {
-  DCHECK(layout_object);
-
+void SVGResourcesCache::ClientDestroyed(LayoutObject& layout_object) {
   SVGResources* resources = CachedResourcesForLayoutObject(layout_object);
   if (resources)
     resources->RemoveClientFromCache(layout_object);
-  SVGResourcesCache& cache = ResourcesCache(layout_object->GetDocument());
+  SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
   cache.RemoveResourcesFromLayoutObject(layout_object);
 }
 
@@ -229,12 +223,12 @@ SVGResourcesCache::TemporaryStyleScope::TemporaryStyleScope(
 
 void SVGResourcesCache::TemporaryStyleScope::SwitchTo(
     const ComputedStyle& style) {
-  DCHECK(LayoutObjectCanHaveResources(&layout_object_));
+  DCHECK(LayoutObjectCanHaveResources(layout_object_));
   if (styles_are_equal_)
     return;
   SVGResourcesCache& cache = ResourcesCache(layout_object_.GetDocument());
-  cache.RemoveResourcesFromLayoutObject(&layout_object_);
-  cache.AddResourcesFromLayoutObject(&layout_object_, style);
+  cache.RemoveResourcesFromLayoutObject(layout_object_);
+  cache.AddResourcesFromLayoutObject(layout_object_, style);
 }
 
 }  // namespace blink

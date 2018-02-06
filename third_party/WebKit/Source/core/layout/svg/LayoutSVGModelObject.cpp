@@ -91,7 +91,7 @@ FloatRect LayoutSVGModelObject::LocalBoundingBoxRectForAccessibility() const {
 }
 
 void LayoutSVGModelObject::WillBeDestroyed() {
-  SVGResourcesCache::ClientDestroyed(this);
+  SVGResourcesCache::ClientDestroyed(*this);
   LayoutObject::WillBeDestroyed();
 }
 
@@ -134,7 +134,7 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
   }
 
   LayoutObject::StyleDidChange(diff, old_style);
-  SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());
+  SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
 }
 
 bool LayoutSVGModelObject::NodeAtPoint(HitTestResult&,

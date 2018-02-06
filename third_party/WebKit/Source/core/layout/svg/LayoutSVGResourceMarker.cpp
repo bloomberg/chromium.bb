@@ -54,9 +54,8 @@ void LayoutSVGResourceMarker::RemoveAllClientsFromCache(
 }
 
 void LayoutSVGResourceMarker::RemoveClientFromCache(
-    LayoutObject* client,
+    LayoutObject& client,
     bool mark_for_invalidation) {
-  DCHECK(client);
   MarkClientForInvalidation(client, mark_for_invalidation
                                         ? kBoundariesInvalidation
                                         : kParentOnlyInvalidation);

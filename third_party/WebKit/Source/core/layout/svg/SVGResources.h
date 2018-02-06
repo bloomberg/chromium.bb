@@ -46,7 +46,7 @@ class SVGResources {
  public:
   SVGResources();
 
-  static std::unique_ptr<SVGResources> BuildResources(const LayoutObject*,
+  static std::unique_ptr<SVGResources> BuildResources(const LayoutObject&,
                                                       const ComputedStyle&);
 
   static void RemoveWatchesForElement(Element&);
@@ -97,10 +97,10 @@ class SVGResources {
   void BuildSetOfResources(HashSet<LayoutSVGResourceContainer*>&);
 
   // Methods operating on all cached resources
-  void RemoveClientFromCache(LayoutObject*,
+  void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) const;
   void RemoveClientFromCacheAffectingObjectBounds(
-      LayoutObject*,
+      LayoutObject&,
       bool mark_for_invalidation = true) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);

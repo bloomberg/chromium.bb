@@ -714,7 +714,7 @@ void Write(TextStream& ts, const LayoutSVGShape& shape, int indent) {
 
 void WriteResources(TextStream& ts, const LayoutObject& object, int indent) {
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(&object);
+      SVGResourcesCache::CachedResourcesForLayoutObject(object);
   if (!resources)
     return;
   const ComputedStyle& style = object.StyleRef();

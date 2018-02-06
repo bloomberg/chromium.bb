@@ -65,7 +65,7 @@ bool SVGResourcesCycleSolver::ResourceContainsCycles(
       continue;
     }
     if (SVGResources* node_resources =
-            SVGResourcesCache::CachedResourcesForLayoutObject(node)) {
+            SVGResourcesCache::CachedResourcesForLayoutObject(*node)) {
       // Fetch all the resources referenced by |node|.
       ResourceSet node_set;
       node_resources->BuildSetOfResources(node_set);

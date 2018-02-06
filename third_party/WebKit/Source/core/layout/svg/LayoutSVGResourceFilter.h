@@ -80,7 +80,7 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  void RemoveClientFromCache(LayoutObject*,
+  void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) override;
 
   FloatRect ResourceBoundingBox(const LayoutObject*);
