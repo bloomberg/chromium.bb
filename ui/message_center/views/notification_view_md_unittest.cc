@@ -472,7 +472,7 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   delegate_->set_expecting_reply_submission(true);
 
   std::vector<ButtonInfo> buttons = CreateButtons(2);
-  buttons[1].type = ButtonType::TEXT;
+  buttons[1].placeholder = base::string16();
   notification()->set_buttons(buttons);
   UpdateNotificationViews();
   widget()->Show();

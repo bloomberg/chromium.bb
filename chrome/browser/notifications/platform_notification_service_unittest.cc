@@ -247,9 +247,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
   const auto& buttons = notification.buttons();
   ASSERT_EQ(2u, buttons.size());
   EXPECT_EQ("Button 1", base::UTF16ToUTF8(buttons[0].title));
-  EXPECT_EQ(message_center::ButtonType::BUTTON, buttons[0].type);
+  EXPECT_FALSE(buttons[0].placeholder);
   EXPECT_EQ("Button 2", base::UTF16ToUTF8(buttons[1].title));
-  EXPECT_EQ(message_center::ButtonType::TEXT, buttons[1].type);
+  EXPECT_TRUE(buttons[1].placeholder);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

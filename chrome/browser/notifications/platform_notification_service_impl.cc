@@ -540,17 +540,9 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
     // the 1x bitmap - crbug.com/585815.
     button.icon =
         gfx::Image::CreateFrom1xBitmap(notification_resources.action_icons[i]);
-    button.placeholder =
-        action.placeholder.is_null()
-            ? l10n_util::GetStringUTF16(IDS_NOTIFICATION_REPLY_PLACEHOLDER)
-            : action.placeholder.string();
-    switch (action.type) {
-      case content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
-        button.type = message_center::ButtonType::BUTTON;
-        break;
-      case content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
-        button.type = message_center::ButtonType::TEXT;
-        break;
+    if (action.type == content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT) {
+      button.placeholder = action.placeholder.as_optional_string16().value_or(
+          l10n_util::GetStringUTF16(IDS_NOTIFICATION_REPLY_PLACEHOLDER));
     }
     buttons.push_back(button);
   }
