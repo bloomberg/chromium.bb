@@ -50,7 +50,6 @@ AM_CPPFLAGS = 					\
 	-I$(top_builddir)/tests			\
 	-I$(top_srcdir)/shared			\
 	-I$(top_builddir)/protocol		\
-	-DDATADIR='"$(datadir)"'		\
 	-DLIBWESTON_MODULEDIR='"$(libweston_moduledir)"' \
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DBINDIR='"$(bindir)"'
@@ -951,7 +950,6 @@ desktop_shell_la_CPPFLAGS =			\
 	-I$(top_builddir)/libweston		\
 	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/desktop-shell		\
-	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DIN_WESTON
@@ -1081,7 +1079,6 @@ xwayland_la_CPPFLAGS =				\
 	-I$(top_builddir)/libweston		\
 	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/xwayland		\
-	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBEXECDIR='"$(libexecdir)"'
 
@@ -1118,6 +1115,10 @@ endif
 noinst_LTLIBRARIES += libshared.la libshared-cairo.la \
 	libzunitc.la libzunitcmain.la
 
+libshared_la_CPPFLAGS = \
+	-DDATADIR='"$(datadir)"' \
+	$(AM_CPPFLAGS)
+
 libshared_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 libshared_la_SOURCES =				\
@@ -1132,8 +1133,9 @@ libshared_la_SOURCES =				\
 	shared/xalloc.c			\
 	shared/xalloc.h
 
+libshared_cairo_la_CPPFLAGS = $(libshared_la_CPPFLAGS)
+
 libshared_cairo_la_CFLAGS =			\
-	-DDATADIR='"$(datadir)"'		\
 	$(AM_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(PIXMAN_CFLAGS)			\
