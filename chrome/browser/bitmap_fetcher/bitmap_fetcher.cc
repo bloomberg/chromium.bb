@@ -31,13 +31,13 @@ void BitmapFetcher::Init(const std::string& referrer,
   resource_request->referrer = GURL(referrer);
   resource_request->referrer_policy = referrer_policy;
   resource_request->load_flags = load_flags;
-  simple_loader_ = content::SimpleURLLoader::Create(std::move(resource_request),
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation_);
 }
 
 void BitmapFetcher::Start(network::mojom::URLLoaderFactory* loader_factory) {
   if (simple_loader_) {
-    content::SimpleURLLoader::BodyAsStringCallback callback = base::BindOnce(
+    network::SimpleURLLoader::BodyAsStringCallback callback = base::BindOnce(
         &BitmapFetcher::OnSimpleLoaderComplete, base::Unretained(this));
     simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
         loader_factory, std::move(callback));

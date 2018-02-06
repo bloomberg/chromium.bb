@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_STREAM_CONSUMER_H_
-#define CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_STREAM_CONSUMER_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_SIMPLE_URL_LOADER_STREAM_CONSUMER_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_SIMPLE_URL_LOADER_STREAM_CONSUMER_H_
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace network {
 
 // Interface to handle streaming data from SimpleURLLoader. All methods are
 // invoked on the sequence the SimpleURLLoader was started on, and all callbacks
 // must be invoked on the same sequence. The SimpleURLLoader may be deleted at
 // any time. None of these methods will be called during SimpleURLLoader
 // destruction.
-class CONTENT_EXPORT SimpleURLLoaderStreamConsumer {
+class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoaderStreamConsumer {
  public:
   // Called as body data is received.
   //
@@ -66,6 +66,6 @@ class CONTENT_EXPORT SimpleURLLoaderStreamConsumer {
   DISALLOW_COPY_AND_ASSIGN(SimpleURLLoaderStreamConsumer);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_STREAM_CONSUMER_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_SIMPLE_URL_LOADER_STREAM_CONSUMER_H_

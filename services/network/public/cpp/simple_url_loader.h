@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_H_
-#define CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_SIMPLE_URL_LOADER_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_SIMPLE_URL_LOADER_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
 
 namespace base {
 class FilePath;
@@ -32,7 +32,7 @@ class URLLoaderFactory;
 }
 }  // namespace network
 
-namespace content {
+namespace network {
 
 class SimpleURLLoaderStreamConsumer;
 
@@ -53,7 +53,7 @@ class SimpleURLLoaderStreamConsumer;
 // * Maybe some sort of retry backoff or delay?  ServiceURLLoaderContext enables
 // throttling for its URLFetchers.  Could additionally/alternatively support
 // 503 + Retry-After.
-class CONTENT_EXPORT SimpleURLLoader {
+class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
  public:
   // When a failed request should automatically be retried. These are intended
   // to be ORed together.
@@ -90,15 +90,15 @@ class CONTENT_EXPORT SimpleURLLoader {
 
   // Callback used when a redirect is being followed. It is safe to delete the
   // SimpleURLLoader during the callback.
-  using OnRedirectCallback = base::RepeatingCallback<void(
-      const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head)>;
+  using OnRedirectCallback =
+      base::RepeatingCallback<void(const net::RedirectInfo& redirect_info,
+                                   const ResourceResponseHead& response_head)>;
 
   // Creates a SimpleURLLoader for |resource_request|. The request can be
   // started by calling any one of the Download methods once. The loader may not
   // be reused.
   static std::unique_ptr<SimpleURLLoader> Create(
-      std::unique_ptr<network::ResourceRequest> resource_request,
+      std::unique_ptr<ResourceRequest> resource_request,
       const net::NetworkTrafficAnnotationTag& annotation_tag);
 
   virtual ~SimpleURLLoader();
@@ -115,10 +115,9 @@ class CONTENT_EXPORT SimpleURLLoader {
   // invoked on completion. Deleting the SimpleURLLoader before the callback is
   // invoked will result in cancelling the request, and the callback will not be
   // called.
-  virtual void DownloadToString(
-      network::mojom::URLLoaderFactory* url_loader_factory,
-      BodyAsStringCallback body_as_string_callback,
-      size_t max_body_size) = 0;
+  virtual void DownloadToString(mojom::URLLoaderFactory* url_loader_factory,
+                                BodyAsStringCallback body_as_string_callback,
+                                size_t max_body_size) = 0;
 
   // Same as DownloadToString, but downloads to a buffer of unbounded size,
   // potentially causing a crash if the amount of addressable memory is
@@ -126,7 +125,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // instead (DownloadToString if the body is expected to be of reasonable
   // length, or DownloadToFile otherwise).
   virtual void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback) = 0;
 
   // SimpleURLLoader will download the entire response to a file at the
@@ -143,7 +142,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // downloaded file will be deleted asynchronously and the callback will not be
   // invoked, regardless of other settings.
   virtual void DownloadToFile(
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
@@ -151,7 +150,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // Same as DownloadToFile, but creates a temporary file instead of taking a
   // FilePath.
   virtual void DownloadToTempFile(
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
 
@@ -165,7 +164,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // deleted, or the handler's OnComplete() method has been invoked by the
   // SimpleURLLoader.
   virtual void DownloadAsStream(
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      mojom::URLLoaderFactory* url_loader_factory,
       SimpleURLLoaderStreamConsumer* stream_consumer) = 0;
 
   // Sets callback to be invoked during redirects. Callback may delete the
@@ -248,7 +247,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // The ResourceResponseHead for the request. Will be nullptr if ResponseInfo
   // was never received. May only be called once the loader has informed the
   // caller of completion.
-  virtual const network::ResourceResponseHead* ResponseInfo() const = 0;
+  virtual const ResourceResponseHead* ResponseInfo() const = 0;
 
  protected:
   SimpleURLLoader();
@@ -257,6 +256,6 @@ class CONTENT_EXPORT SimpleURLLoader {
   DISALLOW_COPY_AND_ASSIGN(SimpleURLLoader);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_SIMPLE_URL_LOADER_H_

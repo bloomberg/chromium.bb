@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder.h"
-#include "content/public/common/simple_url_loader.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -62,7 +62,7 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
   // Alerts the delegate that a failure occurred.
   void ReportFailure();
 
-  std::unique_ptr<content::SimpleURLLoader> simple_loader_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   const GURL url_;
   BitmapFetcherDelegate* const delegate_;

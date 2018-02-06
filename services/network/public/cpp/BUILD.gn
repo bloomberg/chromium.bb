@@ -24,6 +24,9 @@ component("cpp") {
     "net_adapters.h",
     "network_switches.cc",
     "network_switches.h",
+    "simple_url_loader.cc",
+    "simple_url_loader.h",
+    "simple_url_loader_stream_consumer.h",
   ]
 
   public_deps = [
@@ -103,6 +106,7 @@ source_set("tests") {
     "mutable_partial_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "network_struct_traits_unittest.cc",
     "proxy_config_traits_unittest.cc",
+    "simple_url_loader_unittest.cc",
   ]
   deps = [
     ":cpp",
@@ -111,6 +115,7 @@ source_set("tests") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
+    "//services/network:network_service",
     "//testing/gtest",
   ]
 }

@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace content {
 
@@ -27,7 +27,7 @@ class SimpleURLLoaderTestHelper {
 
   // Returns a BodyAsStringCallback for use with a SimpleURLLoader. May be
   // called only once.
-  SimpleURLLoader::BodyAsStringCallback GetCallback();
+  network::SimpleURLLoader::BodyAsStringCallback GetCallback();
 
   // Waits until the callback returned by GetCallback() is invoked.
   void WaitForCallback();
