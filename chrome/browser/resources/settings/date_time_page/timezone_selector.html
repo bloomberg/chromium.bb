@@ -13,6 +13,11 @@
       settings-dropdown-menu {
         --md-select-width: 400px;
       }
+      /* When per_user_timezone_enabled is true, dropdowns are start-aligned. */
+      #userTimeZoneSelector,
+      #systemTimezoneSelector {
+        --settings-dropdown-menu-policy-order: 1;
+      }
     </style>
     <template is="dom-if" restamp
         if="[[!prefs.cros.flags.per_user_timezone_enabled.value]]">
