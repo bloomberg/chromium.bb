@@ -9,7 +9,10 @@ cmake_minimum_required(VERSION 3.2)
 project(LIBWEBM CXX)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx_flags.cmake")
-include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
+
+if (NOT BUILD_SHARED_LIBS)
+  include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
+endif ()
 
 set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -314,7 +317,7 @@ add_library(mkvmuxer OBJECT ${mkvmuxer_sources})
 add_library(mkvparser OBJECT ${mkvparser_sources})
 add_library(webvtt_common OBJECT ${webvtt_common_sources})
 
-add_library(webm STATIC ${libwebm_common_sources}
+add_library(webm ${libwebm_common_sources}
             $<TARGET_OBJECTS:mkvmuxer>
             $<TARGET_OBJECTS:mkvparser>)
 
