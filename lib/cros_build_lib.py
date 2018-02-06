@@ -59,6 +59,10 @@ CHROOT_LV_NAME = 'chroot'
 CHROOT_THINPOOL_NAME = 'thinpool'
 
 
+# Max times to recheck the result of an lvm command that doesn't finish quickly.
+_MAX_LVM_RETRIES = 3
+
+
 def ShellQuote(s):
   """Quote |s| in a way that is safe for use in a shell.
 
@@ -1644,6 +1648,21 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     SudoRunCommand(cmd, capture_output=True, print_cmd=False)
 
   osutils.SafeMakedirsNonRoot(chroot)
+
+  # Sometimes lvchange can take a few seconds to run.  Try to wait for the
+  # device to appear before mounting it.
+  count = 0
+  while not os.path.exists(chroot_dev_path):
+    if count > _MAX_LVM_RETRIES:
+      logging.error('Device %s still does not exist.  Expect mounting the '
+                    'filesystem to fail.', chroot_dev_path)
+      break
+
+    count += 1
+    logging.warning('Device file %s does not exist yet on try %d.',
+                    chroot_dev_path, count)
+    time.sleep(1)
+
   cmd = ['mount', '-text4', '-onoatime', chroot_dev_path, chroot]
   SudoRunCommand(cmd, capture_output=True, print_cmd=False)
 
