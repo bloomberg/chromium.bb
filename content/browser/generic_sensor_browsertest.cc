@@ -253,7 +253,8 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
 };
 
 // Flakily crashes on Linux ASAN/TSAN bots.  https://crbug.com/789515
-#if defined(OS_LINUX)
+// Flakily times out on Windows bots.  https://crbug.com/809537
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_AmbientLightSensorTest DISABLED_AmbientLightSensorTest
 #else
 #define MAYBE_AmbientLightSensorTest AmbientLightSensorTest
