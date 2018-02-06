@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -388,8 +387,8 @@ public interface ContentViewCore {
     void sendDoubleTapForTest(long timeMs, int x, int y);
 
     /**
-     * @return The visible select popup being shown.
+     * @return {@code true} if select popup is being shown.
      */
     @VisibleForTesting
-    SelectPopup getSelectPopupForTest();
+    boolean isSelectPopupVisibleForTest();
 }
