@@ -72,8 +72,6 @@
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_resolver.h"
-#include "components/keep_alive_registry/keep_alive_types.h"
-#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -434,23 +432,9 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
 
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 
-  // Close the login screen on NOTIFICATION_APP_TERMINATING.
-  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
-
-  // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
-  // not shown yet. Lock window has to be closed at this point so that
-  // a browser window exists and the window can acquire input focus.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllSources());
-
   // Login screen is moved to lock screen container when user logs in.
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
-
-  keep_alive_.reset(
-      new ScopedKeepAlive(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
-                          KeepAliveRestartOption::DISABLED));
 
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   // Mash always runs login screen with zero delay
@@ -505,14 +489,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   manager->Initialize(chromeos::SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
-
-  // Disable Drag'n'Drop for the login session.
-  if (!ash_util::IsRunningInMash()) {
-    scoped_drag_drop_disabler_.reset(
-        new wm::ScopedDragDropDisabler(ash::Shell::GetPrimaryRootWindow()));
-  } else {
-    NOTIMPLEMENTED();
-  }
 }
 
 LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
@@ -542,8 +518,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
 
   ScheduleCompletionCallbacks(std::move(completion_callbacks_));
 
-  keep_alive_.reset();
-
   // TODO(tengs): This should be refactored. See crbug.com/314934.
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // DriveOptInController will delete itself when finished.
@@ -567,10 +541,6 @@ gfx::NativeWindow LoginDisplayHostWebUI::GetNativeWindow() const {
 
 WebUILoginView* LoginDisplayHostWebUI::GetWebUILoginView() const {
   return login_view_;
-}
-
-void LoginDisplayHostWebUI::BeforeSessionStart() {
-  session_starting_ = true;
 }
 
 void LoginDisplayHostWebUI::Finalize(base::OnceClosure completion_callback) {
@@ -816,6 +786,8 @@ void LoginDisplayHostWebUI::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  LoginDisplayHostCommon::Observe(type, source, details);
+
   if (chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE == type ||
       chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
     VLOG(1) << "Login WebUI >> WEBUI_VISIBLE";
@@ -827,16 +799,6 @@ void LoginDisplayHostWebUI::Observe(
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                      content::NotificationService::AllSources());
-  } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-    ShutdownDisplayHost();
-  } else if (type == chrome::NOTIFICATION_BROWSER_OPENED && session_starting_) {
-    // Browsers created before session start (windows opened by extensions, for
-    // example) are ignored.
-    OnBrowserCreated();
-    registrar_.Remove(this, chrome::NOTIFICATION_APP_TERMINATING,
-                      content::NotificationService::AllSources());
-    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
                       content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
              user_manager::UserManager::Get()->IsCurrentUserNew()) {
@@ -966,15 +928,6 @@ void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, private
-
-void LoginDisplayHostWebUI::ShutdownDisplayHost() {
-  if (shutting_down_)
-    return;
-
-  shutting_down_ = true;
-  registrar_.RemoveAll();
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
 
 void LoginDisplayHostWebUI::ScheduleWorkspaceAnimation() {
   if (ash_util::IsRunningInMash()) {
