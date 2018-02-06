@@ -342,6 +342,8 @@ blink_core_sources("css") {
     "cssom/CSSScale.h",
     "cssom/CSSSkew.cpp",
     "cssom/CSSSkew.h",
+    "cssom/CSSSkewX.cpp",
+    "cssom/CSSSkewX.h",
     "cssom/CSSStyleImageValue.cpp",
     "cssom/CSSStyleImageValue.h",
     "cssom/CSSStyleValue.cpp",

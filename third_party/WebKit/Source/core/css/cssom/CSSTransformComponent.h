@@ -30,6 +30,7 @@ class CORE_EXPORT CSSTransformComponent : public ScriptWrappable {
     kRotationType,
     kScaleType,
     kSkewType,
+    kSkewXType,
     kTranslationType,
   };
 
