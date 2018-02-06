@@ -11,20 +11,6 @@ namespace device {
 
 namespace {
 
-enum SwitchProButtons {
-  SWITCH_PRO_BUTTON_CAPTURE = BUTTON_INDEX_COUNT,
-  SWITCH_PRO_BUTTON_COUNT
-};
-
-// The Switch Pro controller reports a larger logical range than the analog
-// axes are capable of, and as a result the received axis values only use about
-// 70% of the total range. We renormalize the axis values to cover the full
-// range. The axis extents were determined experimentally.
-const static float kSwitchProAxisXMin = -0.7f;
-const static float kSwitchProAxisXMax = 0.7f;
-const static float kSwitchProAxisYMin = -0.65f;
-const static float kSwitchProAxisYMax = 0.75f;
-
 void MapperXInputStyleGamepad(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[2]);
@@ -454,43 +440,6 @@ void MapperSteelSeries(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperSwitchProUsb(const Gamepad& input, Gamepad* mapped) {
-  *mapped = input;
-  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[0], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[1], kSwitchProAxisYMin, kSwitchProAxisYMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[2], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[3], kSwitchProAxisYMin, kSwitchProAxisYMax);
-
-  mapped->buttons_length = SWITCH_PRO_BUTTON_COUNT;
-  mapped->axes_length = AXIS_INDEX_COUNT;
-}
-
-void MapperSwitchProBluetooth(const Gamepad& input, Gamepad* mapped) {
-  *mapped = input;
-  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
-  mapped->buttons[SWITCH_PRO_BUTTON_CAPTURE] = input.buttons[13];
-  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
-  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[5]);
-  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[4]);
-  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
-      AxisPositiveAsButton(input.axes[4]);
-  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[0], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[1], kSwitchProAxisYMin, kSwitchProAxisYMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[2], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[3], kSwitchProAxisYMin, kSwitchProAxisYMax);
-
-  mapped->buttons_length = SWITCH_PRO_BUTTON_COUNT;
-  mapped->axes_length = AXIS_INDEX_COUNT;
-}
-
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -517,7 +466,6 @@ struct MappingData {
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
     {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
     {"054c", "0ba0", MapperDualshock4},          // Dualshock 4 USB receiver
-    {"057e", "2009", MapperSwitchProUsb},        // Switch Pro Controller
     {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
     {"0925", "0005", MapperLakeviewResearch},    // SmartJoy PLUS Adapter
     {"0925", "8866", MapperLakeviewResearch},    // WiseGroup MP-8866
@@ -558,13 +506,6 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
   } else if (mapper == MapperDualshock3SixAxis && version_number == "8111") {
     mapper = MapperDualshock3SixAxisNew;
   }
-
-  // The Nintendo Switch Pro controller exposes the same product ID when
-  // connected over USB or Bluetooth but communicates using different protocols.
-  // In Bluetooth mode it uses standard HID, but in USB mode it uses a
-  // vendor-specific protocol. Select a mapper depending on the connection type.
-  if (mapper == MapperSwitchProUsb && bus_type == GAMEPAD_BUS_BLUETOOTH)
-    mapper = MapperSwitchProBluetooth;
 
   return mapper;
 }
