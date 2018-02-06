@@ -333,7 +333,13 @@ AbortCallback SmbFileSystem::WriteFile(
     int64_t offset,
     int length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  const std::vector<uint8_t> data(buffer->data(), buffer->data() + length);
+  base::ScopedFD temp_fd = temp_file_manager_.CreateTempFile(data);
+
+  GetSmbProviderClient()->WriteFile(
+      GetMountId(), file_handle, offset, length, std::move(temp_fd),
+      base::BindOnce(&SmbFileSystem::HandleRequestWriteFileCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
 
@@ -497,6 +503,12 @@ void SmbFileSystem::HandleRequestReadFileCallback(
 }
 
 void SmbFileSystem::HandleRequestTruncateCallback(
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    smbprovider::ErrorType error) const {
+  callback.Run(TranslateError(error));
+}
+
+void SmbFileSystem::HandleRequestWriteFileCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
     smbprovider::ErrorType error) const {
   callback.Run(TranslateError(error));
