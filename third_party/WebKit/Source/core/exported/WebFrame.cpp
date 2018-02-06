@@ -118,6 +118,7 @@ bool WebFrame::Swap(WebFrame* frame) {
       TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
                            TRACE_EVENT_SCOPE_THREAD, "frame", &local_frame);
     }
+    local_frame.SetIsProvisional(false);
   } else {
     ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
   }

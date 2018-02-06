@@ -10608,4 +10608,73 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Verifies that when navigating an OOPIF to same site and then canceling
+// navigation from beforeunload handler popup will not remove the
+// RemoteFrameView from OOPIF's owner element in the parent process. This test
+// uses OOPIF visibility to make sure RemoteFrameView exists after beforeunload
+// is handled.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CanceledBeforeUnloadShouldNotClearRemoteFrameView) {
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+
+  FrameTreeNode* child_node =
+      web_contents()->GetFrameTree()->root()->child_at(0);
+  GURL b_url(embedded_test_server()->GetURL(
+      "b.com", "/render_frame_host/beforeunload.html"));
+  NavigateFrameToURL(child_node, b_url);
+  FrameConnectorDelegate* frame_connector_delegate =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child_node->current_frame_host()->GetView())
+          ->FrameConnectorForTesting();
+
+  // Need user gesture for 'beforeunload' to fire.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Simulate user choosing to stay on the page after beforeunload fired.
+  SetShouldProceedOnBeforeUnload(shell(), true /* proceed */,
+                                 false /* success */);
+
+  // First, hide the <iframe>. This goes through RemoteFrameView::Hide() and
+  // eventually updates the FrameConnectorDelegate. Also,
+  // RemoteFrameView::self_visible_ will be set to false which can only be
+  // undone by calling RemoteFrameView::Show. Therefore, potential calls to
+  // RemoteFrameView::SetParentVisible(true) would not update the visibility at
+  // the browser side.
+  ASSERT_TRUE(ExecuteScript(
+      web_contents(),
+      "document.querySelector('iframe').style.visibility = 'hidden';"));
+  while (!frame_connector_delegate->IsHidden()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Now we navigate the child to about:blank, but since we do not proceed with
+  // the navigation, the OOPIF should stay alive and RemoteFrameView intact.
+  ASSERT_TRUE(ExecuteScript(
+      web_contents(), "document.querySelector('iframe').src = 'about:blank';"));
+  WaitForAppModalDialog(shell());
+
+  // Sanity check: We should still have an OOPIF and hence a RWHVCF.
+  ASSERT_TRUE(static_cast<RenderWidgetHostViewBase*>(
+                  child_node->current_frame_host()->GetView())
+                  ->IsRenderWidgetHostViewChildFrame());
+
+  // Now make the <iframe> visible again. This calls RemoteFrameView::Show()
+  // only if the RemoteFrameView is the EmbeddedContentView of the corresponding
+  // HTMLFrameOwnerElement.
+  ASSERT_TRUE(ExecuteScript(
+      web_contents(),
+      "document.querySelector('iframe').style.visibility = 'visible';"));
+  while (frame_connector_delegate->IsHidden()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
+
 }  // namespace content

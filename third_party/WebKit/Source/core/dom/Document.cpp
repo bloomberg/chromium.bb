@@ -2741,7 +2741,12 @@ void Document::Shutdown() {
   // in LocalFrame::CreateView(). See also https://crbug.com/673170 and the
   // comment in LocalFrameView::Dispose().
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-  if (owner_element)
+
+  // In the case of a provisional frame, skip clearing the EmbeddedContentView.
+  // A provisional frame is not fully attached to the DOM yet and clearing the
+  // EmbeddedContentView here could clear a not-yet-swapped-out frame
+  // (https://crbug.com/807772).
+  if (owner_element && !frame_->IsProvisional())
     owner_element->SetEmbeddedContentView(nullptr);
 
   markers_->PrepareForDestruction();
