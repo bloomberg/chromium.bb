@@ -14,7 +14,6 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/variations/service/variations_service.h"
 #include "net/base/url_util.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
@@ -34,8 +33,7 @@ SubscriptionManagerImpl::SubscriptionManagerImpl(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
     variations::VariationsService* variations_service,
-    SigninManagerBase* signin_manager,
-    OAuth2TokenService* access_token_service,
+    identity::IdentityManager* identity_manager,
     const std::string& locale,
     const std::string& api_key,
     const GURL& subscribe_url,
@@ -43,17 +41,16 @@ SubscriptionManagerImpl::SubscriptionManagerImpl(
     : url_request_context_getter_(std::move(url_request_context_getter)),
       pref_service_(pref_service),
       variations_service_(variations_service),
-      signin_manager_(signin_manager),
-      access_token_service_(access_token_service),
+      identity_manager_(identity_manager),
       locale_(locale),
       api_key_(api_key),
       subscribe_url_(subscribe_url),
       unsubscribe_url_(unsubscribe_url) {
-  signin_manager_->AddObserver(this);
+  identity_manager_->AddObserver(this);
 }
 
 SubscriptionManagerImpl::~SubscriptionManagerImpl() {
-  signin_manager_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 void SubscriptionManagerImpl::Subscribe(const std::string& subscription_token) {
@@ -61,7 +58,7 @@ void SubscriptionManagerImpl::Subscribe(const std::string& subscription_token) {
   if (request_) {
     request_ = nullptr;
   }
-  if (signin_manager_->IsAuthenticated()) {
+  if (identity_manager_->HasPrimaryAccount()) {
     StartAccessTokenRequest(subscription_token);
   } else {
     SubscribeInternal(subscription_token, /*access_token=*/std::string());
@@ -104,12 +101,13 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
   }
 
   OAuth2TokenService::ScopeSet scopes = {kContentSuggestionsApiScope};
-  access_token_fetcher_ = std::make_unique<
-      identity::PrimaryAccountAccessTokenFetcher>(
-      "ntp_snippets", signin_manager_, access_token_service_, scopes,
-      base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
-                     base::Unretained(this), subscription_token),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+  access_token_fetcher_ =
+      identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+          "ntp_snippets", scopes,
+          base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
+                         base::Unretained(this), subscription_token),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::
+              kWaitUntilAvailable);
 }
 
 void SubscriptionManagerImpl::AccessTokenFetchFinished(
@@ -193,7 +191,7 @@ bool SubscriptionManagerImpl::NeedsToResubscribe() {
   // Check if authentication state changed after subscription.
   bool is_auth_subscribe = pref_service_->GetBoolean(
       prefs::kBreakingNewsSubscriptionDataIsAuthenticated);
-  bool is_authenticated = signin_manager_->IsAuthenticated();
+  bool is_authenticated = identity_manager_->HasPrimaryAccount();
   return is_auth_subscribe != is_authenticated;
 }
 
@@ -235,14 +233,13 @@ void SubscriptionManagerImpl::DidUnsubscribe(const std::string& new_token,
   }
 }
 
-void SubscriptionManagerImpl::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username) {
+void SubscriptionManagerImpl::OnPrimaryAccountSet(
+    const AccountInfo& account_info) {
   SigninStatusChanged();
 }
 
-void SubscriptionManagerImpl::GoogleSignedOut(const std::string& account_id,
-                                              const std::string& username) {
+void SubscriptionManagerImpl::OnPrimaryAccountCleared(
+    const AccountInfo& account_info) {
   SigninStatusChanged();
 }
 

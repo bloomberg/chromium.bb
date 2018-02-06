@@ -276,11 +276,8 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
   gcm::GCMDriver* gcm_driver =
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver();
 
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
 
   scoped_refptr<net::URLRequestContextGetter> request_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
@@ -296,9 +293,8 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
   }
 
   auto subscription_manager = base::MakeUnique<SubscriptionManagerImpl>(
-      request_context, pref_service, variations_service, signin_manager,
-      token_service, api_key, locale,
-      GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
+      request_context, pref_service, variations_service, identity_manager,
+      api_key, locale, GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
       GetPushUpdatesUnsubscriptionEndpoint(chrome::GetChannel()));
 
   instance_id::InstanceIDProfileService* instance_id_profile_service =
