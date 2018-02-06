@@ -222,17 +222,18 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
   class IOSession;
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolMessage(int call_id,
+  void DispatchProtocolCommand(int call_id,
                                const String& method,
                                const String& message) override;
 
   // InspectorSession::Client implementation.
-  void SendProtocolMessage(int session_id,
-                           int call_id,
-                           const String& response,
-                           const String& state) override;
+  void SendProtocolResponse(int session_id,
+                            int call_id,
+                            const String& response,
+                            const String& state) override;
+  void SendProtocolNotification(int session_id, const String& message) override;
 
-  void DispatchProtocolMessageInternal(int call_id,
+  void DispatchProtocolCommandInternal(int call_id,
                                        const String& method,
                                        const String& message);
   void InitializeInspectorSession(const String& reattach_state);
@@ -279,7 +280,7 @@ class WebDevToolsAgentImpl::Session::IOSession
   void DeleteSoon() { session_task_runner_->DeleteSoon(FROM_HERE, this); }
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolMessage(int call_id,
+  void DispatchProtocolCommand(int call_id,
                                const String& method,
                                const String& message) override {
     DCHECK(ShouldInterruptForMethod(method));
@@ -288,11 +289,11 @@ class WebDevToolsAgentImpl::Session::IOSession
       CHECK(false);
 
     MainThreadDebugger::InterruptMainThreadAndRun(CrossThreadBind(
-        &WebDevToolsAgentImpl::Session::DispatchProtocolMessageInternal,
+        &WebDevToolsAgentImpl::Session::DispatchProtocolCommandInternal,
         session_, call_id, method, message));
     PostCrossThreadTask(
         *agent_task_runner_, FROM_HERE,
-        CrossThreadBind(&WebDevToolsAgentImpl::Session::DispatchProtocolMessage,
+        CrossThreadBind(&WebDevToolsAgentImpl::Session::DispatchProtocolCommand,
                         session_, call_id, method, message));
   }
 
@@ -350,31 +351,37 @@ void WebDevToolsAgentImpl::Session::Detach() {
   inspector_session_->Dispose();
 }
 
-void WebDevToolsAgentImpl::Session::DispatchProtocolMessage(
+void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
     int call_id,
     const String& method,
     const String& message) {
   if (ShouldInterruptForMethod(method))
     MainThreadDebugger::Instance()->TaskRunner()->RunAllTasksDontWait();
   else
-    DispatchProtocolMessageInternal(call_id, method, message);
+    DispatchProtocolCommandInternal(call_id, method, message);
 }
 
-void WebDevToolsAgentImpl::Session::SendProtocolMessage(int session_id,
-                                                        int call_id,
-                                                        const String& response,
-                                                        const String& state) {
+void WebDevToolsAgentImpl::Session::SendProtocolResponse(int session_id,
+                                                         int call_id,
+                                                         const String& response,
+                                                         const String& state) {
   if (detached_)
     return;
 
   // Make tests more predictable by flushing all sessions before sending
   // protocol response in any of them.
-  if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
+  if (LayoutTestSupport::IsRunningLayoutTest())
     agent_->FlushProtocolNotifications();
-  host_ptr_->DispatchProtocolMessage(response, call_id, state);
+  host_ptr_->DispatchProtocolResponse(response, call_id, state);
 }
 
-void WebDevToolsAgentImpl::Session::DispatchProtocolMessageInternal(
+void WebDevToolsAgentImpl::Session::SendProtocolNotification(
+    int session_id,
+    const String& message) {
+  host_ptr_->DispatchProtocolNotification(message);
+}
+
+void WebDevToolsAgentImpl::Session::DispatchProtocolCommandInternal(
     int call_id,
     const String& method,
     const String& message) {

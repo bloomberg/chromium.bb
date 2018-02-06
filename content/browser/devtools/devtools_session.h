@@ -72,10 +72,11 @@ class DevToolsSession : public protocol::FrontendChannel,
   void flushProtocolNotifications() override;
 
   // blink::mojom::DevToolsSessionHost implementation.
-  void DispatchProtocolMessage(
+  void DispatchProtocolResponse(
       const std::string& message,
       int call_id,
       const base::Optional<std::string>& state) override;
+  void DispatchProtocolNotification(const std::string& message) override;
 
   mojo::AssociatedBinding<blink::mojom::DevToolsSessionHost> binding_;
   blink::mojom::DevToolsSessionAssociatedPtr session_ptr_;
