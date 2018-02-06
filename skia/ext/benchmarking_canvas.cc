@@ -251,8 +251,6 @@ std::unique_ptr<base::Value> AsValue(const SkPaint& paint) {
 std::unique_ptr<base::Value> SaveLayerFlagsAsValue(
     SkCanvas::SaveLayerFlags flags) {
   FlagsBuilder builder('|');
-  builder.addFlag(flags & SkCanvas::kIsOpaque_SaveLayerFlag,
-                  "kIsOpaque");
   builder.addFlag(flags & SkCanvas::kPreserveLCDText_SaveLayerFlag,
                   "kPreserveLCDText");
 
