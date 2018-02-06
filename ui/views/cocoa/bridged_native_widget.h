@@ -138,7 +138,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Transition the window into or out of fullscreen. This will immediately
   // invert the value of target_fullscreen_state().
-  void ToggleDesiredFullscreenState();
+  void ToggleDesiredFullscreenState(bool async = false);
 
   // Called by the NSWindowDelegate when the size of the window changes.
   void OnSizeChanged();
