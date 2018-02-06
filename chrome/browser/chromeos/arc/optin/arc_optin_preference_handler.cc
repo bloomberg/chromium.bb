@@ -67,9 +67,7 @@ void ArcOptInPreferenceHandler::SendMetricsMode() {
     const bool exists = chromeos::CrosSettings::Get()->GetBoolean(
         chromeos::kStatsReportingPref, &enabled);
     DCHECK(exists);
-    observer_->OnMetricsModeChanged(
-        enabled,
-        IsMetricsReportingPolicyManaged(g_browser_process->local_state()));
+    observer_->OnMetricsModeChanged(enabled, IsMetricsReportingPolicyManaged());
   }
 }
 

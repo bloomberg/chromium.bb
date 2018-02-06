@@ -529,7 +529,7 @@ void ChromeMetricsServiceClient::OnPluginLoadingError(
 }
 
 bool ChromeMetricsServiceClient::IsReportingPolicyManaged() {
-  return IsMetricsReportingPolicyManaged(g_browser_process->local_state());
+  return IsMetricsReportingPolicyManaged();
 }
 
 metrics::EnableMetricsDefault
@@ -600,7 +600,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       base::MakeUnique<metrics::ScreenInfoMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
-      metrics_state_manager_->IsMetricsReportingEnabled()));
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
 
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<metrics::DriveMetricsProvider>(
