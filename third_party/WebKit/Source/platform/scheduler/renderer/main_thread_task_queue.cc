@@ -136,6 +136,13 @@ void MainThreadTaskQueue::DetachFromRendererScheduler() {
   renderer_scheduler_->OnShutdownTaskQueue(this);
   renderer_scheduler_ = nullptr;
   web_frame_scheduler_ = nullptr;
+
+  if (GetTaskQueueImpl()) {
+    GetTaskQueueImpl()->SetOnTaskStartedHandler(
+        internal::TaskQueueImpl::OnTaskStartedHandler());
+    GetTaskQueueImpl()->SetOnTaskCompletedHandler(
+        internal::TaskQueueImpl::OnTaskCompletedHandler());
+  }
 }
 
 void MainThreadTaskQueue::ShutdownTaskQueue() {

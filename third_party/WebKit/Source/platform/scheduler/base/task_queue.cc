@@ -59,6 +59,10 @@ void TaskQueue::ShutdownTaskQueue() {
     return;
   }
   impl_->SetBlameContext(nullptr);
+  impl_->SetOnTaskStartedHandler(
+      internal::TaskQueueImpl::OnTaskStartedHandler());
+  impl_->SetOnTaskCompletedHandler(
+      internal::TaskQueueImpl::OnTaskCompletedHandler());
   task_queue_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
 }
 
@@ -256,10 +260,6 @@ base::Optional<MoveableAutoLock> TaskQueue::AcquireImplReadLockIfNeeded()
 
 std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
   DCHECK(impl_);
-  impl_->SetOnTaskStartedHandler(
-      internal::TaskQueueImpl::OnTaskStartedHandler());
-  impl_->SetOnTaskCompletedHandler(
-      internal::TaskQueueImpl::OnTaskCompletedHandler());
   return std::move(impl_);
 }
 
