@@ -8208,6 +8208,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Created new window in existing browser session.
       </message>
 
+      <!-- Upgrade recovery bubble -->
+      <if expr="use_titlecase">
+        <message name="IDS_DECLINE_RECOVERY" desc="In Title Case: Text for the button the user clicks to decline recovery request.">
+          No, Thanks
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_DECLINE_RECOVERY" desc="Text for the button the user clicks to decline recovery request.">
+          No, thanks
+        </message>
+      </if>
+
       <!-- Sync strings -->
 
       <!-- Shared between all the plaforms -->
