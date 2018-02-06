@@ -254,7 +254,11 @@
       var urlIndex = 0;
 
       evaluateOnFrontend("TestRunner.installShowResourceLocationHooks(); reply();", function() {
-        webInspector.inspectedWindow.eval("loadResources();", showNextURL);
+        webInspector.inspectedWindow.eval("loadResources();");
+        webInspector.network.onRequestFinished.addListener(request => {
+          if (request.request.url.includes('abe.png'))
+            showNextURL();
+        });
       });
       function showNextURL() {
         if (urlIndex >= urls.length) {
