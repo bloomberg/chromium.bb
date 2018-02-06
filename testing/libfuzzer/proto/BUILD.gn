@@ -55,8 +55,7 @@ if (!is_win) {
     #  Can't disable instrumentation because of container-overflow false
     # positives.
 
-    # Assertion failures and integer oveflows in skia are uninteresting. Don't
-    # use debug builds on CF.
+    # Assertion failures and integer oveflows in skia are uninteresting.
     if (is_debug || is_ubsan) {
       all_dependent_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
     }
