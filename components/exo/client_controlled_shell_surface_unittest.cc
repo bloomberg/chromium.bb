@@ -754,4 +754,51 @@ TEST_F(ClientControlledShellSurfaceTest, MouseAndTouchTarget) {
       targeter->FindTargetForEvent(root, &no_touch))));
 }
 
+// The shell surface in SystemModal container should be unresizable.
+TEST_F(ClientControlledShellSurfaceTest,
+       ShellSurfaceInSystemModalIsUnresizable) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get(),
+                                                            /*is_modal=*/true);
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  EXPECT_FALSE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+}
+
+// The shell surface in SystemModal container should not become target
+// at the edge.
+TEST_F(ClientControlledShellSurfaceTest, ShellSurfaceInSystemModalHitTest) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get(),
+                                                            /*is_modal=*/true);
+  shell_surface->set_client_controlled_move_resize(false);
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+
+  gfx::Size desktop_size(640, 480);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(desktop_size)));
+  surface->Attach(desktop_buffer.get());
+  surface->SetInputRegion(gfx::Rect(0, 0, 0, 0));
+  shell_surface->SetGeometry(display.bounds());
+  surface->Commit();
+
+  EXPECT_FALSE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  aura::Window* root = window->GetRootWindow();
+
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(100, 0),
+                       gfx::Point(100, 0), ui::EventTimeForNow(), 0, 0);
+  aura::WindowTargeter targeter;
+  aura::Window* found =
+      static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
+  EXPECT_FALSE(window->Contains(found));
+}
+
 }  // namespace exo

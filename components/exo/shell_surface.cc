@@ -140,13 +140,6 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   widget_->SetFullscreen(fullscreen);
 }
 
-void ShellSurface::DisableMovement() {
-  movement_disabled_ = true;
-
-  if (widget_)
-    widget_->set_movement_disabled(true);
-}
-
 void ShellSurface::Resize(int component) {
   TRACE_EVENT1("exo", "ShellSurface::Resize", "component", component);
 
