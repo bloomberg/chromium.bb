@@ -196,6 +196,11 @@ bool IsDisplayMoveWindowAccelsEnabled() {
       kAshEnableDisplayMoveWindowAccels);
 }
 
+bool IsDockedMagnifierEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kAshEnableDockedMagnifier);
+}
+
 bool IsNightLightEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableNightLight);

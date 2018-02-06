@@ -67,6 +67,12 @@ const char kAccessibilitySwitchAccessEnabled[] = "settings.a11y.switch_access";
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
+// A boolean pref storing the enabled status of the Docked Magnifier feature.
+const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
+// A double pref storing the scale value of the Docked Magnifier feature by
+// which the screen is magnified.
+const char kDockedMagnifierScale[] = "ash.docked_magnifier.scale";
+
 // A boolean pref which stores whether a stylus has been seen before.
 const char kHasSeenStylus[] = "ash.has_seen_stylus";
 // A boolean pref which stores whether a the palette warm welcome bubble

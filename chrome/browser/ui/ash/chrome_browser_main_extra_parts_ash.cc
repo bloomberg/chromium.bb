@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ash_config.h"
+#include "chrome/browser/chromeos/docked_magnifier/docked_magnifier_client.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
@@ -277,6 +278,11 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
     night_light_client_ = std::make_unique<NightLightClient>(
         g_browser_process->system_request_context());
     night_light_client_->Start();
+  }
+
+  if (ash::switches::IsDockedMagnifierEnabled()) {
+    docked_magnifier_client_ = std::make_unique<DockedMagnifierClient>();
+    docked_magnifier_client_->Start();
   }
 }
 

@@ -13,6 +13,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/media_controller.h"
 #include "ash/message_center/message_center_controller.h"
 #include "ash/metrics/time_to_first_present_recorder.h"
@@ -71,6 +72,11 @@ void BindAshMessageCenterControllerRequestOnMainThread(
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
+}
+
+void BindDockedMagnifierControllerRequestOnMainThread(
+    mojom::DockedMagnifierControllerRequest request) {
+  Shell::Get()->docked_magnifier_controller()->BindRequest(std::move(request));
 }
 
 void BindHighlighterControllerRequestOnMainThread(
@@ -179,6 +185,11 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
+  if (switches::IsDockedMagnifierEnabled()) {
+    registry->AddInterface(
+        base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
+        main_thread_task_runner);
+  }
   registry->AddInterface(
       base::Bind(&BindHighlighterControllerRequestOnMainThread),
       main_thread_task_runner);

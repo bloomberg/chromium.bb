@@ -30,6 +30,9 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilitySelectToSpeakEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
+ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];
+ASH_PUBLIC_EXPORT extern const char kDockedMagnifierScale[];
+
 ASH_PUBLIC_EXPORT extern const char kHasSeenStylus[];
 ASH_PUBLIC_EXPORT extern const char kShownPaletteWelcomeBubble[];
 ASH_PUBLIC_EXPORT extern const char kEnableStylusTools[];

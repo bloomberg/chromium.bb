@@ -46,6 +46,7 @@
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
+#include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_controller.h"
@@ -379,6 +380,7 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityController::RegisterProfilePrefs(registry, for_test);
   BluetoothPowerController::RegisterProfilePrefs(registry);
+  DockedMagnifierController::RegisterProfilePrefs(registry);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
@@ -451,6 +453,11 @@ bool Shell::ShouldSaveDisplaySettings() {
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
       resolution_notification_controller_->DoesNotificationTimeout());
+}
+
+DockedMagnifierController* Shell::docked_magnifier_controller() {
+  DCHECK(switches::IsDockedMagnifierEnabled());
+  return docked_magnifier_controller_.get();
 }
 
 NightLightController* Shell::night_light_controller() {
@@ -799,6 +806,8 @@ Shell::~Shell() {
   // NightLightController depends on the PrefService as well as the window tree
   // host manager, and must be destructed before them. crbug.com/724231.
   night_light_controller_ = nullptr;
+  // Similarly for DockedMagnifierController.
+  docked_magnifier_controller_ = nullptr;
 
   shell_port_->Shutdown();
   window_tree_host_manager_->Shutdown();
@@ -1050,6 +1059,11 @@ void Shell::Init(ui::ContextFactory* context_factory,
   autoclick_controller_.reset(AutoclickController::CreateInstance());
 
   high_contrast_controller_.reset(new HighContrastController);
+
+  if (switches::IsDockedMagnifierEnabled()) {
+    docked_magnifier_controller_ =
+        std::make_unique<DockedMagnifierController>();
+  }
 
   viz::mojom::VideoDetectorObserverPtr observer;
   video_detector_ =
