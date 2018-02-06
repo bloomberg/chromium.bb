@@ -215,7 +215,7 @@ Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_8x8_c,
     av1_fwd_txfm2d_8x8_sse2 },  // TX_8X8    // 8x8 transform
   { av1_fwd_txfm2d_16x16_c, av1_fwd_txfm2d_16x16_sse2 },  // TX_16X16
-  { NULL, NULL },                                         // TX_32X32
+  { av1_fwd_txfm2d_32x32_c, av1_fwd_txfm2d_32x32_sse2 },  // TX_32X32
 #if CONFIG_TX64X64
   { NULL, NULL },                                         // TX_64X64
 #endif                                                    // CONFIG_TX64X64
@@ -224,7 +224,7 @@ Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_8x16_c, av1_fwd_txfm2d_8x16_sse2 },    // TX_8X16
   { av1_fwd_txfm2d_16x8_c, av1_fwd_txfm2d_16x8_sse2 },    // TX_16X8
   { av1_fwd_txfm2d_16x32_c, av1_fwd_txfm2d_16x32_sse2 },  // TX_16X32
-  { NULL, NULL },                                         // TX_32X16
+  { av1_fwd_txfm2d_32x16_c, av1_fwd_txfm2d_32x16_sse2 },  // TX_32X16
 #if CONFIG_TX64X64
   { NULL, NULL },  // TX_32X64
   { NULL, NULL },  // TX_64X32
