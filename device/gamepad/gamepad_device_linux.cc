@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <limits.h>
+#include <linux/hidraw.h>
 #include <linux/input.h>
 #include <linux/joystick.h>
 #include <sys/ioctl.h>
@@ -33,6 +34,17 @@ static inline bool test_bit(int bit, const unsigned long* data) {
   return data[bit / LONG_BITS] & (1UL << (bit % LONG_BITS));
 }
 
+GamepadBusType GetEvdevBusType(int fd) {
+  struct input_id input_info;
+  if (HANDLE_EINTR(ioctl(fd, EVIOCGID, &input_info)) >= 0) {
+    if (input_info.bustype == BUS_USB)
+      return GAMEPAD_BUS_USB;
+    if (input_info.bustype == BUS_BLUETOOTH)
+      return GAMEPAD_BUS_BLUETOOTH;
+  }
+  return GAMEPAD_BUS_UNKNOWN;
+}
+
 bool HasRumbleCapability(int fd) {
   unsigned long evbit[BITS_TO_LONGS(EV_MAX)];
   unsigned long ffbit[BITS_TO_LONGS(FF_MAX)];
@@ -47,6 +59,28 @@ bool HasRumbleCapability(int fd) {
   }
 
   return test_bit(FF_RUMBLE, ffbit);
+}
+
+bool GetHidrawDevinfo(int fd,
+                      GamepadBusType* bus_type,
+                      uint16_t* vendor_id,
+                      uint16_t* product_id) {
+  struct hidraw_devinfo info;
+  if (HANDLE_EINTR(ioctl(fd, HIDIOCGRAWINFO, &info)) < 0)
+    return false;
+  if (bus_type) {
+    if (info.bustype == BUS_USB)
+      *bus_type = GAMEPAD_BUS_USB;
+    else if (info.bustype == BUS_BLUETOOTH)
+      *bus_type = GAMEPAD_BUS_BLUETOOTH;
+    else
+      *bus_type = GAMEPAD_BUS_UNKNOWN;
+  }
+  if (vendor_id)
+    *vendor_id = static_cast<uint16_t>(info.vendor);
+  if (product_id)
+    *product_id = static_cast<uint16_t>(info.product);
+  return true;
 }
 
 int StoreRumbleEffect(int fd,
@@ -107,14 +141,26 @@ bool GamepadDeviceLinux::IsEmpty() const {
 }
 
 bool GamepadDeviceLinux::SupportsVibration() const {
-  // Dualshock4 vibration is supported through the hidraw node.
-  if (is_dualshock4_)
-    return hidraw_fd_ >= 0 && dualshock4_ != nullptr;
+  if (dualshock4_)
+    return true;
+
+  // Vibration is only supported over USB.
+  // TODO(mattreynolds): add support for Switch Pro vibration over Bluetooth.
+  if (switch_pro_)
+    return bus_type_ == GAMEPAD_BUS_USB;
 
   return supports_force_feedback_ && evdev_fd_ >= 0;
 }
 
 void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
+  if (switch_pro_ && bus_type_ == GAMEPAD_BUS_USB) {
+    // When connected over USB, the Switch Pro controller does not correctly
+    // report its state over USB HID. Instead, fetch the state using the
+    // device's vendor-specific USB protocol.
+    switch_pro_->ReadUsbPadState(pad);
+    return;
+  }
+
   DCHECK_GE(joydev_fd_, 0);
 
   js_event event;
@@ -140,6 +186,12 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
     }
     pad->timestamp = event.time;
   }
+}
+
+GamepadStandardMappingFunction GamepadDeviceLinux::GetMappingFunction() const {
+  return GetGamepadStandardMappingFunction(vendor_id_.c_str(),
+                                           product_id_.c_str(),
+                                           version_number_.c_str(), bus_type_);
 }
 
 bool GamepadDeviceLinux::IsSameDevice(const UdevGamepadLinux& pad_info) {
@@ -205,8 +257,6 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
   product_id_ = product_id ? product_id : "";
   version_number_ = version_number ? version_number : "";
   name_ = name_string;
-  is_dualshock4_ =
-      Dualshock4ControllerBase::IsDualshock4(vendor_id_int, product_id_int);
 
   return true;
 }
@@ -233,6 +283,7 @@ bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
     return false;
 
   supports_force_feedback_ = HasRumbleCapability(evdev_fd_);
+  bus_type_ = GetEvdevBusType(evdev_fd_);
 
   return true;
 }
@@ -258,7 +309,27 @@ bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
   if (hidraw_fd_ < 0)
     return false;
 
-  dualshock4_ = std::make_unique<Dualshock4ControllerLinux>(hidraw_fd_);
+  uint16_t vendor_id;
+  uint16_t product_id;
+  bool is_dualshock4 = false;
+  bool is_switch_pro = false;
+  if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
+    is_dualshock4 =
+        Dualshock4ControllerLinux::IsDualshock4(vendor_id, product_id);
+    is_switch_pro =
+        SwitchProControllerLinux::IsSwitchPro(vendor_id, product_id);
+    DCHECK(!is_dualshock4 || !is_switch_pro);
+  }
+
+  if (is_dualshock4 && !dualshock4_)
+    dualshock4_ = std::make_unique<Dualshock4ControllerLinux>(hidraw_fd_);
+
+  if (is_switch_pro && !switch_pro_) {
+    switch_pro_ = std::make_unique<SwitchProControllerLinux>(hidraw_fd_);
+
+    if (bus_type_ == GAMEPAD_BUS_USB)
+      switch_pro_->SendConnectionStatusQuery();
+  }
 
   return true;
 }
@@ -267,6 +338,9 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   if (dualshock4_)
     dualshock4_->Shutdown();
   dualshock4_.reset();
+  if (switch_pro_)
+    switch_pro_->Shutdown();
+  switch_pro_.reset();
   if (hidraw_fd_ >= 0) {
     close(hidraw_fd_);
     hidraw_fd_ = -1;
@@ -275,9 +349,13 @@ void GamepadDeviceLinux::CloseHidrawNode() {
 
 void GamepadDeviceLinux::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
-  if (is_dualshock4_) {
-    if (dualshock4_)
-      dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+  if (dualshock4_) {
+    dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+    return;
+  }
+
+  if (switch_pro_) {
+    switch_pro_->SetVibration(strong_magnitude, weak_magnitude);
     return;
   }
 
@@ -303,9 +381,13 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
 }
 
 void GamepadDeviceLinux::SetZeroVibration() {
-  if (is_dualshock4_) {
-    if (dualshock4_)
-      dualshock4_->SetZeroVibration();
+  if (dualshock4_) {
+    dualshock4_->SetZeroVibration();
+    return;
+  }
+
+  if (switch_pro_) {
+    switch_pro_->SetZeroVibration();
     return;
   }
 

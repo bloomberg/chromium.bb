@@ -7,6 +7,8 @@
 
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_linux.h"
+#include "device/gamepad/gamepad_standard_mappings.h"
+#include "device/gamepad/switch_pro_controller_linux.h"
 #include "device/gamepad/udev_gamepad_linux.h"
 
 extern "C" {
@@ -40,6 +42,8 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   std::string GetVersionNumber() const { return version_number_; }
   std::string GetName() const { return name_; }
   std::string GetSyspathPrefix() const { return syspath_prefix_; }
+  GamepadBusType GetBusType() const { return bus_type_; }
+  GamepadStandardMappingFunction GetMappingFunction() const;
 
   bool SupportsVibration() const;
 
@@ -120,11 +124,15 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // is associated with this device.
   int hidraw_fd_;
 
-  // True if the vendor and product IDs match any model of Dualshock4.
-  bool is_dualshock4_;
+  // The type of the bus through which the device is connected, or
+  // GAMEPAD_BUS_UNKNOWN if the bus type could not be determined.
+  GamepadBusType bus_type_ = GAMEPAD_BUS_UNKNOWN;
 
   // Dualshock4 functionality, if available.
   std::unique_ptr<Dualshock4ControllerLinux> dualshock4_;
+
+  // Nintendo Switch Pro controller functionality, if available.
+  std::unique_ptr<SwitchProControllerLinux> switch_pro_;
 };
 
 }  // namespace device
