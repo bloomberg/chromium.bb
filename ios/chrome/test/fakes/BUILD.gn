@@ -9,6 +9,8 @@ source_set("fakes") {
   sources = [
     "fake_contained_presenter.h",
     "fake_contained_presenter.mm",
+    "fake_download_manager_consumer.h",
+    "fake_download_manager_consumer.mm",
     "fake_download_manager_tab_helper_delegate.h",
     "fake_download_manager_tab_helper_delegate.mm",
     "fake_pass_kit_tab_helper_delegate.h",
@@ -18,6 +20,7 @@ source_set("fakes") {
   deps = [
     "//base",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/presenters",
     "//ios/web/public",
     "//ios/web/public/download",

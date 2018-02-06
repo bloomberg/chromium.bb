@@ -82,12 +82,10 @@ void DownloadManagerTabHelper::OnDownloadUpdated(web::DownloadTask* task) {
     case web::DownloadTask::State::kInProgress:
       [[NetworkActivityIndicatorManager sharedInstance]
           startNetworkTaskForGroup:GetNetworkActivityKey()];
-      [delegate_ downloadManagerTabHelper:this didUpdateDownload:task_.get()];
       break;
     case web::DownloadTask::State::kComplete:
       [[NetworkActivityIndicatorManager sharedInstance]
           clearNetworkTasksForGroup:GetNetworkActivityKey()];
-      [delegate_ downloadManagerTabHelper:this didUpdateDownload:task_.get()];
       break;
     case web::DownloadTask::State::kNotStarted:
       // OnDownloadUpdated cannot be called with this state.

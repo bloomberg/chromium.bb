@@ -7,18 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-@class DownloadManagerViewController;
+#import "ios/chrome/browser/ui/download/download_manager_consumer.h"
 
-typedef NS_ENUM(NSInteger, DownloadManagerState) {
-  // Download has not started yet.
-  kDownloadManagerStateNotStarted = 0,
-  // Download is actively progressing.
-  kDownloadManagerStateInProgress,
-  // Download is completely finished without errors.
-  kDownloadManagerStateSuceeded,
-  // Download has failed with an error.
-  kDownloadManagerStateFailed,
-};
+@class DownloadManagerViewController;
 
 @protocol DownloadManagerViewControllerDelegate<NSObject>
 @optional
@@ -39,21 +30,10 @@ typedef NS_ENUM(NSInteger, DownloadManagerState) {
 @end
 
 // Presents bottom bar UI for a single download task.
-@interface DownloadManagerViewController : UIViewController
+@interface DownloadManagerViewController
+    : UIViewController<DownloadManagerConsumer>
 
 @property(nonatomic, weak) id<DownloadManagerViewControllerDelegate> delegate;
-
-// Name of the file being downloaded.
-@property(nonatomic, copy) NSString* fileName;
-
-// The received size of the file being downloaded in bytes.
-@property(nonatomic) int64_t countOfBytesReceived;
-
-// The expected size of the file being downloaded in bytes.
-@property(nonatomic) int64_t countOfBytesExpectedToReceive;
-
-// State of the download task. Default is kDownloadManagerStateNotStarted.
-@property(nonatomic) DownloadManagerState state;
 
 @end
 

@@ -6,27 +6,19 @@
 
 #include <memory>
 
-#include "base/files/file_util.h"
 #import "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
-#include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
+#import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/web/public/download/download_task.h"
-#include "ios/web/public/web_thread.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using web::WebThread;
 
 @interface DownloadManagerCoordinator ()<
     ContainedPresenterDelegate,
@@ -35,6 +27,7 @@ using web::WebThread;
   DownloadManagerViewController* _viewController;
   // View controller for presenting "Open In.." dialog.
   UIDocumentInteractionController* _openInController;
+  DownloadManagerMediator _mediator;
 }
 @end
 
@@ -49,7 +42,8 @@ using web::WebThread;
 
   _viewController = [[DownloadManagerViewController alloc] init];
   _viewController.delegate = self;
-  [self updateViewController];
+  _mediator.SetDownloadTask(_downloadTask);
+  _mediator.SetConsumer(_viewController);
 
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.presentedViewController = _viewController;
@@ -65,6 +59,7 @@ using web::WebThread;
     [self.presenter dismissAnimated:YES];
     _viewController = nil;
   }
+  _mediator.SetDownloadTask(nullptr);
   _downloadTask = nullptr;
 }
 
@@ -81,16 +76,6 @@ using web::WebThread;
   _downloadTask = download;
   self.animatesPresentation = YES;
   [self start];
-}
-
-- (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
-               didUpdateDownload:(nonnull web::DownloadTask*)download {
-  if (_downloadTask != download) {
-    // Do nothing if download was updated for a background Tab.
-    return;
-  }
-
-  [self updateViewController];
 }
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
@@ -128,7 +113,7 @@ using web::WebThread;
 
 - (void)downloadManagerViewControllerDidStartDownload:
     (DownloadManagerViewController*)controller {
-  [self startDownload];
+  _mediator.StartDowloading();
 }
 
 - (void)downloadManagerViewController:(DownloadManagerViewController*)controller
@@ -144,90 +129,6 @@ using web::WebThread;
                                             inView:layoutGuide.owningView
                                           animated:YES];
   DCHECK(menuShown);
-}
-
-#pragma mark - Private
-
-// Updates presented view controller with web::DownloadTask data.
-- (void)updateViewController {
-  _viewController.state = [self downloadManagerState];
-  _viewController.countOfBytesReceived = _downloadTask->GetReceivedBytes();
-  _viewController.countOfBytesExpectedToReceive =
-      _downloadTask->GetTotalBytes();
-  _viewController.fileName =
-      base::SysUTF16ToNSString(_downloadTask->GetSuggestedFilename());
-}
-
-// Returns DownloadManagerState for the current download task.
-- (DownloadManagerState)downloadManagerState {
-  switch (_downloadTask->GetState()) {
-    case web::DownloadTask::State::kNotStarted:
-      return kDownloadManagerStateNotStarted;
-    case web::DownloadTask::State::kInProgress:
-      return kDownloadManagerStateInProgress;
-    case web::DownloadTask::State::kComplete:
-      return _downloadTask->GetErrorCode() ? kDownloadManagerStateFailed
-                                           : kDownloadManagerStateSuceeded;
-    case web::DownloadTask::State::kCancelled:
-      // Download Manager should dismiss the UI after download cancellation.
-      NOTREACHED();
-      return kDownloadManagerStateNotStarted;
-  }
-}
-
-// Asynchronously starts download operation.
-- (void)startDownload {
-  base::FilePath downloadDir;
-  if (!GetDownloadsDirectory(&downloadDir)) {
-    [self didFailFileWriterCreation];
-    return;
-  }
-
-  // Download will start once writer is created by background task, however it
-  // OK to change view controller state now to preven further user interactions
-  // with "Start Download" button.
-  _viewController.state = kDownloadManagerStateInProgress;
-
-  base::string16 suggestedFileName = _downloadTask->GetSuggestedFilename();
-  __weak DownloadManagerCoordinator* weakSelf = self;
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindBlockArc(^{
-        if (!weakSelf)
-          return;
-
-        if (!base::CreateDirectory(downloadDir)) {
-          WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-                                [weakSelf didFailFileWriterCreation];
-                              }));
-          return;
-        }
-
-        base::FilePath downloadFilePath =
-            downloadDir.Append(base::UTF16ToUTF8(suggestedFileName));
-        auto taskRunner = base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND});
-        __block auto writer = std::make_unique<net::URLFetcherFileWriter>(
-            taskRunner, downloadFilePath);
-        WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-          writer->Initialize(base::BindBlockArc(^(int error) {
-            DownloadManagerCoordinator* strongSelf = weakSelf;
-            if (!strongSelf)
-              return;
-
-            if (!error) {
-              strongSelf.downloadTask->Start(std::move(writer));
-            } else {
-              [strongSelf didFailFileWriterCreation];
-            }
-          }));
-        }));
-      }));
-}
-
-// Called when coordinator failed to create file writer.
-- (void)didFailFileWriterCreation {
-  _viewController.state = kDownloadManagerStateFailed;
 }
 
 @end
