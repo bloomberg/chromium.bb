@@ -464,9 +464,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
         GetLayoutBox()->GetNode());
   }
 
-  if (AXObjectCache* cache =
-          GetLayoutBox()->GetDocument().ExistingAXObjectCache())
-    cache->HandleScrollPositionChanged(GetLayoutBox());
   GetLayoutBox()->View()->ClearHitTestCache();
 
   // Inform the FrameLoader of the new scroll position, so it can be restored
@@ -487,6 +484,10 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     if (RuntimeEnabledFeatures::ScrollAnchoringEnabled())
       GetScrollAnchor()->Clear();
   }
+
+  if (AXObjectCache* cache =
+          GetLayoutBox()->GetDocument().ExistingAXObjectCache())
+    cache->HandleScrollPositionChanged(GetLayoutBox());
 }
 
 void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
