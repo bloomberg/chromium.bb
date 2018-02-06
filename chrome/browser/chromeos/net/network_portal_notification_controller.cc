@@ -27,8 +27,8 @@
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_handler.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -73,8 +73,7 @@ Profile* GetProfileForPrimaryUser() {
 }
 
 void CloseNotification() {
-  NotificationDisplayService::GetForSystemNotifications()->Close(
-      NotificationHandler::Type::TRANSIENT,
+  SystemNotificationHelper::GetInstance()->Close(
       NetworkPortalNotificationController::kNotificationId);
 }
 
@@ -293,8 +292,8 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
         network->guid());
   }
 
-  NotificationDisplayService::GetForSystemNotifications()->Display(
-      NotificationHandler::Type::TRANSIENT, *GetNotification(network, state));
+  SystemNotificationHelper::GetInstance()->Display(
+      *GetNotification(network, state));
   UMA_HISTOGRAM_ENUMERATION(
       NetworkPortalNotificationController::kNotificationMetric,
       NetworkPortalNotificationController::NOTIFICATION_METRIC_DISPLAYED,

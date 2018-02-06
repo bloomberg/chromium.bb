@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
-#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -91,8 +91,7 @@ void ShowErrorNotification(const std::string& service_path,
           GetErrorNotificationVectorIcon(network_type),
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
-  NotificationDisplayService::GetForSystemNotifications()->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+  SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
 bool ShouldConnectFailedNotificationBeShown(const std::string& error_name,
@@ -288,8 +287,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           cellular->network_technology() == shill::kNetworkTechnologyLte
               ? IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE
               : IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G);
-  NotificationDisplayService::GetForSystemNotifications()->Display(
-      NotificationHandler::Type::TRANSIENT,
+  SystemNotificationHelper::GetInstance()->Display(
       *message_center::Notification::CreateSystemNotification(
           kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
@@ -326,8 +324,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
                    << guid;
     return;
   }
-  NotificationDisplayService::GetForSystemNotifications()->Display(
-      NotificationHandler::Type::TRANSIENT,
+  SystemNotificationHelper::GetInstance()->Display(
       *message_center::Notification::CreateSystemNotification(
           kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
@@ -341,8 +338,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
 }
 
 void NetworkStateNotifier::RemoveConnectNotification() {
-  NotificationDisplayService::GetForSystemNotifications()->Close(
-      NotificationHandler::Type::TRANSIENT, kNetworkConnectNotificationId);
+  SystemNotificationHelper::GetInstance()->Close(kNetworkConnectNotificationId);
 }
 
 void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(

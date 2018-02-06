@@ -6,7 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,16 +26,6 @@ Profile* GetProfileFromId(const std::string& profile_id, bool incognito) {
 }
 
 }  // namespace
-
-// static
-NotificationDisplayService*
-NotificationDisplayService::GetForSystemNotifications() {
-  // System notifications (such as those for network state) aren't tied to a
-  // particular user and can show up before any user is logged in, so fall back
-  // to the signin profile, which is guaranteed to exist.
-  return NotificationDisplayService::GetForProfile(
-      chromeos::ProfileHelper::GetSigninProfile());
-}
 
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
