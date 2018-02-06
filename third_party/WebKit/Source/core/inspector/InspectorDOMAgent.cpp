@@ -83,6 +83,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -112,14 +113,17 @@ class InspectorRevalidateDOMTask final
 
  private:
   Member<InspectorDOMAgent> dom_agent_;
-  Timer<InspectorRevalidateDOMTask> timer_;
+  TaskRunnerTimer<InspectorRevalidateDOMTask> timer_;
   HeapHashSet<Member<Element>> style_attr_invalidated_elements_;
 };
 
 InspectorRevalidateDOMTask::InspectorRevalidateDOMTask(
     InspectorDOMAgent* dom_agent)
     : dom_agent_(dom_agent),
-      timer_(this, &InspectorRevalidateDOMTask::OnTimer) {}
+      timer_(
+          dom_agent->GetDocument()->GetTaskRunner(TaskType::kDOMManipulation),
+          this,
+          &InspectorRevalidateDOMTask::OnTimer) {}
 
 void InspectorRevalidateDOMTask::ScheduleStyleAttrRevalidationFor(
     Element* element) {
