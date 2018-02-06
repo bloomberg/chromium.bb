@@ -117,7 +117,7 @@ const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
 
 }  // namespace
 
-NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
+NetErrorHelper::NetErrorHelper(RenderFrame* render_frame, bool online)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
       weak_controller_delegate_factory_(this),
@@ -130,10 +130,9 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
       command_line->HasSwitch(switches::kEnableOfflineAutoReloadVisibleOnly);
   // TODO(mmenke): Consider only creating a NetErrorHelperCore for main frames.
   // subframes don't need any of the NetErrorHelperCore's extra logic.
-  core_.reset(new NetErrorHelperCore(this,
-                                     auto_reload_enabled,
+  core_.reset(new NetErrorHelperCore(this, auto_reload_enabled,
                                      auto_reload_visible_only,
-                                     !render_frame->IsHidden()));
+                                     !render_frame->IsHidden(), online));
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
