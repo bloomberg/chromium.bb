@@ -386,8 +386,6 @@ std::unique_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
   return OncMaskValues::Mask(signature, onc_object, mask);
 }
 
-namespace {
-
 std::string DecodePEM(const std::string& pem_encoded) {
   // The PEM block header used for DER certificates
   const char kCertificateHeader[] = "CERTIFICATE";
@@ -414,6 +412,8 @@ std::string DecodePEM(const std::string& pem_encoded) {
   }
   return decoded;
 }
+
+namespace {
 
 CertPEMsByGUIDMap GetServerAndCACertsByGUID(
     const base::ListValue& certificates) {

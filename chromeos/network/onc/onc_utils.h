@@ -125,6 +125,10 @@ CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
     base::DictionaryValue* global_network_config,
     base::ListValue* certificates);
 
+// Parse the given PEM encoded certificate |pem_encoded| and return the
+// contained DER encoding. Returns an empty string on failure.
+std::string DecodePEM(const std::string& pem_encoded);
+
 // Parse the given PEM encoded certificate |pem_encoded| and create a
 // CERTCertificate from it.
 CHROMEOS_EXPORT net::ScopedCERTCertificate DecodePEMCertificate(
