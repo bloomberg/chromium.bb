@@ -436,5 +436,10 @@ ChromeAppListModelUpdater::CreateAppListItem(
   std::unique_ptr<app_list::AppListItem> ash_app_list_item =
       std::make_unique<app_list::AppListItem>(metadata->id);
   ash_app_list_item->SetMetadata(std::move(metadata));
+
+  ChromeAppListItem* chrome_app_item = FindItem(ash_app_list_item->id());
+  if (chrome_app_item && !chrome_app_item->icon().isNull())
+    ash_app_list_item->SetIcon(chrome_app_item->icon());
+
   return ash_app_list_item;
 }
