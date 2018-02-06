@@ -376,14 +376,24 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   background-image: url(../images/ui/checkbox_checked.png);
 }
 
+.top-header {
+  display: none;
+}
+
 /**** New wallpaper picker rules **********************************************/
 
 body.v2 {
-  background-color: #fff;
+  -webkit-app-region: no-drag;
+  background-color: transparent;
 }
 
 .v2 .dialog-container {
+  background-color: #fff;
   flex-direction: row;
+  height: 450px;
+  position: absolute;
+  top: 180px;
+  width: 100%;
 }
 
 .v2 .dialog-topbar {
@@ -392,7 +402,7 @@ body.v2 {
 }
 
 .v2 .image-picker {
-  height: 340px;
+  height: 100%;
 }
 
 .v2 #categories-list {
@@ -410,4 +420,32 @@ body.v2 {
 
 .v2 #surprise-me {
   display: none;
+}
+
+.v2 .image-picker [role=listitem] {
+  height: 160px;
+  width: 160px;
+}
+
+.v2 .image-picker img {
+  height: unset;
+  overflow: hidden;
+  position: absolute;
+  width: unset;
+}
+
+.v2 .bottom-bar {
+  display: none;
+}
+
+.v2 .top-header {
+  background-color: #fff;
+  display: flex;
+  height: 50px;
+  position: absolute;
+  width: 760px;
+}
+
+.v2 .top-header .more-options {
+  display: flex;
 }

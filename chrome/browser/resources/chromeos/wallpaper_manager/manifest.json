@@ -20,6 +20,7 @@
     "alarms",
     "app.window.alpha",
     "chrome://resources/",
+    "commandLinePrivate",
     "experimental",
     "storage",
     "unlimitedStorage",

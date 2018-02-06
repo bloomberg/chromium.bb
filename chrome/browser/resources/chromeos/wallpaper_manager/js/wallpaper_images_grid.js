@@ -11,6 +11,11 @@ cr.define('wallpapers', function() {
   /** @const */ var ShowSpinnerDelayMs = 500;
 
   /**
+   * The following values should be kept in sync with the style sheet.
+   */
+  var GRID_SIZE_CSS = 160;
+
+  /**
    * Creates a new wallpaper thumbnails grid item.
    * @param {{wallpaperId: number, baseURL: string, layout: string,
    *          source: string, availableOffline: boolean,
@@ -32,8 +37,6 @@ cr.define('wallpapers', function() {
     el.dataModelId_ = dataModelId;
     el.thumbnail_ = thumbnail;
     el.callback_ = callback;
-    el.useNewWallpaperPicker_ =
-        loadTimeData.getBoolean('useNewWallpaperPicker');
     return el;
   }
 
@@ -135,10 +138,11 @@ cr.define('wallpapers', function() {
                     self.dataItem.source ==
                     Constants.WallpaperSourceEnum.Online) {
                   var xhr = new XMLHttpRequest();
-                  var urlSuffix = self.useNewWallpaperPicker_ ?
-                      '' :
-                      Constants.OnlineWallpaperThumbnailUrlSuffix;
-                  xhr.open('GET', self.dataItem.baseURL + urlSuffix, true);
+                  xhr.open(
+                      'GET',
+                      self.dataItem.baseURL +
+                          WallpaperUtil.getOnlineWallpaperThumbnailSuffix(),
+                      true);
                   xhr.responseType = 'arraybuffer';
                   xhr.send(null);
                   xhr.addEventListener('load', function(e) {
@@ -313,6 +317,33 @@ cr.define('wallpapers', function() {
     },
 
     /**
+     * Crops the image to diplay it in a square grid of size |GRID_SIZE_CSS|, by
+     * adjusting its relative position with the outer image grid.
+     * @param {object} image The wallpaper image.
+     * @private
+     */
+    cropImageToFitGrid_: function(image) {
+      var aspectRatio = image.offsetWidth / image.offsetHeight;
+      var newHeight;
+      var newWidth;
+      if (aspectRatio > 1) {
+        newHeight = GRID_SIZE_CSS;
+        newWidth = GRID_SIZE_CSS * aspectRatio;
+        // The center portion is visible, and the overflow area on the left and
+        // right will be hidden.
+        image.style.left = (GRID_SIZE_CSS - newWidth) / 2 + 'px';
+      } else {
+        newWidth = GRID_SIZE_CSS;
+        newHeight = GRID_SIZE_CSS / aspectRatio;
+        // The center portion is visible, and the overflow area on the top and
+        // buttom will be hidden.
+        image.style.top = (GRID_SIZE_CSS - newHeight) / 2 + 'px';
+      }
+      image.style.height = newHeight + 'px';
+      image.style.width = newWidth + 'px';
+    },
+
+    /**
      * Check if new thumbnail grid finished loading. This reduces the count of
      * remaining items to be loaded and when 0, shows the thumbnail grid. Note
      * it does not reduce the count on a previous |dataModelId|.
@@ -329,6 +360,10 @@ cr.define('wallpapers', function() {
       this.pendingItems_--;
       if (opt_wallpaperId != null)
         this.thumbnailList_[opt_wallpaperId] = opt_thumbnail;
+
+      if (opt_thumbnail && loadTimeData.getBoolean('useNewWallpaperPicker'))
+        this.cropImageToFitGrid_(opt_thumbnail);
+
       if (this.pendingItems_ == 0) {
         this.style.visibility = 'visible';
         window.clearTimeout(this.spinnerTimeout_);

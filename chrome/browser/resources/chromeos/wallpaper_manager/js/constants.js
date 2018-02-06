@@ -88,11 +88,6 @@
   CustomWallpaperThumbnailSuffix: '_thumbnail',
 
   /**
-   * Suffix to append to the base url of an online wallpaper thumbnail.
-   */
-  OnlineWallpaperThumbnailUrlSuffix: '_thumbnail.png',
-
-  /**
    * The default layout of each wallpaper thumbnail.
    */
   WallpaperThumbnailDefaultLayout: 'CENTER_CROPPED',

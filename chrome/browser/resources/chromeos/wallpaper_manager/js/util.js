@@ -390,6 +390,28 @@ WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
 };
 
 /**
+ * Gets the suffix to append to the base url of an online wallpaper. The
+ * requested thumbnail is displayed in the wallpaper picker grid.
+ */
+WallpaperUtil.getOnlineWallpaperThumbnailSuffix = function() {
+  return loadTimeData.getBoolean('useNewWallpaperPicker') ? '' :
+                                                            '_thumbnail.png';
+};
+
+/**
+ * Gets the suffix to append to the base url of an online wallpaper. The
+ * requested high resolution image is used to set the wallpaper.
+ */
+WallpaperUtil.getOnlineWallpaperHighResolutionSuffix = function() {
+  // FIFE url is used for new wallpaper picker, and the desired image size
+  // should be specified. Currently we are using 1.5 times the display width for
+  // better visual effects (subject to change).
+  return loadTimeData.getBoolean('useNewWallpaperPicker') ?
+      '=w' + Math.round(1.5 * loadTimeData.getInteger('primaryDisplayWidth')) :
+      Constants.HighResolutionSuffix;
+};
+
+/**
  * Runs chrome.test.sendMessage in test environment. Does nothing if running
  * in production environment.
  *
