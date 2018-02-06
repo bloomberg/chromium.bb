@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -44,7 +44,7 @@ class WebUILoginView;
 
 // An implementation class for OOBE/login WebUI screen host.
 // It encapsulates controllers, wallpaper integration and flow.
-class LoginDisplayHostWebUI : public LoginDisplayHost,
+class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public content::NotificationObserver,
                               public content::WebContentsObserver,
                               public chromeos::SessionManagerClient::Observer,
@@ -57,7 +57,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   explicit LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds);
   ~LoginDisplayHostWebUI() override;
 
-  // LoginDisplayHost implementation:
+  // LoginDisplayHost:
   LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
