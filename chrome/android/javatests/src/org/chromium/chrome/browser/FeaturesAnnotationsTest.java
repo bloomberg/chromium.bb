@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -72,6 +73,7 @@ public class FeaturesAnnotationsTest {
      * here explicitly calls {@link Features#enable(String...)}, so its feature should also be added
      * to the set of registered flags.
      */
+    @DisabledTest(message = "https://crbug.com/805160")
     @Test
     @SmallTest
     @ChromeHome.Enable
@@ -121,6 +123,7 @@ public class FeaturesAnnotationsTest {
         assertThat(finalEnabledList.size(), equalTo(4));
     }
 
+    @DisabledTest(message = "https://crbug.com/805160")
     @Test
     @SmallTest
     @ChromeHome.Enable

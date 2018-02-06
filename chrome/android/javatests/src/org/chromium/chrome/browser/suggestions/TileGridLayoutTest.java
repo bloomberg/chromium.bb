@@ -245,6 +245,7 @@ public class TileGridLayoutTest {
         mRenderTestRule.render(tileGridLayout, "two_tiles_grid_landscape");
     }
 
+    @DisabledTest(message = "https://crbug.com/805160")
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})

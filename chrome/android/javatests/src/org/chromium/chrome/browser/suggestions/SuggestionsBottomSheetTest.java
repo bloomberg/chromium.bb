@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
@@ -31,6 +32,7 @@ import org.chromium.ui.test.util.UiRestriction;
 /**
  * Instrumentation tests for {@link SuggestionsBottomSheetContent}.
  */
+@DisabledTest(message = "https://crbug.com/805160")
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class SuggestionsBottomSheetTest {

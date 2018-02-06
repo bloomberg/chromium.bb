@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -31,16 +28,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
-import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -61,22 +54,20 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,7 +77,7 @@ import java.util.Locale;
 /**
  * Tests for the appearance of Article Snippets.
  */
-@RunWith(ParameterizedRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ArticleSnippetsTest {
@@ -102,17 +93,6 @@ public class ArticleSnippetsTest {
 
     @Rule
     public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
-
-    private final boolean mChromeHomeEnabled;
-
-    @ClassParameter
-    private static List<ParameterSet> sClassParams = new ArrayList<>();
-    static {
-        sClassParams.add(new ParameterSet().name("ChromeHomeDisabled").value(false));
-        if (!DeviceFormFactor.isTablet()) {
-            sClassParams.add(new ParameterSet().name("ChromeHomeEnabled").value(true));
-        }
-    }
 
     private SuggestionsUiDelegate mUiDelegate;
     private FakeSuggestionsSource mSnippetsSource;
@@ -131,21 +111,8 @@ public class ArticleSnippetsTest {
 
     private long mTimestamp;
 
-    public ArticleSnippetsTest(boolean chromeHomeEnabled) {
-        mChromeHomeEnabled = chromeHomeEnabled;
-        if (chromeHomeEnabled) {
-            mRenderTestRule.setVariantPrefix("modern");
-        }
-    }
-
     @Before
     public void setUp() throws Exception {
-        if (mChromeHomeEnabled) {
-            Features.getInstance().enable(ChromeFeatureList.CHROME_HOME);
-        } else {
-            Features.getInstance().disable(ChromeFeatureList.CHROME_HOME);
-        }
-
         mActivityTestRule.startMainActivityOnBlankPage();
         mThumbnailProvider = new MockThumbnailProvider();
         mSnippetsSource = new FakeSuggestionsSource();
@@ -162,13 +129,6 @@ public class ArticleSnippetsTest {
             }
             NetworkChangeNotifier.forceConnectivityState(true);
         });
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            FeatureUtilities.resetChromeHomeEnabledForTests();
-            FeatureUtilities.cacheChromeHomeEnabled();
-        });
-
-        assertThat(FeatureUtilities.isChromeHomeEnabled(), is(mChromeHomeEnabled));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeActivity activity = mActivityTestRule.getActivity();

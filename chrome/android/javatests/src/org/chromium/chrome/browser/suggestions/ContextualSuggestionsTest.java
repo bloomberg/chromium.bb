@@ -46,6 +46,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for Contextual suggestions.
  */
+@DisabledTest(message = "https://crbug.com/805160")
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class ContextualSuggestionsTest {
