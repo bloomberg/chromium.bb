@@ -8,8 +8,8 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_header_util.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
 #include "third_party/skia/include/core/SkPath.h"

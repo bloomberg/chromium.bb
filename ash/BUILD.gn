@@ -1027,6 +1027,7 @@ component("ash") {
 
   public_deps = [
     "//ash/public/cpp",
+    "//ash/public/cpp/vector_icons",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
@@ -1573,6 +1574,7 @@ test("ash_unittests") {
     "//ash/autoclick/common:autoclick",
     "//ash/public/cpp",
     "//ash/public/cpp:unit_tests",
+    "//ash/public/cpp/vector_icons",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",

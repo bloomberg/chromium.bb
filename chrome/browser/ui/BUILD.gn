@@ -2110,6 +2110,7 @@ split_static_library("ui") {
       "//ash",
       "//ash:ash_with_content",
       "//ash/public/cpp",
+      "//ash/public/cpp/vector_icons",
       "//ash/resources/vector_icons",
       "//ash/strings",
       "//chrome/browser/chromeos",

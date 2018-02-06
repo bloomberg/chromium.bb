@@ -293,18 +293,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "tray_action_new_lock_screen_note.icon",
     "window_control_back.1x.icon",
     "window_control_back.icon",
-    "window_control_close.1x.icon",
-    "window_control_close.icon",
-    "window_control_left_snapped.1x.icon",
-    "window_control_left_snapped.icon",
-    "window_control_maximize.1x.icon",
-    "window_control_maximize.icon",
-    "window_control_minimize.1x.icon",
-    "window_control_minimize.icon",
-    "window_control_restore.1x.icon",
-    "window_control_restore.icon",
-    "window_control_right_snapped.1x.icon",
-    "window_control_right_snapped.icon",
   ]
 
   if (is_chrome_branded) {
