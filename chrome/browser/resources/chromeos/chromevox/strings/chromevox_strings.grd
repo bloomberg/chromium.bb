@@ -2783,6 +2783,27 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Shown to a user when they invoke the read current title command in a context without a title." name="IDS_CHROMEVOX_NO_TITLE">
         No title
       </message>
+      <message desc="Spoken when a user issues a command when nothing is focused." name="IDS_CHROMEVOX_WARNING_NO_CURRENT_RANGE">
+        No focus. Press Ctrl+T to open a new tab.
+      </message>
+      <message desc="A hint to the user that the current control is checkable." name="IDS_CHROMEVOX_HINT_CHECKABLE">
+        Press Search+Space to toggle.
+      </message>
+      <message desc="A hint to the user that the current control is clickable." name="IDS_CHROMEVOX_HINT_CLICKABLE">
+        Press Search+Space to activate.
+      </message>
+      <message desc="A hint to the user that the current control has a list of auto completions." name="IDS_CHROMEVOX_HINT_AUTOCOMPLETE_LIST">
+        Press up or down arrow for auto completions.
+      </message>
+      <message desc="A hint to the user that the current control has inline auto completions." name="IDS_CHROMEVOX_HINT_AUTOCOMPLETE_INLINE">
+        Type to auto complete.
+      </message>
+      <message desc="A hint to the user for interacting with the table control." name="IDS_CHROMEVOX_HINT_TABLE">
+        Press Search+Ctrl+Alt with arrows to navigate by cell.
+      </message>
+      <message desc="A hint to the user for interacting with the menu control." name="IDS_CHROMEVOX_HINT_MENU">
+        Press up or down arrow to navigate; enter to activate.
+      </message>
     </messages>
   </release>
 </grit>
