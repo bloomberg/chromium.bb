@@ -1562,26 +1562,6 @@ bool Editor::FindString(const String& target, FindOptions options) {
   return true;
 }
 
-Range* Editor::FindStringAndScrollToVisible(const String& target,
-                                            Range* previous_match,
-                                            FindOptions options) {
-  Range* next_match = FindRangeOfString(
-      target, EphemeralRangeInFlatTree(previous_match), options);
-  if (!next_match)
-    return nullptr;
-
-  Node* first_node = next_match->FirstNode();
-  first_node->GetLayoutObject()->ScrollRectToVisible(
-      LayoutRect(next_match->BoundingBox()),
-      WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                              ScrollAlignment::kAlignCenterIfNeeded,
-                              kUserScroll));
-  first_node->GetDocument().SetSequentialFocusNavigationStartingPoint(
-      first_node);
-
-  return next_match;
-}
-
 // TODO(yosin) We should return |EphemeralRange| rather than |Range|. We use
 // |Range| object for checking whether start and end position crossing shadow
 // boundaries, however we can do it without |Range| object.

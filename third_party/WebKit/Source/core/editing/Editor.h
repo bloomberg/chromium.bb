@@ -234,7 +234,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   bool FindString(const String&, FindOptions);
 
-  Range* FindStringAndScrollToVisible(const String&, Range*, FindOptions);
   Range* FindRangeOfString(const String& target,
                            const EphemeralRange& reference_range,
                            FindOptions);
