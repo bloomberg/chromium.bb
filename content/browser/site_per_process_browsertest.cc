@@ -132,6 +132,11 @@
 #include "ui/gfx/geometry/point_f.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/aura/env.h"
+#include "ui/aura/test/test_screen.h"
+#endif
+
 using ::testing::SizeIs;
 
 namespace content {
@@ -702,6 +707,56 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
   FrameTreeNode* child = root->child_at(0);
   EXPECT_EQ(expected_dip_scale, GetFrameDeviceScaleFactor(child));
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeUpdateToCorrectDeviceScaleFactor) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  EXPECT_EQ(1.0, GetFrameDeviceScaleFactor(web_contents()));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(1.0, GetFrameDeviceScaleFactor(child));
+
+  double expected_dip_scale = 2.0;
+
+  // TODO(oshima): allow DeviceScaleFactor change on other platforms
+  // (win, linux, mac, android and mus).
+  aura::TestScreen* test_screen =
+      static_cast<aura::TestScreen*>(display::Screen::GetScreen());
+  test_screen->CreateHostForPrimaryDisplay();
+  test_screen->SetDeviceScaleFactor(expected_dip_scale);
+
+  double device_scale_factor = 0;
+  // Wait until dppx becomes 2 if the frame's dpr hasn't beeen updated
+  // to 2 yet.
+  const char kScript[] =
+      "function sendDpr() "
+      "{window.domAutomationController.send(window.devicePixelRatio);}; "
+      "if (window.devicePixelRatio == 2) sendDpr();"
+      "window.matchMedia('screen and "
+      "(min-resolution: 2dppx)').addListener(function(e) { if (e.matches) { "
+      "sendDpr();}})";
+  // Make sure that both main frame and iframe are updated to 2x.
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractDouble(child, kScript, &device_scale_factor));
+  EXPECT_EQ(expected_dip_scale, device_scale_factor);
+
+  device_scale_factor = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(web_contents(), kScript,
+                                            &device_scale_factor));
+  EXPECT_EQ(expected_dip_scale, device_scale_factor);
+}
+
+#endif
 
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.

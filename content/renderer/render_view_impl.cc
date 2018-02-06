@@ -313,33 +313,6 @@ WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
   }
 }
 
-// Returns true if the device scale is high enough that losing subpixel
-// antialiasing won't have a noticeable effect on text quality.
-static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  // On Android, we never have subpixel antialiasing. On Chrome OS we prefer to
-  // composite all scrollers so that we get animated overlay scrollbars.
-  return true;
-#else
-  // 1.5 is a common touchscreen tablet device scale factor. For such
-  // devices main thread antialiasing is a heavy burden.
-  return device_scale_factor >= 1.5f;
-#endif
-}
-
-static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
-                                       float device_scale_factor) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
-    return false;
-  if (command_line.HasSwitch(switches::kEnablePreferCompositingToLCDText))
-    return true;
-  if (!compositor_deps->IsLcdTextEnabled())
-    return true;
-  return DeviceScaleEnsuresTextQuality(device_scale_factor);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -563,8 +536,6 @@ void RenderViewImpl::Initialize(
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
 
   webview()->SetDisplayMode(display_mode_);
-  webview()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-      PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
   webview()->GetSettings()->SetThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->SetShowFPSCounter(
@@ -2232,7 +2203,6 @@ void RenderViewImpl::DidCompletePageScaleAnimation() {
 
 void RenderViewImpl::OnDeviceScaleFactorChanged() {
   RenderWidget::OnDeviceScaleFactorChanged();
-  UpdateWebViewWithDeviceScaleFactor();
   if (auto_resize_mode_)
     AutoResizeCompositor(viz::LocalSurfaceId());
 }
@@ -2499,18 +2469,6 @@ void RenderViewImpl::DidCommitCompositorFrame() {
   RenderWidget::DidCommitCompositorFrame();
   for (auto& observer : observers_)
     observer.DidCommitCompositorFrame();
-}
-
-void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {
-  if (!webview())
-    return;
-  if (IsUseZoomForDSFEnabled()) {
-    webview()->SetZoomFactorForDeviceScaleFactor(device_scale_factor_);
-  } else {
-    webview()->SetDeviceScaleFactor(device_scale_factor_);
-  }
-  webview()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-      PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
 }
 
 void RenderViewImpl::OnDiscardInputEvent(
