@@ -59,7 +59,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
 
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
-  StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
+  StatusAreaWidget* status_area_widget() const {
+    return status_area_widget_.get();
+  }
 
   void PostCreateShelf();
 
@@ -123,8 +125,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
 
-  // Owned by the native widget.
-  StatusAreaWidget* status_area_widget_;
+  std::unique_ptr<StatusAreaWidget> status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.

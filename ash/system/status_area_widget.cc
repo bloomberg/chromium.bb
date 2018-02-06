@@ -31,45 +31,44 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
   params.delegate = status_area_widget_delegate_;
   params.name = "StatusAreaWidget";
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = status_container;
   Init(params);
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);
 }
 
-StatusAreaWidget::~StatusAreaWidget() = default;
-
 void StatusAreaWidget::Initialize() {
   // Create the child views, right to left.
-  overview_button_tray_ = new OverviewButtonTray(shelf_);
-  status_area_widget_delegate_->AddChildView(overview_button_tray_);
+  overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
 
-  system_tray_ = new SystemTray(shelf_);
-  status_area_widget_delegate_->AddChildView(system_tray_);
+  system_tray_ = std::make_unique<SystemTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(system_tray_.get());
 
   // Must happen after the widget is initialized so the native window exists.
-  web_notification_tray_ =
-      new WebNotificationTray(shelf_, GetNativeWindow(), system_tray_);
-  status_area_widget_delegate_->AddChildView(web_notification_tray_);
+  web_notification_tray_ = std::make_unique<WebNotificationTray>(
+      shelf_, GetNativeWindow(), system_tray_.get());
+  status_area_widget_delegate_->AddChildView(web_notification_tray_.get());
 
-  palette_tray_ = new PaletteTray(shelf_);
-  status_area_widget_delegate_->AddChildView(palette_tray_);
+  palette_tray_ = std::make_unique<PaletteTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(palette_tray_.get());
 
-  virtual_keyboard_tray_ = new VirtualKeyboardTray(shelf_);
-  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_);
+  virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_.get());
 
-  ime_menu_tray_ = new ImeMenuTray(shelf_);
-  status_area_widget_delegate_->AddChildView(ime_menu_tray_);
+  ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
 
-  logout_button_tray_ = new LogoutButtonTray(shelf_);
-  status_area_widget_delegate_->AddChildView(logout_button_tray_);
+  logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
   // The layout depends on the number of children, so build it once after
   // adding all of them.
   status_area_widget_delegate_->UpdateLayout();
 
   // Initialize after all trays have been created.
-  system_tray_->InitializeTrayItems(web_notification_tray_);
+  system_tray_->InitializeTrayItems(web_notification_tray_.get());
   web_notification_tray_->Initialize();
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
@@ -83,31 +82,18 @@ void StatusAreaWidget::Initialize() {
   Show();
 }
 
-void StatusAreaWidget::Shutdown() {
+StatusAreaWidget::~StatusAreaWidget() {
   system_tray_->Shutdown();
-  // Destroy the trays early, causing them to be removed from the view
-  // hierarchy. Do not used scoped pointers since we don't want to destroy them
-  // in the destructor if Shutdown() is not called (e.g. in tests).
-  // Failure to remove the tray views causes layout crashes during shutdown,
-  // for example http://crbug.com/700122.
-  // TODO(jamescook): Find a better way to avoid the layout problems, perhaps
-  // by making ShelfWidget call CloseNow() on this widget during shutdown.
-  // http://crbug.com/700255
-  delete web_notification_tray_;
-  web_notification_tray_ = nullptr;
+
+  web_notification_tray_.reset();
   // Must be destroyed after |web_notification_tray_|.
-  delete system_tray_;
-  system_tray_ = nullptr;
-  delete ime_menu_tray_;
-  ime_menu_tray_ = nullptr;
-  delete virtual_keyboard_tray_;
-  virtual_keyboard_tray_ = nullptr;
-  delete palette_tray_;
-  palette_tray_ = nullptr;
-  delete logout_button_tray_;
-  logout_button_tray_ = nullptr;
-  delete overview_button_tray_;
-  overview_button_tray_ = nullptr;
+  system_tray_.reset();
+  ime_menu_tray_.reset();
+  virtual_keyboard_tray_.reset();
+  palette_tray_.reset();
+  logout_button_tray_.reset();
+  overview_button_tray_.reset();
+
   // All child tray views have been removed.
   DCHECK_EQ(0, GetContentsView()->child_count());
 }
@@ -148,8 +134,8 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
 
 TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
   if (overview_button_tray_->visible())
-    return overview_button_tray_;
-  return system_tray_;
+    return overview_button_tray_.get();
+  return system_tray_.get();
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
