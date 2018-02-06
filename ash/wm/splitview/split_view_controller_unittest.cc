@@ -913,7 +913,7 @@ TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
 
 // Tests that the left or top snapped window can be moved outside of work area
 // when its minimum size is larger than its current bounds.
-TEST_F(SplitViewControllerTest, SnapWindowBoundsWithMinimumSizeTest) {
+TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager,
@@ -1033,10 +1033,10 @@ TEST_F(SplitViewControllerTest, SnapWindowBoundsWithMinimumSizeTest) {
   EndSplitView();
 }
 
-// Tests that if a snapped window's minumum size is larger than one third but
-// smaller than half of the work area's longer side. The divider should be
-// snapped to a position that is larger than the window's minimum size.
-TEST_F(SplitViewControllerTest, DividerPositionWithWindowMinimumSizeTest) {
+// Tests that the divider should not be moved to a position that is smaller than
+// the snapped window's minimum size after resizing.
+TEST_F(SplitViewControllerTest,
+       DividerPositionOnResizingSnappedWindowWithMinimumSizeTest) {
   const gfx::Rect bounds(0, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   aura::test::TestWindowDelegate* delegate1 =
@@ -1114,6 +1114,42 @@ TEST_F(SplitViewControllerTest, DividerPositionWithWindowMinimumSizeTest) {
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
   EndSplitView();
+}
+
+// Tests that the divider and snapped windows bounds should be updated if
+// snapping a new window with minimum size, which is larger than the bounds
+// of its snap position.
+TEST_F(SplitViewControllerTest,
+       DividerPositionWithWindowMinimumSizeOnSnapTest) {
+  const gfx::Rect bounds(0, 0, 200, 300);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  const gfx::Rect workarea_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+
+  // Divider should be moved to the middle at the beginning.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ASSERT_TRUE(split_view_divider());
+  EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
+  EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
+
+  // Drag the divider to two-third position.
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  generator.set_current_location(divider_bounds.CenterPoint());
+  generator.DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  EXPECT_GT(divider_position(), 0.5f * workarea_bounds.width());
+  EXPECT_LE(divider_position(), 0.67f * workarea_bounds.width());
+
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  aura::test::TestWindowDelegate* delegate2 =
+      static_cast<aura::test::TestWindowDelegate*>(window2->delegate());
+  delegate2->set_minimum_size(
+      gfx::Size(workarea_bounds.width() * 0.4f, workarea_bounds.height()));
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
+  EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 }
 
 }  // namespace ash
