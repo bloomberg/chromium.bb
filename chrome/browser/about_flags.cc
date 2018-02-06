@@ -2072,6 +2072,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHarfbuzzRendertextDescription, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText)},
 #endif  // OS_MACOSX
+    {"allow-previews", flag_descriptions::kPreviewsAllowedName,
+     flag_descriptions::kPreviewsAllowedDescription, kOsAll,
+     FEATURE_VALUE_TYPE(previews::features::kPreviews)},
     {"data-saver-server-previews",
      flag_descriptions::kDataSaverServerPreviewsName,
      flag_descriptions::kDataSaverServerPreviewsDescription, kOsAll,
