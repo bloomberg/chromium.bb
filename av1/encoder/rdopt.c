@@ -5723,7 +5723,6 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
 
   int mode_cost = 0;
   int16_t mode_ctx = mode_context & NEWMV_CTX_MASK;
-  int16_t is_all_zero_mv = mode_context & (1 << ALL_ZERO_FLAG_OFFSET);
 
   assert(is_inter_mode(mode));
 
@@ -5733,8 +5732,6 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
   } else {
     mode_cost = x->newmv_mode_cost[mode_ctx][1];
     mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
-
-    if (is_all_zero_mv) return mode_cost;
 
     if (mode == GLOBALMV) {
       mode_cost += x->zeromv_mode_cost[mode_ctx][0];
@@ -9462,19 +9459,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                      mbmi_ext->ref_mv_stack[ref_frame],
                      mbmi_ext->compound_mode_context, candidates, mi_row,
                      mi_col, NULL, NULL, mbmi_ext->mode_context);
-    if (mbmi_ext->ref_mv_count[ref_frame] < 2) {
-      MV_REFERENCE_FRAME rf[2];
-      av1_set_ref_frame(rf, ref_frame);
-      if (mbmi_ext->ref_mvs[rf[0]][0].as_int !=
-              frame_mv[GLOBALMV][rf[0]].as_int ||
-          mbmi_ext->ref_mvs[rf[0]][1].as_int !=
-              frame_mv[GLOBALMV][rf[0]].as_int ||
-          mbmi_ext->ref_mvs[rf[1]][0].as_int !=
-              frame_mv[GLOBALMV][rf[1]].as_int ||
-          mbmi_ext->ref_mvs[rf[1]][1].as_int !=
-              frame_mv[GLOBALMV][rf[1]].as_int)
-        mbmi_ext->mode_context[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
-    }
   }
 
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
@@ -10813,32 +10797,6 @@ PALETTE_EXIT:
       !(best_mbmode.mode == NEWMV || best_mbmode.mode == NEW_NEWMV ||
         have_nearmv_in_inter_mode(best_mbmode.mode))) {
     best_mbmode.ref_mv_idx = 0;
-  }
-
-  if (best_mbmode.ref_frame[0] > INTRA_FRAME &&
-      best_mbmode.ref_frame[1] <= INTRA_FRAME
-#if CONFIG_EXT_SKIP
-      && !best_mbmode.skip_mode
-#endif  // CONFIG_EXT_SKIP
-      ) {
-    int8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
-    int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
-    if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
-      int_mv zeromv;
-      const MV_REFERENCE_FRAME ref = best_mbmode.ref_frame[0];
-      zeromv.as_int = gm_get_motion_vector(&cm->global_motion[ref],
-                                           cm->allow_high_precision_mv, bsize,
-                                           mi_col, mi_row
-#if CONFIG_AMVR
-                                           ,
-                                           cm->cur_frame_force_integer_mv
-#endif
-                                           )
-                          .as_int;
-      if (best_mbmode.mv[0].as_int == zeromv.as_int) {
-        best_mbmode.mode = GLOBALMV;
-      }
-    }
   }
 
   if (best_mode_index < 0 || best_rd >= best_rd_so_far) {

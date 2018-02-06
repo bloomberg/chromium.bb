@@ -762,10 +762,6 @@ static void update_inter_mode_stats(FRAME_COUNTS *counts, PREDICTION_MODE mode,
   } else {
     ++counts->newmv_mode[mode_ctx][1];
 
-    if (mode_context & (1 << ALL_ZERO_FLAG_OFFSET)) {
-      return;
-    }
-
     mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
     if (mode == GLOBALMV) {
       ++counts->zeromv_mode[mode_ctx][0];
