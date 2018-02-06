@@ -3,6 +3,7 @@
 # file, run "gn help dotfile" at the command line.
 
 import("//build/dotfile_settings.gni")
+import("//third_party/angle/dotfile_settings.gni")
 
 # The location of the build configuration file.
 buildconfig = "//build/config/BUILDCONFIG.gn"
@@ -231,7 +232,9 @@ check_targets = [
 #      files and passes them to a script, it will always be correct.
 
 exec_script_whitelist =
-    build_dotfile_settings.exec_script_whitelist + [
+    build_dotfile_settings.exec_script_whitelist +
+    angle_dotfile_settings.exec_script_whitelist +
+    [
       # Whitelist entries for //build should go into
       # //build/dotfile_settings.gni instead, so that they can be shared
       # with other repos. The entries in this list should be only for files
@@ -248,9 +251,6 @@ exec_script_whitelist =
       "//remoting/host/installer/win/generate_clsids.gni",
 
       # TODO(dpranke): Get these from the appropriate repos instead.
-      "//third_party/angle/BUILD.gn",
-      "//third_party/angle/src/tests/BUILD.gn",
-      "//third_party/angle/src/vulkan_support/BUILD.gn",
       "//third_party/catapult/tracing/BUILD.gn",
       "//third_party/google_input_tools/inputview.gni",
 
