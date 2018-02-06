@@ -56,6 +56,7 @@
 #include "shared/helpers.h"
 #include "shared/image-loader.h"
 #include "shared/timespec-util.h"
+#include "shared/file-util.h"
 #include "gl-renderer.h"
 #include "weston-egl-ext.h"
 #include "pixman-renderer.h"
@@ -911,6 +912,7 @@ x11_output_enable(struct weston_output *base)
 	xcb_screen_t *screen;
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
+	char *icon_filename;
 
 	int ret;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
@@ -991,7 +993,9 @@ x11_output_enable(struct weston_output *base)
 			    b->atom.wm_class, b->atom.string, 8,
 			    sizeof class, class);
 
-	x11_output_set_icon(b, output, DATADIR "/weston/wayland.png");
+	icon_filename = file_name_with_datadir("wayland.png");
+	x11_output_set_icon(b, output, icon_filename);
+	free(icon_filename);
 
 	x11_output_set_wm_protocols(b, output);
 

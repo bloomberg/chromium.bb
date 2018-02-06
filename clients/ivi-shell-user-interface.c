@@ -43,6 +43,7 @@
 #include "shared/os-compatibility.h"
 #include "shared/xalloc.h"
 #include "shared/zalloc.h"
+#include "shared/file-util.h"
 #include "ivi-application-client-protocol.h"
 #include "ivi-hmi-controller-client-protocol.h"
 
@@ -1076,6 +1077,7 @@ hmi_homescreen_setting_create(void)
 	const char *name = NULL;
 	uint32_t workspace_layer_id;
 	uint32_t icon_surface_id = 0;
+	char *filename;
 
 	wl_list_init(&setting->workspace_list);
 	wl_list_init(&setting->launcher_list);
@@ -1095,51 +1097,65 @@ hmi_homescreen_setting_create(void)
 	weston_config_section_get_uint(
 		shellSection, "workspace-layer-id", &workspace_layer_id, 3000);
 
+	filename = file_name_with_datadir("background.png");
 	weston_config_section_get_string(
 		shellSection, "background-image", &setting->background.filePath,
-		DATADIR "/weston/background.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "background-id", &setting->background.id, 1001);
 
+	filename = file_name_with_datadir("panel.png");
 	weston_config_section_get_string(
 		shellSection, "panel-image", &setting->panel.filePath,
-		DATADIR "/weston/panel.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "panel-id", &setting->panel.id, 1002);
 
+	filename = file_name_with_datadir("tiling.png");
 	weston_config_section_get_string(
 		shellSection, "tiling-image", &setting->tiling.filePath,
-		DATADIR "/weston/tiling.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "tiling-id", &setting->tiling.id, 1003);
 
+	filename = file_name_with_datadir("sidebyside.png");
 	weston_config_section_get_string(
 		shellSection, "sidebyside-image", &setting->sidebyside.filePath,
-		DATADIR "/weston/sidebyside.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "sidebyside-id", &setting->sidebyside.id, 1004);
 
+	filename = file_name_with_datadir("fullscreen.png");
 	weston_config_section_get_string(
 		shellSection, "fullscreen-image", &setting->fullscreen.filePath,
-		DATADIR "/weston/fullscreen.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "fullscreen-id", &setting->fullscreen.id, 1005);
 
+	filename = file_name_with_datadir("random.png");
 	weston_config_section_get_string(
 		shellSection, "random-image", &setting->random.filePath,
-		DATADIR "/weston/random.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "random-id", &setting->random.id, 1006);
 
+	filename = file_name_with_datadir("home.png");
 	weston_config_section_get_string(
 		shellSection, "home-image", &setting->home.filePath,
-		DATADIR "/weston/home.png");
+		filename);
+	free(filename);
 
 	weston_config_section_get_uint(
 		shellSection, "home-id", &setting->home.id, 1007);

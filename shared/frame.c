@@ -34,6 +34,7 @@
 #include <linux/input.h>
 
 #include "cairo-util.h"
+#include "shared/file-util.h"
 
 enum frame_button_flags {
 	FRAME_BUTTON_ALIGN_RIGHT = 0x1,
@@ -357,41 +358,65 @@ frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
 			                                          FRAME_STATUS_MENU,
 			                                          FRAME_BUTTON_CLICK_DOWN);
 		} else {
+			char *name = file_name_with_datadir("icon_window.png");
+
+			if (!name)
+				goto free_frame;
+
 			button = frame_button_create(frame,
-			                             DATADIR "/weston/icon_window.png",
+			                             name,
 			                             FRAME_STATUS_MENU,
 			                             FRAME_BUTTON_CLICK_DOWN);
+			free(name);
 		}
 		if (!button)
 			goto free_frame;
 	}
 
 	if (buttons & FRAME_BUTTON_CLOSE) {
+		char *name = file_name_with_datadir("sign_close.png");
+
+		if (!name)
+			goto free_frame;
+
 		button = frame_button_create(frame,
-					     DATADIR "/weston/sign_close.png",
+					     name,
 					     FRAME_STATUS_CLOSE,
 					     FRAME_BUTTON_ALIGN_RIGHT |
 					     FRAME_BUTTON_DECORATED);
+		free(name);
 		if (!button)
 			goto free_frame;
 	}
 
 	if (buttons & FRAME_BUTTON_MAXIMIZE) {
+		char *name = file_name_with_datadir("sign_maximize.png");
+
+		if (!name)
+			goto free_frame;
+
 		button = frame_button_create(frame,
-					     DATADIR "/weston/sign_maximize.png",
+					     name,
 					     FRAME_STATUS_MAXIMIZE,
 					     FRAME_BUTTON_ALIGN_RIGHT |
 					     FRAME_BUTTON_DECORATED);
+		free(name);
 		if (!button)
 			goto free_frame;
 	}
 
 	if (buttons & FRAME_BUTTON_MINIMIZE) {
+		char *name = file_name_with_datadir("sign_minimize.png");
+
+		if (!name)
+			goto free_frame;
+
 		button = frame_button_create(frame,
-					     DATADIR "/weston/sign_minimize.png",
+					     name,
 					     FRAME_STATUS_MINIMIZE,
 					     FRAME_BUTTON_ALIGN_RIGHT |
 					     FRAME_BUTTON_DECORATED);
+		free(name);
 		if (!button)
 			goto free_frame;
 	}

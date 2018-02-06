@@ -49,6 +49,7 @@
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
 #include "shared/zalloc.h"
+#include "shared/file-util.h"
 
 #include "weston-desktop-shell-client-protocol.h"
 
@@ -760,8 +761,12 @@ background_draw(struct widget *widget, void *data)
 	image = NULL;
 	if (background->image)
 		image = load_cairo_surface(background->image);
-	else if (background->color == 0)
-		image = load_cairo_surface(DATADIR "/weston/pattern.png");
+	else if (background->color == 0) {
+		char *name = file_name_with_datadir("pattern.png");
+
+		image = load_cairo_surface(name);
+		free(name);
+	}
 
 	if (image && background->type != -1) {
 		im_w = cairo_image_surface_get_width(image);
@@ -1351,10 +1356,13 @@ panel_add_launchers(struct panel *panel, struct desktop *desktop)
 	}
 
 	if (count == 0) {
+                char *name = file_name_with_datadir("terminal.png");
+
 		/* add default launcher */
 		panel_add_launcher(panel,
-				   DATADIR "/weston/terminal.png",
+				   name,
 				   BINDIR "/weston-terminal");
+		free(name);
 	}
 }
 
