@@ -10533,7 +10533,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Create an out-of-process iframe that causes itself to be detached during
 // its layout/animate phase. See https://crbug.com/802932.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OOPIFDetachDuringAnimation) {
+// Disabled on Android due to flakiness, https://crbug.com/809580.
+#if defined(OS_ANDROID)
+#define MAYBE_OOPIFDetachDuringAnimation DISABLED_OOPIFDetachDuringAnimation
+#else
+#define MAYBE_OOPIFDetachDuringAnimation OOPIFDetachDuringAnimation
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_OOPIFDetachDuringAnimation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/frame-detached-in-animationstart-event.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
