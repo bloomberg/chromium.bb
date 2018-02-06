@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
 
@@ -25,10 +24,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
-import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -42,13 +38,8 @@ import java.util.List;
 public class FeatureUtilities {
     private static final String TAG = "FeatureUtilities";
 
-    private static final String SYNTHETIC_CHROME_HOME_EXPERIMENT_NAME = "SyntheticChromeHome";
-    private static final String ENABLED_EXPERIMENT_GROUP = "Enabled";
-    private static final String DISABLED_EXPERIMENT_GROUP = "Disabled";
-
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
-    private static Boolean sChromeHomeEnabled;
     private static String sChromeHomeSwipeLogicType;
 
     private static Boolean sIsSoleEnabled;
@@ -189,6 +180,8 @@ public class FeatureUtilities {
     }
 
     /**
+     * DEPRECATED: DO NOT USE.
+     *
      * Cache whether or not Chrome Home and related features are enabled. If this method is called
      * multiple times, the existing cached state is cleared and re-computed.
      */
@@ -196,67 +189,31 @@ public class FeatureUtilities {
         // Chrome Home doesn't work with tablets.
         if (DeviceFormFactor.isTablet()) return;
         ChromePreferenceManager.getInstance().clearObsoleteChromeHomePrefs();
-
-        boolean isChromeHomeEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
-        ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
-        manager.setChromeHomeEnabled(isChromeHomeEnabled);
-
-        PrefServiceBridge.getInstance().setChromeHomePersonalizedOmniboxSuggestionsEnabled(
-                areChromeHomePersonalizedOmniboxSuggestionsEnabled());
-
-        UmaSessionStats.registerSyntheticFieldTrial(SYNTHETIC_CHROME_HOME_EXPERIMENT_NAME,
-                isChromeHomeEnabled() ? ENABLED_EXPERIMENT_GROUP : DISABLED_EXPERIMENT_GROUP);
-    }
-
-    private static boolean areChromeHomePersonalizedOmniboxSuggestionsEnabled() {
-        LocaleManager localeManager = LocaleManager.getInstance();
-        return isChromeHomeEnabled() && !localeManager.hasCompletedSearchEnginePromo()
-                && !localeManager.hasShownSearchEnginePromoThisSession()
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CHROME_HOME_PERSONALIZED_OMNIBOX_SUGGESTIONS);
     }
 
     /**
+     * DEPRECATED: DO NOT USE.
+     *
      * @return Whether or not chrome should attach the toolbar to the bottom of the screen.
      */
     @CalledByNative
     public static boolean isChromeHomeEnabled() {
-        if (DeviceFormFactor.isTablet()) return false;
-
-        if (sChromeHomeEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            // Allow disk access for preferences while Chrome Home is in experimentation.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            try {
-                sChromeHomeEnabled = prefManager.isChromeHomeEnabled();
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-
-            // If the browser has been initialized by this point, check the experiment as well to
-            // avoid the restart logic in cacheChromeHomeEnabled.
-            if (ChromeFeatureList.isInitialized()) {
-                boolean chromeHomeExperimentEnabled =
-                        ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
-
-                if (chromeHomeExperimentEnabled != sChromeHomeEnabled) {
-                    sChromeHomeEnabled = chromeHomeExperimentEnabled;
-                    ChromePreferenceManager.getInstance().setChromeHomeEnabled(
-                            chromeHomeExperimentEnabled);
-                }
-            }
-            ChromePreferenceManager.setChromeHomeEnabledDate(sChromeHomeEnabled);
-        }
-        return sChromeHomeEnabled;
+        return false;
     }
 
     /**
      * Resets whether Chrome Home is enabled for tests. After this is called, the next call to
      * #isChromeHomeEnabled() will retrieve the value from shared preferences.
      */
-    public static void resetChromeHomeEnabledForTests() {
-        sChromeHomeEnabled = null;
+    @Deprecated
+    public static void resetChromeHomeEnabledForTests() {}
+
+    /**
+     * @return Whether Chrome Duplex, split toolbar Chrome Home, is enabled.
+     */
+    public static boolean isChromeDuplexEnabled() {
+        return ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUPLEX);
     }
 
     /**

@@ -62,7 +62,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTExternalLinkHandling,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
-    &kChromeHomeFeature,
+    &kChromeDuplexFeature,
     &kChromeHomeBottomNavLabels,
     &kChromeHomeClearUrlOnOpen,
     &kChromeHomeDestroySuggestions,
@@ -186,8 +186,8 @@ const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
 const base::Feature kCCTRedirectPreconnect{"CCTRedirectPreconnect",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kChromeHomeFeature{"ChromeHome",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeDuplexFeature{"ChromeDuplex",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomeBottomNavLabels{
     "ChromeHomeBottomNavLabels", base::FEATURE_DISABLED_BY_DEFAULT};
