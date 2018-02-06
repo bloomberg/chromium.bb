@@ -89,6 +89,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private static final String VERSION_CODE_PREF = "lastVersionCodeUsed";
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
 
+    private final static Object sSingletonLock = new Object();
+    private static WebViewChromiumFactoryProvider sSingleton;
+
     private final WebViewChromiumRunQueue mRunQueue = new WebViewChromiumRunQueue(
             () -> { return WebViewChromiumFactoryProvider.this.hasStarted(); });
 
@@ -155,6 +158,31 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private WebViewDelegate mWebViewDelegate;
 
     boolean mShouldDisableThreadChecking;
+
+    /**
+     * Thread-safe way to set the one and only WebViewChromiumFactoryProvider.
+     */
+    private static void setSingleton(WebViewChromiumFactoryProvider provider) {
+        synchronized (sSingletonLock) {
+            if (sSingleton != null) {
+                throw new RuntimeException(
+                        "WebViewChromiumFactoryProvider should only be set once!");
+            }
+            sSingleton = provider;
+        }
+    }
+
+    /**
+     * Thread-safe way to get the one and only WebViewChromiumFactoryProvider.
+     */
+    public static WebViewChromiumFactoryProvider getSingleton() {
+        synchronized (sSingletonLock) {
+            if (sSingleton == null) {
+                throw new RuntimeException("WebViewChromiumFactoryProvider has not been set!");
+            }
+            return sSingleton;
+        }
+    }
 
     /**
      * Entry point for newer versions of Android.
@@ -262,6 +290,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         mShouldDisableThreadChecking =
                 shouldDisableThreadChecking(ContextUtils.getApplicationContext());
         // Now safe to use WebView data directory.
+
+        setSingleton(this);
     }
 
     /* package */ static void checkStorageIsNotDeviceProtected(Context context) {
