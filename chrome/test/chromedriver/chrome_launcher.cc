@@ -464,17 +464,20 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
       std::move(devtools_event_listeners), std::move(port_reservation),
       capabilities.page_load_strategy, std::move(process), command,
       &user_data_dir, &extension_dir, capabilities.network_emulation_enabled));
-  for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
-    VLOG(0) << "Waiting for extension bg page load: " << extension_bg_pages[i];
-    std::unique_ptr<WebView> web_view;
-    Status status = chrome_desktop->WaitForPageToLoad(
-        extension_bg_pages[i], base::TimeDelta::FromSeconds(10),
-        &web_view, w3c_compliant);
-    if (status.IsError()) {
-      return Status(kUnknownError,
-                    "failed to wait for extension background page to load: " +
-                        extension_bg_pages[i],
-                    status);
+  if (!capabilities.extension_load_timeout.is_zero()) {
+    for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
+      VLOG(0) << "Waiting for extension bg page load: "
+              << extension_bg_pages[i];
+      std::unique_ptr<WebView> web_view;
+      Status status = chrome_desktop->WaitForPageToLoad(
+          extension_bg_pages[i], capabilities.extension_load_timeout, &web_view,
+          w3c_compliant);
+      if (status.IsError()) {
+        return Status(kUnknownError,
+                      "failed to wait for extension background page to load: " +
+                          extension_bg_pages[i],
+                      status);
+      }
     }
   }
   *chrome = std::move(chrome_desktop);
