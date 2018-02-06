@@ -89,6 +89,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
         ['mac', 'linux'], bug=809233)
+    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
+        ['win', 'nvidia', 'opengl'], bug=809594)
     self.Fail('conformance2/transform_feedback/simultaneous_binding.html',
         bug=696345)
     self.Fail('conformance2/uniforms/' +
@@ -1196,6 +1198,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=658844)
     self.Fail('conformance2/uniforms/uniform-blocks-with-arrays.html',
         ['linux', 'amd'], bug=2103) # angle bug ID
+    self.Fail('conformance2/uniforms/simple-buffer-change.html',
+        ['linux', 'amd', 'no_angle'], bug=809595)
 
     # Linux AMD R7 240
     self.Fail('conformance2/textures/canvas/' +
