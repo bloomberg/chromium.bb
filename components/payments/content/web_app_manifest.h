@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_SECTION_H_
-#define COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_SECTION_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_H_
+#define COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_H_
 
 #include <stdint.h>
 
@@ -28,6 +28,17 @@ struct WebAppManifestSection {
   std::vector<std::vector<uint8_t>> fingerprints;
 };
 
+struct WebAppInstallationInfo {
+  WebAppInstallationInfo();
+  ~WebAppInstallationInfo();
+
+  // TODO(crbug.com/782270): Add icons.
+  std::string name;
+  std::string sw_js_url;
+  std::string sw_scope;
+  bool sw_use_cache;
+};
+
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_SECTION_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_H_

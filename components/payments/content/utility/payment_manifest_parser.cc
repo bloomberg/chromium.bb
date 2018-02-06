@@ -29,6 +29,11 @@ const char* const kDefaultApplications = "default_applications";
 const char* const kHttpPrefix = "http://";
 const char* const kHttpsPrefix = "https://";
 const char* const kSupportedOrigins = "supported_origins";
+const char* const kServiceWorker = "serviceworker";
+const char* const kServiceWorkerSrc = "src";
+const char* const kServiceWorkerScope = "scope";
+const char* const kServiceWorkerUseCache = "use_cache";
+const char* const kWebAppName = "name";
 
 // Parses the "default_applications": ["https://some/url"] from |dict| into
 // |web_app_manifest_urls|. Returns 'false' for invalid data.
@@ -233,6 +238,25 @@ void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
                  parser_callback));
 }
 
+void PaymentManifestParser::ParseWebAppInstallationInfo(
+    const std::string& content,
+    WebAppInstallationInfoCallback callback) {
+  scoped_refptr<JsonParserCallback<WebAppInstallationInfoCallback>>
+      sw_parser_callback =
+          new JsonParserCallback<WebAppInstallationInfoCallback>(
+              base::Bind(&PaymentManifestParser::OnWebAppParseInstallationInfo,
+                         weak_factory_.GetWeakPtr()),
+              std::move(callback));
+
+  data_decoder::SafeJsonParser::Parse(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      content,
+      base::Bind(&JsonParserCallback<WebAppInstallationInfoCallback>::OnSuccess,
+                 sw_parser_callback),
+      base::Bind(&JsonParserCallback<WebAppInstallationInfoCallback>::OnError,
+                 sw_parser_callback));
+}
+
 // static
 void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
     std::unique_ptr<base::Value> value,
@@ -411,6 +435,42 @@ void PaymentManifestParser::OnWebAppParse(WebAppCallback callback,
   // Can trigger synchronous deletion of this object, so can't access any of the
   // member variables after this block.
   std::move(callback).Run(manifest);
+}
+
+void PaymentManifestParser::OnWebAppParseInstallationInfo(
+    WebAppInstallationInfoCallback callback,
+    std::unique_ptr<base::Value> value) {
+  // TODO(crbug.com/782270): Move this function into a static function for unit
+  // test.
+  if (value->FindKey({kServiceWorker}) == nullptr) {
+    return std::move(callback).Run(nullptr);
+  }
+
+  std::unique_ptr<WebAppInstallationInfo> sw =
+      std::make_unique<WebAppInstallationInfo>();
+  auto* v = value->FindPath({kServiceWorker, kServiceWorkerSrc});
+  if (v == nullptr) {
+    LOG(ERROR) << "Service Worker js src cannot be empty.";
+    return std::move(callback).Run(nullptr);
+  }
+  sw->sw_js_url = v->GetString();
+
+  v = value->FindPath({kServiceWorker, kServiceWorkerScope});
+  if (v != nullptr) {
+    sw->sw_scope = v->GetString();
+  }
+
+  v = value->FindPath({kServiceWorker, kServiceWorkerUseCache});
+  if (v != nullptr) {
+    sw->sw_use_cache = v->GetBool();
+  }
+
+  v = value->FindKey({kWebAppName});
+  if (v != nullptr) {
+    sw->name = v->GetString();
+  }
+
+  return std::move(callback).Run(std::move(sw));
 }
 
 }  // namespace payments

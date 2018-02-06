@@ -51,13 +51,13 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
         content::BrowserContext::GetDefaultStoragePartition(context)
             ->GetURLRequestContext());
     downloader->AddTestServerURL("https://", https_server_->GetURL("/"));
+    auto parser = std::make_unique<payments::PaymentManifestParser>();
+    auto cache = WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
+        Profile::FromBrowserContext(context),
+        ServiceAccessType::EXPLICIT_ACCESS);
 
-    ManifestVerifier verifier(
-        web_contents, std::move(downloader),
-        std::make_unique<payments::PaymentManifestParser>(),
-        WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
-            Profile::FromBrowserContext(context),
-            ServiceAccessType::EXPLICIT_ACCESS));
+    ManifestVerifier verifier(web_contents, downloader.get(), parser.get(),
+                              cache.get());
 
     base::RunLoop run_loop;
     verifier.Verify(

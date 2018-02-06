@@ -5,13 +5,18 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_APP_FACTORY_H_
 #define COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_APP_FACTORY_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "components/payments/content/web_app_manifest.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+
+class GURL;
 
 template <class T>
 class scoped_refptr;
@@ -22,12 +27,18 @@ class WebContents;
 
 namespace payments {
 
+class PaymentManifestDownloader;
 class PaymentManifestWebDataService;
-class PaymentMethodManifestDownloaderInterface;
 
 // Retrieves service worker payment apps.
 class ServiceWorkerPaymentAppFactory {
  public:
+  using InstallablePaymentApps =
+      std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>;
+  using GetAllPaymentAppsCallback =
+      base::OnceCallback<void(content::PaymentAppProvider::PaymentApps,
+                              InstallablePaymentApps)>;
+
   static ServiceWorkerPaymentAppFactory* GetInstance();
 
   // Retrieves all service worker payment apps that can handle payments for
@@ -47,7 +58,7 @@ class ServiceWorkerPaymentAppFactory {
       content::WebContents* web_contents,
       scoped_refptr<PaymentManifestWebDataService> cache,
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
-      content::PaymentAppProvider::GetAllPaymentAppsCallback callback,
+      GetAllPaymentAppsCallback callback,
       base::OnceClosure finished_writing_cache_callback_for_testing);
 
   // Removes |apps| that don't match any of the |requested_method_data| based on
@@ -68,9 +79,9 @@ class ServiceWorkerPaymentAppFactory {
   // Should be called before every call to GetAllPaymentApps() (because the test
   // downloader is moved into the SelfDeletingServiceWorkerPaymentAppFactory).
   void SetDownloaderAndIgnorePortInAppScopeForTesting(
-      std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader);
+      std::unique_ptr<PaymentManifestDownloader> downloader);
 
-  std::unique_ptr<PaymentMethodManifestDownloaderInterface> test_downloader_;
+  std::unique_ptr<PaymentManifestDownloader> test_downloader_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFactory);
 };

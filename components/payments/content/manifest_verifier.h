@@ -32,9 +32,9 @@ class Origin;
 
 namespace payments {
 
+class PaymentManifestDownloader;
 class PaymentManifestParser;
 class PaymentManifestWebDataService;
-class PaymentMethodManifestDownloaderInterface;
 
 // Verifies that payment handlers (i.e., service worker payment apps) can use
 // the payment method names that they claim. Each object can be used to verify
@@ -55,11 +55,13 @@ class ManifestVerifier final : public WebDataServiceConsumer {
       base::OnceCallback<void(content::PaymentAppProvider::PaymentApps)>;
 
   // Creates the verifier and starts up the parser utility process.
-  ManifestVerifier(
-      content::WebContents* web_contents,
-      std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
-      std::unique_ptr<PaymentManifestParser> parser,
-      scoped_refptr<PaymentManifestWebDataService> cache);
+  // The owner of ManifestVerifier owns |downloader|, |parser| and
+  // |cache|. They should live until |finished_using_resources| parameter to
+  // Verify() method is called.
+  ManifestVerifier(content::WebContents* web_contents,
+                   PaymentManifestDownloader* downloader,
+                   PaymentManifestParser* parser,
+                   PaymentManifestWebDataService* cache);
 
   ~ManifestVerifier() override;
 
@@ -100,13 +102,13 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   DevToolsHelper dev_tools_;
 
   // Downloads the manifests.
-  std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader_;
+  PaymentManifestDownloader* downloader_;
 
   // Parses the manifests.
-  std::unique_ptr<PaymentManifestParser> parser_;
+  PaymentManifestParser* parser_;
 
   // Caches the manifests.
-  scoped_refptr<PaymentManifestWebDataService> cache_;
+  PaymentManifestWebDataService* cache_;
 
   // The list of payment apps being verified.
   content::PaymentAppProvider::PaymentApps apps_;

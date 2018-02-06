@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
+#include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
@@ -227,10 +228,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   bool ArePaymentOptionsSatisfied();
 
   // The PaymentAppProvider::GetAllPaymentAppsCallback.
-  void GetAllPaymentAppsCallback(content::BrowserContext* context,
-                                 const GURL& top_level_origin,
-                                 const GURL& frame_origin,
-                                 content::PaymentAppProvider::PaymentApps apps);
+  void GetAllPaymentAppsCallback(
+      content::BrowserContext* context,
+      const GURL& top_level_origin,
+      const GURL& frame_origin,
+      content::PaymentAppProvider::PaymentApps apps,
+      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps);
 
   // The ServiceWorkerPaymentInstrument::ValidateCanMakePaymentCallback.
   void OnSWPaymentInstrumentValidated(

@@ -46,13 +46,15 @@ static_library("content") {
 # Files used by content and utility.
 static_library("content_common") {
   sources = [
-    "web_app_manifest_section.cc",
-    "web_app_manifest_section.h",
+    "web_app_manifest.cc",
+    "web_app_manifest.h",
   ]
 }
 
 static_library("utils") {
   sources = [
+    "installable_payment_app_crawler.cc",
+    "installable_payment_app_crawler.h",
     "manifest_verifier.cc",
     "manifest_verifier.h",
     "origin_security_checker.cc",
