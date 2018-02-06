@@ -132,21 +132,21 @@ void WindowOcclusionTracker::MaybeRecomputeOcclusion() {
   }
 }
 
-void WindowOcclusionTracker::RecomputeOcclusionImpl(
+bool WindowOcclusionTracker::RecomputeOcclusionImpl(
     Window* window,
     const gfx::Transform& parent_transform_relative_to_root,
     const SkIRect* clipped_bounds,
     SkRegion* occluded_region) {
   DCHECK(window);
 
-  if (WindowIsAnimated(window)) {
-    SetWindowAndDescendantsAreOccluded(window, false);
-    return;
-  }
-
   if (!window->IsVisible()) {
     SetWindowAndDescendantsAreOccluded(window, true);
-    return;
+    return false;
+  }
+
+  if (WindowIsAnimated(window)) {
+    SetWindowAndDescendantsAreOccluded(window, false);
+    return true;
   }
 
   // Compute window bounds.
@@ -157,7 +157,7 @@ void WindowOcclusionTracker::RecomputeOcclusionImpl(
     // For simplicity, windows that are not axis-aligned are considered
     // unoccluded and do not occlude other windows.
     SetWindowAndDescendantsAreOccluded(window, false);
-    return;
+    return true;
   }
   const SkIRect window_bounds = GetWindowBoundsInRootWindow(
       window, transform_relative_to_root, clipped_bounds);
@@ -165,19 +165,23 @@ void WindowOcclusionTracker::RecomputeOcclusionImpl(
   // Compute children occlusion states.
   const SkIRect* clipped_bounds_for_children =
       window->layer()->GetMasksToBounds() ? &window_bounds : clipped_bounds;
+  bool has_visible_child = false;
   for (auto* child : base::Reversed(window->children())) {
-    RecomputeOcclusionImpl(child, transform_relative_to_root,
-                           clipped_bounds_for_children, occluded_region);
+    has_visible_child |=
+        RecomputeOcclusionImpl(child, transform_relative_to_root,
+                               clipped_bounds_for_children, occluded_region);
   }
 
   // Compute window occlusion state.
   if (occluded_region->contains(window_bounds)) {
-    SetOccluded(window, true);
-  } else {
-    SetOccluded(window, false);
-    if (VisibleWindowIsOpaque(window))
-      occluded_region->op(window_bounds, SkRegion::kUnion_Op);
+    SetOccluded(window, !has_visible_child);
+    return has_visible_child;
   }
+
+  SetOccluded(window, false);
+  if (VisibleWindowIsOpaque(window))
+    occluded_region->op(window_bounds, SkRegion::kUnion_Op);
+  return true;
 }
 
 void WindowOcclusionTracker::CleanupAnimatedWindows() {

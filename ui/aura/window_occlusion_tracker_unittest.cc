@@ -277,8 +277,84 @@ TEST_F(WindowOcclusionTrackerTest, TwoWindowsOccludeOneWindow) {
   EXPECT_FALSE(delegate_c->is_expecting_call());
 }
 
-// Verify that when the bounds of a child window do not cover the bounds of a
-// parent window, both windows are non-occluded.
+// Verify that a window and its child that are covered by a sibling are
+// occluded.
+TEST_F(WindowOcclusionTrackerTest, SiblingOccludesWindowAndChild) {
+  // Create window a. Expect it to be non-occluded.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 20, 20));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Create window b, with bounds that occlude half of its parent window a.
+  // Expect it to be non-occluded.
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 20), window_a);
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // Create window c, with bounds that occlude window a and window b. Expect it
+  // to be non-occluded, and window a and b to be occluded.
+  MockWindowDelegate* delegate_c = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
+  delegate_b->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
+  delegate_c->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_c, gfx::Rect(0, 0, 20, 20));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+  EXPECT_FALSE(delegate_c->is_expecting_call());
+}
+
+// Verify that a window with one half covered by a child and the other half
+// covered by a sibling is non-occluded.
+TEST_F(WindowOcclusionTrackerTest, ChildAndSiblingOccludeOneWindow) {
+  // Create window a. Expect it to be non-occluded.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 20, 20));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Create window b, with bounds that occlude half of its parent window a.
+  // Expect it to be non-occluded.
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 20), window_a);
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // Create window c, with bounds that occlude the other half of window a.
+  // Expect it to be non-occluded and expect window a to remain non-occluded.
+  MockWindowDelegate* delegate_c = new MockWindowDelegate();
+  delegate_c->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_c, gfx::Rect(10, 0, 10, 20));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_c->is_expecting_call());
+}
+
+// Verify that a window covered by 2 non-occluded children is non-occluded.
+TEST_F(WindowOcclusionTrackerTest, ChildrenOccludeOneWindow) {
+  // Create window a. Expect it to be non-occluded.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 20, 20));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Create window b, with bounds that cover half of its parent window a. Expect
+  // it to be non-occluded.
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 20), window_a);
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // Create window c, with bounds that cover the other half of its parent window
+  // a. Expect it to be non-occluded. Expect window a to remain non-occluded.
+  MockWindowDelegate* delegate_c = new MockWindowDelegate();
+  delegate_c->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_c, gfx::Rect(10, 0, 10, 20), window_a);
+  EXPECT_FALSE(delegate_c->is_expecting_call());
+}
+
+// Verify that when the bounds of a child window covers the bounds of a parent
+// window but is itself visible, the parent window is visible.
 TEST_F(WindowOcclusionTrackerTest, ChildDoesNotOccludeParent) {
   // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
@@ -286,32 +362,12 @@ TEST_F(WindowOcclusionTrackerTest, ChildDoesNotOccludeParent) {
   Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
-  // Create window b with window a as parent. The bounds of window b do not
-  // fully cover window a. Expect both windows to be non-occluded.
-  MockWindowDelegate* delegate_b = new MockWindowDelegate();
-  delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
-  CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 5, 5), window_a);
-  EXPECT_FALSE(delegate_b->is_expecting_call());
-}
-
-// Verify that when the bounds of a child window cover the bounds of a parent
-// window, the parent is occluded and the child is non-occluded. Also, verify
-// that when the parent of a window changes, occlusion states are updated.
-TEST_F(WindowOcclusionTrackerTest, ChildOccludesParent) {
-  // Create window a. Expect it to be non-occluded.
-  MockWindowDelegate* delegate_a = new MockWindowDelegate();
-  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
-  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
-  EXPECT_FALSE(delegate_a->is_expecting_call());
-
   // Create window b with window a as parent. The bounds of window b fully cover
-  // window a. Expect window a to be occluded but not window b.
+  // window a. Expect both windows to be non-occluded.
   MockWindowDelegate* delegate_b = new MockWindowDelegate();
-  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   Window* window_b =
       CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 10), window_a);
-  EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
   // Create window c whose bounds don't overlap existing windows.
@@ -320,13 +376,9 @@ TEST_F(WindowOcclusionTrackerTest, ChildOccludesParent) {
   Window* window_c = CreateTrackedWindow(delegate_c, gfx::Rect(15, 0, 10, 10));
   EXPECT_FALSE(delegate_c->is_expecting_call());
 
-  // Change the parent of window b from window a to window c. Expect window a to
-  // be non-occluded and window c to be occluded.
-  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
-  delegate_c->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
+  // Change the parent of window b from window a to window c. Expect all windows
+  // to remain non-occluded.
   window_c->AddChild(window_b);
-  EXPECT_FALSE(delegate_a->is_expecting_call());
-  EXPECT_FALSE(delegate_c->is_expecting_call());
 }
 
 // Verify that when the stacking order of windows change, occlusion states are
@@ -374,13 +426,11 @@ TEST_F(WindowOcclusionTrackerTest, TransparentParentStackingChanged) {
                                          root_window(), true);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
-  // Create window b which has the same bounds as its parent window a. Expect
-  // window b to be non-occluded and window a to be occluded.
+  // Create window b which has the same bounds as its parent window a. Expect it
+  // to be non-occluded.
   MockWindowDelegate* delegate_b = new MockWindowDelegate();
-  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 10), window_a);
-  EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
   // Create window c which is transparent and has the same bounds as window a
@@ -389,26 +439,29 @@ TEST_F(WindowOcclusionTrackerTest, TransparentParentStackingChanged) {
   delegate_c->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   Window* window_c = CreateTrackedWindow(delegate_c, gfx::Rect(0, 0, 10, 10),
                                          root_window(), true);
-  EXPECT_FALSE(delegate_b->is_expecting_call());
   EXPECT_FALSE(delegate_c->is_expecting_call());
 
   // Create window d which has the same bounds as its parent window c. Expect
-  // window d to be non-occluded and all other windows to be occluded.
+  // window d to be non-occluded and window a and b to be occluded.
   MockWindowDelegate* delegate_d = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_b->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
-  delegate_c->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_d->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   CreateTrackedWindow(delegate_d, gfx::Rect(0, 0, 10, 10), window_c);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
-  EXPECT_FALSE(delegate_c->is_expecting_call());
   EXPECT_FALSE(delegate_d->is_expecting_call());
 
-  // Move window a on top of the stack. Expect its child window b to be non-
-  // occluded and all other windows to be occluded.
+  // Move window a on top of the stack. Expect window a and b to be non-occluded
+  // and window c and d to be occluded.
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  delegate_c->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_d->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   root_window()->StackChildAtTop(window_a);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
+  EXPECT_FALSE(delegate_c->is_expecting_call());
   EXPECT_FALSE(delegate_d->is_expecting_call());
 }
 
@@ -874,7 +927,7 @@ class ResizeWindowObserver : public WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override {
-    window_to_resize_->SetBounds(window->bounds());
+    window_to_resize_->SetBounds(old_bounds);
   }
 
  private:
@@ -892,28 +945,34 @@ TEST_F(WindowOcclusionTrackerTest, ResizeChildFromObserver) {
   // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
-  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
-  // Create window b, which is a child of window a. Expect it to be non-
-  // occluded.
+  // Create window b. Expect it to be non-occluded and to occlude window a.
   MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
-  Window* window_b =
-      CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 5, 5), window_a);
+  Window* window_b = CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
-  // Create an observer that will resize window b when window a is resized.
-  ResizeWindowObserver resize_window_observer(window_b);
-  window_a->AddObserver(&resize_window_observer);
-
-  // Resize window a. Expect window b to be resized so that window a is
+  // Create window c, which is a child of window b. Expect it to be non-
   // occluded.
-  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
-  window_a->SetBounds(gfx::Rect(0, 0, 20, 20));
-  EXPECT_FALSE(delegate_a->is_expecting_call());
+  MockWindowDelegate* delegate_c = new MockWindowDelegate();
+  delegate_c->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window_c =
+      CreateTrackedWindow(delegate_c, gfx::Rect(0, 0, 5, 5), window_b);
+  EXPECT_FALSE(delegate_b->is_expecting_call());
 
-  window_a->RemoveObserver(&resize_window_observer);
+  // Create an observer that will resize window c when window b is resized.
+  ResizeWindowObserver resize_window_observer(window_c);
+  window_b->AddObserver(&resize_window_observer);
+
+  // Resize window b. Expect window c to be resized so that window a stays
+  // occluded. Window a should not temporarily be non-occluded.
+  window_b->SetBounds(gfx::Rect(0, 0, 5, 5));
+
+  window_b->RemoveObserver(&resize_window_observer);
 }
 
 // Verify that the bounds of windows are changed multiple times within the scope
@@ -1026,7 +1085,7 @@ TEST_F(WindowOcclusionTrackerTest, HierarchyOfTransforms) {
 
 // Verify that clipping is taken into account when computing occlusion.
 TEST_F(WindowOcclusionTrackerTest, Clipping) {
-  // Create window b. Expect it to be non-occluded.
+  // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
@@ -1039,13 +1098,11 @@ TEST_F(WindowOcclusionTrackerTest, Clipping) {
   EXPECT_FALSE(delegate_b->is_expecting_call());
   window_b->layer()->SetMasksToBounds(true);
 
-  // Create window c which has window b as parent. Expect it to occlude window
-  // b, but not window a since it's clipped.
+  // Create window c which has window b as parent. Don't expect it to occlude
+  // window a since its bounds are clipped by window b.
   MockWindowDelegate* delegate_c = new MockWindowDelegate();
-  delegate_b->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
   delegate_c->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
   CreateTrackedWindow(delegate_c, gfx::Rect(0, 0, 10, 10), window_b);
-  EXPECT_FALSE(delegate_b->is_expecting_call());
   EXPECT_FALSE(delegate_c->is_expecting_call());
 }
 
