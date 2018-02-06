@@ -738,6 +738,28 @@ static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
   return true;
 }
 
+static void PerformDelete(LocalFrame& frame) {
+  if (!frame.GetEditor().CanDelete())
+    return;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // |SelectedRange| requires clean layout for visible selection normalization.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  frame.GetEditor().AddToKillRing(frame.GetEditor().SelectedRange());
+  // TODO(chongz): |Editor::performDelete()| has no direction.
+  // https://github.com/w3c/editing/issues/130
+  frame.GetEditor().DeleteSelectionWithSmartDelete(
+      frame.GetEditor().CanSmartCopyOrDelete() ? DeleteMode::kSmart
+                                               : DeleteMode::kSimple,
+      InputEvent::InputType::kDeleteContentBackward);
+
+  // clear the "start new kill ring sequence" setting, because it was set to
+  // true when the selection was updated by deleting the range
+  frame.GetEditor().SetStartNewKillRingSequence(false);
+}
+
 static bool ExecuteDelete(LocalFrame& frame,
                           Event*,
                           EditorCommandSource source,
@@ -745,7 +767,7 @@ static bool ExecuteDelete(LocalFrame& frame,
   switch (source) {
     case kCommandFromMenuOrKeyBinding: {
       // Doesn't modify the text if the current selection isn't a range.
-      frame.GetEditor().PerformDelete();
+      PerformDelete(frame);
       return true;
     }
     case kCommandFromDOM:
@@ -852,7 +874,7 @@ static bool ExecuteDeleteToMark(LocalFrame& frame,
             .Build(),
         SetSelectionOptions::Builder().SetShouldCloseTyping(true).Build());
   }
-  frame.GetEditor().PerformDelete();
+  PerformDelete(frame);
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
