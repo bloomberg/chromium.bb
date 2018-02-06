@@ -45,6 +45,9 @@
                            residualVelocity:(CGPoint)velocity;
 // Called when the scroll view stops decelerating.
 - (void)scrollViewDidEndDecelerating;
+// Called when a scroll event is interrupted (i.e. when a navigation occurs mid-
+// scroll).
+- (void)scrollWasInterrupted;
 
 @end
 
