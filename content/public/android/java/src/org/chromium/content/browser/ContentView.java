@@ -85,14 +85,16 @@ public class ContentView extends FrameLayout
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
-        return WebContentsAccessibility.fromWebContents(mContentViewCore.getWebContents());
+        WebContents webContents = getWebContents();
+        return webContents != null ? WebContentsAccessibility.fromWebContents(webContents) : null;
     }
 
     @Override
     public boolean performAccessibilityAction(int action, Bundle arguments) {
         WebContentsAccessibility wcax = getWebContentsAccessibility();
-        return wcax.supportsAction(action) ? wcax.performAction(action, arguments)
-                                           : super.performAccessibilityAction(action, arguments);
+        return wcax != null && wcax.supportsAction(action)
+                ? wcax.performAction(action, arguments)
+                : super.performAccessibilityAction(action, arguments);
     }
 
     /**
@@ -118,8 +120,9 @@ public class ContentView extends FrameLayout
 
     @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        WebContentsAccessibility wcax = getWebContentsAccessibility();
         AccessibilityNodeProvider provider =
-                getWebContentsAccessibility().getAccessibilityNodeProvider();
+                (wcax != null) ? wcax.getAccessibilityNodeProvider() : null;
         return (provider != null) ? provider : super.getAccessibilityNodeProvider();
     }
 
@@ -190,7 +193,8 @@ public class ContentView extends FrameLayout
     @Override
     public boolean onHoverEvent(MotionEvent event) {
         boolean consumed = getEventForwarder().onHoverEvent(event);
-        if (!getWebContentsAccessibility().isTouchExplorationEnabled()) super.onHoverEvent(event);
+        WebContentsAccessibility wcax = getWebContentsAccessibility();
+        if (wcax != null && !wcax.isTouchExplorationEnabled()) super.onHoverEvent(event);
         return consumed;
     }
 
@@ -339,7 +343,8 @@ public class ContentView extends FrameLayout
 
         @Override
         public void onProvideVirtualStructure(final ViewStructure structure) {
-            getWebContentsAccessibility().onProvideVirtualStructure(structure, false);
+            WebContentsAccessibility wcax = getWebContentsAccessibility();
+            if (wcax != null) wcax.onProvideVirtualStructure(structure, false);
         }
     }
 }
