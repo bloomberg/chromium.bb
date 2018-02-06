@@ -1339,12 +1339,11 @@ void SimpleEntryImpl::CreationOperationComplete(
 void SimpleEntryImpl::EntryOperationComplete(
     const CompletionCallback& completion_callback,
     const SimpleEntryStat& entry_stat,
-    std::unique_ptr<int> result) {
+    int result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
-  DCHECK(result);
-  if (*result < 0) {
+  if (result < 0) {
     state_ = STATE_FAILURE;
     MarkAsDoomed(DOOM_COMPLETED);
   } else {
@@ -1354,7 +1353,7 @@ void SimpleEntryImpl::EntryOperationComplete(
 
   if (!completion_callback.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(completion_callback, *result));
+        FROM_HERE, base::Bind(completion_callback, result));
   }
   RunNextOperationIfNeeded();
 }
@@ -1401,7 +1400,7 @@ void SimpleEntryImpl::ReadOperationComplete(
                       CreateNetLogReadWriteCompleteCallback(*result));
   }
 
-  EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
+  EntryOperationComplete(completion_callback, *entry_stat, *result);
 }
 
 void SimpleEntryImpl::WriteOperationComplete(
@@ -1423,7 +1422,7 @@ void SimpleEntryImpl::WriteOperationComplete(
     crc32s_end_offset_[stream_index] = 0;
   }
 
-  EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
+  EntryOperationComplete(completion_callback, *entry_stat, *result);
 }
 
 void SimpleEntryImpl::ReadSparseOperationComplete(
@@ -1441,7 +1440,7 @@ void SimpleEntryImpl::ReadSparseOperationComplete(
 
   SimpleEntryStat entry_stat(*last_used, last_modified_, data_size_,
                              sparse_data_size_);
-  EntryOperationComplete(completion_callback, entry_stat, std::move(result));
+  EntryOperationComplete(completion_callback, entry_stat, *result);
 }
 
 void SimpleEntryImpl::WriteSparseOperationComplete(
@@ -1457,7 +1456,7 @@ void SimpleEntryImpl::WriteSparseOperationComplete(
                       CreateNetLogReadWriteCompleteCallback(*result));
   }
 
-  EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
+  EntryOperationComplete(completion_callback, *entry_stat, *result);
 }
 
 void SimpleEntryImpl::GetAvailableRangeOperationComplete(
@@ -1469,7 +1468,7 @@ void SimpleEntryImpl::GetAvailableRangeOperationComplete(
 
   SimpleEntryStat entry_stat(last_used_, last_modified_, data_size_,
                              sparse_data_size_);
-  EntryOperationComplete(completion_callback, entry_stat, std::move(result));
+  EntryOperationComplete(completion_callback, entry_stat, *result);
 }
 
 void SimpleEntryImpl::DoomOperationComplete(

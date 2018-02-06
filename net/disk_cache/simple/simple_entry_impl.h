@@ -271,7 +271,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // |completion_callback| after updating state and dooming on errors.
   void EntryOperationComplete(const CompletionCallback& completion_callback,
                               const SimpleEntryStat& entry_stat,
-                              std::unique_ptr<int> result);
+                              int result);
 
   // Called after an asynchronous read. Updates |crc32s_| if possible.
   void ReadOperationComplete(
