@@ -20,17 +20,12 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
     const viz::FrameSinkId& parent_frame_sink_id,
     const viz::FrameSinkId& frame_sink_id,
     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
-    blink::mojom::OffscreenCanvasSurfaceRequest request,
     DestroyCallback destroy_callback)
     : host_frame_sink_manager_(host_frame_sink_manager),
       client_(std::move(client)),
-      binding_(this, std::move(request)),
-      destroy_callback_(std::move(destroy_callback)),
-      frame_sink_id_(frame_sink_id),
-      parent_frame_sink_id_(parent_frame_sink_id) {
-  binding_.set_connection_error_handler(
-      base::BindOnce(&OffscreenCanvasSurfaceImpl::OnSurfaceConnectionClosed,
-                     base::Unretained(this)));
+      parent_frame_sink_id_(parent_frame_sink_id),
+      frame_sink_id_(frame_sink_id) {
+  client_.set_connection_error_handler(std::move(destroy_callback));
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
 #if DCHECK_IS_ON()
   host_frame_sink_manager_->SetFrameSinkDebugLabel(
@@ -74,10 +69,6 @@ void OffscreenCanvasSurfaceImpl::OnFirstSurfaceActivation(
 void OffscreenCanvasSurfaceImpl::OnFrameTokenChanged(uint32_t frame_token) {
   // TODO(yiyix, fsamuel): To complete plumbing of frame tokens for offscreen
   // canvas
-}
-
-void OffscreenCanvasSurfaceImpl::OnSurfaceConnectionClosed() {
-  std::move(destroy_callback_).Run();
 }
 
 }  // namespace content

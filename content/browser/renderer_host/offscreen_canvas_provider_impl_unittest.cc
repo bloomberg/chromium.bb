@@ -40,6 +40,13 @@ constexpr viz::FrameSinkId kFrameSinkParent(kRendererClientId, 1);
 constexpr viz::FrameSinkId kFrameSinkA(kRendererClientId, 3);
 constexpr viz::FrameSinkId kFrameSinkB(kRendererClientId, 4);
 
+// Creates a closure that sets |error_variable| true when run.
+base::OnceClosure ConnectionErrorClosure(bool* error_variable) {
+  DCHECK(error_variable);
+  return base::BindOnce([](bool* error_variable) { *error_variable = true; },
+                        error_variable);
+}
+
 // Stub OffscreenCanvasSurfaceClient that stores the latest SurfaceInfo.
 class StubOffscreenCanvasSurfaceClient
     : public blink::mojom::OffscreenCanvasSurfaceClient {
@@ -50,12 +57,18 @@ class StubOffscreenCanvasSurfaceClient
   blink::mojom::OffscreenCanvasSurfaceClientPtr GetInterfacePtr() {
     blink::mojom::OffscreenCanvasSurfaceClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
+    binding_.set_connection_error_handler(
+        ConnectionErrorClosure(&connection_error_));
     return client;
   }
 
-  const viz::SurfaceInfo& GetLastSurfaceInfo() const {
+  void Close() { binding_.Close(); }
+
+  const viz::SurfaceInfo& last_surface_info() const {
     return last_surface_info_;
   }
+
+  bool connection_error() const { return connection_error_; }
 
  private:
   // blink::mojom::OffscreenCanvasSurfaceClient:
@@ -65,15 +78,10 @@ class StubOffscreenCanvasSurfaceClient
 
   mojo::Binding<blink::mojom::OffscreenCanvasSurfaceClient> binding_;
   viz::SurfaceInfo last_surface_info_;
+  bool connection_error_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StubOffscreenCanvasSurfaceClient);
 };
-
-// Creates a closure that sets |error_variable| true when run.
-base::Closure ConnectionErrorClosure(bool* error_variable) {
-  return base::Bind([](bool* error_variable) { *error_variable = true; },
-                    error_variable);
-}
 
 }  // namespace
 
@@ -140,18 +148,15 @@ TEST_F(OffscreenCanvasProviderImplTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
   // Mimic connection from the renderer main thread to browser.
   StubOffscreenCanvasSurfaceClient surface_client;
-  blink::mojom::OffscreenCanvasSurfacePtr surface;
   provider()->CreateOffscreenCanvasSurface(kFrameSinkParent, kFrameSinkA,
-                                           surface_client.GetInterfacePtr(),
-                                           mojo::MakeRequest(&surface));
+                                           surface_client.GetInterfacePtr());
 
   OffscreenCanvasSurfaceImpl* surface_impl =
       GetOffscreenCanvasSurface(kFrameSinkA);
 
   // There should be a single OffscreenCanvasSurfaceImpl and it should have the
-  // provided FrameSinkId and parent FrameSinkId.
+  // provided FrameSinkId.
   EXPECT_EQ(kFrameSinkA, surface_impl->frame_sink_id());
-  EXPECT_EQ(kFrameSinkParent, surface_impl->parent_frame_sink_id());
   EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkA));
 
   // Mimic connection from the renderer main or worker thread to browser.
@@ -175,7 +180,7 @@ TEST_F(OffscreenCanvasProviderImplTest,
 
   // OffscreenCanvasSurfaceClient in the renderer should get the new SurfaceId
   // including the |local_id|.
-  const auto& surface_info = surface_client.GetLastSurfaceInfo();
+  const auto& surface_info = surface_client.last_surface_info();
   EXPECT_EQ(kFrameSinkA, surface_info.id().frame_sink_id());
   EXPECT_EQ(local_id, surface_info.id().local_surface_id());
 }
@@ -184,17 +189,15 @@ TEST_F(OffscreenCanvasProviderImplTest,
 // destroys the OffscreenCanvasSurfaceImpl in browser.
 TEST_F(OffscreenCanvasProviderImplTest, ClientClosesConnection) {
   StubOffscreenCanvasSurfaceClient surface_client;
-  blink::mojom::OffscreenCanvasSurfacePtr surface;
   provider()->CreateOffscreenCanvasSurface(kFrameSinkParent, kFrameSinkA,
-                                           surface_client.GetInterfacePtr(),
-                                           mojo::MakeRequest(&surface));
+                                           surface_client.GetInterfacePtr());
 
   RunUntilIdle();
 
   EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkA));
 
   // Mimic closing the connection from the renderer.
-  surface.reset();
+  surface_client.Close();
 
   RunUntilIdle();
 
@@ -207,22 +210,15 @@ TEST_F(OffscreenCanvasProviderImplTest, ClientClosesConnection) {
 // renderer.
 TEST_F(OffscreenCanvasProviderImplTest, ProviderClosesConnections) {
   StubOffscreenCanvasSurfaceClient surface_client;
-  blink::mojom::OffscreenCanvasSurfacePtr surface;
   provider()->CreateOffscreenCanvasSurface(kFrameSinkParent, kFrameSinkA,
-                                           surface_client.GetInterfacePtr(),
-                                           mojo::MakeRequest(&surface));
-
-  // Observe connection errors on |surface|.
-  bool connection_error = false;
-  surface.set_connection_error_handler(
-      ConnectionErrorClosure(&connection_error));
+                                           surface_client.GetInterfacePtr());
 
   RunUntilIdle();
 
-  // There should be a OffscreenCanvasSurfaceImpl and |surface| should be bound.
+  // There should be a OffscreenCanvasSurfaceImpl and |surface_client| should be
+  // bound.
   EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkA));
-  EXPECT_TRUE(surface.is_bound());
-  EXPECT_FALSE(connection_error);
+  EXPECT_FALSE(surface_client.connection_error());
 
   // Delete OffscreenCanvasProviderImpl before client disconnects.
   DeleteOffscreenCanvasProviderImpl();
@@ -230,8 +226,8 @@ TEST_F(OffscreenCanvasProviderImplTest, ProviderClosesConnections) {
   RunUntilIdle();
 
   // This should destroy the OffscreenCanvasSurfaceImpl and close the connection
-  // to |surface| triggering a connection error.
-  EXPECT_TRUE(connection_error);
+  // to |surface_client| triggering a connection error.
+  EXPECT_TRUE(surface_client.connection_error());
 }
 
 // Check that connecting CompositorFrameSink without first making a
@@ -265,40 +261,30 @@ TEST_F(OffscreenCanvasProviderImplTest, InvalidClientId) {
   EXPECT_NE(kRendererClientId, invalid_frame_sink_id.client_id());
 
   StubOffscreenCanvasSurfaceClient surface_client;
-  blink::mojom::OffscreenCanvasSurfacePtr surface;
-  provider()->CreateOffscreenCanvasSurface(
-      kFrameSinkParent, invalid_frame_sink_id, surface_client.GetInterfacePtr(),
-      mojo::MakeRequest(&surface));
-
-  // Observe connection errors on |surface|.
-  bool connection_error = false;
-  surface.set_connection_error_handler(
-      ConnectionErrorClosure(&connection_error));
+  provider()->CreateOffscreenCanvasSurface(kFrameSinkParent,
+                                           invalid_frame_sink_id,
+                                           surface_client.GetInterfacePtr());
 
   RunUntilIdle();
 
   // No OffscreenCanvasSurfaceImpl should have been created.
   EXPECT_THAT(GetAllCanvases(), IsEmpty());
 
-  // The connection for |surface| will have failed and triggered a connection
-  // error.
-  EXPECT_TRUE(connection_error);
+  // The connection for |surface_client| will have failed and triggered a
+  // connection error.
+  EXPECT_TRUE(surface_client.connection_error());
 }
 
 // Mimic renderer with two offscreen canvases.
 TEST_F(OffscreenCanvasProviderImplTest,
        MultiHTMLCanvasElementTransferToOffscreen) {
   StubOffscreenCanvasSurfaceClient surface_client_a;
-  blink::mojom::OffscreenCanvasSurfacePtr surface_a;
   provider()->CreateOffscreenCanvasSurface(kFrameSinkParent, kFrameSinkA,
-                                           surface_client_a.GetInterfacePtr(),
-                                           mojo::MakeRequest(&surface_a));
+                                           surface_client_a.GetInterfacePtr());
 
   StubOffscreenCanvasSurfaceClient surface_client_b;
-  blink::mojom::OffscreenCanvasSurfacePtr surface_b;
   provider()->CreateOffscreenCanvasSurface(kFrameSinkParent, kFrameSinkB,
-                                           surface_client_b.GetInterfacePtr(),
-                                           mojo::MakeRequest(&surface_b));
+                                           surface_client_b.GetInterfacePtr());
 
   RunUntilIdle();
 
@@ -306,14 +292,14 @@ TEST_F(OffscreenCanvasProviderImplTest,
   EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkA, kFrameSinkB));
 
   // Mimic closing first connection from the renderer.
-  surface_a.reset();
+  surface_client_a.Close();
 
   RunUntilIdle();
 
   EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkB));
 
   // Mimic closing second connection from the renderer.
-  surface_b.reset();
+  surface_client_b.Close();
 
   RunUntilIdle();
 

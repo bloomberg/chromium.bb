@@ -48,8 +48,6 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   }
 
  private:
-  mojom::blink::OffscreenCanvasSurfacePtr service_;
-
   scoped_refptr<cc::Layer> cc_layer_;
   std::unique_ptr<WebLayer> web_layer_;
 

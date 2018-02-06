@@ -30,7 +30,6 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
                                             : viz::FrameSinkId()) {
-  DCHECK(!service_.is_bound());
   mojom::blink::OffscreenCanvasProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));
@@ -40,8 +39,7 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
   blink::mojom::blink::OffscreenCanvasSurfaceClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateOffscreenCanvasSurface(parent_frame_sink_id_, frame_sink_id_,
-                                         std::move(client),
-                                         mojo::MakeRequest(&service_));
+                                         std::move(client));
 }
 
 SurfaceLayerBridge::~SurfaceLayerBridge() {
