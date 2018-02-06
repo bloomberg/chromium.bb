@@ -2660,9 +2660,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistClientRedirect) {
   GURL first_url = embedded_test_server()->GetURL("/client-redirect?" +
                                                   redirected_url.spec());
 
-  ui_test_utils::NavigateToURL(browser(), first_url);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  // There are two navigations: one when loading client-redirect.html and
+  // another when the document redirects using http-equiv="refresh".
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            first_url, 2);
   EXPECT_EQ(base::ASCIIToUTF16("Redirected!"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
