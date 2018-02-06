@@ -18,6 +18,8 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +27,10 @@ using testing::ElementsAre;
 
 namespace ntp_snippets {
 
+#if !defined(OS_CHROMEOS)
 const char kTestEmail[] = "test@email.com";
+#endif
+
 const char kAPIKey[] = "fakeAPIkey";
 const char kSubscriptionUrl[] = "http://valid-url.test/subscribe";
 const char kSubscriptionUrlSignedIn[] = "http://valid-url.test/subscribe";
@@ -42,7 +47,8 @@ class SubscriptionManagerImplTest
       public OAuth2TokenService::DiagnosticsObserver {
  public:
   SubscriptionManagerImplTest()
-      : request_context_getter_(
+      : identity_manager_(utils_.fake_signin_manager(), utils_.token_service()),
+        request_context_getter_(
             new net::TestURLRequestContextGetter(message_loop_.task_runner())) {
   }
 
@@ -66,13 +72,14 @@ class SubscriptionManagerImplTest
     return utils_.token_service();
   }
 
+  identity::IdentityManager* GetIdentityManager() { return &identity_manager_; }
+
   SigninManagerBase* GetSigninManager() { return utils_.fake_signin_manager(); }
 
   std::unique_ptr<SubscriptionManagerImpl> BuildSubscriptionManager() {
     return std::make_unique<SubscriptionManagerImpl>(
         GetRequestContext(), GetPrefService(),
-        /*variations_service=*/nullptr, GetSigninManager(),
-        GetOAuth2TokenService(),
+        /*variations_service=*/nullptr, GetIdentityManager(),
         /*locale=*/"", kAPIKey, GURL(kSubscriptionUrl),
         GURL(kUnsubscriptionUrl));
   }
@@ -130,19 +137,26 @@ class SubscriptionManagerImplTest
 
 #if !defined(OS_CHROMEOS)
   void SignIn() {
-    utils_.fake_signin_manager()->SignIn(kTestEmail, "user", "pass");
+    identity::MakePrimaryAccountAvailable(utils_.fake_signin_manager(),
+                                          GetOAuth2TokenService(),
+                                          GetIdentityManager(), kTestEmail);
   }
 
-  void SignOut() { utils_.fake_signin_manager()->ForceSignOut(); }
+  void SignOut() {
+    identity::ClearPrimaryAccount(utils_.fake_signin_manager(),
+                                  GetIdentityManager());
+  }
 #endif  // !defined(OS_CHROMEOS)
 
   void IssueRefreshToken(FakeProfileOAuth2TokenService* auth_token_service) {
-    auth_token_service->GetDelegate()->UpdateCredentials(kTestEmail, "token");
+    auth_token_service->GetDelegate()->UpdateCredentials(
+        GetIdentityManager()->GetPrimaryAccountInfo().account_id, "token");
   }
 
   void IssueAccessToken(FakeProfileOAuth2TokenService* auth_token_service) {
-    auth_token_service->IssueAllTokensForAccount(kTestEmail, "access_token",
-                                                 base::Time::Max());
+    auth_token_service->IssueAllTokensForAccount(
+        GetIdentityManager()->GetPrimaryAccountInfo().account_id,
+        "access_token", base::Time::Max());
   }
 
   void set_on_access_token_request_callback(base::OnceClosure callback) {
@@ -178,6 +192,7 @@ class SubscriptionManagerImplTest
 
   base::MessageLoop message_loop_;
   test::RemoteSuggestionsTestUtils utils_;
+  identity::IdentityManager identity_manager_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   base::OnceClosure on_access_token_request_callback_;

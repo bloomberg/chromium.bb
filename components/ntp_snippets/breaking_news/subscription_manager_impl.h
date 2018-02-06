@@ -11,11 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
-class OAuth2TokenService;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -35,14 +34,13 @@ namespace ntp_snippets {
 // for subscription. Bookkeeping is required to detect any change (e.g. the
 // token render invalid), and resubscribe accordingly.
 class SubscriptionManagerImpl : public SubscriptionManager,
-                                public SigninManagerBase::Observer {
+                                public identity::IdentityManager::Observer {
  public:
   SubscriptionManagerImpl(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       PrefService* pref_service,
       variations::VariationsService* variations_service,
-      SigninManagerBase* signin_manager,
-      OAuth2TokenService* access_token_service,
+      identity::IdentityManager* identity_manager,
       const std::string& locale,
       const std::string& api_key,
       const GURL& subscribe_url,
@@ -65,11 +63,9 @@ class SubscriptionManagerImpl : public SubscriptionManager,
   static void ClearProfilePrefs(PrefService* pref_service);
 
  private:
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // identity:IdentityManager::Observer implementation.
+  void OnPrimaryAccountSet(const AccountInfo& account_info) override;
+  void OnPrimaryAccountCleared(const AccountInfo& account_info) override;
 
   void SigninStatusChanged();
 
@@ -104,8 +100,7 @@ class SubscriptionManagerImpl : public SubscriptionManager,
   variations::VariationsService* const variations_service_;
 
   // Authentication for signed-in users.
-  SigninManagerBase* signin_manager_;
-  OAuth2TokenService* access_token_service_;
+  identity::IdentityManager* identity_manager_;
 
   const std::string locale_;
 
