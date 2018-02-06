@@ -93,7 +93,7 @@ def _PrettyPrintCLRisks(risks):
     risks: The risks to print.
   """
   return ', '.join([
-      _PrettyPrintCLRisk(k, v)
+      '%s = %s' % (k, v)
       for k, v in risks.iteritems()])
 
 
@@ -104,7 +104,7 @@ def _PrettyPrintCLRisk(cl, risk):
     cl: The Gerrit CL number.
     risk: The risk as a percent.
   """
-  return '%s = %s' % (cl, _Percent(risk))
+  return 'Bad CL risk for %s = %s' % (cl, _Percent(risk))
 
 
 def _Percent(risk):
