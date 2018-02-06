@@ -489,7 +489,8 @@ void DrawingBuffer::MailboxReleasedSoftware(
   recycled_bitmaps_.push_back(std::move(recycled));
 }
 
-scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
+scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
+    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   ScopedStateRestorer scoped_state_restorer(this);
 
   // This can be null if the context is lost before the first call to
@@ -530,10 +531,16 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   GLuint texture_id = gl_->CreateAndConsumeTextureCHROMIUM(
       transferable_resource.mailbox_holder.mailbox.name);
 
-  // Return the mailbox but report that the resource is lost to prevent trying
-  // to use the backing for future frames. We keep it alive with our own
-  // reference to the backing via our |textureId|.
-  release_callback->Run(gpu::SyncToken(), true /* lost_resource */);
+  if (out_release_callback) {
+    // Allow the consumer to release the resource when done using it, so it can
+    // be recycled.
+    *out_release_callback = std::move(release_callback);
+  } else {
+    // Return the mailbox but report that the resource is lost to prevent trying
+    // to use the backing for future frames. We keep it alive with our own
+    // reference to the backing via our |textureId|.
+    release_callback->Run(gpu::SyncToken(), true /* lost_resource */);
+  }
 
   // We reuse the same mailbox name from above since our texture id was consumed
   // from it.
