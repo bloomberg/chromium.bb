@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -62,7 +63,8 @@ import org.chromium.ui.base.DeviceFormFactor;
  * The native new tab page, represented by some basic data such as title and url, and an Android
  * View that displays the page.
  */
-public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
+public class NewTabPageView
+        extends FrameLayout implements TileGroup.Observer, VrShellDelegate.VrModeObserver {
     private static final String TAG = "NewTabPageView";
 
     private static final long SNAP_SCROLL_DELAY_MS = 30;
@@ -249,12 +251,6 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         mContextMenuManager = new ContextMenuManager(mManager.getNavigationDelegate(),
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
-        manager.addDestructionObserver(new DestructionObserver() {
-            @Override
-            public void onDestroy() {
-                mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
-            }
-        });
 
         Profile profile = Profile.getLastUsedProfile();
         OfflinePageBridge offlinePageBridge =
@@ -337,6 +333,16 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
             @Override
             public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
                 onChanged();
+            }
+        });
+
+        VrShellDelegate.registerVrModeObserver(this);
+        if (VrShellDelegate.isInVr()) onEnterVr();
+
+        manager.addDestructionObserver(new DestructionObserver() {
+            @Override
+            public void onDestroy() {
+                NewTabPageView.this.onDestroy();
             }
         });
 
@@ -1012,4 +1018,18 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         }
     }
 
+    @Override
+    public void onEnterVr() {
+        mSearchBoxView.setVisibility(GONE);
+    }
+
+    @Override
+    public void onExitVr() {
+        mSearchBoxView.setVisibility(VISIBLE);
+    }
+
+    private void onDestroy() {
+        mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
+        VrShellDelegate.unregisterVrModeObserver(this);
+    }
 }
