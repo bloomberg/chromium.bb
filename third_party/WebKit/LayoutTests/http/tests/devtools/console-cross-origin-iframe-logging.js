@@ -26,16 +26,11 @@
       }
   `);
 
-  var finishAttemptsLeft = 2;
-  ConsoleTestRunner.addConsoleSniffer(maybeFinish, true);
+  ConsoleTestRunner.addConsoleSniffer(finish);
   Common.settingForTest('monitoringXHREnabled').set(true);
-  TestRunner.evaluateInPage('accessFrame()', maybeFinish);
+  TestRunner.evaluateInPage('accessFrame()');
 
-  function maybeFinish() {
-    --finishAttemptsLeft;
-    if (finishAttemptsLeft)
-      return;
-
+  function finish() {
     Common.settingForTest('monitoringXHREnabled').set(false);
     ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
