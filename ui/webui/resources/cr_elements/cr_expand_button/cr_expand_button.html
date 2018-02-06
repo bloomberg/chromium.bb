@@ -26,8 +26,8 @@
     <div id="outer" on-tap="toggleExpand_">
       <div id="label" on-tap="toggleExpand_"><slot></slot></div>
       <button is="paper-icon-button-light" class$="[[iconName_(expanded)]]"
-          toggles active="{{expanded}}" disabled="[[disabled]]" alt="[[alt]]"
-          aria-active-attribute="aria-expanded"
+          toggles active="{{expanded}}" disabled="[[disabled]]"
+          aria-label$="[[alt]]" aria-active-attribute="aria-expanded"
           tabindex$="[[tabIndex]]">
       </button>
     </div>
