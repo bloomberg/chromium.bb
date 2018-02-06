@@ -47,19 +47,22 @@ def _GetUnstrippedPath(path):
   return maybe_unstripped_path
 
 
-def FilterStream(stream, manifest_path, output_dir):
+def FilterStream(stream, package_name, manifest_path, output_dir):
   """Looks for backtrace lines from an iterable |stream| and symbolizes them.
   Yields a stream of strings with symbolized entries replaced."""
 
-  return _SymbolizerFilter(manifest_path, output_dir).SymbolizeStream(stream)
+  return _SymbolizerFilter(package_name,
+                           manifest_path,
+                           output_dir).SymbolizeStream(stream)
 
 
 class _SymbolizerFilter(object):
   """Adds backtrace symbolization capabilities to a process output stream."""
 
-  def __init__(self, manifest_path, output_dir):
+  def __init__(self, package_name, manifest_path, output_dir):
     self._symbols_mapping = {}
     self._output_dir = output_dir
+    self._package_name = package_name
 
     # Compute remote/local path mappings using the manifest data.
     for next_line in open(manifest_path):
@@ -70,6 +73,8 @@ class _SymbolizerFilter(object):
 
       self._symbols_mapping[os.path.basename(target)] = stripped_binary_path
       self._symbols_mapping[target] = stripped_binary_path
+      if target == 'bin/app':
+        self._symbols_mapping[package_name] = stripped_binary_path
       logging.debug('Symbols: %s -> %s' % (source, target))
 
   def _SymbolizeEntries(self, entries):
