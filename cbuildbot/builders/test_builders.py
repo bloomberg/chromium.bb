@@ -10,6 +10,7 @@ from __future__ import print_function
 import functools
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import parallel
 
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import generic_builders
@@ -132,4 +133,4 @@ class VMInformationalBuilder(simple_builders.SimpleBuilder):
                               test_basename=config.test_suite)
         ) for index, config in enumerate(self._run.config.vm_tests)
     ]
-    self._RunParallelStages(parallel_stages)
+    parallel.RunParallelSteps(parallel_stages)
