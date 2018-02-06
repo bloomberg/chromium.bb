@@ -189,6 +189,9 @@ static_library("SPIRV-Tools") {
 
   all_dependent_configs = [ ":SPIRV-Tools_config" ]
 
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
   deps = [
     ":build_version_inc",
     ":core_tables_1-0",
