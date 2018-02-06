@@ -80,7 +80,8 @@ public class StubbedProvider implements BackendProvider {
         }
 
         @Override
-        public void removeDownload(final String guid, final boolean isOffTheRecord) {
+        public void removeDownload(
+                final String guid, final boolean isOffTheRecord, boolean externallyRemoved) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
