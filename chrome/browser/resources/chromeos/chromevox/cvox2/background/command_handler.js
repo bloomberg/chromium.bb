@@ -252,7 +252,8 @@ CommandHandler.onCommand = function(command) {
   var dir = Dir.FORWARD;
   var pred = null;
   var predErrorMsg = undefined;
-  var rootPred = AutomationPredicate.root;
+  var rootPred = AutomationPredicate.editableRoot;
+  var shouldWrap = true;
   var speechProps = {};
   var skipSync = false;
   var didNavigate = false;
@@ -619,6 +620,7 @@ CommandHandler.onCommand = function(command) {
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_above';
       rootPred = AutomationPredicate.table;
+      shouldWrap = false;
       break;
     case 'previousCol':
       dir = Dir.BACKWARD;
@@ -627,6 +629,7 @@ CommandHandler.onCommand = function(command) {
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_left';
       rootPred = AutomationPredicate.row;
+      shouldWrap = false;
       break;
     case 'nextRow':
       var tableOpts = {row: true, dir: dir};
@@ -634,6 +637,7 @@ CommandHandler.onCommand = function(command) {
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_below';
       rootPred = AutomationPredicate.table;
+      shouldWrap = false;
       break;
     case 'nextCol':
       var tableOpts = {col: true, dir: dir};
@@ -641,6 +645,7 @@ CommandHandler.onCommand = function(command) {
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_right';
       rootPred = AutomationPredicate.row;
+      shouldWrap = false;
       break;
     case 'goToRowFirstCell':
     case 'goToRowLastCell':
@@ -668,6 +673,7 @@ CommandHandler.onCommand = function(command) {
       // Should not be outputted.
       predErrorMsg = 'no_cell_above';
       rootPred = AutomationPredicate.table;
+      shouldWrap = false;
       break;
     case 'goToColLastCell':
       dir = Dir.BACKWARD;
@@ -683,6 +689,7 @@ CommandHandler.onCommand = function(command) {
       // Should not be outputted.
       predErrorMsg = 'no_cell_below';
       rootPred = AutomationPredicate.table;
+      shouldWrap = false;
       break;
     case 'goToFirstCell':
     case 'goToLastCell':
@@ -710,8 +717,7 @@ CommandHandler.onCommand = function(command) {
     var bound = current.getBound(dir).node;
     if (bound) {
       var node = AutomationUtil.findNextNode(
-          bound, dir, pred,
-          {skipInitialAncestry: true, root: AutomationPredicate.editableRoot});
+          bound, dir, pred, {skipInitialAncestry: true, root: rootPred});
 
       if (node && !skipSync) {
         node = AutomationUtil.findNodePre(
@@ -723,6 +729,16 @@ CommandHandler.onCommand = function(command) {
         current = cursors.Range.fromNode(node);
       } else {
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        if (!shouldWrap) {
+          if (predErrorMsg) {
+            new Output()
+                .withString(Msgs.getMsg(predErrorMsg))
+                .withQueueMode(cvox.QueueMode.FLUSH)
+                .go();
+          }
+          return false;
+        }
+
         var root = bound;
         while (root && !AutomationPredicate.editableRoot(root))
           root = root.parent;
@@ -737,10 +753,8 @@ CommandHandler.onCommand = function(command) {
                       root, dir, AutomationPredicate.leaf) ||
               bound;
         }
-        node = AutomationUtil.findNextNode(bound, dir, pred, {
-          skipInitialAncestry: true,
-          root: AutomationPredicate.editableRoot
-        });
+        node = AutomationUtil.findNextNode(
+            bound, dir, pred, {skipInitialAncestry: true, root: rootPred});
 
         if (node && !skipSync) {
           node = AutomationUtil.findNodePre(
@@ -751,8 +765,10 @@ CommandHandler.onCommand = function(command) {
         if (node) {
           current = cursors.Range.fromNode(node);
         } else if (predErrorMsg) {
-          cvox.ChromeVox.tts.speak(
-              Msgs.getMsg(predErrorMsg), cvox.QueueMode.FLUSH);
+          new Output()
+              .withString(Msgs.getMsg(predErrorMsg))
+              .withQueueMode(cvox.QueueMode.FLUSH)
+              .go();
           return false;
         }
       }
