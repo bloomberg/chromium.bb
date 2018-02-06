@@ -44,13 +44,13 @@
 namespace {
 
 // The HTML DOM ID used in Javascript.
-constexpr char kAMPRedirectionPreviewsHtmlId[] = "amp-preview-status";
+constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
 constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
 constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
 
 // Descriptions for previews.
-constexpr char kAmpRedirectionDescription[] = "AMP Previews";
+constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
 constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
 constexpr char kOfflineDesciption[] = "Offline Previews";
@@ -318,30 +318,28 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
-TEST_F(InterventionsInternalsPageHandlerTest, AMPRedirectionDisabled) {
-  // Init with kAMPRedirection disabled.
-  scoped_feature_list_->InitWithFeatures({},
-                                         {previews::features::kAMPRedirection});
+TEST_F(InterventionsInternalsPageHandlerTest, PreviewsAllowedDisabled) {
+  // Init with kPreviews disabled.
+  scoped_feature_list_->InitWithFeatures({}, {previews::features::kPreviews});
 
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
-  auto amp_redirection = passed_in_modes.find(kAMPRedirectionPreviewsHtmlId);
-  ASSERT_NE(passed_in_modes.end(), amp_redirection);
-  EXPECT_EQ(kAmpRedirectionDescription, amp_redirection->second->description);
-  EXPECT_FALSE(amp_redirection->second->enabled);
+  auto previews_allowed = passed_in_modes.find(kPreviewsAllowedHtmlId);
+  ASSERT_NE(passed_in_modes.end(), previews_allowed);
+  EXPECT_EQ(kPreviewsAllowedDescription, previews_allowed->second->description);
+  EXPECT_FALSE(previews_allowed->second->enabled);
 }
 
-TEST_F(InterventionsInternalsPageHandlerTest, AMPRedirectionEnabled) {
-  // Init with kAMPRedirection enabled.
-  scoped_feature_list_->InitWithFeatures({previews::features::kAMPRedirection},
-                                         {});
+TEST_F(InterventionsInternalsPageHandlerTest, PreviewsAllowedEnabled) {
+  // Init with kPreviews enabled.
+  scoped_feature_list_->InitWithFeatures({previews::features::kPreviews}, {});
 
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
-  auto amp_redirection = passed_in_modes.find(kAMPRedirectionPreviewsHtmlId);
-  ASSERT_NE(passed_in_modes.end(), amp_redirection);
-  EXPECT_EQ(kAmpRedirectionDescription, amp_redirection->second->description);
-  EXPECT_TRUE(amp_redirection->second->enabled);
+  auto previews_allowed = passed_in_modes.find(kPreviewsAllowedHtmlId);
+  ASSERT_NE(passed_in_modes.end(), previews_allowed);
+  EXPECT_EQ(kPreviewsAllowedDescription, previews_allowed->second->description);
+  EXPECT_TRUE(previews_allowed->second->enabled);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, ClientLoFiDisabled) {
@@ -425,7 +423,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 4;
+  constexpr size_t expected = 5;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 

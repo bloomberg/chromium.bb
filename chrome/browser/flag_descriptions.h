@@ -716,6 +716,9 @@ extern const char kPermissionsBlacklistDescription[];
 extern const char kPinchScaleName[];
 extern const char kPinchScaleDescription[];
 
+extern const char kPreviewsAllowedName[];
+extern const char kPreviewsAllowedDescription[];
+
 extern const char kPrintPdfAsImageName[];
 extern const char kPrintPdfAsImageDescription[];
 

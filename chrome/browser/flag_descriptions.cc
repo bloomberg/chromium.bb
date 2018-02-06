@@ -1146,6 +1146,12 @@ const char kPinchScaleName[] = "Pinch scale";
 const char kPinchScaleDescription[] =
     "Enables experimental support for scale using pinch.";
 
+const char kPreviewsAllowedName[] = "Previews Allowed";
+const char kPreviewsAllowedDescription[] =
+    "Allows previews to be shown subject to specific preview types being "
+    "enabled and the client experiencing specific triggering conditions. "
+    "May be used as a kill-switch to turn off all potential preview types.";
+
 const char kPrintPdfAsImageName[] = "Print Pdf as Image";
 const char kPrintPdfAsImageDescription[] =
     "If enabled, an option to print PDF files as images will be available in "
