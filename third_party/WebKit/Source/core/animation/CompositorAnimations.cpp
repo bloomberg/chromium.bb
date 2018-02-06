@@ -290,25 +290,35 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
       }
     }
   } else {
+    LayoutObject* layout_object = target_element.GetLayoutObject();
     bool paints_into_own_backing =
-        target_element.GetLayoutObject() &&
-        target_element.GetLayoutObject()->GetCompositingState() ==
-            kPaintsIntoOwnBacking;
+        layout_object &&
+        layout_object->GetCompositingState() == kPaintsIntoOwnBacking;
     // This function is called in CheckCanStartAnimationOnCompositor(), after
     // CheckCanStartEffectOnCompositor returns code.Ok(), which means that we
-    // know this animation could be accelerated. If |!paints_into_own_backing|,
-    // then we know that the animation is not composited due to certain check,
-    // such as the ComputedStyle::ShouldCompositeForCurrentAnimations(), for
-    // a running experiment.
+    // know the effect (such as transform) could be accelerated. If the target
+    // element is SVG, then we should not return code.Ok() because a SVG
+    // animation cannot be composited. If the target element is not SVG, and
+    // |!paints_into_own_backing|, then we know that the animation is not
+    // composited due to certain check, such as the
+    // ComputedStyle::ShouldCompositeForCurrentAnimations(), for a running
+    // experiment.
+    bool is_svg_element = layout_object && layout_object->IsSVG();
     if (!paints_into_own_backing) {
-      return FailureCode::NotPaintIntoOwnBacking(
-          "Acceleratable animation not accelerated due to an experiment");
+      if (!is_svg_element) {
+        return FailureCode::AcceleratableAnimNotAccelerated(
+            "Acceleratable animation not accelerated due to an experiment");
+      } else {
+        return FailureCode::NonActionable(
+            "Element does not paint into own backing");
+      }
     }
   }
 
   return FailureCode::None();
 }
 
+// TODO(crbug.com/809685): consider refactor this function.
 CompositorAnimations::FailureCode
 CompositorAnimations::CheckCanStartAnimationOnCompositor(
     const Timing& timing,
