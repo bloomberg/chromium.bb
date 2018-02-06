@@ -84,6 +84,8 @@ base::LazyInstance<std::vector<base::Callback<void(DevToolsWindow*)>>>::Leaky
 
 static const char kKeyUpEventName[] = "keyup";
 static const char kKeyDownEventName[] = "keydown";
+static const char kNodeFrontendURL[] =
+    "chrome-devtools://devtools/bundled/node_app.html";
 
 bool FindInspectedBrowserAndTabIndex(
     WebContents* inspected_web_contents, Browser** browser, int* tab) {
@@ -988,8 +990,12 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     bool can_dock,
                                     const std::string& panel,
                                     bool has_other_clients) {
-  std::string url(!frontend_url.empty() ? frontend_url
-                                        : chrome::kChromeUIDevToolsURL);
+  std::string url = frontend_url;
+  if (url.empty()) {
+    url = frontend_type == kFrontendNode ? kNodeFrontendURL
+                                         : chrome::kChromeUIDevToolsURL;
+  }
+
   std::string url_string(url +
                          ((url.find("?") == std::string::npos) ? "?" : "&"));
   switch (frontend_type) {
@@ -999,9 +1005,6 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     case kFrontendWorker:
       url_string += "&isSharedWorker=true";
       break;
-    case kFrontendNode:
-      url_string += "&nodeFrontend=true";
-      FALLTHROUGH;
     case kFrontendV8:
       url_string += "&v8only=true";
       break;
