@@ -9,7 +9,7 @@
 #include "platform/graphics/MailboxTextureHolder.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "public/platform/Platform.h"
-#include "skia/ext/texture_handle.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -48,10 +48,17 @@ SkiaTextureHolder::SkiaTextureHolder(
   GrGLTextureInfo texture_info;
   texture_info.fTarget = GL_TEXTURE_2D;
   texture_info.fID = shared_context_texture_id;
+  if (kN32_SkColorType == kRGBA_8888_SkColorType) {
+    texture_info.fFormat = GL_RGBA8_OES;
+  } else {
+    DCHECK(kN32_SkColorType == kBGRA_8888_SkColorType);
+    texture_info.fFormat = GL_BGRA8_EXT;
+  }
   GrBackendTexture backend_texture(mailbox_size.Width(), mailbox_size.Height(),
-                                   kSkia8888_GrPixelConfig, texture_info);
+                                   GrMipMapped::kNo, texture_info);
   image_ = SkImage::MakeFromAdoptedTexture(shared_gr_context, backend_texture,
-                                           kBottomLeft_GrSurfaceOrigin);
+                                           kBottomLeft_GrSurfaceOrigin,
+                                           kN32_SkColorType);
 }
 
 SkiaTextureHolder::~SkiaTextureHolder() {
