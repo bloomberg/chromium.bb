@@ -1080,13 +1080,8 @@ Element* Document::CreateElement(const QualifiedName& q_name,
   Element* element;
 
   if (definition) {
-    // TODO(tkent): Branch async/sync in blink::CustomElement.
-    if (flags.IsAsyncCustomElements()) {
-      element = definition->CreateElementAsync(*this, q_name, flags);
-    } else {
-      element =
-          CustomElement::CreateCustomElementSync(*this, q_name, definition);
-    }
+    element =
+        CustomElement::CreateCustomElement(*this, q_name, flags, *definition);
   } else if (V0CustomElement::IsValidName(q_name.LocalName()) &&
              RegistrationContext()) {
     element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
