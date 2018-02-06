@@ -2887,6 +2887,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
       cm->allow_intrabc = aom_rb_read_bit(rb);
 #endif  // CONFIG_INTRABC
+#if CONFIG_CDF_UPDATE_MODE
+    cm->cdf_update_mode = aom_rb_read_literal(rb, 2);
+#endif  // CONFIG_CDF_UPDATE_MODE
     cm->use_prev_frame_mvs = 0;
   } else {
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
@@ -2943,6 +2946,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
         cm->allow_intrabc = aom_rb_read_bit(rb);
 #endif  // CONFIG_INTRABC                               // CONFIG_INTRABC
+#if CONFIG_CDF_UPDATE_MODE
+      cm->cdf_update_mode = aom_rb_read_literal(rb, 2);
+#endif                                  // CONFIG_CDF_UPDATE_MODE
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
 #if CONFIG_OBU
       pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)

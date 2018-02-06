@@ -209,28 +209,32 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
       break;
     case 3:
       ++counts->eob_multi128[plane][eob_multi_ctx][eob_pt - 1];
-      if (allow_update_cdf)
+      if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf128[plane][eob_multi_ctx], eob_pt - 1,
                    8);
+      }
       break;
     case 4:
       ++counts->eob_multi256[plane][eob_multi_ctx][eob_pt - 1];
-      if (allow_update_cdf)
+      if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf256[plane][eob_multi_ctx], eob_pt - 1,
                    9);
+      }
       break;
     case 5:
       ++counts->eob_multi512[plane][eob_multi_ctx][eob_pt - 1];
-      if (allow_update_cdf)
+      if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf512[plane][eob_multi_ctx], eob_pt - 1,
                    10);
+      }
       break;
     case 6:
     default:
       ++counts->eob_multi1024[plane][eob_multi_ctx][eob_pt - 1];
-      if (allow_update_cdf)
+      if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf1024[plane][eob_multi_ctx], eob_pt - 1,
                    11);
+      }
       break;
   }
 

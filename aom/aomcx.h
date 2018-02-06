@@ -350,6 +350,13 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TUNE_CONTENT,
 
+  /*!\brief Codec control function to set CDF update mode.
+   *
+   *  0: no update                  1: update all the time
+   *  2: update half of the time    3: update quarter of the time
+   */
+  AV1E_SET_CDF_UPDATE_MODE,
+
   /*!\brief Codec control function to set color space info.
    * \note Valid ranges: 0..23, default is "Unspecified".
    *                     0 = For future use
@@ -1016,6 +1023,9 @@ AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FILM_GRAIN_TEST_VECTOR, unsigned int)
 #define AOM_CTRL_AV1E_SET_FILM_GRAIN_TEST_VECTOR
+
+AOM_CTRL_USE_TYPE(AV1E_SET_CDF_UPDATE_MODE, int)
+#define AOM_CTRL_AV1E_SET_CDF_UPDATE_MODE
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

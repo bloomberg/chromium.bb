@@ -645,9 +645,16 @@ static const struct arg_enum_list tune_content_enum[] = {
 
 static const arg_def_t tune_content = ARG_DEF_ENUM(
     NULL, "tune-content", 1, "Tune content type", tune_content_enum);
-#endif
 
-#if CONFIG_AV1_ENCODER
+#if CONFIG_CDF_UPDATE_MODE
+static const arg_def_t cdf_update_mode =
+    ARG_DEF(NULL, "cdf-update-mode", 1,
+            "CDF update rate for entropy coding "
+            "(0: off; 1: update all the time(default); "
+            "2: update half the time; "
+            "3: update quarter of the time)");
+#endif  // CONFIG_CDF_UPDATE_MODE
+
 #if CONFIG_EXT_PARTITION
 static const struct arg_enum_list superblock_size_enum[] = {
   { "dynamic", AOM_SUPERBLOCK_SIZE_DYNAMIC },
@@ -705,6 +712,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &frame_periodic_boost,
                                        &noise_sens,
                                        &tune_content,
+#if CONFIG_CDF_UPDATE_MODE
+                                       &cdf_update_mode,
+#endif  // CONFIG_CDF_UPDATE_MODE
 #if CONFIG_CICP
                                        &input_color_primaries,
                                        &input_transfer_characteristics,
@@ -777,6 +787,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_FRAME_PERIODIC_BOOST,
                                         AV1E_SET_NOISE_SENSITIVITY,
                                         AV1E_SET_TUNE_CONTENT,
+#if CONFIG_CDF_UPDATE_MODE
+                                        AV1E_SET_CDF_UPDATE_MODE,
+#endif  // CONFIG_CDF_UPDATE_MODE
 #if CONFIG_CICP
                                         AV1E_SET_COLOR_PRIMARIES,
                                         AV1E_SET_TRANSFER_CHARACTERISTICS,
@@ -801,7 +814,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #endif
                                         AV1E_SET_DISABLE_TEMPMV,
                                         0 };
-#endif
+#endif  // CONFIG_AV1_ENCODER
 
 static const arg_def_t *no_args[] = { NULL };
 
