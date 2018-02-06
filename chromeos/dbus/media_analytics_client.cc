@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -36,17 +37,17 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     media_perception_signal_handler_.Reset();
   }
 
-  void GetState(const StateCallback& callback) override {
+  void GetState(DBusMethodCallback<mri::State> callback) override {
     dbus::MethodCall method_call(media_perception::kMediaPerceptionServiceName,
                                  media_perception::kStateFunction);
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&MediaAnalyticsClientImpl::OnState,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void SetState(const mri::State& state,
-                const StateCallback& callback) override {
+                DBusMethodCallback<mri::State> callback) override {
     DCHECK(state.has_status()) << "Attempting to SetState without status set.";
 
     dbus::MethodCall method_call(media_perception::kMediaPerceptionServiceName,
@@ -58,17 +59,17 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&MediaAnalyticsClientImpl::OnState,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetDiagnostics(const DiagnosticsCallback& callback) override {
+  void GetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback) override {
     dbus::MethodCall method_call(media_perception::kMediaPerceptionServiceName,
                                  media_perception::kGetDiagnosticsFunction);
     // TODO(lasoren): Verify that this timeout setting is sufficient.
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&MediaAnalyticsClientImpl::OnGetDiagnostics,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:
@@ -120,11 +121,12 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     media_perception_signal_handler_.Run(media_perception);
   }
 
-  void OnState(const StateCallback& callback, dbus::Response* response) {
+  void OnState(DBusMethodCallback<mri::State> callback,
+               dbus::Response* response) {
     mri::State state;
     if (!response) {
       LOG(ERROR) << "Call to State failed to get response.";
-      callback.Run(false, state);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
@@ -134,25 +136,25 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Invalid D-Bus response: " << response->ToString();
-      callback.Run(false, state);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
     if (!state.ParseFromArray(bytes, length)) {
       LOG(ERROR) << "Failed to parse State message.";
-      callback.Run(false, state);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
-    callback.Run(true, state);
+    std::move(callback).Run(std::move(state));
   }
 
-  void OnGetDiagnostics(const DiagnosticsCallback& callback,
+  void OnGetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback,
                         dbus::Response* response) {
     mri::Diagnostics diagnostics;
     if (!response) {
       LOG(ERROR) << "Call to GetDiagnostics failed to get response.";
-      callback.Run(false, diagnostics);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
@@ -162,17 +164,17 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Invalid GetDiagnostics response: " << response->ToString();
-      callback.Run(false, diagnostics);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
     if (!diagnostics.ParseFromArray(bytes, length)) {
       LOG(ERROR) << "Failed to parse Diagnostics message.";
-      callback.Run(false, diagnostics);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
-    callback.Run(true, diagnostics);
+    std::move(callback).Run(std::move(diagnostics));
   }
 
   dbus::ObjectProxy* dbus_proxy_;

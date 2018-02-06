@@ -5,7 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_MEDIA_PERCEPTION_PRIVATE_MEDIA_PERCEPTION_API_MANAGER_H_
 #define EXTENSIONS_BROWSER_API_MEDIA_PERCEPTION_PRIVATE_MEDIA_PERCEPTION_API_MANAGER_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/media_perception/media_perception.pb.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/media_perception_private.h"
@@ -73,14 +76,12 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
 
   // Callback for State D-Bus method calls to the media analytics process.
   void StateCallback(const APIStateCallback& callback,
-                     bool succeeded,
-                     const mri::State& state);
+                     base::Optional<mri::State> state);
 
   // Callback for GetDiagnostics D-Bus method calls to the media analytics
   // process.
   void GetDiagnosticsCallback(const APIGetDiagnosticsCallback& callback,
-                              bool succeeded,
-                              const mri::Diagnostics& diagnostics);
+                              base::Optional<mri::Diagnostics> diagnostics);
 
   // Callback for Upstart command to start media analytics process.
   void UpstartStartCallback(const APIStateCallback& callback,
