@@ -670,8 +670,9 @@ void ClientControlledShellSurface::InitializeWindowState(
   // Allow the client to request bounds that do not fill the entire work area
   // when maximized, or the entire display when fullscreen.
   window_state->set_allow_set_bounds_direct(true);
-  widget_->set_movement_disabled(true);
   window_state->set_ignore_keyboard_bounds_change(true);
+  if (container_ == ash::kShellWindowId_SystemModalContainer)
+    DisableMovement();
 }
 
 float ClientControlledShellSurface::GetScale() const {

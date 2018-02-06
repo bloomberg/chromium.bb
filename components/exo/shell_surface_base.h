@@ -146,6 +146,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   void SetCanMinimize(bool can_minimize);
 
+  // Prevents shell surface from being moved.
+  void DisableMovement();
+
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
 
