@@ -75,13 +75,14 @@ config("chromium_sqlite3_compile_options") {
     # syntax working but execution failing.  Review:
     #   src/src/parse.py
     #   src/tool/mkkeywordhash.c
-  ]
 
-  # Pull in config.h on Linux.  This allows use of preprocessor macros which
-  # are not available to the build config.
-  if (is_linux) {
-    defines += [ "_HAVE_SQLITE_CONFIG_H" ]
-  }
+    # Chromium does not use sqlite3_{enable_}load_extension().
+    # Asides from giving us fairly minor code savings, this option disables code
+    # that breaks our method for renaming SQLite's exported symbols. Last,
+    # there's a tiny security benefit to knowing that WebSQL can't possibly
+    # reach extension loading code.
+    "SQLITE_OMIT_LOAD_EXTENSION",
+  ]
 
   if (using_sanitizer) {
     # Limit max length of data blobs and queries for fuzzing builds by 128 MB.
@@ -138,7 +139,13 @@ if (!use_system_sqlite) {
     ]
 
     cflags = []
-    defines = []
+    defines = [
+      # The generated sqlite3.c does not include sqlite3.h, so we cannot easily
+      # inject the renaming macros in amalgamation/export_renames.h. However,
+      # if the macro below is defined, sqlite3.c will #include "config.h", which
+      # can be used to inject the macros.
+      "_HAVE_SQLITE_CONFIG_H",
+    ]
 
     if (is_component_build) {
       if (is_win) {
@@ -168,7 +175,10 @@ if (!use_system_sqlite) {
       ]
     }
 
-    include_dirs = [ "amalgamation" ]
+    include_dirs = [
+      ".",  # sqlite3.h here must override the one in amalgamation/.
+      "amalgamation",
+    ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
@@ -222,11 +232,14 @@ if (!use_system_sqlite) {
 
   if (is_linux) {
     executable("sqlite_shell") {
-      # So shell.c can find the correct sqlite3.h.
-      include_dirs = [ "amalgamation" ]
+      include_dirs = [
+        # shell.c contains an '#include "sqlite3.h", which we want to be
+        # resolved to //third_party/sqlite/shell.h.
+        ".",
+      ]
 
       sources = [
-        "amalgamation/shell.c",
+        "amalgamation/shell/shell.c",
         "src/src/shell_icu_linux.c",
 
         # Include a dummy c++ file to force linking of libstdc++.
