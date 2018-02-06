@@ -165,7 +165,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   // Does nothing if the web application hasn't requested a rAF callback.
   void RequestVSync();
 
-  scoped_refptr<Image> GetFrameImage();
+  scoped_refptr<Image> GetFrameImage(
+      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
   Member<NavigatorVR> navigator_vr_;
   unsigned display_id_ = 0;
@@ -179,7 +180,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   Member<VREyeParameters> eye_parameters_right_;
   device::mojom::blink::VRPosePtr frame_pose_;
   device::mojom::blink::VRPosePtr pending_pose_;
-
 
   // This frame ID is vr-specific and is used to track when frames arrive at the
   // VR compositor so that it knows which poses to use, when to apply bounds
