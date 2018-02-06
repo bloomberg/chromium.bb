@@ -9,6 +9,7 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSFontVariationValue : public CSSValue {
  public:
@@ -35,6 +36,7 @@ class CSSFontVariationValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontVariationValue, IsFontVariationValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif

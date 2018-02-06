@@ -14,7 +14,8 @@
 namespace blink {
 namespace {
 
-CSSFontVariationValue* ConsumeFontVariationTag(CSSParserTokenRange& range) {
+cssvalue::CSSFontVariationValue* ConsumeFontVariationTag(
+    CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
   static const unsigned kTagNameLength = 4;
 
@@ -36,7 +37,8 @@ CSSFontVariationValue* ConsumeFontVariationTag(CSSParserTokenRange& range) {
   double tag_value = 0;
   if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, tag_value))
     return nullptr;
-  return CSSFontVariationValue::Create(tag, clampTo<float>(tag_value));
+  return cssvalue::CSSFontVariationValue::Create(tag,
+                                                 clampTo<float>(tag_value));
 }
 
 }  // namespace
@@ -50,7 +52,7 @@ const CSSValue* FontVariationSettings::ParseSingleValue(
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   CSSValueList* variation_settings = CSSValueList::CreateCommaSeparated();
   do {
-    CSSFontVariationValue* font_variation_value =
+    cssvalue::CSSFontVariationValue* font_variation_value =
         ConsumeFontVariationTag(range);
     if (!font_variation_value)
       return nullptr;
@@ -72,8 +74,9 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (unsigned i = 0; i < variation_settings->size(); ++i) {
     const FontVariationAxis& variation_axis = variation_settings->at(i);
-    CSSFontVariationValue* variation_value = CSSFontVariationValue::Create(
-        variation_axis.Tag(), variation_axis.Value());
+    cssvalue::CSSFontVariationValue* variation_value =
+        cssvalue::CSSFontVariationValue::Create(variation_axis.Tag(),
+                                                variation_axis.Value());
     list->Append(*variation_value);
   }
   return list;
