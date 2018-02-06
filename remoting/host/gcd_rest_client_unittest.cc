@@ -40,12 +40,13 @@ class GcdRestClientTest : public testing::Test {
     }
     client_.reset(new GcdRestClient("http://gcd_base_url", "<gcd_device_id>",
                                     nullptr, token_getter));
-    client_->SetClockForTest(base::WrapUnique(new base::SimpleTestClock));
+    client_->SetClockForTest(&clock_);
   }
 
  protected:
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeOAuthTokenGetter default_token_getter_;
+  base::SimpleTestClock clock_;
   std::unique_ptr<GcdRestClient> client_;
   int counter_ = 0;
   GcdRestClient::Result last_result_ = GcdRestClient::OTHER_ERROR;

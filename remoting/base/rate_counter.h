@@ -54,8 +54,7 @@ class RateCounter {
   // Sum of values in |data_points_|.
   int64_t sum_;
 
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* tick_clock_ = &default_tick_clock_;
+  base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 
   SEQUENCE_CHECKER(sequence_checker_);
 

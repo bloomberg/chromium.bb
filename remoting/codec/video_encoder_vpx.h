@@ -88,7 +88,6 @@ class VideoEncoderVpx : public VideoEncoder {
   // Used to help initialize VideoPackets from DesktopFrames.
   VideoEncoderHelper helper_;
 
-  base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderVpx);

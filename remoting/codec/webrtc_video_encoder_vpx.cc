@@ -419,7 +419,7 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
 WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)
     : use_vp9_(use_vp9),
-      clock_(&default_tick_clock_),
+      clock_(base::DefaultTickClock::GetInstance()),
       bitrate_filter_(kVp8MinimumTargetBitrateKbpsPerMegapixel) {
   // Indicates config is still uninitialized.
   config_.g_timebase.den = 0;

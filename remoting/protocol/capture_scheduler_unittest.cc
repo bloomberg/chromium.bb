@@ -31,8 +31,7 @@ class CaptureSchedulerTest : public testing::Test {
         base::Bind(&CaptureSchedulerTest::DoCapture, base::Unretained(this))));
     scheduler_->set_minimum_interval(
         base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
-    tick_clock_ = new base::SimpleTestTickClock();
-    scheduler_->SetTickClockForTest(base::WrapUnique(tick_clock_));
+    scheduler_->SetTickClockForTest(&tick_clock_);
     capture_timer_ = new base::MockTimer(false, false);
     scheduler_->SetTimerForTest(base::WrapUnique(capture_timer_));
     scheduler_->Start();
@@ -53,7 +52,7 @@ class CaptureSchedulerTest : public testing::Test {
       base::TimeDelta expected_delay_between_frames) {
     capture_timer_->Fire();
     CheckCaptureCalled();
-    tick_clock_->Advance(capture_delay);
+    tick_clock_.Advance(capture_delay);
     scheduler_->OnCaptureCompleted();
 
     VideoPacket packet;
@@ -77,8 +76,9 @@ class CaptureSchedulerTest : public testing::Test {
 
   std::unique_ptr<CaptureScheduler> scheduler_;
 
+  base::SimpleTestTickClock tick_clock_;
+
   // Owned by |scheduler_|.
-  base::SimpleTestTickClock* tick_clock_;
   base::MockTimer* capture_timer_;
 
   bool capture_called_;

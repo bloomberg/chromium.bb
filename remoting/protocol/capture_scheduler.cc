@@ -45,7 +45,7 @@ namespace protocol {
 // We assume that the number of available cores is constant.
 CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
     : capture_closure_(capture_closure),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       capture_timer_(new base::Timer(false, false)),
       minimum_interval_(
           base::TimeDelta::FromMilliseconds(kDefaultMinimumIntervalMs)),
@@ -127,9 +127,8 @@ void CaptureScheduler::ProcessVideoAck(std::unique_ptr<VideoAck> video_ack) {
   ScheduleNextCapture();
 }
 
-void CaptureScheduler::SetTickClockForTest(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
+void CaptureScheduler::SetTickClockForTest(base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void CaptureScheduler::SetTimerForTest(std::unique_ptr<base::Timer> timer) {

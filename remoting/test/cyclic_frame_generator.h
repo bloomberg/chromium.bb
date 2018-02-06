@@ -80,7 +80,6 @@ class CyclicFrameGenerator : public protocol::InputEventTimestampsSource {
   friend class base::RefCountedThreadSafe<CyclicFrameGenerator>;
 
   std::vector<std::unique_ptr<webrtc::DesktopFrame>> reference_frames_;
-  base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
   webrtc::DesktopSize screen_size_;
 

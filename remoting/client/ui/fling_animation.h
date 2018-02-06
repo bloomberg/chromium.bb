@@ -37,7 +37,7 @@ class FlingAnimation {
   // Aborts the animation.
   void Abort();
 
-  void SetTickClockForTest(std::unique_ptr<base::TickClock> clock);
+  void SetTickClockForTest(base::TickClock* clock);
 
  private:
   FlingTracker fling_tracker_;
@@ -45,7 +45,7 @@ class FlingAnimation {
 
   base::TimeTicks fling_start_time_;
 
-  std::unique_ptr<base::TickClock> clock_;
+  base::TickClock* clock_;
 
   // FlingAnimation is neither copyable nor movable.
   FlingAnimation(const FlingAnimation&) = delete;

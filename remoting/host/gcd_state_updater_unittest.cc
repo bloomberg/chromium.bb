@@ -40,7 +40,7 @@ class GcdStateUpdaterTest : public testing::Test {
                                        nullptr,
                                        &token_getter_)),
         signal_strategy_(SignalingAddress("local_jid")) {
-    rest_client_->SetClockForTest(base::WrapUnique(new base::SimpleTestClock));
+    rest_client_->SetClockForTest(&test_clock_);
   }
 
   void OnSuccess() { on_success_count_++; }
@@ -50,7 +50,10 @@ class GcdStateUpdaterTest : public testing::Test {
  protected:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle runner_handler_;
+  // TODO(tzik): Remove |clock_| after updating TestMockTimeTaskRunner to own
+  // the clock instances.
   std::unique_ptr<base::Clock> clock_;
+  base::SimpleTestClock test_clock_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeOAuthTokenGetter token_getter_;
   std::unique_ptr<GcdRestClient> rest_client_;

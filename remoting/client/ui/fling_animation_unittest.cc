@@ -42,13 +42,11 @@ class FlingAnimationTest : public testing::Test {
 
   bool change_received_ = false;
 
-  // Owned by |fling_animation_|.
-  base::SimpleTestTickClock* mock_clock_;
+  base::SimpleTestTickClock mock_clock_;
 };
 
 void FlingAnimationTest::SetUp() {
-  mock_clock_ = new base::SimpleTestTickClock();
-  fling_animation_.SetTickClockForTest(base::WrapUnique(mock_clock_));
+  fling_animation_.SetTickClockForTest(&mock_clock_);
 }
 
 void FlingAnimationTest::TearDown() {
@@ -56,7 +54,7 @@ void FlingAnimationTest::TearDown() {
 }
 
 void FlingAnimationTest::TickAnimation(base::TimeDelta time_delta) {
-  mock_clock_->Advance(time_delta);
+  mock_clock_.Advance(time_delta);
   fling_animation_.Tick();
 }
 
