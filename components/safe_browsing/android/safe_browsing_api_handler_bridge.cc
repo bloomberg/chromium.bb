@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -35,11 +36,12 @@ namespace safe_browsing {
 
 namespace {
 void RunCallbackOnIOThread(
-    const SafeBrowsingApiHandler::URLCheckCallbackMeta& callback,
+    std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     SBThreatType threat_type,
     const ThreatMetadata& metadata) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, threat_type, metadata));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(*callback), threat_type, metadata));
 }
 
 void ReportUmaResult(safe_browsing::UmaRemoteCallResult result) {
@@ -68,7 +70,7 @@ int SBThreatTypeToJavaThreatType(const SBThreatType& sb_threat_type) {
 ScopedJavaLocalRef<jintArray> SBThreatTypeSetToJavaArray(
     JNIEnv* env,
     const SBThreatTypeSet& threat_types) {
-  DCHECK(threat_types.size() > 0);
+  DCHECK_LT(0u, threat_types.size());
   int int_threat_types[threat_types.size()];
   int* itr = &int_threat_types[0];
   for (auto threat_type : threat_types) {
@@ -120,14 +122,16 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
       DCHECK_EQ(result_status, RESULT_STATUS_INTERNAL_ERROR);
       ReportUmaResult(UMA_STATUS_INTERNAL_ERROR);
     }
-    RunCallbackOnIOThread(*callback, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
+                          ThreatMetadata());
     return;
   }
 
   // Shortcut for safe, so we don't have to parse JSON.
   if (metadata_str == "{}") {
     ReportUmaResult(UMA_STATUS_SAFE);
-    RunCallbackOnIOThread(*callback, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
+                          ThreatMetadata());
   } else {
     // Unsafe, assuming we can parse the JSON.
     SBThreatType worst_threat;
@@ -138,7 +142,7 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
       DVLOG(1) << "Check " << callback_id << " was a MATCH";
     }
 
-    RunCallbackOnIOThread(*callback, worst_threat, threat_metadata);
+    RunCallbackOnIOThread(std::move(callback), worst_threat, threat_metadata);
   }
 }
 
@@ -162,7 +166,7 @@ void SafeBrowsingApiHandlerBridge::Initialize() {
 }
 
 void SafeBrowsingApiHandlerBridge::StartURLCheck(
-    const SafeBrowsingApiHandler::URLCheckCallbackMeta& callback,
+    std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     const GURL& url,
     const SBThreatTypeSet& threat_types) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -179,7 +183,7 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   // >100ms, so use base::MayBlock even though we aren't technically doing
   // blocking IO.
   if (!api_task_runner_) {
-    core_->StartURLCheck(callback, url, threat_types);
+    core_->StartURLCheck(std::move(callback), url, threat_types);
     return;
   }
   // Unretained is safe because the task to delete |core_| will be sequenced
@@ -187,8 +191,8 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   api_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SafeBrowsingApiHandlerBridge::Core::StartURLCheck,
-                     base::Unretained(core_.get()), callback, url,
-                     threat_types));
+                     base::Unretained(core_.get()), base::Passed(&callback),
+                     url, threat_types));
 }
 
 SafeBrowsingApiHandlerBridge::Core::Core() {
@@ -211,7 +215,7 @@ bool SafeBrowsingApiHandlerBridge::Core::CheckApiIsSupported() {
 }
 
 void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
-    const URLCheckCallbackMeta& callback,
+    std::unique_ptr<URLCheckCallbackMeta> callback,
     const GURL& url,
     const SBThreatTypeSet& threat_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -220,14 +224,16 @@ void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
   if (!CheckApiIsSupported()) {
     // Mark all requests as safe. Only users who have an old, broken GMSCore or
     // have sideloaded Chrome w/o PlayStore should land here.
-    RunCallbackOnIOThread(callback, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
+                          ThreatMetadata());
     ReportUmaResult(UMA_STATUS_UNSUPPORTED);
     return;
   }
 
-  // Make copy on the heap so we can pass the pointer through JNI.
-  intptr_t callback_id =
-      reinterpret_cast<intptr_t>(new URLCheckCallbackMeta(callback));
+  // Save the address on the heap so we can pass it through JNI. The unique ptr
+  // releases ownership, we will re-own this callback when the response is
+  // received in JNI_SafeBrowsingApiBridge_OnUrlCheckDone.
+  intptr_t callback_id = reinterpret_cast<intptr_t>(callback.release());
 
   DVLOG(1) << "Starting check " << callback_id << " for URL " << url;
 
