@@ -61,6 +61,8 @@ TaskQueueImpl::~TaskQueueImpl() {
   // destructor calls UnregisterTaskQueue on all task queues.
   DCHECK(any_thread().task_queue_manager == nullptr)
       << "UnregisterTaskQueue must be called first!";
+  DCHECK(main_thread_only().on_task_started_handler.is_null());
+  DCHECK(main_thread_only().on_task_completed_handler.is_null());
 #endif
 }
 

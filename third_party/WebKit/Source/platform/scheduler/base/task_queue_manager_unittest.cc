@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread.h"
@@ -3231,6 +3232,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
   EXPECT_EQ(complete_counter, 4);
   EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6, 7, 8));
+  UnsetOnTaskHandlers(runners_[0]);
 }
 
 TEST_F(TaskQueueManagerTest, GracefulShutdown) {
@@ -3409,6 +3411,70 @@ TEST_F(TaskQueueManagerTest, CanceledTasksInQueueCantMakeOtherTasksSkipAhead) {
   test_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(1, 2));
+}
+
+TEST_F(TaskQueueManagerTest, TaskQueueDeletedOnAnotherThread) {
+  Initialize(0u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+
+  int start_counter = 0;
+  int complete_counter = 0;
+  SetOnTaskHandlers(main_tq, &start_counter, &complete_counter);
+
+  EXPECT_EQ(1u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(0u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
+
+  for (int i = 1; i <= 5; ++i) {
+    main_tq->PostDelayedTask(
+        FROM_HERE, base::BindRepeating(&RecordTimeTask, &run_times, &now_src_),
+        base::TimeDelta::FromMilliseconds(i * 100));
+  }
+
+  // TODO(altimin): do not do this after switching to weak pointer-based
+  // task handlers.
+  UnsetOnTaskHandlers(main_tq);
+
+  base::WaitableEvent task_queue_deleted(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  std::unique_ptr<base::Thread> thread =
+      std::make_unique<base::Thread>("test thread");
+  thread->StartAndWaitForTesting();
+
+  thread->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](scoped_refptr<base::SingleThreadTaskRunner> task_queue,
+                        base::WaitableEvent* task_queue_deleted) {
+                       task_queue = nullptr;
+                       task_queue_deleted->Signal();
+                     },
+                     std::move(main_tq), &task_queue_deleted));
+  task_queue_deleted.Wait();
+
+  EXPECT_EQ(1u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(1u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
+
+  test_task_runner_->RunUntilIdle();
+
+  // Even with TaskQueue gone, tasks are executed.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(301),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(401),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(501)));
+
+  EXPECT_EQ(0u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(0u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
+
+  thread->Stop();
 }
 
 }  // namespace task_queue_manager_unittest

@@ -328,10 +328,15 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 
     if (observer)
       pair.first->RemoveTaskObserver(observer);
+
+    pair.first->ShutdownTaskQueue();
   }
 
   if (virtual_time_domain_)
     UnregisterTimeDomain(virtual_time_domain_.get());
+
+  if (virtual_time_control_task_queue_)
+    virtual_time_control_task_queue_->ShutdownTaskQueue();
 
   base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
       this);
