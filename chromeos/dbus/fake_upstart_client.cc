@@ -33,7 +33,7 @@ void FakeUpstartClient::RestartAuthPolicyService() {
 
 void FakeUpstartClient::StartMediaAnalytics(
     const std::vector<std::string>& /* upstart_env */,
-    const UpstartCallback& callback) {
+    VoidDBusMethodCallback callback) {
   FakeMediaAnalyticsClient* media_analytics_client =
       static_cast<FakeMediaAnalyticsClient*>(
           DBusThreadManager::Get()->GetMediaAnalyticsClient());
@@ -44,7 +44,7 @@ void FakeUpstartClient::StartMediaAnalytics(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeUpstartClient::RestartMediaAnalytics(const UpstartCallback& callback) {
+void FakeUpstartClient::RestartMediaAnalytics(VoidDBusMethodCallback callback) {
   FakeMediaAnalyticsClient* media_analytics_client =
       static_cast<FakeMediaAnalyticsClient*>(
           DBusThreadManager::Get()->GetMediaAnalyticsClient());
@@ -64,7 +64,7 @@ void FakeUpstartClient::StopMediaAnalytics() {
   media_analytics_client->set_process_running(false);
 }
 
-void FakeUpstartClient::StopMediaAnalytics(const UpstartCallback& callback) {
+void FakeUpstartClient::StopMediaAnalytics(VoidDBusMethodCallback callback) {
   FakeMediaAnalyticsClient* media_analytics_client =
       static_cast<FakeMediaAnalyticsClient*>(
           DBusThreadManager::Get()->GetMediaAnalyticsClient());

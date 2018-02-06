@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 
@@ -22,7 +23,6 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
  public:
   ~UpstartClient() override;
 
-  using UpstartCallback = base::Callback<void(bool succeeded)>;
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static UpstartClient* Create();
@@ -37,16 +37,16 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // |upstart_env|: List of upstart environment variables to be passed to the
   // upstart service.
   virtual void StartMediaAnalytics(const std::vector<std::string>& upstart_env,
-                                   const UpstartCallback& callback) = 0;
+                                   VoidDBusMethodCallback callback) = 0;
 
   // Restarts the media analytics process.
-  virtual void RestartMediaAnalytics(const UpstartCallback& callback) = 0;
+  virtual void RestartMediaAnalytics(VoidDBusMethodCallback callback) = 0;
 
   // Stops the media analytics process.
   virtual void StopMediaAnalytics() = 0;
 
   // Provides an interface for stopping the media analytics process.
-  virtual void StopMediaAnalytics(const UpstartCallback& callback) = 0;
+  virtual void StopMediaAnalytics(VoidDBusMethodCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
