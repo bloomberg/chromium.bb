@@ -3332,16 +3332,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   SnapshotTabHelper::FromWebState(currentTab.webState)
       ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
 
-  // Tabs open by DOM are always renderer initiated.
-  web::NavigationManager::WebLoadParams params(GURL{});
-  params.transition_type = ui::PAGE_TRANSITION_LINK;
-  params.is_renderer_initiated = true;
-  Tab* childTab = [[self tabModel]
-      insertTabWithLoadParams:params
-                       opener:currentTab
-                  openedByDOM:YES
-                      atIndex:TabModelConstants::kTabPositionAutomatically
-                 inBackground:NO];
+  Tab* childTab = [[self tabModel] insertOpenByDOMTabWithOpener:currentTab];
+
   return childTab.webState;
 }
 
