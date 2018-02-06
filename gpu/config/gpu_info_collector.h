@@ -57,10 +57,6 @@ GPU_EXPORT void IdentifyActiveGPU(GPUInfo* gpu_info);
 void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
                                angle::SystemInfo* system_info);
 
-// On Android, this calls CollectContextGraphicsInfo().
-// On other platforms, this calls CollectBasicGraphicsInfo().
-GPU_EXPORT void CollectGraphicsInfoForTesting(GPUInfo* gpu_info);
-
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_INFO_COLLECTOR_H_

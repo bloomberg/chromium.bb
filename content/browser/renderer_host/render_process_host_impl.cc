@@ -86,6 +86,7 @@
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_client.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_controller.h"
@@ -2449,6 +2450,11 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   if (IsCompositorImageAnimationEnabled())
     command_line->AppendSwitch(switches::kEnableCompositorImageAnimations);
+
+  // Appending disable-gpu-feature switches due to software rendering list.
+  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+  DCHECK(gpu_data_manager);
+  gpu_data_manager->AppendRendererCommandLine(command_line);
 
   // Slimming Paint v2 implies layer lists in the renderer.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -18,7 +18,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "ui/gl/gl_share_group.h"
@@ -63,13 +62,9 @@ ScopedAllowGL::~ScopedAllowGL() {
 // static
 void DeferredGpuCommandService::SetInstance() {
   if (!g_service.Get().get()) {
-    gpu::GPUInfo gpu_info;
-    // TODO(zmo): Instead of using CollectBasicGraphicsInfo(), we
-    // should potentially initialize GL bindings properly here, and
-    // call CollectContextGraphicsInfo() and get rid of
-    // CollectBasicGraphicsInfo(). That is, if GPU thread doesn't
-    // initialize the bindings first.
-    gpu::CollectBasicGraphicsInfo(&gpu_info);
+    // TODO(zmo): Collect GPU info here instead.
+    gpu::GPUInfo gpu_info =
+        content::GpuDataManager::GetInstance()->GetGPUInfo();
     DCHECK(base::CommandLine::InitializedForCurrentProcess());
     gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
         gpu_info,

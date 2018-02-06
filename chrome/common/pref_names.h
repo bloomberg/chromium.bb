@@ -454,6 +454,18 @@ extern const char kHasSeenWelcomePage[];
 extern const char kHasSeenWin10PromoPage[];
 #endif
 
+extern const char kGLVendorString[];
+extern const char kGLRendererString[];
+extern const char kGLVersionString[];
+
+#if defined(OS_ANDROID)
+extern const char kGLExtensionsString[];
+extern const char kGpuDriverInfoMaxSamples[];
+extern const char kGpuDriverInfoResetNotificationStrategy[];
+extern const char kGpuDriverInfoShaderVersion[];
+extern const char kGpuDriverInfoBuildFingerPrint[];
+#endif
+
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
 #if defined(OS_ANDROID)

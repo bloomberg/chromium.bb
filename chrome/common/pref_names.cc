@@ -1085,6 +1085,15 @@ const char kEnableDoNotTrack[] = "enable_do_not_track";
 // non-webkit-prefixed string.
 const char kEnableEncryptedMedia[] = "webkit.webprefs.encrypted_media_enabled";
 
+// GL_VENDOR string.
+const char kGLVendorString[] = "gl_vendor_string";
+
+// GL_RENDERER string.
+const char kGLRendererString[] = "gl_renderer_string";
+
+// GL_VERSION string.
+const char kGLVersionString[] = "gl_version_string";
+
 // Boolean that specifies whether to import the form data for autofill from the
 // default browser on first run.
 const char kImportAutofillFormData[] = "import_autofill_form_data";
@@ -1235,6 +1244,15 @@ const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
 // permission, so any existing permissions must be migrated).
 const char kMigratedToSiteNotificationChannels[] =
     "notifications.migrated_to_channels";
+
+// Cached information about GPU driver.
+const char kGLExtensionsString[] = "gl_extensions_string";
+const char kGpuDriverInfoMaxSamples[] = "gpu_driver_info_max_samples";
+const char kGpuDriverInfoResetNotificationStrategy[] =
+    "gpu_driver_info_reset_notification_strategy";
+const char kGpuDriverInfoShaderVersion[] = "gpu_driver_info_shader_version";
+const char kGpuDriverInfoBuildFingerPrint[] =
+    "gpu_driver_info_build_finder_print";
 #endif
 
 // Maps from app ids to origin + Service Worker registration ID.
