@@ -156,9 +156,15 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
           viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
           base::BindOnce(&CopyFromCompositingSurfaceHasResult, output_size,
                          preferred_color_type, callback));
-  if (!src_subrect.IsEmpty())
-    request->set_area(src_subrect);
-  RequestCopyOfOutput(std::move(request));
+  if (!src_subrect.IsEmpty()) {
+    request->set_area(
+        gfx::ScaleToRoundedRect(src_subrect, active_device_scale_factor_));
+  }
+
+  if (request_copy_of_output_callback_for_testing_.is_null())
+    support_->RequestCopyOfSurface(std::move(request));
+  else
+    request_copy_of_output_callback_for_testing_.Run(std::move(request));
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
@@ -177,13 +183,19 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
           nullptr, std::move(target), callback));
-  if (!src_subrect.IsEmpty())
-    request->set_area(src_subrect);
-  RequestCopyOfOutput(std::move(request));
+  if (!src_subrect.IsEmpty()) {
+    request->set_area(
+        gfx::ScaleToRoundedRect(src_subrect, active_device_scale_factor_));
+  }
+
+  if (request_copy_of_output_callback_for_testing_.is_null())
+    support_->RequestCopyOfSurface(std::move(request));
+  else
+    request_copy_of_output_callback_for_testing_.Run(std::move(request));
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return compositor_ && HasFallbackSurface();
+  return support_ && HasFallbackSurface() && active_device_scale_factor_ != 0.f;
 }
 
 void DelegatedFrameHost::BeginFrameSubscription(
@@ -438,12 +450,10 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 
   // To avoid unnecessary browser composites, try to go directly to the Surface
   // rather than through the Layer (which goes through the browser compositor).
-  if (HasFallbackSurface() &&
-      request_copy_of_output_callback_for_testing_.is_null()) {
+  if (request_copy_of_output_callback_for_testing_.is_null())
     support_->RequestCopyOfSurface(std::move(request));
-  } else {
-    RequestCopyOfOutput(std::move(request));
-  }
+  else
+    request_copy_of_output_callback_for_testing_.Run(std::move(request));
 }
 
 void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
@@ -601,6 +611,7 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
       surface_info.id());
   local_surface_id_ = surface_info.id().local_surface_id();
+  active_device_scale_factor_ = surface_info.device_scale_factor();
 
   // Surface synchronization deals with resizes in WasResized().
   if (!enable_surface_synchronization_) {
@@ -921,21 +932,6 @@ void DelegatedFrameHost::ResetCompositor() {
 void DelegatedFrameHost::LockResources() {
   DCHECK(local_surface_id_.is_valid());
   frame_evictor_->LockFrame();
-}
-
-void DelegatedFrameHost::RequestCopyOfOutput(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
-  // If a specific area has not been requested, set one to ensure correct
-  // clipping occurs.
-  if (!request->has_area())
-    request->set_area(gfx::Rect(current_frame_size_in_dip_));
-
-  if (request_copy_of_output_callback_for_testing_.is_null()) {
-    client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(
-        std::move(request));
-  } else {
-    request_copy_of_output_callback_for_testing_.Run(std::move(request));
-  }
 }
 
 void DelegatedFrameHost::UnlockResources() {
