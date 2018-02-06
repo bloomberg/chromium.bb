@@ -66,15 +66,6 @@ class SQL_EXPORT Recovery {
  public:
   ~Recovery();
 
-  // This module is intended to be used in concert with a virtual
-  // table module (see third_party/sqlite/src/src/recover.c).  If the
-  // build defines USE_SYSTEM_SQLITE, this module will not be present.
-  // TODO(shess): I am still debating how to handle this - perhaps it
-  // will just imply Unrecoverable().  This is exposed to allow tests
-  // to adapt to the cases, please do not rely on it in production
-  // code.
-  static bool FullRecoverySupported();
-
   // Begin the recovery process by opening a temporary database handle
   // and attach the existing database to it at "corrupt".  To prevent
   // deadlock, all transactions on |connection| are rolled back.
