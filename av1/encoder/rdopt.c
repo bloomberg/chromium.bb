@@ -4435,6 +4435,9 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       x->plane[plane].eobs[block] = 0;
 #if CONFIG_LV_MAP
       x->plane[plane].txb_entropy_ctx[block] = 0;
+#if CONFIG_TXK_SEL
+      update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, DCT_DCT);
+#endif
 #endif  // CONFIG_LV_MAP
     } else {
       rd_stats->skip = 0;
