@@ -67,4 +67,9 @@ void DpadFromAxis(Gamepad* mapped, float dir) {
   mapped->buttons[BUTTON_INDEX_DPAD_LEFT].value = left ? 1.f : 0.f;
 }
 
+float RenormalizeAndClampAxis(float value, float min, float max) {
+  value = (2.f * (value - min) / (max - min)) - 1.f;
+  return value < -1.f ? -1.f : (value > 1.f ? 1.f : value);
+}
+
 }  // namespace device

@@ -60,6 +60,38 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
     ReadDeviceData(i);
 }
 
+// static
+void GamepadPlatformDataFetcherLinux::UpdateGamepadStrings(
+    const std::string& name,
+    const std::string& vendor_id,
+    const std::string& product_id,
+    bool has_standard_mapping,
+    Gamepad* pad) {
+  // Set the ID string. The ID contains the device name, vendor and product IDs,
+  // and an indication of whether the standard mapping is in use.
+  std::string id =
+      base::StringPrintf("%s (%sVendor: %s Product: %s)", name.c_str(),
+                         has_standard_mapping ? "STANDARD GAMEPAD " : "",
+                         vendor_id.c_str(), product_id.c_str());
+  base::TruncateUTF8ToByteSize(id, Gamepad::kIdLengthCap - 1, &id);
+  base::string16 tmp16 = base::UTF8ToUTF16(id);
+  memset(pad->id, 0, sizeof(pad->id));
+  tmp16.copy(pad->id, arraysize(pad->id) - 1);
+
+  // Set the mapper string to "standard" if the gamepad has a standard mapping,
+  // or the empty string otherwise.
+  if (has_standard_mapping) {
+    std::string mapping = "standard";
+    base::TruncateUTF8ToByteSize(mapping, Gamepad::kMappingLengthCap - 1,
+                                 &mapping);
+    tmp16 = base::UTF8ToUTF16(mapping);
+    memset(pad->mapping, 0, sizeof(pad->mapping));
+    tmp16.copy(pad->mapping, arraysize(pad->mapping) - 1);
+  } else {
+    pad->mapping[0] = 0;
+  }
+}
+
 // Used during enumeration, and monitor notifications.
 void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
   std::unique_ptr<UdevGamepadLinux> udev_gamepad =
@@ -148,39 +180,11 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     return;
   }
 
-  std::string vendor_id = device->GetVendorId();
-  std::string product_id = device->GetProductId();
-  std::string version_number = device->GetVersionNumber();
-  std::string name = device->GetName();
-
-  GamepadStandardMappingFunction& mapper = state->mapper;
-  mapper = GetGamepadStandardMappingFunction(
-      vendor_id.c_str(), product_id.c_str(), version_number.c_str(),
-      GAMEPAD_BUS_UNKNOWN);
+  state->mapper = device->GetMappingFunction();
 
   Gamepad& pad = state->data;
-
-  // Append the vendor and product information then convert the utf-8
-  // id string to WebUChar.
-  std::string id =
-      name + base::StringPrintf(" (%sVendor: %s Product: %s)",
-                                mapper ? "STANDARD GAMEPAD " : "",
-                                vendor_id.c_str(), product_id.c_str());
-  base::TruncateUTF8ToByteSize(id, Gamepad::kIdLengthCap - 1, &id);
-  base::string16 tmp16 = base::UTF8ToUTF16(id);
-  memset(pad.id, 0, sizeof(pad.id));
-  tmp16.copy(pad.id, arraysize(pad.id) - 1);
-
-  if (mapper) {
-    std::string mapping = "standard";
-    base::TruncateUTF8ToByteSize(mapping, Gamepad::kMappingLengthCap - 1,
-                                 &mapping);
-    tmp16 = base::UTF8ToUTF16(mapping);
-    memset(pad.mapping, 0, sizeof(pad.mapping));
-    tmp16.copy(pad.mapping, arraysize(pad.mapping) - 1);
-  } else {
-    pad.mapping[0] = 0;
-  }
+  UpdateGamepadStrings(device->GetName(), device->GetVendorId(),
+                       device->GetProductId(), state->mapper != nullptr, &pad);
 
   pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
   pad.vibration_actuator.not_null = device->SupportsVibration();
@@ -207,6 +211,24 @@ void GamepadPlatformDataFetcherLinux::RefreshEvdevDevice(
     DCHECK(state);
     if (state) {
       Gamepad& pad = state->data;
+
+      // To select the correct mapper for an arbitrary gamepad we may need info
+      // from both the joydev and evdev nodes. For instance, a gamepad that
+      // connects over USB and Bluetooth may need to select a mapper based on
+      // the connection type, but this information is only available through
+      // evdev. To ensure that gamepads are usable when evdev is unavailable, a
+      // preliminary mapping is assigned when the joydev node is enumerated.
+      //
+      // Here we check if associating the evdev node changed the mapping
+      // function that should be used for this gamepad. If so, assign the new
+      // mapper and rebuild the gamepad strings.
+      GamepadStandardMappingFunction mapper = device->GetMappingFunction();
+      if (mapper != state->mapper) {
+        state->mapper = mapper;
+        UpdateGamepadStrings(device->GetName(), device->GetVendorId(),
+                             device->GetProductId(), mapper != nullptr, &pad);
+      }
+
       pad.vibration_actuator.not_null = device->SupportsVibration();
     }
   }
