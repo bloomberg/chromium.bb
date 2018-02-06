@@ -577,22 +577,6 @@ GLenum GLES2Implementation::GetError() {
   return err;
 }
 
-GLenum GLES2Implementation::GetClientSideGLError() {
-  if (error_bits_ == 0) {
-    return GL_NO_ERROR;
-  }
-
-  GLenum error = GL_NO_ERROR;
-  for (uint32_t mask = 1; mask != 0; mask = mask << 1) {
-    if ((error_bits_ & mask) != 0) {
-      error = GLES2Util::GLErrorBitToGLError(mask);
-      break;
-    }
-  }
-  error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
-  return error;
-}
-
 GLenum GLES2Implementation::GetGLError() {
   TRACE_EVENT0("gpu", "GLES2::GetGLError");
   // Check the GL error first, then our wrapped error.
@@ -7249,6 +7233,52 @@ void GLES2Implementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
                           raster_mapped_buffer_->offset());
   raster_mapped_buffer_ = base::nullopt;
   CheckGLError();
+}
+
+void GLES2Implementation::IssueBeginQuery(GLenum target,
+                                          GLuint id,
+                                          uint32_t sync_data_shm_id,
+                                          uint32_t sync_data_shm_offset) {
+  helper_->BeginQueryEXT(target, id, sync_data_shm_id, sync_data_shm_offset);
+}
+
+void GLES2Implementation::IssueEndQuery(GLenum target, GLuint submit_count) {
+  helper_->EndQueryEXT(target, submit_count);
+}
+
+void GLES2Implementation::IssueQueryCounter(GLuint id,
+                                            GLenum target,
+                                            uint32_t sync_data_shm_id,
+                                            uint32_t sync_data_shm_offset,
+                                            GLuint submit_count) {
+  helper_->QueryCounterEXT(id, target, sync_data_shm_id, sync_data_shm_offset,
+                           submit_count);
+}
+
+void GLES2Implementation::IssueSetDisjointValueSync(
+    uint32_t sync_data_shm_id,
+    uint32_t sync_data_shm_offset) {
+  helper_->SetDisjointValueSyncCHROMIUM(sync_data_shm_id, sync_data_shm_offset);
+}
+
+GLenum GLES2Implementation::GetClientSideGLError() {
+  if (error_bits_ == 0) {
+    return GL_NO_ERROR;
+  }
+
+  GLenum error = GL_NO_ERROR;
+  for (uint32_t mask = 1; mask != 0; mask = mask << 1) {
+    if ((error_bits_ & mask) != 0) {
+      error = GLES2Util::GLErrorBitToGLError(mask);
+      break;
+    }
+  }
+  error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
+  return error;
+}
+
+CommandBufferHelper* GLES2Implementation::cmd_buffer_helper() {
+  return helper_;
 }
 
 // Include the auto-generated part of this file. We split this because it means

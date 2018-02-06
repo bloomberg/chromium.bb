@@ -150,7 +150,7 @@ QueryTracker::Query::Query(GLuint id,
       client_begin_time_us_(0),
       result_(0) {}
 
-void QueryTracker::Query::Begin(GLES2Implementation* gl) {
+void QueryTracker::Query::Begin(QueryTrackerClient* client) {
   // init memory, inc count
   MarkAsActive();
 
@@ -161,24 +161,24 @@ void QueryTracker::Query::Begin(GLES2Implementation* gl) {
     case GL_LATENCY_QUERY_CHROMIUM:
       client_begin_time_us_ = MicrosecondsSinceOriginOfTime();
       // tell service about id, shared memory and count
-      gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
+      client->IssueBeginQuery(target(), id(), shm_id(), shm_offset());
       break;
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     default:
       // tell service about id, shared memory and count
-      gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
+      client->IssueBeginQuery(target(), id(), shm_id(), shm_offset());
       break;
   }
 }
 
-void QueryTracker::Query::End(GLES2Implementation* gl) {
+void QueryTracker::Query::End(QueryTrackerClient* client) {
   switch (target()) {
     case GL_GET_ERROR_QUERY_CHROMIUM: {
-      GLenum error = gl->GetClientSideGLError();
+      GLenum error = client->GetClientSideGLError();
       if (error == GL_NO_ERROR) {
         // There was no error so start the query on the service.
         // it will end immediately.
-        gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
+        client->IssueBeginQuery(target(), id(), shm_id(), shm_offset());
       } else {
         // There's an error on the client, no need to bother the service. Just
         // set the query as completed and return the error.
@@ -190,19 +190,19 @@ void QueryTracker::Query::End(GLES2Implementation* gl) {
       }
     }
   }
-  flush_count_ = gl->helper()->flush_generation();
+  flush_count_ = client->cmd_buffer_helper()->flush_generation();
   int32_t submit_count = NextSubmitCount();
-  gl->helper()->EndQueryEXT(target(), submit_count);
-  MarkAsPending(gl->helper()->InsertToken(), submit_count);
+  client->IssueEndQuery(target(), submit_count);
+  MarkAsPending(client->cmd_buffer_helper()->InsertToken(), submit_count);
 }
 
-void QueryTracker::Query::QueryCounter(GLES2Implementation* gl) {
+void QueryTracker::Query::QueryCounter(QueryTrackerClient* client) {
   MarkAsActive();
-  flush_count_ = gl->helper()->flush_generation();
+  flush_count_ = client->cmd_buffer_helper()->flush_generation();
   int32_t submit_count = NextSubmitCount();
-  gl->helper()->QueryCounterEXT(id(), target(), shm_id(), shm_offset(),
-                                submit_count);
-  MarkAsPending(gl->helper()->InsertToken(), submit_count);
+  client->IssueQueryCounter(id(), target(), shm_id(), shm_offset(),
+                            submit_count);
+  MarkAsPending(client->cmd_buffer_helper()->InsertToken(), submit_count);
 }
 
 bool QueryTracker::Query::CheckResultsAvailable(
@@ -211,12 +211,12 @@ bool QueryTracker::Query::CheckResultsAvailable(
     bool processed_all = base::subtle::Acquire_Load(
                              &info_.sync->process_count) == submit_count();
     // We check lost on the command buffer itself here instead of checking the
-    // GLES2Implementation because the GLES2Implementation will not hear about
+    // QueryTrackerClient because the QueryTrackerClient will not hear about
     // the loss until we exit out of this call stack (to avoid re-entrancy), and
     // we need be able to enter kComplete state on context loss.
-    // TODO(danakj): If GLES2Implementation can handle being notified of loss
+    // TODO(danakj): If QueryTrackerClient can handle being notified of loss
     // re-entrantly (without calling its clients re-entrantly), then we could
-    // call GLES2Implementation::GetGraphicsResetStatusKHR() here and remove
+    // call QueryTrackerClient::GetGraphicsResetStatusKHR() here and remove
     // this method from CommandBufferHelper.
     if (processed_all || helper->IsContextLost()) {
       switch (target()) {
@@ -314,65 +314,63 @@ void QueryTracker::Shrink(CommandBufferHelper* helper) {
   query_sync_manager_.Shrink(helper);
 }
 
-bool QueryTracker::BeginQuery(GLuint id, GLenum target,
-                              GLES2Implementation* gl) {
+bool QueryTracker::BeginQuery(GLuint id,
+                              GLenum target,
+                              QueryTrackerClient* client) {
   QueryTracker::Query* query = GetQuery(id);
   if (!query) {
     query = CreateQuery(id, target);
     if (!query) {
-      gl->SetGLError(GL_OUT_OF_MEMORY,
-                     "glBeginQueryEXT",
-                     "transfer buffer allocation failed");
+      client->SetGLError(GL_OUT_OF_MEMORY, "glBeginQueryEXT",
+                         "transfer buffer allocation failed");
       return false;
     }
   } else if (query->target() != target) {
-    gl->SetGLError(GL_INVALID_OPERATION,
-                   "glBeginQueryEXT",
-                   "target does not match");
+    client->SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                       "target does not match");
     return false;
   }
 
   current_queries_[query->target()] = query;
-  query->Begin(gl);
+  query->Begin(client);
   return true;
 }
 
-bool QueryTracker::EndQuery(GLenum target, GLES2Implementation* gl) {
+bool QueryTracker::EndQuery(GLenum target, QueryTrackerClient* client) {
   QueryTargetMap::iterator target_it = current_queries_.find(target);
   if (target_it == current_queries_.end()) {
-    gl->SetGLError(GL_INVALID_OPERATION,
-                   "glEndQueryEXT", "no active query");
+    client->SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT",
+                       "no active query");
     return false;
   }
 
-  target_it->second->End(gl);
+  target_it->second->End(client);
   current_queries_.erase(target_it);
   return true;
 }
 
-bool QueryTracker::QueryCounter(GLuint id, GLenum target,
-                                GLES2Implementation* gl) {
+bool QueryTracker::QueryCounter(GLuint id,
+                                GLenum target,
+                                QueryTrackerClient* client) {
   QueryTracker::Query* query = GetQuery(id);
   if (!query) {
     query = CreateQuery(id, target);
     if (!query) {
-      gl->SetGLError(GL_OUT_OF_MEMORY,
-                     "glQueryCounterEXT",
-                     "transfer buffer allocation failed");
+      client->SetGLError(GL_OUT_OF_MEMORY, "glQueryCounterEXT",
+                         "transfer buffer allocation failed");
       return false;
     }
   } else if (query->target() != target) {
-    gl->SetGLError(GL_INVALID_OPERATION,
-                   "glQueryCounterEXT",
-                   "target does not match");
+    client->SetGLError(GL_INVALID_OPERATION, "glQueryCounterEXT",
+                       "target does not match");
     return false;
   }
 
-  query->QueryCounter(gl);
+  query->QueryCounter(client);
   return true;
 }
 
-bool QueryTracker::SetDisjointSync(GLES2Implementation* gl) {
+bool QueryTracker::SetDisjointSync(QueryTrackerClient* client) {
   if (!disjoint_count_sync_) {
     // Allocate memory for disjoint value sync.
     int32_t shm_id = -1;
@@ -385,7 +383,7 @@ bool QueryTracker::SetDisjointSync(GLES2Implementation* gl) {
       disjoint_count_sync_shm_offset_ = shm_offset;
       disjoint_count_sync_ = static_cast<DisjointValueSync*>(mem);
       disjoint_count_sync_->Reset();
-      gl->helper()->SetDisjointValueSyncCHROMIUM(shm_id, shm_offset);
+      client->IssueSetDisjointValueSync(shm_id, shm_offset);
     }
   }
   return disjoint_count_sync_ != nullptr;
