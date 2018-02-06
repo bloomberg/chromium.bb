@@ -96,7 +96,14 @@ def main():
   parser.add_argument(
       '--collect-prod-hosts',
       action='store_true',
-      help='Enable collection of prod host metrics, like roles')
+      help='[DEPRECATED. Use --collect-host-manifest instead.] '
+           'Enable collection of prod host metrics, like roles')
+  parser.add_argument(
+      '--collect-host-manifest',
+      default=None,
+      choices=['prod', 'staging'],
+      help='Enable collection of server metrics (e.g. roles) for servers in '
+           'the given lab environment.')
   opts = parser.parse_args()
   opts.Freeze()
 
@@ -107,6 +114,9 @@ def main():
   interface.state.metric_name_prefix = (interface.state.metric_name_prefix
                                         + 'chromeos/sysmon/')
 
+  # Transitional, while we migrate users off of |collect_prod_hosts|
+  if opts.collect_host_manifest is not None:
+    opts.collect_prod_hosts = True
   collector = _MetricCollector(collect_prod_hosts=opts.collect_prod_hosts)
   loop.SleepLoop(callback=collector,
                  interval=opts.interval).loop_forever()
