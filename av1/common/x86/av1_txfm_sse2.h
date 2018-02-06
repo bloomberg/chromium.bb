@@ -59,16 +59,30 @@ static INLINE __m128i load_32bit_to_16bit(const int32_t *a) {
   return _mm_packs_epi32(a_low, *(const __m128i *)(a + 4));
 }
 
-// Store 8 16 bit values. If the destination is 32 bits then sign extend the
-// values by multiplying by 1.
+// Store 8 16 bit values. Sign extend the values.
 static INLINE void store_16bit_to_32bit(__m128i a, int32_t *b) {
-  const __m128i one = _mm_set1_epi16(1);
-  const __m128i a_hi = _mm_mulhi_epi16(a, one);
-  const __m128i a_lo = _mm_mullo_epi16(a, one);
-  const __m128i a_1 = _mm_unpacklo_epi16(a_lo, a_hi);
-  const __m128i a_2 = _mm_unpackhi_epi16(a_lo, a_hi);
-  _mm_store_si128((__m128i *)(b), a_1);
+  const __m128i a_lo = _mm_unpacklo_epi16(a, a);
+  const __m128i a_hi = _mm_unpackhi_epi16(a, a);
+  const __m128i a_1 = _mm_srai_epi32(a_lo, 16);
+  const __m128i a_2 = _mm_srai_epi32(a_hi, 16);
+  _mm_store_si128((__m128i *)b, a_1);
   _mm_store_si128((__m128i *)(b + 4), a_2);
+}
+
+static INLINE void store_rect_16bit_to_32bit(__m128i a, int32_t *b) {
+  const __m128i sqrt2_coef = _mm_set1_epi16(NewSqrt2);
+  const __m128i rounding = _mm_set1_epi32(1 << (NewSqrt2Bits - 1));
+  __m128i a_lo, a_hi;
+  a_lo = _mm_unpacklo_epi16(a, _mm_setzero_si128());
+  a_hi = _mm_unpackhi_epi16(a, _mm_setzero_si128());
+  a_lo = _mm_madd_epi16(a_lo, sqrt2_coef);
+  a_hi = _mm_madd_epi16(a_hi, sqrt2_coef);
+  a_lo = _mm_add_epi32(a_lo, rounding);
+  a_hi = _mm_add_epi32(a_hi, rounding);
+  a_lo = _mm_srai_epi32(a_lo, NewSqrt2Bits);
+  a_hi = _mm_srai_epi32(a_hi, NewSqrt2Bits);
+  _mm_store_si128((__m128i *)b, a_lo);
+  _mm_store_si128((__m128i *)(b + 4), a_hi);
 }
 
 static INLINE void load_buffer_16bit_to_16bit(const int16_t *in, int stride,
@@ -98,6 +112,14 @@ static INLINE void store_buffer_16bit_to_32bit_8x8(const __m128i *const in,
                                                    const int stride) {
   for (int i = 0; i < 8; ++i) {
     store_16bit_to_32bit(in[i], out + i * stride);
+  }
+}
+
+static INLINE void store_rect_buffer_16bit_to_32bit_8x8(const __m128i *const in,
+                                                        int32_t *const out,
+                                                        const int stride) {
+  for (int i = 0; i < 8; ++i) {
+    store_rect_16bit_to_32bit(in[i], out + i * stride);
   }
 }
 
