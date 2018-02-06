@@ -55,9 +55,8 @@ std::string HistogramInternalsRequestJob::GenerateHTML(const GURL& url) {
   data.append("</head><body>");
 
   // Display any stats for which we sent off requests the last time.
-  data.append("<p>Stats accumulated from browser startup to previous ");
-  data.append("page load; reload to get stats as of this page load.</p>\n");
-  data.append("<table width=\"100%\">\n");
+  data.append(
+      "<p>Stats accumulated since browser startup. Reload to refresh.</p>\n");
 
   base::StatisticsRecorder::WriteHTMLGraph(unescaped_query, &data);
   return data;
