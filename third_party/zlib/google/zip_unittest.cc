@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -338,6 +339,75 @@ TEST_F(ZipTest, UnzipEvil2) {
   ASSERT_FALSE(base::PathExists(evil_file));
 }
 
+TEST_F(ZipTest, UnzipWithFilter) {
+  auto filter = base::BindRepeating([](const base::FilePath& path) {
+    return path.BaseName().MaybeAsASCII() == "foo.txt";
+  });
+  base::FilePath path;
+  ASSERT_TRUE(GetTestDataDirectory(&path));
+  ASSERT_TRUE(zip::UnzipWithFilterCallback(path.AppendASCII("test.zip"),
+                                           test_dir_, filter, false));
+  // Only foo.txt should have been extracted. The following paths should not
+  // be extracted:
+  //   foo/
+  //   foo/bar.txt
+  //   foo/bar/
+  //   foo/bar/.hidden
+  //   foo/bar/baz.txt
+  //   foo/bar/quux.txt
+  ASSERT_TRUE(base::PathExists(test_dir_.AppendASCII("foo.txt")));
+  base::FileEnumerator extractedFiles(
+      test_dir_,
+      false,  // Do not enumerate recursively - the file must be in the root.
+      base::FileEnumerator::FileType::FILES);
+  int extracted_count = 0;
+  while (!extractedFiles.Next().empty())
+    ++extracted_count;
+  ASSERT_EQ(1, extracted_count);
+
+  base::FileEnumerator extractedDirs(
+      test_dir_,
+      false,  // Do not enumerate recursively - we require zero directories.
+      base::FileEnumerator::FileType::DIRECTORIES);
+  extracted_count = 0;
+  while (!extractedDirs.Next().empty())
+    ++extracted_count;
+  ASSERT_EQ(0, extracted_count);
+}
+
+TEST_F(ZipTest, UnzipWithDelegates) {
+  auto filter =
+      base::BindRepeating([](const base::FilePath& path) { return true; });
+  auto dir_creator = base::BindRepeating(
+      [](const base::FilePath& extract_dir, const base::FilePath& entry_path) {
+        return base::CreateDirectory(extract_dir.Append(entry_path));
+      },
+      test_dir_);
+  auto writer = base::BindRepeating(
+      [](const base::FilePath& extract_dir, const base::FilePath& entry_path)
+          -> std::unique_ptr<zip::WriterDelegate> {
+        return std::make_unique<zip::FilePathWriterDelegate>(
+            extract_dir.Append(entry_path));
+      },
+      test_dir_);
+  base::FilePath path;
+  ASSERT_TRUE(GetTestDataDirectory(&path));
+  base::File file(path.AppendASCII("test.zip"),
+                  base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+  ASSERT_TRUE(zip::UnzipWithFilterAndWriters(file.GetPlatformFile(), writer,
+                                             dir_creator, filter, false));
+  base::FilePath dir = test_dir_;
+  base::FilePath dir_foo = dir.AppendASCII("foo");
+  base::FilePath dir_foo_bar = dir_foo.AppendASCII("bar");
+  ASSERT_TRUE(base::PathExists(dir.AppendASCII("foo.txt")));
+  ASSERT_TRUE(base::PathExists(dir_foo));
+  ASSERT_TRUE(base::PathExists(dir_foo.AppendASCII("bar.txt")));
+  ASSERT_TRUE(base::PathExists(dir_foo_bar));
+  ASSERT_TRUE(base::PathExists(dir_foo_bar.AppendASCII(".hidden")));
+  ASSERT_TRUE(base::PathExists(dir_foo_bar.AppendASCII("baz.txt")));
+  ASSERT_TRUE(base::PathExists(dir_foo_bar.AppendASCII("quux.txt")));
+}
+
 TEST_F(ZipTest, Zip) {
   base::FilePath src_dir;
   ASSERT_TRUE(GetTestDataDirectory(&src_dir));
@@ -424,10 +494,11 @@ TEST_F(ZipTest, ZipFiles) {
   EXPECT_TRUE(reader.Open(zip_name));
   EXPECT_EQ(zip_file_list_.size(), static_cast<size_t>(reader.num_entries()));
   for (size_t i = 0; i < zip_file_list_.size(); ++i) {
-    EXPECT_TRUE(reader.LocateAndOpenEntry(zip_file_list_[i]));
-    // Check the path in the entry just in case.
+    EXPECT_TRUE(reader.HasMore());
+    EXPECT_TRUE(reader.OpenCurrentEntryInZip());
     const zip::ZipReader::EntryInfo* entry_info = reader.current_entry_info();
     EXPECT_EQ(entry_info->file_path(), zip_file_list_[i]);
+    reader.AdvanceToNextEntry();
   }
 }
 #endif  // defined(OS_POSIX)
