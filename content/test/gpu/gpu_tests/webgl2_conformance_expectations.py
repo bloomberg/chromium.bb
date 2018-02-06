@@ -87,6 +87,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelodoffset.html',
         bug=794335)
 
+    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
+        ['mac', 'linux'], bug=809233)
+    self.Fail('conformance2/transform_feedback/simultaneous_binding.html',
+        bug=696345)
+    self.Fail('conformance2/uniforms/' +
+        'incompatible-texture-type-for-sampler.html',
+        bug=809237)
+
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['nvidia'], bug=798117)
+    self.Fail('conformance/glsl/bugs/' +
+        'in-parameter-passed-as-inout-argument-and-global.html',
+        ['nvidia'], bug=792210)
+
     # Windows only.
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win'], bug=757098)
@@ -103,6 +117,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=736926)
     self.Fail('conformance2/uniforms/uniform-blocks-with-arrays.html',
         ['win'], bug=2103) # angle bug ID
+    self.Fail('conformance2/rendering/' +
+        'framebuffer-texture-changing-base-level.html',
+        ['win'], bug=2291) # angle bug ID
+    self.Fail('conformance/glsl/bugs/if-return-and-elseif.html',
+        ['win'], bug=2325) # angle bug ID
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
