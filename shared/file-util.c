@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
 #include "file-util.h"
 
@@ -118,4 +119,22 @@ file_create_dated(const char *path_prefix, const char *suffix,
 		return NULL;
 
 	return fdopen(fd, "w");
+}
+
+char *
+file_name_with_datadir(const char *filename)
+{
+	const char *base = getenv("WESTON_DATA_DIR");
+	char *out;
+	int len;
+
+	if (base)
+		len = asprintf(&out, "%s/%s", base, filename);
+	else
+		len = asprintf(&out, "%s/weston/%s", DATADIR, filename);
+
+	if (len == -1)
+		return NULL;
+
+	return out;
 }
