@@ -43,10 +43,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // during construction.
   void Initialize();
 
-  // Destroys the system tray and web notification tray. Called before
-  // tearing down the windows to avoid shutdown ordering issues.
-  void Shutdown();
-
   // Update the alignment of the widget and tray views.
   void UpdateAfterShelfAlignmentChange();
 
@@ -67,15 +63,15 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;
   }
-  SystemTray* system_tray() { return system_tray_; }
+  SystemTray* system_tray() { return system_tray_.get(); }
   WebNotificationTray* web_notification_tray() {
-    return web_notification_tray_;
+    return web_notification_tray_.get();
   }
-  OverviewButtonTray* overview_button_tray() { return overview_button_tray_; }
-
-  PaletteTray* palette_tray() { return palette_tray_; }
-
-  ImeMenuTray* ime_menu_tray() { return ime_menu_tray_; }
+  OverviewButtonTray* overview_button_tray() {
+    return overview_button_tray_.get();
+  }
+  PaletteTray* palette_tray() { return palette_tray_.get(); }
+  ImeMenuTray* ime_menu_tray() { return ime_menu_tray_.get(); }
 
   Shelf* shelf() { return shelf_; }
 
@@ -101,11 +97,11 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   void UpdateShelfItemBackground(SkColor color) override;
 
   LogoutButtonTray* logout_button_tray_for_testing() {
-    return logout_button_tray_;
+    return logout_button_tray_.get();
   }
 
   VirtualKeyboardTray* virtual_keyboard_tray_for_testing() {
-    return virtual_keyboard_tray_;
+    return virtual_keyboard_tray_.get();
   }
 
  private:
@@ -119,14 +115,13 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
 
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
-  // Child views owned by views hierarchy.
-  OverviewButtonTray* overview_button_tray_ = nullptr;
-  SystemTray* system_tray_ = nullptr;
-  WebNotificationTray* web_notification_tray_ = nullptr;
-  LogoutButtonTray* logout_button_tray_ = nullptr;
-  PaletteTray* palette_tray_ = nullptr;
-  VirtualKeyboardTray* virtual_keyboard_tray_ = nullptr;
-  ImeMenuTray* ime_menu_tray_ = nullptr;
+  std::unique_ptr<OverviewButtonTray> overview_button_tray_;
+  std::unique_ptr<SystemTray> system_tray_;
+  std::unique_ptr<WebNotificationTray> web_notification_tray_;
+  std::unique_ptr<LogoutButtonTray> logout_button_tray_;
+  std::unique_ptr<PaletteTray> palette_tray_;
+  std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
+  std::unique_ptr<ImeMenuTray> ime_menu_tray_;
 
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 

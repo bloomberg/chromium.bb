@@ -52,6 +52,7 @@ namespace ash {
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
     : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
   DCHECK(shelf_);
+  set_owned_by_client();  // Deleted by DeleteDelegate().
 
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
@@ -118,7 +119,9 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
   return focus_cycler->widget_activating() == GetWidget();
 }
 
-void StatusAreaWidgetDelegate::DeleteDelegate() {}
+void StatusAreaWidgetDelegate::DeleteDelegate() {
+  delete this;
+}
 
 void StatusAreaWidgetDelegate::UpdateLayout() {
   // Use a grid layout so that the trays can be centered in each cell, and

@@ -332,7 +332,8 @@ void TrayBubbleView::OnWidgetClosing(Widget* widget) {
 
   BubbleDialogDelegateView::OnWidgetClosing(widget);
   --g_current_tray_bubble_showing_count_;
-  DCHECK_GE(g_current_tray_bubble_showing_count_, 0);
+  DCHECK_GE(g_current_tray_bubble_showing_count_, 0)
+      << "Closing " << widget->GetName();
 }
 
 void TrayBubbleView::OnWidgetActivationChanged(Widget* widget, bool active) {
