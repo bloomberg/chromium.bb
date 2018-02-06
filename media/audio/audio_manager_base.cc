@@ -573,24 +573,15 @@ void AudioManagerBase::InitializeDebugRecording() {
   debug_recording_manager_ = CreateAudioDebugRecordingManager(GetTaskRunner());
 }
 
-void AudioManagerBase::EnableDebugRecording(
-    const base::FilePath& base_file_name) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  DCHECK(debug_recording_manager_)
-      << "InitializeDebugRecording() must be called before enabling";
-  debug_recording_manager_->EnableDebugRecording(base_file_name);
-}
-
-void AudioManagerBase::DisableDebugRecording() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  if (debug_recording_manager_)
-    debug_recording_manager_->DisableDebugRecording();
-}
-
 std::unique_ptr<AudioDebugRecordingManager>
 AudioManagerBase::CreateAudioDebugRecordingManager(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return std::make_unique<AudioDebugRecordingManager>(std::move(task_runner));
+}
+
+AudioDebugRecordingManager* AudioManagerBase::GetAudioDebugRecordingManager() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return debug_recording_manager_.get();
 }
 
 void AudioManagerBase::SetMaxStreamCountForTesting(int max_input,
