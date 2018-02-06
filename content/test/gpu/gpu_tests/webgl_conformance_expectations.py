@@ -112,6 +112,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['nvidia'], bug=798117)
+    self.Fail('conformance/glsl/bugs/' +
+        'in-parameter-passed-as-inout-argument-and-global.html',
+        ['nvidia'], bug=792210)
 
     # Timing out on multiple platforms right now.
     self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
@@ -238,6 +243,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=616335)
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
+    self.Fail('conformance/glsl/bugs/if-return-and-elseif.html',
+        ['win'], bug=2325) # angle bug ID
 
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
