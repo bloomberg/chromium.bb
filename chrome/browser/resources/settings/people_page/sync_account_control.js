@@ -12,74 +12,148 @@ Polymer({
   properties: {
     /**
      * The current sync status, supplied by SyncBrowserProxy.
-     * @type {?settings.SyncStatus}
+     * @type {!settings.SyncStatus}
      */
     syncStatus: Object,
 
-    /** @private {!settings.ProfileInfo} */
-    profileInfo_: Object,
+    /** @private {!Array<!settings.StoredAccount>} */
+    storedAccounts_: Object,
+
+    /** @private {?settings.StoredAccount} */
+    shownAccount_: Object,
+
+    promoLabel: String,
+
+    promoSecondaryLabel: String,
+
+    /** @private {boolean} */
+    shouldShowAvatarRow_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowAvatarRow_(storedAccounts_, syncStatus,' +
+          'storedAccounts_.length, syncStatus.signedIn)',
+    }
   },
+
+  observers: [
+    'onShownAccountShouldChange_(storedAccounts_.*, syncStatus.*)',
+  ],
 
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
   /** @override */
   attached: function() {
-    const profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
-    profileInfoProxy.getProfileInfo().then(this.handleProfileInfo_.bind(this));
-    this.addWebUIListener(
-        'profile-info-changed', this.handleProfileInfo_.bind(this));
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
+    this.syncBrowserProxy_.getStoredAccounts().then(
+        this.handleStoredAccounts_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+    this.addWebUIListener(
+        'stored-accounts-updated', this.handleStoredAccounts_.bind(this));
   },
 
   /**
-   * Handler for when the profile's icon and name is updated.
+   * @param {string} label
+   * @param {string} name
+   * @return {string}
    * @private
-   * @param {!settings.ProfileInfo} info
    */
-  handleProfileInfo_: function(info) {
-    this.profileInfo_ = info;
+  getSubstituteLabel_: function(label, name) {
+    return loadTimeData.substituteString(label, name);
+  },
+
+  /**
+   * @param {string} label
+   * @param {string} name
+   * @return {string}
+   * @private
+   */
+  getNameDisplay_: function(label, name) {
+    return this.syncStatus.signedIn ?
+        loadTimeData.substituteString(label, name) :
+        name;
+  },
+
+  /**
+   * @param {!Array<!settings.StoredAccount>} accounts
+   * @private
+   */
+  handleStoredAccounts_: function(accounts) {
+    this.storedAccounts_ = accounts;
   },
 
   /**
    * Handler for when the sync state is pushed from the browser.
-   * @param {?settings.SyncStatus} syncStatus
+   * @param {!settings.SyncStatus} syncStatus
    * @private
    */
   handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
   },
 
-  /** @private */
-  onSigninTap_: function() {
-    this.syncBrowserProxy_.startSignIn();
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowAvatarRow_: function() {
+    return this.syncStatus.signedIn || this.storedAccounts_.length > 0;
   },
 
   /** @private */
-  onDisconnectTap_: function() {
+  onSigninTap_: function() {
+    this.syncBrowserProxy_.startSignIn();
+
+    // Need to close here since one menu item also triggers this function.
+    if (this.$$('#menu')) {
+      /** @type {!CrActionMenuElement} */ (this.$$('#menu')).close();
+    }
+  },
+
+  /** @private */
+  onSyncButtonTap_: function() {
+    assert(this.shownAccount_);
+    this.syncBrowserProxy_.startSyncingWithEmail(this.shownAccount_.email);
+  },
+
+  /** @private */
+  onTurnOffButtonTap_: function() {
     /* This will route to people_page's disconnect dialog. */
     settings.navigateTo(settings.routes.SIGN_OUT);
   },
 
-  /**
-   * @param {string} iconUrl
-   * @return {string} A CSS image-set for multiple scale factors.
-   * @private
-   */
-  getIcon_: function(iconUrl) {
-    return cr.icon.getImage(iconUrl);
+  /** @private */
+  onMenuButtonTap_: function() {
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('#menu'));
+    actionMenu.showAt(assert(this.$$('#dots')));
   },
 
   /**
-   * @param {!settings.SyncStatus} syncStatus
-   * @return {boolean} Whether to show the "Sign in to Chrome" button.
+   * @param {!{model:
+   *          !{item: !settings.StoredAccount},
+   *        }} e
    * @private
    */
-  showSignin_: function(syncStatus) {
-    return !!syncStatus.signinAllowed && !syncStatus.signedIn;
+  onAccountTap_: function(e) {
+    this.shownAccount_ = e.model.item;
+    /** @type {!CrActionMenuElement} */ (this.$$('#menu')).close();
   },
+
+  /** @private */
+  onShownAccountShouldChange_: function() {
+    if (this.syncStatus.signedIn) {
+      for (let i = 0; i < this.storedAccounts_.length; i++) {
+        if (this.storedAccounts_[i].email == this.syncStatus.signedInUsername) {
+          this.shownAccount_ = this.storedAccounts_[i];
+          return;
+        }
+      }
+    } else {
+      this.shownAccount_ =
+          this.storedAccounts_ ? this.storedAccounts_[0] : null;
+    }
+  }
 });

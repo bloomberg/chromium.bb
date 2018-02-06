@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -28,6 +29,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/signin/core/browser/signin_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -1439,13 +1441,19 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
 #else   // !defined(OS_CHROMEOS)
     {"domainManagedProfile", IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE},
-    {"peopleSignInPrompt", IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT},
-    {"peopleSignInPromptSecondary",
-     IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY},
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
     {"profileNameAndPicture", IDS_SETTINGS_PROFILE_NAME_AND_PICTURE},
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
 #endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    {"peopleSignInPrompt", IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT},
+    {"peopleSignInPromptSecondary",
+     IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY},
+    {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
+    {"syncAsName", IDS_SETTINGS_PEOPLE_SYNC_AS_NAME},
+    {"syncedToName", IDS_SETTINGS_PEOPLE_SYNCED_TO_NAME},
+    {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+#endif
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncDisabledByAdministrator",
      IDS_SETTINGS_SYNC_DISABLED_BY_ADMINISTRATOR},

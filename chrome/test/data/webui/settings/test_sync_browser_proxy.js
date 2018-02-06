@@ -7,6 +7,7 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getSyncStatus',
+      'getStoredAccounts',
       'signOut',
     ]);
   }
@@ -18,6 +19,12 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
       signedIn: true,
       signedInUsername: 'fakeUsername'
     });
+  }
+
+  /** @override */
+  getStoredAccounts() {
+    this.methodCalled('getStoredAccounts');
+    return Promise.resolve([]);
   }
 
   /** @override */

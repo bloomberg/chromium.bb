@@ -3051,6 +3051,18 @@
     <message name="IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY" desc="The secondary text displayed to prompt users to sign in to chrome.">
       Sync for a personalized browsing experience, across your devices
     </message>
+    <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
+      Use another account
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_SYNC_AS_NAME" desc="The label for the button that lets the user lock-in the account to sync with.">
+      Sync as <ph name="FULL_NAME">$1<ex>Bob Smith</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_SYNCED_TO_NAME" desc="The text displayed to the user that the profile is currently synced to a specific account.">
+      Synced to <ph name="FULL_NAME">$1<ex>Bob Smith</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF" desc="The label for the button that lets the user turn off profile syncing with their gaia account.">
+      Turn off
+    </message>
     <message name="IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION" desc="The text to display in the 'Sign out of Chrome' dialog to stop syncing for managed profiles.">
       Because this account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>, your bookmarks, history, passwords, and other settings will be cleared from this device. However, your data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
     </message>
