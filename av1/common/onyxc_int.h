@@ -222,6 +222,9 @@ typedef struct SequenceHeader {
   int frame_id_numbers_present_flag;
   int frame_id_length;
   int delta_frame_id_length;
+  BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
+  int mib_size;        // Size of the superblock in units of MI blocks
+  int mib_size_log2;   // Log 2 of above.
 #if CONFIG_MONO_VIDEO
   int monochrome;
 #endif  // CONFIG_MONO_VIDEO
@@ -553,9 +556,6 @@ typedef struct AV1Common {
   int film_grain_params_present;
   aom_film_grain_t film_grain_params;
 #endif
-  BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
-  int mib_size;        // Size of the superblock in units of MI blocks
-  int mib_size_log2;   // Log 2 of above.
   int cdef_pri_damping;
   int cdef_sec_damping;
   int nb_cdef_strengths;
@@ -746,11 +746,11 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
 }
 
 static INLINE int mi_cols_aligned_to_sb(const AV1_COMMON *cm) {
-  return ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
+  return ALIGN_POWER_OF_TWO(cm->mi_cols, cm->seq_params.mib_size_log2);
 }
 
 static INLINE int mi_rows_aligned_to_sb(const AV1_COMMON *cm) {
-  return ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
+  return ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
 }
 
 static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
@@ -1180,7 +1180,8 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           int mi_col_start, int mi_col_end) {
   const int num_planes = av1_num_planes(cm);
   const int width = mi_col_end - mi_col_start;
-  const int aligned_width = ALIGN_POWER_OF_TWO(width, cm->mib_size_log2);
+  const int aligned_width =
+      ALIGN_POWER_OF_TWO(width, cm->seq_params.mib_size_log2);
 
   const int offset_y = mi_col_start << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
   const int width_y = aligned_width << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
@@ -1377,10 +1378,11 @@ static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
 #endif
 }
 
-static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {
-  cm->sb_size = sb_size;
-  cm->mib_size = mi_size_wide[cm->sb_size];
-  cm->mib_size_log2 = b_width_log2_lookup[cm->sb_size];
+static INLINE void set_sb_size(SequenceHeader *const seq_params,
+                               BLOCK_SIZE sb_size) {
+  seq_params->sb_size = sb_size;
+  seq_params->mib_size = mi_size_wide[seq_params->sb_size];
+  seq_params->mib_size_log2 = b_width_log2_lookup[seq_params->sb_size];
 }
 
 static INLINE int all_lossless(const AV1_COMMON *cm, const MACROBLOCKD *xd) {

@@ -151,16 +151,16 @@ static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
   enum lf_path path = get_loop_filter_path(lf_data->y_only, lf_data->planes);
 #endif
   for (mi_row = lf_data->start; mi_row < lf_data->stop;
-       mi_row += lf_sync->num_workers * lf_data->cm->mib_size) {
+       mi_row += lf_sync->num_workers * lf_data->cm->seq_params.mib_size) {
     MODE_INFO **const mi =
         lf_data->cm->mi_grid_visible + mi_row * lf_data->cm->mi_stride;
 
     for (mi_col = 0; mi_col < lf_data->cm->mi_cols;
-         mi_col += lf_data->cm->mib_size) {
+         mi_col += lf_data->cm->seq_params.mib_size) {
       LOOP_FILTER_MASK lfm;
       int plane;
 
-      av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
+      av1_setup_dst_planes(lf_data->planes, lf_data->cm->seq_params.sb_size,
                            lf_data->frame_buffer, mi_row, mi_col,
                            av1_num_planes(lf_data->cm));
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
@@ -184,22 +184,22 @@ static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
 static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
                                       LFWorkerData *const lf_data) {
   const int num_planes = lf_data->y_only ? 1 : MAX_MB_PLANE;
-  const int sb_cols =
-      mi_cols_aligned_to_sb(lf_data->cm) >> lf_data->cm->mib_size_log2;
+  const int sb_cols = mi_cols_aligned_to_sb(lf_data->cm) >>
+                      lf_data->cm->seq_params.mib_size_log2;
   int mi_row, mi_col;
 #if !CONFIG_EXT_PARTITION_TYPES
   enum lf_path path = get_loop_filter_path(lf_data->y_only, lf_data->planes);
 #endif
 
   for (mi_row = lf_data->start; mi_row < lf_data->stop;
-       mi_row += lf_sync->num_workers * lf_data->cm->mib_size) {
+       mi_row += lf_sync->num_workers * lf_data->cm->seq_params.mib_size) {
     MODE_INFO **const mi =
         lf_data->cm->mi_grid_visible + mi_row * lf_data->cm->mi_stride;
 
     for (mi_col = 0; mi_col < lf_data->cm->mi_cols;
-         mi_col += lf_data->cm->mib_size) {
-      const int r = mi_row >> lf_data->cm->mib_size_log2;
-      const int c = mi_col >> lf_data->cm->mib_size_log2;
+         mi_col += lf_data->cm->seq_params.mib_size) {
+      const int r = mi_row >> lf_data->cm->seq_params.mib_size_log2;
+      const int c = mi_col >> lf_data->cm->seq_params.mib_size_log2;
       LOOP_FILTER_MASK lfm;
       int plane;
 
@@ -207,7 +207,7 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
       // the outer loop to column-based and remove the synchronizations here.
       sync_read(lf_sync, r, c);
 
-      av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
+      av1_setup_dst_planes(lf_data->planes, lf_data->cm->seq_params.sb_size,
                            lf_data->frame_buffer, mi_row, mi_col,
                            av1_num_planes(lf_data->cm));
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
@@ -230,8 +230,8 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
 static int loop_filter_row_worker(AV1LfSync *const lf_sync,
                                   LFWorkerData *const lf_data) {
   const int num_planes = lf_data->y_only ? 1 : MAX_MB_PLANE;
-  const int sb_cols =
-      mi_cols_aligned_to_sb(lf_data->cm) >> lf_data->cm->mib_size_log2;
+  const int sb_cols = mi_cols_aligned_to_sb(lf_data->cm) >>
+                      lf_data->cm->seq_params.mib_size_log2;
   int mi_row, mi_col;
 #if !CONFIG_EXT_PARTITION_TYPES
   enum lf_path path = get_loop_filter_path(lf_data->y_only, lf_data->planes);
@@ -245,14 +245,14 @@ static int loop_filter_row_worker(AV1LfSync *const lf_sync,
 #endif  // CONFIG_EXT_PARTITION
 
   for (mi_row = lf_data->start; mi_row < lf_data->stop;
-       mi_row += lf_sync->num_workers * lf_data->cm->mib_size) {
+       mi_row += lf_sync->num_workers * lf_data->cm->seq_params.mib_size) {
     MODE_INFO **const mi =
         lf_data->cm->mi_grid_visible + mi_row * lf_data->cm->mi_stride;
 
     for (mi_col = 0; mi_col < lf_data->cm->mi_cols;
-         mi_col += lf_data->cm->mib_size) {
-      const int r = mi_row >> lf_data->cm->mib_size_log2;
-      const int c = mi_col >> lf_data->cm->mib_size_log2;
+         mi_col += lf_data->cm->seq_params.mib_size) {
+      const int r = mi_row >> lf_data->cm->seq_params.mib_size_log2;
+      const int c = mi_col >> lf_data->cm->seq_params.mib_size_log2;
 #if !CONFIG_EXT_PARTITION_TYPES
       LOOP_FILTER_MASK lfm;
 #endif
@@ -260,7 +260,7 @@ static int loop_filter_row_worker(AV1LfSync *const lf_sync,
 
       sync_read(lf_sync, r, c);
 
-      av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
+      av1_setup_dst_planes(lf_data->planes, lf_data->cm->seq_params.sb_size,
                            lf_data->frame_buffer, mi_row, mi_col);
 #if CONFIG_EXT_PARTITION_TYPES
       for (plane = 0; plane < num_planes; ++plane) {
@@ -300,7 +300,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   // Number of superblock rows and cols
-  const int sb_rows = mi_rows_aligned_to_sb(cm) >> cm->mib_size_log2;
+  const int sb_rows = mi_rows_aligned_to_sb(cm) >> cm->seq_params.mib_size_log2;
   // Decoder may allocate more threads than number of tiles based on user's
   // input.
   const int tile_cols = cm->tile_cols;
@@ -338,7 +338,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
     // Loopfilter data
     av1_loop_filter_data_reset(lf_data, frame, cm, planes);
-    lf_data->start = start + i * cm->mib_size;
+    lf_data->start = start + i * cm->seq_params.mib_size;
     lf_data->stop = stop;
     lf_data->y_only = y_only;
 
@@ -367,7 +367,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
     // Loopfilter data
     av1_loop_filter_data_reset(lf_data, frame, cm, planes);
-    lf_data->start = start + i * cm->mib_size;
+    lf_data->start = start + i * cm->seq_params.mib_size;
     lf_data->stop = stop;
     lf_data->y_only = y_only;
 
@@ -397,7 +397,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
     // Loopfilter data
     av1_loop_filter_data_reset(lf_data, frame, cm, planes);
-    lf_data->start = start + i * cm->mib_size;
+    lf_data->start = start + i * cm->seq_params.mib_size;
     lf_data->stop = stop;
     lf_data->y_only = y_only;
 

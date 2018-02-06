@@ -2665,7 +2665,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
               const MV dv = { 8 * (ref_block_hash.y - y_pos),
                               8 * (ref_block_hash.x - x_pos) };
               if (!av1_is_dv_valid(dv, tile, mi_row, mi_col, bsize,
-                                   cpi->common.mib_size_log2))
+                                   cpi->common.seq_params.mib_size_log2))
                 continue;
             }
 #endif  // CONFIG_INTRABC

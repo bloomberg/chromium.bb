@@ -1128,8 +1128,8 @@ static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
   const MB_MODE_INFO *mbmi =
       &cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]->mbmi;
   // Initialise when at top left part of the superblock
-  if (!(mi_row & (cm->mib_size - 1)) &&
-      !(mi_col & (cm->mib_size - 1))) {  // Top left?
+  if (!(mi_row & (cm->seq_params.mib_size - 1)) &&
+      !(mi_col & (cm->seq_params.mib_size - 1))) {  // Top left?
 #if CONFIG_EXT_PARTITION
     cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
         cm->cdef_preset[3] = -1;
@@ -1141,7 +1141,7 @@ static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
 // Emit CDEF param at first non-skip coding block
 #if CONFIG_EXT_PARTITION
   const int mask = 1 << (6 - MI_SIZE_LOG2);
-  const int index = cm->sb_size == BLOCK_128X128
+  const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
   if (cm->cdef_preset[index] == -1 && !skip) {
@@ -1257,9 +1257,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   write_cdef(cm, w, skip, mi_col, mi_row);
 
   if (cm->delta_q_present_flag) {
-    int super_block_upper_left = ((mi_row & (cm->mib_size - 1)) == 0) &&
-                                 ((mi_col & (cm->mib_size - 1)) == 0);
-    if ((bsize != cm->sb_size || skip == 0) && super_block_upper_left) {
+    int super_block_upper_left =
+        ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
+        ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
+    if ((bsize != cm->seq_params.sb_size || skip == 0) &&
+        super_block_upper_left) {
       assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
@@ -1575,9 +1577,11 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   write_cdef(cm, w, skip, mi_col, mi_row);
 
   if (cm->delta_q_present_flag) {
-    int super_block_upper_left = ((mi_row & (cm->mib_size - 1)) == 0) &&
-                                 ((mi_col & (cm->mib_size - 1)) == 0);
-    if ((bsize != cm->sb_size || skip == 0) && super_block_upper_left) {
+    int super_block_upper_left =
+        ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
+        ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
+    if ((bsize != cm->seq_params.sb_size || skip == 0) &&
+        super_block_upper_left) {
       assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
@@ -1780,7 +1784,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
   xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
   m = xd->mi[0];
 
-  assert(m->mbmi.sb_type <= cm->sb_size ||
+  assert(m->mbmi.sb_type <= cm->seq_params.sb_size ||
          (m->mbmi.sb_type >= BLOCK_SIZES && m->mbmi.sb_type < BLOCK_SIZES_ALL));
 
   bh = mi_size_high[m->mbmi.sb_type];
@@ -1894,7 +1898,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
   xd->mi = cm->mi_grid_visible + mi_offset;
 
-  assert(mbmi->sb_type <= cm->sb_size ||
+  assert(mbmi->sb_type <= cm->seq_params.sb_size ||
          (mbmi->sb_type >= BLOCK_SIZES && mbmi->sb_type < BLOCK_SIZES_ALL));
 
   bh = mi_size_high[mbmi->sb_type];
@@ -2172,11 +2176,14 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif  // CONFIG_EXT_DELTA_Q
   }
 
-  for (mi_row = mi_row_start; mi_row < mi_row_end; mi_row += cm->mib_size) {
+  for (mi_row = mi_row_start; mi_row < mi_row_end;
+       mi_row += cm->seq_params.mib_size) {
     av1_zero_left_context(xd);
 
-    for (mi_col = mi_col_start; mi_col < mi_col_end; mi_col += cm->mib_size) {
-      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
+    for (mi_col = mi_col_start; mi_col < mi_col_end;
+         mi_col += cm->seq_params.mib_size) {
+      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col,
+                     cm->seq_params.sb_size);
     }
   }
 }
@@ -2568,10 +2575,10 @@ static void wb_write_uniform(struct aom_write_bit_buffer *wb, int n, int v) {
 
 static void write_tile_info_max_tile(const AV1_COMMON *const cm,
                                      struct aom_write_bit_buffer *wb) {
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
-  int width_sb = width_mi >> cm->mib_size_log2;
-  int height_sb = height_mi >> cm->mib_size_log2;
+  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->seq_params.mib_size_log2);
+  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
+  int width_sb = width_mi >> cm->seq_params.mib_size_log2;
+  int height_sb = height_mi >> cm->seq_params.mib_size_log2;
   int size_sb, i;
 
   aom_wb_write_bit(wb, cm->uniform_tile_spacing_flag);
@@ -2622,18 +2629,18 @@ static void write_tile_info(const AV1_COMMON *const cm,
 #if CONFIG_EXT_TILE
   if (cm->large_scale_tile) {
     const int tile_width =
-        ALIGN_POWER_OF_TWO(cm->tile_width, cm->mib_size_log2) >>
-        cm->mib_size_log2;
+        ALIGN_POWER_OF_TWO(cm->tile_width, cm->seq_params.mib_size_log2) >>
+        cm->seq_params.mib_size_log2;
     const int tile_height =
-        ALIGN_POWER_OF_TWO(cm->tile_height, cm->mib_size_log2) >>
-        cm->mib_size_log2;
+        ALIGN_POWER_OF_TWO(cm->tile_height, cm->seq_params.mib_size_log2) >>
+        cm->seq_params.mib_size_log2;
 
     assert(tile_width > 0);
     assert(tile_height > 0);
 
 // Write the tile sizes
 #if CONFIG_EXT_PARTITION
-    if (cm->sb_size == BLOCK_128X128) {
+    if (cm->seq_params.sb_size == BLOCK_128X128) {
       assert(tile_width <= 32);
       assert(tile_height <= 32);
       aom_wb_write_literal(wb, tile_width - 1, 5);
@@ -3389,6 +3396,21 @@ static void write_film_grain_params(AV1_COMMON *const cm,
 }
 #endif  // CONFIG_FILM_GRAIN
 
+static void write_sb_size(SequenceHeader *seq_params,
+                          struct aom_write_bit_buffer *wb) {
+  (void)seq_params;
+  (void)wb;
+  assert(seq_params->mib_size == mi_size_wide[seq_params->sb_size]);
+  assert(seq_params->mib_size == 1 << seq_params->mib_size_log2);
+#if CONFIG_EXT_PARTITION
+  assert(seq_params->sb_size == BLOCK_128X128 ||
+         seq_params->sb_size == BLOCK_64X64);
+  aom_wb_write_bit(wb, seq_params->sb_size == BLOCK_128X128 ? 1 : 0);
+#else
+  assert(seq_params->sb_size == BLOCK_64X64);
+#endif  // CONFIG_EXT_PARTITION
+}
+
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3430,22 +3452,10 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
         wb, seq_params->frame_id_length - seq_params->delta_frame_id_length - 1,
         3);
   }
+
+  write_sb_size(seq_params, wb);
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
-
-static void write_sb_size(const AV1_COMMON *cm,
-                          struct aom_write_bit_buffer *wb) {
-  (void)cm;
-  (void)wb;
-  assert(cm->mib_size == mi_size_wide[cm->sb_size]);
-  assert(cm->mib_size == 1 << cm->mib_size_log2);
-#if CONFIG_EXT_PARTITION
-  assert(cm->sb_size == BLOCK_128X128 || cm->sb_size == BLOCK_64X64);
-  aom_wb_write_bit(wb, cm->sb_size == BLOCK_128X128 ? 1 : 0);
-#else
-  assert(cm->sb_size == BLOCK_64X64);
-#endif  // CONFIG_EXT_PARTITION
-}
 
 static void write_compound_tools(const AV1_COMMON *cm,
                                  struct aom_write_bit_buffer *wb) {
@@ -3663,8 +3673,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #else
     write_frame_size(cm, wb);
 #endif
-    write_sb_size(cm, wb);
-
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_INTRABC
     if (cm->allow_screen_content_tools) aom_wb_write_bit(wb, cm->allow_intrabc);
@@ -3711,7 +3719,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #else
       write_frame_size(cm, wb);
 #endif
-      write_sb_size(cm, wb);
       aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_INTRABC
       if (cm->allow_screen_content_tools)
@@ -4000,7 +4007,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
     write_frame_size(cm, wb);
 #endif
-    write_sb_size(cm, wb);
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_INTRABC
     if (cm->allow_screen_content_tools) aom_wb_write_bit(wb, cm->allow_intrabc);

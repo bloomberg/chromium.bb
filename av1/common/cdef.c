@@ -166,7 +166,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0, num_planes);
+  av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, frame, 0, 0,
+                       num_planes);
   row_cdef = aom_malloc(sizeof(*row_cdef) * (nhfb + 2) * 2);
   memset(row_cdef, 1, sizeof(*row_cdef) * (nhfb + 2) * 2);
   prev_row_cdef = row_cdef + 1;

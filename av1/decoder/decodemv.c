@@ -44,8 +44,8 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
   if (cm->all_lossless) return;
 
   const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
-  if (!(mi_col & (cm->mib_size - 1)) &&
-      !(mi_row & (cm->mib_size - 1))) {  // Top left?
+  if (!(mi_col & (cm->seq_params.mib_size - 1)) &&
+      !(mi_row & (cm->seq_params.mib_size - 1))) {  // Top left?
 #if CONFIG_EXT_PARTITION
     cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
         cm->cdef_preset[3] = -1;
@@ -56,7 +56,7 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
 // Read CDEF param at first a non-skip coding block
 #if CONFIG_EXT_PARTITION
   const int mask = 1 << (6 - MI_SIZE_LOG2);
-  const int index = cm->sb_size == BLOCK_128X128
+  const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
   cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]
@@ -77,13 +77,14 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
                              MB_MODE_INFO *const mbmi, int mi_col, int mi_row) {
   int sign, abs, reduced_delta_qindex = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
-  const int b_col = mi_col & (cm->mib_size - 1);
-  const int b_row = mi_row & (cm->mib_size - 1);
+  const int b_col = mi_col & (cm->seq_params.mib_size - 1);
+  const int b_row = mi_row & (cm->seq_params.mib_size - 1);
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
-  if ((bsize != cm->sb_size || mbmi->skip == 0) && read_delta_q_flag) {
+  if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
+      read_delta_q_flag) {
     abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
     const int smallval = (abs < DELTA_Q_SMALL);
 
@@ -112,13 +113,14 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
                               int mi_row) {
   int sign, abs, reduced_delta_lflevel = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
-  const int b_col = mi_col & (cm->mib_size - 1);
-  const int b_row = mi_row & (cm->mib_size - 1);
+  const int b_col = mi_col & (cm->seq_params.mib_size - 1);
+  const int b_row = mi_row & (cm->seq_params.mib_size - 1);
   const int read_delta_lf_flag = (b_col == 0 && b_row == 0);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
-  if ((bsize != cm->sb_size || mbmi->skip == 0) && read_delta_lf_flag) {
+  if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
+      read_delta_lf_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
     if (cm->delta_lf_multi) {
       assert(lf_id >= 0 && lf_id < FRAME_LF_COUNT);
@@ -906,7 +908,7 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
   mv->as_mv.row = (mv->as_mv.row >> 3) * 8;
   int valid = is_mv_valid(&mv->as_mv) &&
               av1_is_dv_valid(mv->as_mv, &xd->tile, mi_row, mi_col, bsize,
-                              cm->mib_size_log2);
+                              cm->seq_params.mib_size_log2);
   return valid;
 }
 #endif  // CONFIG_INTRABC
@@ -959,7 +961,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif
     int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
     if (dv_ref.as_int == 0)
-      av1_find_ref_dv(&dv_ref, &xd->tile, cm->mib_size, mi_row, mi_col);
+      av1_find_ref_dv(&dv_ref, &xd->tile, cm->seq_params.mib_size, mi_row,
+                      mi_col);
     // Ref DV should not have sub-pel.
     int valid_dv = (dv_ref.as_mv.col & 7) == 0 && (dv_ref.as_mv.row & 7) == 0;
     dv_ref.as_mv.col = (dv_ref.as_mv.col >> 3) * 8;
@@ -1625,7 +1628,7 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 static void fpm_sync(void *const data, int mi_row) {
   AV1Decoder *const pbi = (AV1Decoder *)data;
   av1_frameworker_wait(pbi->frame_worker_owner, pbi->common.prev_frame,
-                       mi_row << pbi->common.mib_size_log2);
+                       mi_row << pbi->common.seq_params.mib_size_log2);
 }
 
 #if DEC_MISMATCH_DEBUG

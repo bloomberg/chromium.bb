@@ -384,7 +384,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                          int mi_row, int mi_col, int bs) {
-  const int sb_mi_size = mi_size_wide[cm->sb_size];
+  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
   const int mask_row = mi_row & (sb_mi_size - 1);
   const int mask_col = mi_col & (sb_mi_size - 1);
 
@@ -434,7 +434,7 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static int check_sb_border(const AV1_COMMON *cm, const int mi_row,
                            const int mi_col, const int row_offset,
                            const int col_offset) {
-  const int sb_mi_size = mi_size_wide[cm->sb_size];
+  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
   const int row = mi_row & (sb_mi_size - 1);
   const int col = mi_col & (sb_mi_size - 1);
 
@@ -989,7 +989,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int16_t *mode_context, int_mv zeromv,
                              uint8_t refmv_count) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
-  const int sb_mi_size = mi_size_wide[cm->sb_size];
+  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
   int i;
   int context_counter = 0;
 

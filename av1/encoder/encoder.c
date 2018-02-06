@@ -357,7 +357,7 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
-    set_sb_size(cm, select_sb_size(cpi));
+    set_sb_size(&cm->seq_params, select_sb_size(cpi));
 #if CONFIG_REFERENCE_BUFFER
     set_use_reference_buffer(cm, 0);
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -879,8 +879,8 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
     cm->log2_tile_cols = AOMMAX(cpi->oxcf.tile_columns, cm->min_log2_tile_cols);
     cm->log2_tile_cols = AOMMIN(cm->log2_tile_cols, cm->max_log2_tile_cols);
   } else {
-    int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
-    int sb_cols = mi_cols >> cm->mib_size_log2;
+    int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->seq_params.mib_size_log2);
+    int sb_cols = mi_cols >> cm->seq_params.mib_size_log2;
     int size_sb, j = 0;
     cm->uniform_tile_spacing_flag = 0;
     for (i = 0, start_sb = 0; start_sb < sb_cols && i < MAX_TILE_COLS; i++) {
@@ -899,8 +899,8 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
     cm->log2_tile_rows = AOMMAX(cpi->oxcf.tile_rows, cm->min_log2_tile_rows);
     cm->log2_tile_rows = AOMMIN(cm->log2_tile_rows, cm->max_log2_tile_rows);
   } else {
-    int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
-    int sb_rows = mi_rows >> cm->mib_size_log2;
+    int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
+    int sb_rows = mi_rows >> cm->seq_params.mib_size_log2;
     int size_sb, j = 0;
     for (i = 0, start_sb = 0; start_sb < sb_rows && i < MAX_TILE_ROWS; i++) {
       cm->tile_row_start_sb[i] = start_sb;
@@ -960,11 +960,11 @@ static void set_tile_info(AV1_COMP *cpi) {
     int i;
     for (i = 0; i <= cm->tile_cols; i++) {
       cm->tile_col_start_sb[i] =
-          ((i * cm->tile_width - 1) >> cm->mib_size_log2) + 1;
+          ((i * cm->tile_width - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
     for (i = 0; i <= cm->tile_rows; i++) {
       cm->tile_row_start_sb[i] =
-          ((i * cm->tile_height - 1) >> cm->mib_size_log2) + 1;
+          ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
 #endif  // CONFIG_MAX_TILE
   } else {
@@ -1111,7 +1111,8 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
 
   cm->width = oxcf->width;
   cm->height = oxcf->height;
-  set_sb_size(cm, select_sb_size(cpi));  // set sb size before allocations
+  set_sb_size(&cm->seq_params,
+              select_sb_size(cpi));  // set sb size before allocations
   alloc_compressor_data(cpi);
 #if CONFIG_FILM_GRAIN
   update_film_grain_parameters(cpi, oxcf);
@@ -3232,12 +3233,12 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->width = cpi->oxcf.width;
   cm->height = cpi->oxcf.height;
 
-  int sb_size = cm->sb_size;
-  set_sb_size(cm, select_sb_size(cpi));
+  int sb_size = cm->seq_params.sb_size;
+  set_sb_size(&cm->seq_params, select_sb_size(cpi));
 
-  if (cpi->initial_width || sb_size != cm->sb_size) {
+  if (cpi->initial_width || sb_size != cm->seq_params.sb_size) {
     if (cm->width > cpi->initial_width || cm->height > cpi->initial_height ||
-        cm->sb_size != sb_size) {
+        cm->seq_params.sb_size != sb_size) {
       av1_free_context_buffers(cm);
       av1_free_pc_tree(&cpi->td, num_planes);
       alloc_compressor_data(cpi);

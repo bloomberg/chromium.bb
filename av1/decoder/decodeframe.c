@@ -1260,12 +1260,13 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
 }
 
-static void setup_sb_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+static void setup_sb_size(SequenceHeader *seq_params,
+                          struct aom_read_bit_buffer *rb) {
   (void)rb;
 #if CONFIG_EXT_PARTITION
-  set_sb_size(cm, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
+  set_sb_size(seq_params, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
 #else
-  set_sb_size(cm, BLOCK_64X64);
+  set_sb_size(seq_params, BLOCK_64X64);
 #endif  // CONFIG_EXT_PARTITION
 }
 
@@ -1411,10 +1412,10 @@ static int rb_read_uniform(struct aom_read_bit_buffer *const rb, int n) {
 
 static void read_tile_info_max_tile(AV1_COMMON *const cm,
                                     struct aom_read_bit_buffer *const rb) {
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
-  int width_sb = width_mi >> cm->mib_size_log2;
-  int height_sb = height_mi >> cm->mib_size_log2;
+  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->seq_params.mib_size_log2);
+  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
+  int width_sb = width_mi >> cm->seq_params.mib_size_log2;
+  int height_sb = height_mi >> cm->seq_params.mib_size_log2;
 
   av1_get_tile_limits(cm);
   cm->uniform_tile_spacing_flag = aom_rb_read_bit(rb);
@@ -1498,7 +1499,7 @@ static void read_tile_info(AV1Decoder *const pbi,
         ;
 // Read the tile width/height
 #if CONFIG_EXT_PARTITION
-    if (cm->sb_size == BLOCK_128X128) {
+    if (cm->seq_params.sb_size == BLOCK_128X128) {
       cm->tile_width = aom_rb_read_literal(rb, 5) + 1;
       cm->tile_height = aom_rb_read_literal(rb, 5) + 1;
     } else {
@@ -1509,8 +1510,8 @@ static void read_tile_info(AV1Decoder *const pbi,
     }
 #endif  // CONFIG_EXT_PARTITION
 
-    cm->tile_width <<= cm->mib_size_log2;
-    cm->tile_height <<= cm->mib_size_log2;
+    cm->tile_width <<= cm->seq_params.mib_size_log2;
+    cm->tile_height <<= cm->seq_params.mib_size_log2;
 
     cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
     cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
@@ -1553,11 +1554,11 @@ static void read_tile_info(AV1Decoder *const pbi,
 #if CONFIG_MAX_TILE
     for (int i = 0; i <= cm->tile_cols; i++) {
       cm->tile_col_start_sb[i] =
-          ((i * cm->tile_width - 1) >> cm->mib_size_log2) + 1;
+          ((i * cm->tile_width - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
     for (int i = 0; i <= cm->tile_rows; i++) {
       cm->tile_row_start_sb[i] =
-          ((i * cm->tile_height - 1) >> cm->mib_size_log2) + 1;
+          ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
 #endif  // CONFIG_MAX_TILE
   } else {
@@ -2066,13 +2067,13 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
       for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
-           mi_row += cm->mib_size) {
+           mi_row += cm->seq_params.mib_size) {
         av1_zero_left_context(&td->xd);
 
         for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
-             mi_col += cm->mib_size) {
+             mi_col += cm->seq_params.mib_size) {
           decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
-                           cm->sb_size);
+                           cm->seq_params.sb_size);
         }
         aom_merge_corrupted_flag(&pbi->mb.corrupted, td->xd.corrupted);
         if (pbi->mb.corrupted)
@@ -2088,7 +2089,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     // After loopfiltering, the last 7 row pixels in each superblock row may
     // still be changed by the longest loopfilter of the next superblock row.
     if (cm->frame_parallel_decode)
-      av1_frameworker_broadcast(pbi->cur_buf, mi_row << cm->mib_size_log2);
+      av1_frameworker_broadcast(pbi->cur_buf,
+                                mi_row << cm->seq_params.mib_size_log2);
   }
 
 #if CONFIG_INTRABC
@@ -2378,6 +2380,8 @@ void read_sequence_header(SequenceHeader *seq_params,
     seq_params->frame_id_length =
         aom_rb_read_literal(rb, 3) + seq_params->delta_frame_id_length + 1;
   }
+
+  setup_sb_size(seq_params, rb);
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
@@ -2775,7 +2779,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #else
     setup_frame_size(cm, rb);
 #endif
-    setup_sb_size(cm, rb);
 
     if (pbi->need_resync) {
       memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
@@ -2843,7 +2846,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #else
       setup_frame_size(cm, rb);
 #endif
-      setup_sb_size(cm, rb);
       if (pbi->need_resync) {
         memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
         pbi->need_resync = 0;

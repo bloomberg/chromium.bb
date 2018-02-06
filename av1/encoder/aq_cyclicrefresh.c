@@ -389,8 +389,10 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
   int i, block_count, bl_index, sb_rows, sb_cols, sbs_in_frame;
   int xmis, ymis, x, y;
   memset(seg_map, CR_SEGMENT_ID_BASE, cm->mi_rows * cm->mi_cols);
-  sb_cols = (cm->mi_cols + cm->mib_size - 1) / cm->mib_size;
-  sb_rows = (cm->mi_rows + cm->mib_size - 1) / cm->mib_size;
+  sb_cols =
+      (cm->mi_cols + cm->seq_params.mib_size - 1) / cm->seq_params.mib_size;
+  sb_rows =
+      (cm->mi_rows + cm->seq_params.mib_size - 1) / cm->seq_params.mib_size;
   sbs_in_frame = sb_cols * sb_rows;
   // Number of target blocks to get the q delta (segment 1).
   block_count = cr->percent_refresh * cm->mi_rows * cm->mi_cols / 100;
@@ -406,8 +408,8 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     // Get the mi_row/mi_col corresponding to superblock index i.
     int sb_row_index = (i / sb_cols);
     int sb_col_index = i - sb_row_index * sb_cols;
-    int mi_row = sb_row_index * cm->mib_size;
-    int mi_col = sb_col_index * cm->mib_size;
+    int mi_row = sb_row_index * cm->seq_params.mib_size;
+    int mi_col = sb_col_index * cm->seq_params.mib_size;
     int qindex_thresh =
         cpi->oxcf.content == AOM_CONTENT_SCREEN
             ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2, cm->base_qindex)
@@ -416,8 +418,8 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     assert(mi_col >= 0 && mi_col < cm->mi_cols);
     bl_index = mi_row * cm->mi_cols + mi_col;
     // Loop through all MI blocks in superblock and update map.
-    xmis = AOMMIN(cm->mi_cols - mi_col, cm->mib_size);
-    ymis = AOMMIN(cm->mi_rows - mi_row, cm->mib_size);
+    xmis = AOMMIN(cm->mi_cols - mi_col, cm->seq_params.mib_size);
+    ymis = AOMMIN(cm->mi_rows - mi_row, cm->seq_params.mib_size);
     for (y = 0; y < ymis; y++) {
       for (x = 0; x < xmis; x++) {
         const int bl_index2 = bl_index + y * cm->mi_cols + x;

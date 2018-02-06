@@ -1537,7 +1537,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int *rrow1, int *tile_tl_idx) {
   assert(rcol0 && rcol1 && rrow0 && rrow1);
 
-  if (bsize != cm->sb_size) return 0;
+  if (bsize != cm->seq_params.sb_size) return 0;
   if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) return 0;
 
   const int is_uv = plane > 0;
@@ -1545,7 +1545,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 // Which tile contains the superblock? Find that tile's top-left in mi-units,
 // together with the tile's size in pixels.
 #if CONFIG_MAX_TILE
-  const int mib_log2 = cm->mib_size_log2;
+  const int mib_log2 = cm->seq_params.mib_size_log2;
   const int tile_row = get_tile_idx(cm->tile_row_start_sb, mi_row, mib_log2);
   const int tile_col = get_tile_idx(cm->tile_col_start_sb, mi_col, mib_log2);
 #else

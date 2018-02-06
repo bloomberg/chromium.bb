@@ -931,8 +931,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   const uint8_t allow_update_cdf = tile_data->allow_update_cdf;
 
   // delta quant applies to both intra and inter
-  const int super_block_upper_left = ((mi_row & (cm->mib_size - 1)) == 0) &&
-                                     ((mi_col & (cm->mib_size - 1)) == 0);
+  const int super_block_upper_left =
+      ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
+      ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
 
   const int seg_ref_active =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
@@ -956,7 +957,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   }
 #endif  // CONFIG_EXT_SKIP
 
-  if (cm->delta_q_present_flag && (bsize != cm->sb_size || !mbmi->skip) &&
+  if (cm->delta_q_present_flag &&
+      (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
       super_block_upper_left) {
     const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
     const int absdq = abs(dq);
@@ -1488,7 +1490,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   if (!dry_run) {
 #if CONFIG_EXT_DELTA_Q
     mbmi = &xd->mi[0]->mbmi;
-    if (bsize == cpi->common.sb_size && mbmi->skip == 1 &&
+    if (bsize == cpi->common.seq_params.sb_size && mbmi->skip == 1 &&
         cpi->common.delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
       for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
@@ -1671,9 +1673,9 @@ static void set_partial_sb_partition(const AV1_COMMON *const cm, MODE_INFO *mi,
                                      MODE_INFO **mib) {
   int bh = bh_in;
   int r, c;
-  for (r = 0; r < cm->mib_size; r += bh) {
+  for (r = 0; r < cm->seq_params.mib_size; r += bh) {
     int bw = bw_in;
-    for (c = 0; c < cm->mib_size; c += bw) {
+    for (c = 0; c < cm->seq_params.mib_size; c += bw) {
       const int index = r * cm->mi_stride + c;
       mib[index] = mi + index;
       mib[index]->mbmi.sb_type = find_partition_size(
@@ -1701,10 +1703,11 @@ static void set_fixed_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   assert((mi_rows_remaining > 0) && (mi_cols_remaining > 0));
 
   // Apply the requested partition size to the SB if it is all "in image"
-  if ((mi_cols_remaining >= cm->mib_size) &&
-      (mi_rows_remaining >= cm->mib_size)) {
-    for (block_row = 0; block_row < cm->mib_size; block_row += bh) {
-      for (block_col = 0; block_col < cm->mib_size; block_col += bw) {
+  if ((mi_cols_remaining >= cm->seq_params.mib_size) &&
+      (mi_rows_remaining >= cm->seq_params.mib_size)) {
+    for (block_row = 0; block_row < cm->seq_params.mib_size; block_row += bh) {
+      for (block_col = 0; block_col < cm->seq_params.mib_size;
+           block_col += bw) {
         int index = block_row * cm->mi_stride + block_col;
         mib[index] = mi_upper_left + index;
         mib[index]->mbmi.sb_type = bsize;
@@ -1979,11 +1982,11 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
   // We must have chosen a partitioning and encoding or we'll fail later on.
   // No other opportunities for success.
-  if (bsize == cm->sb_size)
+  if (bsize == cm->seq_params.sb_size)
     assert(chosen_rdc.rate < INT_MAX && chosen_rdc.dist < INT64_MAX);
 
   if (do_recon) {
-    if (bsize == cm->sb_size) {
+    if (bsize == cm->seq_params.sb_size) {
       // NOTE: To get estimate for rate due to the tokens, use:
       // int rate_coeffs = 0;
       // encode_sb(cpi, td, tile_data, tp, mi_row, mi_col, DRY_RUN_COSTCOEFFS,
@@ -2067,8 +2070,8 @@ static void get_sb_partition_size_range(const AV1_COMMON *const cm,
   int index = 0;
 
   // Check the sb_type for each block that belongs to this region.
-  for (i = 0; i < cm->mib_size; ++i) {
-    for (j = 0; j < cm->mib_size; ++j) {
+  for (i = 0; i < cm->seq_params.mib_size; ++i) {
+    for (j = 0; j < cm->seq_params.mib_size; ++j) {
       MODE_INFO *mi = mib[index + j];
       BLOCK_SIZE sb_type = mi ? mi->mbmi.sb_type : BLOCK_4X4;
       *min_block_size = AOMMIN(*min_block_size, sb_type);
@@ -2110,12 +2113,12 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
     }
     // Find the min and max partition sizes used in the left superblock
     if (left_in_image) {
-      MODE_INFO **left_sb_mi = &mi[-cm->mib_size];
+      MODE_INFO **left_sb_mi = &mi[-cm->seq_params.mib_size];
       get_sb_partition_size_range(cm, xd, left_sb_mi, &min_size, &max_size);
     }
     // Find the min and max partition sizes used in the above suprblock.
     if (above_in_image) {
-      MODE_INFO **above_sb_mi = &mi[-xd->mi_stride * cm->mib_size];
+      MODE_INFO **above_sb_mi = &mi[-xd->mi_stride * cm->seq_params.mib_size];
       get_sb_partition_size_range(cm, xd, above_sb_mi, &min_size, &max_size);
     }
 
@@ -2147,8 +2150,8 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
     min_size = AOMMIN(min_size, next_square_size[max_size]);
   }
 
-  *min_block_size = AOMMIN(min_size, cm->sb_size);
-  *max_block_size = AOMMIN(max_size, cm->sb_size);
+  *min_block_size = AOMMIN(min_size, cm->seq_params.sb_size);
+  *max_block_size = AOMMIN(max_size, cm->seq_params.sb_size);
 }
 
 // TODO(jingning) refactor functions setting partition search range
@@ -2163,7 +2166,7 @@ static void set_partition_range(const AV1_COMMON *const cm,
 
   const int idx_str = cm->mi_stride * mi_row + mi_col;
   MODE_INFO **const prev_mi = &cm->prev_mi_grid_visible[idx_str];
-  BLOCK_SIZE min_size = cm->sb_size;  // default values
+  BLOCK_SIZE min_size = cm->seq_params.sb_size;  // default values
   BLOCK_SIZE max_size = BLOCK_4X4;
 
   if (prev_mi) {
@@ -2200,8 +2203,8 @@ static void set_partition_range(const AV1_COMMON *const cm,
     max_size = max_partition_size[max_size];
   }
 
-  *min_bs = AOMMIN(min_size, cm->sb_size);
-  *max_bs = AOMMIN(max_size, cm->sb_size);
+  *min_bs = AOMMIN(min_size, cm->seq_params.sb_size);
+  *max_bs = AOMMIN(max_size, cm->seq_params.sb_size);
 }
 
 static INLINE void store_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
@@ -2670,7 +2673,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
-    if (bsize == cm->sb_size) {
+    if (bsize == cm->seq_params.sb_size) {
       restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
     } else {
       encode_sb(cpi, td, tile_data, tp, mi_row, mi_col, DRY_RUN_NORMAL, bsize,
@@ -2686,7 +2689,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif  // CONFIG_DIST_8X8
 
-  if (bsize == cm->sb_size) {
+  if (bsize == cm->seq_params.sb_size) {
 #if !CONFIG_LV_MAP
     assert(tp_orig < *tp || (tp_orig == *tp && xd->mi[0]->mbmi.skip));
 #endif
@@ -3535,7 +3538,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
-    if (bsize == cm->sb_size) {
+    if (bsize == cm->seq_params.sb_size) {
 #if CONFIG_LV_MAP
       x->cb_offset = 0;
 #endif
@@ -3556,7 +3559,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif  // CONFIG_DIST_8X8
 
-  if (bsize == cm->sb_size) {
+  if (bsize == cm->seq_params.sb_size) {
 #if !CONFIG_LV_MAP
     assert(tp_orig < *tp || (tp_orig == *tp && xd->mi[0]->mbmi.skip));
 #endif
@@ -3602,7 +3605,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   // Code each SB in the row
   for (mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
-       mi_col += cm->mib_size) {
+       mi_col += cm->seq_params.mib_size) {
     const struct segmentation *const seg = &cm->seg;
     int dummy_rate;
     int64_t dummy_dist;
@@ -3612,7 +3615,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
     const int idx_str = cm->mi_stride * mi_row + mi_col;
     MODE_INFO **mi = cm->mi_grid_visible + idx_str;
-    PC_TREE *const pc_root = td->pc_root[cm->mib_size_log2 - MIN_MIB_SIZE_LOG2];
+    PC_TREE *const pc_root =
+        td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
 
 #if CONFIG_LV_MAP
     av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
@@ -3647,7 +3651,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     if (seg->enabled) {
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-      int segment_id = get_segment_id(cm, map, cm->sb_size, mi_row, mi_col);
+      int segment_id =
+          get_segment_id(cm, map, cm->seq_params.sb_size, mi_row, mi_col);
       seg_skip = segfeature_active(seg, segment_id, SEG_LVL_SKIP);
     }
 #if CONFIG_AMVR
@@ -3673,7 +3678,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       assert(current_qindex > 0);
 
       xd->delta_qindex = current_qindex - cm->base_qindex;
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->sb_size);
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
       xd->mi[0]->mbmi.current_q_index = current_qindex;
 #if !CONFIG_EXT_DELTA_Q
       xd->mi[0]->mbmi.segment_id = 0;
@@ -3689,8 +3694,10 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
         // pre-set the delta lf for loop filter. Note that this value is set
         // before mi is assigned for each block in current superblock
-        for (j = 0; j < AOMMIN(cm->mib_size, cm->mi_rows - mi_row); j++) {
-          for (k = 0; k < AOMMIN(cm->mib_size, cm->mi_cols - mi_col); k++) {
+        for (j = 0; j < AOMMIN(cm->seq_params.mib_size, cm->mi_rows - mi_row);
+             j++) {
+          for (k = 0; k < AOMMIN(cm->seq_params.mib_size, cm->mi_cols - mi_col);
+               k++) {
             cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
                 .mbmi.current_delta_lf_from_base = clamp(
                 current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
@@ -3711,36 +3718,38 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     x->source_variance = UINT_MAX;
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
       BLOCK_SIZE bsize;
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->sb_size);
-      bsize = seg_skip ? cm->sb_size : sf->always_this_block_size;
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
+      bsize = seg_skip ? cm->seq_params.sb_size : sf->always_this_block_size;
       set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, cm->sb_size,
-                       &dummy_rate, &dummy_dist, 1, pc_root);
+      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
+                       cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
+                       pc_root);
     } else if (cpi->partition_search_skippable_frame) {
       BLOCK_SIZE bsize;
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->sb_size);
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
       bsize = get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
       set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, cm->sb_size,
-                       &dummy_rate, &dummy_dist, 1, pc_root);
+      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
+                       cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
+                       pc_root);
     } else {
       // If required set upper and lower partition size limits
       if (sf->auto_min_max_partition_size) {
-        set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->sb_size);
+        set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
         rd_auto_partition_range(cpi, tile_info, xd, mi_row, mi_col,
                                 &x->min_partition_size, &x->max_partition_size);
       }
 
-      reset_partition(pc_root, cm->sb_size);
+      reset_partition(pc_root, cm->seq_params.sb_size);
       x->use_cb_search_range = 0;
       if (cpi->sf.two_pass_partition_search &&
-          mi_row + mi_size_high[cm->sb_size] < cm->mi_rows &&
-          mi_col + mi_size_wide[cm->sb_size] < cm->mi_cols &&
+          mi_row + mi_size_high[cm->seq_params.sb_size] < cm->mi_rows &&
+          mi_col + mi_size_wide[cm->seq_params.sb_size] < cm->mi_cols &&
           cm->frame_type != KEY_FRAME) {
         x->cb_partition_scan = 1;
         rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
-                              cm->sb_size, &dummy_rdc, INT64_MAX, pc_root,
-                              NULL);
+                              cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
+                              pc_root, NULL);
         x->cb_partition_scan = 0;
 
         x->source_variance = UINT_MAX;
@@ -3763,19 +3772,21 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         av1_zero(x->pred_mv);
         pc_root->index = 0;
 
-        for (int idy = 0; idy < mi_size_high[cm->sb_size]; ++idy) {
-          for (int idx = 0; idx < mi_size_wide[cm->sb_size]; ++idx) {
+        for (int idy = 0; idy < mi_size_high[cm->seq_params.sb_size]; ++idy) {
+          for (int idx = 0; idx < mi_size_wide[cm->seq_params.sb_size]; ++idx) {
             const int offset = cm->mi_stride * (mi_row + idy) + (mi_col + idx);
             cm->mi_grid_visible[offset] = 0;
           }
         }
 
         x->use_cb_search_range = 1;
-        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
-                          &dummy_rdc, INT64_MAX, pc_root, NULL);
+        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col,
+                          cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
+                          pc_root, NULL);
       } else {
-        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
-                          &dummy_rdc, INT64_MAX, pc_root, NULL);
+        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col,
+                          cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
+                          pc_root, NULL);
       }
     }
   }
@@ -3858,8 +3869,8 @@ void av1_init_tile_data(AV1_COMP *cpi) {
 
       cpi->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
       pre_tok = cpi->tile_tok[tile_row][tile_col];
-      tile_tok = allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2,
-                                  num_planes);
+      tile_tok = allocated_tokens(
+          *tile_info, cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
 
 #if CONFIG_EXT_TILE
       tile_data->allow_update_cdf = !cm->large_scale_tile;
@@ -3918,14 +3929,15 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #endif  // CONFIG_INTRABC
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
-       mi_row += cm->mib_size) {
+       mi_row += cm->seq_params.mib_size) {
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);
   }
 
   cpi->tok_count[tile_row][tile_col] =
       (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
   assert(cpi->tok_count[tile_row][tile_col] <=
-         allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2,
+         allocated_tokens(*tile_info,
+                          cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
                           av1_num_planes(cm)));
 }
 
@@ -4216,8 +4228,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   int i;
   const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
 
-  x->min_partition_size = AOMMIN(x->min_partition_size, cm->sb_size);
-  x->max_partition_size = AOMMIN(x->max_partition_size, cm->sb_size);
+  x->min_partition_size = AOMMIN(x->min_partition_size, cm->seq_params.sb_size);
+  x->max_partition_size = AOMMIN(x->max_partition_size, cm->seq_params.sb_size);
 #if CONFIG_DIST_8X8
   x->using_dist_8x8 = cpi->oxcf.using_dist_8x8;
   x->tune_metric = cpi->oxcf.tuning;

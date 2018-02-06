@@ -284,7 +284,7 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
     const int bw_in_mi_log2 = mi_width_log2_lookup[bsize];
     const int bh_in_mi_log2 = mi_height_log2_lookup[bsize];
-    const int sb_mi_size = mi_size_high[cm->sb_size];
+    const int sb_mi_size = mi_size_high[cm->seq_params.sb_size];
     const int blk_row_in_sb = (mi_row & (sb_mi_size - 1)) >> bh_in_mi_log2;
     const int blk_col_in_sb = (mi_col & (sb_mi_size - 1)) >> bw_in_mi_log2;
 
@@ -526,7 +526,7 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
     const int bw_in_mi_log2 = mi_width_log2_lookup[bsize];
     const int bh_in_mi_log2 = mi_height_log2_lookup[bsize];
-    const int sb_mi_size = mi_size_high[cm->sb_size];
+    const int sb_mi_size = mi_size_high[cm->seq_params.sb_size];
     const int blk_row_in_sb = (mi_row & (sb_mi_size - 1)) >> bh_in_mi_log2;
     const int blk_col_in_sb = (mi_col & (sb_mi_size - 1)) >> bw_in_mi_log2;
 

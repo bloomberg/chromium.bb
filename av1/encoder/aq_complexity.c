@@ -138,7 +138,7 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
     // It is converted to bits << AV1_PROB_COST_SHIFT units.
     const int64_t num = (int64_t)(cpi->rc.sb64_target_rate * xmis * ymis)
                         << AV1_PROB_COST_SHIFT;
-    const int denom = cm->mib_size * cm->mib_size;
+    const int denom = cm->seq_params.mib_size * cm->seq_params.mib_size;
     const int target_rate = (int)(num / denom);
     double logvar;
     double low_var_thresh;

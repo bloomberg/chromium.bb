@@ -6395,9 +6395,9 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     step_param = cpi->mv_step_param;
   }
 
-  if (cpi->sf.adaptive_motion_search && bsize < cm->sb_size) {
+  if (cpi->sf.adaptive_motion_search && bsize < cm->seq_params.sb_size) {
     int boffset =
-        2 * (b_width_log2_lookup[cm->sb_size] -
+        2 * (b_width_log2_lookup[cm->seq_params.sb_size] -
              AOMMIN(b_height_log2_lookup[bsize], b_width_log2_lookup[bsize]));
     step_param = AOMMAX(step_param, boffset);
   }
@@ -8761,8 +8761,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
   const int w = block_size_wide[bsize];
   const int h = block_size_high[bsize];
-  const int sb_row = mi_row >> cm->mib_size_log2;
-  const int sb_col = mi_col >> cm->mib_size_log2;
+  const int sb_row = mi_row >> cm->seq_params.mib_size_log2;
+  const int sb_col = mi_col >> cm->seq_params.mib_size_log2;
 
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
@@ -8781,7 +8781,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
   if (dv_ref.as_int == 0)
-    av1_find_ref_dv(&dv_ref, tile, cm->mib_size, mi_row, mi_col);
+    av1_find_ref_dv(&dv_ref, tile, cm->seq_params.mib_size, mi_row, mi_col);
   // Ref DV should not have sub-pel.
   assert((dv_ref.as_mv.col & 7) == 0);
   assert((dv_ref.as_mv.row & 7) == 0);
@@ -8814,16 +8814,18 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
         x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
         x->mv_limits.col_max = (tile->mi_col_end - mi_col) * MI_SIZE - w;
         x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
-        x->mv_limits.row_max = (sb_row * cm->mib_size - mi_row) * MI_SIZE - h;
+        x->mv_limits.row_max =
+            (sb_row * cm->seq_params.mib_size - mi_row) * MI_SIZE - h;
         break;
       case IBC_MOTION_LEFT:
         x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
-        x->mv_limits.col_max = (sb_col * cm->mib_size - mi_col) * MI_SIZE - w;
+        x->mv_limits.col_max =
+            (sb_col * cm->seq_params.mib_size - mi_col) * MI_SIZE - w;
         // TODO(aconverse@google.com): Minimize the overlap between above and
         // left areas.
         x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
         int bottom_coded_mi_edge =
-            AOMMIN((sb_row + 1) * cm->mib_size, tile->mi_row_end);
+            AOMMIN((sb_row + 1) * cm->seq_params.mib_size, tile->mi_row_end);
         x->mv_limits.row_max = (bottom_coded_mi_edge - mi_row) * MI_SIZE - h;
         break;
       default: assert(0);
@@ -8862,7 +8864,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     mvp_full = x->best_mv.as_mv;
     MV dv = {.row = mvp_full.row * 8, .col = mvp_full.col * 8 };
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
-    if (!av1_is_dv_valid(dv, tile, mi_row, mi_col, bsize, cm->mib_size_log2))
+    if (!av1_is_dv_valid(dv, tile, mi_row, mi_col, bsize,
+                         cm->seq_params.mib_size_log2))
       continue;
 
     // DV should not have sub-pel.
@@ -9093,8 +9096,8 @@ int av1_active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
 // In most cases this is the "real" edge unless there are formatting
 // bars embedded in the stream.
 int av1_active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
-  return av1_active_h_edge(cpi, mi_row, cpi->common.mib_size) ||
-         av1_active_v_edge(cpi, mi_col, cpi->common.mib_size);
+  return av1_active_h_edge(cpi, mi_row, cpi->common.seq_params.mib_size) ||
+         av1_active_v_edge(cpi, mi_col, cpi->common.seq_params.mib_size);
 }
 
 static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
