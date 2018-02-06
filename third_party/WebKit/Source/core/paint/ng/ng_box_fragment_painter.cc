@@ -399,7 +399,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (!painting_overflow_contents) {
-    PaintNormalBoxShadow(paint_info, paint_rect, style);
+    PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges_.line_left,
+                         border_edges_.line_right);
 
     if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
