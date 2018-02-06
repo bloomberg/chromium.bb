@@ -5,8 +5,11 @@
 source_set("download") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "download_manager_consumer.h",
     "download_manager_coordinator.h",
     "download_manager_coordinator.mm",
+    "download_manager_mediator.h",
+    "download_manager_mediator.mm",
     "download_manager_view_controller.h",
     "download_manager_view_controller.mm",
     "legacy_download_manager_controller.h",
@@ -51,6 +54,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "download_manager_coordinator_unittest.mm",
+    "download_manager_mediator_unittest.mm",
     "download_manager_view_controller_unittest.mm",
     "legacy_download_manager_controller_unittest.mm",
     "pass_kit_coordinator_unittest.mm",

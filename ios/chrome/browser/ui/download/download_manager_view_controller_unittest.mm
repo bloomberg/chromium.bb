@@ -21,15 +21,6 @@ class DownloadManagerViewControllerTest : public PlatformTest {
   DownloadManagerViewController* view_controller_;
 };
 
-// Tests default state for the new view controller.
-TEST_F(DownloadManagerViewControllerTest, Init) {
-  EXPECT_FALSE(view_controller_.delegate);
-  EXPECT_FALSE(view_controller_.fileName);
-  EXPECT_EQ(0, view_controller_.countOfBytesReceived);
-  EXPECT_EQ(0, view_controller_.countOfBytesExpectedToReceive);
-  EXPECT_EQ(kDownloadManagerStateNotStarted, view_controller_.state);
-}
-
 // Tests label and button titles with kDownloadManagerStateNotStarted state
 // and long file name.
 TEST_F(DownloadManagerViewControllerTest, NotStartedWithLongFileName) {

@@ -63,19 +63,6 @@ TEST_F(DownloadManagerTabHelperTest, DownloadCreationForHiddenWebState) {
   ASSERT_FALSE(delegate_.state);
 }
 
-// Tests that "done" download has Complete state.
-TEST_F(DownloadManagerTabHelperTest, DownloadUpdate) {
-  ASSERT_FALSE(delegate_.state);
-  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
-
-  web::FakeDownloadTask* task_ptr = task.get();
-  tab_helper()->Download(std::move(task));
-  task_ptr->SetDone(true);
-
-  ASSERT_TRUE(delegate_.state);
-  EXPECT_EQ(web::DownloadTask::State::kComplete, *delegate_.state);
-}
-
 // Tests hiding and showing WebState.
 TEST_F(DownloadManagerTabHelperTest, HideAndShowWebState) {
   web_state_->WasShown();

@@ -20,11 +20,6 @@ class DownloadTask;
                didCreateDownload:(nonnull web::DownloadTask*)download
                webStateIsVisible:(BOOL)webStateIsVisible;
 
-// Informs the delegate that a DownloadTask was updated (download progress was
-// changed, or download has reached a terminal state).
-- (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
-               didUpdateDownload:(nonnull web::DownloadTask*)download;
-
 // Informs the delegate that WebState related to this download was hidden.
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                  didHideDownload:(nonnull web::DownloadTask*)download;

@@ -36,6 +36,11 @@ NSString* GetSizeString(long long size_in_bytes) {
   UIButton* _closeButton;
   UILabel* _statusLabel;
   UIButton* _actionButton;
+
+  NSString* _fileName;
+  int64_t _countOfBytesReceived;
+  int64_t _countOfBytesExpectedToReceive;
+  DownloadManagerState _state;
 }
 // Shadow view sits on top of background view. Union of shadow and background
 // views fills self.view area. The shadow is dropped to web page, not to white
@@ -47,10 +52,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 @implementation DownloadManagerViewController
 
 @synthesize delegate = _delegate;
-@synthesize fileName = _fileName;
-@synthesize countOfBytesReceived = _countOfBytesReceived;
-@synthesize countOfBytesExpectedToReceive = _countOfBytesExpectedToReceive;
-@synthesize state = _state;
 @synthesize shadow = _shadow;
 @synthesize background = _background;
 
@@ -134,7 +135,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   ]];
 }
 
-#pragma mark - Public Properties
+#pragma mark - Public
 
 - (void)setFileName:(NSString*)fileName {
   if (![_fileName isEqual:fileName]) {
@@ -239,7 +240,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 }
 
 - (void)didTapActionButton {
-  switch (self.state) {
+  switch (_state) {
     case kDownloadManagerStateNotStarted: {
       SEL selector = @selector(downloadManagerViewControllerDidStartDownload:);
       if ([_delegate respondsToSelector:selector]) {
@@ -277,30 +278,30 @@ NSString* GetSizeString(long long size_in_bytes) {
 // Updates status label text depending on |state|.
 - (void)updateStatusLabel {
   NSString* statusText = nil;
-  switch (self.state) {
+  switch (_state) {
     case kDownloadManagerStateNotStarted:
-      statusText = self.fileName;
-      if (self.countOfBytesExpectedToReceive != -1) {
+      statusText = _fileName;
+      if (_countOfBytesExpectedToReceive != -1) {
         statusText = [statusText
             stringByAppendingFormat:@" - %@",
                                     GetSizeString(
-                                        self.countOfBytesExpectedToReceive)];
+                                        _countOfBytesExpectedToReceive)];
       }
       break;
     case kDownloadManagerStateInProgress:
       // TODO(crbug.com/805533): Localize this string.
       statusText =
           [NSString stringWithFormat:@"Downloading... %@",
-                                     GetSizeString(self.countOfBytesReceived)];
-      if (self.countOfBytesExpectedToReceive != -1) {
+                                     GetSizeString(_countOfBytesReceived)];
+      if (_countOfBytesExpectedToReceive != -1) {
         statusText = [statusText
             stringByAppendingFormat:@"/%@",
                                     GetSizeString(
-                                        self.countOfBytesExpectedToReceive)];
+                                        _countOfBytesExpectedToReceive)];
       }
       break;
     case kDownloadManagerStateSuceeded:
-      statusText = self.fileName;
+      statusText = _fileName;
       break;
     case kDownloadManagerStateFailed:
       // TODO(crbug.com/805533): Localize this string.
@@ -315,7 +316,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 // Updates title and hidden state for action button depending on |state|.
 - (void)updateActionButton {
   NSString* title = nil;
-  switch (self.state) {
+  switch (_state) {
     case kDownloadManagerStateNotStarted:
       // TODO(crbug.com/805533): Localize this string.
       title = @"Download";
@@ -333,7 +334,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   }
 
   [self.actionButton setTitle:title forState:UIControlStateNormal];
-  self.actionButton.hidden = self.state == kDownloadManagerStateInProgress;
+  self.actionButton.hidden = _state == kDownloadManagerStateInProgress;
 }
 
 @end

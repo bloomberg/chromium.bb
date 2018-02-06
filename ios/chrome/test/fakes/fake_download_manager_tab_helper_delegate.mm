@@ -25,11 +25,6 @@
 }
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
-               didUpdateDownload:(nonnull web::DownloadTask*)download {
-  _state = std::make_unique<web::DownloadTask::State>(download->GetState());
-}
-
-- (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                  didHideDownload:(nonnull web::DownloadTask*)download {
   _state = nullptr;
 }
