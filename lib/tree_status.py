@@ -519,7 +519,7 @@ def ConstructGoldenEyeSuiteDetailsURL(job_id=None, build_id=None):
   if job_id:
     return _link + 'suiteId=%d' % int(job_id)
   else:
-    return _link + 'id=%d' % int(build_id)
+    return _link + 'cidbBuildId=%d' % int(build_id)
 
 
 def ConstructGoldenEyeBuildDetailsURL(build_id):
