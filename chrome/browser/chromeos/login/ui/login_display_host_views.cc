@@ -56,10 +56,6 @@ WebUILoginView* LoginDisplayHostViews::GetWebUILoginView() const {
   return nullptr;
 }
 
-void LoginDisplayHostViews::BeforeSessionStart() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayHostViews::Finalize(base::OnceClosure completion_callback) {
   completion_callbacks_.push_back(std::move(completion_callback));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -120,6 +116,10 @@ void LoginDisplayHostViews::OnStartAppLaunch() {
 }
 
 void LoginDisplayHostViews::OnStartArcKiosk() {
+  NOTIMPLEMENTED();
+}
+
+void LoginDisplayHostViews::OnBrowserCreated() {
   NOTIMPLEMENTED();
 }
 
