@@ -79,6 +79,7 @@ source_set("tests") {
     "generic_sensor/platform_sensor_fusion_unittest.cc",
     "generic_sensor/platform_sensor_provider_unittest_android.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_unittest.cc",
+    "geolocation/geolocation_service_unittest.cc",
     "geolocation/public_ip_address_geolocator_unittest.cc",
     "geolocation/public_ip_address_location_notifier_unittest.cc",
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
@@ -92,6 +93,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//device/base/synchronization",
+    "//device/geolocation",
     "//device/geolocation/public/cpp",
     "//mojo/edk/embedder:headers",
     "//mojo/public/cpp/bindings",
@@ -246,6 +248,7 @@ if (is_android) {
     ]
     deps = [
       "//base:base_java",
+      "//device/geolocation:geolocation_java",
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
