@@ -210,6 +210,8 @@ TEST_F(AppContainerProfileTest, CheckIncompatibleOptions) {
   EXPECT_EQ(SBOX_ERROR_BAD_PARAMS,
             policy_->SetIntegrityLevel(INTEGRITY_LEVEL_UNTRUSTED));
   EXPECT_EQ(SBOX_ERROR_BAD_PARAMS, policy_->SetLowBox(kAppContainerSid));
+  EXPECT_EQ(SBOX_ERROR_BAD_PARAMS,
+            policy_->SetProcessMitigations(MITIGATION_HEAP_TERMINATE));
 }
 
 TEST_F(AppContainerProfileTest, NoCapabilities) {

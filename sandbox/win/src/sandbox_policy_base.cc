@@ -267,7 +267,7 @@ void PolicyBase::DestroyAlternateDesktop() {
 }
 
 ResultCode PolicyBase::SetIntegrityLevel(IntegrityLevel integrity_level) {
-  if (_app_container_profile)
+  if (app_container_profile_)
     return SBOX_ERROR_BAD_PARAMS;
   integrity_level_ = integrity_level;
   return SBOX_ALL_OK;
@@ -288,7 +288,7 @@ ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(sid);
-  if (lowbox_sid_ || _app_container_profile)
+  if (lowbox_sid_ || app_container_profile_)
     return SBOX_ERROR_BAD_PARAMS;
 
   if (!ConvertStringSidToSid(sid, &lowbox_sid_))
@@ -298,7 +298,7 @@ ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
 }
 
 ResultCode PolicyBase::SetProcessMitigations(MitigationFlags flags) {
-  if (!CanSetProcessMitigationsPreStartup(flags))
+  if (app_container_profile_ || !CanSetProcessMitigationsPreStartup(flags))
     return SBOX_ERROR_BAD_PARAMS;
   mitigations_ = flags;
   return SBOX_ALL_OK;
@@ -603,16 +603,23 @@ ResultCode PolicyBase::SetAppContainerProfile(AppContainerProfile* profile) {
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(profile);
-  if (lowbox_sid_ || _app_container_profile ||
+  if (lowbox_sid_ || app_container_profile_ ||
       integrity_level_ != INTEGRITY_LEVEL_LAST)
     return SBOX_ERROR_BAD_PARAMS;
 
-  _app_container_profile = profile;
+  app_container_profile_ = profile;
+  // A bug exists in CreateProcess where enabling an AppContainer profile and
+  // passing a set of mitigation flags will generate ERROR_INVALID_PARAMETER.
+  // Apply best efforts here and convert set mitigations to delayed mitigations.
+  delayed_mitigations_ =
+      mitigations_ & GetAllowedPostStartupProcessMitigations();
+  DCHECK(delayed_mitigations_ == (mitigations_ & ~MITIGATION_SEHOP));
+  mitigations_ = 0;
   return SBOX_ALL_OK;
 }
 
 scoped_refptr<AppContainerProfile> PolicyBase::GetAppContainerProfile() {
-  return _app_container_profile;
+  return app_container_profile_;
 }
 
 ResultCode PolicyBase::SetupAllInterceptions(TargetProcess* target) {
