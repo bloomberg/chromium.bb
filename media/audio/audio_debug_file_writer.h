@@ -55,7 +55,7 @@ class MEDIA_EXPORT AudioDebugFileWriter {
   // Gets the extension for the file type the as a string, for example "wav".
   // Can be called before calling Start() to add the appropriate extension to
   // the filename.
-  virtual const base::FilePath::CharType* GetFileNameExtension();
+  virtual const base::FilePath::CharType* GetFileExtension();
 
  protected:
   const AudioParameters params_;

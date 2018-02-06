@@ -345,6 +345,8 @@ static_library("test_support") {
     "audio_system_test_util.h",
     "audio_unittest_util.cc",
     "audio_unittest_util.h",
+    "mock_audio_debug_recording_manager.cc",
+    "mock_audio_debug_recording_manager.h",
     "mock_audio_manager.cc",
     "mock_audio_manager.h",
     "mock_audio_source_callback.cc",

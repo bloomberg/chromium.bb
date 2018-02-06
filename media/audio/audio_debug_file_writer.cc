@@ -304,7 +304,7 @@ bool AudioDebugFileWriter::WillWrite() {
   return !!file_writer_;
 }
 
-const base::FilePath::CharType* AudioDebugFileWriter::GetFileNameExtension() {
+const base::FilePath::CharType* AudioDebugFileWriter::GetFileExtension() {
   return FILE_PATH_LITERAL("wav");
 }
 

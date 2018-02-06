@@ -53,8 +53,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
-  void EnableDebugRecording(const base::FilePath& base_file_name) final;
-  void DisableDebugRecording() final;
 
   void SetMaxStreamCountForTesting(int max_input, int max_output) final;
 
@@ -159,6 +157,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual std::unique_ptr<AudioDebugRecordingManager>
   CreateAudioDebugRecordingManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  AudioDebugRecordingManager* GetAudioDebugRecordingManager() final;
 
   // These functions assign group ids to devices based on their device ids. The
   // default implementation is an attempt to do this based on
