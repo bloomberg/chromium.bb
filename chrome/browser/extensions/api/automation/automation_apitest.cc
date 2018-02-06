@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
       << message_;
 }
 
-// Disabled due to flakiness: https://crbug.com/807128.
+// TODO(https://crbug.com/622387): Disabled due to flakiness.
 #if defined(OS_CHROMEOS) && defined(NDEBUG)
 #define MAYBE_Location DISABLED_Location
 #else
@@ -180,14 +180,14 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationHostsPermissions) {
 }
 
 #if defined(USE_AURA)
-// Flaky, see http://crbug.com/637525
+// TODO(https://crbug.com/754870): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_Desktop) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "desktop.html"))
       << message_;
 }
 
 #if defined(OS_CHROMEOS)
-// TODO(crbug.com/615908): Flaky on CrOS sanitizers.
+// TODO(https://crbug.com/754870): Flaky on CrOS sanitizers.
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopInitialFocus) {
   ASSERT_TRUE(
       RunExtensionSubtest("automation/tests/desktop", "initial_focus.html"))
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusWeb) {
       << message_;
 }
 
-// Flaky, see https://crbug.com/724923.
+// TODO(https://crbug.com/622387): flaky.
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopFocusIframe) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopFocusIframe) {
       << message_;
 }
 
-// Flaky: crbug.com/808343
+// TODO(https://crbug.com/622387): flaky.
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopHitTestIframe) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopHitTest) {
       << message_;
 }
 
-// Flaky, see http://crbug.com/435449
+// TODO(https://crbug.com/754870): flaky.
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopLoadTabs) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "load_tabs.html"))
       << message_;
@@ -287,7 +287,6 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Find) {
       << message_;
 }
 
-// TODO(crbug.com/725420) Flaky
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Attributes) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "attributes.html"))
