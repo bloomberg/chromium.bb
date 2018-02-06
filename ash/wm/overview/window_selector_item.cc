@@ -87,7 +87,7 @@ constexpr int kHorizontalLabelPaddingDp = 12;
 constexpr int kHeaderHeightDp = 40;
 
 // Opacity for dimmed items.
-constexpr float kDimmedItemOpacity = 0.5f;
+constexpr float kDimmedItemOpacity = 0.3f;
 
 // Opacity for fading out during closing a window.
 constexpr float kClosingItemOpacity = 0.8f;

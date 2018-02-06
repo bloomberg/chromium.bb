@@ -14,6 +14,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -36,14 +37,12 @@
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/vector_icons/vector_icons.h"
-#include "third_party/skia/include/core/SkPath.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
@@ -59,39 +58,45 @@ namespace ash {
 namespace {
 
 // The amount of padding surrounding the text in the text filtering textbox.
-const int kTextFilterHorizontalPadding = 10;
+constexpr int kTextFilterHorizontalPadding = 6;
 
 // The height of the text filtering textbox.
-const int kTextFilterHeight = 40;
+constexpr int kTextFilterHeight = 32;
 
 // The margin at the bottom to make sure the text filter layer is hidden.
 // This is needed because positioning the text filter directly touching the top
 // edge of the screen still allows the shadow to peek through.
-const int kTextFieldBottomMargin = 2;
+constexpr int kTextFieldBottomMargin = 2;
 
 // Distance from top of overview to the top of text filtering textbox as a
 // proportion of the total overview area.
-const float kTextFilterTopScreenProportion = 0.02f;
+constexpr float kTextFilterTopScreenProportion = 0.02f;
 
 // Width of the text filter area.
-const int kTextFilterWidth = 280;
+constexpr int kTextFilterWidth = 280;
 
-// The font style used for text filtering textbox.
-static const ui::ResourceBundle::FontStyle kTextFilterFontStyle =
-    ui::ResourceBundle::FontStyle::BaseFont;
+// The font delta used for text filtering textbox.
+constexpr int kTextFilterFontDelta = 1;
 
 // The color of the text and its background in the text filtering textbox.
-const SkColor kTextFilterTextColor = SkColorSetARGB(222, 0, 0, 0);
-const SkColor kTextFilterBackgroundColor = SK_ColorWHITE;
+constexpr SkColor kTextFilterTextColor = SkColorSetARGB(0xFF, 0x3C, 0x40, 0x43);
+constexpr SkColor kTextFilterBackgroundColor = SK_ColorWHITE;
 
 // The color or search icon.
-const SkColor kTextFilterIconColor = SkColorSetARGB(138, 0, 0, 0);
+constexpr SkColor kTextFilterIconColor = SkColorSetARGB(138, 0, 0, 0);
 
 // The size of search icon.
-const int kTextFilterIconSize = 20;
+constexpr int kTextFilterIconSize = 20;
 
 // The radius used for the rounded corners on the text filtering textbox.
-const int kTextFilterCornerRadius = 2;
+constexpr int kTextFilterCornerRadius = 16;
+
+// Values for the old overview ui.
+// TODO(crbug.com/782320): Delete these values when the old ui becomes obsolete.
+constexpr int kOldTextFilterHorizontalPadding = 6;
+constexpr int kOldTextFilterHeight = 40;
+constexpr SkColor kOldTextFilterTextColor = SkColorSetARGB(222, 0, 0, 0);
+constexpr int kOldTextFilterCornerRadius = 2;
 
 // A comparator for locating a selector item for a given root.
 struct WindowSelectorItemForRoot {
@@ -137,7 +142,8 @@ gfx::Rect GetTextFilterPosition(aura::Window* root_window) {
           0.5 * (total_bounds.width() -
                  std::min(kTextFilterWidth, total_bounds.width())),
       total_bounds.y() + total_bounds.height() * kTextFilterTopScreenProportion,
-      std::min(kTextFilterWidth, total_bounds.width()), kTextFilterHeight);
+      std::min(kTextFilterWidth, total_bounds.width()),
+      IsNewOverviewUi() ? kTextFilterHeight : kOldTextFilterHeight);
 }
 
 // Initializes the text filter on the top of the main root window and requests
@@ -161,28 +167,38 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 
   // Use |container| to specify the padding surrounding the text and to give
   // the textfield rounded corners.
-  views::View* container =
-      new RoundedRectView(kTextFilterCornerRadius, kTextFilterBackgroundColor);
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  const int text_height =
-      std::max(kTextFilterIconSize,
-               bundle.GetFontList(kTextFilterFontStyle).GetHeight());
+  views::View* container = new RoundedRectView(
+      IsNewOverviewUi() ? kTextFilterCornerRadius : kOldTextFilterCornerRadius,
+      kTextFilterBackgroundColor);
+  const gfx::FontList& font_list =
+      views::Textfield::GetDefaultFontList().Derive(
+          kTextFilterFontDelta, gfx::Font::FontStyle::NORMAL,
+          gfx::Font::Weight::NORMAL);
+  const int text_height = std::max(kTextFilterIconSize, font_list.GetHeight());
   DCHECK(text_height);
   const int vertical_padding = (params.bounds.height() - text_height) / 2;
   auto* layout = container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
-      gfx::Insets(vertical_padding, kTextFilterHorizontalPadding),
+      gfx::Insets(vertical_padding,
+                  IsNewOverviewUi() ? kTextFilterHorizontalPadding
+                                    : kOldTextFilterHorizontalPadding,
+                  vertical_padding,
+                  IsNewOverviewUi() ? kTextFilterCornerRadius
+                                    : kOldTextFilterHorizontalPadding),
       kTextFilterHorizontalPadding));
 
-  views::Textfield* textfield = new views::Textfield;
+  views::Textfield* textfield = new views::Textfield();
   textfield->set_controller(controller);
   textfield->SetBorder(views::NullBorder());
   textfield->SetBackgroundColor(kTextFilterBackgroundColor);
-  textfield->SetTextColor(kTextFilterTextColor);
-  views::ImageView* image_view = new views::ImageView;
+  textfield->SetTextColor(IsNewOverviewUi() ? kTextFilterTextColor
+                                            : kOldTextFilterTextColor);
+  textfield->SetFontList(font_list);
+
+  views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(image);
+
   container->AddChildView(image_view);
-  textfield->SetFontList(bundle.GetFontList(kTextFilterFontStyle));
   container->AddChildView(textfield);
   layout->SetFlexForView(textfield, 1);
   widget->SetContentsView(container);
@@ -210,16 +226,7 @@ bool WindowSelector::IsSelectable(aura::Window* window) {
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
     : delegate_(delegate),
       restore_focus_window_(wm::GetFocusedWindow()),
-      ignore_activations_(false),
-      selected_grid_index_(0),
-      overview_start_time_(base::Time::Now()),
-      num_key_presses_(0),
-      num_items_(0),
-      showing_text_filter_(false),
-      text_filter_string_length_(0),
-      num_times_textfield_cleared_(0),
-      restoring_minimized_windows_(false),
-      text_filter_bottom_(0) {
+      overview_start_time_(base::Time::Now()) {
   DCHECK(delegate_);
 }
 
@@ -299,10 +306,14 @@ void WindowSelector::Init(const WindowList& windows,
       window_grid->PositionWindows(/*animate=*/true);
     }
 
-    search_image_ = gfx::CreateVectorIcon(
-        vector_icons::kSearchIcon, kTextFilterIconSize, kTextFilterIconColor);
+    // Image used for text filter textfield.
+    gfx::ImageSkia search_image =
+        gfx::CreateVectorIcon(IsNewOverviewUi() ? kOverviewTextFilterSearchIcon
+                                                : vector_icons::kSearchIcon,
+                              kTextFilterIconSize, kTextFilterIconColor);
+
     aura::Window* root_window = Shell::GetPrimaryRootWindow();
-    text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image_,
+    text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image,
                                                &text_filter_bottom_));
   }
 
