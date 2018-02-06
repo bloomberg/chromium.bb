@@ -108,4 +108,14 @@ SelectToSpeakE2ETest.prototype = {
       chrome.tabs.create(createParams);
     }.bind(this));
   },
+
+  /**
+   * Helper function to find a staticText node from a root
+   * @param {AutomationNode} root The root node to search through
+   * @param {string} text The text to search for
+   * @return {AutomationNode} The found text node, or null if none is found.
+   */
+  findTextNode: function(root, text) {
+    return root.find({role: 'staticText', attributes: {name: text}});
+  },
 };

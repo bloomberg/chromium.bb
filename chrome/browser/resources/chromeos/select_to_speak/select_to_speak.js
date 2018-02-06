@@ -1221,6 +1221,24 @@ SelectToSpeak.prototype = {
   },
 
   /**
+   * Fires a mock mouse down event for testing.
+   * @param {!Event} event The fake mouse down event to fire. The object
+   * must contain at minimum a screenX and a screenY.
+   */
+  fireMockMouseDownEvent: function(event) {
+    this.onMouseDown_(event);
+  },
+
+  /**
+   * Fires a mock mouse up event for testing.
+   * @param {!Event} event The fake mouse up event to fire. The object
+   * must contain at minimum a screenX and a screenY.
+   */
+  fireMockMouseUpEvent: function(event) {
+    this.onMouseUp_(event);
+  },
+
+  /**
    * Overrides default setting to read selected text and enables the
    * ability to read selected text at a keystroke. Should only be used
    * for testing.

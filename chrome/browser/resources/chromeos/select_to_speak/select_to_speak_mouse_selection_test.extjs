@@ -1,0 +1,89 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
+GEN_INCLUDE(['mock_tts.js']);
+
+/**
+ * Browser tests for select-to-speak's feature to speak text
+ * by holding down a key and clicking or dragging with the mouse.
+ * @constructor
+ * @extends {SelectToSpeakE2ETest}
+ */
+function SelectToSpeakMouseSelectionTest() {
+  SelectToSpeakE2ETest.call(this);
+  this.mockTts = new MockTts();
+  chrome.tts = this.mockTts;
+}
+
+SelectToSpeakMouseSelectionTest.prototype = {
+  __proto__: SelectToSpeakE2ETest.prototype,
+
+  /**
+   * Triggers speech using the search key and clicking with the mouse.
+   * @param {Object} downEvent The mouse-down event.
+   * @param {Object} upEvent The mouse-up event.
+   */
+   selectRangeForSpeech(downEvent, upEvent) {
+      selectToSpeak.fireMockKeyDownEvent(
+          {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
+      selectToSpeak.fireMockMouseDownEvent(downEvent);
+      selectToSpeak.fireMockMouseUpEvent(upEvent);
+      selectToSpeak.fireMockKeyUpEvent(
+          {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
+   },
+}
+
+TEST_F('SelectToSpeakMouseSelectionTest', 'SpeaksNodeWhenClicked',
+    function() {
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' +
+      '<p>This is some text</p>',
+      function(desktop) {
+        assertFalse(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 0);
+        this.mockTts.setOnSpeechCallbacks([this.newCallback(
+            function(utterance) {
+              // Speech starts asynchronously.
+              assertTrue(this.mockTts.currentlySpeaking());
+              assertEquals(this.mockTts.pendingUtterances().length, 1);
+              this.assertEqualsCollapseWhitespace(
+              this.mockTts.pendingUtterances()[0], 'This is some text');
+            }
+        )]);
+        let textNode = this.findTextNode(desktop, 'This is some text');
+        let event = {screenX: textNode.location.left + 1,
+                     screenY: textNode.location.top + 1};
+        this.selectRangeForSpeech(event, event);
+      }
+  );
+});
+
+TEST_F('SelectToSpeakMouseSelectionTest', 'SpeaksMultipleNodesWhenDragged',
+    function() {
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' +
+      '<p>This is some text</p><p>This is some more text</p>',
+      function(desktop) {
+        assertFalse(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 0);
+        this.mockTts.setOnSpeechCallbacks([this.newCallback(
+            function(utterance) {
+              assertTrue(this.mockTts.currentlySpeaking());
+              assertEquals(this.mockTts.pendingUtterances().length, 1);
+              this.assertEqualsCollapseWhitespace(utterance, 'This is some text');
+            }
+        ), this.newCallback(
+            function(utterance) {
+              this.assertEqualsCollapseWhitespace(utterance, 'This is some more text');
+            }
+        )]);
+        let firstNode = this.findTextNode(desktop, 'This is some text');
+        let downEvent = {screenX: firstNode.location.left + 1,
+                         screenY: firstNode.location.top + 1};
+        let lastNode = this.findTextNode(desktop, 'This is some more text');
+        let upEvent = {screenX: lastNode.location.left + lastNode.location.width,
+                       screenY: lastNode.location.top + lastNode.location.height};
+        this.selectRangeForSpeech(downEvent, upEvent);
+      }
+  );
+});

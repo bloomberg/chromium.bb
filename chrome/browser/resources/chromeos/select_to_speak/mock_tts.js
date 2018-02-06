@@ -10,7 +10,7 @@
  */
 var MockTts = function() {
   /**
-   * @type {Array<String>}
+   * @type {Array<string>}
    * @private
    */
   this.pendingUtterances_ = [];
@@ -20,6 +20,15 @@ var MockTts = function() {
    * @private
    */
   this.currentlySpeaking_ = false;
+
+  /**
+   * A list of callbacks to call each time speech is requested.
+   * These are stored such that the last one should be called
+   * first. Each should only be used once.
+   * @type {Array<function(string)>}
+   * @private
+   */
+  this.speechCallbackStack_ = [];
 };
 
 MockTts.prototype = {
@@ -28,6 +37,9 @@ MockTts.prototype = {
   speak: function(utterance, options) {
     this.pendingUtterances_.push(utterance);
     this.currentlySpeaking_ = true;
+    if (this.speechCallbackStack_.length > 0) {
+      this.speechCallbackStack_.pop()(utterance);
+    }
   },
   stop: function() {
     this.pendingUtterances_ = [];
@@ -45,5 +57,8 @@ MockTts.prototype = {
   },
   pendingUtterances: function() {
     return this.pendingUtterances_;
+  },
+  setOnSpeechCallbacks: function(callbacks) {
+    this.speechCallbackStack_ = callbacks.reverse();
   }
 };
