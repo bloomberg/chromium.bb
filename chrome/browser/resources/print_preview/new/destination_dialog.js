@@ -62,7 +62,6 @@ Polymer({
         destinationStore,
         print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
         this.updateDestinations_.bind(this));
-    this.tracker_.add(window, 'resize', this.updateHeight_.bind(this));
   },
 
   /** @private */
@@ -123,20 +122,9 @@ Polymer({
     this.$.dialog.close();
   },
 
-  /** @private */
-  updateHeight_: function() {
-    const heightNum = this.$.dialog.getBoundingClientRect().height -
-        this.$$('.cloudprint-promo').offsetHeight -
-        this.$.buttons.offsetHeight - this.$.titleBox.offsetHeight;
-
-    this.$.lists.style.height = `${heightNum}px`;
-    this.$.lists.style.minHeight = `${heightNum}px`;
-  },
-
   show: function() {
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.$.dialog.showModal();
-    this.updateHeight_();
   },
 });
