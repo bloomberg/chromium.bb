@@ -88,6 +88,7 @@
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
+#include "third_party/WebKit/public/web/commit_result.mojom.h"
 #include "ui/accessibility/ax_modes.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
@@ -535,6 +536,10 @@ class CONTENT_EXPORT RenderFrameImpl
       int error_code,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) override;
+  void CommitSameDocumentNavigation(
+      const CommonNavigationParams& common_params,
+      const RequestNavigationParams& request_params,
+      CommitSameDocumentNavigationCallback callback) override;
   void HandleRendererDebugURL(const GURL& url) override;
   void UpdateSubresourceLoaderFactories(
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) override;
@@ -1102,8 +1107,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const network::ResourceResponseHead& head,
-      const GURL& body_url,
-      bool is_same_document_navigation);
+      const GURL& body_url);
 
   // Returns a ChildURLLoaderFactoryBundle which can be used to request
   // subresources for this frame.
@@ -1303,6 +1307,40 @@ class CONTENT_EXPORT RenderFrameImpl
           remote_interface_provider_request);
 
   blink::WebComputedAXTree* GetOrCreateWebComputedAXTree() override;
+
+  // Updates the state of this frame when asked to commit a navigation.
+  void PrepareFrameForCommit(const CommonNavigationParams& common_params,
+                             const RequestNavigationParams& request_params);
+
+  // Updates the state when asked to commit a history navigation.  Sets
+  // |item_for_history_navigation| and |load_type| to the appropriate values for
+  // commit.
+  //
+  // The function will also return whether to proceed with the commit of a
+  // history navigation or not.  This can return false when the state of the
+  // history in the browser process goes out of sync with the renderer process.
+  // This can happen in the following scenario:
+  //   * this RenderFrame has a document with URL foo, which does a push state
+  //     to foo#bar.
+  //   * the user starts a navigation to foo/bar.
+  //   * the browser process asks this renderer process to commit the navigation
+  //     to foo/bar.
+  //   * the browser process starts a navigation back to foo, which it
+  //     considers same-document since the navigation to foo/bar hasn't
+  //     committed yet. It asks the RenderFrame to commit the same-document
+  //     navigation to foo#bar.
+  //   * by the time the RenderFrame receives the call to commit the
+  //     same-document back navigation, the navigation to foo/bar has committed.
+  //     A back navigation to foo is no longer same-document with the current
+  //     document of the RenderFrame (foo/bar). Therefore, the navigation cannot
+  //     be committed as a same-document navigation.
+  // When this happens, the navigation will be sent back to the browser process
+  // so that it can be performed in cross-document fashion.
+  blink::mojom::CommitResult PrepareForHistoryNavigationCommit(
+      FrameMsg_Navigate_Type::Value navigation_type,
+      const RequestNavigationParams& request_params,
+      blink::WebHistoryItem* item_for_history_navigation,
+      blink::WebFrameLoadType* load_type);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after

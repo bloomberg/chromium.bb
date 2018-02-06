@@ -259,6 +259,11 @@ class CORE_EXPORT WebLocalFrameImpl final
             WebHistoryLoadType,
             bool is_client_redirect,
             const base::UnguessableToken& devtools_navigation_token) override;
+  blink::mojom::CommitResult CommitSameDocumentNavigation(
+      const WebURL&,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      bool is_client_redirect) override;
   void LoadJavaScriptURL(const WebURL&) override;
   void LoadData(const WebData&,
                 const WebString& mime_type,

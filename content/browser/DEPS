@@ -154,6 +154,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/oom_intervention.mojom.h",
   "+third_party/WebKit/public/platform/reporting.mojom.h",
   "+third_party/WebKit/public/platform/web_feature.mojom.h",
+  "+third_party/WebKit/public/web/commit_result.mojom.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

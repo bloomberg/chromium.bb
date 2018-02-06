@@ -51,6 +51,7 @@
 #include "platform/wtf/HashSet.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebTriggeringEventInfo.h"
+#include "public/web/commit_result.mojom-shared.h"
 
 #include <memory>
 
@@ -58,6 +59,7 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
+class Event;
 class HTMLFormElement;
 class LocalFrame;
 class Frame;
@@ -96,6 +98,17 @@ class CORE_EXPORT FrameLoader final {
             FrameLoadType = kFrameLoadTypeStandard,
             HistoryItem* = nullptr,
             HistoryLoadType = kHistoryDifferentDocumentLoad);
+
+  // Called when the browser process has asked this renderer process to commit a
+  // same document navigation in that frame. Returns false if the navigation
+  // cannot commit, true otherwise.
+  mojom::CommitResult CommitSameDocumentNavigation(
+      const KURL&,
+      FrameLoadType,
+      HistoryItem*,
+      ClientRedirectPolicy,
+      Document* origin_document = nullptr,
+      Event* triggering_event = nullptr);
 
   // Warning: stopAllLoaders can and will detach the LocalFrame out from under
   // you. All callers need to either protect the LocalFrame or guarantee they

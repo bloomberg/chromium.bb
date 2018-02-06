@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom.h"
@@ -31,7 +32,6 @@ namespace content {
 
 class FrameNavigationEntry;
 class FrameTreeNode;
-class NavigationRequest;
 class RenderFrameHostImpl;
 struct CommonNavigationParams;
 
@@ -160,6 +160,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                                  const CommonNavigationParams& common_params,
                                  mojom::BeginNavigationParamsPtr begin_params);
+
+  // Used to restart a navigation that was thought to be same-document in
+  // cross-document mode.
+  virtual void RestartNavigationAsCrossDocument(
+      std::unique_ptr<NavigationRequest> navigation_request) {}
 
   // Used to abort an ongoing renderer-initiated navigation.
   virtual void OnAbortNavigation(FrameTreeNode* frame_tree_node) {}

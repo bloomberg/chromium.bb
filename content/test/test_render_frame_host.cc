@@ -75,6 +75,11 @@ class TestRenderFrameHost::NavigationInterceptor
         std::move(controller_service_worker), devtools_navigation_token);
   }
 
+  void CommitSameDocumentNavigation(
+      const CommonNavigationParams& common_params,
+      const RequestNavigationParams& request_params,
+      CommitSameDocumentNavigationCallback callback) override {}
+
   void CommitFailedNavigation(
       const content::CommonNavigationParams& common_params,
       const content::RequestNavigationParams& request_params,

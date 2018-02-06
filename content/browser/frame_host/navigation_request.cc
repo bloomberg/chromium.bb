@@ -605,6 +605,29 @@ NavigationRequest::TakeNavigationHandle() {
   return std::move(navigation_handle_);
 }
 
+void NavigationRequest::ResetForCrossDocumentRestart() {
+  DCHECK(
+      FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type));
+
+  // Reset the NavigationHandle, which is now incorrectly marked as
+  // same-document.
+  navigation_handle_.reset();
+
+  // Convert the navigation type to the appropriate cross-document one.
+  if (common_params_.navigation_type ==
+      FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT) {
+    common_params_.navigation_type =
+        FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
+  } else {
+    DCHECK(common_params_.navigation_type ==
+           FrameMsg_Navigate_Type::SAME_DOCUMENT);
+    common_params_.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+  }
+
+  // Reset the state of the NavigationRequest.
+  state_ = NOT_STARTED;
+}
+
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response) {

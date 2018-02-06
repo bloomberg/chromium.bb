@@ -908,6 +908,22 @@ void NavigatorImpl::OnBeginNavigation(
   // See https://crbug.com/770157.
 }
 
+void NavigatorImpl::RestartNavigationAsCrossDocument(
+    std::unique_ptr<NavigationRequest> navigation_request) {
+  FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
+  // Don't restart the navigation if there is already another ongoing navigation
+  // in the FrameTreeNode.
+  if (frame_tree_node->navigation_request())
+    return;
+
+  navigation_request->ResetForCrossDocumentRestart();
+  frame_tree_node->CreatedNavigationRequest(std::move(navigation_request));
+  frame_tree_node->navigation_request()->BeginNavigation();
+  // DO NOT USE THE NAVIGATION REQUEST BEYOND THIS POINT. It might have been
+  // destroyed in BeginNavigation().
+  // See https://crbug.com/770157.
+}
+
 void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
   NavigationRequest* ongoing_navigation_request =
       frame_tree_node->navigation_request();

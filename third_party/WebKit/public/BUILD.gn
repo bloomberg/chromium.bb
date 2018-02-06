@@ -773,6 +773,7 @@ mojom("mojo_bindings") {
     "platform/referrer.mojom",
     "platform/reporting.mojom",
     "platform/site_engagement.mojom",
+    "web/commit_result.mojom",
     "web/console_message.mojom",
     "web/devtools_agent.mojom",
     "web/devtools_frontend.mojom",
