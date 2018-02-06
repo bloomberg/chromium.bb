@@ -238,7 +238,7 @@ bool Recovery::Init(const base::FilePath& db_path) {
   }
 
   // Enable the recover virtual table for this connection.
-  int rc = recoverVtableInit(recover_db_.db_);
+  int rc = chrome_sqlite3_recoverVtableInit(recover_db_.db_);
   if (rc != SQLITE_OK) {
     RecordRecoveryEvent(RECOVERY_FAILED_VIRTUAL_TABLE_INIT);
     LOG(ERROR) << "Failed to initialize recover module: "
