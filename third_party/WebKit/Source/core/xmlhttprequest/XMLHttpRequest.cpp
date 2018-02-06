@@ -1566,8 +1566,13 @@ void XMLHttpRequest::UpdateContentTypeAndCharset(
   ReplaceCharsetInMediaType(content_type, charset);
   request_headers_.Set(HTTPNames::Content_Type, AtomicString(content_type));
 
-  if (original_content_type != content_type)
+  if (original_content_type != content_type) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kReplaceCharsetInXHR);
+    if (!EqualIgnoringASCIICase(original_content_type, content_type)) {
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kReplaceCharsetInXHRIgnoringCase);
+    }
+  }
 }
 
 bool XMLHttpRequest::ResponseIsXML() const {
