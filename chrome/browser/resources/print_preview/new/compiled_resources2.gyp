@@ -170,6 +170,7 @@
         '../data/compiled_resources2.gyp:size',
         '../data/compiled_resources2.gyp:margins',
         '../data/compiled_resources2.gyp:printable_area',
+        'model',
         'settings_behavior',
         'state',
       ],

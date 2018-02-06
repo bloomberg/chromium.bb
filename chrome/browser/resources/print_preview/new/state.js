@@ -13,6 +13,8 @@ cr.exportPath('print_preview_new');
  *   invalidSettings: boolean,
  *   initialized: boolean,
  *   cancelled: boolean,
+ *   printRequested: boolean,
+ *   printFailed: boolean,
  * }}
  */
 print_preview_new.State;
