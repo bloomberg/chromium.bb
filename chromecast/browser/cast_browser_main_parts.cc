@@ -395,7 +395,13 @@ void CastBrowserMainParts::ToolkitInitialized() {
   // the background (resources have not yet been granted to cast) since it
   // prevents the long delay the user would have seen on first rendering. Note
   // that future calls to FcInit() are safe no-ops per the FontConfig interface.
+  FcChar8 bundle_dir[] = "fonts/";
+
   FcInit();
+
+  if (FcConfigAppFontAddDir(nullptr, bundle_dir) == FcFalse) {
+    LOG(ERROR) << "Cannot load fonts from " << bundle_dir;
+  }
 #endif
 }
 
