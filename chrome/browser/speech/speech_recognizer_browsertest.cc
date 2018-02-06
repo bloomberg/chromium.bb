@@ -35,7 +35,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
 
   MOCK_METHOD2(OnSpeechResult, void(const base::string16&, bool));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
-  MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerState));
+  MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerStatus));
   MOCK_METHOD2(GetSpeechAuthParameters, void(std::string*, std::string*));
 
  private:

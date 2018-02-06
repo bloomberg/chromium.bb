@@ -29,7 +29,7 @@ class DictationChromeos : public SpeechRecognizerDelegate {
   void OnSpeechResult(const base::string16& query, bool is_final) override;
   void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
-      SpeechRecognizerState new_state) override;
+      SpeechRecognizerStatus new_state) override;
   void GetSpeechAuthParameters(std::string* auth_scope,
                                std::string* auth_token) override;
 

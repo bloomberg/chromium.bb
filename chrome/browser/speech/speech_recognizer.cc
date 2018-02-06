@@ -58,7 +58,7 @@ class SpeechRecognizer::EventListener
   friend class base::RefCountedThreadSafe<SpeechRecognizer::EventListener>;
   ~EventListener() override;
 
-  void NotifyRecognitionStateChanged(SpeechRecognizerState new_state);
+  void NotifyRecognitionStateChanged(SpeechRecognizerStatus new_state);
 
   // Starts a timer for |timeout_seconds|. When the timer expires, will stop
   // capturing audio and get a final utterance from the recognition manager.
@@ -161,7 +161,7 @@ void SpeechRecognizer::EventListener::StopOnIOThread() {
 }
 
 void SpeechRecognizer::EventListener::NotifyRecognitionStateChanged(
-    SpeechRecognizerState new_state) {
+    SpeechRecognizerStatus new_state) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechRecognizerDelegate::OnSpeechRecognitionStateChanged,
