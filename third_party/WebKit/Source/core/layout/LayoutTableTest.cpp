@@ -18,6 +18,30 @@ class LayoutTableTest : public RenderingTest {
   }
 };
 
+TEST_F(LayoutTableTest, OverflowViaOutline) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div { display: table; width: 100px; height: 200px; }
+    </style>
+    <div id=target>
+      <div id=child></div>
+    </div>
+  )HTML");
+  auto* target = GetTableByElementId("target");
+  EXPECT_EQ(LayoutRect(0, 0, 100, 200), target->SelfVisualOverflowRect());
+  ToElement(target->GetNode())
+      ->setAttribute(HTMLNames::styleAttr, "outline: 2px solid black");
+
+  auto* child = GetTableByElementId("child");
+  ToElement(child->GetNode())
+      ->setAttribute(HTMLNames::styleAttr, "outline: 2px solid black");
+
+  target->GetFrameView()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(-2, -2, 104, 204), target->SelfVisualOverflowRect());
+
+  EXPECT_EQ(LayoutRect(-2, -2, 104, 204), child->SelfVisualOverflowRect());
+}
+
 TEST_F(LayoutTableTest, OverflowWithCollapsedBorders) {
   SetBodyInnerHTML(R"HTML(
     <style>
