@@ -1750,6 +1750,9 @@ class Changelist(object):
     """Get owner from codereview, which may differ from this checkout."""
     return self._codereview_impl.GetIssueOwner()
 
+  def GetReviewers(self):
+    return self._codereview_impl.GetReviewers()
+
   def GetMostRecentPatchset(self):
     return self._codereview_impl.GetMostRecentPatchset()
 
@@ -1908,6 +1911,9 @@ class _ChangelistCodereviewBase(object):
   def GetIssueOwner(self):
     raise NotImplementedError()
 
+  def GetReviewers(self):
+    raise NotImplementedError()
+
   def GetTryJobProperties(self, patchset=None):
     raise NotImplementedError()
 
@@ -2009,6 +2015,9 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def GetIssueOwner(self):
     return (self.GetIssueProperties() or {}).get('owner_email')
+
+  def GetReviewers(self):
+    return (self.GetIssueProperties() or {}).get('reviewers')
 
   def AddComment(self, message, publish=None):
     return self.RpcServer().add_comment(self.GetIssue(), message)
@@ -3277,6 +3286,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def GetIssueOwner(self):
     return self._GetChangeDetail(['DETAILED_ACCOUNTS'])['owner']['email']
+
+  def GetReviewers(self):
+    details = self._GetChangeDetail(['DETAILED_ACCOUNTS'])
+    return [reviewer['email'] for reviewer in details['reviewers']['REVIEWER']]
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -5896,7 +5909,9 @@ def CMDowners(parser, args):
   return owners_finder.OwnersFinder(
       affected_files,
       change.RepositoryRoot(),
-      author, fopen=file, os_path=os.path,
+      author,
+      cl.GetReviewers(),
+      fopen=file, os_path=os.path,
       disable_color=options.no_color,
       override_files=change.OriginalOwnersFiles()).run()
 

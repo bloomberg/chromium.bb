@@ -26,6 +26,7 @@ john = 'john@example.com'
 ken = 'ken@example.com'
 peter = 'peter@example.com'
 tom = 'tom@example.com'
+nonowner = 'nonowner@example.com'
 
 
 def owners_file(*email_addresses, **kwargs):
@@ -70,10 +71,11 @@ def test_repo():
 
 
 class OutputInterceptedOwnersFinder(owners_finder.OwnersFinder):
-  def __init__(self, files, local_root,
+  def __init__(self, files, local_root, author, reviewers,
                fopen, os_path, disable_color=False):
     super(OutputInterceptedOwnersFinder, self).__init__(
-      files, local_root, None, fopen, os_path, disable_color=disable_color)
+      files, local_root, author, reviewers, fopen, os_path,
+      disable_color=disable_color)
     self.output = []
     self.indentation_stack = []
 
@@ -113,8 +115,12 @@ class _BaseTestCase(unittest.TestCase):
     self.root = '/'
     self.fopen = self.repo.open_for_reading
 
-  def ownersFinder(self, files):
-    finder = OutputInterceptedOwnersFinder(files, self.root,
+  def ownersFinder(self, files, author=nonowner, reviewers=None):
+    reviewers = reviewers or []
+    finder = OutputInterceptedOwnersFinder(files,
+                                           self.root,
+                                           author,
+                                           reviewers,
                                            fopen=self.fopen,
                                            os_path=self.repo,
                                            disable_color=True)
@@ -127,6 +133,22 @@ class _BaseTestCase(unittest.TestCase):
 class OwnersFinderTests(_BaseTestCase):
   def test_constructor(self):
     self.assertNotEquals(self.defaultFinder(), None)
+
+  def test_skip_files_owned_by_reviewers(self):
+    files = [
+        'chrome/browser/defaults.h',  # owned by brett
+        'content/bar/foo.cc',         # not owned by brett
+    ]
+    finder = self.ownersFinder(files, reviewers=[brett])
+    self.assertEqual(finder.unreviewed_files, {'content/bar/foo.cc'})
+
+  def test_skip_files_owned_by_author(self):
+    files = [
+        'chrome/browser/defaults.h',  # owned by brett
+        'content/bar/foo.cc',         # not owned by brett
+    ]
+    finder = self.ownersFinder(files, author=brett)
+    self.assertEqual(finder.unreviewed_files, {'content/bar/foo.cc'})
 
   def test_reset(self):
     finder = self.defaultFinder()

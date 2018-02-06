@@ -22,7 +22,7 @@ class OwnersFinder(object):
 
   indentation = 0
 
-  def __init__(self, files, local_root, author,
+  def __init__(self, files, local_root, author, reviewers,
                fopen, os_path,
                email_postfix='@chromium.org',
                disable_color=False,
@@ -45,9 +45,13 @@ class OwnersFinder(object):
 
     filtered_files = files
 
-    # Eliminate files that the author can review.
+    reviewers = list(reviewers)
+    if author:
+      reviewers.append(author)
+
+    # Eliminate files that existing reviewers can review.
     filtered_files = list(self.db.files_not_covered_by(
-      filtered_files, [author] if author else []))
+        filtered_files, reviewers))
 
     # If some files are eliminated.
     if len(filtered_files) != len(files):

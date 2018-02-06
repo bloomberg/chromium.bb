@@ -870,12 +870,12 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
 
   owner_email = owner_email or input_api.change.author_email
 
-  if owner_email:
-    reviewers_plus_owner = set([owner_email]).union(reviewers)
-    missing_files = owners_db.files_not_covered_by(affected_files,
-        reviewers_plus_owner)
-  else:
-    missing_files = owners_db.files_not_covered_by(affected_files, reviewers)
+  finder = input_api.owners_finder(
+      affected_files, input_api.change.RepositoryRoot(),
+      owner_email, reviewers, fopen=file, os_path=input_api.os_path,
+      email_postfix='', disable_color=True,
+      override_files=input_api.change.OriginalOwnersFiles())
+  missing_files = finder.unreviewed_files
 
   if missing_files:
     output_list = [
@@ -883,11 +883,6 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
                   (needed, '\n    '.join(sorted(missing_files))))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
-      finder = input_api.owners_finder(
-          missing_files, input_api.change.RepositoryRoot(),
-          owner_email, fopen=file, os_path=input_api.os_path,
-          email_postfix='', disable_color=True,
-          override_files=input_api.change.OriginalOwnersFiles())
       owners_with_comments = []
       def RecordComments(text):
         owners_with_comments.append(finder.print_indent() + text)
