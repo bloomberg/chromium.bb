@@ -50,6 +50,8 @@ crbug.com/667560 [ Linux ] http/tests/devtools/console/console-search.js [ Leak 
 crbug.com/765721 [ Linux ] http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 crbug.com/765721 [ Linux ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 
+crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
