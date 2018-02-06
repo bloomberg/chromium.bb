@@ -19,6 +19,7 @@ mojom("interfaces_internal") {
     "ash_message_center_controller.mojom",
     "cast_config.mojom",
     "constants.mojom",
+    "docked_magnifier_controller.mojom",
     "event_properties.mojom",
     "highlighter_controller.mojom",
     "ime_controller.mojom",

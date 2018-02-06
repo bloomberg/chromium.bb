@@ -13,6 +13,7 @@
           "ash::mojom::AccessibilityController",
           "ash::mojom::AshMessageCenterController",
           "ash::mojom::CastConfig",
+          "ash::mojom::DockedMagnifierController",
           "ash::mojom::HighlighterController",
           "ash::mojom::ImeController",
           "ash::mojom::LocaleNotificationController",

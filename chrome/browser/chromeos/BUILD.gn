@@ -526,6 +526,8 @@ source_set("chromeos") {
     "display/output_protection_delegate.h",
     "display/quirks_manager_delegate_impl.cc",
     "display/quirks_manager_delegate_impl.h",
+    "docked_magnifier/docked_magnifier_client.cc",
+    "docked_magnifier/docked_magnifier_client.h",
     "drive/debug_info_collector.cc",
     "drive/debug_info_collector.h",
     "drive/download_handler.cc",
