@@ -46,9 +46,10 @@
       </button>
     </cr-toolbar>
     <dialog is="cr-action-menu" id="moreActionsMenu">
-      <button class="dropdown-item clear-all" on-tap="onClearAllTap_">
+      <button slot="item" class="dropdown-item clear-all"
+          on-tap="onClearAllTap_">
         $i18n{clearAll}
-      </div>
+      </button>
       <button slot="item" class="dropdown-item"
           on-tap="onOpenDownloadsFolderTap_">
         $i18n{openDownloadsFolder}
