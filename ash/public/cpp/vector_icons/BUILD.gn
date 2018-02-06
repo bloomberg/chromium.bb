@@ -1,0 +1,36 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/vector_icons/vector_icons.gni")
+
+# The icons in this target, unlike those in //ash/resources/vector_icons, are ok to use from outside of ash/.
+aggregate_vector_icons("ash_public_vector_icons") {
+  icon_directory = "."
+
+  icons = [
+    "window_control_left_snapped.1x.icon",
+    "window_control_left_snapped.icon",
+    "window_control_right_snapped.1x.icon",
+    "window_control_right_snapped.icon",
+    "window_control_close.1x.icon",
+    "window_control_close.icon",
+    "window_control_maximize.1x.icon",
+    "window_control_maximize.icon",
+    "window_control_minimize.1x.icon",
+    "window_control_minimize.icon",
+    "window_control_restore.1x.icon",
+    "window_control_restore.icon",
+  ]
+}
+
+source_set("vector_icons") {
+  sources = get_target_outputs(":ash_public_vector_icons")
+
+  deps = [
+    ":ash_public_vector_icons",
+    "//base",
+    "//skia",
+    "//ui/gfx",
+  ]
+}
