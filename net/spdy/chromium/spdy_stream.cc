@@ -461,7 +461,8 @@ bool SpdyStream::ShouldRetryRSTPushStream() {
   return (response_headers_.empty() && type_ == SPDY_PUSH_STREAM && delegate_);
 }
 
-void SpdyStream::OnPushPromiseHeadersReceived(SpdyHeaderBlock headers) {
+void SpdyStream::OnPushPromiseHeadersReceived(SpdyHeaderBlock headers,
+                                              GURL url) {
   CHECK(!request_headers_valid_);
   CHECK_EQ(io_state_, STATE_IDLE);
   CHECK_EQ(type_, SPDY_PUSH_STREAM);
@@ -470,7 +471,7 @@ void SpdyStream::OnPushPromiseHeadersReceived(SpdyHeaderBlock headers) {
   io_state_ = STATE_RESERVED_REMOTE;
   request_headers_ = std::move(headers);
   request_headers_valid_ = true;
-  url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
+  url_from_header_block_ = std::move(url);
 }
 
 void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {

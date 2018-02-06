@@ -274,7 +274,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
   HttpRequestInfo CreateGetPushRequest() const WARN_UNUSED_RESULT {
     HttpRequestInfo request;
     request.method = "GET";
-    request.url = GURL(GetDefaultUrlWithPath("/foo.dat"));
+    request.url = GURL("https://www.example.org/foo.dat");
     return request;
   }
 
@@ -517,10 +517,6 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
   ChunkedUploadDataStream* upload_chunked_data_stream() {
     return upload_chunked_data_stream_.get();
-  }
-
-  SpdyString GetDefaultUrlWithPath(const char* path) const {
-    return SpdyString(kDefaultUrl) + path;
   }
 
   size_t num_active_streams(base::WeakPtr<SpdySession> session) {
@@ -1865,9 +1861,8 @@ TEST_F(SpdyNetworkTransactionTest, ResetPushWithTransferEncoding) {
   const char* const headers[] = {
     "transfer-encoding", "chunked"
   };
-  SpdySerializedFrame push(
-      spdy_util_.ConstructSpdyPush(headers, arraysize(headers) / 2, 2, 1,
-                                   GetDefaultUrlWithPath("/1").c_str()));
+  SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
+      headers, arraysize(headers) / 2, 2, 1, "https://www.example.org/1"));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(push, 2), CreateMockRead(body, 4),
@@ -2370,7 +2365,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
@@ -2408,7 +2403,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushHeadMethod) {
 
   SpdyHeaderBlock push_promise_header_block;
   push_promise_header_block[kHttp2MethodHeader] = "HEAD";
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/foo.dat",
                                  &push_promise_header_block);
   SpdySerializedFrame push_promise(spdy_util_.ConstructSpdyPushPromise(
       1, 2, std::move(push_promise_header_block)));
@@ -2466,13 +2461,13 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushHeadDoesNotMatchGetRequest) {
       spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
   spdy_util_.UpdateWithStreamDestruction(1);
   SpdySerializedFrame req2(spdy_util_.ConstructSpdyGet(
-      GetDefaultUrlWithPath("/foo.dat").c_str(), 3, LOWEST));
+      "https://www.example.org/foo.dat", 3, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req1, 0), CreateMockWrite(priority, 2),
                         CreateMockWrite(req2, 6)};
 
   SpdyHeaderBlock push_promise_header_block;
   push_promise_header_block[kHttp2MethodHeader] = "HEAD";
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/foo.dat",
                                  &push_promise_header_block);
   SpdySerializedFrame push_promise(spdy_util_.ConstructSpdyPushPromise(
       1, 2, std::move(push_promise_header_block)));
@@ -2541,7 +2536,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushBeforeHeaders) {
   };
 
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -2586,7 +2581,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   const char kPushedData[] = "pushed";
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
       2, kPushedData, strlen(kPushedData), true));
@@ -2654,9 +2649,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushUpdatesPriority) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 5));
 
   SpdySerializedFrame stream2_push(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream4_push(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 4, 1, GetDefaultUrlWithPath("/bar.dat").c_str()));
+      nullptr, 0, 4, 1, "https://www.example.org/bar.dat"));
 
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(2, true));
@@ -2734,7 +2729,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushServerAborted) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream2_rst(
       spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_PROTOCOL_ERROR));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -2789,9 +2784,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushDuplicate) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 4, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 4, 1, "https://www.example.org/foo.dat"));
 
   const char kPushedData[] = "pushed";
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -2837,7 +2832,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   static const char kPushedData[] = "pushed my darling hello my baby";
   SpdySerializedFrame stream2_body_base(spdy_util_.ConstructSpdyDataFrame(
       2, kPushedData, strlen(kPushedData), true));
@@ -2890,7 +2885,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   static const char kPushedData[] = "pushed my darling hello my baby";
   SpdySerializedFrame stream2_body_base(spdy_util_.ConstructSpdyDataFrame(
       2, kPushedData, strlen(kPushedData), true));
@@ -2971,7 +2966,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 0, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 0, "https://www.example.org/foo.dat"));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
   };
@@ -2992,7 +2987,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 9, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 9, "https://www.example.org/foo.dat"));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
       CreateMockRead(stream1_body, 4),
@@ -3047,9 +3042,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnPushedStream) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
+      nullptr, 0, 4, 2, "https://www.example.org/bar.dat"));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
       CreateMockRead(stream3_syn, 4),
@@ -3074,7 +3069,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1), CreateMockRead(stream1_body, 2),
       CreateMockRead(stream2_syn, 3), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
@@ -3119,7 +3114,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
                         CreateMockWrite(goaway, 8)};
 
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -3127,7 +3122,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
       2, kPushedData, strlen(kPushedData), true));
   SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
+      nullptr, 0, 4, 2, "https://www.example.org/bar.dat"));
 
   MockRead reads[] = {
       CreateMockRead(stream2_syn, 1),     CreateMockRead(stream1_reply, 2),
@@ -3175,13 +3170,13 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsPush) {
       spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
   spdy_util_.UpdateWithStreamDestruction(1);
   SpdySerializedFrame req2(spdy_util_.ConstructSpdyGet(
-      GetDefaultUrlWithPath("/foo.dat").c_str(), 3, LOWEST));
+      "https://www.example.org/foo.dat", 3, LOWEST));
   MockWrite writes1[] = {CreateMockWrite(req1, 0), CreateMockWrite(priority, 3),
                          CreateMockWrite(req2, 6)};
 
   SpdySerializedFrame reply1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_INTERNAL_ERROR));
@@ -3392,7 +3387,7 @@ TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
   SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdyHeaderBlock push_promise_header_block;
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/foo.dat",
                                  &push_promise_header_block);
   SpdySerializedFrame push_promise(spdy_util_.ConstructSpdyPushPromise(
       1, 2, std::move(push_promise_header_block)));
@@ -3419,7 +3414,7 @@ TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithInvalidMethod) {
 
   SpdyHeaderBlock push_promise_header_block;
   push_promise_header_block[":method"] = "POST";
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/foo.dat",
                                  &push_promise_header_block);
   SpdySerializedFrame push_promise(spdy_util_.ConstructSpdyPushPromise(
       1, 2, std::move(push_promise_header_block)));
@@ -4743,7 +4738,7 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
       "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   SpdySerializedFrame req2(spdy_util_2.ConstructSpdyGet(
-      GetDefaultUrlWithPath("/foo.dat").c_str(), 1, LOWEST));
+      "https://www.example.org/foo.dat", 1, LOWEST));
   SpdySerializedFrame resp2(spdy_util_2.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body2(spdy_util_2.ConstructSpdyDataFrame(1, true));
 
@@ -4762,7 +4757,7 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
 
   // Create another request to www.example.org, but this time through a proxy.
   request_.method = "GET";
-  request_.url = GURL(GetDefaultUrlWithPath("/foo.dat"));
+  request_.url = GURL("https://www.example.org/foo.dat");
   auto session_deps_proxy = std::make_unique<SpdySessionDependencies>(
       ProxyResolutionService::CreateFixedFromPacResult("PROXY myproxy:70"));
   NormalSpdyTransactionHelper helper_proxy(request_, DEFAULT_PRIORITY, log_,
@@ -4976,7 +4971,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
 
   SpdyHeaderBlock initial_headers;
   initial_headers[":method"] = "GET";
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/foo.dat",
                                  &initial_headers);
   SpdySerializedFrame stream2_syn(
       spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(initial_headers)));
@@ -5035,7 +5030,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdyHeaderBlock initial_headers;
   initial_headers[":method"] = "GET";
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/foo.dat",
                                  &initial_headers);
   SpdySerializedFrame stream2_syn(
       spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(initial_headers)));
@@ -6556,9 +6551,9 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
 TEST_F(SpdyNetworkTransactionTest,
        GoAwayOnPushStreamIdLesserOrEqualThanLastAccepted) {
   SpdySerializedFrame push_a(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 4, 1, GetDefaultUrlWithPath("/a.dat").c_str()));
+      nullptr, 0, 4, 1, "https://www.example.org/a.dat"));
   SpdyHeaderBlock push_b_headers;
-  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/b.dat"),
+  spdy_util_.AddUrlToHeaderBlock("https://www.example.org/b.dat",
                                  &push_b_headers);
   SpdySerializedFrame push_b(
       spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(push_b_headers)));
