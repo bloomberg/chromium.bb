@@ -186,10 +186,6 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
       EffectModel::CompositeOperation effect_composite,
       double offset) const = 0;
 
-  // Comparator function for sorting Keyframes based on their offsets.
-  static bool CompareOffsets(const scoped_refptr<Keyframe>&,
-                             const scoped_refptr<Keyframe>&);
-
  protected:
   Keyframe()
       : offset_(), composite_(), easing_(LinearTimingFunction::Shared()) {}
