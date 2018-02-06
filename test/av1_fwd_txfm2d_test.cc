@@ -217,14 +217,14 @@ Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_16x16_c, av1_fwd_txfm2d_16x16_sse2 },  // TX_16X16
   { NULL, NULL },                                         // TX_32X32
 #if CONFIG_TX64X64
-  { NULL, NULL },                                       // TX_64X64
-#endif                                                  // CONFIG_TX64X64
-  { NULL, NULL },                                       // TX_4X8
-  { NULL, NULL },                                       // TX_8X4
-  { av1_fwd_txfm2d_8x16_c, av1_fwd_txfm2d_8x16_sse2 },  // TX_8X16
-  { NULL, NULL },                                       // TX_16X8
-  { NULL, NULL },                                       // TX_16X32
-  { NULL, NULL },                                       // TX_32X16
+  { NULL, NULL },                                         // TX_64X64
+#endif                                                    // CONFIG_TX64X64
+  { NULL, NULL },                                         // TX_4X8
+  { NULL, NULL },                                         // TX_8X4
+  { av1_fwd_txfm2d_8x16_c, av1_fwd_txfm2d_8x16_sse2 },    // TX_8X16
+  { av1_fwd_txfm2d_16x8_c, av1_fwd_txfm2d_16x8_sse2 },    // TX_16X8
+  { av1_fwd_txfm2d_16x32_c, av1_fwd_txfm2d_16x32_sse2 },  // TX_16X32
+  { NULL, NULL },                                         // TX_32X16
 #if CONFIG_TX64X64
   { NULL, NULL },  // TX_32X64
   { NULL, NULL },  // TX_64X32
@@ -242,7 +242,14 @@ Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
 TEST(av1_fwd_txfm2d_sse2, match) {
   const int bd = 8;
   for (int tx_size = TX_4X4; tx_size < TX_SIZES_ALL; ++tx_size) {
+    const int rows = tx_size_high[tx_size];
+    const int cols = tx_size_wide[tx_size];
     for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
+      if ((rows >= 32 || cols >= 32) && tx_type != DCT_DCT && tx_type != IDTX &&
+          tx_type != V_DCT && tx_type != H_DCT) {
+        // No ADST for large size transforms.
+        continue;
+      }
       Fwd_Txfm2d_Func ref_func = fwd_func_sse2_list[tx_size][0];
       Fwd_Txfm2d_Func target_func = fwd_func_sse2_list[tx_size][1];
       if (ref_func != NULL && target_func != NULL) {
@@ -251,8 +258,6 @@ TEST(av1_fwd_txfm2d_sse2, match) {
         DECLARE_ALIGNED(16, int32_t, ref_output[64 * 64]) = { 0 };
         int input_stride = 64;
         ACMRandom rnd(ACMRandom::DeterministicSeed());
-        int rows = tx_size_high[tx_size];
-        int cols = tx_size_wide[tx_size];
         for (int cnt = 0; cnt < 500; ++cnt) {
           if (cnt == 0) {
             for (int r = 0; r < rows; ++r) {
