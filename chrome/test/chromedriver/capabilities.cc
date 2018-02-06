@@ -63,6 +63,17 @@ Status ParseInterval(int* to_set,
   return Status(kOk);
 }
 
+Status ParseTimeDelta(base::TimeDelta* to_set,
+                      const base::Value& option,
+                      Capabilities* capabilities) {
+  int milliseconds;
+  Status status = ParseInterval(&milliseconds, option, capabilities);
+  if (status.IsError())
+    return status;
+  *to_set = base::TimeDelta::FromMilliseconds(milliseconds);
+  return Status(kOk);
+}
+
 Status ParseFilePath(base::FilePath* to_set,
                      const base::Value& option,
                      Capabilities* capabilities) {
@@ -476,6 +487,8 @@ Status ParseChromeOptions(
     parser_map["detach"] = base::Bind(&ParseBoolean, &capabilities->detach);
     parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["extensions"] = base::Bind(&ParseExtensions);
+    parser_map["extensionLoadTimeout"] =
+        base::Bind(&ParseTimeDelta, &capabilities->extension_load_timeout);
     parser_map["forceDevToolsScreenshot"] = base::Bind(
         &ParseBoolean, &capabilities->force_devtools_screenshot);
     parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
@@ -625,6 +638,7 @@ PerfLoggingPrefs::~PerfLoggingPrefs() {}
 Capabilities::Capabilities()
     : android_use_running_app(false),
       detach(false),
+      extension_load_timeout(base::TimeDelta::FromSeconds(10)),
       force_devtools_screenshot(true),
       page_load_strategy(PageLoadStrategy::kNormal),
       network_emulation_enabled(false),
