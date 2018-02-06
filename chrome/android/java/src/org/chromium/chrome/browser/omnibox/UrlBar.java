@@ -585,6 +585,20 @@ public class UrlBar extends AutocompleteEditText {
 
         // If we are copying/cutting the full previously formatted URL, reset the URL
         // text before initiating the TextViews handling of the context menu.
+        //
+        // Example:
+        //    Original display text: www.example.com
+        //    Original URL:          http://www.example.com
+        //
+        // Editing State:
+        //    www.example.com/blah/foo
+        //    |<--- Selection --->|
+        //
+        // Resulting clipboard text should be:
+        //    http://www.example.com/blah/
+        //
+        // As long as the full original text was selected, it will replace that with the original
+        // URL and keep any further modifications by the user.
         String currentText = getText().toString();
         if (selectedStartIndex == 0
                 && (id == android.R.id.cut || id == android.R.id.copy)
