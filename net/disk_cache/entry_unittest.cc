@@ -1821,6 +1821,12 @@ void DiskCacheEntryTest::GetAvailableRange() {
   EXPECT_EQ(0, cb.GetResult(rv));
   EXPECT_EQ(kTinyLen * 2, start);
 
+  // Get a huge range with maximum boundary
+  start = -1;
+  rv = entry->GetAvailableRange(0x2100000, std::numeric_limits<int32_t>::max(),
+                                &start, cb.callback());
+  EXPECT_EQ(0, cb.GetResult(rv));
+
   entry->Close();
 }
 
