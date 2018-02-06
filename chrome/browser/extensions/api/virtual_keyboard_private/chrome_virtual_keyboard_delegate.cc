@@ -152,24 +152,31 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   return true;
 }
 
-bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
+bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
+    int mode_enum,
+    OnSetModeCallback on_set_mode_callback) {
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
   if (!controller)
     return false;
 
-  switch (mode_enum) {
-    case keyboard_api::KEYBOARD_MODE_FULL_WIDTH:
-      controller->SetContainerType(keyboard::ContainerType::FULL_WIDTH);
-      break;
-    case keyboard_api::KEYBOARD_MODE_FLOATING:
-      controller->SetContainerType(keyboard::ContainerType::FLOATING);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  controller->SetContainerType(ConvertKeyboardModeToContainerType(mode_enum),
+                               std::move(on_set_mode_callback));
   return true;
+}
+
+keyboard::ContainerType
+ChromeVirtualKeyboardDelegate::ConvertKeyboardModeToContainerType(
+    int mode) const {
+  switch (mode) {
+    case keyboard_api::KEYBOARD_MODE_FULL_WIDTH:
+      return keyboard::ContainerType::FULL_WIDTH;
+    case keyboard_api::KEYBOARD_MODE_FLOATING:
+      return keyboard::ContainerType::FLOATING;
+  }
+
+  NOTREACHED();
+  return keyboard::ContainerType::FULL_WIDTH;
 }
 
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(

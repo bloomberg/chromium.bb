@@ -61,7 +61,9 @@ bool ShellVirtualKeyboardDelegate::IsLanguageSettingsEnabled() {
   return false;
 }
 
-bool ShellVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
+bool ShellVirtualKeyboardDelegate::SetVirtualKeyboardMode(
+    int mode_enum,
+    OnSetModeCallback on_set_mode_callback) {
   return false;
 }
 

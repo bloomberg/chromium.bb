@@ -742,9 +742,6 @@ void KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
       event, container_->GetRootWindow()->bounds());
 }
 
-void KeyboardController::SetContainerType(const ContainerType type) {
-  SetContainerType(type, base::BindOnce([](bool ignored) { /* noop */ }));
-}
 
 void KeyboardController::SetContainerType(
     const ContainerType type,
