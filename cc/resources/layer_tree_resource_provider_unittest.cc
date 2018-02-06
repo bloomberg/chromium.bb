@@ -98,8 +98,10 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceReleased) {
   // The local id is different.
   EXPECT_NE(id, tran.id);
 
-  // No sync token was returned since the resource was never exported.
-  EXPECT_CALL(release, Released(gpu::SyncToken(), false));
+  // The same SyncToken that was sent is returned when the resource was never
+  // exported. The SyncToken may be from any context, and the ReleaseCallback
+  // may need to wait on it before interacting with the resource on its context.
+  EXPECT_CALL(release, Released(tran.mailbox_holder.sync_token, false));
   provider().RemoveImportedResource(id);
 }
 

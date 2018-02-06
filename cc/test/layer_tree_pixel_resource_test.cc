@@ -52,6 +52,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
   LayerTreeResourceProvider* resource_provider = host_impl->resource_provider();
   viz::SharedBitmapManager* shared_bitmap_manager =
       host_impl->layer_tree_frame_sink()->shared_bitmap_manager();
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+      host_impl->layer_tree_frame_sink()->gpu_memory_buffer_manager();
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
 
@@ -82,10 +84,12 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
       break;
     case ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);
+      EXPECT_TRUE(gpu_memory_buffer_manager);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
 
-      *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
-          resource_provider, viz::PlatformColor::BestTextureFormat());
+      *raster_buffer_provider = std::make_unique<ZeroCopyRasterBufferProvider>(
+          resource_provider, gpu_memory_buffer_manager,
+          compositor_context_provider, viz::PlatformColor::BestTextureFormat());
       *resource_pool = std::make_unique<ResourcePool>(
           resource_provider, std::move(task_runner),
           gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,

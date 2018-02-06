@@ -771,8 +771,9 @@ class TextureLayerImplWithResourceTest : public TextureLayerTest {
 // Test conditions for results of TextureLayerImpl::WillDraw under
 // different configurations of different mailbox, texture_id, and draw_mode.
 TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
-  EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(), false))
+  EXPECT_CALL(
+      test_data_.mock_callback_,
+      Release(test_data_.mailbox_name1_, test_data_.sync_token1_, false))
       .Times(AnyNumber());
   EXPECT_CALL(
       test_data_.mock_callback_,
@@ -847,10 +848,11 @@ TEST_F(TextureLayerImplWithResourceTest, TestImplLayerCallbacks) {
       test_data_.resource1_,
       viz::SingleReleaseCallback::Create(test_data_.release_callback1_));
 
-  // Test multiple commits without an activation. The resource wasn't used so no
-  // sync token is returned.
-  EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(), false))
+  // Test multiple commits without an activation. The resource wasn't used so
+  // the original sync token is returned.
+  EXPECT_CALL(
+      test_data_.mock_callback_,
+      Release(test_data_.mailbox_name1_, test_data_.sync_token1_, false))
       .Times(1);
   pending_layer->SetTransferableResource(
       test_data_.resource2_,
@@ -883,9 +885,11 @@ TEST_F(TextureLayerImplWithResourceTest, TestImplLayerCallbacks) {
   active_layer->DidBecomeActive();
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
-  // Test destructor. The resource wasn't used so no sync token is returned.
-  EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(), false))
+  // Test destructor. The resource wasn't used so the original sync token is
+  // returned.
+  EXPECT_CALL(
+      test_data_.mock_callback_,
+      Release(test_data_.mailbox_name1_, test_data_.sync_token1_, false))
       .Times(1);
   pending_layer->SetTransferableResource(
       test_data_.resource1_,

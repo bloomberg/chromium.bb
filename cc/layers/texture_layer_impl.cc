@@ -194,8 +194,10 @@ void TextureLayerImpl::FreeTransferableResource() {
   if (own_resource_) {
     DCHECK(!resource_id_);
     if (release_callback_) {
-      // We didn't use the resource, so don't need to return a SyncToken.
-      release_callback_->Run(gpu::SyncToken(), false);
+      // We didn't use the resource, but the client might need the SyncToken
+      // before it can use the resource with its own GL context.
+      release_callback_->Run(transferable_resource_.mailbox_holder.sync_token,
+                             false);
     }
     transferable_resource_ = viz::TransferableResource();
     release_callback_ = nullptr;
