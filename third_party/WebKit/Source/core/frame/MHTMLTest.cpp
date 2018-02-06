@@ -475,23 +475,20 @@ TEST_F(MHTMLTest, ShadowDom) {
   EXPECT_TRUE(IsShadowHost(document->getElementById("h1")));
   EXPECT_TRUE(IsShadowHost(document->getElementById("h2")));
   // The nested shadow DOM tree is created.
-  EXPECT_TRUE(IsShadowHost(document->getElementById("h2")
-                               ->Shadow()
-                               ->OldestShadowRoot()
-                               .getElementById("h3")));
+  EXPECT_TRUE(IsShadowHost(
+      document->getElementById("h2")->Shadow()->GetShadowRoot().getElementById(
+          "h3")));
 
   EXPECT_TRUE(IsShadowHost(document->getElementById("h4")));
   // The static element in the shadow dom template is found.
-  EXPECT_TRUE(document->getElementById("h4")
-                  ->Shadow()
-                  ->OldestShadowRoot()
-                  .getElementById("s1"));
+  EXPECT_TRUE(
+      document->getElementById("h4")->Shadow()->GetShadowRoot().getElementById(
+          "s1"));
   // The element to be created by the script in the shadow dom template is
   // not found because the script is blocked.
-  EXPECT_FALSE(document->getElementById("h4")
-                   ->Shadow()
-                   ->OldestShadowRoot()
-                   .getElementById("s2"));
+  EXPECT_FALSE(
+      document->getElementById("h4")->Shadow()->GetShadowRoot().getElementById(
+          "s2"));
 }
 
 TEST_F(MHTMLTest, FormControlElements) {

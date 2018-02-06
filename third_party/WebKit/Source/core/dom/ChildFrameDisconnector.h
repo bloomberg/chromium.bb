@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class ElementShadow;
 class HTMLFrameOwnerElement;
 class Node;
 
@@ -25,7 +24,6 @@ class ChildFrameDisconnector {
 
  private:
   void CollectFrameOwners(Node&);
-  void CollectFrameOwners(ElementShadow&);
   void DisconnectCollectedFrameOwners();
   Node& Root() const { return *root_; }
 
