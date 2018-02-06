@@ -28,7 +28,9 @@ const size_t kDefaultSamplingInterval = 128 * 1024;
 
 bool g_deterministic;
 Atomic32 g_running;
-AtomicWord g_cumulative_counter = 0;
+Atomic32 g_operations_in_flight;
+Atomic32 g_fast_path_is_closed;
+AtomicWord g_cumulative_counter;
 AtomicWord g_threshold = kDefaultSamplingInterval;
 AtomicWord g_sampling_interval = kDefaultSamplingInterval;
 uint32_t g_last_sample_ordinal = 0;
@@ -216,7 +218,6 @@ void SamplingNativeHeapProfiler::MaybeRecordAlloc(void* address, size_t size) {
   // Lock-free algorithm that adds the allocation size to the cumulative
   // counter. When the counter reaches threshold, it picks a single thread
   // that will record the sample and reset the counter.
-  // The thread that records the sample returns true, others return false.
   AtomicWord threshold = base::subtle::NoBarrier_Load(&g_threshold);
   AtomicWord accumulated = base::subtle::NoBarrier_AtomicIncrement(
       &g_cumulative_counter, static_cast<AtomicWord>(size));
@@ -265,15 +266,32 @@ void SamplingNativeHeapProfiler::RecordAlloc(size_t total_allocated,
   size_t count = std::max<size_t>(1, (total_allocated + size / 2) / size);
   Sample sample(size, count, ++g_last_sample_ordinal);
   RecordStackTrace(&sample, skip_frames);
+
+  // Close the fast-path as inserting an element into samples_ may cause
+  // rehashing that invalidates iterators affecting all the concurrent
+  // readers.
+  base::subtle::Release_Store(&g_fast_path_is_closed, 1);
+  while (base::subtle::Acquire_Load(&g_operations_in_flight)) {
+    while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
+    }
+  }
+  // TODO(alph): We can do better by keeping the fast-path open when
+  // we know insert won't cause rehashing.
   samples_.insert(std::make_pair(address, std::move(sample)));
+  base::subtle::Release_Store(&g_fast_path_is_closed, 0);
 
   entered_.Set(false);
 }
 
 // static
 void SamplingNativeHeapProfiler::MaybeRecordFree(void* address) {
-  // TODO(alph): Implement a fast path without locking a mutex.
-  g_instance->RecordFree(address);
+  bool maybe_sampled = true;  // Pessimistically assume allocation was sampled.
+  base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, 1);
+  if (LIKELY(!base::subtle::NoBarrier_Load(&g_fast_path_is_closed)))
+    maybe_sampled = g_instance->samples_.count(address);
+  base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, -1);
+  if (maybe_sampled)
+    g_instance->RecordFree(address);
 }
 
 void SamplingNativeHeapProfiler::RecordFree(void* address) {
