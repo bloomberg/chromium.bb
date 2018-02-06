@@ -1002,4 +1002,19 @@ TEST(PNGTests, sizeMayOverflow) {
   EXPECT_TRUE(decoder->Failed());
 }
 
+TEST(PNGTests, truncated) {
+  auto decoder = CreatePNGDecoderWithPngData(
+      "/LayoutTests/images/resources/crbug807324.png");
+
+  // An update to libpng (without using the libpng-provided workaround) resulted
+  // in truncating this image. It has no transparency, so no pixel should be
+  // transparent.
+  auto* frame = decoder->DecodeFrameBufferAtIndex(0);
+  auto size = decoder->Size();
+  for (int i = 0; i < size.Width();  ++i)
+  for (int j = 0; j < size.Height(); ++j) {
+    ASSERT_NE(SK_ColorTRANSPARENT, *frame->GetAddr(i, j));
+  }
+}
+
 };  // namespace blink
