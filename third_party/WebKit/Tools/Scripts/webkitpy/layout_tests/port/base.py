@@ -64,8 +64,11 @@ from webkitpy.w3c.wpt_manifest import WPTManifest
 _log = logging.getLogger(__name__)
 
 
+# TODO(https://crbug.com/787020): Remove dependency on msttcorefonts.
 MS_TRUETYPE_FONTS_DIR = '/usr/share/fonts/truetype/msttcorefonts/'
 MS_TRUETYPE_FONTS_PACKAGE = 'ttf-mscorefonts-installer'
+
+CONTENT_SHELL_FONTS_DIR = "third_party/content_shell_fonts/content_shell_test_fonts"
 
 FONT_FILES = [
     [[MS_TRUETYPE_FONTS_DIR], 'Arial.ttf', MS_TRUETYPE_FONTS_PACKAGE],
@@ -97,17 +100,15 @@ FONT_FILES = [
     [[MS_TRUETYPE_FONTS_DIR], 'Verdana_Italic.ttf', MS_TRUETYPE_FONTS_PACKAGE],
     # The Microsoft font EULA
     [['/usr/share/doc/ttf-mscorefonts-installer/'], 'READ_ME!.gz', MS_TRUETYPE_FONTS_PACKAGE],
+
     # Other fonts: Arabic, CJK, Indic, Thai, etc.
-    # [['/usr/share/fonts/truetype/ttf-dejavu/'], 'DejaVuSans.ttf', 'ttf-dejavu'],
-    # [['/usr/share/fonts/truetype/kochi/'], 'kochi-mincho.ttf', 'ttf-kochi-mincho'],
-    # [['/usr/share/fonts/truetype/ttf-indic-fonts-core/'], 'lohit_hi.ttf', 'ttf-indic-fonts-core'],
-    # [['/usr/share/fonts/truetype/ttf-indic-fonts-core/'], 'lohit_ta.ttf', 'ttf-indic-fonts-core'],
-    # [['/usr/share/fonts/truetype/ttf-indic-fonts-core/'], 'MuktiNarrow.ttf', 'ttf-indic-fonts-core'],
-    # [['/usr/share/fonts/truetype/thai/', '/usr/share/fonts/truetype/tlwg/'], 'Garuda.ttf', 'fonts-tlwg-garuda'],
-    # [['/usr/share/fonts/truetype/ttf-indic-fonts-core/',
-    #   '/usr/share/fonts/truetype/ttf-punjabi-fonts/'],
-    #  'lohit_pa.ttf',
-    #  'ttf-indic-fonts-core'],
+    [[CONTENT_SHELL_FONTS_DIR], 'DejaVuSans.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Garuda.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Lohit-Devanagari.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Lohit-Gurmukhi.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Lohit-Tamil.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'MuktiNarrow.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'NotoSansKhmer-Regular.ttf', None],
 ]
 
 
@@ -1865,14 +1866,18 @@ class Port(object):
         for (font_dirs, font_file, package) in FONT_FILES:
             exists = False
             for font_dir in font_dirs:
-                font_path = font_dir + font_file
+                font_path = os.path.join(font_dir, font_file)
+                if not os.path.isabs(font_path):
+                    font_path = self._path_from_chromium_base(font_path)
                 if self._check_file_exists(font_path, '', more_logging=False):
                     result.append(font_path)
                     exists = True
                     break
             if not exists:
-                message = 'You are missing %s under %s. Try installing %s. See build instructions.' % \
-                    (font_file, font_dirs, package)
+                message = 'You are missing %s under %s.' % (font_file, font_dirs)
+                if package:
+                    message += ' Try installing %s. See build instructions.' % package
+
                 _log.error(message)
                 raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS, message)
         return result
