@@ -158,6 +158,41 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(int render_process_id,
   return WriteToLogFile(it, message);
 }
 
+void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
+    int render_process_id) {
+  // Closing files will call MaybeStartUploading(). Avoid letting that upload
+  // any recently expired files.
+  PrunePendingLogs();
+
+  // Remove all of the peer connections associated with this render process.
+  // It's important to do this before closing the actual files, because closing
+  // files can trigger a new upload if no active peer connections are present.
+  auto pc_it = active_peer_connections_.begin();
+  while (pc_it != active_peer_connections_.end()) {
+    if (pc_it->render_process_id == render_process_id) {
+      pc_it = active_peer_connections_.erase(pc_it);
+    } else {
+      ++pc_it;
+    }
+  }
+
+  // Close all of the files that were associated with peer connections which
+  // belonged to this render process.
+  auto log_it = active_logs_.begin();
+  while (log_it != active_logs_.end()) {
+    if (log_it->first.render_process_id == render_process_id) {
+      log_it = CloseLogFile(log_it);
+    } else {
+      ++log_it;
+    }
+  }
+
+  // Though CloseLogFile() calls this, it's important to also do this
+  // explicitly, since it could be that no files were closed, but some
+  // active PeerConnections that were suppressing uploading are now gone.
+  MaybeStartUploading();
+}
+
 void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
     const base::FilePath& file_path,
     bool upload_successful) {
