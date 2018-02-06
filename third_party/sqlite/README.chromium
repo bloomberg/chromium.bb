@@ -42,7 +42,7 @@ The directory structure is as follows. Files common to all third_party projects
                   build, which merges all the code in one .c file and one .h
                   file. See https://www.sqlite.org/amalgamation.html
 * amalgamation/config.h - Linux build configuration
-* google_generate_amalgamation.sh - Script that generates the amalgamation
+* scripts/ - Scripts that generate the files in the amalgamation
 * sqlite.h - The header used by the rest of Chromium to include SQLite. This
              forwards to amalgamation/sqlite3.h
 * fuzz/ - Google OSS-Fuzz (ClusterFuzz) testing for Chromium's SQLite build
@@ -54,7 +54,7 @@ The directory structure is as follows. Files common to all third_party projects
 third_party/sqlite/src is the patched source from SQLite.  This is used to
 generate the amalgamation, a concatenation of all of the files into a giant
 sqlite3.c.  To prototype, edit in src/, then call
-  ./google_generate_amalgamation.sh
+  ./scripts/generate_amalgamation.sh
 to regenerate sqlite3.c.  The code in src/ is much easier to edit, and the
 SQLite test framework can easily be run.  During development it may be
 convenient to modify BUILD.gn based on src/main.mk to just pull in the src/
@@ -101,8 +101,8 @@ git add patches/*.patch
 git commit -m "Rebuild patches for sqlite_${BASE}"
 
 # Re-generate the amalgamation.
-./google_generate_amalgamation.sh
-git commit -m 'google_generate_amalgamation.sh' amalgamation/
+./scripts/generate_amalgamation.sh
+git commit -m './scripts/generate_amalgamation.sh' amalgamation/
 # At this point everything should build and work.
 
 # Do a squash upload.  This should add your single patch to patches/, and apply
@@ -204,16 +204,23 @@ git rebase sqlite-new-base
 
 #### Finally, create the branch that we'll upload.
 git new-branch --upstream-current sqlite-new-cl
-./google_generate_amalgamation.sh
+./scripts/generate_amalgamation.sh
+
+#### Validate the upgrade.
 # The goal is to have a set of reasonably-independent CLs which can be
 # understood separately, so that future importers can sensibly determine how to
 # handle conflicts.  So use git-rebase and slipstream fixups back into their
 # original CL until everything builds and works.
 cd ../..
 ninja -C out/Default
+# Check that extract_sqlite_api.py added chrome_ to all exported symbols.
+# Only "_fini" and "_init" should be unprefixed.
+nm -B out/Default/libchromium_sqlite3.so | cut -c 18- | sort | grep '^T'
 out/Default/sql_unittests
 third_party/WebKit/Tools/Scripts/run-webkit-tests -t Default storage/websql/*
 cd third_party/sqlite
+
+#### Create the review.
 # Rebuild the patch set.
 git rm patches/*
 git format-patch --output-directory=patches --ignore-space-change \
