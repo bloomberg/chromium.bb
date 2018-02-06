@@ -35505,6 +35505,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="HyperText Transfer Protocol Secure (https)"/>
   <int value="6" label="App Socket (socket)"/>
   <int value="7" label="Line Print Daemon (lpd)"/>
+  <int value="8" label="IPP-over-USB (ippusb)"/>
 </enum>
 
 <enum name="PrinterServiceEventType">
