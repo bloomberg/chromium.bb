@@ -21,6 +21,7 @@
 #include "cc/base/switches.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -640,14 +641,16 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 GetFrameSinkManager(), data->display.get(),
                 data->display_client.get(),
                 static_cast<scoped_refptr<viz::VulkanContextProvider>>(
-                    vulkan_context_provider))
+                    vulkan_context_provider),
+                features::IsVizHitTestingEnabled())
           : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
                 GetFrameSinkManager(), data->display.get(),
                 data->display_client.get(), context_provider,
                 shared_worker_context_provider_, compositor->task_runner(),
                 GetGpuMemoryBufferManager(),
-                viz::ServerSharedBitmapManager::current());
+                viz::ServerSharedBitmapManager::current(),
+                features::IsVizHitTestingEnabled());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
