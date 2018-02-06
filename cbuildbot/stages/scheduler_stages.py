@@ -72,14 +72,16 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     return bucket
 
   def PostSlaveBuildToBuildbucket(self, build_name, build_config,
-                                  master_build_id, buildset_tag,
-                                  dryrun=False):
+                                  master_build_id, master_buildbucket_id,
+                                  buildset_tag, dryrun=False):
     """Send a Put slave build request to Buildbucket.
 
     Args:
       build_name: Salve build name to put to Buildbucket.
       build_config: Slave build config to put to Buildbucket.
-      master_build_id: Master build id of the slave build.
+      master_build_id: CIDB id of the master scheduling the slave build.
+      master_buildbucket_id: buildbucket id of the master scheduling the
+                             slave build.
       buildset_tag: The buildset tag for strong consistent tag queries.
                     More context: crbug.com/661689
       dryrun: Whether a dryrun, default to False.
@@ -98,6 +100,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
             'cbb_branch:%s' % self._run.manifest_branch,
             'cbb_config:%s' % build_name,
             'cbb_master_build_id:%s' % master_build_id,
+            'cbb_master_buildbucket_id:%s' % master_buildbucket_id,
             'cbb_email:']
 
     if build_config.boards:
@@ -145,6 +148,9 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       logging.info('No build id. Skip scheduling slaves.')
       return
 
+    # May be None. This is okay.
+    buildbucket_id = self._run.options.buildbucket_id
+
     buildset_tag = 'cbuildbot/%s/%s/%s' % (
         self._run.manifest_branch, self._run.config.name, build_id)
 
@@ -158,8 +164,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     for slave_config_name, slave_config in slave_config_map.iteritems():
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_config_name, slave_config, build_id, buildset_tag,
-            dryrun=dryrun)
+            slave_config_name, slave_config, build_id, buildbucket_id,
+            buildset_tag, dryrun=dryrun)
         request_reason = None
 
         if slave_config.important:

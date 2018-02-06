@@ -202,7 +202,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     stage = self.ConstructStage()
     buildbucket_id, created_ts = stage.PostSlaveBuildToBuildbucket(
-        'slave', slave_config, 0, 'buildset_tag', dryrun=True)
+        'slave', slave_config, 0, 'master_bb_id', 'buildset_tag', dryrun=True)
 
     self.assertEqual(buildbucket_id, 'bb_id_1')
     self.assertEqual(created_ts, 1)
@@ -220,7 +220,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     stage = self.ConstructStage()
     buildbucket_id, created_ts = stage.PostSlaveBuildToBuildbucket(
-        'slave', slave_config, 0, 'buildset_tag', dryrun=True)
+        'slave', slave_config, 0, 'master_bb_id', 'buildset_tag', dryrun=True)
 
     self.assertEqual(buildbucket_id, 'bb_id_1')
     self.assertEqual(created_ts, 1)
