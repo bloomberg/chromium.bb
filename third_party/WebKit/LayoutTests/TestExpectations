@@ -63,7 +63,6 @@ crbug.com/807382 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]
 crbug.com/805049 [ Mac ] virtual/spv175/compositing/iframes/fixed-position-iframe.html [ Pass Crash ]
 
 # spv175+root-layer-scrolls failures. They also fail with root-layer-scrolls without enable-slimming-paint-v175.
-crbug.com/417782 virtual/spv175/compositing/overflow/border-radius-composited-subframe.html [ Failure ]
 crbug.com/417782 virtual/spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 
 crbug.com/803774 http/tests/loading/htxg/ [ Skip ]
@@ -3289,7 +3288,6 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 # These entries were copied from FlagExpectations/root-layer-scrolls
 ################################################################################
 crbug.com/417782 compositing/iframes/become-composited-nested-iframes.html [ Failure ]
-crbug.com/417782 compositing/overflow/border-radius-composited-subframe.html [ Failure ]
 crbug.com/417782 compositing/overflow/tiled-mask.html [ Failure ]
 crbug.com/417782 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/417782 compositing/squashing/squash-above-fixed-3.html [ Failure ]
@@ -3331,7 +3329,6 @@ crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/scale-and-scroll-iframe-window.html [ Failure ]
-crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/border-radius-composited-subframe.html [ Failure ]
 crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
 crbug.com/417782 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Failure ]
 crbug.com/417782 virtual/scroll_customization/fast/scroll-behavior/scroll-into-view-sticky.html [ Crash ]
