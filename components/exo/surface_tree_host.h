@@ -49,10 +49,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // surface tree.
   void GetHitTestMask(gfx::Path* mask) const;
 
-  // Returns the cursor for the given position. If no cursor provider is
-  // registered then CursorType::kNull is returned.
-  gfx::NativeCursor GetCursor(const gfx::Point& point) const;
-
   // Call this to indicate that the previous CompositorFrame is processed and
   // the surface is being scheduled for a draw.
   void DidReceiveCompositorFrameAck();
