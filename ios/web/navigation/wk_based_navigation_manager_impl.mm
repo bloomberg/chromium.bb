@@ -40,9 +40,11 @@ void SetNavigationItemInWKItem(WKBackForwardListItem* wk_item,
 
 web::NavigationItemImpl* GetNavigationItemFromWKItem(
     WKBackForwardListItem* wk_item) {
-  return wk_item ? [[CRWNavigationItemHolder
-                       holderForBackForwardListItem:wk_item] navigationItem]
-                 : nullptr;
+  if (!wk_item)
+    return nullptr;
+
+  return [[CRWNavigationItemHolder holderForBackForwardListItem:wk_item]
+      navigationItem];
 }
 
 }  // namespace

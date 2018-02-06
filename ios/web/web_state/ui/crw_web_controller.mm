@@ -38,6 +38,7 @@
 #import "ios/net/http_response_headers_util.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -5061,6 +5062,28 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (![_webView isLoading]) {
     if (_documentURL == URL)
       return;
+
+    // At this point, _webView, _webView.backForwardList.currentItem and its
+    // associated NavigationItem should all have the same URL, except in two
+    // edge cases:
+    // 1. location.replace that only changes hash: WebKit updates _webView.URL
+    //    and currentItem.URL, and NavigationItem URL must be synced.
+    // 2. location.replace to about: URL: a WebKit bug causes only _webView.URL,
+    //    but not currentItem.URL to be updated. NavigationItem URL should be
+    //    synced to _webView.URL.
+    // This needs to be done before |URLDidChangeWithoutDocumentChange| so any
+    // WebStateObserver callbacks will see the updated URL.
+    // TODO(crbug.com/809287) use currentItem.URL instead of _webView.URL to
+    // update NavigationItem URL.
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      const GURL webViewURL = net::GURLWithNSURL(_webView.URL);
+      web::NavigationItem* currentItem = [[CRWNavigationItemHolder
+          holderForBackForwardListItem:_webView.backForwardList.currentItem]
+          navigationItem];
+      if (currentItem && webViewURL != currentItem->GetURL())
+        currentItem->SetURL(webViewURL);
+    }
+
     [self URLDidChangeWithoutDocumentChange:URL];
   } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
     WKNavigation* navigation = [_navigationStates lastAddedNavigation];
