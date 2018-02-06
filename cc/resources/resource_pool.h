@@ -17,7 +17,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/unguessable_token.h"
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/scoped_resource.h"
@@ -25,6 +27,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,6 +43,25 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   // Delay before a resource is considered expired.
   static constexpr base::TimeDelta kDefaultExpirationDelay =
       base::TimeDelta::FromSeconds(5);
+
+  // A base class to hold ownership of gpu backed PoolResources. Allows the
+  // client to define destruction semantics.
+  class GpuBacking {
+   public:
+    virtual ~GpuBacking() = default;
+
+    gpu::Mailbox mailbox;
+    gpu::SyncToken mailbox_sync_token;
+    uint32_t texture_target;
+    gpu::SyncToken returned_sync_token;
+
+    // Guids for for memory dumps. This guid will always be valid.
+    virtual base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
+        uint64_t tracing_process_id) = 0;
+    // Some gpu resources can be shared memory-backed, and this guid should be
+    // prefered in that case. But if not then this will be empty.
+    virtual base::UnguessableToken SharedMemoryGuid() = 0;
+  };
 
   // Scoped move-only object returned when getting a resource from the pool.
   // Ownership must be given back to the pool to release the resource.
@@ -86,12 +108,21 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
       return resource_->resource_id();
     }
 
+    // Only valid when the ResourcePool is vending texture-backed resources.
+    GpuBacking* gpu_backing() const {
+      DCHECK(is_gpu_);
+      return resource_->gpu_backing();
+    }
+    void set_gpu_backing(std::unique_ptr<GpuBacking> gpu) const {
+      DCHECK(is_gpu_);
+      return resource_->set_gpu_backing(std::move(gpu));
+    }
+
     // Only valid when the ResourcePool is vending software-backed resources.
     viz::SharedBitmap* shared_bitmap() const {
       DCHECK(!is_gpu_);
       return resource_->shared_bitmap();
     }
-    // Only valid when the ResourcePool is vending software-backed resources.
     void set_shared_bitmap(
         std::unique_ptr<viz::SharedBitmap> shared_bitmap) const {
       DCHECK(!is_gpu_);
@@ -212,6 +243,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     const viz::ResourceId& resource_id() const { return resource_id_; }
     void set_resource_id(viz::ResourceId id) { resource_id_ = id; }
 
+    GpuBacking* gpu_backing() const { return gpu_backing_.get(); }
+    void set_gpu_backing(std::unique_ptr<GpuBacking> gpu) {
+      gpu_backing_ = std::move(gpu);
+    }
+
     viz::SharedBitmap* shared_bitmap() const { return shared_bitmap_.get(); }
     void set_shared_bitmap(std::unique_ptr<viz::SharedBitmap> shared_bitmap) {
       shared_bitmap_ = std::move(shared_bitmap);
@@ -228,9 +264,6 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
       invalidated_rect_ = invalidated_rect;
     }
 
-    const gpu::SyncToken& sync_token() const { return sync_token_; }
-    void set_sync_token(const gpu::SyncToken& token) { sync_token_ = token; }
-
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       const LayerTreeResourceProvider* resource_provider,
                       bool dump_parent,
@@ -246,17 +279,18 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     base::TimeTicks last_usage_;
     gfx::Rect invalidated_rect_;
 
-    // TODO(danakj): Own a backing for gpu resources here also,
-    // instead of owning it through the |resource_id_|.
+    // An id used to name the backing for transfer to the display compositor.
     viz::ResourceId resource_id_ = 0;
 
-    // The backing for software resources. Initially null for resources given
-    // out by ResourcePool, to be filled in by the client.
-    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
+    // The backing for gpu resources. Initially null for resources given
+    // out by ResourcePool, to be filled in by the client. Is destroyed on the
+    // compositor thread.
+    std::unique_ptr<GpuBacking> gpu_backing_;
 
-    // If a resource was exported and returned, then this will hold the token
-    // that must be waited on before re-using the resource.
-    gpu::SyncToken sync_token_;
+    // The backing for software resources. Initially null for resources given
+    // out by ResourcePool, to be filled in by the client. Is destroyed on the
+    // compositor thread.
+    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
   };
 
   // Callback from the ResourceProvider to notify when an exported PoolResource

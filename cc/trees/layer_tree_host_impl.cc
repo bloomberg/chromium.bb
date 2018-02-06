@@ -2661,8 +2661,10 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
         ResourcePool::kDefaultExpirationDelay,
         settings_.disallow_non_exact_resource_reuse);
 
-    *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
-        resource_provider_.get(), settings_.preferred_tile_format);
+    *raster_buffer_provider = std::make_unique<ZeroCopyRasterBufferProvider>(
+        resource_provider_.get(),
+        layer_tree_frame_sink_->gpu_memory_buffer_manager(),
+        compositor_context_provider, settings_.preferred_tile_format);
     return;
   }
 

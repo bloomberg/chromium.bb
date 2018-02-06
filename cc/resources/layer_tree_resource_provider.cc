@@ -87,7 +87,12 @@ struct LayerTreeResourceProvider::ImportedResource {
   ImportedResource(viz::ResourceId id,
                    const viz::TransferableResource& resource,
                    std::unique_ptr<viz::SingleReleaseCallback> release_callback)
-      : resource(resource), release_callback(std::move(release_callback)) {
+      : resource(resource),
+        release_callback(std::move(release_callback)),
+        // If the resource is immediately deleted, it returns the same SyncToken
+        // it came with. The client may need to wait on that before deleting the
+        // backing or reusing it.
+        returned_sync_token(resource.mailbox_holder.sync_token) {
     // Replace the |resource| id with the local id from this
     // LayerTreeResourceProvider.
     this->resource.id = id;
