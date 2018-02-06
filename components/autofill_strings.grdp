@@ -209,34 +209,73 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered.">
     Confirm
   </message>
-  <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
-      Do you want Chrome to save this card?
+  <if expr="use_titlecase">
+    <if expr="_google_chrome">
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="In Title Case: Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
+        Do You Want Chrome to Save This Card?
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="In Title Case: Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
+        Do You Want Chromium to Save This Card?
+      </message>
+    </if>
+    <if expr="is_linux and not chromeos">
+      <then>
+        <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="In Title Case: Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
+          Do You Want to Save This Card to Your Google Account?
+        </message>
+      </then>
+      <else>
+        <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="In Title Case: Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
+          Do You Want to Save This Card to Your Google Account and on This Device?
+        </message>
+      </else>
+    </if>
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2" desc="In Title Case: Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
+      Save Card to Google?
+    </message>
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3" desc="In Title Case: Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to January 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
+      Save Card?
+    </message>
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE" desc="In Title Case: Title text to show for the Autofill upload save credit card prompt when more information (e.g., CVC) is needed in order to save the card.">
+      Confirm Security Code
     </message>
   </if>
-  <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
-      Do you want Chromium to save this card?
+  <if expr="not use_titlecase">
+    <if expr="_google_chrome">
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
+        Do you want Chrome to save this card?
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
+        Do you want Chromium to save this card?
+      </message>
+    </if>
+    <if expr="is_linux and not chromeos">
+      <then>
+        <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
+          Do you want to save this card to your Google Account?
+        </message>
+      </then>
+      <else>
+        <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
+          Do you want to save this card to your Google Account and on this device?
+        </message>
+      </else>
+    </if>
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
+      Save card to Google?
+    </message>
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to January 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
+      Save card?
+    </message>
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE" desc="Title text to show for the Autofill upload save credit card prompt when more information (e.g., CVC) is needed in order to save the card.">
+      Confirm security code
     </message>
   </if>
-  <if expr="is_linux and not chromeos">
-    <then>
-      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
-        Do you want to save this card to your Google Account?
-      </message>
-    </then>
-    <else>
-      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
-        Do you want to save this card to your Google Account and on this device?
-      </message>
-    </else>
-  </if>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
-    Save card to Google?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to January 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
-    Save card?
-  </message>
+
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
   </message>
@@ -252,9 +291,6 @@
       </message>
     </else>
   </if>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE" desc="Title text to show for the Autofill upload save credit card prompt when more information (e.g., CVC) is needed in order to save the card.">
-    Confirm security code
-  </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION" desc="Text displayed in the Autofill save credit card prompt requesting the additional CVC information needed in order to save the card to Google Payments.  It will display the network and last four digits of the card to be saved.">
     Enter the security code for <ph name="CREDIT_CARD">$1<ex>Visa ****5678</ex></ph>.  This code won't be saved.
   </message>
