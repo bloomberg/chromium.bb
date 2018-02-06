@@ -191,6 +191,12 @@ void SplitViewController::SnapWindow(aura::Window* window,
   else if (right_window_)
     state_ = RIGHT_SNAPPED;
 
+  // Update the divider position and window bounds before snapping a new window.
+  // Since the minimum size of |window| maybe larger than currently bounds in
+  // |snap_position|.
+  MoveDividerToClosestFixedPosition();
+  UpdateSnappedWindowsAndDividerBounds();
+
   StartObserving(window);
   const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
                                                   : wm::WM_EVENT_SNAP_RIGHT);
