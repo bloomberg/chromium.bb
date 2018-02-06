@@ -205,7 +205,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
     // Add suggestion apps, a folder with apps and other app list items.
     const int kSuggestionAppNum = 3;
-    const int kItemNumInFolder = 8;
+    const int kItemNumInFolder = 25;
     const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
     AppListTestModel* model = delegate_->GetTestModel();
     SearchModel* search_model = delegate_->GetSearchModel();
@@ -737,9 +737,9 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
-// Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state within
-// folder.
-TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFolder) {
+// Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state in the first
+// page within folder.
+TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   Show();
 
   // Transition to FULLSCREEN_ALL_APPS state and open the folder.
@@ -752,7 +752,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFolder) {
   forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model_for_test();
-  for (int i = 0; i < view_model->view_size();
+  for (size_t i = 0; i < kMaxFolderItemsPerPage;
        i += app_list_folder_view()->items_grid_view()->cols())
     forward_view_list.push_back(view_model->view_at(i));
   forward_view_list.push_back(
@@ -766,9 +766,53 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFolder) {
   backward_view_list.push_back(search_box_view()->search_box());
   backward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
-  for (int i = view_model->view_size() - 1; i >= 0;
+  for (int i = kMaxFolderItemsPerPage - 1; i >= 0;
        i -= app_list_folder_view()->items_grid_view()->cols())
     backward_view_list.push_back(view_model->view_at(i));
+  backward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by up.
+  TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
+}
+
+// Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state in the second
+// page within folder.
+TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
+  Show();
+
+  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
+  SetAppListState(AppListViewState::FULLSCREEN_ALL_APPS);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+
+  // Select the second page.
+  app_list_folder_view()->items_grid_view()->pagination_model()->SelectPage(
+      1, false /* animate */);
+
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  const views::ViewModelT<AppListItemView>* view_model =
+      app_list_folder_view()->items_grid_view()->view_model_for_test();
+  for (int i = kMaxFolderItemsPerPage; i < view_model->view_size();
+       i += app_list_folder_view()->items_grid_view()->cols()) {
+    forward_view_list.push_back(view_model->view_at(i));
+  }
+  forward_view_list.push_back(
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
+  forward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by down.
+  TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
+
+  std::vector<views::View*> backward_view_list;
+  backward_view_list.push_back(search_box_view()->search_box());
+  backward_view_list.push_back(
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
+  for (size_t i = view_model->view_size() - 1; i >= kMaxFolderItemsPerPage;
+       i -= app_list_folder_view()->items_grid_view()->cols()) {
+    backward_view_list.push_back(view_model->view_at(i));
+  }
   backward_view_list.push_back(search_box_view()->search_box());
 
   // Test traversal triggered by up.

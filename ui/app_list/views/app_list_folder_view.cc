@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -512,6 +513,19 @@ gfx::Size AppListFolderView::CalculatePreferredSize() const {
 void AppListFolderView::Layout() {
   CalculateIdealBounds();
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
+}
+
+bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Let the FocusManager handle Left/Right keys.
+  if (!CanProcessUpDownKeyTraversal(event))
+    return false;
+
+  if (folder_header_view_->HasTextFocus() && event.key_code() == ui::VKEY_UP) {
+    // Move focus to the last app list item view in the selected page.
+    items_grid_view_->GetCurrentPageLastItemViewInFolder()->RequestFocus();
+    return true;
+  }
+  return false;
 }
 
 void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {

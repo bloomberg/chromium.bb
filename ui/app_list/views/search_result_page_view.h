@@ -45,6 +45,8 @@ class APP_LIST_EXPORT SearchResultPageView
                           ash::AppListState from_state,
                           ash::AppListState to_state) override;
   gfx::Rect GetSearchBoxBounds() const override;
+  views::View* GetFirstFocusableView() override;
+  views::View* GetLastFocusableView() override;
 
   // Overridden from SearchResultContainerView::Delegate :
   void OnSearchResultContainerResultsChanged() override;

@@ -43,6 +43,14 @@ views::View* AppListPage::GetSelectedView() const {
   return nullptr;
 }
 
+views::View* AppListPage::GetFirstFocusableView() {
+  return nullptr;
+}
+
+views::View* AppListPage::GetLastFocusableView() {
+  return nullptr;
+}
+
 gfx::Rect AppListPage::GetAboveContentsOffscreenBounds(
     const gfx::Size& size) const {
   gfx::Rect rect(size);

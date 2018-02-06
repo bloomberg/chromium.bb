@@ -303,6 +303,23 @@ views::View* AppsContainerView::GetSelectedView() const {
              : apps_grid_view_->GetSelectedView();
 }
 
+views::View* AppsContainerView::GetFirstFocusableView() {
+  if (IsInFolderView()) {
+    // The pagination inside a folder is set horizontally, so focus should be
+    // set on the first item view in the selected page when it is moved down
+    // from the search box.
+    return app_list_folder_view_->items_grid_view()
+        ->GetCurrentPageFirstItemViewInFolder();
+  }
+  return GetFocusManager()->GetNextFocusableView(
+      this, GetWidget(), false /* reverse */, false /* dont_loop */);
+}
+
+views::View* AppsContainerView::GetLastFocusableView() {
+  return GetFocusManager()->GetNextFocusableView(
+      this, GetWidget(), true /* reverse */, false /* dont_loop */);
+}
+
 void AppsContainerView::SetShowState(ShowState show_state,
                                      bool show_apps_with_animation) {
   if (show_state_ == show_state)
