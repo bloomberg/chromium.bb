@@ -14,24 +14,24 @@
 namespace content {
 namespace {
 
-const char kNotificationTagSeparator[] = "#";
-const char kPersistentNotificationPrefix[] = "p";
-const char kNonPersistentNotificationPrefix[] = "n";
+const char kNotificationTagSeparator = '#';
+const char kPersistentNotificationPrefix = 'p';
+const char kNonPersistentNotificationPrefix = 'n';
 
 }  // namespace
 
 // static
 bool NotificationIdGenerator::IsPersistentNotification(
     const base::StringPiece& notification_id) {
-  return notification_id.starts_with(
-      std::string(kPersistentNotificationPrefix));
+  return notification_id.length() > 0 &&
+         notification_id.front() == kPersistentNotificationPrefix;
 }
 
 // static
 bool NotificationIdGenerator::IsNonPersistentNotification(
     const base::StringPiece& notification_id) {
-  return notification_id.starts_with(
-      std::string(kNonPersistentNotificationPrefix));
+  return notification_id.length() > 0 &&
+         notification_id.front() == kNonPersistentNotificationPrefix;
 }
 
 // Notification Id is of the following format:
