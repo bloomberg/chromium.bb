@@ -57,14 +57,29 @@ def main():
   for extension in extensions:
     if extension['type'] == 'emulated-device':
       device = extension['device']
-      devices[device['title']] = {
-        'userAgent': device['user-agent'].replace('%s', version),
-        'width': device['screen']['vertical']['width'],
-        'height': device['screen']['vertical']['height'],
-        'deviceScaleFactor': device['screen']['device-pixel-ratio'],
-        'touch': 'touch' in device['capabilities'],
-        'mobile': 'mobile' in device['capabilities'],
-      }
+      title = device['title']
+      titles = [title]
+      # For 'iPhone 6/7/8', also add ['iPhone 6', 'iPhone 7', 'iPhone 8'] for
+      # backward compatibility.
+      if '/' in title:
+        words = title.split()
+        for i in range(len(words)):
+          if '/' in words[i]:
+            # Only support one word containing '/'
+            break
+        tokens = words[i].split('/')
+        for token in tokens:
+          words[i] = token
+          titles.append(' '.join(words))
+      for title in titles:
+        devices[title] = {
+          'userAgent': device['user-agent'].replace('%s', version),
+          'width': device['screen']['vertical']['width'],
+          'height': device['screen']['vertical']['height'],
+          'deviceScaleFactor': device['screen']['device-pixel-ratio'],
+          'touch': 'touch' in device['capabilities'],
+          'mobile': 'mobile' in device['capabilities'],
+        }
 
   output_dir = 'chrome/test/chromedriver/chrome'
   cpp_source.WriteSource('mobile_device_list',
