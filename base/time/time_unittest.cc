@@ -1234,10 +1234,6 @@ TEST(TimeDelta, ZeroMinMax) {
   static_assert(kMin < kZero, "");
 }
 
-constexpr bool IsMin(TimeDelta delta) {
-  return delta.is_min();
-}
-
 TEST(TimeDelta, MaxConversions) {
   // static_assert also confirms constexpr works as intended.
   constexpr TimeDelta kMax = TimeDelta::Max();
@@ -1277,17 +1273,19 @@ TEST(TimeDelta, MaxConversions) {
   static_assert(TimeDelta::FromMicroseconds(max_int).is_max(), "");
 
   static_assert(
-      IsMin(TimeDelta::FromSeconds(min_int / Time::kMicrosecondsPerSecond - 1)),
+      TimeDelta::FromSeconds(min_int / Time::kMicrosecondsPerSecond - 1)
+          .is_min(),
       "");
 
-  static_assert(IsMin(TimeDelta::FromMilliseconds(
-                    min_int / Time::kMillisecondsPerSecond - 1)),
-                "");
+  static_assert(
+      TimeDelta::FromMilliseconds(min_int / Time::kMillisecondsPerSecond - 1)
+          .is_min(),
+      "");
 
-  static_assert(IsMin(TimeDelta::FromMicroseconds(min_int)), "");
+  static_assert(TimeDelta::FromMicroseconds(min_int).is_min(), "");
 
   static_assert(
-      IsMin(TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min())),
+      TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min()).is_min(),
       "");
 
   // Floating point arithmetic resulting in infinity isn't constexpr in C++14.
@@ -1313,12 +1311,14 @@ TEST(TimeDelta, MaxConversions) {
       "");
 
   static_assert(
-      IsMin(TimeDelta::FromSecondsD(min_d / Time::kMicrosecondsPerSecond - 1)),
+      TimeDelta::FromSecondsD(min_d / Time::kMicrosecondsPerSecond - 1)
+          .is_min(),
       "");
 
-  static_assert(IsMin(TimeDelta::FromMillisecondsD(
-                    min_d / Time::kMillisecondsPerSecond * 2)),
-                "");
+  static_assert(
+      TimeDelta::FromMillisecondsD(min_d / Time::kMillisecondsPerSecond * 2)
+          .is_min(),
+      "");
 }
 
 TEST(TimeDelta, NumericOperators) {
@@ -1433,18 +1433,18 @@ TEST(TimeDelta, Overflows) {
   TimeDelta large_negative = -large_delta;
   EXPECT_GT(TimeDelta(), large_negative);
   EXPECT_FALSE(large_delta.is_max());
-  EXPECT_FALSE(IsMin(-large_negative));
+  EXPECT_FALSE((-large_negative).is_min());
   constexpr TimeDelta kOneSecond = TimeDelta::FromSeconds(1);
 
   // Test +, -, * and / operators.
   EXPECT_TRUE((large_delta + kOneSecond).is_max());
-  EXPECT_TRUE(IsMin(large_negative + (-kOneSecond)));
-  EXPECT_TRUE(IsMin(large_negative - kOneSecond));
+  EXPECT_TRUE((large_negative + (-kOneSecond)).is_min());
+  EXPECT_TRUE((large_negative - kOneSecond).is_min());
   EXPECT_TRUE((large_delta - (-kOneSecond)).is_max());
   EXPECT_TRUE((large_delta * 2).is_max());
-  EXPECT_TRUE(IsMin(large_delta * -2));
+  EXPECT_TRUE((large_delta * -2).is_min());
   EXPECT_TRUE((large_delta / 0.5).is_max());
-  EXPECT_TRUE(IsMin(large_delta / -0.5));
+  EXPECT_TRUE((large_delta / -0.5).is_min());
 
   // Test +=, -=, *= and /= operators.
   TimeDelta delta = large_delta;
@@ -1452,11 +1452,11 @@ TEST(TimeDelta, Overflows) {
   EXPECT_TRUE(delta.is_max());
   delta = large_negative;
   delta += -kOneSecond;
-  EXPECT_TRUE(IsMin(delta));
+  EXPECT_TRUE((delta).is_min());
 
   delta = large_negative;
   delta -= kOneSecond;
-  EXPECT_TRUE(IsMin(delta));
+  EXPECT_TRUE((delta).is_min());
   delta = large_delta;
   delta -= -kOneSecond;
   EXPECT_TRUE(delta.is_max());
@@ -1466,14 +1466,14 @@ TEST(TimeDelta, Overflows) {
   EXPECT_TRUE(delta.is_max());
   delta = large_negative;
   delta *= 1.5;
-  EXPECT_TRUE(IsMin(delta));
+  EXPECT_TRUE((delta).is_min());
 
   delta = large_delta;
   delta /= 0.5;
   EXPECT_TRUE(delta.is_max());
   delta = large_negative;
   delta /= 0.5;
-  EXPECT_TRUE(IsMin(delta));
+  EXPECT_TRUE((delta).is_min());
 
   // Test operations with Time and TimeTicks.
   EXPECT_TRUE((large_delta + Time::Now()).is_max());
