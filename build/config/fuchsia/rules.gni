@@ -186,22 +186,26 @@ template("fuchsia_executable_runner") {
   _exe_name = get_label_info(exe_target, "name")
   _exe_path = "${root_out_dir}/${_exe_name}"
 
+  # Define the target dependencies as the union of the executable target
+  # and the invoker's deps.
+  if (defined(invoker.deps)) {
+    _combined_deps = invoker.deps + [ exe_target ]
+  } else {
+    _combined_deps = [ exe_target ]
+  }
+
   package(_pkg_target) {
     forward_variables_from(invoker, [ "testonly" ])
     package_name = _exe_name
     binary = _exe_name
-    deps = [
-      exe_target,
-    ]
+    deps = _combined_deps
   }
 
   generate_runner_script(_gen_runner_target) {
     forward_variables_from(invoker, [ "testonly" ])
     runner_script = "exe_runner.py"
     generated_script = "$root_build_dir/bin/run_${_exe_name}"
-    deps = [
-      exe_target,
-    ]
+    deps = _combined_deps
     exe_path = _exe_path
     root_target_name = invoker.target_name
     package_name = _exe_name
@@ -221,9 +225,7 @@ template("fuchsia_executable_runner") {
     runner_script = "archive_builder.py"
     generated_script =
         "$root_build_dir/bin/archive_" + get_label_info(exe_target, "name")
-    deps = [
-      exe_target,
-    ]
+    deps = _combined_deps
     exe_path = _exe_path
     root_target_name = invoker.target_name
     package_name = _exe_name

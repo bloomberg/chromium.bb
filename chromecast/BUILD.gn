@@ -453,7 +453,7 @@ if (is_fuchsia) {
     exe_target = ":cast_shell"
 
     if (chromecast_branding != "public") {
-      data_deps = [
+      deps = [
         "//chromecast/internal:fuchsia_internal_data_deps",
       ]
     }
