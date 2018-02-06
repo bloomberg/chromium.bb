@@ -96,7 +96,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void Copy(EditorCommandSource);
   void Paste(EditorCommandSource);
   void PasteAsPlainText(EditorCommandSource);
-  void PerformDelete();
 
   static void CountEvent(ExecutionContext*, const Event*);
   void CopyImage(const HitTestResult&);

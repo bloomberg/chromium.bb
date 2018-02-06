@@ -1274,27 +1274,6 @@ void Editor::PasteAsPlainText(EditorCommandSource source) {
   PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard(), source);
 }
 
-void Editor::PerformDelete() {
-  if (!CanDelete())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |SelectedRange| requires clean layout for visible selection normalization.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  AddToKillRing(SelectedRange());
-  // TODO(chongz): |Editor::performDelete()| has no direction.
-  // https://github.com/w3c/editing/issues/130
-  DeleteSelectionWithSmartDelete(
-      CanSmartCopyOrDelete() ? DeleteMode::kSmart : DeleteMode::kSimple,
-      InputEvent::InputType::kDeleteContentBackward);
-
-  // clear the "start new kill ring sequence" setting, because it was set to
-  // true when the selection was updated by deleting the range
-  SetStartNewKillRingSequence(false);
-}
-
 static void CountEditingEvent(ExecutionContext* execution_context,
                               const Event* event,
                               WebFeature feature_on_input,
