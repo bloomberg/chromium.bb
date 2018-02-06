@@ -3054,9 +3054,9 @@ static int openDatabase(
 
 #ifdef DEFAULT_ENABLE_RECOVER
   /* Initialize recover virtual table for testing. */
-  extern int recoverVtableInit(sqlite3 *db);
+  extern int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
   if( !db->mallocFailed && rc==SQLITE_OK ){
-    rc = recoverVtableInit(db);
+    rc = chrome_sqlite3_recoverVtableInit(db);
   }
 #endif
 

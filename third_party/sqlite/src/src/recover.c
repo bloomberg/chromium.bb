@@ -1981,7 +1981,7 @@ static sqlite3_module recoverModule = {
 };
 
 SQLITE_API
-int recoverVtableInit(sqlite3 *db){
+int chrome_sqlite3_recoverVtableInit(sqlite3 *db){
   return sqlite3_create_module_v2(db, "recover", &recoverModule, NULL, 0);
 }
 

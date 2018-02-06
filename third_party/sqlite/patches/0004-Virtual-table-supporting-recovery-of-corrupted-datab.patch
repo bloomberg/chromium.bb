@@ -73,9 +73,9 @@ index 40c09348a745..aaf30bba232e 100644
 
 +#ifdef DEFAULT_ENABLE_RECOVER
 +  /* Initialize recover virtual table for testing. */
-+  extern int recoverVtableInit(sqlite3 *db);
++  extern int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
 +  if( !db->mallocFailed && rc==SQLITE_OK ){
-+    rc = recoverVtableInit(db);
++    rc = chrome_sqlite3_recoverVtableInit(db);
 +  }
 +#endif
 +
@@ -2071,7 +2071,7 @@ index 000000000000..c22fd4d43166
 +};
 +
 +SQLITE_API
-+int recoverVtableInit(sqlite3 *db){
++int chrome_sqlite3_recoverVtableInit(sqlite3 *db){
 +  return sqlite3_create_module_v2(db, "recover", &recoverModule, NULL, 0);
 +}
 +
@@ -2382,7 +2382,7 @@ index 000000000000..691f2fdbab22
 +** selected users to enable it (currently sql/recovery.cc).
 +*/
 +SQLITE_API
-+int recoverVtableInit(sqlite3 *db);
++int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
 +
 +#ifdef __cplusplus
 +}  /* End of the 'extern "C"' block */
