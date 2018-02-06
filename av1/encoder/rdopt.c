@@ -1488,6 +1488,42 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   *out_dist_sum = dist_sum;
 }
 
+static void check_block_skip(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                             MACROBLOCK *x, MACROBLOCKD *xd, int plane_from,
+                             int plane_to, int *skip_txfm_sb) {
+  *skip_txfm_sb = 1;
+  for (int plane = plane_from; plane <= plane_to; ++plane) {
+    struct macroblock_plane *const p = &x->plane[plane];
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
+    unsigned int sse;
+
+    if (x->skip_chroma_rd && plane) continue;
+
+    // Since fast HBD variance functions scale down sse by 4 bit, we first use
+    // fast vf implementation to rule out blocks with non-zero scaled sse. Then,
+    // only if the source is HBD and the scaled sse is 0, accurate sse
+    // computation is applied to determine if the sse is really 0. This step is
+    // necessary for HBD lossless coding.
+    cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
+                       &sse);
+    if (sse) {
+      *skip_txfm_sb = 0;
+      return;
+    } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      uint64_t sse64 = aom_highbd_sse_odd_size(
+          p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
+          block_size_wide[bs], block_size_high[bs]);
+
+      if (sse64) {
+        *skip_txfm_sb = 0;
+        return;
+      }
+    }
+  }
+  return;
+}
+
 int64_t av1_block_error_c(const tran_low_t *coeff, const tran_low_t *dqcoeff,
                           intptr_t block_size, int64_t *ssz) {
   int i;
@@ -7607,8 +7643,7 @@ static int64_t motion_mode_rd(
     RD_STATS *rd_stats, RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
     int *disable_skip, int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME], int mi_row,
     int mi_col, HandleInterModeArgs *const args, const int64_t ref_best_rd,
-    const int *refs, int rate_mv, int *skip_txfm_sb, int64_t *skip_sse_sb,
-    BUFFER_SET *orig_dst) {
+    const int *refs, int rate_mv, BUFFER_SET *orig_dst) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -7651,12 +7686,10 @@ static int64_t motion_mode_rd(
        mode_index <= (int)last_motion_mode_allowed + interintra_allowed;
        mode_index++) {
     int64_t tmp_rd = INT64_MAX;
-    int tmp_rate;
-    int64_t tmp_dist;
     int tmp_rate2 = rate2_nocoeff;
     int is_interintra_mode = mode_index > (int)last_motion_mode_allowed;
+    int skip_txfm_sb = 0;
 
-    *skip_txfm_sb = 0;
     *mbmi = base_mbmi;
     if (is_interintra_mode) {
       mbmi->motion_mode = SIMPLE_TRANSLATION;
@@ -7664,6 +7697,10 @@ static int64_t motion_mode_rd(
       mbmi->motion_mode = (MOTION_MODE)mode_index;
       assert(mbmi->ref_frame[1] != INTRA_FRAME);
     }
+
+    // SIMPLE_TRANSLATION mode: no need to recalculate.
+    // The prediction is calculated before motion_mode_rd() is called in
+    // handle_inter_mode()
 
     // OBMC mode
     if (mbmi->motion_mode == OBMC_CAUSAL) {
@@ -7689,8 +7726,6 @@ static int64_t motion_mode_rd(
       av1_build_obmc_inter_prediction(
           cm, xd, mi_row, mi_col, args->above_pred_buf, args->above_pred_stride,
           args->left_pred_buf, args->left_pred_stride);
-      model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
-                      &tmp_dist, skip_txfm_sb, skip_sse_sb);
     }
 
     // Local warped motion mode
@@ -7764,8 +7799,6 @@ static int64_t motion_mode_rd(
         }
 
         av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
-        model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
-                        &tmp_dist, skip_txfm_sb, skip_sse_sb);
       } else {
         continue;
       }
@@ -7917,9 +7950,9 @@ static int64_t motion_mode_rd(
       }  // if (is_interintra_wedge_used(bsize))
       restore_dst_buf(xd, *orig_dst, num_planes);
       av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
-      model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
-                      &tmp_dist, skip_txfm_sb, skip_sse_sb);
     }
+
+    check_block_skip(cpi, bsize, x, xd, 0, num_planes - 1, &skip_txfm_sb);
 
     x->skip = 0;
 
@@ -7953,7 +7986,7 @@ static int64_t motion_mode_rd(
         rd_stats->rate += x->motion_mode_cost1[bsize][mbmi->motion_mode];
       }
     }
-    if (!*skip_txfm_sb) {
+    if (!skip_txfm_sb) {
       int64_t rdcosty = INT64_MAX;
       int is_cost_valid_uv = 0;
 
@@ -8041,8 +8074,8 @@ static int64_t motion_mode_rd(
       mbmi->skip = 0;
       rd_stats->rate += x->skip_cost[av1_get_skip_context(xd)][1];
 
-      rd_stats->dist = *skip_sse_sb;
-      rd_stats->sse = *skip_sse_sb;
+      rd_stats->dist = 0;
+      rd_stats->sse = 0;
       rd_stats_y->rate = 0;
       rd_stats_uv->rate = 0;
       rd_stats->skip = 1;
@@ -8663,10 +8696,9 @@ static int64_t handle_inter_mode(
 
     rd_stats->rate += compmode_interinter_cost;
 
-    ret_val =
-        motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
-                       disable_skip, mode_mv, mi_row, mi_col, args, ref_best_rd,
-                       refs, rate_mv, &skip_txfm_sb, &skip_sse_sb, &orig_dst);
+    ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
+                             disable_skip, mode_mv, mi_row, mi_col, args,
+                             ref_best_rd, refs, rate_mv, &orig_dst);
 #if CONFIG_JNT_COMP
     if (is_comp_pred && ret_val != INT64_MAX) {
       int64_t tmp_rd;
