@@ -265,6 +265,22 @@ TEST_F(VisibleUnitsWordTest, NextWordMixedEditability) {
                  "abc<b contenteditable=false>def ghi|</b>jkl mno</p>"));
 }
 
+TEST_F(VisibleUnitsWordTest, NextWordPunctuation) {
+  EXPECT_EQ("abc|.def", DoNextWord("|abc.def"));
+  EXPECT_EQ("abc|.def", DoNextWord("a|bc.def"));
+  EXPECT_EQ("abc|.def", DoNextWord("ab|c.def"));
+  EXPECT_EQ("abc.def|", DoNextWord("abc|.def"));
+  EXPECT_EQ("abc.def|", DoNextWord("abc.|def"));
+
+  EXPECT_EQ("abc|...def", DoNextWord("|abc...def"));
+  EXPECT_EQ("abc|...def", DoNextWord("a|bc...def"));
+  EXPECT_EQ("abc|...def", DoNextWord("ab|c...def"));
+  EXPECT_EQ("abc...def|", DoNextWord("abc|...def"));
+  EXPECT_EQ("abc...def|", DoNextWord("abc.|..def"));
+  EXPECT_EQ("abc...def|", DoNextWord("abc..|.def"));
+  EXPECT_EQ("abc...def|", DoNextWord("abc...|def"));
+}
+
 TEST_F(VisibleUnitsWordTest, NextWordSkipTab) {
   InsertStyleElement("s { white-space: pre }");
   EXPECT_EQ("<p><s>\t</s>foo|</p>", DoNextWord("<p><s>\t|</s>foo</p>"));
