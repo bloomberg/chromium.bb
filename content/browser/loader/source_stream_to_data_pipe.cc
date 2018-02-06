@@ -10,10 +10,10 @@
 namespace content {
 
 SourceStreamToDataPipe::SourceStreamToDataPipe(
-    std::unique_ptr<net::SourceStream> source,
+    net::SourceStream* source,
     mojo::ScopedDataPipeProducerHandle dest,
     base::OnceCallback<void(int)> completion_callback)
-    : source_(std::move(source)),
+    : source_(source),
       dest_(std::move(dest)),
       completion_callback_(std::move(completion_callback)),
       writable_handle_watcher_(FROM_HERE,
