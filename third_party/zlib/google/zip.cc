@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "third_party/zlib/google/zip_internal.h"
@@ -31,6 +32,20 @@ bool ExcludeNoFilesFilter(const base::FilePath& file_path) {
 
 bool ExcludeHiddenFilesFilter(const base::FilePath& file_path) {
   return !IsHiddenFile(file_path);
+}
+
+// Creates a directory at |extract_dir|/|entry_path|, including any parents.
+bool CreateDirectory(const base::FilePath& extract_dir,
+                     const base::FilePath& entry_path) {
+  return base::CreateDirectory(extract_dir.Append(entry_path));
+}
+
+// Creates a WriterDelegate that can write a file at |extract_dir|/|entry_path|.
+std::unique_ptr<WriterDelegate> CreateFilePathWriterDelegate(
+    const base::FilePath& extract_dir,
+    const base::FilePath& entry_path) {
+  return std::make_unique<FilePathWriterDelegate>(
+      extract_dir.Append(entry_path));
 }
 
 class DirectFileAccessor : public FileAccessor {
@@ -166,9 +181,26 @@ bool UnzipWithFilterCallback(const base::FilePath& src_file,
                              const base::FilePath& dest_dir,
                              const FilterCallback& filter_cb,
                              bool log_skipped_files) {
-  ZipReader reader;
-  if (!reader.Open(src_file)) {
+  base::File file(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
     DLOG(WARNING) << "Failed to open " << src_file.value();
+    return false;
+  }
+  return UnzipWithFilterAndWriters(
+      file.GetPlatformFile(),
+      base::BindRepeating(&CreateFilePathWriterDelegate, dest_dir),
+      base::BindRepeating(&CreateDirectory, dest_dir), filter_cb,
+      log_skipped_files);
+}
+
+bool UnzipWithFilterAndWriters(const base::PlatformFile& src_file,
+                               const WriterFactory& writer_factory,
+                               const DirectoryCreator& directory_creator,
+                               const FilterCallback& filter_cb,
+                               bool log_skipped_files) {
+  ZipReader reader;
+  if (!reader.OpenFromPlatformFile(src_file)) {
+    DLOG(WARNING) << "Failed to open src_file " << src_file;
     return false;
   }
   while (reader.HasMore()) {
@@ -176,20 +208,25 @@ bool UnzipWithFilterCallback(const base::FilePath& src_file,
       DLOG(WARNING) << "Failed to open the current file in zip";
       return false;
     }
+    const base::FilePath& entry_path = reader.current_entry_info()->file_path();
     if (reader.current_entry_info()->is_unsafe()) {
-      DLOG(WARNING) << "Found an unsafe file in zip "
-                    << reader.current_entry_info()->file_path().value();
+      DLOG(WARNING) << "Found an unsafe file in zip " << entry_path;
       return false;
     }
-    if (filter_cb.Run(reader.current_entry_info()->file_path())) {
-      if (!reader.ExtractCurrentEntryIntoDirectory(dest_dir)) {
-        DLOG(WARNING) << "Failed to extract "
-                      << reader.current_entry_info()->file_path().value();
-        return false;
+    if (filter_cb.Run(entry_path)) {
+      if (reader.current_entry_info()->is_directory()) {
+        if (!directory_creator.Run(entry_path))
+          return false;
+      } else {
+        std::unique_ptr<WriterDelegate> writer = writer_factory.Run(entry_path);
+        if (!reader.ExtractCurrentEntry(writer.get(),
+                                        std::numeric_limits<uint64_t>::max())) {
+          DLOG(WARNING) << "Failed to extract " << entry_path;
+          return false;
+        }
       }
     } else if (log_skipped_files) {
-      DLOG(WARNING) << "Skipped file "
-                    << reader.current_entry_info()->file_path().value();
+      DLOG(WARNING) << "Skipped file " << entry_path;
     }
 
     if (!reader.AdvanceToNextEntry()) {
