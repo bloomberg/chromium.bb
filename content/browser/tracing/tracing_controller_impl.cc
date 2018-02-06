@@ -166,7 +166,16 @@ void TracingControllerImpl::AddAgents() {
 std::unique_ptr<base::DictionaryValue>
 TracingControllerImpl::GenerateMetadataDict() const {
   auto metadata_dict = std::make_unique<base::DictionaryValue>();
-  metadata_dict->SetString("trace-config", trace_config_->ToString());
+
+  // trace_config_ can be null if the tracing controller finishes flushing
+  // traces before the Chrome tracing agent finishes flushing traces. Normally,
+  // this does not happen; however, if the service manager is teared down during
+  // tracing, e.g. at Chrome shutdown, tracing controller may finish flushing
+  // traces without waiting for tracing agents.
+  if (trace_config_) {
+    DCHECK(IsTracing());
+    metadata_dict->SetString("trace-config", trace_config_->ToString());
+  }
 
   metadata_dict->SetString("network-type", GetNetworkTypeString());
   metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
