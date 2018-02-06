@@ -199,7 +199,6 @@ uint64_t GetCurrentQPC() {
 }
 
 uint64_t g_last_process_output_time;
-HRESULT g_last_unhandled_error;
 HRESULT g_last_device_removed_reason;
 
 }  // namespace
@@ -1925,9 +1924,10 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
         SetState(kStopped);
         return;
       } else {
-        NOTREACHED() << "Unhandled error in DoDecode()";
-        g_last_unhandled_error = hr;
-        return;
+        // Unknown error, stop playback and log error.
+        SetState(kStopped);
+        RETURN_AND_NOTIFY_ON_FAILURE(hr, "Unhandled error in DoDecode()",
+                                     PLATFORM_FAILURE, );
       }
     }
 
