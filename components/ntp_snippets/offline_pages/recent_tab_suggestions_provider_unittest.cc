@@ -93,6 +93,7 @@ class RecentTabSuggestionsProviderTestNoLoad : public testing::Test {
         &observer_, ui_adapter_, pref_service());
     // Force adapter to load its cache.
     ui_adapter_->GetAllItems(base::BindOnce(&GetAllItemsDummyCallback));
+    provider_->FetchRecentTabs();
   }
 
   Category recent_tabs_category() {

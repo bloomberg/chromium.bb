@@ -37,8 +37,6 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
   ~OfflineContentAggregatorBridge() override;
 
   // Methods called from Java via JNI.
-  jboolean AreItemsAvailable(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& jobj);
   void OpenItem(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& jobj,
                 const base::android::JavaParamRef<jstring>& j_namespace,
@@ -79,7 +77,6 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
   OfflineContentAggregatorBridge(OfflineContentAggregator* aggregator);
 
   // OfflineContentProvider::Observer implementation.
-  void OnItemsAvailable(OfflineContentProvider* provider) override;
   void OnItemsAdded(
       const OfflineContentProvider::OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;

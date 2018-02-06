@@ -30,9 +30,6 @@ class ThrottledOfflineContentProvider
                                   OfflineContentProvider* provider);
   ~ThrottledOfflineContentProvider() override;
 
-  // OfflineContentProvider implementation.
-  bool AreItemsAvailable() override;
-
   // Taking actions on the OfflineContentProvider will flush any queued updates
   // immediately after performing the action. This is to make sure item updates
   // in response to the update are immediately reflected back to the caller.
@@ -58,7 +55,6 @@ class ThrottledOfflineContentProvider
 
  private:
   // OfflineContentProvider::Observer implementation.
-  void OnItemsAvailable(OfflineContentProvider* provider) override;
   void OnItemsAdded(const OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
   void OnItemUpdated(const OfflineItem& item) override;
@@ -67,10 +63,6 @@ class ThrottledOfflineContentProvider
                          const OfflineItemList& items);
   void OnGetItemByIdDone(SingleItemCallback callback,
                          const base::Optional<OfflineItem>& item);
-
-  // Used to notify |observer| that the underying OfflineContentProvider has
-  // called OfflineContentProvider::Observer::OnItemsAvailable().
-  void NotifyItemsAvailable(OfflineContentProvider::Observer* observer);
 
   // Checks if |item| already has an update pending. If so, replaces the content
   // of the update with |item|.

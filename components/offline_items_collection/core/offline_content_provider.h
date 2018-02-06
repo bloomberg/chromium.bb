@@ -20,9 +20,6 @@ struct OfflineItem;
 struct OfflineItemVisuals;
 
 // A provider of a set of OfflineItems that are meant to be exposed to the UI.
-// The provider is required to notify all observers of OnItemsAvailable when the
-// underlying data set is initialized.  Without that call it should not expect
-// nor have to support any other calls to this provider.
 class OfflineContentProvider {
  public:
   using OfflineItemList = std::vector<OfflineItem>;
@@ -34,36 +31,34 @@ class OfflineContentProvider {
 
   // An observer class that should be notified of relevant changes to the
   // underlying data source.
+  // For the Observer that maintains its own cache of items, populated via
+  // GetAllItems method, it is possible to receive notifications that are
+  // out-of-sync with the cache content. See notes on the methods.
   class Observer {
    public:
-    // Called when the underlying data source for the provider has been
-    // initialized and the contents are able to be queried and interacted with.
-    // |provider| should be a reference to this OfflineContentProvider that is
-    // initialized.
-    virtual void OnItemsAvailable(OfflineContentProvider* provider) = 0;
-
     // Called when one or more OfflineItems have been added and should be shown
     // in the UI.
+    // If Observer maintains a cache of items, the specified items may already
+    // be in the cache, in which case this call has to be ignored.
     virtual void OnItemsAdded(const OfflineItemList& items) = 0;
 
     // Called when the OfflineItem represented by |id| should be removed from
     // the UI.
+    // If Observer maintains a cache of items, item with the specified id may
+    // not be present in the cache, in which case this call should be ignored.
     virtual void OnItemRemoved(const ContentId& id) = 0;
 
     // Called when the contents of |item| have been updated and the UI should be
     // refreshed for that item.
     // TODO(dtrainor): Make this take a list of OfflineItems.
+    // If Observer maintains a cache of items, the changes may already be
+    // applied to the items in the cache, so there is no difference between
+    // items. In this case, this call should be ignored.
     virtual void OnItemUpdated(const OfflineItem& item) = 0;
 
    protected:
     virtual ~Observer() = default;
   };
-
-  // Returns whether or not the underlying data source for this provider has
-  // been initialized and is ready to start returning content.  This provider
-  // should not need to support handling the other data query/manipulation
-  // methods if this returns false.
-  virtual bool AreItemsAvailable() = 0;
 
   // Called to trigger opening an OfflineItem represented by |id|.
   virtual void OpenItem(const ContentId& id) = 0;
@@ -100,9 +95,6 @@ class OfflineContentProvider {
                                  const VisualsCallback& callback) = 0;
 
   // Adds an observer that should be notified of OfflineItem list modifications.
-  // If the provider is already initialized OnItemsAvailable should be scheduled
-  // on this observer (suggested over calling the method directly to avoid
-  // reentrancy).
   virtual void AddObserver(Observer* observer) = 0;
 
   // Removes an observer.  No further notifications should be sent to it.

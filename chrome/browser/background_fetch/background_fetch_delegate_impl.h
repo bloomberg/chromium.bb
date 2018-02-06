@@ -74,7 +74,6 @@ class BackgroundFetchDelegateImpl
                            uint64_t size);
 
   // OfflineContentProvider implementation:
-  bool AreItemsAvailable() override;
   void OpenItem(const offline_items_collection::ContentId& id) override;
   void RemoveItem(const offline_items_collection::ContentId& id) override;
   void CancelDownload(const offline_items_collection::ContentId& id) override;

@@ -182,11 +182,6 @@ void RecentTabSuggestionsProvider::RegisterProfilePrefs(
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
-void RecentTabSuggestionsProvider::OnItemsAvailable(
-    OfflineContentProvider* provider) {
-  FetchRecentTabs();
-}
-
 void RecentTabSuggestionsProvider::OnItemsAdded(
     const std::vector<OfflineItem>& items) {
   FetchRecentTabs();

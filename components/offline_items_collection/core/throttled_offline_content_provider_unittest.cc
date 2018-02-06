@@ -83,28 +83,6 @@ class ThrottledOfflineContentProviderTest : public testing::Test {
   base::WeakPtrFactory<ThrottledOfflineContentProviderTest> weak_ptr_factory_;
 };
 
-TEST_F(ThrottledOfflineContentProviderTest, TestReadyBeforeObserver) {
-  EXPECT_FALSE(provider_.AreItemsAvailable());
-  wrapped_provider_.NotifyOnItemsAvailable();
-  EXPECT_TRUE(provider_.AreItemsAvailable());
-
-  ScopedMockOfflineContentProvider::ScopedMockObserver observer1(&provider_);
-  ScopedMockOfflineContentProvider::ScopedMockObserver observer2(&provider_);
-
-  EXPECT_CALL(observer1, OnItemsAvailable(&provider_));
-  EXPECT_CALL(observer2, OnItemsAvailable(&provider_));
-  task_runner_->RunUntilIdle();
-}
-
-TEST_F(ThrottledOfflineContentProviderTest, TestReadyAfterObserver) {
-  ScopedMockOfflineContentProvider::ScopedMockObserver observer(&provider_);
-
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_));
-  EXPECT_FALSE(provider_.AreItemsAvailable());
-  wrapped_provider_.NotifyOnItemsAvailable();
-  EXPECT_TRUE(provider_.AreItemsAvailable());
-}
-
 TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   ScopedMockOfflineContentProvider::ScopedMockObserver observer(&provider_);
 
@@ -115,7 +93,6 @@ TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   items.push_back(item);
 
   testing::InSequence sequence;
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_));
   EXPECT_CALL(wrapped_provider_, OpenItem(id));
   EXPECT_CALL(wrapped_provider_, RemoveItem(id));
   EXPECT_CALL(wrapped_provider_, CancelDownload(id));
@@ -123,7 +100,6 @@ TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   EXPECT_CALL(wrapped_provider_, ResumeDownload(id, true));
   EXPECT_CALL(wrapped_provider_, GetVisualsForItem(id, _));
   wrapped_provider_.SetItems(items);
-  wrapped_provider_.NotifyOnItemsAvailable();
   provider_.OpenItem(id);
   provider_.RemoveItem(id);
   provider_.CancelDownload(id);
@@ -150,11 +126,9 @@ TEST_F(ThrottledOfflineContentProviderTest, TestRemoveCancelsUpdate) {
   ContentId id("1", "A");
   OfflineItem item(id);
 
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(item)).Times(0);
   EXPECT_CALL(observer, OnItemRemoved(id)).Times(1);
 
-  wrapped_provider_.NotifyOnItemsAvailable();
   provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item);
   wrapped_provider_.NotifyOnItemRemoved(id);
@@ -175,11 +149,9 @@ TEST_F(ThrottledOfflineContentProviderTest, TestOnItemUpdatedSquashed) {
   OfflineItem updated_item2(id2);
   updated_item2.title = "updated2";
 
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(updated_item1)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(updated_item2)).Times(1);
 
-  wrapped_provider_.NotifyOnItemsAvailable();
   provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item1);
   wrapped_provider_.NotifyOnItemUpdated(item2);
@@ -204,11 +176,9 @@ TEST_F(ThrottledOfflineContentProviderTest, TestGetItemByIdOverridesUpdate) {
   std::vector<OfflineItem> items = {item1, item2};
   wrapped_provider_.SetItems(items);
 
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(updated_item1)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(item2)).Times(1);
 
-  wrapped_provider_.NotifyOnItemsAvailable();
   provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item1);
   wrapped_provider_.NotifyOnItemUpdated(item2);
@@ -241,12 +211,10 @@ TEST_F(ThrottledOfflineContentProviderTest, TestGetAllItemsOverridesUpdate) {
   items.push_back(updated_item1);
   items.push_back(item2);
 
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(updated_item1)).Times(1);
   EXPECT_CALL(observer, OnItemUpdated(item2)).Times(1);
 
   wrapped_provider_.SetItems(items);
-  wrapped_provider_.NotifyOnItemsAvailable();
   provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item1);
   wrapped_provider_.NotifyOnItemUpdated(item2);
@@ -272,9 +240,6 @@ TEST_F(ThrottledOfflineContentProviderTest, TestThrottleWorksProperly) {
 
   OfflineItem item4(id1);
   item4.title = "updated3";
-
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
-  wrapped_provider_.NotifyOnItemsAvailable();
 
   {
     EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
@@ -308,9 +273,6 @@ TEST_F(ThrottledOfflineContentProviderTest, TestInitialRequestGoesThrough) {
   OfflineItem item1_updated(id1);
   item1_updated.title = "updated1";
 
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
-  wrapped_provider_.NotifyOnItemsAvailable();
-
   {
     EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
     provider_.set_last_update_time(GetTimeThatWillAllowAnUpdate());
@@ -338,10 +300,6 @@ TEST_F(ThrottledOfflineContentProviderTest, TestReentrantUpdatesGetQueued) {
 
   TriggerSingleReentrantUpdateHelper observer(&provider_, &wrapped_provider_,
                                               updated_item);
-
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
-  wrapped_provider_.NotifyOnItemsAvailable();
-
   {
     wrapped_provider_.NotifyOnItemUpdated(item);
     EXPECT_CALL(observer, OnItemUpdated(item)).Times(1);
@@ -356,9 +314,6 @@ TEST_F(ThrottledOfflineContentProviderTest, TestReentrantUpdatesGetQueued) {
 
 TEST_F(ThrottledOfflineContentProviderTest, TestPokingProviderFlushesQueue) {
   ScopedMockOfflineContentProvider::ScopedMockObserver observer(&provider_);
-
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
-  wrapped_provider_.NotifyOnItemsAvailable();
 
   ContentId id1("1", "A");
   OfflineItem item1(id1);

@@ -78,7 +78,6 @@ class DownloadUIAdapter : public OfflineContentProvider,
   int64_t GetOfflineIdByGuid(const std::string& guid) const;
 
   // OfflineContentProvider implmentation.
-  bool AreItemsAvailable() override;
   void OpenItem(const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
@@ -170,7 +169,6 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void OnOfflinePagesLoaded(const MultipleOfflinePageItemResult& pages);
   void OnRequestsLoaded(std::vector<std::unique_ptr<SavePageRequest>> requests);
 
-  void NotifyItemsLoaded(OfflineContentProvider::Observer* observer);
   void OnDeletePagesDone(DeletePageResult result);
 
   void AddItemHelper(std::unique_ptr<ItemInfo> item_info);

@@ -29,7 +29,7 @@ bool MapContainsValue(const std::map<T, U>& map, U value) {
 }  // namespace
 
 OfflineContentAggregator::OfflineContentAggregator()
-    : sent_on_items_available_(false), weak_ptr_factory_(this) {}
+    : weak_ptr_factory_(this) {}
 
 OfflineContentAggregator::~OfflineContentAggregator() = default;
 
@@ -60,12 +60,7 @@ void OfflineContentAggregator::UnregisterProvider(
   // associated with any other namespace.
   if (!MapContainsValue(providers_, provider)) {
     provider->RemoveObserver(this);
-    pending_actions_.erase(provider);
   }
-}
-
-bool OfflineContentAggregator::AreItemsAvailable() {
-  return sent_on_items_available_;
 }
 
 void OfflineContentAggregator::OpenItem(const ContentId& id) {
@@ -74,8 +69,7 @@ void OfflineContentAggregator::OpenItem(const ContentId& id) {
   if (it == providers_.end())
     return;
 
-  RunIfReady(it->second, base::Bind(&OfflineContentProvider::OpenItem,
-                                    base::Unretained(it->second), id));
+  it->second->OpenItem(id);
 }
 
 void OfflineContentAggregator::RemoveItem(const ContentId& id) {
@@ -84,8 +78,7 @@ void OfflineContentAggregator::RemoveItem(const ContentId& id) {
   if (it == providers_.end())
     return;
 
-  RunIfReady(it->second, base::Bind(&OfflineContentProvider::RemoveItem,
-                                    base::Unretained(it->second), id));
+  it->second->RemoveItem(id);
 }
 
 void OfflineContentAggregator::CancelDownload(const ContentId& id) {
@@ -94,8 +87,7 @@ void OfflineContentAggregator::CancelDownload(const ContentId& id) {
   if (it == providers_.end())
     return;
 
-  RunIfReady(it->second, base::Bind(&OfflineContentProvider::CancelDownload,
-                                    base::Unretained(it->second), id));
+  it->second->CancelDownload(id);
 }
 
 void OfflineContentAggregator::PauseDownload(const ContentId& id) {
@@ -104,8 +96,7 @@ void OfflineContentAggregator::PauseDownload(const ContentId& id) {
   if (it == providers_.end())
     return;
 
-  RunIfReady(it->second, base::Bind(&OfflineContentProvider::PauseDownload,
-                                    base::Unretained(it->second), id));
+  it->second->PauseDownload(id);
 }
 
 void OfflineContentAggregator::ResumeDownload(const ContentId& id,
@@ -115,15 +106,13 @@ void OfflineContentAggregator::ResumeDownload(const ContentId& id,
   if (it == providers_.end())
     return;
 
-  RunIfReady(it->second,
-             base::Bind(&OfflineContentProvider::ResumeDownload,
-                        base::Unretained(it->second), id, has_user_gesture));
+  it->second->ResumeDownload(id, has_user_gesture);
 }
 
 void OfflineContentAggregator::GetItemById(const ContentId& id,
                                            SingleItemCallback callback) {
   auto it = providers_.find(id.name_space);
-  if (it == providers_.end() || !it->second->AreItemsAvailable()) {
+  if (it == providers_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
@@ -151,8 +140,6 @@ void OfflineContentAggregator::GetAllItems(MultipleItemCallback callback) {
   DCHECK(aggregated_items_.empty());
   for (auto provider_it : providers_) {
     auto* provider = provider_it.second;
-    if (!provider->AreItemsAvailable())
-      continue;
 
     provider->GetAllItems(
         base::BindOnce(&OfflineContentAggregator::OnGetAllItemsDone,
@@ -206,13 +193,6 @@ void OfflineContentAggregator::AddObserver(
     return;
 
   observers_.AddObserver(observer);
-
-  if (sent_on_items_available_ || providers_.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&OfflineContentAggregator::CheckAndNotifyItemsAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
 }
 
 void OfflineContentAggregator::RemoveObserver(
@@ -221,35 +201,7 @@ void OfflineContentAggregator::RemoveObserver(
   if (!observers_.HasObserver(observer))
     return;
 
-  signaled_observers_.erase(observer);
   observers_.RemoveObserver(observer);
-}
-
-void OfflineContentAggregator::NotifyItemsAdded(const OfflineItemList& items) {
-  if (items.empty())
-    return;
-
-  for (auto* observer : signaled_observers_)
-    observer->OnItemsAdded(items);
-}
-
-void OfflineContentAggregator::OnItemsAvailable(
-    OfflineContentProvider* provider) {
-  // Flush any pending actions that should be mirrored to the provider.
-  FlushPendingActionsIfReady(provider);
-
-  // Some observers might already be under the impression that this class was
-  // initialized.  Just treat this as an OnItemsAdded and notify those observers
-  // of the new items.
-  if (signaled_observers_.size() > 0) {
-    provider->GetAllItems(
-        base::BindOnce(&OfflineContentAggregator::NotifyItemsAdded,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // Check if there were any observers who haven't been told that this class is
-  // initialized yet.  If so, notify them now.
-  CheckAndNotifyItemsAvailable();
 }
 
 void OfflineContentAggregator::OnItemsAdded(const OfflineItemList& items) {
@@ -265,56 +217,6 @@ void OfflineContentAggregator::OnItemRemoved(const ContentId& id) {
 void OfflineContentAggregator::OnItemUpdated(const OfflineItem& item) {
   for (auto& observer : observers_)
     observer.OnItemUpdated(item);
-}
-
-void OfflineContentAggregator::CheckAndNotifyItemsAvailable() {
-  // If we haven't sent out the initialization message yet, make sure all
-  // underlying OfflineContentProviders are ready before notifying observers
-  // that we're ready to send items.
-  if (!sent_on_items_available_) {
-    for (auto& it : providers_) {
-      if (!it.second->AreItemsAvailable())
-        return;
-    }
-  }
-
-  // Notify all observers who haven't been told about the initialization that we
-  // are initialized.  Track the observers so that we don't notify them again.
-  for (auto& observer : observers_) {
-    if (!base::ContainsKey(signaled_observers_, &observer)) {
-      observer.OnItemsAvailable(this);
-      signaled_observers_.insert(&observer);
-    }
-  }
-
-  // Track that we've told the world that we are initialized.
-  sent_on_items_available_ = true;
-}
-
-void OfflineContentAggregator::FlushPendingActionsIfReady(
-    OfflineContentProvider* provider) {
-  DCHECK(MapContainsValue(providers_, provider));
-
-  if (!provider->AreItemsAvailable())
-    return;
-
-  CallbackList actions = std::move(pending_actions_[provider]);
-  for (auto& action : actions) {
-    action.Run();
-
-    // Check to see if the OfflineContentProvider was removed during the call to
-    // |action|.  If so stop the loop.
-    if (pending_actions_.find(provider) == pending_actions_.end())
-      return;
-  }
-}
-
-void OfflineContentAggregator::RunIfReady(OfflineContentProvider* provider,
-                                          const base::Closure& action) {
-  if (provider->AreItemsAvailable())
-    action.Run();
-  else
-    pending_actions_[provider].push_back(action);
 }
 
 }  // namespace offline_items_collection

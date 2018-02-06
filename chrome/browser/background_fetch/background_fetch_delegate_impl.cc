@@ -335,10 +335,6 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
     observer->OnItemUpdated(job_details->offline_item);
 }
 
-bool BackgroundFetchDelegateImpl::AreItemsAvailable() {
-  return true;
-}
-
 void BackgroundFetchDelegateImpl::OpenItem(
     const offline_items_collection::ContentId& id) {
   // TODO(delphick): Add custom OpenItem behavior.
@@ -433,16 +429,6 @@ void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
   DCHECK(!observers_.count(observer));
 
   observers_.insert(observer);
-  // OnItemsAvailable mustn't be called directly since offline_items_collection
-  // is not re-entrant.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](Observer* observer,
-                        base::WeakPtr<BackgroundFetchDelegateImpl> provider) {
-                       if (provider)
-                         observer->OnItemsAvailable(provider.get());
-                     },
-                     observer, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundFetchDelegateImpl::RemoveObserver(Observer* observer) {

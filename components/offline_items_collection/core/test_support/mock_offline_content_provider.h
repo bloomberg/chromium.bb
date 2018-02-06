@@ -21,7 +21,6 @@ class MockOfflineContentProvider : public OfflineContentProvider {
     ~MockObserver() override;
 
     // OfflineContentProvider::Observer implementation.
-    MOCK_METHOD1(OnItemsAvailable, void(OfflineContentProvider*));
     MOCK_METHOD1(OnItemsAdded, void(const OfflineItemList&));
     MOCK_METHOD1(OnItemRemoved, void(const ContentId&));
     MOCK_METHOD1(OnItemUpdated, void(const OfflineItem&));
@@ -32,13 +31,11 @@ class MockOfflineContentProvider : public OfflineContentProvider {
 
   bool HasObserver(Observer* observer);
   void SetItems(const OfflineItemList& items);
-  void NotifyOnItemsAvailable();
   void NotifyOnItemsAdded(const OfflineItemList& items);
   void NotifyOnItemRemoved(const ContentId& id);
   void NotifyOnItemUpdated(const OfflineItem& item);
 
   // OfflineContentProvider implementation.
-  bool AreItemsAvailable() override;
   MOCK_METHOD1(OpenItem, void(const ContentId&));
   MOCK_METHOD1(RemoveItem, void(const ContentId&));
   MOCK_METHOD1(CancelDownload, void(const ContentId&));
@@ -53,7 +50,6 @@ class MockOfflineContentProvider : public OfflineContentProvider {
 
  private:
   base::ObserverList<Observer> observers_;
-  bool items_available_;
   OfflineItemList items_;
 };
 
