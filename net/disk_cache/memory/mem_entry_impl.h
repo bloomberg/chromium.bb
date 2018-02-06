@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/containers/linked_list.h"
@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "net/base/interval.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/log/net_log_with_source.h"
@@ -140,7 +141,7 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
                MemEntryImpl* parent,
                net::NetLog* net_log);
 
-  using EntryMap = std::unordered_map<int, MemEntryImpl*>;
+  using EntryMap = std::map<int, MemEntryImpl*>;
 
   static const int kNumStreams = 3;
 
@@ -165,10 +166,11 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
   // created.
   MemEntryImpl* GetChild(int64_t offset, bool create);
 
-  // Finds the first child located within the range [|offset|, |offset + len|).
-  // Returns the number of bytes ahead of |offset| to reach the first available
-  // bytes in the entry. The first child found is output to |child|.
-  int FindNextChild(int64_t offset, int len, MemEntryImpl** child);
+  // Returns an interval describing what's stored in the child entry pointed to
+  // by i, in global coordinates.
+  // Precondition: i != children_.end();
+  net::Interval<int64_t> ChildInterval(
+      MemEntryImpl::EntryMap::const_iterator i);
 
   std::string key_;
   std::vector<char> data_[kNumStreams];  // User data.
