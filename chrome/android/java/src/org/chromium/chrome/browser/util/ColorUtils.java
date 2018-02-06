@@ -72,13 +72,18 @@ public class ColorUtils {
      */
     public static int getTextBoxColorForToolbarBackground(
             Resources res, boolean isNtp, int color, boolean useModernDesign) {
+        // If modern is enabled, it is a special case. It's toolbar is white with a darker text box
+        // background.
+        boolean usingDefaultThemeColor =
+                ColorUtils.isUsingDefaultToolbarColor(res, useModernDesign, false, color);
+        if (usingDefaultThemeColor && useModernDesign) {
+            return ApiCompatibilityUtils.getColor(res, R.color.modern_light_grey);
+        }
+
         if (shouldUseOpaqueTextboxBackground(color)) {
             // NTP should have no visible textbox in the toolbar, so just return the toolbar's
             // background color.
-            if (isNtp) return ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
-
-            return useModernDesign ? ApiCompatibilityUtils.getColor(res, R.color.modern_light_grey)
-                                   : Color.WHITE;
+            return isNtp ? ApiCompatibilityUtils.getColor(res, R.color.ntp_bg) : Color.WHITE;
         }
         return getColorWithOverlay(color, Color.WHITE, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
     }

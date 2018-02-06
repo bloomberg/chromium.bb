@@ -284,6 +284,9 @@ public class ToolbarPhone extends ToolbarLayout
      */
     private int mModernLocationBarExtraFocusedStartMargin;
 
+    /** The current color of the location bar. */
+    private int mCurrentLocationBarColor;
+
     /**
      * Used to specify the visual state of the toolbar.
      */
@@ -388,8 +391,7 @@ public class ToolbarPhone extends ToolbarLayout
             Resources res = getResources();
             mModernLocationBarBackgroundHeight =
                     res.getDimensionPixelSize(R.dimen.modern_toolbar_background_size);
-            mLocationBarBackground =
-                    ApiCompatibilityUtils.getDrawable(res, R.drawable.modern_toolbar_background);
+            mLocationBarBackground = createModernLocationBarBackground();
             mLocationBarBackground.getPadding(mLocationBarBackgroundPadding);
             mLocationBarBackground.mutate();
             mLocationBar.setPadding(mLocationBarBackgroundPadding.left,
@@ -416,6 +418,37 @@ public class ToolbarPhone extends ToolbarLayout
                     mLocationBarBackgroundPadding.top, mLocationBarBackgroundPadding.right,
                     mLocationBarBackgroundPadding.bottom);
         }
+    }
+
+    /**
+     * @return The drawable for the modern location bar background.
+     */
+    public Drawable createModernLocationBarBackground() {
+        Drawable drawable = ApiCompatibilityUtils.getDrawable(
+                getResources(), R.drawable.modern_toolbar_background);
+        drawable.setColorFilter(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_light_grey),
+                PorterDuff.Mode.SRC_IN);
+        return drawable;
+    }
+
+    /**
+     * Set the background color of the location bar to appropriately match the theme color.
+     */
+    private void updateModernLocationBarColor(int color) {
+        if (mCurrentLocationBarColor == color) return;
+        mCurrentLocationBarColor = color;
+        mLocationBarBackground.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+
+    /**
+     * Get the corresponding location bar color for a toolbar color.
+     * @param toolbarColor The color of the toolbar.
+     * @return The location bar color.
+     */
+    private int getLocationBarColorForToolbarColor(int toolbarColor) {
+        return ColorUtils.getTextBoxColorForToolbarBackground(
+                getResources(), false, toolbarColor, mLocationBar.useModernDesign());
     }
 
     private void inflateTabSwitchingResources() {
@@ -1435,6 +1468,12 @@ public class ToolbarPhone extends ToolbarLayout
             } else {
                 backgroundAlpha = mLocationBarBackgroundAlpha;
             }
+
+            // If modern is enabled the location bar background is opaque.
+            // TODO(mdjones): The location bar background should always be opaque. We have the
+            // capability to determine the foreground color without alpha and it reduces the amount
+            // of state that this class tracks.
+            if (mLocationBar.useModernDesign()) backgroundAlpha = 255;
             mLocationBarBackground.setAlpha(backgroundAlpha);
 
             if (shouldDrawLocationBarBackground()) {
@@ -2214,6 +2253,9 @@ public class ToolbarPhone extends ToolbarLayout
         final int finalColor = getToolbarDataProvider().getPrimaryColor();
         if (initialColor == finalColor) return;
 
+        final int initialLocationBarColor = getLocationBarColorForToolbarColor(initialColor);
+        final int finalLocationBarColor = getLocationBarColorForToolbarColor(finalColor);
+
         if (!isVisualStateValidForBrandColorTransition(mVisualState)) return;
 
         if (!shouldAnimate) {
@@ -2239,6 +2281,10 @@ public class ToolbarPhone extends ToolbarLayout
                 }
                 updateToolbarBackground(
                         ColorUtils.getColorWithOverlay(initialColor, finalColor, fraction));
+                if (mLocationBar.useModernDesign()) {
+                    updateModernLocationBarColor(ColorUtils.getColorWithOverlay(
+                            initialLocationBarColor, finalLocationBarColor, fraction));
+                }
             }
         });
         mBrandColorTransitionAnimation.addListener(new AnimatorListenerAdapter() {
@@ -2473,6 +2519,9 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+        if (mLocationBar.useModernDesign()) {
+            updateModernLocationBarColor(getLocationBarColorForToolbarColor(currentPrimaryColor));
+        }
 
         setMenuButtonHighlightDrawable(mHighlightingMenu);
         if (mShowMenuBadge && inOrEnteringStaticTab) {
