@@ -23,7 +23,9 @@
   TestRunner.evaluateInPage('loadIframe()');
 
   function step2() {
-    NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', true, step3);
+    NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', true, () => {
+      TestRunner.deprecatedRunAfterPendingDispatches(step3);
+    });
   }
 
   function step3() {
