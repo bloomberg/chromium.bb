@@ -78,6 +78,14 @@ static INLINE void load_buffer_16bit_to_16bit(const int16_t *in, int stride,
   }
 }
 
+static INLINE void load_buffer_16bit_to_16bit_flip(const int16_t *in,
+                                                   int stride, __m128i *out,
+                                                   int out_size) {
+  for (int i = 0; i < out_size; ++i) {
+    out[out_size - i - 1] = load_16bit_to_16bit(in + i * stride);
+  }
+}
+
 static INLINE void load_buffer_32bit_to_16bit(const int32_t *in, int stride,
                                               __m128i *out, int out_size) {
   for (int i = 0; i < out_size; ++i) {
@@ -111,6 +119,12 @@ static INLINE void round_shift_16bit(__m128i *in, int size, int bit) {
     for (int i = 0; i < size; ++i) {
       in[i] = _mm_slli_epi16(in[i], bit);
     }
+  }
+}
+
+static INLINE void flip_buf_sse2(__m128i *in, __m128i *out, int size) {
+  for (int i = 0; i < size; ++i) {
+    out[size - i - 1] = in[i];
   }
 }
 

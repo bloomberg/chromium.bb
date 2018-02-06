@@ -156,44 +156,48 @@ typedef struct TXFM_2D_FLIP_CFG {
   int stage_num_row;
 } TXFM_2D_FLIP_CFG;
 
-static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
+static INLINE void get_flip_cfg(TX_TYPE tx_type, int *ud_flip, int *lr_flip) {
   switch (tx_type) {
     case DCT_DCT:
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      cfg->ud_flip = 0;
-      cfg->lr_flip = 0;
+      *ud_flip = 0;
+      *lr_flip = 0;
       break;
     case IDTX:
     case V_DCT:
     case H_DCT:
     case V_ADST:
     case H_ADST:
-      cfg->ud_flip = 0;
-      cfg->lr_flip = 0;
+      *ud_flip = 0;
+      *lr_flip = 0;
       break;
     case FLIPADST_DCT:
     case FLIPADST_ADST:
     case V_FLIPADST:
-      cfg->ud_flip = 1;
-      cfg->lr_flip = 0;
+      *ud_flip = 1;
+      *lr_flip = 0;
       break;
     case DCT_FLIPADST:
     case ADST_FLIPADST:
     case H_FLIPADST:
-      cfg->ud_flip = 0;
-      cfg->lr_flip = 1;
+      *ud_flip = 0;
+      *lr_flip = 1;
       break;
     case FLIPADST_FLIPADST:
-      cfg->ud_flip = 1;
-      cfg->lr_flip = 1;
+      *ud_flip = 1;
+      *lr_flip = 1;
       break;
     default:
-      cfg->ud_flip = 0;
-      cfg->lr_flip = 0;
+      *ud_flip = 0;
+      *lr_flip = 0;
       assert(0);
   }
+}
+
+static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
+  get_flip_cfg(tx_type, &cfg->ud_flip, &cfg->lr_flip);
 }
 
 static INLINE TX_SIZE av1_rotate_tx_size(TX_SIZE tx_size) {

@@ -1591,11 +1591,11 @@ void av1_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output, int stride,
     { fadst8_new_sse2, fdct8_new_sse2 },   // ADST_DCT
     { fdct8_new_sse2, fadst8_new_sse2 },   // DCT_ADST
     { fadst8_new_sse2, fadst8_new_sse2 },  // ADST_ADST
-    { NULL, NULL },                        // FLIPADST_DCT
-    { NULL, NULL },                        // DCT_FLIPADST
-    { NULL, NULL },                        // FLIPADST_FLIPADST
-    { NULL, NULL },                        // ADST_FLIPADST
-    { NULL, NULL },                        // FLIPADST_ADST
+    { fadst8_new_sse2, fdct8_new_sse2 },   // FLIPADST_DCT
+    { fdct8_new_sse2, fadst8_new_sse2 },   // DCT_FLIPADST
+    { fadst8_new_sse2, fadst8_new_sse2 },  // FLIPADST_FLIPADST
+    { fadst8_new_sse2, fadst8_new_sse2 },  // ADST_FLIPADST
+    { fadst8_new_sse2, fadst8_new_sse2 },  // FLIPADST_ADST
     { NULL, NULL },                        // IDTX
     { NULL, NULL },                        // V_DCT
     { NULL, NULL },                        // H_DCT
@@ -1608,11 +1608,22 @@ void av1_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output, int stride,
   const transform_1d_sse2 col_txfm = txfm_arr[tx_type].col;
   const transform_1d_sse2 row_txfm = txfm_arr[tx_type].row;
   if (col_txfm != NULL && row_txfm != NULL) {
-    load_buffer_16bit_to_16bit(input, stride, buf, buf_size);
+    int ud_flip, lr_flip;
+    get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+    if (ud_flip)
+      load_buffer_16bit_to_16bit_flip(input, stride, buf, buf_size);
+    else
+      load_buffer_16bit_to_16bit(input, stride, buf, buf_size);
     round_shift_16bit(buf, 8, shift[0]);
     col_txfm(buf, buf, cos_bit_col);
     round_shift_16bit(buf, 8, shift[1]);
-    transpose_16bit_8x8(buf, buf);
+    if (lr_flip) {
+      __m128i tmp[8];
+      transpose_16bit_8x8(buf, tmp);
+      flip_buf_sse2(tmp, buf, 8);
+    } else {
+      transpose_16bit_8x8(buf, buf);
+    }
     row_txfm(buf, buf, cos_bit_row);
     round_shift_16bit(buf, 8, shift[2]);
     transpose_16bit_8x8(buf, buf);
