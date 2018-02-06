@@ -929,8 +929,16 @@ Element* HTMLConstructionSite::CreateElement(
                                                GetCreateElementFlags());
     } else {
       element = document.createElement(tag_name, GetCreateElementFlags());
-      if (!is.IsNull() && !V0CustomElement::IsValidName(tag_name.LocalName()))
-        V0CustomElementRegistrationContext::SetTypeExtension(element, is);
+      // Step 7.3 of "create an element". The above createElement()
+      // doesn't take care of "is" attribute.
+      if (!is.IsNull()) {
+        if (namespace_uri == HTMLNames::xhtmlNamespaceURI &&
+            element->GetCustomElementState() ==
+                CustomElementState::kUncustomized)
+          element->SetCustomElementState(CustomElementState::kUndefined);
+        if (!V0CustomElement::IsValidName(tag_name.LocalName()))
+          V0CustomElementRegistrationContext::SetTypeExtension(element, is);
+      }
     }
     // Definition for the created element does not exist here and it cannot be
     // custom or failed.
