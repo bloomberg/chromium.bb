@@ -22,7 +22,6 @@ from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -1072,28 +1071,6 @@ class EBuild(object):
     cls._RunGit(directory, ['update-index', '-q', '--refresh'])
     output = cls._RunGit(directory, ['diff-index', '--name-only', 'HEAD'])
     return output not in [None, '']
-
-  @staticmethod
-  def _GetSHA1ForPath(manifest, path):
-    """Get the latest SHA1 for a given project from Gerrit.
-
-    This function looks up the remote and branch for a given project in the
-    manifest, and uses this to lookup the SHA1 from Gerrit. This only makes
-    sense for unpinned manifests.
-
-    Args:
-      manifest: git.ManifestCheckout object.
-      path: Path of project.
-
-    Raises:
-      Exception if the manifest is pinned.
-    """
-    checkout = manifest.FindCheckoutFromPath(path)
-    project = checkout['name']
-    helper = gerrit.GetGerritHelper(checkout['remote'])
-    manifest_branch = checkout['revision']
-    branch = git.StripRefsHeads(manifest_branch)
-    return helper.GetLatestSHA1ForBranch(project, branch)
 
   @classmethod
   def _AlmostSameEBuilds(cls, ebuild_path1, ebuild_path2):
