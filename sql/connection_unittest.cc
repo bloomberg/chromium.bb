@@ -26,10 +26,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-#include "base/ios/ios_util.h"
-#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-
 namespace sql {
 namespace test {
 
