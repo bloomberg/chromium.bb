@@ -512,8 +512,6 @@ String ClipOpName(SkClipOp op) {
 
 String SaveLayerFlagsToString(SkCanvas::SaveLayerFlags flags) {
   String flags_string = "";
-  if (flags & SkCanvas::kIsOpaque_SaveLayerFlag)
-    flags_string.append("kIsOpaque_SaveLayerFlag ");
   if (flags & SkCanvas::kPreserveLCDText_SaveLayerFlag)
     flags_string.append("kPreserveLCDText_SaveLayerFlag ");
   return flags_string;
