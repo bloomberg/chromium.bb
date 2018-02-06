@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/android/remote_database_manager.h"
 
+#include <map>
 #include <memory>
 
 #include "base/logging.h"
@@ -22,7 +23,7 @@ namespace {
 
 class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
  public:
-  void StartURLCheck(const URLCheckCallbackMeta& callback,
+  void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                      const GURL& url,
                      const SBThreatTypeSet& threat_types) override {}
 };

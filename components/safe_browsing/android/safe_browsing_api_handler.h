@@ -8,6 +8,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_H_
 #define COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,12 +25,12 @@ class SafeBrowsingApiHandler {
   static void SetInstance(SafeBrowsingApiHandler* instance);
   static SafeBrowsingApiHandler* GetInstance();
 
-  typedef base::Callback<void(SBThreatType sb_threat_type,
-                              const ThreatMetadata& metadata)>
+  typedef base::OnceCallback<void(SBThreatType sb_threat_type,
+                                  const ThreatMetadata& metadata)>
       URLCheckCallbackMeta;
 
   // Makes Native->Java call and invokes callback when check is done.
-  virtual void StartURLCheck(const URLCheckCallbackMeta& callback,
+  virtual void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                              const GURL& url,
                              const SBThreatTypeSet& threat_types) = 0;
 

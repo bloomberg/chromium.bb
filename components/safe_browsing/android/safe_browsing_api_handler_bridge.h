@@ -29,7 +29,7 @@ class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
   ~SafeBrowsingApiHandlerBridge() override;
 
   // Makes Native->Java call to check the URL against Safe Browsing lists.
-  void StartURLCheck(const URLCheckCallbackMeta& callback,
+  void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                      const GURL& url,
                      const SBThreatTypeSet& threat_types) override;
 
@@ -43,7 +43,7 @@ class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
     Core();
     ~Core();
 
-    void StartURLCheck(const URLCheckCallbackMeta& callback,
+    void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                        const GURL& url,
                        const SBThreatTypeSet& threat_types);
 
