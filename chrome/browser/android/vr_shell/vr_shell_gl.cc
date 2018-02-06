@@ -1086,11 +1086,16 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     acquired_frame_.Unbind();
   }
 
-  // GVR submit needs the saved head pose that was used for JS rendering. Don't
-  // use render_info_primary_.head_pose here, that may have been overwritten by
-  // OnVSync's controller handling.
-  gfx::Transform webvr_head_pose =
-      webvr_head_pose_[frame_index % kPoseRingBufferSize];
+  // GVR submit needs the exact head pose that was used for rendering.
+  gfx::Transform submit_head_pose;
+  if (ShouldDrawWebVr()) {
+    // Don't use render_info_primary_.head_pose here, that may have been
+    // overwritten by OnVSync's controller handling. We need the pose that was
+    // sent to JS.
+    submit_head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
+  } else {
+    submit_head_pose = render_info_primary_.head_pose;
+  }
   if (ShouldDrawWebVr() && surfaceless_rendering_ && !webvr_use_gpu_fence_) {
     // Continue with submit once a GL fence signals that current drawing
     // operations have completed.
@@ -1101,10 +1106,10 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
-                       webvr_head_pose, base::Passed(&fence)));
+                       submit_head_pose, base::Passed(&fence)));
   } else {
     // Continue with submit immediately.
-    DrawFrameSubmitNow(frame_index, webvr_head_pose);
+    DrawFrameSubmitNow(frame_index, submit_head_pose);
   }
 }
 
