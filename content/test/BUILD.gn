@@ -1531,7 +1531,6 @@ test("content_unittests") {
     # TODO(jam): move these network/ tests to services/network.
     "../public/common/drop_data_unittest.cc",
     "../public/common/network_connection_tracker_unittest.cc",
-    "../public/common/simple_url_loader_unittest.cc",
     "../public/common/url_utils_unittest.cc",
     "../public/test/referrer_unittest.cc",
     "../public/test/test_browser_thread_bundle_unittest.cc",

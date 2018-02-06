@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_view.h"
 
-namespace content {
+namespace network {
 class SimpleURLLoader;
 }
 
@@ -53,7 +53,7 @@ class TermsOfServiceScreen : public BaseScreen,
 
   TermsOfServiceScreenView* view_;
 
-  std::unique_ptr<content::SimpleURLLoader> terms_of_service_loader_;
+  std::unique_ptr<network::SimpleURLLoader> terms_of_service_loader_;
 
   // Timer that enforces a custom (shorter) timeout on the attempt to download
   // the Terms of Service.

@@ -11,7 +11,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/simple_url_loader.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -21,6 +20,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace content {
@@ -47,8 +47,8 @@ int LoadBasicRequestOnIOThread(
   // Wait for callback on UI thread to avoid nesting IO message loops.
   simple_loader_helper.SetRunLoopQuitThread(BrowserThread::UI);
 
-  std::unique_ptr<content::SimpleURLLoader> simple_loader =
-      content::SimpleURLLoader::Create(std::move(request),
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
                                        TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // |URLLoaderFactoryGetter::GetNetworkFactory()| can only be accessed on IO
@@ -56,9 +56,10 @@ int LoadBasicRequestOnIOThread(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          [](content::SimpleURLLoader* loader,
+          [](network::SimpleURLLoader* loader,
              URLLoaderFactoryGetter* factory_getter,
-             SimpleURLLoader::BodyAsStringCallback body_as_string_callback) {
+             network::SimpleURLLoader::BodyAsStringCallback
+                 body_as_string_callback) {
             loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
                 factory_getter->GetNetworkFactory(),
                 std::move(body_as_string_callback));

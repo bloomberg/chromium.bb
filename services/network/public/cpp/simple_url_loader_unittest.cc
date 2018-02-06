@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 #include <stdint.h>
 
@@ -26,9 +26,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
-#include "content/public/common/simple_url_loader_stream_consumer.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -45,13 +42,14 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace network {
 namespace {
 
 // Server path that returns a response containing as many a's as are specified
@@ -555,7 +553,7 @@ class SimpleURLLoaderTestBase {
   static base::FilePath GetTestFilePath() {
     base::FilePath test_data_dir;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
-    return test_data_dir.AppendASCII("content/test/data/title1.html");
+    return test_data_dir.AppendASCII("services/test/data/title1.html");
   }
 
   static std::string GetTestFileContents() {
@@ -2531,4 +2529,4 @@ TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace network

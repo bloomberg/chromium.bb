@@ -20,9 +20,9 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/simple_url_loader.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -118,12 +118,12 @@ void TermsOfServiceScreen::StartDownload() {
   // Request a text/plain MIME type as only plain-text Terms of Service are
   // accepted.
   resource_request->headers.SetHeader("Accept", "text/plain");
-  terms_of_service_loader_ = content::SimpleURLLoader::Create(
+  terms_of_service_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   // Retry up to three times if network changes are detected during the
   // download.
   terms_of_service_loader_->SetRetryOptions(
-      3, content::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+      3, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   network::mojom::URLLoaderFactory* loader_factory =
       g_browser_process->system_network_context_manager()
           ->GetURLLoaderFactory();
@@ -150,7 +150,7 @@ void TermsOfServiceScreen::OnDownloaded(
   download_timer_.Stop();
 
   // Destroy the fetcher when this method returns.
-  std::unique_ptr<content::SimpleURLLoader> loader(
+  std::unique_ptr<network::SimpleURLLoader> loader(
       std::move(terms_of_service_loader_));
   if (!view_)
     return;

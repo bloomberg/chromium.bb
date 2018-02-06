@@ -18,6 +18,9 @@
 
 namespace content {
 class BrowserContext;
+}
+
+namespace network {
 class SimpleURLLoader;
 }
 
@@ -61,7 +64,7 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   const int default_icon_resource_id_;
 
   bool icon_fetch_attempted_;
-  std::unique_ptr<content::SimpleURLLoader> simple_loader_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   gfx::ImageSkia icon_;
 

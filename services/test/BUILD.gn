@@ -65,6 +65,7 @@ bundle_data("tests_bundle_data") {
     "//services/test/data/redirect307-to-echo",
     "//services/test/data/redirect307-to-echo.mock-http-headers",
     "//services/test/data/simple_page.html",
+    "//services/test/data/title1.html",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +
