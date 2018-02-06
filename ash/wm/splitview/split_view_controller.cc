@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
@@ -26,8 +27,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
@@ -102,6 +105,16 @@ bool SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(
 }
 
 bool SplitViewController::CanSnap(aura::Window* window) {
+  // In M65, some ARC apps can be freely resized and thus are capble of
+  // displaying in splitscreen, but splitscreen is not supported for ARC apps
+  // windows yet in M65, thus we should explicity return false here for ARC apps
+  // windows. Otherwise we may see issues as in https://crbug.com/808748. It
+  // will be reverted later in M66.
+  if (window->GetProperty(aura::client::kAppType) ==
+      static_cast<int>(AppType::ARC_APP)) {
+    return false;
+  }
+
   if (!wm::CanActivateWindow(window))
     return false;
   if (!wm::GetWindowState(window)->CanSnap())
