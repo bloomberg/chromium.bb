@@ -4271,7 +4271,7 @@ int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
     int ret;
 
     memclear(args);
-    args.handles = (intptr_t)handles;
+    args.handles = (uintptr_t)handles;
     args.timeout_nsec = timeout_nsec;
     args.count_handles = num_handles;
     args.flags = flags;
