@@ -14,12 +14,23 @@ namespace network {
 
 namespace test {
 
-int UDPSocketTestHelper::OpenSync(mojom::UDPSocketPtr* socket,
-                                  net::AddressFamily address_family) {
+UDPSocketTestHelper::UDPSocketTestHelper(mojom::UDPSocketPtr* socket)
+    : socket_(socket) {}
+
+UDPSocketTestHelper::~UDPSocketTestHelper() {}
+
+int UDPSocketTestHelper::OpenSync(net::AddressFamily address_family) {
+  mojom::UDPSocketOptionsPtr options;
+  return OpenWithOptionsSync(address_family, std::move(options));
+}
+
+int UDPSocketTestHelper::OpenWithOptionsSync(
+    net::AddressFamily address_family,
+    mojom::UDPSocketOptionsPtr options) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->Open(
-      address_family,
+  socket_->get()->Open(
+      address_family, std::move(options),
       base::BindOnce(
           [](base::RunLoop* run_loop, int* result_out, int result) {
             *result_out = result;
@@ -30,12 +41,11 @@ int UDPSocketTestHelper::OpenSync(mojom::UDPSocketPtr* socket,
   return net_error;
 }
 
-int UDPSocketTestHelper::ConnectSync(mojom::UDPSocketPtr* socket,
-                                     const net::IPEndPoint& remote_addr,
+int UDPSocketTestHelper::ConnectSync(const net::IPEndPoint& remote_addr,
                                      net::IPEndPoint* local_addr_out) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->Connect(
+  socket_->get()->Connect(
       remote_addr,
       base::BindOnce(
           [](base::RunLoop* run_loop, int* result_out,
@@ -53,12 +63,11 @@ int UDPSocketTestHelper::ConnectSync(mojom::UDPSocketPtr* socket,
   return net_error;
 }
 
-int UDPSocketTestHelper::BindSync(mojom::UDPSocketPtr* socket,
-                                  const net::IPEndPoint& local_addr,
+int UDPSocketTestHelper::BindSync(const net::IPEndPoint& local_addr,
                                   net::IPEndPoint* local_addr_out) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->Bind(
+  socket_->get()->Bind(
       local_addr, base::BindOnce(
                       [](base::RunLoop* run_loop, int* result_out,
                          net::IPEndPoint* local_addr_out, int result,
@@ -75,12 +84,11 @@ int UDPSocketTestHelper::BindSync(mojom::UDPSocketPtr* socket,
   return net_error;
 }
 
-int UDPSocketTestHelper::SendToSync(mojom::UDPSocketPtr* socket,
-                                    const net::IPEndPoint& remote_addr,
+int UDPSocketTestHelper::SendToSync(const net::IPEndPoint& remote_addr,
                                     const std::vector<uint8_t>& input) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->SendTo(
+  socket_->get()->SendTo(
       remote_addr, input,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       base::BindOnce(
@@ -93,11 +101,10 @@ int UDPSocketTestHelper::SendToSync(mojom::UDPSocketPtr* socket,
   return net_error;
 }
 
-int UDPSocketTestHelper::SendSync(mojom::UDPSocketPtr* socket,
-                                  const std::vector<uint8_t>& input) {
+int UDPSocketTestHelper::SendSync(const std::vector<uint8_t>& input) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->Send(
+  socket_->get()->Send(
       input,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       base::BindOnce(
@@ -110,11 +117,10 @@ int UDPSocketTestHelper::SendSync(mojom::UDPSocketPtr* socket,
   return net_error;
 }
 
-int UDPSocketTestHelper::SetSendBufferSizeSync(mojom::UDPSocketPtr* socket,
-                                               size_t size) {
+int UDPSocketTestHelper::SetSendBufferSizeSync(size_t size) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->SetSendBufferSize(
+  socket_->get()->SetSendBufferSize(
       size, base::BindOnce(
                 [](base::RunLoop* run_loop, int* result_out, int result) {
                   *result_out = result;
@@ -125,17 +131,46 @@ int UDPSocketTestHelper::SetSendBufferSizeSync(mojom::UDPSocketPtr* socket,
   return net_error;
 }
 
-int UDPSocketTestHelper::SetReceiveBufferSizeSync(mojom::UDPSocketPtr* socket,
-                                                  size_t size) {
+int UDPSocketTestHelper::SetReceiveBufferSizeSync(size_t size) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket->get()->SetReceiveBufferSize(
+  socket_->get()->SetReceiveBufferSize(
       size, base::BindOnce(
                 [](base::RunLoop* run_loop, int* result_out, int result) {
                   *result_out = result;
                   run_loop->Quit();
                 },
                 base::Unretained(&run_loop), base::Unretained(&net_error)));
+  run_loop.Run();
+  return net_error;
+}
+
+int UDPSocketTestHelper::JoinGroupSync(const net::IPAddress& group_address) {
+  base::RunLoop run_loop;
+  int net_error = net::ERR_FAILED;
+  socket_->get()->JoinGroup(
+      group_address,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, int* result_out, int result) {
+            *result_out = result;
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop), base::Unretained(&net_error)));
+  run_loop.Run();
+  return net_error;
+}
+
+int UDPSocketTestHelper::LeaveGroupSync(const net::IPAddress& group_address) {
+  base::RunLoop run_loop;
+  int net_error = net::ERR_FAILED;
+  socket_->get()->LeaveGroup(
+      group_address,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, int* result_out, int result) {
+            *result_out = result;
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop), base::Unretained(&net_error)));
   run_loop.Run();
   return net_error;
 }
