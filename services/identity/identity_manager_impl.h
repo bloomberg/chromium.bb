@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
-#include "services/identity/public/interfaces/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_manager.mojom.h"
 
 class AccountTrackerService;
 

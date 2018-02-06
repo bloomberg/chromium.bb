@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/identity/public/interfaces/google_service_auth_error.mojom"
+mojom = "//services/identity/public/mojom/google_service_auth_error.mojom"
 public_headers = [ "//google_apis/gaia/google_service_auth_error.h" ]
-traits_headers = [ "//services/identity/public/cpp/google_service_auth_error_struct_traits.h" ]
+traits_headers = [
+  "//services/identity/public/cpp/google_service_auth_error_struct_traits.h",
+]
 sources = [
   "//services/identity/public/cpp/google_service_auth_error_struct_traits.cc",
 ]

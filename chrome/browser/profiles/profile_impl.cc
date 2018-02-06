@@ -126,7 +126,7 @@
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/identity/identity_service.h"
-#include "services/identity/public/interfaces/constants.mojom.h"
+#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"

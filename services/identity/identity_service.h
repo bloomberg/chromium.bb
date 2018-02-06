@@ -6,7 +6,7 @@
 #define SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "services/identity/public/interfaces/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
