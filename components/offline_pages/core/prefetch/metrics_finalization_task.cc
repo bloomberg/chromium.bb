@@ -224,13 +224,13 @@ bool ReportMetricsAndFinalizeSync(sql::Connection* db) {
 
   if (transaction.Commit()) {
     for (const auto& url : urls) {
-      DVLOG(1) << "Finalized prefetch item: (" << url.offline_id << ", "
-               << url.generate_bundle_attempts << ", "
+      DVLOG(1) << "Finalized prefetch item with error code "
+               << static_cast<int>(url.error_code) << ": (" << url.offline_id
+               << ", " << url.generate_bundle_attempts << ", "
                << url.get_operation_attempts << ", "
                << url.download_initiation_attempts << ", "
                << url.archive_body_length << ", " << url.creation_time << ", "
-               << static_cast<int>(url.error_code) << ", " << url.file_size
-               << ")";
+               << url.file_size << ")";
       ReportMetricsFor(url, now);
     }
     return true;
