@@ -295,11 +295,11 @@ void NotificationTemplateBuilder::AddActions(
   bool inline_reply = false;
   std::string placeholder;
   for (const auto& button : buttons) {
-    if (button.type != message_center::ButtonType::TEXT)
+    if (!button.placeholder)
       continue;
 
     inline_reply = true;
-    placeholder = base::UTF16ToUTF8(button.placeholder);
+    placeholder = base::UTF16ToUTF8(*button.placeholder);
     break;
   }
 

@@ -67,14 +67,8 @@ ScopedJavaLocalRef<jobject> JNI_NotificationPlatformBridge_ConvertToJavaBitmap(
 
 NotificationActionType GetNotificationActionType(
     message_center::ButtonInfo button) {
-  switch (button.type) {
-    case message_center::ButtonType::BUTTON:
-      return NotificationActionType::BUTTON;
-    case message_center::ButtonType::TEXT:
-      return NotificationActionType::TEXT;
-  }
-  NOTREACHED();
-  return NotificationActionType::TEXT;
+  return button.placeholder ? NotificationActionType::TEXT
+                            : NotificationActionType::BUTTON;
 }
 
 ScopedJavaLocalRef<jobjectArray> ConvertToJavaActionInfos(
@@ -91,8 +85,11 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaActionInfos(
     ScopedJavaLocalRef<jstring> title =
         base::android::ConvertUTF16ToJavaString(env, button.title);
     int type = GetNotificationActionType(button);
-    ScopedJavaLocalRef<jstring> placeholder =
-        base::android::ConvertUTF16ToJavaString(env, button.placeholder);
+    ScopedJavaLocalRef<jstring> placeholder;
+    if (button.placeholder) {
+      placeholder =
+          base::android::ConvertUTF16ToJavaString(env, *button.placeholder);
+    }
     ScopedJavaLocalRef<jobject> icon =
         JNI_NotificationPlatformBridge_ConvertToJavaBitmap(env, button.icon);
     ScopedJavaLocalRef<jobject> action_info = Java_ActionInfo_createActionInfo(

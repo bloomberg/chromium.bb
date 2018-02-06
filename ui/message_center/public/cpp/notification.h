@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -45,15 +46,6 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT NotificationItem {
   base::string16 message;
 };
 
-enum class ButtonType {
-  // A simple button having an icon and a title that the user can click on.
-  BUTTON,
-
-  // A button having an icon and a title that should also enable the user to
-  // input text, enabling them to quickly respond from the notification.
-  TEXT
-};
-
 enum class SettingsButtonHandler {
   NONE,     // No button. This is the default.
   TRAY,     // Button shown, the tray handles clicks. Only used on Chrome OS.
@@ -77,12 +69,10 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT ButtonInfo {
   // requirements of the notification.
   gfx::Image icon;
 
-  // Type of this button.
-  ButtonType type = ButtonType::BUTTON;
-
-  // The placeholder string that should be displayed in the input field for TEXT
-  // type buttons until the user has entered a response themselves.
-  base::string16 placeholder;
+  // The placeholder string that should be displayed in the input field for
+  // text input type buttons until the user has entered a response themselves.
+  // If the value is null, there is no input field associated with the button.
+  base::Optional<base::string16> placeholder;
 };
 
 // TODO(estade): add an ALWAYS value to mark notifications as additionally

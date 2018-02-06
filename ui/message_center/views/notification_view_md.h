@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
@@ -114,9 +115,8 @@ class NotificationButtonMD : public views::LabelButton {
   // |placeholder| is placeholder text shown on the input field. Only used when
   // |is_inline_reply| is true.
   NotificationButtonMD(views::ButtonListener* listener,
-                       bool is_inline_reply,
                        const base::string16& label,
-                       const base::string16& placeholder);
+                       const base::Optional<base::string16>& placeholder);
   ~NotificationButtonMD() override;
 
   void SetText(const base::string16& text) override;
@@ -127,12 +127,12 @@ class NotificationButtonMD : public views::LabelButton {
 
   SkColor enabled_color_for_testing() { return label()->enabled_color(); }
 
-  bool is_inline_reply() const { return is_inline_reply_; }
-  const base::string16& placeholder() const { return placeholder_; }
+  const base::Optional<base::string16>& placeholder() const {
+    return placeholder_;
+  }
 
  private:
-  const bool is_inline_reply_;
-  const base::string16 placeholder_;
+  const base::Optional<base::string16> placeholder_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationButtonMD);
 };

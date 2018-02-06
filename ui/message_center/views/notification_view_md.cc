@@ -329,14 +329,13 @@ const char* LargeImageContainerView::GetClassName() const {
 
 // NotificationButtonMD ////////////////////////////////////////////////////////
 
-NotificationButtonMD::NotificationButtonMD(views::ButtonListener* listener,
-                                           bool is_inline_reply,
-                                           const base::string16& label,
-                                           const base::string16& placeholder)
+NotificationButtonMD::NotificationButtonMD(
+    views::ButtonListener* listener,
+    const base::string16& label,
+    const base::Optional<base::string16>& placeholder)
     : views::LabelButton(listener,
                          base::i18n::ToUpper(label),
                          views::style::CONTEXT_BUTTON_MD),
-      is_inline_reply_(is_inline_reply),
       placeholder_(placeholder) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetInkDropMode(views::LabelButton::InkDropMode::ON);
@@ -783,10 +782,10 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender != action_buttons_[i])
       continue;
-    if (action_buttons_[i]->is_inline_reply()) {
+    if (action_buttons_[i]->placeholder()) {
       inline_reply_->textfield()->set_index(i);
       inline_reply_->textfield()->set_placeholder(
-          action_buttons_[i]->placeholder());
+          *action_buttons_[i]->placeholder());
       inline_reply_->textfield()->RequestFocus();
       inline_reply_->AnimateBackground(*event.AsLocatedEvent());
       inline_reply_->SetVisible(true);
@@ -1048,7 +1047,7 @@ void NotificationViewMD::CreateOrUpdateImageView(
 
 void NotificationViewMD::CreateOrUpdateActionButtonViews(
     const Notification& notification) {
-  std::vector<ButtonInfo> buttons = notification.buttons();
+  const std::vector<ButtonInfo>& buttons = notification.buttons();
   bool new_buttons = action_buttons_.size() != buttons.size();
 
   if (new_buttons || buttons.size() == 0) {
@@ -1062,9 +1061,8 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
   for (size_t i = 0; i < buttons.size(); ++i) {
     ButtonInfo button_info = buttons[i];
     if (new_buttons) {
-      bool is_inline_reply = button_info.type == ButtonType::TEXT;
       NotificationButtonMD* button = new NotificationButtonMD(
-          this, is_inline_reply, button_info.title, button_info.placeholder);
+          this, button_info.title, button_info.placeholder);
       action_buttons_.push_back(button);
       action_buttons_row_->AddChildView(button);
     } else {
@@ -1130,8 +1128,8 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   settings_row_->SetVisible(false);
 
   settings_done_button_ = new NotificationButtonMD(
-      this, false, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_DONE),
-      base::EmptyString16());
+      this, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_DONE),
+      base::nullopt);
   auto* settings_button_row = new views::View;
   auto settings_button_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kSettingsButtonRowPadding, 0);
