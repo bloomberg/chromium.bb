@@ -5811,6 +5811,7 @@ static int check_best_zero_mv(
   (void)mi_row;
   (void)mi_col;
   (void)cpi;
+  (void)compound_mode_context;
   if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
     for (int cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
       zeromv[cur_frm].as_int =
@@ -5858,7 +5859,11 @@ static int check_best_zero_mv(
               this_mode == GLOBAL_GLOBALMV) &&
              frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
              frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int) {
+#if CONFIG_OPT_REF_MV
+    int16_t rfc = av1_mode_context_analyzer(mode_context, ref_frames);
+#else
     int16_t rfc = compound_mode_context[ref_frames[0]];
+#endif
     int c2 = cost_mv_ref(x, NEAREST_NEARESTMV, rfc);
     int c3 = cost_mv_ref(x, GLOBAL_GLOBALMV, rfc);
     int c5 = cost_mv_ref(x, NEAR_NEARMV, rfc);
@@ -8211,11 +8216,15 @@ static int64_t handle_inter_mode(
 #endif
   if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
 
+#if CONFIG_OPT_REF_MV
+  mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+#else
   if (is_comp_pred)
     mode_ctx = mbmi_ext->compound_mode_context[refs[0]];
   else
     mode_ctx =
         av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+#endif
 
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     tmp_buf = CONVERT_TO_BYTEPTR(tmp_buf_);

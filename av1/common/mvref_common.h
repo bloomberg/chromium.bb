@@ -350,7 +350,20 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
 
 static INLINE int16_t av1_mode_context_analyzer(
     const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf) {
-  return mode_context[av1_ref_frame_type(rf)];
+  const int8_t ref_frame = av1_ref_frame_type(rf);
+
+#if CONFIG_OPT_REF_MV
+  if (rf[1] <= INTRA_FRAME) return mode_context[ref_frame];
+
+  const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
+  const int16_t refmv_ctx =
+      (mode_context[ref_frame] >> REFMV_OFFSET) & REFMV_CTX_MASK;
+  const int16_t comp_ctx = (refmv_ctx >> 1) * COMP_NEWMV_CTXS +
+                           AOMMIN(newmv_ctx, COMP_NEWMV_CTXS - 1);
+  return comp_ctx;
+#else
+  return mode_context[ref_frame];
+#endif
 }
 
 static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,

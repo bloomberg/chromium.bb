@@ -1354,11 +1354,16 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     write_ref_frames(cm, xd, w);
 
+#if CONFIG_OPT_REF_MV
+    mode_ctx =
+        av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+#else
     if (is_compound)
       mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
     else
       mode_ctx =
           av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+#endif
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {

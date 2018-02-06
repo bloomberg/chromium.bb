@@ -1316,6 +1316,19 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       int16_t mode_ctx;
       const PREDICTION_MODE mode = mbmi->mode;
+
+#if CONFIG_OPT_REF_MV
+      mode_ctx =
+          av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+      if (has_second_ref(mbmi)) {
+        ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
+        if (allow_update_cdf)
+          update_cdf(fc->inter_compound_mode_cdf[mode_ctx],
+                     INTER_COMPOUND_OFFSET(mode), INTER_COMPOUND_MODES);
+      } else {
+        update_inter_mode_stats(counts, mode, mode_ctx);
+      }
+#else
       if (has_second_ref(mbmi)) {
         mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
         ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
@@ -1327,6 +1340,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
         update_inter_mode_stats(counts, mode, mode_ctx);
       }
+#endif
 
       int mode_allowed = (mbmi->mode == NEWMV);
       mode_allowed |= (mbmi->mode == NEW_NEWMV);
