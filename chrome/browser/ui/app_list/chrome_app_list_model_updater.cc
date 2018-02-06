@@ -230,6 +230,14 @@ size_t ChromeAppListModelUpdater::BadgedItemCount() {
   return count;
 }
 
+void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
+                                                        int command_id,
+                                                        int event_flags) {
+  ChromeAppListItem* chrome_item = FindItem(id);
+  if (chrome_item)
+    chrome_item->ContextMenuItemSelected(command_id, event_flags);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods for AppListSyncableService
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/shelf_struct_traits.h"
+#include "ash/public/cpp/shelf_struct_mojom_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/gfx/image/mojo/image_skia_struct_traits.h"
@@ -16,7 +16,7 @@ using ShelfItemStructTraits =
 bool StructTraits<ash::mojom::ShelfIDDataView, ash::ShelfID>::Read(
     ash::mojom::ShelfIDDataView data,
     ash::ShelfID* out) {
-  if (!data.ReadAppId(&out->app_id) ||!data.ReadLaunchId(&out->launch_id))
+  if (!data.ReadAppId(&out->app_id) || !data.ReadLaunchId(&out->launch_id))
     return false;
   // A non-empty launch id requires a non-empty app id.
   return out->launch_id.empty() || !out->app_id.empty();

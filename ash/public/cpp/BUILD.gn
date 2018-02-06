@@ -38,6 +38,8 @@ component("cpp") {
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
     "login_constants.h",
+    "menu_utils.cc",
+    "menu_utils.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",
     "remote_shelf_item_delegate.cc",
@@ -112,8 +114,9 @@ mojom("test_interfaces") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "menu_utils_unittest.cc",
     "shelf_model_unittest.cc",
-    "shelf_struct_traits_unittest.cc",
+    "shelf_struct_mojom_traits_unittest.cc",
   ]
 
   deps = [

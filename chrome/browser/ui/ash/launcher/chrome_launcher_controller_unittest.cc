@@ -3888,8 +3888,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   // opposite order. Last created goes in front.
   ash::MenuItemList items = item_delegate->GetAppMenuItems(0);
   ASSERT_EQ(items.size(), 2U);
-  EXPECT_EQ(items[0]->command_id, 0U);
-  EXPECT_EQ(items[1]->command_id, 1U);
+  EXPECT_EQ(items[0]->command_id, 0);
+  EXPECT_EQ(items[1]->command_id, 1);
 
   // Execute command to activate first window.
   item_delegate->ExecuteCommand(false, items[1]->command_id, ui::EF_NONE,

@@ -55,9 +55,14 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void ViewShown() override {}
   void Dismiss() override;
   void ViewClosing() override {}
-  void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {}
+  void GetWallpaperProminentColors(
+      GetWallpaperProminentColorsCallback callback) override {}
   void ActivateItem(const std::string& id, int event_flags) override;
-  ui::MenuModel* GetContextMenuModel(const std::string& id) override;
+  void GetContextMenuModel(const std::string& id,
+                           GetContextMenuModelCallback callback) override;
+  void ContextMenuItemSelected(const std::string& id,
+                               int command_id,
+                               int event_flags) override {}
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override {}
   void RemoveObserver(
       app_list::AppListViewDelegateObserver* observer) override {}

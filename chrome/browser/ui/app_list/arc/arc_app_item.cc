@@ -84,3 +84,7 @@ ui::MenuModel* ArcAppItem::GetContextMenuModel() {
                                             GetController()));
   return context_menu_->GetMenuModel();
 }
+
+app_list::AppContextMenu* ArcAppItem::GetAppContextMenu() {
+  return context_menu_.get();
+}

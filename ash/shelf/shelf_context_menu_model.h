@@ -45,13 +45,6 @@ class ASH_EXPORT ShelfContextMenuModel : public ui::SimpleMenuModel,
                         int64_t display_id);
   ~ShelfContextMenuModel() override;
 
-  // Add the given |items| to |model|, populating |submenus| as needed.
-  // This is defined as static to support use by the submodel helper class.
-  static void AddItems(ui::SimpleMenuModel* model,
-                       ui::SimpleMenuModel::Delegate* delegate,
-                       const std::vector<mojom::MenuItemPtr>& items,
-                       std::vector<std::unique_ptr<ui::MenuModel>>* submenus);
-
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;

@@ -184,6 +184,10 @@ bool ExtensionAppItem::IsBadged() const {
   return icon_ && icon_->icon_is_badged();
 }
 
+app_list::AppContextMenu* ExtensionAppItem::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
 void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {
   Launch(event_flags);
 }

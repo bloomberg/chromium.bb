@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/widget/widget.h"
@@ -41,7 +42,6 @@ class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
-class AppListViewDelegate;
 class AppsGridView;
 class HideViewAnimationObserver;
 class PaginationModel;
@@ -301,7 +301,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Overridden from AppListViewDelegateObserver:
   void OnWallpaperColorsChanged() override;
 
-  void GetWallpaperProminentColors(std::vector<SkColor>* colors);
+  void GetWallpaperProminentColors(
+      AppListViewDelegate::GetWallpaperProminentColorsCallback callback);
   void SetBackgroundShieldColor();
 
   // Records the number of folders, and the number of items in folders for UMA
@@ -385,6 +386,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Metric reporter for state change animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
       state_animation_metrics_reporter_;
+
+  base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

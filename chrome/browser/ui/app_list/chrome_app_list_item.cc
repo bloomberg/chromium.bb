@@ -92,6 +92,16 @@ bool ChromeAppListItem::IsBadged() const {
   return false;
 }
 
+app_list::AppContextMenu* ChromeAppListItem::GetAppContextMenu() {
+  return nullptr;
+}
+
+void ChromeAppListItem::ContextMenuItemSelected(int command_id,
+                                                int event_flags) {
+  if (GetAppContextMenu())
+    GetAppContextMenu()->ExecuteCommand(command_id, event_flags);
+}
+
 extensions::AppSorting* ChromeAppListItem::GetAppSorting() {
   return extensions::ExtensionSystem::Get(profile())->app_sorting();
 }

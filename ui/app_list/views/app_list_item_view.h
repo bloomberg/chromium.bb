@@ -7,14 +7,18 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/app_list/model/app_list_item_observer.h"
+#include "ash/public/interfaces/menu.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/views/image_shadow_animator.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
@@ -23,7 +27,7 @@ class ImageView;
 class Label;
 class MenuRunner;
 class ProgressBar;
-}
+}  // namespace views
 
 namespace app_list {
 
@@ -34,7 +38,8 @@ class AppsGridView;
 class APP_LIST_EXPORT AppListItemView : public views::Button,
                                         public views::ContextMenuController,
                                         public AppListItemObserver,
-                                        public ImageShadowAnimator::Delegate {
+                                        public ImageShadowAnimator::Delegate,
+                                        public ui::SimpleMenuModel::Delegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -131,6 +136,12 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Records the context menu user journey time.
   void OnContextMenuClosed(const base::TimeTicks& open_time);
 
+  // Callback invoked when a context menu is received after calling
+  // |AppListViewDelegate::GetContextMenuModel|.
+  void OnContextMenuModelReceived(const gfx::Point& point,
+                                  ui::MenuSourceType source_type,
+                                  std::vector<ash::mojom::MenuItemPtr> menu);
+
   // views::ContextMenuController overrides:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
@@ -159,6 +170,11 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   void ItemPercentDownloadedChanged() override;
   void ItemBeingDestroyed() override;
 
+  // ui::SimpleMenuModel::Delegate overrides;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+
   const bool is_folder_;
   const bool is_in_folder_;
 
@@ -171,6 +187,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   views::ProgressBar* progress_bar_;  // Strongly typed child view.
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
+  std::vector<ash::mojom::MenuItemPtr> context_menu_items_;
+  std::vector<std::unique_ptr<ui::MenuModel>> context_submenu_models_;
 
   UIState ui_state_ = UI_STATE_NORMAL;
 

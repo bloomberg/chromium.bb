@@ -276,7 +276,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {
+  void GetWallpaperProminentColors(
+      GetWallpaperProminentColorsCallback callback) override {
     NOTIMPLEMENTED();
   }
 
@@ -288,8 +289,15 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     item->Activate(event_flags);
   }
 
-  ui::MenuModel* GetContextMenuModel(const std::string& id) override {
-    return nullptr;
+  void GetContextMenuModel(const std::string& id,
+                           GetContextMenuModelCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void ContextMenuItemSelected(const std::string& id,
+                               int command_id,
+                               int event_flags) override {
+    NOTIMPLEMENTED();
   }
 
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override {

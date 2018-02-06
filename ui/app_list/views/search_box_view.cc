@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/model/search/search_box_model.h"
@@ -75,7 +76,8 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
                              AppListView* app_list_view)
     : search_box::SearchBoxViewBase(delegate),
       view_delegate_(view_delegate),
-      app_list_view_(app_list_view) {
+      app_list_view_(app_list_view),
+      weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
   view_delegate_->AddObserver(this);
 }
@@ -242,8 +244,9 @@ void SearchBoxView::UpdateSearchIcon() {
                                            search_box_color()));
 }
 
-void SearchBoxView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {
-  view_delegate_->GetWallpaperProminentColors(colors);
+void SearchBoxView::GetWallpaperProminentColors(
+    AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
+  view_delegate_->GetWallpaperProminentColors(std::move(callback));
 }
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
@@ -307,9 +310,8 @@ void SearchBoxView::Update() {
   NotifyQueryChanged();
 }
 
-void SearchBoxView::OnWallpaperColorsChanged() {
-  std::vector<SkColor> prominent_colors;
-  GetWallpaperProminentColors(&prominent_colors);
+void SearchBoxView::OnWallpaperProminentColorsReceived(
+    const std::vector<SkColor>& prominent_colors) {
   if (prominent_colors.empty())
     return;
   DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
@@ -326,6 +328,12 @@ void SearchBoxView::OnWallpaperColorsChanged() {
   search_box()->set_placeholder_text_color(search_box_color());
   UpdateBackgroundColor(background_color());
   SchedulePaint();
+}
+
+void SearchBoxView::OnWallpaperColorsChanged() {
+  GetWallpaperProminentColors(
+      base::BindOnce(&SearchBoxView::OnWallpaperProminentColorsReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {

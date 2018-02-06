@@ -84,6 +84,9 @@ class AppListModelUpdater {
       base::OnceCallback<void(const std::unordered_map<std::string, size_t>&)>;
   virtual void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) {
   }
+  virtual void ContextMenuItemSelected(const std::string& id,
+                                       int command_id,
+                                       int event_flags) {}
 
   // Methods for AppListSyncableService:
   virtual void AddItemToOemFolder(
