@@ -173,6 +173,7 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
     case CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS:
       LOG(WARNING) << "dns_config has unhandled options!";
       dns_config->unhandled_options = true;
+      FALLTHROUGH;
     default:
       return error;
   }

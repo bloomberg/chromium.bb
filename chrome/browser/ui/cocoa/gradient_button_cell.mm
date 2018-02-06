@@ -515,15 +515,16 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     case kMiddleButtonType:
       drawFrame.size.width += 20;
       innerFrame.size.width += 2;
-      // Fallthrough
+      FALLTHROUGH;
     case kRightButtonType:
       drawFrame.origin.x -= 20;
       innerFrame.origin.x -= 2;
-      // Fallthrough
+      FALLTHROUGH;
     case kLeftButtonType:
     case kLeftButtonWithShadowType:
       drawFrame.size.width += 20;
       innerFrame.size.width += 2;
+      break;
     default:
       break;
   }

@@ -1747,7 +1747,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           return NO;  // NO because the selection-handling code will close
                       // later.
         }
-        // Fall-through if selected index is folder.
+        FALLTHROUGH;
       }
       // Keys that open and close submenus.
       case NSRightArrowFunctionKey: {

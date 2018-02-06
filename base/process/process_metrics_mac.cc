@@ -237,7 +237,7 @@ bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
         break;
       case SM_COW:
         private_pages_count += info.private_pages_resident;
-        // Fall through
+        FALLTHROUGH;
       case SM_SHARED:
       case SM_PRIVATE_ALIASED:
       case SM_TRUESHARED:

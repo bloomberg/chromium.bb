@@ -53,7 +53,7 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
         [item_controller_ remove];  // We're deleted now!
         return;
       }
-      // fall through
+      FALLTHROUGH;
     case DownloadItem::IN_PROGRESS:
     case DownloadItem::CANCELLED:
       [item_controller_ setStateFromDownload:&download_model_];

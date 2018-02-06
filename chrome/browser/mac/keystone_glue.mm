@@ -427,7 +427,7 @@ NSString* const kVersionKey = @"KSVersion";
 
     case kBrandFileTypeNotDetermined:
       NOTIMPLEMENTED();
-      // Fall through
+      FALLTHROUGH;
     case kBrandFileTypeNone:
       // Clear the value.
       result = @"";

@@ -779,6 +779,7 @@ void XboxControllerMac::ProcessXboxOnePacket(size_t length) {
         return;
       XboxOneGuideData* data = reinterpret_cast<XboxOneGuideData*>(buffer);
       delegate_->XboxControllerGotGuideData(this, data->down);
+      break;
     }
     default:
       // Unknown packet: ignore!
