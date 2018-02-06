@@ -548,6 +548,7 @@ void FakeCryptohomeClient::MountEx(
     DBusMethodCallback<cryptohome::BaseReply> callback) {
   cryptohome::CryptohomeErrorCode error = cryptohome_error_;
   last_mount_request_ = request;
+  last_mount_auth_request_ = auth;
   cryptohome::BaseReply reply;
   cryptohome::MountReply* mount =
       reply.MutableExtension(cryptohome::MountReply::reply);

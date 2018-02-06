@@ -278,6 +278,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   }
   bool hidden_mount() const { return last_mount_request_.hidden_mount(); }
   bool public_mount() const { return last_mount_request_.public_mount(); }
+  const std::string& get_secret_for_last_mount_authentication() const {
+    return last_mount_auth_request_.key().secret();
+  }
 
   // MigrateToDircrypto getters.
   const cryptohome::Identification& get_id_for_disk_migrated_to_dircrypto()
@@ -364,6 +367,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   cryptohome::CryptohomeErrorCode cryptohome_error_ =
       cryptohome::CRYPTOHOME_ERROR_NOT_SET;
   cryptohome::MountRequest last_mount_request_;
+  cryptohome::AuthorizationRequest last_mount_auth_request_;
 
   // MigrateToDircrypto fields.
   cryptohome::Identification id_for_disk_migrated_to_dircrypto_;

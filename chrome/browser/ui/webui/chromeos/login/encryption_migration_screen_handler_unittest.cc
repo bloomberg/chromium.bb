@@ -235,6 +235,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
   EXPECT_TRUE(fake_cryptohome_client_->minimal_migration());
   EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
             fake_cryptohome_client_->get_id_for_disk_migrated_to_dircrypto());
+  EXPECT_EQ(
+      user_context_.GetKey()->GetSecret(),
+      fake_cryptohome_client_->get_secret_for_last_mount_authentication());
 }
 
 // Tests handling of a resumed minimal migration run. This should behave the
@@ -256,6 +259,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
   EXPECT_TRUE(fake_cryptohome_client_->minimal_migration());
   EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
             fake_cryptohome_client_->get_id_for_disk_migrated_to_dircrypto());
+  EXPECT_EQ(
+      user_context_.GetKey()->GetSecret(),
+      fake_cryptohome_client_->get_secret_for_last_mount_authentication());
 }
 
 // Tests handling of a minimal migration run that takes a long time to finish.
@@ -279,6 +285,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationSlow) {
   EXPECT_TRUE(fake_cryptohome_client_->minimal_migration());
   EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
             fake_cryptohome_client_->get_id_for_disk_migrated_to_dircrypto());
+  EXPECT_EQ(
+      user_context_.GetKey()->GetSecret(),
+      fake_cryptohome_client_->get_secret_for_last_mount_authentication());
 }
 
 // Tests handling of a minimal migration run that fails.
@@ -304,6 +313,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
   EXPECT_TRUE(fake_cryptohome_client_->minimal_migration());
   EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
             fake_cryptohome_client_->get_id_for_disk_migrated_to_dircrypto());
+  EXPECT_EQ(
+      user_context_.GetKey()->GetSecret(),
+      fake_cryptohome_client_->get_secret_for_last_mount_authentication());
 }
 
 }  // namespace chromeos
