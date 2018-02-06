@@ -31,6 +31,12 @@ extern "C" {
 static const int cos_bit_min = 10;
 static const int cos_bit_max = 16;
 
+static const int NewSqrt2Bits = 12;
+// 2^12 * sqrt(2)
+static const int32_t NewSqrt2 = 5793;
+// 2^12 / sqrt(2)
+static const int32_t NewInvSqrt2 = 2896;
+
 // cospi_arr[i][j] = (int)round(cos(M_PI*j/128) * (1<<(cos_bit_min+i)));
 static const int32_t cospi_arr_data[7][64] = {
   { 1024, 1024, 1023, 1021, 1019, 1016, 1013, 1009, 1004, 999, 993, 987, 980,

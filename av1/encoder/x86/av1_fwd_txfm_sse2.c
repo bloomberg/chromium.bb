@@ -1696,7 +1696,7 @@ void av1_fwd_txfm2d_8x16_sse2(const int16_t *input, int32_t *output, int stride,
       store_buffer_16bit_to_32bit_8x8(buf, output + 8 * width * i, width);
     }
     for (int i = 0; i < width * height; i++) {
-      output[i] = (int32_t)fdct_round_shift(output[i] * Sqrt2);
+      output[i] = round_shift(output[i] * NewSqrt2, NewSqrt2Bits);
     }
   } else {
     av1_fwd_txfm2d_8x16_c(input, output, stride, tx_type, bd);

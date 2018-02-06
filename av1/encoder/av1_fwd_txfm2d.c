@@ -116,14 +116,14 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
   for (r = 0; r < txfm_size_row; ++r) {
     txfm_func_row(buf + r * txfm_size_col, output + r * txfm_size_col,
                   cos_bit_row, stage_range_row);
+    av1_round_shift_array(output + r * txfm_size_col, txfm_size_col, -shift[2]);
     if (abs(rect_type) == 1) {
       // Multiply everything by Sqrt2 if the transform is rectangular and the
       // size difference is a factor of 2.
       for (c = 0; c < txfm_size_col; ++c)
         output[r * txfm_size_col + c] =
-            (int32_t)fdct_round_shift(output[r * txfm_size_col + c] * Sqrt2);
+            round_shift(output[r * txfm_size_col + c] * NewSqrt2, NewSqrt2Bits);
     }
-    av1_round_shift_array(output + r * txfm_size_col, txfm_size_col, -shift[2]);
   }
 }
 
