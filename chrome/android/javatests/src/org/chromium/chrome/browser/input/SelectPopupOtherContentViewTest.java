@@ -65,7 +65,7 @@ public class SelectPopupOtherContentViewTest {
         public boolean isSatisfied() {
             ContentViewCore contentViewCore =
                     mActivityTestRule.getActivity().getCurrentContentViewCore();
-            return contentViewCore.getSelectPopupForTest() != null;
+            return contentViewCore.isSelectPopupVisibleForTest();
         }
     }
 
@@ -112,8 +112,7 @@ public class SelectPopupOtherContentViewTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // The popup should still be shown.
-        Assert.assertNotNull(
-                "The select popup got hidden by destroying of unrelated ContentViewCore.",
-                viewCore.getSelectPopupForTest());
+        Assert.assertTrue("The select popup got hidden by destroying of unrelated ContentViewCore.",
+                viewCore.isSelectPopupVisibleForTest());
     }
 }

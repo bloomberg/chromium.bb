@@ -1036,13 +1036,10 @@ public class ContentViewCoreImpl
         if (mSelectPopup != null) mSelectPopup.hide(true);
     }
 
-    /**
-     * @return The visible select popup being shown.
-     */
     @VisibleForTesting
     @Override
-    public SelectPopup getSelectPopupForTest() {
-        return mSelectPopup;
+    public boolean isSelectPopupVisibleForTest() {
+        return mSelectPopup != null;
     }
 
     private void destroyPastePopup() {
