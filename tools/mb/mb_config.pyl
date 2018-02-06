@@ -631,8 +631,7 @@
       'linux_chromium_dbg_ng': 'debug_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
       'linux_chromium_headless_rel': 'headless_linux_release_trybot',
-      'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot',
-      'linux_chromium_ozone_ng': 'ozone_linux_release_trybot',
+      'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot_compile_only',
 
       # This is intentionally a release_bot and not a release_trybot;
       # enabling DCHECKs seems to cause flaky failures that don't show up
@@ -1487,8 +1486,8 @@
       'ozone_linux', 'release_bot',
     ],
 
-    'ozone_linux_release_trybot': [
-      'ozone_linux', 'release_trybot',
+    'ozone_linux_release_trybot_compile_only': [
+      'ozone_linux', 'release_trybot', 'compile_only',
     ],
 
     'presubmit': [
