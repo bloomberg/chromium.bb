@@ -670,14 +670,11 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
   {
     sql::test::ScopedErrorExpecter expecter;
 
-    // Earlier versions of Chromium compiled against SQLite 3.6.7.3, which
-    // returned SQLITE_IOERR_SHORT_READ in this case.  Some platforms may still
-    // compile against an earlier SQLite via USE_SYSTEM_SQLITE.
-    if (expecter.SQLiteLibVersionNumber() < 3008005) {
-      expecter.ExpectError(SQLITE_IOERR_SHORT_READ);
-    } else {
-      expecter.ExpectError(SQLITE_NOTADB);
-    }
+    // Old SQLite versions returned a different error code.
+    ASSERT_GE(expecter.SQLiteLibVersionNumber(), 3014000)
+        << "Chrome ships with SQLite 3.22.0+. The system SQLite version is "
+        << "only supported on iOS 10+, which ships with SQLite 3.14.0+";
+    expecter.ExpectError(SQLITE_NOTADB);
 
     EXPECT_TRUE(db().Open(db_path()));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -1533,10 +1530,8 @@ TEST_F(SQLConnectionTest, RegisterIntentToUpload) {
 TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
-
-    // SQLite doesn't have mmap support (perhaps an early iOS release).
-    if (!s.Step())
-      return;
+    ASSERT_TRUE(s.Step())
+        << "All supported SQLite versions should have mmap support";
 
     // If mmap I/O is not on, attempt to turn it on.  If that succeeds, then
     // Open() should have turned it on.  If mmap support is disabled, 0 is
@@ -1569,10 +1564,8 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabledAltStatus) {
 
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
-
-    // SQLite doesn't have mmap support (perhaps an early iOS release).
-    if (!s.Step())
-      return;
+    ASSERT_TRUE(s.Step())
+        << "All supported SQLite versions should have mmap support";
 
     // If mmap I/O is not on, attempt to turn it on.  If that succeeds, then
     // Open() should have turned it on.  If mmap support is disabled, 0 is
@@ -1595,14 +1588,6 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabledAltStatus) {
 }
 
 TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  // Mmap is not supported on iOS9.
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
-    return;
-  }
-#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-
   const size_t kMmapAlot = 25 * 1024 * 1024;
   int64_t mmap_status = MetaTable::kMmapFailure;
 
@@ -1646,15 +1631,6 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
 }
 
 TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  // Mmap is not supported on iOS9.  Make sure that test takes precedence.
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    db().set_mmap_alt_status();
-    ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
-    return;
-  }
-#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-
   const size_t kMmapAlot = 25 * 1024 * 1024;
 
   // At this point, Connection still expects a future [meta] table.

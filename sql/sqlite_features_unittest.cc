@@ -19,10 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_IOS)
-#include "base/ios/ios_util.h"
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
@@ -164,24 +160,17 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
   EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
 }
 
-#if defined(OS_IOS) || defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
 // If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
 // offering to support it.
 TEST_F(SQLiteFeaturesTest, NoMmap) {
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    // iOS 10 added mmap support for sqlite.
-    return;
-  }
-#endif
-
   // For recent versions of SQLite, SQLITE_MAX_MMAP_SIZE=0 can be used to
   // disable mmap support.  Alternately, sqlite3_config() could be used.  In
   // that case, the pragma will run successfully, but the size will always be 0.
   //
-  // The SQLite embedded in older iOS releases predates the addition of mmap
-  // support.  In that case the pragma will run without error, but no results
-  // are returned when querying the value.
+  // Historical note: The SQLite version bundled with iOS 9 and below does not
+  // have mmap support. Chrome now requires iOS 10 and above. This is only
+  // relevant when USE_SYSTEM_SQLITE is defined.
   //
   // MojoVFS implements a no-op for xFileControl().  PRAGMA mmap_size is
   // implemented in terms of SQLITE_FCNTL_MMAP_SIZE.  In that case, the pragma
@@ -190,7 +179,7 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
   sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
   ASSERT_TRUE(!s.Step() || !s.ColumnInt64(0));
 }
-#endif  // defined(OS_IOS) || defined(OS_FUCHSIA)
+#endif  // defined(OS_FUCHSIA)
 
 #if !defined(OS_FUCHSIA)
 // Verify that OS file writes are reflected in the memory mapping of a
@@ -200,30 +189,17 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
 // version doesn't reflect the OS file writes, SQLite's memory-mapped I/O should
 // be disabled on this platform using SQLITE_MAX_MMAP_SIZE=0.
 TEST_F(SQLiteFeaturesTest, Mmap) {
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // iOS9's sqlite does not support mmap, so this test must be skipped.
-    return;
-  }
-#endif
-
   // Try to turn on mmap'ed I/O.
   ignore_result(db().Execute("PRAGMA mmap_size = 1048576"));
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
 
-#if !defined(USE_SYSTEM_SQLITE)
-    // With Chromium's version of SQLite, the setting should always be non-zero.
+    // Historical note: The SQLite version bundled with iOS 9 and below does
+    // not have mmap support. Chrome now requires iOS 10 and above. This is
+    // only relevant when USE_SYSTEM_SQLITE is defined.
+
     ASSERT_TRUE(s.Step());
     ASSERT_GT(s.ColumnInt64(0), 0);
-#else
-    // With the system SQLite, don't verify underlying mmap functionality if the
-    // SQLite is too old to support mmap, or if mmap is disabled (see NoMmap
-    // test).  USE_SYSTEM_SQLITE is not bundled into the NoMmap case because
-    // whether mmap is enabled or not is outside of Chromium's control.
-    if (!s.Step() || !s.ColumnInt64(0))
-      return;
-#endif
   }
   db().Close();
 
