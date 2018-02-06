@@ -88,11 +88,11 @@
 
     <template is="cr-lazy-render" id="menu">
       <dialog is="cr-action-menu">
-        <button id="menuOpenButton" class="dropdown-item"
+        <button id="menuOpenButton" slot="item" class="dropdown-item"
             on-tap="onOpenAllTap_">
           $i18n{openAll}
         </button>
-        <button id="menuDeleteButton" class="dropdown-item"
+        <button id="menuDeleteButton" slot="item" class="dropdown-item"
             on-tap="onDeleteSessionTap_">
           $i18n{deleteSession}
         </button>
