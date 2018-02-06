@@ -345,29 +345,6 @@ blink::WebDragOperationsMask ConvertToWeb(int drag_op) {
   return (blink::WebDragOperationsMask) web_drag_op;
 }
 
-int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
-  int web_input_event_modifiers = 0;
-  if (aura_event_flags & ui::EF_SHIFT_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::kShiftKey;
-  if (aura_event_flags & ui::EF_CONTROL_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::kControlKey;
-  if (aura_event_flags & ui::EF_ALT_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::kAltKey;
-  if (aura_event_flags & ui::EF_COMMAND_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::kMetaKey;
-  if (aura_event_flags & ui::EF_LEFT_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::kLeftButtonDown;
-  if (aura_event_flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::kMiddleButtonDown;
-  if (aura_event_flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::kRightButtonDown;
-  if (aura_event_flags & ui::EF_BACK_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::kBackButtonDown;
-  if (aura_event_flags & ui::EF_FORWARD_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::kForwardButtonDown;
-  return web_input_event_modifiers;
-}
-
 GlobalRoutingID GetRenderViewHostID(RenderViewHost* rvh) {
   return GlobalRoutingID(rvh->GetProcess()->GetID(), rvh->GetRoutingID());
 }
@@ -1237,7 +1214,7 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   gfx::PointF screen_pt(display::Screen::GetScreen()->GetCursorScreenPoint());
   current_rwh_for_drag_->DragTargetDragEnter(
       *current_drop_data_, transformed_pt, screen_pt, op,
-      ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
+      ui::EventFlagsToWebEventModifiers(event.flags()));
 
   if (drag_dest_delegate_) {
     drag_dest_delegate_->OnReceiveDragData(event.data());
@@ -1285,7 +1262,7 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
   blink::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
   target_rwh->DragTargetDragOver(
       transformed_pt, screen_pt, op,
-      ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
+      ui::EventFlagsToWebEventModifiers(event.flags()));
 
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDragOver();
@@ -1334,7 +1311,7 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   target_rwh->DragTargetDrop(
       *current_drop_data_, transformed_pt,
       gfx::PointF(display::Screen::GetScreen()->GetCursorScreenPoint()),
-      ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
+      ui::EventFlagsToWebEventModifiers(event.flags()));
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();
   current_drop_data_.reset();
