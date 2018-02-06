@@ -114,17 +114,32 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   chromeos::WizardController* GetWizardController() override {
     return wizard_controller_.get();
   }
+  chromeos::AppLaunchController* GetAppLaunchController() override {
+    return nullptr;
+  }
   void StartUserAdding(base::OnceClosure completion_callback) override {}
   void CancelUserAdding() override {}
-  void OnStartSignInScreen(
-      const chromeos::LoginScreenContext& context) override {}
+  void StartSignInScreen(const chromeos::LoginScreenContext& context) override {
+  }
   void OnPreferencesChanged() override {}
-  void OnStartAppLaunch() override {}
-  void OnStartArcKiosk() override {}
+  void PrewarmAuthentication() override {}
+  void StartAppLaunch(const std::string& app_id,
+                      bool diagnostic_mode,
+                      bool is_auto_launch) override {}
+  void StartDemoAppLaunch() override {}
+  void StartArcKiosk(const AccountId& account_id) override {}
   void StartVoiceInteractionOobe() override {
     is_voice_interaction_oobe_ = true;
   }
   bool IsVoiceInteractionOobe() override { return is_voice_interaction_oobe_; }
+  void CompleteLogin(const chromeos::UserContext& user_context) override {}
+  void OnGaiaScreenReady() override {}
+  void SetDisplayEmail(const std::string& email) override {}
+  void SetDisplayAndGivenName(const std::string& display_name,
+                              const std::string& given_name) override {}
+  void LoadWallpaper(const AccountId& account_id) override {}
+  void LoadSigninWallpaper() override {}
+  bool IsUserWhitelisted(const AccountId& account_id) override { return false; }
 
  private:
   bool is_voice_interaction_oobe_ = false;

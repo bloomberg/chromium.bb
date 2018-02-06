@@ -754,7 +754,8 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
   if (test_expects_complete_login_)
     SubmitLoginFormForTest();
 
-  LoginDisplayHost::default_host()->OnGaiaScreenReady();
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->OnGaiaScreenReady();
 }
 
 void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
