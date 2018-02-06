@@ -36,6 +36,9 @@ class LogSourceAccessManager {
   explicit LogSourceAccessManager(content::BrowserContext* context);
   ~LogSourceAccessManager();
 
+  // Call this to override the maximum burst access count of the rate limiter.
+  static void SetMaxNumBurstAccessesForTesting(int num_accesses);
+
   // To override the default rate-limiting mechanism of this function, pass in
   // a TimeDelta representing the desired minimum time between consecutive reads
   // of a source from an extension. Does not take ownership of |timeout|. When

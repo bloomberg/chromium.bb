@@ -27,10 +27,17 @@ using ReadLogSourceParams = api::feedback_private::ReadLogSourceParams;
 using ReadLogSourceResult = api::feedback_private::ReadLogSourceResult;
 using SystemLogsResponse = system_logs::SystemLogsResponse;
 
+// Default value of |g_max_num_burst_accesses|.
+constexpr int kDefaultMaxNumBurstAccesses = 10;
+
 // The minimum time between consecutive reads of a log source by a particular
 // extension.
 constexpr base::TimeDelta kDefaultRateLimitingTimeout =
     base::TimeDelta::FromMilliseconds(1000);
+
+// The maximum number of accesses on a single log source that can be allowed
+// before the next recharge increment. See access_rate_limiter.h for more info.
+int g_max_num_burst_accesses = kDefaultMaxNumBurstAccesses;
 
 // If this is null, then |kDefaultRateLimitingTimeoutMs| is used as the timeout.
 const base::TimeDelta* g_rate_limiting_timeout = nullptr;
@@ -79,6 +86,12 @@ LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
       weak_factory_(this) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}
+
+// static
+void LogSourceAccessManager::SetMaxNumBurstAccessesForTesting(
+    int num_accesses) {
+  g_max_num_burst_accesses = num_accesses;
+}
 
 // static
 void LogSourceAccessManager::SetRateLimitingTimeoutForTesting(
@@ -228,7 +241,8 @@ bool LogSourceAccessManager::UpdateSourceAccessTime(ResourceId id) {
   const SourceAndExtension& key = *iter->second;
   if (rate_limiters_.find(key) == rate_limiters_.end()) {
     rate_limiters_.emplace(
-        key, std::make_unique<AccessRateLimiter>(1, GetMinTimeBetweenReads(),
+        key, std::make_unique<AccessRateLimiter>(g_max_num_burst_accesses,
+                                                 GetMinTimeBetweenReads(),
                                                  tick_clock_.get()));
   }
   return rate_limiters_[key]->AttemptAccess();
