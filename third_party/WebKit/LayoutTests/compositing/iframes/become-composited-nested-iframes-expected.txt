@@ -3,6 +3,16 @@
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 1500],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
@@ -13,32 +23,15 @@
       "bounds": [284, 204]
     },
     {
-      "name": "Frame Overflow Controls Host Layer",
-      "position": [22, 122],
-      "bounds": [280, 200],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Clipping Layer",
-      "position": [22, 122],
-      "bounds": [280, 200],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Scrolling Layer",
-      "position": [22, 122],
-      "drawsContent": false
-    },
-    {
-      "name": "Content Root Layer",
-      "position": [22, 122],
-      "bounds": [280, 200],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutView #document",
       "position": [22, 122],
       "bounds": [280, 200]
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [22, 122],
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "LayoutIFrame IFRAME",
@@ -46,33 +39,16 @@
       "bounds": [252, 172]
     },
     {
-      "name": "Frame Overflow Controls Host Layer",
-      "position": [31, 131],
-      "bounds": [250, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Clipping Layer",
-      "position": [31, 131],
-      "bounds": [250, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Scrolling Layer",
-      "position": [31, 131],
-      "drawsContent": false
-    },
-    {
-      "name": "Content Root Layer",
-      "position": [31, 131],
-      "bounds": [250, 230],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutView #document",
       "position": [31, 131],
-      "bounds": [250, 230],
+      "bounds": [250, 170],
       "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [31, 131],
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
@@ -87,32 +63,15 @@
       "bounds": [284, 204]
     },
     {
-      "name": "Frame Overflow Controls Host Layer",
-      "position": [22, 346],
-      "bounds": [280, 200],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Clipping Layer",
-      "position": [22, 346],
-      "bounds": [280, 200],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Scrolling Layer",
-      "position": [22, 346],
-      "drawsContent": false
-    },
-    {
-      "name": "Content Root Layer",
-      "position": [22, 346],
-      "bounds": [280, 200],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutView #document",
       "position": [22, 346],
       "bounds": [280, 200]
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [22, 346],
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "LayoutIFrame IFRAME",
@@ -120,33 +79,16 @@
       "bounds": [252, 172]
     },
     {
-      "name": "Frame Overflow Controls Host Layer",
-      "position": [31, 355],
-      "bounds": [250, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Clipping Layer",
-      "position": [31, 355],
-      "bounds": [250, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Frame Scrolling Layer",
-      "position": [31, 355],
-      "drawsContent": false
-    },
-    {
-      "name": "Content Root Layer",
-      "position": [31, 355],
-      "bounds": [250, 230],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutView #document",
       "position": [31, 355],
-      "bounds": [250, 230],
+      "bounds": [250, 170],
       "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [31, 355],
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
