@@ -836,21 +836,15 @@ void BridgedNativeWidget::OnFullscreenTransitionComplete(
     return;
   }
 
+  // The transition completed, but into the wrong state. This can happen when
+  // there are calls to change the fullscreen state whilst mid-transition.
   // First update to reflect reality so that OnTargetFullscreenStateChanged()
   // expects the change.
   target_fullscreen_state_ = actual_fullscreen_state;
-  ToggleDesiredFullscreenState();
-
-  // Usually ToggleDesiredFullscreenState() sets |in_fullscreen_transition_| via
-  // OnFullscreenTransitionStart(). When it does not, it means Cocoa ignored the
-  // toggleFullScreen: request. This can occur when the fullscreen transition
-  // fails and Cocoa is *about* to send windowDidFailToEnterFullScreen:.
-  // Annoyingly, for this case, Cocoa first sends windowDidExitFullScreen:.
-  if (in_fullscreen_transition_)
-    DCHECK_NE(target_fullscreen_state_, actual_fullscreen_state);
+  ToggleDesiredFullscreenState(true /* async */);
 }
 
-void BridgedNativeWidget::ToggleDesiredFullscreenState() {
+void BridgedNativeWidget::ToggleDesiredFullscreenState(bool async) {
   // If there is currently an animation into or out of fullscreen, then AppKit
   // emits the string "not in fullscreen state" to stdio and does nothing. For
   // this case, schedule a transition back into the desired state when the
@@ -878,7 +872,18 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
   // This will be reset when a transition out of fullscreen completes.
   gfx::SetNSWindowCanFullscreen(window_, true);
 
-  [window_ toggleFullScreen:nil];
+  // Until 10.13, AppKit would obey a call to -toggleFullScreen: made inside
+  // OnFullscreenTransitionComplete(). Starting in 10.13, it behaves as though
+  // the transition is still in progress and just emits "not in a fullscreen
+  // state" when trying to exit fullscreen in the same runloop that entered it.
+  // To handle this case, invoke -toggleFullScreen: asynchronously.
+  if (async) {
+    [window_ performSelector:@selector(toggleFullScreen:)
+                  withObject:nil
+                  afterDelay:0];
+  } else {
+    [window_ toggleFullScreen:nil];
+  }
 }
 
 void BridgedNativeWidget::OnSizeChanged() {

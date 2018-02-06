@@ -214,6 +214,18 @@ bool IsRTLSelectBuggy(SEL sel) {
 
 @synthesize ignoredToggleFullScreenCount = ignoredToggleFullScreenCount_;
 
+- (void)performSelector:(SEL)aSelector
+             withObject:(id)anArgument
+             afterDelay:(NSTimeInterval)delay {
+  // This is used in simulations without a message loop. Don't start a message
+  // loop since that would expose the tests to system notifications and
+  // potential flakes. Instead, just pretend the message loop is flushed here.
+  if (aSelector == @selector(toggleFullScreen:))
+    [self toggleFullScreen:anArgument];
+  else
+    [super performSelector:aSelector withObject:anArgument afterDelay:delay];
+}
+
 - (void)toggleFullScreen:(id)sender {
   ++ignoredToggleFullScreenCount_;
 }
