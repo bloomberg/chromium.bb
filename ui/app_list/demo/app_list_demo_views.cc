@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -21,8 +20,6 @@
 #include "ui/views_content_client/views_content_client.h"
 
 namespace {
-
-class AppListDemoService;
 
 // Number of dummy apps to populate in the app list.
 const int kInitialItems = 20;
@@ -57,7 +54,6 @@ app_list::AppListView* DemoAppListViewDelegate::InitView(
   app_list::AppListView::InitParams params;
   params.parent = container;
   view_->Initialize(params);
-  view_->MaybeSetAnchorPoint(gfx::Point(300, 300));
 
   // Populate some apps.
   GetTestModel()->PopulateApps(kInitialItems);
@@ -82,7 +78,8 @@ void DemoAppListViewDelegate::ViewClosing() {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-void ShowAppList(gfx::NativeWindow window_context) {
+void ShowAppList(content::BrowserContext* browser_context,
+                 gfx::NativeWindow window_context) {
   DemoAppListViewDelegate* delegate = new DemoAppListViewDelegate;
   app_list::AppListView* view = delegate->InitView(window_context);
   view->GetWidget()->Show();
@@ -93,7 +90,6 @@ void ShowAppList(gfx::NativeWindow window_context) {
 
 int main(int argc, const char** argv) {
   ui::ViewsContentClient views_content_client(argc, argv);
-
   views_content_client.set_task(base::Bind(&ShowAppList));
   return views_content_client.RunMain();
 }
