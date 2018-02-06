@@ -4,6 +4,10 @@
 
 #include "extensions/browser/api/media_perception_private/media_perception_api_manager.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -290,28 +294,26 @@ void MediaPerceptionAPIManager::UpstartRestartCallback(
   GetState(callback);
 }
 
-void MediaPerceptionAPIManager::StateCallback(const APIStateCallback& callback,
-                                              bool succeeded,
-                                              const mri::State& state_proto) {
-  media_perception::State state;
-  if (!succeeded) {
+void MediaPerceptionAPIManager::StateCallback(
+    const APIStateCallback& callback,
+    base::Optional<mri::State> result) {
+  if (!result.has_value()) {
     callback.Run(GetStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE));
     return;
   }
-  callback.Run(media_perception::StateProtoToIdl(state_proto));
+  callback.Run(media_perception::StateProtoToIdl(result.value()));
 }
 
 void MediaPerceptionAPIManager::GetDiagnosticsCallback(
     const APIGetDiagnosticsCallback& callback,
-    bool succeeded,
-    const mri::Diagnostics& diagnostics_proto) {
-  if (!succeeded) {
+    base::Optional<mri::Diagnostics> result) {
+  if (!result.has_value()) {
     callback.Run(GetDiagnosticsForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE));
     return;
   }
-  callback.Run(media_perception::DiagnosticsProtoToIdl(diagnostics_proto));
+  callback.Run(media_perception::DiagnosticsProtoToIdl(result.value()));
 }
 
 void MediaPerceptionAPIManager::MediaPerceptionSignalHandler(

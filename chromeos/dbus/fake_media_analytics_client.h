@@ -22,13 +22,13 @@ class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
   ~FakeMediaAnalyticsClient() override;
 
   // Inherited from MediaAnalyticsClient.
-  void GetState(const StateCallback& callback) override;
+  void GetState(DBusMethodCallback<mri::State> callback) override;
   void SetState(const mri::State& state,
-                const StateCallback& callback) override;
+                DBusMethodCallback<mri::State> callback) override;
   void SetMediaPerceptionSignalHandler(
       const MediaPerceptionSignalHandler& handler) override;
   void ClearMediaPerceptionSignalHandler() override;
-  void GetDiagnostics(const DiagnosticsCallback& callback) override;
+  void GetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback) override;
 
   // Inherited from DBusClient.
   void Init(dbus::Bus* bus) override;
@@ -48,10 +48,10 @@ class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
 
  private:
   // Echoes back the previously set state.
-  void OnState(const StateCallback& callback);
+  void OnState(DBusMethodCallback<mri::State> callback);
 
   // Runs callback with the Diagnostics proto provided in SetDiagnostics.
-  void OnGetDiagnostics(const DiagnosticsCallback& callback);
+  void OnGetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback);
 
   // Runs callback with a MediaPerception proto provided in
   // FireMediaPerceptionEvent.
