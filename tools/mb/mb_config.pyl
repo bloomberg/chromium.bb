@@ -497,8 +497,8 @@
       # TODO(thakis): Remove this once WinMSVC64 bots are live (the bots with
       # unqualified names now use clang).
       'WinClang64 (dbg)': 'win_clang_release_bot',
-      'WinMSVC64': 'win_msvc_release_bot',
-      'WinMSVC64 (dbg)': 'win_msvc_debug_bot',
+      'WinMSVC64': 'win_msvc_release_bot_compile_only',
+      'WinMSVC64 (dbg)': 'win_msvc_debug_bot_compile_only',
     },
 
     'internal.client.kitchensync': {
@@ -739,8 +739,8 @@
       'win_chromium_syzyasan_rel': 'syzyasan_no_pch_release_x86',
       'win_chromium_x64_rel_ng': 'release_trybot_minimal_symbols',
       'win_clang': 'win_clang_release_bot',
-      'win-msvc-rel': 'win_msvc_release_bot',
-      'win-msvc-dbg': 'win_msvc_debug_bot',
+      'win-msvc-rel': 'win_msvc_release_bot_compile_only',
+      'win-msvc-dbg': 'win_msvc_debug_bot_compile_only',
       'win_clang_dbg': 'clang_debug_trybot_x86',
       'win_clang_rel': 'clang_official_release_trybot_x86',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
@@ -1686,7 +1686,11 @@
     ],
 
     'win_msvc_release_bot': [
-      'no_clang', 'minimal_symbols', 'release_bot',
+      'no_clang', 'release_bot',
+    ],
+
+    'win_msvc_release_bot_compile_only': [
+      'no_clang', 'release_bot', 'compile_only',
     ],
 
     'win_msvc_release_bot_x86': [
@@ -1694,7 +1698,11 @@
     ],
 
     'win_msvc_debug_bot': [
-      'no_clang', 'minimal_symbols', 'debug_bot',
+      'no_clang', 'debug_bot',
+    ],
+
+    'win_msvc_debug_bot_compile_only': [
+      'no_clang', 'debug_bot', 'compile_only',
     ],
 
     'win_msvc_debug_bot_x86': [
