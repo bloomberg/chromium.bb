@@ -10,6 +10,7 @@
 #include <cmath>
 #include <tuple>
 
+#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
@@ -331,19 +332,22 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
   virtual bool use_fixed_aspect_ratio() const { return false; }
 
   void SetUp() override {
-#if defined(OS_CHROMEOS)
     // Enable use of the GPU, where available, to greatly speed these tests up.
+    auto* const command_line = base::CommandLine::ForCurrentProcess();
+#if defined(MEMORY_SANITIZER)
+    // Don't append any switches. This will cause the MSAN-instrumented software
+    // GL implementation to be used. http://crbug.com/806715
+    ALLOW_UNUSED_LOCAL(command_line);
+#elif defined(OS_CHROMEOS)
     // As of this writing, enabling this flag on ChromeOS bots with Mus enabled
     // causes a CHECK failure in GpuProcessTransportFactory::EstablishedGpuCh()
     // for a false "use_gpu_compositing".
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMus)) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kUseGpuInTests);
+    if (!command_line->HasSwitch(switches::kMus)) {
+      command_line->AppendSwitch(switches::kUseGpuInTests);
     }
 #else
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseGpuInTests);
-#endif  // defined(OS_CHROMEOS)
+    command_line->AppendSwitch(switches::kUseGpuInTests);
+#endif
 
     // Screen capture requires readback from compositor output.
     EnablePixelOutput();
@@ -468,17 +472,8 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
 
 // Tests that the device refuses to start if the WebContents target was
 // destroyed before the device could start.
-// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
-// use-of-uninit-value errors.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart \
-  DISABLED_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart
-#else
-#define MAYBE_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart \
-  ErrorsOutIfWebContentsHasGoneBeforeDeviceStart
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       MAYBE_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
+                       ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
   auto* const main_frame = shell()->web_contents()->GetMainFrame();
   const auto render_process_id = main_frame->GetProcess()->GetID();
   const auto render_frame_id = main_frame->GetRoutingID();
@@ -510,17 +505,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device starts, captures a frame, and then gracefully
 // errors-out because the WebContents is destroyed before the device is stopped.
-// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
-// use-of-uninit-value errors.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_ErrorsOutWhenWebContentsIsDestroyed \
-  DISABLED_ErrorsOutWhenWebContentsIsDestroyed
-#else
-#define MAYBE_ErrorsOutWhenWebContentsIsDestroyed \
-  ErrorsOutWhenWebContentsIsDestroyed
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       MAYBE_ErrorsOutWhenWebContentsIsDestroyed) {
+                       ErrorsOutWhenWebContentsIsDestroyed) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -540,15 +526,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
-// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
-// use-of-uninit-value errors.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_SuspendsAndResumes DISABLED_SuspendsAndResumes
-#else
-#define MAYBE_SuspendsAndResumes SuspendsAndResumes
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       MAYBE_SuspendsAndResumes) {
+                       SuspendsAndResumes) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -580,16 +559,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
-// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
-// use-of-uninit-value errors.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_DeliversRefreshFramesUponRequest \
-  DISABLED_DeliversRefreshFramesUponRequest
-#else
-#define MAYBE_DeliversRefreshFramesUponRequest DeliversRefreshFramesUponRequest
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       MAYBE_DeliversRefreshFramesUponRequest) {
+                       DeliversRefreshFramesUponRequest) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Set the page content to a known color.
@@ -643,15 +614,8 @@ INSTANTIATE_TEST_CASE_P(
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, and whether the WebContents is visible/hidden or
 // occluded/unoccluded.
-// TODO(crbug/806715): On CrOS+MSAN, the platform OpenGL library triggers MSAN
-// use-of-uninit-value errors.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_CapturesContentChanges DISABLED_CapturesContentChanges
-#else
-#define MAYBE_CapturesContentChanges CapturesContentChanges
-#endif
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       MAYBE_CapturesContentChanges) {
+                       CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (use_software_compositing() ? "Software Compositing"
