@@ -75,8 +75,7 @@ class MetricsReportingStateTest : public InProcessBrowserTest,
   ~MetricsReportingStateTest() override = default;
 
   static bool IsMetricsAndCrashReportingEnabled() {
-    return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
-        g_browser_process->local_state());
+    return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   }
 
   bool is_metrics_reporting_enabled_initial_value() const { return GetParam(); }
@@ -157,8 +156,6 @@ IN_PROC_BROWSER_TEST_P(MetricsReportingStateTest, ChangeMetricsReportingState) {
   base::RunLoop run_loop;
   bool value_after_change = false;
   ChangeMetricsReportingStateWithReply(
-      g_browser_process->local_state(),
-      g_browser_process->GetMetricsServicesManager(),
       !is_metrics_reporting_enabled_initial_value(),
       base::Bind(&OnMetricsReportingStateChanged, &value_after_change,
                  run_loop.QuitClosure()));

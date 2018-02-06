@@ -65,16 +65,14 @@ std::unique_ptr<base::DictionaryValue>
       std::make_unique<base::DictionaryValue>());
   dict->SetBoolean(
       "enabled",
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
-          g_browser_process->local_state()));
-  dict->SetBoolean("managed", IsMetricsReportingPolicyManaged(
-                                  g_browser_process->local_state()));
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  dict->SetBoolean("managed", IsMetricsReportingPolicyManaged());
   return dict;
 }
 
 void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
     const base::ListValue* args) {
-  if (IsMetricsReportingPolicyManaged(g_browser_process->local_state())) {
+  if (IsMetricsReportingPolicyManaged()) {
     NOTREACHED();
     // NOTE: ChangeMetricsReportingState() already checks whether metrics
     // reporting is managed by policy. Also, the UI really shouldn't be able to
@@ -86,9 +84,7 @@ void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
 
   bool enabled;
   CHECK(args->GetBoolean(0, &enabled));
-  ChangeMetricsReportingState(g_browser_process->local_state(),
-                              g_browser_process->GetMetricsServicesManager(),
-                              enabled);
+  ChangeMetricsReportingState(enabled);
 }
 
 void MetricsReportingHandler::OnPolicyChanged(const base::Value* previous,
