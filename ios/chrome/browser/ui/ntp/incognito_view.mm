@@ -35,12 +35,20 @@ GURL GetUrlWithLang(const GURL& url) {
   return google_util::AppendGoogleLocaleParam(url, locale);
 }
 
+const CGFloat kStackViewHorizontalMargin = 24.0;
+const CGFloat kStackViewMaxWidth = 416.0;
+const CGFloat kStackViewDefaultSpacing = 32.0;
+const CGFloat kStackViewImageSpacing = 24.0;
+const CGFloat kLayoutGuideVerticalMargin = 8.0;
+const CGFloat kLayoutGuideMinHeight = 12.0;
+
 const int kLinkColor = 0x03A9F4;
 }  // namespace
 
 @implementation IncognitoView {
   __weak id<UrlLoader> _loader;
   UIView* _containerView;
+  UIStackView* _stackView;
 
   // Constraint ensuring that |containerView| is at least as high as the
   // superview of the IncognitoNTPView, i.e. the Incognito panel.
@@ -61,15 +69,28 @@ const int kLinkColor = 0x03A9F4;
 
     self.alwaysBounceVertical = YES;
 
-    // Container in which all the subviews (image, labels, button) are added.
+    // Container to hold and vertically position the stack view.
     _containerView = [[UIView alloc] initWithFrame:frame];
     [_containerView setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+    // Stackview in which all the subviews (image, labels, button) are added.
+    _stackView = [[UIStackView alloc] init];
+    [_stackView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    _stackView.axis = UILayoutConstraintAxisVertical;
+    _stackView.spacing = kStackViewDefaultSpacing;
+    _stackView.distribution = UIStackViewDistributionFill;
+    _stackView.alignment = UIStackViewAlignmentCenter;
+    [_containerView addSubview:_stackView];
 
     // Incognito image.
     UIImageView* incognitoImage = [[UIImageView alloc]
         initWithImage:[UIImage imageNamed:@"incognito_icon"]];
     [incognitoImage setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [_containerView addSubview:incognitoImage];
+    [_stackView addArrangedSubview:incognitoImage];
+    if (@available(iOS 11.0, *)) {
+      [_stackView setCustomSpacing:kStackViewImageSpacing
+                         afterView:incognitoImage];
+    }
 
     // Title.
     UIFont* titleFont = [[MDCTypography fontLoader] lightFontOfSize:24];
@@ -77,7 +98,7 @@ const int kLinkColor = 0x03A9F4;
         [self labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_HEADING)
                          font:titleFont
                         alpha:0.8];
-    [_containerView addSubview:incognitoTabHeading];
+    [_stackView addArrangedSubview:incognitoTabHeading];
 
     // Description paragraph.
     UIFont* regularFont = [[MDCTypography fontLoader] regularFontOfSize:14];
@@ -85,14 +106,14 @@ const int kLinkColor = 0x03A9F4;
         labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_DESCRIPTION)
                    font:regularFont
                   alpha:0.7];
-    [_containerView addSubview:incognitoTabDescription];
+    [_stackView addArrangedSubview:incognitoTabDescription];
 
     // Warning paragraph.
     UILabel* incognitoTabWarning = [self
         labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_MESSAGE_WARNING)
                    font:regularFont
                   alpha:0.7];
-    [_containerView addSubview:incognitoTabWarning];
+    [_stackView addArrangedSubview:incognitoTabWarning];
 
     // Learn more button.
     MDCButton* learnMore = [[MDCFlatButton alloc] init];
@@ -111,59 +132,55 @@ const int kLinkColor = 0x03A9F4;
     [learnMore addTarget:self
                   action:@selector(learnMoreButtonPressed)
         forControlEvents:UIControlEventTouchUpInside];
-    [_containerView addSubview:learnMore];
+    [_stackView addArrangedSubview:learnMore];
 
-    // |topGuide| and |bottomGuide| exist to vertically center the sibling views
-    // located in between them.
+    // |topGuide| and |bottomGuide| exist to vertically position the stackview
+    // inside the container scrollview.
     UILayoutGuide* topGuide = [[UILayoutGuide alloc] init];
     UILayoutGuide* bottomGuide = [[UILayoutGuide alloc] init];
     [_containerView addLayoutGuide:topGuide];
     [_containerView addLayoutGuide:bottomGuide];
 
-    NSDictionary* viewsDictionary = @{
-      @"topGuide" : topGuide,
-      @"image" : incognitoImage,
-      @"heading" : incognitoTabHeading,
-      @"description" : incognitoTabDescription,
-      @"warning" : incognitoTabWarning,
-      @"learnMoreButton" : learnMore,
-      @"bottomGuide" : bottomGuide,
-    };
-    NSArray* constraints = @[
-      @"V:|-0-[topGuide(>=12)]-[image]-24-[heading]-32-[description]",
-      @"V:[description]-32-[warning]-32-[learnMoreButton]",
-      @"V:[learnMoreButton]-[bottomGuide]-0-|",
-      @"H:|-(>=24)-[heading]-(>=24)-|",
-      @"H:|-(>=24)-[description(==416@999)]-(>=24)-|",
-      @"H:|-(>=24)-[warning(==416@999)]-(>=24)-|"
-    ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(),
-                                      _containerView);
+    [NSLayoutConstraint activateConstraints:@[
+      // Position the stackview between the two guides.
+      [topGuide.topAnchor constraintEqualToAnchor:_containerView.topAnchor],
+      [_stackView.topAnchor constraintEqualToAnchor:topGuide.bottomAnchor
+                                           constant:kLayoutGuideVerticalMargin],
+      [bottomGuide.topAnchor
+          constraintEqualToAnchor:_stackView.bottomAnchor
+                         constant:kLayoutGuideVerticalMargin],
+      [_containerView.bottomAnchor
+          constraintEqualToAnchor:bottomGuide.bottomAnchor],
 
-    AddSameCenterXConstraint(_containerView, incognitoImage);
-    AddSameCenterXConstraint(_containerView, incognitoTabHeading);
-    AddSameCenterXConstraint(_containerView, incognitoTabDescription);
-    AddSameCenterXConstraint(_containerView, incognitoTabWarning);
-    AddSameCenterXConstraint(_containerView, learnMore);
+      // Center the stackview horizontally with a minimum margin.
+      [_stackView.leadingAnchor
+          constraintGreaterThanOrEqualToAnchor:_containerView.leadingAnchor
+                                      constant:kStackViewHorizontalMargin],
+      [_stackView.trailingAnchor
+          constraintLessThanOrEqualToAnchor:_containerView.trailingAnchor
+                                   constant:-kStackViewHorizontalMargin],
+      [_stackView.centerXAnchor
+          constraintEqualToAnchor:_containerView.centerXAnchor],
 
-    // The bottom guide is twice as big as the top guide.
-    [_containerView addConstraint:[NSLayoutConstraint
-                                      constraintWithItem:bottomGuide
-                                               attribute:NSLayoutAttributeHeight
-                                               relatedBy:NSLayoutRelationEqual
-                                                  toItem:topGuide
-                                               attribute:NSLayoutAttributeHeight
-                                              multiplier:2
-                                                constant:0]];
+      // Ensure that the stackview width is constrained.
+      [_stackView.widthAnchor
+          constraintLessThanOrEqualToConstant:kStackViewMaxWidth],
+
+      // Set a minimum top margin and make the bottom guide twice as tall as the
+      // top guide.
+      [topGuide.heightAnchor
+          constraintGreaterThanOrEqualToConstant:kLayoutGuideMinHeight],
+      [bottomGuide.heightAnchor constraintEqualToAnchor:topGuide.heightAnchor
+                                             multiplier:2.0],
+    ]];
 
     [self addSubview:_containerView];
 
     // Constraints comunicating the size of the contentView to the scrollview.
     // See UIScrollView autolayout information at
     // https://developer.apple.com/library/ios/releasenotes/General/RN-iOSSDK-6_0/index.html
-    viewsDictionary = @{@"containerView" : _containerView};
-    constraints = @[
+    NSDictionary* viewsDictionary = @{@"containerView" : _containerView};
+    NSArray* constraints = @[
       @"V:|-0-[containerView]-0-|",
       @"H:|-0-[containerView]-0-|",
     ];
