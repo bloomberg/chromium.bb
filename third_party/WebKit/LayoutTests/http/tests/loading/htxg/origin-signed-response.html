@@ -26,8 +26,6 @@ promise_test(function(t) {
       return promise;
     })
     .then((event) => {
-      // TODO(https://crbug.com/80374): Currently this URL is hard coded in
-      // SignedExchangeHandler.
       assert_equals(event.data.location, 'https://example.com/test.html');
     });
 }, 'Location of origin-signed HTTP response');
