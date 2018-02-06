@@ -87,9 +87,14 @@ promise_test(t => {
           return openWindow(kScope);
         })
       .then(win => {
-          assert_true(isUseCounted(win, kFeature));
-          assert_true(isUseCounted(win, kDeprecatedFeature));
-        });
+        // Check UseCounters have been sent to the new window. Since this is can
+        // happen after the new window's document load, an observer is used to
+        // wait until it happens.
+        return Promise.all([
+            observeUseCounter(win, kFeature),
+            observeUseCounter(win, kDeprecatedFeature)
+        ]);
+      })
   }, 'UseCounter on ServiceWorkerGlobalScope');
 
 promise_test(t => {
