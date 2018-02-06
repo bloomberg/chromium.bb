@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "services/identity/identity_service.h"
-#include "services/identity/public/interfaces/constants.mojom.h"
+#include "services/identity/public/mojom/constants.mojom.h"
 
 namespace {
 

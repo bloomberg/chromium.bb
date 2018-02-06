@@ -13,7 +13,7 @@
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/account_state.h"
-#include "services/identity/public/interfaces/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_manager.mojom.h"
 
 namespace extensions {
 

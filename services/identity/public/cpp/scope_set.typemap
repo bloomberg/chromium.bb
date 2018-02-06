@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/identity/public/interfaces/scope_set.mojom"
+mojom = "//services/identity/public/mojom/scope_set.mojom"
 public_headers = [ "//services/identity/public/cpp/scope_set.h" ]
 traits_headers = [ "//services/identity/public/cpp/scope_set_struct_traits.h" ]
 public_deps = [

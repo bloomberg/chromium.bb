@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/signin/core/browser/account_info.h"
-#include "services/identity/public/interfaces/account_info.mojom.h"
+#include "services/identity/public/mojom/account_info.mojom.h"
 
 namespace mojo {
 

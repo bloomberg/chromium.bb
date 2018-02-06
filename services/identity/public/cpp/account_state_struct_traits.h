@@ -6,7 +6,7 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_STRUCT_TRAITS_H_
 
 #include "services/identity/public/cpp/account_state.h"
-#include "services/identity/public/interfaces/account_state.mojom.h"
+#include "services/identity/public/mojom/account_state.mojom.h"
 
 namespace mojo {
 

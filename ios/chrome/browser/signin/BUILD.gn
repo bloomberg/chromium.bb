@@ -82,7 +82,7 @@ source_set("signin") {
     "//net",
     "//services/identity:lib",
     "//services/identity/public/cpp",
-    "//services/identity/public/interfaces",
+    "//services/identity/public/mojom",
     "//url",
   ]
 }

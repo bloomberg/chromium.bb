@@ -9,7 +9,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "services/identity/public/cpp/account_state.h"
-#include "services/identity/public/interfaces/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_manager.mojom.h"
 
 namespace extensions {
 

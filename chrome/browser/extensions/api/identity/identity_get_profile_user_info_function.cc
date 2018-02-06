@@ -10,7 +10,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/identity/public/interfaces/constants.mojom.h"
+#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {

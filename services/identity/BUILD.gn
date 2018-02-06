@@ -19,7 +19,7 @@ source_set("lib") {
     "//components/signin/core/browser",
     "//components/signin/core/browser:account_info",
     "//services/identity/public/cpp:cpp_types",
-    "//services/identity/public/interfaces",
+    "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
@@ -42,7 +42,7 @@ source_set("tests") {
     "//components/sync_preferences:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//services/identity/public/cpp",
-    "//services/identity/public/interfaces",
+    "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//testing/gmock",

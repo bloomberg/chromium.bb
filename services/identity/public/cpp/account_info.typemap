@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/identity/public/interfaces/account_info.mojom"
+mojom = "//services/identity/public/mojom/account_info.mojom"
 public_headers = [ "//components/signin/core/browser/account_info.h" ]
 traits_headers =
     [ "//services/identity/public/cpp/account_info_struct_traits.h" ]

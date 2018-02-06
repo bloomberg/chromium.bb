@@ -12,8 +12,8 @@
 #import "ios/testing/wait_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/service_manager_connection.h"
-#include "services/identity/public/interfaces/constants.mojom.h"
-#include "services/identity/public/interfaces/identity_manager.mojom.h"
+#include "services/identity/public/mojom/constants.mojom.h"
+#include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

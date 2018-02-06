@@ -8,7 +8,7 @@
 #include <string>
 
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/interfaces/google_service_auth_error.mojom.h"
+#include "services/identity/public/mojom/google_service_auth_error.mojom.h"
 
 namespace mojo {
 

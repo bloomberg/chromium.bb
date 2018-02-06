@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/interfaces/account.mojom.h"
+#include "services/identity/public/mojom/account.mojom.h"
 
 namespace identity {
 

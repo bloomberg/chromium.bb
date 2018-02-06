@@ -25,7 +25,7 @@ if (!is_ios && !is_android) {
     public_deps = [
       "//components/cryptauth",
       "//components/multidevice/service/public/interfaces",
-      "//services/identity/public/interfaces",
+      "//services/identity/public/mojom",
       "//services/service_manager/public/cpp",
     ]
   }

@@ -5,11 +5,11 @@
 module identity.mojom;
 
 import "mojo/common/time.mojom";
-import "services/identity/public/interfaces/account.mojom";
-import "services/identity/public/interfaces/account_info.mojom";
-import "services/identity/public/interfaces/account_state.mojom";
-import "services/identity/public/interfaces/google_service_auth_error.mojom";
-import "services/identity/public/interfaces/scope_set.mojom";
+import "services/identity/public/mojom/account.mojom";
+import "services/identity/public/mojom/account_info.mojom";
+import "services/identity/public/mojom/account_state.mojom";
+import "services/identity/public/mojom/google_service_auth_error.mojom";
+import "services/identity/public/mojom/scope_set.mojom";
 
 // Gives access to information about the user's Google accounts.
 interface IdentityManager {

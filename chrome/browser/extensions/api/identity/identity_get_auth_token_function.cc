@@ -28,7 +28,7 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/identity/public/cpp/scope_set.h"
-#include "services/identity/public/interfaces/constants.mojom.h"
+#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)

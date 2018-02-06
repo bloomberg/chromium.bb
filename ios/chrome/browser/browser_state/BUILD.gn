@@ -204,7 +204,7 @@ source_set("eg_tests") {
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public",
-    "//services/identity/public/interfaces",
+    "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }
