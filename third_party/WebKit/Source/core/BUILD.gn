@@ -2078,8 +2078,6 @@ jumbo_source_set("unit_tests") {
     "testing/sim/SimCanvas.h",
     "testing/sim/SimCompositor.cpp",
     "testing/sim/SimCompositor.h",
-    "testing/sim/SimDisplayItemList.cpp",
-    "testing/sim/SimDisplayItemList.h",
     "testing/sim/SimNetwork.cpp",
     "testing/sim/SimNetwork.h",
     "testing/sim/SimPage.cpp",

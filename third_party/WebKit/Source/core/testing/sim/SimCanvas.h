@@ -7,6 +7,7 @@
 
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
@@ -22,15 +23,28 @@ class SimCanvas : public SkCanvas {
     kShape,
   };
 
-  // TODO(esprehn): Ideally we'd put the text in here too, but SkTextBlob
-  // has no way to get the text back out so we can't assert about drawn text.
-  struct Command {
-    CommandType type;
-    RGBA32 color;
+  class Commands {
+   public:
+    size_t DrawCount() const { return commands_.size(); }
+    size_t DrawCount(CommandType, const String& color_string = String()) const;
+    bool Contains(CommandType type,
+                  const String& color_string = String()) const {
+      return DrawCount(type, color_string) > 0;
+    }
+
+   private:
+    struct Command {
+      CommandType type;
+      RGBA32 color;
+    };
+    Vector<Command> commands_;
+
+    friend class SimCanvas;
   };
 
-  const Vector<Command>& Commands() const { return commands_; }
+  const Commands& GetCommands() const { return commands_; }
 
+ private:
   // Rect
   void onDrawRect(const SkRect&, const SkPaint&) override;
 
@@ -72,10 +86,9 @@ class SimCanvas : public SkCanvas {
                       SkScalar y,
                       const SkPaint&) override;
 
- private:
   void AddCommand(CommandType, RGBA32 = 0);
 
-  Vector<Command> commands_;
+  Commands commands_;
 };
 
 }  // namespace blink

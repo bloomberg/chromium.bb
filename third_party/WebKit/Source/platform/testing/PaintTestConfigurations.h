@@ -32,7 +32,7 @@ class PaintTestConfigurations
             GetParam() & kUnderInvalidationChecking) {}
 };
 
-static constexpr unsigned kDefaultPaintTestConfigurations[] = {
+static constexpr unsigned kAllSlimmingPaintTestConfigurations[] = {
     0,
     kSlimmingPaintV175,
     kSlimmingPaintV2,
@@ -44,14 +44,6 @@ static constexpr unsigned kDefaultPaintTestConfigurations[] = {
 static constexpr unsigned kSlimmingPaintNonV1TestConfigurations[] = {
     kSlimmingPaintV175, kSlimmingPaintV175 | kRootLayerScrolling,
     kSlimmingPaintV2, kSlimmingPaintV2 | kRootLayerScrolling,
-};
-
-static constexpr unsigned kAllSlimmingPaintTestConfigurations[] = {
-    0,
-    kSlimmingPaintV175,
-    kSlimmingPaintV175 | kRootLayerScrolling,
-    kSlimmingPaintV2,
-    kSlimmingPaintV2 | kRootLayerScrolling,
 };
 
 static constexpr unsigned kSlimmingPaintV2TestConfigurations[] = {

@@ -11,7 +11,6 @@
 #include "core/resize_observer/ResizeObservation.h"
 #include "core/resize_observer/ResizeObserverController.h"
 #include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/loader/fetch/ScriptFetchOptions.h"

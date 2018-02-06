@@ -5,11 +5,11 @@
 #ifndef SimCompositor_h
 #define SimCompositor_h
 
+#include "core/testing/sim/SimCanvas.h"
 #include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
 
-class SimDisplayItemList;
 class WebViewImpl;
 
 // Simulated very basic compositor that's capable of running the BeginMainFrame
@@ -28,10 +28,17 @@ class SimCompositor final : public WebLayerTreeView {
 
   void SetWebView(WebViewImpl&);
 
-  // Execute the BeginMainFrame processing steps, an approximation of what
+  // Executes the BeginMainFrame processing steps, an approximation of what
   // cc::ThreadProxy::BeginMainFrame would do.
   // If time is not specified a 60Hz frame rate time progression is used.
-  SimDisplayItemList BeginFrame(double time_delta_in_seconds = 0.016);
+  // Returns all drawing commands that were issued during painting the frame
+  // (including cached ones).
+  SimCanvas::Commands BeginFrame(double time_delta_in_seconds = 0.016);
+
+  // Similar to BeginFrame() but doesn't require NeedsBeginFrame(). This is
+  // useful for testing the painting after a frame is throttled (for which
+  // we don't schedule a BeginFrame).
+  SimCanvas::Commands PaintFrame();
 
   bool NeedsBeginFrame() const { return needs_begin_frame_; }
   bool DeferCommits() const { return defer_commits_; }

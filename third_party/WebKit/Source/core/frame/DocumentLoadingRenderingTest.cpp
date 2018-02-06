@@ -11,7 +11,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -237,19 +236,21 @@ TEST_F(DocumentLoadingRenderingTest,
 
   main_resource.Complete(R"HTML(
     <!DOCTYPE html>
-    <body style='background: red'>
+    <body style='background: white'>
     <iframe id=frame src=frame.html style='border: none'></iframe>
     <p style='transform: translateZ(0)'>Hello World</p>
   )HTML");
 
   // Main page is ready to begin painting as there's no pending sheets.
-  // The frame is not yet loaded, so we only paint the top level page.
+  // The frame is not yet loaded, so we only paint the main frame.
   auto frame1 = Compositor().BeginFrame();
-  EXPECT_TRUE(frame1.Contains(SimCanvas::kText));
+  EXPECT_EQ(2u, frame1.DrawCount());
+  EXPECT_TRUE(frame1.Contains(SimCanvas::kText, "black"));
+  EXPECT_TRUE(frame1.Contains(SimCanvas::kRect, "white"));
 
   frame_resource.Complete(R"HTML(
     <!DOCTYPE html>
-    <style>html { background: pink }</style>
+    <style>html { background: pink; color: gray; }</style>
     <link rel=stylesheet href=test.css>
     <p style='background: yellow;'>Hello World</p>
     <div style='transform: translateZ(0); background: green;'>
@@ -268,16 +269,11 @@ TEST_F(DocumentLoadingRenderingTest,
 
   auto frame2 = Compositor().BeginFrame();
 
-  // The child frame still has pending sheets, and the parent frame has no
-  // invalid paint so we shouldn't draw any text.
-  EXPECT_FALSE(frame2.Contains(SimCanvas::kText));
-
-  // 1 for the main frame background (red).
-  // TODO(esprehn): If we were super smart we'd notice that the nested iframe is
-  // actually composited and not repaint the main frame, but that likely
-  // requires doing compositing and paint invalidation bottom up.
-  EXPECT_EQ(1, frame2.DrawCount());
-  EXPECT_TRUE(frame2.Contains(SimCanvas::kRect, "red"));
+  // The child frame still has pending sheets, so we should not paint it.
+  // Still only paint the main frame.
+  EXPECT_EQ(2u, frame2.DrawCount());
+  EXPECT_TRUE(frame2.Contains(SimCanvas::kText, "black"));
+  EXPECT_TRUE(frame2.Contains(SimCanvas::kRect, "white"));
 
   // Finish loading the sheets in the child frame. After it should issue a
   // paint invalidation for every layer when the frame becomes unthrottled.
@@ -286,7 +282,17 @@ TEST_F(DocumentLoadingRenderingTest,
   // First frame where all frames are loaded, should paint the text in the
   // child frame.
   auto frame3 = Compositor().BeginFrame();
-  EXPECT_TRUE(frame3.Contains(SimCanvas::kText));
+  EXPECT_EQ(10u, frame3.DrawCount());
+  // Paint commands for the main frame.
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kText, "black"));
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kRect, "white"));
+  // Paint commands for the child frame.
+  EXPECT_EQ(3u, frame3.DrawCount(SimCanvas::kText, "gray"));
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kRect, "pink"));
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kRect, "yellow"));
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kRect, "green"));
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kRect, "blue"));
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kRect, "red"));
 }
 
 namespace {
