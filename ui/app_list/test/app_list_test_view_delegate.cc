@@ -5,9 +5,11 @@
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/public/cpp/menu_utils.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "ui/app_list/app_list_switches.h"
@@ -66,14 +68,17 @@ void AppListTestViewDelegate::ActivateItem(const std::string& id,
   static_cast<AppListTestModel::AppListTestItem*>(item)->Activate(event_flags);
 }
 
-ui::MenuModel* AppListTestViewDelegate::GetContextMenuModel(
-    const std::string& id) {
+void AppListTestViewDelegate::GetContextMenuModel(
+    const std::string& id,
+    GetContextMenuModelCallback callback) {
   app_list::AppListItem* item = model_->FindItem(id);
   // TODO(stevenjb/jennyz): Implement this for folder items
-  if (!item || item->is_folder())
-    return nullptr;
-  return static_cast<AppListTestModel::AppListTestItem*>(item)
-      ->GetContextMenuModel();
+  ui::MenuModel* menu = nullptr;
+  if (item && !item->is_folder()) {
+    menu = static_cast<AppListTestModel::AppListTestItem*>(item)
+               ->GetContextMenuModel();
+  }
+  std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
 }
 
 }  // namespace test

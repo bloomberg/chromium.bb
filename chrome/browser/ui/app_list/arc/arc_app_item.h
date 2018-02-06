@@ -49,6 +49,9 @@ class ArcAppItem : public ChromeAppListItem,
   // Updates the app item's icon, if necessary making it gray.
   void UpdateIcon();
 
+  // ChromeAppListItem overrides:
+  app_list::AppContextMenu* GetAppContextMenu() override;
+
   std::unique_ptr<ArcAppIcon> arc_app_icon_;
   std::unique_ptr<ArcAppContextMenu> context_menu_;
 

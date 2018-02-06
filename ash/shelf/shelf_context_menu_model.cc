@@ -6,8 +6,10 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/menu_utils.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -29,39 +31,6 @@ using SubmenuList = std::vector<std::unique_ptr<ui::MenuModel>>;
 namespace ash {
 
 namespace {
-
-// Find a menu item by command id; returns a stub item if no match was found.
-const mojom::MenuItemPtr& GetItem(const MenuItemList& items, int command_id) {
-  const uint32_t id = base::checked_cast<uint32_t>(command_id);
-  static const mojom::MenuItemPtr item_not_found(mojom::MenuItem::New());
-  for (const mojom::MenuItemPtr& item : items) {
-    if (item->command_id == id)
-      return item;
-    if (item->type == ui::MenuModel::TYPE_SUBMENU &&
-        item->submenu.has_value()) {
-      const mojom::MenuItemPtr& submenu_item =
-          GetItem(item->submenu.value(), command_id);
-      if (submenu_item->command_id == id)
-        return submenu_item;
-    }
-  }
-  return item_not_found;
-}
-
-// A shelf context submenu model; used for shelf alignment.
-class ShelfContextSubMenuModel : public ui::SimpleMenuModel {
- public:
-  ShelfContextSubMenuModel(Delegate* delegate,
-                           const MenuItemList& items,
-                           SubmenuList* submenus)
-      : ui::SimpleMenuModel(delegate) {
-    ShelfContextMenuModel::AddItems(this, delegate, items, submenus);
-  }
-  ~ShelfContextSubMenuModel() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfContextSubMenuModel);
-};
 
 // Returns true if the user can modify the shelf's auto-hide behavior pref.
 bool CanUserModifyShelfAutoHide(PrefService* prefs) {
@@ -161,57 +130,18 @@ ShelfContextMenuModel::ShelfContextMenuModel(MenuItemList menu_items,
       display_id_(display_id) {
   // Append some menu items that are handled locally by Ash.
   AddLocalMenuItems(&menu_items_, display_id);
-  AddItems(this, this, menu_items_, &submenus_);
+  menu_utils::PopulateMenuFromMojoMenuItems(this, this, menu_items_,
+                                            &submenus_);
 }
 
 ShelfContextMenuModel::~ShelfContextMenuModel() = default;
 
-// static
-void ShelfContextMenuModel::AddItems(ui::SimpleMenuModel* model,
-                                     ui::SimpleMenuModel::Delegate* delegate,
-                                     const MenuItemList& items,
-                                     SubmenuList* submenus) {
-  for (const mojom::MenuItemPtr& item : items) {
-    switch (item->type) {
-      case ui::MenuModel::TYPE_COMMAND:
-        model->AddItem(item->command_id, item->label);
-        break;
-      case ui::MenuModel::TYPE_CHECK:
-        model->AddCheckItem(item->command_id, item->label);
-        break;
-      case ui::MenuModel::TYPE_RADIO:
-        model->AddRadioItem(item->command_id, item->label,
-                            item->radio_group_id);
-        break;
-      case ui::MenuModel::TYPE_SEPARATOR:
-        model->AddSeparator(ui::NORMAL_SEPARATOR);
-        break;
-      case ui::MenuModel::TYPE_BUTTON_ITEM:
-        NOTREACHED() << "TYPE_BUTTON_ITEM is not yet supported.";
-        break;
-      case ui::MenuModel::TYPE_SUBMENU:
-        if (item->submenu.has_value()) {
-          std::unique_ptr<ui::MenuModel> submenu =
-              std::make_unique<ShelfContextSubMenuModel>(
-                  delegate, item->submenu.value(), submenus);
-          model->AddSubMenu(item->command_id, item->label, submenu.get());
-          submenus->push_back(std::move(submenu));
-        }
-        break;
-    }
-    if (!item->image.isNull()) {
-      model->SetIcon(model->GetIndexOfCommandId(item->command_id),
-                     gfx::Image(item->image));
-    }
-  }
-}
-
 bool ShelfContextMenuModel::IsCommandIdChecked(int command_id) const {
-  return GetItem(menu_items_, command_id)->checked;
+  return menu_utils::GetMenuItemByCommandId(menu_items_, command_id)->checked;
 }
 
 bool ShelfContextMenuModel::IsCommandIdEnabled(int command_id) const {
-  return GetItem(menu_items_, command_id)->enabled;
+  return menu_utils::GetMenuItemByCommandId(menu_items_, command_id)->enabled;
 }
 
 void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {

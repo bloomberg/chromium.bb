@@ -5,9 +5,12 @@
 #include "ui/app_list/views/app_list_item_view.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/public/cpp/menu_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -280,15 +283,19 @@ void AppListItemView::OnContextMenuClosed(const base::TimeTicks& open_time) {
                       base::TimeTicks::Now() - open_time);
 }
 
-void AppListItemView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point,
-                                             ui::MenuSourceType source_type) {
-  if (context_menu_runner_ && context_menu_runner_->IsRunning())
+void AppListItemView::OnContextMenuModelReceived(
+    const gfx::Point& point,
+    ui::MenuSourceType source_type,
+    std::vector<ash::mojom::MenuItemPtr> menu) {
+  if (menu.empty() ||
+      (context_menu_runner_ && context_menu_runner_->IsRunning()))
     return;
 
-  ui::MenuModel* menu_model = delegate_->GetContextMenuModel(item_weak_->id());
-  if (!menu_model)
-    return;
+  // Reset and populate the context menu model.
+  context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+  ash::menu_utils::PopulateMenuFromMojoMenuItems(
+      context_menu_model_.get(), this, menu, &context_submenu_models_);
+  context_menu_items_ = std::move(menu);
 
   UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.AppGrid", source_type,
                             ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
@@ -298,14 +305,42 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
   int run_types = views::MenuRunner::HAS_MNEMONICS |
                   views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   context_menu_runner_.reset(new views::MenuRunner(
-      menu_model, run_types,
+      context_menu_model_.get(), run_types,
       base::Bind(&AppListItemView::OnContextMenuClosed,
                  weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now())));
   context_menu_runner_->RunMenuAt(GetWidget(), NULL,
                                   gfx::Rect(point, gfx::Size()),
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
+}
+
+void AppListItemView::ShowContextMenuForView(views::View* source,
+                                             const gfx::Point& point,
+                                             ui::MenuSourceType source_type) {
+  delegate_->GetContextMenuModel(
+      item_weak_->id(),
+      base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
+                     weak_ptr_factory_.GetWeakPtr(), point, source_type));
 
   source->RequestFocus();
+}
+
+bool AppListItemView::IsCommandIdChecked(int command_id) const {
+  return ash::menu_utils::GetMenuItemByCommandId(context_menu_items_,
+                                                 command_id)
+      ->checked;
+}
+
+bool AppListItemView::IsCommandIdEnabled(int command_id) const {
+  return ash::menu_utils::GetMenuItemByCommandId(context_menu_items_,
+                                                 command_id)
+      ->enabled;
+}
+
+void AppListItemView::ExecuteCommand(int command_id, int event_flags) {
+  if (item_weak_) {
+    delegate_->ContextMenuItemSelected(item_weak_->id(), command_id,
+                                       event_flags);
+  }
 }
 
 void AppListItemView::StateChanged(ButtonState old_state) {

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/shelf_struct_traits.h"
+#include "ash/public/cpp/shelf_struct_mojom_traits.h"
+
+#include <utility>
 
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_struct_traits_test_service.mojom.h"

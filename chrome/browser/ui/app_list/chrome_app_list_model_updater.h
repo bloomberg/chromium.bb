@@ -76,6 +76,9 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   size_t BadgedItemCount() override;
   ui::MenuModel* GetContextMenuModel(const std::string& id);
+  void ContextMenuItemSelected(const std::string& id,
+                               int command_id,
+                               int event_flags) override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(

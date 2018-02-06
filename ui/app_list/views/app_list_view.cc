@@ -5,6 +5,7 @@
 #include "ui/app_list/views/app_list_view.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
@@ -23,7 +24,6 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_util.h"
-#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
@@ -239,7 +239,8 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       previous_arrow_key_traversal_enabled_(
           views::FocusManager::arrow_key_traversal_enabled()),
       state_animation_metrics_reporter_(
-          std::make_unique<StateAnimationMetricsReporter>()) {
+          std::make_unique<StateAnimationMetricsReporter>()),
+      weak_ptr_factory_(this) {
   CHECK(delegate);
 
   display_observer_.Add(display::Screen::GetScreen());
@@ -1321,8 +1322,9 @@ float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   return coefficient * shield_opacity + (1 - coefficient) * shelf_opacity;
 }
 
-void AppListView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {
-  delegate_->GetWallpaperProminentColors(colors);
+void AppListView::GetWallpaperProminentColors(
+    AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
+  delegate_->GetWallpaperProminentColors(std::move(callback));
 }
 
 void AppListView::OnWallpaperColorsChanged() {
@@ -1336,10 +1338,13 @@ void AppListView::SetBackgroundShieldColor() {
   if (!app_list_background_shield_)
     return;
 
-  std::vector<SkColor> prominent_colors;
-  GetWallpaperProminentColors(&prominent_colors);
-  app_list_background_shield_->layer()->SetColor(
-      GetBackgroundShieldColor(prominent_colors));
+  GetWallpaperProminentColors(base::BindOnce(
+      [](base::WeakPtr<AppListView> self,
+         const std::vector<SkColor>& prominent_colors) {
+        self->app_list_background_shield_->layer()->SetColor(
+            GetBackgroundShieldColor(prominent_colors));
+      },
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AppListView::RecordFolderMetrics() {

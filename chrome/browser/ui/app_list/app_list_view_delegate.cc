@@ -12,6 +12,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
@@ -211,16 +212,25 @@ void AppListViewDelegate::ViewClosing() {
 }
 
 void AppListViewDelegate::GetWallpaperProminentColors(
-    std::vector<SkColor>* colors) {
-  *colors = wallpaper_prominent_colors_;
+    GetWallpaperProminentColorsCallback callback) {
+  std::move(callback).Run(wallpaper_prominent_colors_);
 }
 
 void AppListViewDelegate::ActivateItem(const std::string& id, int event_flags) {
   model_updater_->ActivateChromeItem(id, event_flags);
 }
 
-ui::MenuModel* AppListViewDelegate::GetContextMenuModel(const std::string& id) {
-  return model_updater_->GetContextMenuModel(id);
+void AppListViewDelegate::GetContextMenuModel(
+    const std::string& id,
+    GetContextMenuModelCallback callback) {
+  ui::MenuModel* menu = model_updater_->GetContextMenuModel(id);
+  std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
+}
+
+void AppListViewDelegate::ContextMenuItemSelected(const std::string& id,
+                                                  int command_id,
+                                                  int event_flags) {
+  model_updater_->ContextMenuItemSelected(id, command_id, event_flags);
 }
 
 void AppListViewDelegate::AddObserver(
