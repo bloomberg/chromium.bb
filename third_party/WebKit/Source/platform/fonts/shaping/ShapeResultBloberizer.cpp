@@ -170,7 +170,6 @@ inline bool IsSkipInkException(const ShapeResultBloberizer& bloberizer,
   // We want to skip descenders in general, but it is undesirable renderings for
   // CJK characters.
   return bloberizer.GetType() == ShapeResultBloberizer::Type::kTextIntercepts &&
-         !text.Is8Bit() &&
          !Character::CanTextDecorationSkipInk(
              text.CodepointAt(character_index));
 }
