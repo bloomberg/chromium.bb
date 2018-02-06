@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -18,20 +17,6 @@
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 
 namespace crypto {
-
-namespace {
-
-const EVP_MD* ToOpenSSLDigest(SignatureVerifier::HashAlgorithm hash_alg) {
-  switch (hash_alg) {
-    case SignatureVerifier::SHA1:
-      return EVP_sha1();
-    case SignatureVerifier::SHA256:
-      return EVP_sha256();
-  }
-  return nullptr;
-}
-
-}  // namespace
 
 struct SignatureVerifier::VerifyContext {
   bssl::ScopedEVP_MD_CTX ctx;
@@ -46,6 +31,8 @@ bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
                                    size_t signature_len,
                                    const uint8_t* public_key_info,
                                    size_t public_key_info_len) {
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
   int pkey_type = EVP_PKEY_NONE;
   const EVP_MD* digest = nullptr;
   switch (signature_algorithm) {
@@ -54,6 +41,7 @@ bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
       digest = EVP_sha1();
       break;
     case RSA_PKCS1_SHA256:
+    case RSA_PSS_SHA256:
       pkey_type = EVP_PKEY_RSA;
       digest = EVP_sha256();
       break;
@@ -65,41 +53,36 @@ bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
   DCHECK_NE(EVP_PKEY_NONE, pkey_type);
   DCHECK(digest);
 
-  return CommonInit(pkey_type, digest, signature, signature_len,
-                    public_key_info, public_key_info_len, nullptr);
-}
+  if (verify_context_)
+    return false;
 
-bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
-                                         HashAlgorithm mask_hash_alg,
-                                         size_t salt_len,
-                                         const uint8_t* signature,
-                                         size_t signature_len,
-                                         const uint8_t* public_key_info,
-                                         size_t public_key_info_len) {
-  OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  const EVP_MD* const digest = ToOpenSSLDigest(hash_alg);
-  DCHECK(digest);
-  if (!digest) {
+  verify_context_.reset(new VerifyContext);
+  signature_.assign(signature, signature + signature_len);
+
+  CBS cbs;
+  CBS_init(&cbs, public_key_info, public_key_info_len);
+  bssl::UniquePtr<EVP_PKEY> public_key(EVP_parse_public_key(&cbs));
+  if (!public_key || CBS_len(&cbs) != 0 ||
+      EVP_PKEY_id(public_key.get()) != pkey_type) {
     return false;
   }
 
   EVP_PKEY_CTX* pkey_ctx;
-  if (!CommonInit(EVP_PKEY_RSA, digest, signature, signature_len,
-                  public_key_info, public_key_info_len, &pkey_ctx)) {
+  if (!EVP_DigestVerifyInit(verify_context_->ctx.get(), &pkey_ctx, digest,
+                            nullptr, public_key.get())) {
     return false;
   }
 
-  int rv = EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, RSA_PKCS1_PSS_PADDING);
-  if (rv != 1)
-    return false;
-  const EVP_MD* const mgf_digest = ToOpenSSLDigest(mask_hash_alg);
-  DCHECK(mgf_digest);
-  if (!mgf_digest) {
-    return false;
+  if (signature_algorithm == RSA_PSS_SHA256) {
+    if (!EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, RSA_PKCS1_PSS_PADDING) ||
+        !EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx, digest) ||
+        !EVP_PKEY_CTX_set_rsa_pss_saltlen(
+            pkey_ctx, -1 /* match digest and salt length */)) {
+      return false;
+    }
   }
-  return EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx, mgf_digest) &&
-         EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx,
-                                          base::checked_cast<int>(salt_len));
+
+  return true;
 }
 
 void SignatureVerifier::VerifyUpdate(const uint8_t* data_part,
@@ -118,33 +101,6 @@ bool SignatureVerifier::VerifyFinal() {
                                  signature_.size());
   DCHECK_EQ(static_cast<int>(!!rv), rv);
   Reset();
-  return rv == 1;
-}
-
-bool SignatureVerifier::CommonInit(int pkey_type,
-                                   const EVP_MD* digest,
-                                   const uint8_t* signature,
-                                   size_t signature_len,
-                                   const uint8_t* public_key_info,
-                                   size_t public_key_info_len,
-                                   EVP_PKEY_CTX** pkey_ctx) {
-  if (verify_context_)
-    return false;
-
-  verify_context_.reset(new VerifyContext);
-
-  signature_.assign(signature, signature + signature_len);
-
-  CBS cbs;
-  CBS_init(&cbs, public_key_info, public_key_info_len);
-  bssl::UniquePtr<EVP_PKEY> public_key(EVP_parse_public_key(&cbs));
-  if (!public_key || CBS_len(&cbs) != 0 ||
-      EVP_PKEY_id(public_key.get()) != pkey_type) {
-    return false;
-  }
-
-  int rv = EVP_DigestVerifyInit(verify_context_->ctx.get(), pkey_ctx,
-                                digest, nullptr, public_key.get());
   return rv == 1;
 }
 
