@@ -281,6 +281,7 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceMultipleSources) {
 
 TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceWithAccessTimeouts) {
   const TimeDelta timeout(TimeDelta::FromMilliseconds(100));
+  LogSourceAccessManager::SetMaxNumBurstAccessesForTesting(1);
   LogSourceAccessManager::SetRateLimitingTimeoutForTesting(&timeout);
 
   base::SimpleTestTickClock* test_clock = new base::SimpleTestTickClock;
