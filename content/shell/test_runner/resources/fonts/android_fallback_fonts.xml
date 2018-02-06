@@ -7,17 +7,22 @@
     </family>
     <family>
         <fileset>
-            <file>kochi-mincho.ttf</file>
+            <file>Garuda.ttf</file>
         </fileset>
     </family>
     <family>
         <fileset>
-            <file>lohit_hi.ttf</file>
+            <file>Lohit-Devanagari.ttf</file>
         </fileset>
     </family>
     <family>
         <fileset>
-            <file>lohit_ta.ttf</file>
+            <file>Lohit-Gurmukhi.ttf</file>
+        </fileset>
+    </family>
+    <family>
+        <fileset>
+            <file>Lohit-Tamil.ttf</file>
         </fileset>
     </family>
     <family>
@@ -27,12 +32,7 @@
     </family>
     <family>
         <fileset>
-            <file>Garuda.ttf</file>
-        </fileset>
-    </family>
-    <family>
-        <fileset>
-            <file>lohit_pa.ttf</file>
+            <file>NotoSansKhmer-Regular.ttf</file>
         </fileset>
     </family>
 </familyset>
