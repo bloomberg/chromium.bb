@@ -129,10 +129,11 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
 
   // Ensures that the backgrounding / foregrounding gets a chance to run.
   void WaitForLauncherThread() {
+    base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        base::Bind(&base::DoNothing), base::MessageLoop::QuitWhenIdleClosure());
-    base::RunLoop().Run();
+        base::Bind(&base::DoNothing), run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
   }
 
   // Implicitly waits for the renderer process associated with the specified
