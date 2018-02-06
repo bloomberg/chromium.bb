@@ -25,6 +25,8 @@ class VirtualKeyboardDelegate {
   using OnKeyboardSettingsCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue> settings)>;
 
+  using OnSetModeCallback = base::OnceCallback<void(bool success)>;
+
   // Fetch information about the preferred configuration of the keyboard. On
   // exit, |settings| is populated with the keyboard configuration if execution
   // is successful, otherwise it's set to nullptr.
@@ -74,7 +76,9 @@ class VirtualKeyboardDelegate {
   virtual bool ShowLanguageSettings() = 0;
 
   // Sets virtual keyboard window mode.
-  virtual bool SetVirtualKeyboardMode(int mode_enum) = 0;
+  virtual bool SetVirtualKeyboardMode(
+      int mode_enum,
+      OnSetModeCallback on_set_mode_callback) = 0;
 
   // Sets virtual keyboard draggable area bounds.
   // Returns whether the draggable area is set successful.

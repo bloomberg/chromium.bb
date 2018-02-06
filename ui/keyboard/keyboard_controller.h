@@ -175,7 +175,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Sets the active container type. If the keyboard is currently shown, this
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
-  void SetContainerType(const ContainerType type);
   void SetContainerType(const ContainerType type,
                         base::OnceCallback<void(bool)> callback);
 

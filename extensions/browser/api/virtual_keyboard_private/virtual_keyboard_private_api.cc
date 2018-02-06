@@ -130,9 +130,16 @@ ExtensionFunction::ResponseAction VirtualKeyboardPrivateSetModeFunction::Run() {
   std::unique_ptr<keyboard::SetMode::Params> params =
       keyboard::SetMode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  if (!delegate()->SetVirtualKeyboardMode(params->mode))
+  if (!delegate()->SetVirtualKeyboardMode(
+          params->mode,
+          base::BindOnce(&VirtualKeyboardPrivateSetModeFunction::OnSetMode,
+                         this)))
     return RespondNow(Error(kVirtualKeyboardNotEnabled));
-  return RespondNow(NoArguments());
+  return RespondLater();
+}
+
+void VirtualKeyboardPrivateSetModeFunction::OnSetMode(bool success) {
+  Respond(OneArgument(std::make_unique<base::Value>(success)));
 }
 
 ExtensionFunction::ResponseAction

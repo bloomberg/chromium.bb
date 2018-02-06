@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/common/api/virtual_keyboard.h"
+#include "ui/keyboard/container_type.h"
 
 namespace media {
 class AudioSystem;
@@ -44,7 +45,8 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
                     int modifiers) override;
   bool ShowLanguageSettings() override;
   bool IsLanguageSettingsEnabled() override;
-  bool SetVirtualKeyboardMode(int mode_enum) override;
+  bool SetVirtualKeyboardMode(int mode_enum,
+                              OnSetModeCallback on_set_mode_callback) override;
   bool SetDraggableArea(
       const api::virtual_keyboard_private::Bounds& rect) override;
   bool SetRequestedKeyboardState(int state_enum) override;
@@ -57,6 +59,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
                          bool has_audio_input_devices);
   void DispatchConfigChangeEvent(
       std::unique_ptr<base::DictionaryValue> settings);
+  keyboard::ContainerType ConvertKeyboardModeToContainerType(int mode) const;
 
   content::BrowserContext* browser_context_;
   std::unique_ptr<media::AudioSystem> audio_system_;
