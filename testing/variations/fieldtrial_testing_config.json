@@ -2402,6 +2402,7 @@
                     "enable_features": [
                         "OmniboxUIExperimentHideSuggestionUrlScheme",
                         "OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains",
+                        "OmniboxUIExperimentShowSuggestionFavicons",
                         "OmniboxUIExperimentSwapTitleAndUrl",
                         "OmniboxUIExperimentVerticalMargin"
                     ]
