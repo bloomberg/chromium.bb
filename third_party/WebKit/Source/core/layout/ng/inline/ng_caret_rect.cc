@@ -415,8 +415,11 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
       current_line = ToNGPhysicalLineBoxFragment(child.fragment.get());
     }
 
-    // Every inline fragment should have a line box (inclusive) ancestor.
-    DCHECK(current_line);
+    if (!current_line) {
+      // Floats and out-of-flow positioned children are not in any line box;
+      // they don't have caret positions by their sides, either.
+      continue;
+    }
 
     const CaretPositionResolution resolution =
         TryResolveCaretPositionWithFragment(*child.fragment, *current_line,
