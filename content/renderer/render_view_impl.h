@@ -372,8 +372,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                         const ui::LatencyInfo& latency_info,
                         HandledEventCallback callback) override;
 
-  void UpdateWebViewWithDeviceScaleFactor();
-
   bool renderer_wide_named_frame_lookup() {
     return renderer_wide_named_frame_lookup_;
   }

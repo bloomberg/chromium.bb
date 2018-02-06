@@ -92,6 +92,7 @@
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "third_party/WebKit/public/web/WebRange.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebTappedInfo.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
@@ -333,6 +334,33 @@ ui::TextInputMode ConvertWebTextInputMode(blink::WebTextInputMode mode) {
   DCHECK_LE(mode, static_cast<int>(ui::TEXT_INPUT_MODE_MAX))
       << "blink::WebTextInputMode and ui::TextInputMode not synchronized";
   return static_cast<ui::TextInputMode>(mode);
+}
+
+// Returns true if the device scale is high enough that losing subpixel
+// antialiasing won't have a noticeable effect on text quality.
+static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // On Android, we never have subpixel antialiasing. On Chrome OS we prefer to
+  // composite all scrollers so that we get animated overlay scrollbars.
+  return true;
+#else
+  // 1.5 is a common touchscreen tablet device scale factor. For such
+  // devices main thread antialiasing is a heavy burden.
+  return device_scale_factor >= 1.5f;
+#endif
+}
+
+static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
+                                       float device_scale_factor) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
+    return false;
+  if (command_line.HasSwitch(switches::kEnablePreferCompositingToLCDText))
+    return true;
+  if (!compositor_deps->IsLcdTextEnabled())
+    return true;
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
 }  // namespace
@@ -1700,6 +1728,22 @@ void RenderWidget::CloseWebWidget() {
   }
 }
 
+void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {
+  blink::WebFrameWidget* frame_widget = GetFrameWidget();
+  blink::WebFrame* current_frame =
+      frame_widget ? frame_widget->LocalRoot() : nullptr;
+  blink::WebView* webview = current_frame ? current_frame->View() : nullptr;
+  if (webview) {
+    if (IsUseZoomForDSFEnabled())
+      webview->SetZoomFactorForDeviceScaleFactor(device_scale_factor_);
+    else
+      webview->SetDeviceScaleFactor(device_scale_factor_);
+
+    webview->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+        PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
+  }
+}
+
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   blink::WebWidget* web_widget = GetWebWidget();
   if (!web_widget)
@@ -1911,6 +1955,7 @@ void RenderWidget::OnDeviceScaleFactorChanged() {
     compositor_->SetPaintedDeviceScaleFactor(GetOriginalDeviceScaleFactor());
   else
     compositor_->SetDeviceScaleFactor(device_scale_factor_);
+  UpdateWebViewWithDeviceScaleFactor();
 }
 
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {

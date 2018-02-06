@@ -1125,6 +1125,7 @@ test("content_browsertests") {
   if (use_aura) {
     deps += [
       "//ui/aura",
+      "//ui/aura:test_support",
       "//ui/touch_selection:test_support",
       "//ui/touch_selection:touch_selection",
     ]
