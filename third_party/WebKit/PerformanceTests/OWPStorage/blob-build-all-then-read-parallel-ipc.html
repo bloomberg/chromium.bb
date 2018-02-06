@@ -1,12 +1,12 @@
 <!doctype html>
-<title>Blob Build All Then Read in Parallel (2 bytes)</title>
+<title>Blob Build All Then Read in Parallel (ipc)</title>
 <body>
 <script src="../resources/runner.js"></script>
 <script src="resources/shared.js"></script>
 <script>
 let test = {
   description:
-    'Benchmark for creating 80 2-byte blobs and reading them in parallel.',
+    'Benchmark for creating 80 1KB blobs and reading them in parallel.',
   unit: 'ms',
   iterationCount: 5,
   tracingCategories: 'Blob',
@@ -15,7 +15,7 @@ let test = {
     'BlobRequest::ReadRawData', 'BlobRequest'
   ],
   path: 'resources/blob-build-all-then-read-parallel-runner.html',
-  params: { size: 2, numBlobs: 80 }
+  params: { size: 1024, numBlobs: 80 }
 };
 PerfTestRunner.measurePageLoadTimeAfterDoneMessage(test);
 </script>

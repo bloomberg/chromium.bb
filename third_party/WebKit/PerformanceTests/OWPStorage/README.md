@@ -8,12 +8,12 @@ This models an offline load of a Google doc. See [this document](https://docs.go
 
 # Blob Build All Then Read Serially
 
-This benchmark models the creation and reading of a large number of blobs. The blobs are created first, then read one at a time.
+This benchmark models the creation and reading of a large number of blobs. The blobs are created first, then read one at a time. The different versions of this test exercise different transport modes.
 
 # Blob Build All Then Read in Parallel
 
-This benchmark models the creation and reading of a large number of blobs. The blobs are created first, then read all at once.
+This benchmark models the creation and reading of a large number of blobs. The blobs are created first, then read all at once. The different versions of this test exercise different transport modes.
 
 # Blob Build And Read Immediately
 
-This benchmark models the creation and reading of a large number of blobs. Each blob is read immediately after creation.
+This benchmark models the creation and reading of a large number of blobs. Each blob is read immediately after creation. The different versions of this test exercise different transport modes.

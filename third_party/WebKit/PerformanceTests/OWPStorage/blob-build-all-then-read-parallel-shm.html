@@ -1,21 +1,22 @@
 <!doctype html>
-<title>Blob Build All Then Read in Parallel (2 bytes)</title>
+<title>Blob Build All Then Read in Parallel (shared memory)</title>
 <body>
 <script src="../resources/runner.js"></script>
 <script src="resources/shared.js"></script>
 <script>
+// Meant to test the shared memory transportation.
 let test = {
   description:
-    'Benchmark for creating 80 2-byte blobs and reading them in parallel.',
+    'Benchmark for creating 20 11MB blobs and reading them in parallel.',
   unit: 'ms',
-  iterationCount: 5,
+  iterationCount: 6,
   tracingCategories: 'Blob',
   traceEventsToMeasure: [
     'BlobReader::ReadBytesItem', 'Registry::RegisterBlob',
     'BlobRequest::ReadRawData', 'BlobRequest'
   ],
   path: 'resources/blob-build-all-then-read-parallel-runner.html',
-  params: { size: 2, numBlobs: 80 }
+  params: { size: 11 * 1024 * 1024, numBlobs: 20 }
 };
 PerfTestRunner.measurePageLoadTimeAfterDoneMessage(test);
 </script>

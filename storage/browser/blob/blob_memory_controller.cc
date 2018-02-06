@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/small_map.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -43,6 +44,11 @@ namespace {
 constexpr int64_t kUnknownDiskAvailability = -1ll;
 constexpr uint64_t kMegabyte = 1024ull * 1024;
 const int64_t kMinSecondsForPressureEvictions = 30;
+
+// Specifies the size at which blob data will be transported by file instead of
+// memory. Overrides internal logic and allows perf tests to use the file path.
+const char kBlobFileTransportMinSizeSwitch[] =
+    "blob-transport-by-file-min-size";
 
 using FileCreationInfo = BlobMemoryController::FileCreationInfo;
 using MemoryAllocation = BlobMemoryController::MemoryAllocation;
@@ -367,7 +373,11 @@ class BlobMemoryController::FileQuotaAllocationTask
     // Get the file sizes and total size.
     uint64_t total_size =
         GetTotalSizeAndFileSizes(unreserved_file_items, &file_sizes_);
-    DCHECK_LE(total_size, controller_->GetAvailableFileSpaceForBlobs());
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (LIKELY(!command_line->HasSwitch(kBlobFileTransportMinSizeSwitch))) {
+      DCHECK_LE(total_size, controller_->GetAvailableFileSpaceForBlobs());
+    }
     allocation_size_ = total_size;
 
     // Check & set our item states.
@@ -559,14 +569,27 @@ BlobMemoryController::Strategy BlobMemoryController::DetermineStrategy(
       preemptive_transported_bytes <= GetAvailableMemoryForBlobs()) {
     return Strategy::NONE_NEEDED;
   }
+
+  if (total_transportation_bytes <= limits_.max_ipc_memory_size)
+    return Strategy::IPC;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (UNLIKELY(command_line->HasSwitch(kBlobFileTransportMinSizeSwitch))) {
+    uint64_t override_min_size = 0;
+    if (file_paging_enabled_ &&
+        base::StringToUint64(
+            command_line->GetSwitchValueASCII(kBlobFileTransportMinSizeSwitch),
+            &override_min_size) &&
+        total_transportation_bytes >= override_min_size) {
+      return Strategy::FILE;
+    }
+  }
   if (file_paging_enabled_ &&
       total_transportation_bytes <= GetAvailableFileSpaceForBlobs() &&
       total_transportation_bytes > limits_.memory_limit_before_paging()) {
     return Strategy::FILE;
   }
-  if (total_transportation_bytes > limits_.max_ipc_memory_size)
-    return Strategy::SHARED_MEMORY;
-  return Strategy::IPC;
+  return Strategy::SHARED_MEMORY;
 }
 
 bool BlobMemoryController::CanReserveQuota(uint64_t size) const {

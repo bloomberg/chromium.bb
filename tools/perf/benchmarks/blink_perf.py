@@ -416,6 +416,12 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   tag = 'owp_storage'
   subdir = 'OWPStorage'
 
+  # This ensures that all blobs >= 20MB will be transported by files.
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--blob-transport-by-file-min-size=20971520',
+    ])
+
 
 @benchmark.Owner(emails=['wangxianzhu@chromium.org'])
 class BlinkPerfPaint(_BlinkPerfBenchmark):
