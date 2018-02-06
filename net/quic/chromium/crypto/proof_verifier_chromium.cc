@@ -518,36 +518,28 @@ bool ProofVerifierChromium::Job::VerifySignature(
     return false;
   }
 
-  crypto::SignatureVerifier verifier;
-
   size_t size_bits;
   X509Certificate::PublicKeyType type;
   X509Certificate::GetPublicKeyInfo(cert_->cert_buffer(), &size_bits, &type);
-  if (type == X509Certificate::kPublicKeyTypeRSA) {
-    crypto::SignatureVerifier::HashAlgorithm hash_alg =
-        crypto::SignatureVerifier::SHA256;
-    crypto::SignatureVerifier::HashAlgorithm mask_hash_alg = hash_alg;
-    unsigned int hash_len = 32;  // 32 is the length of a SHA-256 hash.
+  crypto::SignatureVerifier::SignatureAlgorithm algorithm;
+  switch (type) {
+    case X509Certificate::kPublicKeyTypeRSA:
+      algorithm = crypto::SignatureVerifier::RSA_PSS_SHA256;
+      break;
+    case X509Certificate::kPublicKeyTypeECDSA:
+      algorithm = crypto::SignatureVerifier::ECDSA_SHA256;
+      break;
+    default:
+      LOG(ERROR) << "Unsupported public key type " << type;
+      return false;
+  }
 
-    bool ok = verifier.VerifyInitRSAPSS(
-        hash_alg, mask_hash_alg, hash_len,
-        reinterpret_cast<const uint8_t*>(signature.data()), signature.size(),
-        reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
-    if (!ok) {
-      DLOG(WARNING) << "VerifyInitRSAPSS failed";
-      return false;
-    }
-  } else if (type == X509Certificate::kPublicKeyTypeECDSA) {
-    if (!verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256,
-                             reinterpret_cast<const uint8_t*>(signature.data()),
-                             signature.size(),
-                             reinterpret_cast<const uint8_t*>(spki.data()),
-                             spki.size())) {
-      DLOG(WARNING) << "VerifyInit failed";
-      return false;
-    }
-  } else {
-    LOG(ERROR) << "Unsupported public key type " << type;
+  crypto::SignatureVerifier verifier;
+  if (!verifier.VerifyInit(
+          algorithm, reinterpret_cast<const uint8_t*>(signature.data()),
+          signature.size(), reinterpret_cast<const uint8_t*>(spki.data()),
+          spki.size())) {
+    DLOG(WARNING) << "VerifyInit failed";
     return false;
   }
 
