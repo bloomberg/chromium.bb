@@ -912,7 +912,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.video_fullscreen_detection_enabled);
   settings->SetEmbeddedMediaExperienceEnabled(
       prefs.embedded_media_experience_enabled);
-  settings->SetImmersiveModeEnabled(prefs.immersive_mode_enabled);
+  settings->SetPagePopupsSuppressed(prefs.page_popups_suppressed);
   settings->SetMediaDownloadInProductHelpEnabled(
       prefs.enable_media_download_in_product_help);
   settings->SetDoNotUpdateSelectionOnMutatingSelectionRange(
