@@ -9,9 +9,9 @@
 
 #include <memory>
 
+#include "base/containers/ring_buffer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/base/ring_buffer.h"
 
 namespace cc {
 
@@ -40,7 +40,7 @@ class FrameRateCounter {
   void GetMinAndMaxFPS(double* min_fps, double* max_fps) const;
   double GetAverageFPS() const;
 
-  typedef RingBuffer<base::TimeTicks, 136> RingBufferType;
+  typedef base::RingBuffer<base::TimeTicks, 136> RingBufferType;
   RingBufferType::Iterator begin() const { return ring_buffer_.Begin(); }
   RingBufferType::Iterator end() const { return ring_buffer_.End(); }
 

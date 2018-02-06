@@ -10,9 +10,9 @@
 
 #include <memory>
 
+#include "base/containers/ring_buffer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/base/ring_buffer.h"
 
 namespace cc {
 
@@ -36,7 +36,7 @@ class MemoryHistory {
 
   void SaveEntry(const Entry& entry);
 
-  typedef RingBuffer<Entry, 80> RingBufferType;
+  typedef base::RingBuffer<Entry, 80> RingBufferType;
   RingBufferType::Iterator Begin() const { return ring_buffer_.Begin(); }
   RingBufferType::Iterator End() const { return ring_buffer_.End(); }
 

@@ -2,16 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_RING_BUFFER_H_
-#define CC_BASE_RING_BUFFER_H_
+#ifndef BASE_CONTAINERS_RING_BUFFER_H_
+#define BASE_CONTAINERS_RING_BUFFER_H_
 
 #include <stddef.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
 
-namespace cc {
+namespace base {
 
+// base::RingBuffer uses a fixed-size array, unlike base::circular_deque and
+// std::deque, and so, one can access only the last |kSize| elements. Also, you
+// can add elements to the front and read/modify random elements, but cannot
+// remove elements from the back. Therefore, it does not have a |Size| method,
+// only |BufferSize|, which is a constant, and |CurrentIndex|, which is the
+// number of elements added so far.
+//
+// If the above is sufficient for your use case, base::RingBuffer should be more
+// efficient than base::circular_deque.
 template <typename T, size_t kSize>
 class RingBuffer {
  public:
@@ -105,6 +114,6 @@ class RingBuffer {
   DISALLOW_COPY_AND_ASSIGN(RingBuffer);
 };
 
-}  // namespace cc
+}  // namespace base
 
-#endif  // CC_BASE_RING_BUFFER_H_
+#endif  // BASE_CONTAINERS_RING_BUFFER_H_
