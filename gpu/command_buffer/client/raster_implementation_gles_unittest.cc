@@ -693,10 +693,12 @@ TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
   display_list->Finalize();
 
   ImageProviderStub image_provider;
-  const gfx::Vector2d translate(1, 2);
+  const gfx::Size content_size(100, 200);
+  const gfx::Rect full_raster_rect(2, 3, 8, 9);
   const gfx::Rect playback_rect(3, 4, 5, 6);
   const gfx::Vector2dF post_translate(7.0f, 8.0f);
   const GLfloat post_scale = 9.0f;
+  bool requires_clear = false;
 
   constexpr const GLsizeiptr kBufferSize = 16 << 10;
   char buffer[kBufferSize];
@@ -704,8 +706,10 @@ TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
   EXPECT_CALL(*gl_, MapRasterCHROMIUM(Le(kBufferSize)))
       .WillOnce(Return(buffer));
   EXPECT_CALL(*gl_, UnmapRasterCHROMIUM(Gt(0))).Times(1);
-  ri_->RasterCHROMIUM(display_list.get(), &image_provider, translate,
-                      playback_rect, post_translate, post_scale);
+
+  ri_->RasterCHROMIUM(display_list.get(), &image_provider, content_size,
+                      full_raster_rect, playback_rect, post_translate,
+                      post_scale, requires_clear);
 }
 
 TEST_F(RasterImplementationGLESTest, EndRasterCHROMIUM) {

@@ -13,6 +13,7 @@
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -244,13 +245,15 @@ void PaintOpWriter::Write(const PaintShader* shader) {
   Write(shader->image_);
   if (shader->record_) {
     Write(true);
-    base::Optional<PaintOpBufferSerializer::Preamble> preamble;
+    base::Optional<gfx::Rect> playback_rect;
+    base::Optional<gfx::SizeF> post_scale;
     if (shader->tile_scale()) {
-      preamble.emplace();
-      preamble->playback_rect = gfx::SkRectToRectF(shader->tile());
-      preamble->post_scale = *shader->tile_scale();
+      playback_rect.emplace(
+          gfx::ToEnclosingRect(gfx::SkRectToRectF(shader->tile())));
+      post_scale.emplace(*shader->tile_scale());
     }
-    Write(shader->record_.get(), std::move(preamble));
+    Write(shader->record_.get(), std::move(playback_rect),
+          std::move(post_scale));
   } else {
     Write(false);
   }
@@ -565,9 +568,10 @@ void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
   Write(filter.input().get());
 }
 
-void PaintOpWriter::Write(
-    const PaintRecord* record,
-    base::Optional<PaintOpBufferSerializer::Preamble> preamble) {
+void PaintOpWriter::Write(const PaintRecord* record,
+                          base::Optional<gfx::Rect> playback_rect,
+                          base::Optional<gfx::SizeF> post_scale) {
+  DCHECK_EQ(playback_rect.has_value(), post_scale.has_value());
   // We need to record how many bytes we will serialize, but we don't know this
   // information until we do the serialization. So, skip the amount needed
   // before writing.
@@ -593,10 +597,11 @@ void PaintOpWriter::Write(
 
   SimpleBufferSerializer serializer(memory_, remaining_bytes_, image_provider_,
                                     transfer_cache_);
-  if (preamble)
-    serializer.Serialize(record, nullptr, *preamble);
-  else
+  if (playback_rect) {
+    serializer.Serialize(record, *playback_rect, *post_scale);
+  } else {
     serializer.Serialize(record);
+  }
 
   if (!serializer.valid()) {
     valid_ = false;

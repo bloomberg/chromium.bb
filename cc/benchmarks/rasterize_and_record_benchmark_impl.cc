@@ -71,8 +71,9 @@ void RunBenchmark(RasterSource* raster_source,
       settings.image_provider = &image_provider;
 
       raster_source->PlaybackToCanvas(
-          &canvas, gfx::ColorSpace(), content_rect, content_rect,
-          gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()), settings);
+          &canvas, gfx::ColorSpace(), content_rect.size(), content_rect,
+          content_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+          settings);
 
       timer.NextLap();
     } while (!timer.HasTimeLimitExpired());

@@ -17,12 +17,6 @@
 
 namespace {
 
-#ifdef NDEBUG
-const bool kDefaultClearCanvasSetting = false;
-#else
-const bool kDefaultClearCanvasSetting = true;
-#endif
-
 // We don't perform per-layer solid color analysis when there are too many skia
 // operations.
 const int kMaxOpsToAnalyzeForLayer = 10;
@@ -35,7 +29,6 @@ RecordingSource::RecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
       requires_clear_(false),
       is_solid_color_(false),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       solid_color_(SK_ColorTRANSPARENT),
       background_color_(SK_ColorTRANSPARENT),
       recording_scale_factor_(1.f) {}

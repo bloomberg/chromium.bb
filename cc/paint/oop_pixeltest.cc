@@ -34,6 +34,16 @@
 namespace cc {
 namespace {
 
+scoped_refptr<DisplayItemList> MakeNoopDisplayItemList() {
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<SaveOp>();
+  display_item_list->push<RestoreOp>();
+  display_item_list->EndPaintOfUnpaired(gfx::Rect(10000, 10000));
+  display_item_list->Finalize();
+  return display_item_list;
+}
+
 class NoOpImageProvider : public ImageProvider {
  public:
   ~NoOpImageProvider() override = default;
@@ -111,17 +121,24 @@ class OopPixelTest : public testing::Test {
     bool use_lcd_text = false;
     bool use_distance_field_text = false;
     SkColorType color_type = kRGBA_8888_SkColorType;
-    gfx::Rect bitmap_rect;
+    gfx::Size resource_size;
+    gfx::Size content_size;
+    gfx::Rect full_raster_rect;
     gfx::Rect playback_rect;
     gfx::Vector2dF post_translate = {0.f, 0.f};
     float post_scale = 1.f;
     gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+    bool requires_clear = false;
+    bool preclear = false;
+    SkColor preclear_color;
   };
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const gfx::Size& playback_size) {
     RasterOptions options;
-    options.bitmap_rect = gfx::Rect(playback_size);
+    options.resource_size = playback_size;
+    options.content_size = options.resource_size;
+    options.full_raster_rect = gfx::Rect(playback_size);
     options.playback_rect = gfx::Rect(playback_size);
     return Raster(display_item_list, options);
   }
@@ -129,8 +146,8 @@ class OopPixelTest : public testing::Test {
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const RasterOptions& options) {
     gpu::gles2::GLES2Interface* gl = context_->GetImplementation();
-    int width = options.bitmap_rect.width();
-    int height = options.bitmap_rect.height();
+    int width = options.resource_size.width();
+    int height = options.resource_size.height();
 
     // Create and allocate a texture on the raster interface.
     GLuint raster_texture_id;
@@ -144,17 +161,26 @@ class OopPixelTest : public testing::Test {
     EXPECT_EQ(raster_implementation_->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 
+    RasterColorSpace color_space(options.color_space, ++color_space_id_);
+
+    if (options.preclear) {
+      raster_implementation_->BeginRasterCHROMIUM(
+          raster_texture_id, options.preclear_color, options.msaa_sample_count,
+          options.use_lcd_text, options.use_distance_field_text,
+          options.color_type, color_space);
+      raster_implementation_->EndRasterCHROMIUM();
+    }
+
     // "Out of process" raster! \o/
 
     raster_implementation_->BeginRasterCHROMIUM(
         raster_texture_id, options.background_color, options.msaa_sample_count,
         options.use_lcd_text, options.use_distance_field_text,
-        options.color_type,
-        RasterColorSpace(options.color_space, ++color_space_id_));
+        options.color_type, color_space);
     raster_implementation_->RasterCHROMIUM(
-        display_item_list.get(), &image_provider_,
-        options.bitmap_rect.OffsetFromOrigin(), options.playback_rect,
-        options.post_translate, options.post_scale);
+        display_item_list.get(), &image_provider_, options.content_size,
+        options.full_raster_rect, options.playback_rect, options.post_translate,
+        options.post_scale, options.requires_clear);
     raster_implementation_->EndRasterCHROMIUM();
 
     // Produce a mailbox and insert an ordering barrier (assumes the raster
@@ -200,10 +226,10 @@ class OopPixelTest : public testing::Test {
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(width, height);
-    SkPixmap pixmap(SkImageInfo::MakeN32Premul(options.bitmap_rect.width(),
-                                               options.bitmap_rect.height()),
+    SkPixmap pixmap(SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                               options.resource_size.height()),
                     colors.data(),
-                    options.bitmap_rect.width() * sizeof(SkColor));
+                    options.resource_size.width() * sizeof(SkColor));
     bitmap.writePixels(pixmap);
     return bitmap;
   }
@@ -212,7 +238,8 @@ class OopPixelTest : public testing::Test {
       scoped_refptr<DisplayItemList> display_item_list,
       const gfx::Size& playback_size) {
     RasterOptions options;
-    options.bitmap_rect = gfx::Rect(playback_size);
+    options.resource_size = playback_size;
+    options.full_raster_rect = gfx::Rect(playback_size);
     options.playback_rect = gfx::Rect(playback_size);
     return RasterExpectedBitmap(display_item_list, options);
   }
@@ -227,17 +254,15 @@ class OopPixelTest : public testing::Test {
     recording.UpdateDisplayItemList(display_item_list, 0u, 1.f);
     recording.SetBackgroundColor(options.background_color);
     Region fake_invalidation;
-    gfx::Rect layer_rect(
-        gfx::Size(options.bitmap_rect.right(), options.bitmap_rect.bottom()));
+    gfx::Rect layer_rect(gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom()));
     recording.UpdateAndExpandInvalidation(&fake_invalidation, layer_rect.size(),
                                           layer_rect);
+    recording.SetRequiresClear(options.requires_clear);
 
     auto raster_source = recording.CreateRasterSource();
     RasterSource::PlaybackSettings settings;
     settings.use_lcd_text = options.use_lcd_text;
-    // OOP raster does not support the complicated debug color clearing from
-    // RasterSource::ClearCanvasForPlayback, so disable it for consistency.
-    settings.clear_canvas_before_raster = false;
     // TODO(enne): add a fake image provider here.
 
     uint32_t flags = options.use_distance_field_text
@@ -258,39 +283,51 @@ class OopPixelTest : public testing::Test {
         gl, capabilities, max_resource_cache_bytes,
         max_glyph_cache_texture_bytes);
     SkImageInfo image_info = SkImageInfo::MakeN32Premul(
-        options.bitmap_rect.width(), options.bitmap_rect.height());
+        options.resource_size.width(), options.resource_size.height());
     auto surface = SkSurface::MakeRenderTarget(scoped_grcontext.get(),
                                                SkBudgeted::kYes, image_info);
     SkCanvas* canvas = surface->getCanvas();
-    canvas->drawColor(options.background_color);
+    if (options.preclear)
+      canvas->drawColor(options.preclear_color);
+    else
+      canvas->drawColor(options.background_color);
 
     gfx::AxisTransform2d raster_transform(options.post_scale,
                                           options.post_translate);
-    raster_source->PlaybackToCanvas(canvas, options.color_space,
-                                    options.bitmap_rect, options.playback_rect,
-                                    raster_transform, settings);
+    gfx::ColorSpace target_color_space;
+    raster_source->PlaybackToCanvas(
+        canvas, options.color_space, options.content_size,
+        options.full_raster_rect, options.playback_rect, raster_transform,
+        settings);
     surface->prepareForExternalIO();
     EXPECT_EQ(gl->GetError(), static_cast<unsigned>(GL_NO_ERROR));
 
     SkBitmap bitmap;
     SkImageInfo info = SkImageInfo::Make(
-        options.bitmap_rect.width(), options.bitmap_rect.height(),
+        options.resource_size.width(), options.resource_size.height(),
         SkColorType::kBGRA_8888_SkColorType, SkAlphaType::kPremul_SkAlphaType);
-    bitmap.allocPixels(info, options.bitmap_rect.width() * 4);
+    bitmap.allocPixels(info, options.resource_size.width() * 4);
     bool success = surface->readPixels(bitmap, 0, 0);
     CHECK(success);
     EXPECT_EQ(gl->GetError(), static_cast<unsigned>(GL_NO_ERROR));
     return bitmap;
   }
 
-  void ExpectEquals(SkBitmap actual, SkBitmap expected) {
+  void ExpectEquals(SkBitmap actual,
+                    SkBitmap expected,
+                    const char* label = nullptr) {
     EXPECT_EQ(actual.dimensions(), expected.dimensions());
     auto expected_url = GetPNGDataUrl(expected);
     auto actual_url = GetPNGDataUrl(actual);
     if (actual_url == expected_url)
       return;
-    ADD_FAILURE() << "\nExpected: " << expected_url
-                  << "\nActual:   " << actual_url;
+    if (label) {
+      ADD_FAILURE() << "\nCase: " << label << "\nExpected: " << expected_url
+                    << "\nActual:   " << actual_url;
+    } else {
+      ADD_FAILURE() << "\nExpected: " << expected_url
+                    << "\nActual:   " << actual_url;
+    }
   }
 
  private:
@@ -367,6 +404,380 @@ TEST_F(OopPixelTest, DrawRect) {
   ExpectEquals(actual, expected);
 }
 
+TEST_F(OopPixelTest, Preclear) {
+  gfx::Rect rect(10, 10);
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->Finalize();
+
+  RasterOptions options;
+  options.resource_size = rect.size();
+  options.full_raster_rect = rect;
+  options.playback_rect = rect;
+  options.background_color = SK_ColorMAGENTA;
+  options.preclear = true;
+  options.preclear_color = SK_ColorGREEN;
+
+  auto actual = Raster(display_item_list, options);
+
+  options.preclear = false;
+  options.background_color = SK_ColorGREEN;
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, ClearingOpaqueCorner) {
+  // Verify that clears work properly for both the right and bottom sides
+  // of an opaque corner tile.
+
+  RasterOptions options;
+  gfx::Point arbitrary_offset(10, 20);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(8, 7));
+  options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom());
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorGREEN;
+  float arbitrary_scale = 0.25f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = false;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Expect a two pixel border from texels 7-9 on the column and 6-8 on row.
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+  SkPaint green;
+  green.setColor(options.background_color);
+  canvas.drawRect(SkRect::MakeXYWH(7, 0, 2, 8), green);
+  canvas.drawRect(SkRect::MakeXYWH(0, 6, 9, 2), green);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingOpaqueCornerExactEdge) {
+  // Verify that clears work properly for both the right and bottom sides
+  // of an opaque corner tile whose content rect exactly lines up with
+  // the edge of the resource.
+
+  RasterOptions options;
+  gfx::Point arbitrary_offset(10, 20);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, options.resource_size);
+  options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom());
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorGREEN;
+  float arbitrary_scale = 0.25f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = false;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Expect a one pixel border on the bottom/right edge.
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+  SkPaint green;
+  green.setColor(options.background_color);
+  canvas.drawRect(SkRect::MakeXYWH(9, 0, 1, 10), green);
+  canvas.drawRect(SkRect::MakeXYWH(0, 9, 10, 1), green);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingOpaqueCornerPartialRaster) {
+  // Verify that clears do nothing on an opaque corner tile whose
+  // partial raster rect doesn't intersect the edge of the content.
+
+  RasterOptions options;
+  options.resource_size = gfx::Size(10, 10);
+  gfx::Point arbitrary_offset(30, 12);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(8, 7));
+  options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom());
+  options.playback_rect =
+      gfx::Rect(arbitrary_offset.x() + 5, arbitrary_offset.y() + 3, 2, 4);
+  options.background_color = SK_ColorGREEN;
+  options.requires_clear = false;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Expect no clearing here because the playback rect is internal.
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingOpaqueRightEdge) {
+  // Verify that a tile that intersects the right edge of content
+  // but not the bottom only clears the right pixels.
+
+  RasterOptions options;
+  gfx::Point arbitrary_offset(30, 40);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(3, 10));
+  options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom() + 1000);
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorGREEN;
+  options.requires_clear = false;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Expect a two pixel column border from texels 2-4.
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+  SkPaint green;
+  green.setColor(options.background_color);
+  canvas.drawRect(SkRect::MakeXYWH(2, 0, 2, 10), green);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingOpaqueBottomEdge) {
+  // Verify that a tile that intersects the bottom edge of content
+  // but not the right only clears the bottom pixels.
+
+  RasterOptions options;
+  gfx::Point arbitrary_offset(10, 20);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(10, 5));
+  options.content_size = gfx::Size(options.full_raster_rect.right() + 1000,
+                                   options.full_raster_rect.bottom());
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorGREEN;
+  float arbitrary_scale = 0.25f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = false;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Expect a two pixel border from texels 4-6 on the row
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+  SkPaint green;
+  green.setColor(options.background_color);
+  canvas.drawRect(SkRect::MakeXYWH(0, 4, 10, 2), green);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingOpaqueInternal) {
+  // Verify that an internal opaque tile does no clearing.
+
+  RasterOptions options;
+  gfx::Point arbitrary_offset(35, 12);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, options.resource_size);
+  // Very large content rect to make this an internal tile.
+  options.content_size = gfx::Size(1000, 1000);
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorGREEN;
+  float arbitrary_scale = 1.2345f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = false;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Expect no clears here, as this tile does not intersect the edge of the
+  // tile.
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingTransparentCorner) {
+  RasterOptions options;
+  gfx::Point arbitrary_offset(5, 8);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(8, 7));
+  options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom());
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorTRANSPARENT;
+  float arbitrary_scale = 3.7f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = true;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  // Because this is rastering the entire tile, clear the entire thing
+  // even if the full raster rect doesn't cover the whole resource.
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorTRANSPARENT);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingTransparentInternalTile) {
+  // Content rect much larger than full raster rect or playback rect.
+  // This should still clear the tile.
+  RasterOptions options;
+  gfx::Point arbitrary_offset(100, 200);
+  options.resource_size = gfx::Size(10, 10);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, options.resource_size);
+  options.content_size = gfx::Size(1000, 1000);
+  options.playback_rect = options.full_raster_rect;
+  options.background_color = SK_ColorTRANSPARENT;
+  float arbitrary_scale = 3.7f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = true;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  // Because this is rastering the entire tile, clear the entire thing
+  // even if the full raster rect doesn't cover the whole resource.
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorTRANSPARENT);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
+TEST_F(OopPixelTest, ClearingTransparentCornerPartialRaster) {
+  RasterOptions options;
+  options.resource_size = gfx::Size(10, 10);
+  gfx::Point arbitrary_offset(30, 12);
+  options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(8, 7));
+  options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                   options.full_raster_rect.bottom());
+  options.playback_rect =
+      gfx::Rect(arbitrary_offset.x() + 5, arbitrary_offset.y() + 3, 2, 4);
+  options.background_color = SK_ColorTRANSPARENT;
+  float arbitrary_scale = 0.23f;
+  options.post_scale = arbitrary_scale;
+  options.requires_clear = true;
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+
+  // Make a non-empty but noop display list to avoid early outs.
+  auto display_item_list = MakeNoopDisplayItemList();
+
+  auto oop_result = Raster(display_item_list, options);
+  auto gpu_result = RasterExpectedBitmap(display_item_list, options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(options.resource_size.width(),
+                                 options.resource_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  // Result should be a red background with a cleared hole where the
+  // playback_rect is.
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(options.preclear_color);
+  canvas.translate(-arbitrary_offset.x(), -arbitrary_offset.y());
+  canvas.clipRect(gfx::RectToSkRect(options.playback_rect));
+  canvas.drawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+
+  ExpectEquals(oop_result, bitmap, "oop");
+  ExpectEquals(gpu_result, bitmap, "gpu");
+}
+
 // Test various bitmap and playback rects in the raster options, to verify
 // that in process (RasterSource) and out of process (GLES2Implementation)
 // raster behave identically.
@@ -384,13 +795,16 @@ TEST_F(OopPixelTest, DrawRectBasicRasterOptions) {
   std::vector<std::pair<gfx::Rect, gfx::Rect>> input = {
       {{0, 0, 10, 10}, {0, 0, 10, 10}},
       {{1, 2, 10, 10}, {4, 2, 5, 6}},
-      {{5, 5, 15, 10}, {0, 0, 10, 10}}};
+      {{5, 5, 15, 10}, {5, 5, 10, 10}}};
 
   for (size_t i = 0; i < input.size(); ++i) {
     SCOPED_TRACE(base::StringPrintf("Case %zd", i));
 
     RasterOptions options;
-    options.bitmap_rect = input[i].first;
+    options.resource_size = input[i].first.size(),
+    options.full_raster_rect = input[i].first;
+    options.content_size = gfx::Size(options.full_raster_rect.right(),
+                                     options.full_raster_rect.bottom());
     options.playback_rect = input[i].second;
     options.background_color = SK_ColorMAGENTA;
 
@@ -418,8 +832,10 @@ TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
   // with the left and top sides of the greenish box partially blended due to
   // the post translate.
   RasterOptions options;
-  options.bitmap_rect = {5, 5, 20, 20};
-  options.playback_rect = {3, 2, 15, 12};
+  options.resource_size = {20, 20};
+  options.content_size = {25, 25};
+  options.full_raster_rect = {5, 5, 20, 20};
+  options.playback_rect = {5, 5, 13, 9};
   options.background_color = SK_ColorCYAN;
   options.post_translate = {0.5f, 0.25f};
   options.post_scale = 2.f;
@@ -449,7 +865,9 @@ TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
 
   // Draw a "tile" in the middle of the display list with a post scale.
   RasterOptions options;
-  options.bitmap_rect = {0, 10, 1, 10};
+  options.resource_size = {10, 10};
+  options.content_size = {20, 20};
+  options.full_raster_rect = {0, 10, 1, 10};
   options.playback_rect = {0, 10, 1, 10};
   options.background_color = SK_ColorGRAY;
   options.post_translate = {0.f, 0.f};
@@ -462,8 +880,10 @@ TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
 
 TEST_F(OopPixelTest, DrawRectColorSpace) {
   RasterOptions options;
-  options.bitmap_rect = gfx::Rect(100, 100);
-  options.playback_rect = options.bitmap_rect;
+  options.resource_size = gfx::Size(100, 100);
+  options.content_size = options.resource_size;
+  options.full_raster_rect = gfx::Rect(options.content_size);
+  options.playback_rect = options.full_raster_rect;
   options.color_space = gfx::ColorSpace::CreateDisplayP3D65();
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
@@ -471,8 +891,9 @@ TEST_F(OopPixelTest, DrawRectColorSpace) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  display_item_list->push<DrawRectOp>(SkRect::MakeWH(100.f, 100.f), flags);
-  display_item_list->EndPaintOfUnpaired(options.bitmap_rect);
+  display_item_list->push<DrawRectOp>(
+      gfx::RectToSkRect(gfx::Rect(options.resource_size)), flags);
+  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
 
   auto actual = Raster(display_item_list, options);

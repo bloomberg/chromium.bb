@@ -17,7 +17,7 @@ struct RasterColorSpace;
 
 namespace gfx {
 class Rect;
-class Vector2d;
+class Size;
 class Vector2dF;
 }  // namespace gfx
 
@@ -109,10 +109,12 @@ class RasterInterface {
       const cc::RasterColorSpace& raster_color_space) = 0;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                               cc::ImageProvider* provider,
-                              const gfx::Vector2d& translate,
+                              const gfx::Size& content_size,
+                              const gfx::Rect& full_raster_rect,
                               const gfx::Rect& playback_rect,
                               const gfx::Vector2dF& post_translate,
-                              GLfloat post_scale) = 0;
+                              GLfloat post_scale,
+                              bool requires_clear) = 0;
 
   // Raster via GrContext.
   virtual void BeginGpuRaster() = 0;

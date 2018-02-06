@@ -49,15 +49,72 @@ RasterSource::RasterSource(const RecordingSource* other)
       solid_color_(other->solid_color_),
       recorded_viewport_(other->recorded_viewport_),
       size_(other->size_),
-      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       recording_scale_factor_(other->recording_scale_factor_) {}
 RasterSource::~RasterSource() = default;
 
-void RasterSource::PlaybackToCanvas(
+void RasterSource::ClearForFullRaster(
     SkCanvas* raster_canvas,
+    const gfx::Size& content_size,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect) const {
+  // If this raster source has opaque contents, it is guaranteeing that it
+  // will draw an opaque rect the size of the layer.  If it is not, then we
+  // must clear this canvas ourselves (i.e. requires_clear_).
+  if (requires_clear_) {
+    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
+    raster_canvas->clear(SK_ColorTRANSPARENT);
+    return;
+  }
+
+  // The last texel of this content is not guaranteed to be fully opaque, so
+  // inset by one to generate the fully opaque coverage rect .  This rect is
+  // in device space.
+  SkIRect coverage_device_rect =
+      SkIRect::MakeWH(content_size.width() - canvas_bitmap_rect.x() - 1,
+                      content_size.height() - canvas_bitmap_rect.y() - 1);
+
+  // Remove playback rect offset, which is equal to bitmap rect offset,
+  // as this is full raster.
+  SkIRect playback_device_rect = SkIRect::MakeWH(canvas_playback_rect.width(),
+                                                 canvas_playback_rect.height());
+
+  // If not fully covered, we need to clear one texel inside the coverage
+  // rect (because of blending during raster) and one texel outside the full
+  // raster rect (because of bilinear filtering during draw).  See comments
+  // in RasterSource.
+  SkIRect device_column = SkIRect::MakeXYWH(coverage_device_rect.right(), 0, 2,
+                                            coverage_device_rect.bottom());
+  // row includes the corner, column excludes it.
+  SkIRect device_row = SkIRect::MakeXYWH(0, coverage_device_rect.bottom(),
+                                         coverage_device_rect.right() + 2, 2);
+
+  RasterSourceClearType clear_type = RasterSourceClearType::kNone;
+  // Only bother clearing if we need to.
+  if (SkIRect::Intersects(device_column, playback_device_rect)) {
+    clear_type = RasterSourceClearType::kBorder;
+    raster_canvas->save();
+    raster_canvas->clipRect(SkRect::MakeFromIRect(device_column),
+                            SkClipOp::kIntersect, false);
+    raster_canvas->drawColor(background_color_, SkBlendMode::kSrc);
+    raster_canvas->restore();
+  }
+  if (SkIRect::Intersects(device_row, playback_device_rect)) {
+    clear_type = RasterSourceClearType::kBorder;
+    raster_canvas->save();
+    raster_canvas->clipRect(SkRect::MakeFromIRect(device_row),
+                            SkClipOp::kIntersect, false);
+    raster_canvas->drawColor(background_color_, SkBlendMode::kSrc);
+    raster_canvas->restore();
+  }
+  TrackRasterSourceNeededClear(clear_type);
+}
+
+void RasterSource::PlaybackToCanvas(
+    SkCanvas* input_canvas,
     const gfx::ColorSpace& target_color_space,
+    const gfx::Size& content_size,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
     const gfx::AxisTransform2d& raster_transform,
@@ -69,20 +126,6 @@ void RasterSource::PlaybackToCanvas(
   // Treat all subnormal values as zero for performance.
   ScopedSubnormalFloatDisabler disabler;
 
-  raster_canvas->save();
-  raster_canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
-  raster_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
-  raster_canvas->translate(raster_transform.translation().x(),
-                           raster_transform.translation().y());
-  raster_canvas->scale(raster_transform.scale() / recording_scale_factor_,
-                       raster_transform.scale() / recording_scale_factor_);
-  PlaybackToCanvas(raster_canvas, target_color_space, settings);
-  raster_canvas->restore();
-}
-
-void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
-                                    const gfx::ColorSpace& target_color_space,
-                                    const PlaybackSettings& settings) const {
   // TODO(enne): color transform needs to be replicated in gles2_cmd_decoder
   SkCanvas* raster_canvas = input_canvas;
   std::unique_ptr<SkCanvas> color_transform_canvas;
@@ -92,91 +135,33 @@ void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
     raster_canvas = color_transform_canvas.get();
   }
 
-  // Some tests want to avoid complicated clearing logic for consistency.
-  if (settings.clear_canvas_before_raster)
-    ClearCanvasForPlayback(raster_canvas);
+  bool is_partial_raster = canvas_bitmap_rect != canvas_playback_rect;
+  if (!is_partial_raster && settings.clear_canvas_before_raster) {
+    ClearForFullRaster(raster_canvas, content_size, canvas_bitmap_rect,
+                       canvas_playback_rect);
+  }
 
-  RasterCommon(raster_canvas, settings.image_provider);
+  raster_canvas->save();
+  raster_canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
+  raster_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
+  raster_canvas->translate(raster_transform.translation().x(),
+                           raster_transform.translation().y());
+  raster_canvas->scale(raster_transform.scale() / recording_scale_factor_,
+                       raster_transform.scale() / recording_scale_factor_);
+
+  if (is_partial_raster && settings.clear_canvas_before_raster &&
+      requires_clear_) {
+    // TODO(enne): Should this be considered a partial clear?
+    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
+    raster_canvas->clear(SK_ColorTRANSPARENT);
+  }
+
+  PlaybackToCanvas(raster_canvas, settings.image_provider);
+  raster_canvas->restore();
 }
 
-void RasterSource::ClearCanvasForPlayback(SkCanvas* canvas) const {
-  // If this raster source has opaque contents, it is guaranteeing that it will
-  // draw an opaque rect the size of the layer.  If it is not, then we must
-  // clear this canvas ourselves.
-  if (requires_clear_) {
-    canvas->clear(SK_ColorTRANSPARENT);
-    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
-    return;
-  }
-
-  if (clear_canvas_with_debug_color_)
-    canvas->clear(DebugColors::NonPaintedFillColor());
-
-  // If the canvas wants us to raster with complex transform, it is hard to
-  // determine the exact region we must clear. Just clear everything.
-  // TODO(trchen): Optimize the common case that transformed content bounds
-  //               covers the whole clip region.
-  if (!canvas->getTotalMatrix().rectStaysRect()) {
-    canvas->clear(SK_ColorTRANSPARENT);
-    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
-    return;
-  }
-
-  SkRect content_device_rect;
-  canvas->getTotalMatrix().mapRect(
-      &content_device_rect, SkRect::MakeWH(size_.width(), size_.height()));
-
-  // The final texel of content may only be partially covered by a
-  // rasterization; this rect represents the content rect that is fully
-  // covered by content.
-  SkIRect opaque_rect;
-  content_device_rect.roundIn(&opaque_rect);
-
-  if (opaque_rect.contains(canvas->getDeviceClipBounds())) {
-    TrackRasterSourceNeededClear(RasterSourceClearType::kNone);
-    return;
-  }
-
-  // Even if completely covered, for rasterizations that touch the edge of the
-  // layer, we also need to raster the background color underneath the last
-  // texel (since the recording won't cover it) and outside the last texel
-  // (due to linear filtering when using this texture).
-  SkIRect interest_rect;
-  content_device_rect.roundOut(&interest_rect);
-  interest_rect.outset(1, 1);
-
-  if (clear_canvas_with_debug_color_) {
-    // Any non-painted areas outside of the content bounds are left in
-    // this color.  If this is seen then it means that cc neglected to
-    // rerasterize a tile that used to intersect with the content rect
-    // after the content bounds grew.
-    canvas->save();
-    // Use clipRegion to bypass CTM because the rects are device rects.
-    SkRegion interest_region;
-    interest_region.setRect(interest_rect);
-    canvas->clipRegion(interest_region, SkClipOp::kDifference);
-    canvas->clear(DebugColors::MissingResizeInvalidations());
-    canvas->restore();
-  }
-
-  // Drawing at most 2 x 2 x (canvas width + canvas height) texels is 2-3X
-  // faster than clearing, so special case this.
-  canvas->save();
-  // Use clipRegion to bypass CTM because the rects are device rects.
-  SkRegion interest_region;
-  interest_region.setRect(interest_rect);
-  interest_region.op(opaque_rect, SkRegion::kDifference_Op);
-  canvas->clipRegion(interest_region);
-  canvas->clear(background_color_);
-  canvas->restore();
-
-  // If we reached this point, we didn't perform a full clear, but a smaller
-  // clear of the border pixels.
-  TrackRasterSourceNeededClear(RasterSourceClearType::kBorder);
-}
-
-void RasterSource::RasterCommon(SkCanvas* raster_canvas,
-                                ImageProvider* image_provider) const {
+void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
+                                    ImageProvider* image_provider) const {
   DCHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
@@ -190,7 +175,7 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
   SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
   if (!size_.IsEmpty()) {
     canvas->clear(SK_ColorTRANSPARENT);
-    RasterCommon(canvas);
+    PlaybackToCanvas(canvas, nullptr);
   }
 
   return recorder.finishRecordingAsPicture();
@@ -234,6 +219,10 @@ bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {
 
 gfx::Size RasterSource::GetSize() const {
   return size_;
+}
+
+gfx::Size RasterSource::GetContentSize(float content_scale) const {
+  return gfx::ScaleToCeiledSize(GetSize(), content_scale);
 }
 
 bool RasterSource::IsSolidColor() const {

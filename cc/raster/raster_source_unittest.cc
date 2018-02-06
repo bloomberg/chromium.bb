@@ -293,8 +293,8 @@ TEST(RasterSourceTest, RasterFullContents) {
       canvas.clear(SK_ColorTRANSPARENT);
 
       raster->PlaybackToCanvas(
-          &canvas, ColorSpaceForTesting(), canvas_rect, canvas_rect,
-          gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+          &canvas, ColorSpaceForTesting(), content_bounds, canvas_rect,
+          canvas_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
           RasterSource::PlaybackSettings());
 
       SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -345,8 +345,8 @@ TEST(RasterSourceTest, RasterPartialContents) {
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
   raster->PlaybackToCanvas(
-      &canvas, ColorSpaceForTesting(), raster_full_rect, playback_rect,
-      gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+      &canvas, ColorSpaceForTesting(), content_bounds, raster_full_rect,
+      playback_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
       RasterSource::PlaybackSettings());
 
   {
@@ -377,8 +377,8 @@ TEST(RasterSourceTest, RasterPartialContents) {
   // that touches the edge pixels of the recording.
   playback_rect.Inset(1, 2, 0, 1);
   raster->PlaybackToCanvas(
-      &canvas, ColorSpaceForTesting(), raster_full_rect, playback_rect,
-      gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+      &canvas, ColorSpaceForTesting(), content_bounds, raster_full_rect,
+      playback_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
       RasterSource::PlaybackSettings());
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -442,8 +442,8 @@ TEST(RasterSourceTest, RasterPartialClear) {
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
   raster->PlaybackToCanvas(
-      &canvas, ColorSpaceForTesting(), raster_full_rect, playback_rect,
-      gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+      &canvas, ColorSpaceForTesting(), content_bounds, raster_full_rect,
+      playback_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
       RasterSource::PlaybackSettings());
 
   {
@@ -482,8 +482,8 @@ TEST(RasterSourceTest, RasterPartialClear) {
   playback_rect =
       gfx::Rect(gfx::ScaleToCeiledSize(partial_bounds, contents_scale));
   raster->PlaybackToCanvas(
-      &canvas, ColorSpaceForTesting(), raster_full_rect, playback_rect,
-      gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+      &canvas, ColorSpaceForTesting(), content_bounds, raster_full_rect,
+      playback_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
       RasterSource::PlaybackSettings());
 
   // Test that the whole playback_rect was cleared and repainted with new alpha.
@@ -523,7 +523,7 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
   SkCanvas canvas(bitmap);
 
   raster->PlaybackToCanvas(
-      &canvas, ColorSpaceForTesting(), canvas_rect, canvas_rect,
+      &canvas, ColorSpaceForTesting(), content_bounds, canvas_rect, canvas_rect,
       gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
       RasterSource::PlaybackSettings());
 
@@ -548,9 +548,6 @@ TEST(RasterSourceTest, GetPictureMemoryUsageIncludesClientReportedMemory) {
   EXPECT_LT(total_memory_usage, 2 * kReportedMemoryUsageInBytes);
 }
 
-// In debug there is a bunch of clearing to debug colors that makes mocking
-// very noisy and hard to test against.
-#ifdef NDEBUG
 TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
   gfx::Size size(100, 100);
   float recording_scale = 2.f;
@@ -567,23 +564,17 @@ TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
   SkMatrix m;
   m.setScale(1.f / recording_scale, 1.f / recording_scale);
 
+  // The recording source has no ops, so will only do the setup.
   EXPECT_CALL(mock_canvas, willSave()).InSequence(s);
-  // The call to raster_canvas->scale() should have values with the recording
-  // scale removed.
   EXPECT_CALL(mock_canvas, didConcat(m)).InSequence(s);
-
-  // Save/restore/clear around the paint ops being played back.
-  EXPECT_CALL(mock_canvas, willSave()).InSequence(s);
-  EXPECT_CALL(mock_canvas, OnDrawPaintWithColor(_)).InSequence(s);
   EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
 
-  EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
-
-  raster_source->PlaybackToCanvas(
-      &mock_canvas, ColorSpaceForTesting(), gfx::Rect(size), gfx::Rect(size),
-      gfx::AxisTransform2d(), RasterSource::PlaybackSettings());
+  gfx::Size small_size(50, 50);
+  raster_source->PlaybackToCanvas(&mock_canvas, ColorSpaceForTesting(), size,
+                                  gfx::Rect(small_size), gfx::Rect(small_size),
+                                  gfx::AxisTransform2d(),
+                                  RasterSource::PlaybackSettings());
 }
-#endif
 
 }  // namespace
 }  // namespace cc

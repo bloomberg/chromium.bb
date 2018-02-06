@@ -121,8 +121,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const LightingSpotPaintFilter& filter);
 
   void Write(const PaintRecord* record,
-             base::Optional<PaintOpBufferSerializer::Preamble> preamble =
-                 base::nullopt);
+             base::Optional<gfx::Rect> playback_rect = base::nullopt,
+             base::Optional<gfx::SizeF> post_scale = base::nullopt);
   void Write(const PaintImage& image);
   void Write(const SkRegion& region);
 
