@@ -318,6 +318,8 @@ Background.prototype = {
    * @return {boolean} True if evt was processed.
    */
   onBrailleKeyEvent: function(evt, content) {
+    // Note: panning within content occurs earlier in event dispatch.
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     switch (evt.command) {
       case cvox.BrailleKeyCommand.PAN_LEFT:
         CommandHandler.onCommand('previousObject');
@@ -467,6 +469,7 @@ Background.prototype = {
    * @private
    */
   onAccessibilityGesture_: function(gesture) {
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     var command = Background.GESTURE_COMMAND_MAP[gesture];
     if (command)
       CommandHandler.onCommand(command);

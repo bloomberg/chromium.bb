@@ -159,10 +159,6 @@ DesktopAutomationHandler.prototype = {
     var prev = ChromeVoxState.instance.currentRange;
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
-      // Category flush here since previous focus events via navigation can
-      // cause double speak.
-      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
-
       // Intentionally skip setting range.
       new Output()
           .withRichSpeechAndBraille(
@@ -178,14 +174,6 @@ DesktopAutomationHandler.prototype = {
   onEventIfSelected: function(evt) {
     if (evt.target.state.selected)
       this.onEventDefault(evt);
-  },
-
-  /**
-   * @param {!AutomationEvent} evt
-   */
-  onEventWithFlushedOutput: function(evt) {
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-    this.onEventDefault(evt);
   },
 
   /**
@@ -284,7 +272,6 @@ DesktopAutomationHandler.prototype = {
     if (!AutomationPredicate.checkable(evt.target))
       return;
 
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
     var event = new CustomAutomationEvent(
         EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
     this.onEventIfInRange(event);
@@ -327,10 +314,6 @@ DesktopAutomationHandler.prototype = {
     if (node.role == RoleType.EMBEDDED_OBJECT || node.role == RoleType.WEB_VIEW)
       return;
 
-    // Category flush speech triggered by events with no source. This includes
-    // views.
-    if (evt.eventFrom == '')
-      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
     if (!node.root)
       return;
 
@@ -363,7 +346,6 @@ DesktopAutomationHandler.prototype = {
 
       if (focusIsAncestor) {
         focus = evt.target;
-        Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
       }
 
       // Create text edit handler, if needed, now in order not to miss initial
@@ -506,7 +488,6 @@ DesktopAutomationHandler.prototype = {
       var override = evt.target.role == RoleType.MENU_ITEM ||
           (evt.target.root == focus.root &&
            focus.root.role == RoleType.DESKTOP);
-      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
       if (override || AutomationUtil.isDescendantOf(evt.target, focus))
         this.onEventDefault(evt);
     }.bind(this));
@@ -623,7 +604,6 @@ DesktopAutomationHandler.prototype = {
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
 
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
     o.withRichSpeechAndBraille(
          ChromeVoxState.instance.currentRange, null, evt.type)
         .go();

@@ -40,12 +40,12 @@ BackgroundKeyboardHandler.prototype = {
     if (cvox.ChromeVox.passThroughMode)
       return false;
 
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     if (!cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();
       evt.stopPropagation();
       this.eatenKeyDowns_.add(evt.keyCode);
     }
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     return false;
   },
 
