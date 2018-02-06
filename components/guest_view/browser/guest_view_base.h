@@ -213,9 +213,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   ~GuestViewBase() override;
 
-  // BrowserPluginGuestDelegate implementation.
-  void SetContextMenuPosition(const gfx::Point& position) override;
-
   // TODO(ekaramad): If a guest is based on BrowserPlugin and is embedded inside
   // a cross-process frame, we need to notify the destruction of the frame so
   // that the clean-up on the browser side is done appropriately. Remove this

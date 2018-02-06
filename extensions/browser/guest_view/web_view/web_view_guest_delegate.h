@@ -24,8 +24,6 @@ class WebViewGuestDelegate {
   // Returns true if the WebViewGuest should handle find requests for its
   // embedder.
   virtual bool ShouldHandleFindRequestsForEmbedder() const = 0;
-
-  virtual void SetContextMenuPosition(const gfx::Point& position) = 0;
 };
 
 }  // namespace extensions

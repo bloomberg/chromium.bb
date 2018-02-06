@@ -67,12 +67,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // content module.
   virtual void SetGuestHost(GuestHost* guest_host) {}
 
-  // Sets the position of the context menu for the guest contents. The value
-  // reported from the guest renderer should be ignored. The reported value
-  // from the guest renderer is incorrect in situations where BrowserPlugin is
-  // subject to CSS transforms.
-  virtual void SetContextMenuPosition(const gfx::Point& position) {}
-
   // TODO(ekaramad): A short workaround to force some types of guests to use
   // a BrowserPlugin even when we are using cross process frames for guests. It
   // should be removed after resolving https://crbug.com/642826).
