@@ -222,13 +222,16 @@ TEST_F(GsmSMSClientTest, Delete) {
   response_ = response.get();
 
   // Call Delete.
-  bool called = false;
-  client_->Delete(kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
-                  base::Bind([](bool* called) { *called = true; }, &called));
+  base::Optional<bool> success;
+  client_->Delete(
+      kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
+      base::BindOnce([](base::Optional<bool>* success_out,
+                        bool success) { success_out->emplace(success); },
+                     &success));
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
+  EXPECT_EQ(true, success);
 }
 
 TEST_F(GsmSMSClientTest, Get) {
@@ -255,32 +258,23 @@ TEST_F(GsmSMSClientTest, Get) {
   response_ = response.get();
 
   // Call Get.
-  base::Value raw_result;
-  client_->Get(
-      kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
-      base::Bind(
-          [](base::Value* result_out, const base::DictionaryValue& result) {
-            *result_out = result.Clone();
-          },
-          &raw_result));
+  base::Optional<base::DictionaryValue> result;
+  client_->Get(kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
+               base::BindOnce(
+                   [](base::Optional<base::DictionaryValue>* result_out,
+                      base::Optional<base::DictionaryValue> result) {
+                     *result_out = std::move(result);
+                   },
+                   &result));
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 
   // Verify the result.
-  const auto result = base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(std::move(raw_result)));
-  ASSERT_TRUE(result);
-  EXPECT_EQ(2u, result->size());
-
-  const base::Value* number =
-      result->FindKeyOfType(kNumberKey, base::Value::Type::STRING);
-  ASSERT_TRUE(number);
-  EXPECT_EQ(kExampleNumber, number->GetString());
-  const base::Value* text =
-      result->FindKeyOfType(kTextKey, base::Value::Type::STRING);
-  ASSERT_TRUE(text);
-  EXPECT_EQ(kExampleText, text->GetString());
+  base::DictionaryValue expected_result;
+  expected_result.SetKey(kNumberKey, base::Value(kExampleNumber));
+  expected_result.SetKey(kTextKey, base::Value(kExampleText));
+  EXPECT_EQ(expected_result, result);
 }
 
 TEST_F(GsmSMSClientTest, List) {
@@ -308,11 +302,12 @@ TEST_F(GsmSMSClientTest, List) {
   response_ = response.get();
 
   // Call List.
-  base::Value result;
+  base::Optional<base::ListValue> result;
   client_->List(kServiceName, dbus::ObjectPath(kObjectPath),
-                base::Bind(
-                    [](base::Value* result_out, const base::ListValue& result) {
-                      *result_out = result.Clone();
+                base::BindOnce(
+                    [](base::Optional<base::ListValue>* result_out,
+                       base::Optional<base::ListValue> result) {
+                      *result_out = std::move(result);
                     },
                     &result));
 

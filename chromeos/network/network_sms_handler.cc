@@ -59,10 +59,12 @@ class NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler
   void RequestUpdate() override;
 
  private:
-  void ListCallback(const base::ListValue& message_list);
+  void ListCallback(base::Optional<base::ListValue> message_list);
   void SmsReceivedCallback(uint32_t index, bool complete);
-  void GetCallback(uint32_t index, const base::DictionaryValue& dictionary);
+  void GetCallback(uint32_t index,
+                   base::Optional<base::DictionaryValue> dictionary);
   void DeleteMessages();
+  void DeleteCallback(bool success);
   void MessageReceived(const base::DictionaryValue& dictionary);
 
   NetworkSmsHandler* host_;
@@ -105,13 +107,15 @@ void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::RequestUpdate() {
 }
 
 void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::ListCallback(
-    const base::ListValue& message_list) {
+    base::Optional<base::ListValue> message_list) {
+  if (!message_list.has_value())
+    return;
+
   // This receives all messages, so clear any pending deletes.
   delete_queue_.clear();
-  for (base::ListValue::const_iterator iter = message_list.begin();
-       iter != message_list.end(); ++iter) {
-    const base::DictionaryValue* message = NULL;
-    if (iter->GetAsDictionary(&message))
+  for (const auto& entry : message_list.value()) {
+    const base::DictionaryValue* message = nullptr;
+    if (entry.GetAsDictionary(&message))
       continue;
     MessageReceived(*message);
     double index = 0;
@@ -134,9 +138,16 @@ void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::DeleteMessages() {
   delete_queue_.pop_back();
   DBusThreadManager::Get()->GetGsmSMSClient()->Delete(
       service_name_, object_path_, index,
-      base::Bind(&NetworkSmsHandler::
-                 ModemManagerNetworkSmsDeviceHandler::DeleteMessages,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::
+                         DeleteCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::DeleteCallback(
+    bool success) {
+  if (!success)
+    return;
+  DeleteMessages();
 }
 
 void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::
@@ -146,15 +157,18 @@ void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::
     return;
   DBusThreadManager::Get()->GetGsmSMSClient()->Get(
       service_name_, object_path_, index,
-      base::Bind(&NetworkSmsHandler::
-                 ModemManagerNetworkSmsDeviceHandler::GetCallback,
-                 weak_ptr_factory_.GetWeakPtr(), index));
+      base::BindOnce(
+          &NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::GetCallback,
+          weak_ptr_factory_.GetWeakPtr(), index));
 }
 
 void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::GetCallback(
     uint32_t index,
-    const base::DictionaryValue& dictionary) {
-  MessageReceived(dictionary);
+    base::Optional<base::DictionaryValue> dictionary) {
+  if (!dictionary.has_value())
+    return;
+
+  MessageReceived(dictionary.value());
   delete_queue_.push_back(index);
   if (!deleting_messages_)
     DeleteMessages();
