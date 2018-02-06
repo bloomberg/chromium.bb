@@ -4,11 +4,11 @@
     <title>
       panner-equalpower.html
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audit.js"></script>
-    <script src="../resources/panner-model-testing.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="../../resources/audit-util.js"></script>
+    <script src="../../resources/audit.js"></script>
+    <script src="../../resources/panner-model-testing.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -78,7 +78,7 @@
                   // position
                   let c0 = renderedBuffer.getChannelData(0);
                   let c1 = renderedBuffer.getChannelData(1);
-                  should(c0, 'Left and right channels').beEqualToArray(c1);
+                  should(c0, 'Mono: Left and right channels').beEqualToArray(c1);
                 })
                 .then(() => task.done());
           });
@@ -128,7 +128,7 @@
                   // position.
                   let c0 = renderedBuffer.getChannelData(0);
                   let c1 = renderedBuffer.getChannelData(1);
-                  should(c0, 'Left and right channels').beEqualToArray(c1);
+                  should(c0, 'Stereo: Left and right channels').beEqualToArray(c1);
                 })
                 .then(() => task.done());
           });
