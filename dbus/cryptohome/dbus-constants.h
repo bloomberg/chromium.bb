@@ -10,7 +10,6 @@ const char kCryptohomeInterface[] = "org.chromium.CryptohomeInterface";
 const char kCryptohomeServicePath[] = "/org/chromium/Cryptohome";
 const char kCryptohomeServiceName[] = "org.chromium.Cryptohome";
 // Methods
-const char kCryptohomeAsyncAddKey[] = "AsyncAddKey";
 const char kCryptohomeCheckKey[] = "CheckKey";
 const char kCryptohomeMigrateKey[] = "MigrateKey";
 const char kCryptohomeRemove[] = "Remove";
