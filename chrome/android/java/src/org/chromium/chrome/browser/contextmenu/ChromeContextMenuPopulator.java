@@ -305,8 +305,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         Set<ContextMenuItem> disabledOptions = getDisabledOptions(params);
         // Split the items into their respective groups.
         List<Pair<Integer, List<ContextMenuItem>>> groupedItems = new ArrayList<>();
-        if (params.isAnchor()
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
+        if (params.isAnchor()) {
             populateItemGroup(LINK, R.string.contextmenu_link_title, groupedItems, supportedOptions,
                     disabledOptions);
         }
@@ -317,11 +316,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (params.isVideo()) {
             populateItemGroup(VIDEO, R.string.contextmenu_video_title, groupedItems,
                     supportedOptions, disabledOptions);
-        }
-        if (params.isAnchor()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
-            populateItemGroup(LINK, R.string.contextmenu_link_title, groupedItems, supportedOptions,
-                    disabledOptions);
         }
 
         // If there are no groups there still needs to be a way to add items from the OTHER_GROUP
