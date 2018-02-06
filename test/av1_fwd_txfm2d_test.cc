@@ -216,14 +216,14 @@ Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_16x16_c, av1_fwd_txfm2d_16x16_sse2 },  // TX_16X16
   { NULL, NULL },                                         // TX_32X32
 #if CONFIG_TX64X64
-  { NULL, NULL },  // TX_64X64
-#endif             // CONFIG_TX64X64
-  { NULL, NULL },  // TX_4X8
-  { NULL, NULL },  // TX_8X4
-  { NULL, NULL },  // TX_8X16
-  { NULL, NULL },  // TX_16X8
-  { NULL, NULL },  // TX_16X32
-  { NULL, NULL },  // TX_32X16
+  { NULL, NULL },                                       // TX_64X64
+#endif                                                  // CONFIG_TX64X64
+  { NULL, NULL },                                       // TX_4X8
+  { NULL, NULL },                                       // TX_8X4
+  { av1_fwd_txfm2d_8x16_c, av1_fwd_txfm2d_8x16_sse2 },  // TX_8X16
+  { NULL, NULL },                                       // TX_16X8
+  { NULL, NULL },                                       // TX_16X32
+  { NULL, NULL },                                       // TX_32X16
 #if CONFIG_TX64X64
   { NULL, NULL },  // TX_32X64
   { NULL, NULL },  // TX_64X32
@@ -271,7 +271,8 @@ TEST(av1_fwd_txfm2d_sse2, match) {
           for (int r = 0; r < rows; ++r) {
             for (int c = 0; c < cols; ++c) {
               ASSERT_EQ(ref_output[r * cols + c], output[r * cols + c])
-                  << "[" << r << "," << c << "]";
+                  << "[" << r << "," << c << "]"
+                  << " tx_size: " << tx_size << " tx_type: " << tx_type;
             }
           }
         }
