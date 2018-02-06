@@ -205,9 +205,25 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
 
   mojom::blink::LockMode mode = Lock::StringToMode(options.mode());
 
+  if (options.steal() && options.ifAvailable()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The 'steal' and 'ifAvailable' options cannot be used together.");
+    return ScriptPromise();
+  }
+
+  if (options.steal() && mode != mojom::blink::LockMode::EXCLUSIVE) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The 'steal' option may only be used with 'exclusive' locks.");
+    return ScriptPromise();
+  }
+
   mojom::blink::LockManager::WaitMode wait =
-      options.ifAvailable() ? mojom::blink::LockManager::WaitMode::NO_WAIT
-                            : mojom::blink::LockManager::WaitMode::WAIT;
+      options.steal()
+          ? mojom::blink::LockManager::WaitMode::PREEMPT
+          : options.ifAvailable() ? mojom::blink::LockManager::WaitMode::NO_WAIT
+                                  : mojom::blink::LockManager::WaitMode::WAIT;
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();

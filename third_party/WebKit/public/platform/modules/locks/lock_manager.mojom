@@ -23,6 +23,7 @@ interface LockRequest {
   Abort(string reason);
 };
 
+// Corresponds to the |mode| enum option in the Web Locks API.
 enum LockMode {
   SHARED,
   EXCLUSIVE
@@ -48,9 +49,14 @@ struct LockInfo {
 // Proposal: https://github.com/inexorabletash/web-locks
 
 interface LockManager {
+  // PREEMPT corresponds to the |steal| option in the API; if used then
+  // all previous locks with the same name are released.
+  // NO_WAIT corresponds to |ifAvailable| option in the API; if used then
+  // the request fails if it cannot be granted immediately.
   enum WaitMode {
     WAIT,
-    NO_WAIT
+    NO_WAIT,
+    PREEMPT
   };
 
   // Request a lock. One of |request|'s methods will be called

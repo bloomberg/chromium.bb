@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/locks/LockManager.h"
 #include "platform/bindings/ScriptState.h"
@@ -76,6 +77,9 @@ Lock::Lock(ScriptState* script_state,
       handle_(std::move(handle)),
       manager_(manager) {
   PauseIfNeeded();
+
+  handle_.set_connection_error_handler(
+      WTF::Bind(&Lock::OnConnectionError, WrapWeakPersistent(this)));
 }
 
 Lock::~Lock() = default;
@@ -136,6 +140,11 @@ void Lock::ReleaseIfHeld() {
     // Let the lock manager know that this instance can be collected.
     manager_->OnLockReleased(this);
   }
+}
+
+void Lock::OnConnectionError() {
+  resolver_->Reject(DOMException::Create(
+      kAbortError, "Lock broken by another request with the 'steal' option."));
 }
 
 }  // namespace blink
