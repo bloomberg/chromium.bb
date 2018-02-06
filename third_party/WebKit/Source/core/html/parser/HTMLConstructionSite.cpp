@@ -411,13 +411,13 @@ HTMLFormElement* HTMLConstructionSite::TakeForm() {
 void HTMLConstructionSite::InsertHTMLHtmlStartTagBeforeHTML(
     AtomicHTMLToken* token) {
   DCHECK(document_);
-  HTMLHtmlElement* element = HTMLHtmlElement::Create(*document_);
-  if (const Attribute* is_attribute =
-          token->GetAttributeItem(HTMLNames::isAttr)) {
-    V0CustomElementRegistrationContext::SetTypeExtension(element,
-                                                         is_attribute->Value());
+  HTMLHtmlElement* element;
+  if (const auto* is_attribute = token->GetAttributeItem(HTMLNames::isAttr)) {
+    element = ToHTMLHtmlElement(document_->CreateElement(
+        HTMLNames::htmlTag, is_attribute->Value(), GetCreateElementFlags()));
+  } else {
+    element = HTMLHtmlElement::Create(*document_);
   }
-  // TODO(tkent): Handle V1 custom built-in element. crbug.com/808311
   SetAttributes(element, token, parser_content_policy_);
   AttachLater(attachment_root_, element);
   open_elements_.PushHTMLHtmlElement(HTMLStackItem::Create(element, token));

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 442 tests; 441 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 444 tests; 443 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a: Define a customized built-in element
 PASS a: Operator 'new' should instantiate a customized built-in element
 PASS a: document.createElement() should instantiate a customized built-in element
@@ -51,6 +51,7 @@ PASS blockquote: innerHTML should instantiate a customized built-in element
 PASS body: Define a customized built-in element
 PASS body: Operator 'new' should instantiate a customized built-in element
 PASS body: document.createElement() should instantiate a customized built-in element
+PASS body: document parser should instantiate a customized built-in element
 PASS br: Define a customized built-in element
 PASS br: Operator 'new' should instantiate a customized built-in element
 PASS br: document.createElement() should instantiate a customized built-in element
@@ -182,6 +183,7 @@ PASS hr: innerHTML should instantiate a customized built-in element
 PASS html: Define a customized built-in element
 PASS html: Operator 'new' should instantiate a customized built-in element
 PASS html: document.createElement() should instantiate a customized built-in element
+PASS html: document parser should instantiate a customized built-in element
 PASS i: Define a customized built-in element
 PASS i: Operator 'new' should instantiate a customized built-in element
 PASS i: document.createElement() should instantiate a customized built-in element
