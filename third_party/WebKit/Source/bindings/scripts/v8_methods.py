@@ -374,7 +374,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, for_main_world=for_main_world, is_static=method.is_static)
 
 
-def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise):
+def v8_value_to_local_cpp_variadic_value(argument, index):
     assert argument.is_variadic
     idl_type = v8_types.native_value_traits_type_name(argument.idl_type, True)
 
@@ -411,7 +411,7 @@ def v8_value_to_local_cpp_ssv_value(extended_attributes, idl_type, v8_value, var
     }
 
 
-def v8_value_to_local_cpp_value(interface_name, method, argument, index, return_promise=False):
+def v8_value_to_local_cpp_value(interface_name, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
@@ -428,7 +428,7 @@ def v8_value_to_local_cpp_value(interface_name, method, argument, index, return_
                                                for_storage=for_storage)
 
     if argument.is_variadic:
-        return v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise)
+        return v8_value_to_local_cpp_variadic_value(argument, index)
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
                                                 name, declare_variable=False,
                                                 use_exception_state=method.returns_promise)
