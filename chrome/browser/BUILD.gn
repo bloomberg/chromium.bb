@@ -329,6 +329,8 @@ split_static_library("browser") {
     "conflicts/module_list_manager_win.h",
     "conflicts/msi_util_win.cc",
     "conflicts/msi_util_win.h",
+    "conflicts/problematic_programs_updater_win.cc",
+    "conflicts/problematic_programs_updater_win.h",
     "conflicts/third_party_metrics_recorder_win.cc",
     "conflicts/third_party_metrics_recorder_win.h",
     "consent_auditor/consent_auditor_factory.cc",

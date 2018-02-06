@@ -86,6 +86,8 @@ ModuleInfoData::ModuleInfoData() : process_types(0), module_types(0) {}
 
 ModuleInfoData::~ModuleInfoData() = default;
 
+ModuleInfoData::ModuleInfoData(ModuleInfoData&& module_data) noexcept = default;
+
 // -----------------------------------------------------------------------------
 
 std::unique_ptr<ModuleInspectionResult> InspectModule(

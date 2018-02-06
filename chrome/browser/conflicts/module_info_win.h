@@ -91,6 +91,8 @@ struct ModuleInfoData {
   ModuleInfoData();
   ~ModuleInfoData();
 
+  ModuleInfoData(ModuleInfoData&& module_data) noexcept;
+
   // Set of all process types in which this module has been seen (may not be
   // currently present in a process of that type). This is a conversion of
   // ProcessType enumeration to a bitfield. See "ProcessTypeToBit" and

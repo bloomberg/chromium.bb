@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 
 namespace {
@@ -40,14 +40,8 @@ bool IsThirdPartyModule(const ModuleInfoData& module_data) {
 }  // namespace
 
 ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder(
-    ModuleDatabase* module_database) {
-  // base::Unretained() is safe here because ThirdPartyMetricsRecorder owns
-  // |installed_programs_| and the callback won't be invoked if this instance is
-  // destroyed.
-  installed_programs_.Initialize(
-      base::BindOnce(&ThirdPartyMetricsRecorder::OnInstalledProgramsInitialized,
-                     base::Unretained(this), module_database));
-}
+    const InstalledPrograms& installed_programs)
+    : installed_programs_(installed_programs) {}
 
 ThirdPartyMetricsRecorder::~ThirdPartyMetricsRecorder() = default;
 
@@ -106,9 +100,4 @@ void ThirdPartyMetricsRecorder::OnModuleDatabaseIdle() {
                                  catalog_module_count_, 1, 500, 50);
   base::UmaHistogramCustomCounts("ThirdPartyModules.Modules.Total",
                                  module_count_, 1, 500, 50);
-}
-
-void ThirdPartyMetricsRecorder::OnInstalledProgramsInitialized(
-    ModuleDatabase* module_database) {
-  module_database->AddObserver(this);
 }

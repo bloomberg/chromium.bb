@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 
 namespace {
 
@@ -32,23 +34,20 @@ constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 ModuleDatabase::ModuleDatabase(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : task_runner_(task_runner),
+      idle_timer_(
+          FROM_HERE,
+          kIdleTimeout,
+          base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this)),
+          false),
+      has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))),
-      module_list_manager_(std::move(task_runner)),
-      third_party_metrics_(this),
-      has_started_processing_(false),
-      idle_timer_(
-          FROM_HERE,
-          kIdleTimeout,
-          base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this)),
-          false),
-      weak_ptr_factory_(this) {
-  // TODO(pmonette): Wire up the module list manager observer.
-}
+      module_list_manager_(task_runner),
+      weak_ptr_factory_(this) {}
 
 ModuleDatabase::~ModuleDatabase() {
   if (this == g_module_database_win_instance)
@@ -240,6 +239,14 @@ void ModuleDatabase::OnDelayExpired() {
 }
 
 void ModuleDatabase::EnterIdleState() {
+  if (!installed_programs_.initialized()) {
+    // ModuleDatabase owns |installed_programs_|, so it is safe to use
+    // base::Unretained().
+    installed_programs_.Initialize(
+        base::BindOnce(&ModuleDatabase::OnInstalledProgramsInitialized,
+                       base::Unretained(this)));
+  }
+
   for (auto& observer : observer_list_)
     observer.OnModuleDatabaseIdle();
 }
@@ -249,4 +256,15 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
     if (module.second.inspection_result)
       observer->OnNewModuleFound(module.first, module.second);
   }
+}
+
+void ModuleDatabase::OnInstalledProgramsInitialized() {
+  third_party_metrics_ =
+      std::make_unique<ThirdPartyMetricsRecorder>(installed_programs_);
+  AddObserver(third_party_metrics_.get());
+
+  problematic_programs_updater_ =
+      ProblematicProgramsUpdater::MaybeCreate(installed_programs_);
+  if (problematic_programs_updater_)
+    AddObserver(problematic_programs_updater_.get());
 }

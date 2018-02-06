@@ -2434,6 +2434,14 @@ const char kNumberHistoryPageIOSPromoShown[] =
 
 // True if the user has dismissed the "desktop to iOS" history page promotion.
 const char kHistoryPageIOSPromoDismissed[] = "history_page_ios_promo_dismissed";
+
+// Acts as a cache to remember problematic programs through restarts. Used for
+// the third-party conflicts warning.
+const char kProblematicPrograms[] = "problematic_programs";
+
+// A boolean value, controlling whether third party software is allowed to
+// inject into Chrome's processes.
+const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 #endif
 
 // An integer that keeps track of prompt waves for the settings reset
@@ -2550,11 +2558,5 @@ const char kSitePerProcess[] = "site_isolation.site_per_process";
 // which prevent it from operating normally. (e.g. SitePerProcess.)
 const char kWebDriverOverridesIncompatiblePolicies[] =
     "webdriver.override_incompatible_policy";
-
-#if defined(OS_WIN)
-// A boolean value, controlling whether third party software is allowed to
-// inject into Chrome's processes.
-const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
-#endif
 
 }  // namespace prefs

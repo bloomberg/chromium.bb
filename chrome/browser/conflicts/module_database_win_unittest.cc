@@ -13,10 +13,12 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -43,6 +45,7 @@ class ModuleDatabaseTest : public testing::Test {
   ModuleDatabaseTest()
       : dll1_(kDll1),
         dll2_(kDll2),
+        scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(base::SequencedTaskRunnerHandle::Get()) {}
 
   const ModuleDatabase::ModuleMap& modules() {
@@ -56,7 +59,6 @@ class ModuleDatabaseTest : public testing::Test {
   }
 
   void RunSchedulerUntilIdle() {
-    // Call ScopedTaskEnvironment::RunUntilIdle() when it supports mocking time.
     base::TaskScheduler::GetInstance()->FlushForTesting();
     mock_time_task_runner_->RunUntilIdle();
   }
@@ -71,9 +73,11 @@ class ModuleDatabaseTest : public testing::Test {
 
  private:
   // Must be before |module_database_|.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner_;
+
+  ScopedTestingLocalState scoped_testing_local_state_;
 
   ModuleDatabase module_database_;
 

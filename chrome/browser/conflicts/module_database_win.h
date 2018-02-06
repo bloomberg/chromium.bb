@@ -14,19 +14,25 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_inspector_win.h"
 #include "chrome/browser/conflicts/module_list_manager_win.h"
-#include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
 class ModuleDatabaseObserver;
+class ProblematicProgramsUpdater;
+class ThirdPartyMetricsRecorder;
 
 namespace base {
 class FilePath;
 }
 
 // A class that keeps track of all modules loaded across Chrome processes.
+//
+// It is also the main class behind third-party modules tracking, and owns the
+// different classes that required to identify problematic programs and
+// record metrics.
 //
 // This is effectively a singleton, but doesn't use base::Singleton. The intent
 // is for the object to be created when Chrome is single-threaded, and for it
@@ -158,11 +164,19 @@ class ModuleDatabase {
   // OnNewModuleFound().
   void NotifyLoadedModules(ModuleDatabaseObserver* observer);
 
+  // Called when |installed_programs_| finishes its initialization.
+  void OnInstalledProgramsInitialized();
+
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // A map of all known modules.
   ModuleMap modules_;
+
+  base::Timer idle_timer_;
+
+  // Indicates if the ModuleDatabase has started processing module load events.
+  bool has_started_processing_;
 
   // Indicates if all shell extensions have been enumerated.
   bool shell_extensions_enumerated_;
@@ -173,17 +187,21 @@ class ModuleDatabase {
   // Inspects new modules on a blocking task runner.
   ModuleInspector module_inspector_;
 
+  // Holds observers.
+  base::ObserverList<ModuleDatabaseObserver> observer_list_;
+
   // Keeps track of where the most recent module list is located on disk, and
   // provides notifications when this changes.
   ModuleListManager module_list_manager_;
-  base::ObserverList<ModuleDatabaseObserver> observer_list_;
 
-  ThirdPartyMetricsRecorder third_party_metrics_;
+  // Retrieves the list of installed programs.
+  InstalledPrograms installed_programs_;
 
-  // Indicates if the ModuleDatabase has started processing module load events.
-  bool has_started_processing_;
+  // Records metrics on third-party modules.
+  std::unique_ptr<ThirdPartyMetricsRecorder> third_party_metrics_;
 
-  base::Timer idle_timer_;
+  // Maintains the cache of problematic programs.
+  std::unique_ptr<ProblematicProgramsUpdater> problematic_programs_updater_;
 
   // Weak pointer factory for this object. This is used when bouncing
   // incoming events to |task_runner_|.

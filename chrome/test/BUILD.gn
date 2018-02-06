@@ -2244,6 +2244,7 @@ test("unit_tests") {
     "../browser/conflicts/module_info_win_unittest.cc",
     "../browser/conflicts/module_inspector_win_unittest.cc",
     "../browser/conflicts/module_list_manager_win_unittest.cc",
+    "../browser/conflicts/problematic_programs_updater_win_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
     "../browser/content_settings/content_settings_mock_observer.h",
