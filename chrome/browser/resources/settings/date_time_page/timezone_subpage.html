@@ -17,6 +17,10 @@
       settings-dropdown-menu {
         --md-select-width: 400px;
       }
+      #timeZoneResolveMethodDropdown,
+      #timezoneSelector {
+        -webkit-padding-start: 28px;
+      }
     </style>
     <div class="settings-box block first">
       <settings-radio-group id="timeZoneRadioGroup"
@@ -42,7 +46,7 @@
             label="$i18n{setTimeZoneAutomaticallyOff}"
             no-extension-indicator>
         </controlled-radio-button>
-        <timezone-selector prefs="{{prefs}}"
+        <timezone-selector id="timezoneSelector" prefs="{{prefs}}"
             active-time-zone-display-name="{{activeTimeZoneDisplayName}}">
         </timezone-selector>
       </settings-radio-group>
