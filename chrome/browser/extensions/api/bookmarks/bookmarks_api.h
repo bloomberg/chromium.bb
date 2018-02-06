@@ -244,23 +244,36 @@ class BookmarksSearchFunction : public BookmarksFunction {
   bool RunOnReady() override;
 };
 
-class BookmarksRemoveFunction : public BookmarksFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE)
-
+class BookmarksRemoveFunctionBase : public BookmarksFunction {
  protected:
-  ~BookmarksRemoveFunction() override {}
+  ~BookmarksRemoveFunctionBase() override {}
+
+  virtual bool is_recursive() const = 0;
 
   // BookmarksFunction:
   bool RunOnReady() override;
 };
 
-class BookmarksRemoveTreeFunction : public BookmarksRemoveFunction {
+class BookmarksRemoveFunction : public BookmarksRemoveFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE);
+
+ protected:
+  ~BookmarksRemoveFunction() override {}
+
+  // BookmarksRemoveFunctionBase:
+  bool is_recursive() const override;
+};
+
+class BookmarksRemoveTreeFunction : public BookmarksRemoveFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.removeTree", BOOKMARKS_REMOVETREE)
 
  protected:
   ~BookmarksRemoveTreeFunction() override {}
+
+  // BookmarksRemoveFunctionBase:
+  bool is_recursive() const override;
 };
 
 class BookmarksCreateFunction : public BookmarksFunction {

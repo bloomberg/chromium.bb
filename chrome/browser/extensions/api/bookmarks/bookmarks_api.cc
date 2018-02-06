@@ -555,7 +555,7 @@ bool BookmarksSearchFunction::RunOnReady() {
   return true;
 }
 
-bool BookmarksRemoveFunction::RunOnReady() {
+bool BookmarksRemoveFunctionBase::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -567,15 +567,21 @@ bool BookmarksRemoveFunction::RunOnReady() {
   if (!GetBookmarkIdAsInt64(params->id, &id))
     return false;
 
-  bool recursive = false;
-  if (name() == BookmarksRemoveTreeFunction::function_name())
-    recursive = true;
-
   BookmarkModel* model = GetBookmarkModel();
   ManagedBookmarkService* managed = GetManagedBookmarkService();
-  if (!bookmark_api_helpers::RemoveNode(model, managed, id, recursive, &error_))
+  if (!bookmark_api_helpers::RemoveNode(model, managed, id, is_recursive(),
+                                        &error_)) {
     return false;
+  }
 
+  return true;
+}
+
+bool BookmarksRemoveFunction::is_recursive() const {
+  return false;
+}
+
+bool BookmarksRemoveTreeFunction::is_recursive() const {
   return true;
 }
 

@@ -21,13 +21,7 @@
 
 using bookmarks::BookmarkModel;
 
-// Flaky on Windows and Linux. http://crbug.com/383452
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_Bookmarks DISABLED_Bookmarks
-#else
-#define MAYBE_Bookmarks Bookmarks
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
   // Add test managed bookmarks to verify that the bookmarks API can read them
   // and can't modify them.
   Profile* profile = browser()->profile();
