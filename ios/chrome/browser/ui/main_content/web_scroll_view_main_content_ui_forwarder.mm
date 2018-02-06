@@ -13,16 +13,19 @@
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface WebScrollViewMainContentUIForwarder ()<
+    CRWWebStateObserver,
     CRWWebViewScrollViewProxyObserver,
     WebStateListObserving> {
-  // The observer bridge.
-  std::unique_ptr<WebStateListObserver> _bridge;
+  // The observer bridges.
+  std::unique_ptr<WebStateListObserver> _webStateListBridge;
+  std::unique_ptr<web::WebStateObserver> _webStateBridge;
 }
 
 // The updater being driven by this object.
@@ -48,11 +51,13 @@
     DCHECK(_updater);
     _webStateList = webStateList;
     DCHECK(_webStateList);
-    _bridge = std::make_unique<WebStateListObserverBridge>(self);
-    _webStateList->AddObserver(_bridge.get());
+    _webStateBridge = std::make_unique<web::WebStateObserverBridge>(self);
+    _webStateListBridge = std::make_unique<WebStateListObserverBridge>(self);
+    _webStateList->AddObserver(_webStateListBridge.get());
     web::WebState* activeWebState = webStateList->GetActiveWebState();
     if (activeWebState) {
       _webState = activeWebState;
+      _webState->AddObserver(_webStateBridge.get());
       _proxy = activeWebState->GetWebViewProxy().scrollViewProxy;
       [_proxy addObserver:self];
     }
@@ -62,7 +67,8 @@
 
 - (void)dealloc {
   // |-disconnect| must be called before deallocation.
-  DCHECK(!_bridge);
+  DCHECK(!_webStateListBridge);
+  DCHECK(!_webStateBridge);
   DCHECK(!_webState);
   DCHECK(!_proxy);
 }
@@ -72,7 +78,11 @@
 - (void)setWebState:(web::WebState*)webState {
   if (_webState == webState)
     return;
+  if (_webState)
+    _webState->RemoveObserver(_webStateBridge.get());
   _webState = webState;
+  if (_webState)
+    _webState->AddObserver(_webStateBridge.get());
   self.proxy =
       _webState ? _webState->GetWebViewProxy().scrollViewProxy : nullptr;
 }
@@ -88,9 +98,17 @@
 #pragma mark Public
 
 - (void)disconnect {
-  self.webStateList->RemoveObserver(_bridge.get());
-  _bridge = nullptr;
+  self.webStateList->RemoveObserver(_webStateListBridge.get());
+  _webStateListBridge = nullptr;
   self.webState = nullptr;
+  _webStateBridge = nullptr;
+}
+
+#pragma mark CRWWebStateObserver
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  [self.updater scrollWasInterrupted];
 }
 
 #pragma mark CRWWebViewScrollViewObserver

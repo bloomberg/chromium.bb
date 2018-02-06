@@ -110,4 +110,10 @@
   self.state.decelerating = NO;
 }
 
+- (void)scrollWasInterrupted {
+  self.state.scrolling = NO;
+  self.state.dragging = NO;
+  self.state.decelerating = NO;
+}
+
 @end
