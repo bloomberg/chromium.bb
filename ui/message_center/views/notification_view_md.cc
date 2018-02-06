@@ -119,10 +119,10 @@ constexpr int kMessageViewWidth =
     kLeftContentPadding.right() - kContentRowPadding.left() -
     kContentRowPadding.right();
 
-const int kMinPixelsPerTitleCharacter = 4;
+const int kMinPixelsPerTitleCharacterMD = 4;
 
 // Character limit = pixels per line * line limit / min. pixels per character.
-constexpr size_t kMessageCharacterLimit =
+constexpr size_t kMessageCharacterLimitMD =
     kNotificationWidth * kMessageExpandedLineLimit / 3;
 
 // The default is 12, so this normally come out to 13.
@@ -854,7 +854,7 @@ void NotificationViewMD::CreateOrUpdateTitleView(
   }
 
   int title_character_limit =
-      kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
+      kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacterMD;
 
   base::string16 title = gfx::TruncateString(
       notification.title(), title_character_limit, gfx::WORD_BREAK);
@@ -882,7 +882,7 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   }
 
   base::string16 text = gfx::TruncateString(
-      notification.message(), kMessageCharacterLimit, gfx::WORD_BREAK);
+      notification.message(), kMessageCharacterLimitMD, gfx::WORD_BREAK);
 
   const gfx::FontList& font_list = GetTextFontList();
 
