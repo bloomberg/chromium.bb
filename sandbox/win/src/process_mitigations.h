@@ -38,6 +38,9 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 bool ApplyProcessMitigationsToSuspendedProcess(HANDLE process,
                                                MitigationFlags flags);
 
+// Returns the list of process mitigations which can be enabled post startup.
+MitigationFlags GetAllowedPostStartupProcessMitigations();
+
 // Returns true if all the supplied flags can be set after a process starts.
 bool CanSetProcessMitigationsPostStartup(MitigationFlags flags);
 

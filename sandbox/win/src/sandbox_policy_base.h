@@ -174,7 +174,7 @@ class PolicyBase final : public TargetPolicy {
   base::HandlesToInheritVector handles_to_share_;
   bool enable_opm_redirection_;
 
-  scoped_refptr<AppContainerProfile> _app_container_profile;
+  scoped_refptr<AppContainerProfile> app_container_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };
