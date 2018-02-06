@@ -13,6 +13,8 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -103,6 +105,14 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
     layer_tree_frame_sink_->SubmitCompositorFrame(std::move(frame));
   }
 
+  void SendRenderPassList(RenderPassList* pass_list) {
+    auto frame = CompositorFrameBuilder()
+                     .SetRenderPassList(std::move(*pass_list))
+                     .Build();
+    pass_list->clear();
+    layer_tree_frame_sink_->SubmitCompositorFrame(std::move(frame));
+  }
+
   void SetUp() override {
     // Draw the first frame to start in an "unlocked" state.
     SwapBuffersWithDamage(display_rect_);
@@ -158,6 +168,95 @@ TEST_F(DirectLayerTreeFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
   task_runner_->RunUntilIdle();
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
+}
+
+// Test that hit_test_region_list are created correctly for the browser.
+TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
+  RenderPassList pass_list;
+
+  // Add a DrawQuad that is not a SurfaceDrawQuad. |hit_test_region_list_|
+  // shouldn't have any child regions.
+  auto pass1 = RenderPass::Create();
+  pass1->output_rect = display_rect_;
+  pass1->id = 1;
+  auto* shared_quad_state1 = pass1->CreateAndAppendSharedQuadState();
+  gfx::Rect rect1(display_rect_);
+  shared_quad_state1->SetAll(
+      gfx::Transform(), rect1 /* quad_layer_rect */,
+      rect1 /* visible_quad_layer_rect */, rect1 /*clip_rect */,
+      false /* is_clipped */, false /* are_contents_opaque */,
+      0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+  auto* quad1 = pass1->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  quad1->SetNew(shared_quad_state1, rect1 /* rect */, rect1 /* visible_rect */,
+                SK_ColorBLACK, false /* force_anti_aliasing_off */);
+  pass_list.push_back(std::move(pass1));
+  SendRenderPassList(&pass_list);
+  task_runner_->RunUntilIdle();
+
+  const auto* hit_test_region_list =
+      frame_sink_manager_.hit_test_manager()->GetActiveHitTestRegionList(
+          display_->CurrentSurfaceId());
+  EXPECT_TRUE(hit_test_region_list);
+  EXPECT_EQ(display_rect_, hit_test_region_list->bounds);
+  EXPECT_EQ(mojom::kHitTestMine, hit_test_region_list->flags);
+  EXPECT_FALSE(hit_test_region_list->regions.size());
+
+  // Add a SurfaceDrawQuad to one render pass, and add a SolidColorDrawQuad to
+  // another render pass. |hit_test_region_list_| should contain one child
+  // region corresponding to that SurfaceDrawQuad.
+  const SurfaceId child_surface_id(
+      FrameSinkId(1, 1), LocalSurfaceId(1, base::UnguessableToken::Create()));
+  auto pass2 = RenderPass::Create();
+  pass2->output_rect = display_rect_;
+  pass2->id = 2;
+  auto* shared_quad_state2 = pass2->CreateAndAppendSharedQuadState();
+  gfx::Rect rect2 = gfx::Rect(20, 20);
+  gfx::Transform transform2;
+  transform2.Translate(-200, -100);
+  shared_quad_state2->SetAll(
+      transform2, rect2 /* quad_layer_rect */,
+      rect2 /* visible_quad_layer_rect */, rect2 /*clip_rect */,
+      false /* is_clipped */, false /* are_contents_opaque */,
+      0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+  auto* quad2 = pass2->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
+  quad2->SetNew(shared_quad_state2, rect2 /* rect */, rect2 /* visible_rect */,
+                child_surface_id /* primary_surface_id */,
+                base::Optional<SurfaceId>() /* fallback_surface_id */,
+                SK_ColorBLACK, false /* stretch_content_to_fill_bounds */);
+  pass_list.push_back(std::move(pass2));
+
+  auto pass3 = RenderPass::Create();
+  pass3->output_rect = display_rect_;
+  pass3->id = 3;
+  auto* shared_quad_state3 = pass3->CreateAndAppendSharedQuadState();
+  gfx::Rect rect3(display_rect_);
+  shared_quad_state3->SetAll(
+      gfx::Transform(), rect3 /* quad_layer_rect */,
+      rect3 /* visible_quad_layer_rect */, rect3 /*clip_rect */,
+      false /* is_clipped */, false /* are_contents_opaque */,
+      0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+  auto* quad3 = pass3->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  quad3->SetNew(shared_quad_state3, rect3 /* rect */, rect3 /* visible_rect */,
+                SK_ColorBLACK, false /* force_anti_aliasing_off */);
+  pass_list.push_back(std::move(pass3));
+  SendRenderPassList(&pass_list);
+  task_runner_->RunUntilIdle();
+
+  const auto* hit_test_region_list1 =
+      frame_sink_manager_.hit_test_manager()->GetActiveHitTestRegionList(
+          display_->CurrentSurfaceId());
+  EXPECT_TRUE(hit_test_region_list1);
+  EXPECT_EQ(display_rect_, hit_test_region_list1->bounds);
+  EXPECT_EQ(mojom::kHitTestMine, hit_test_region_list1->flags);
+  EXPECT_EQ(1u, hit_test_region_list1->regions.size());
+  EXPECT_EQ(child_surface_id.frame_sink_id(),
+            hit_test_region_list1->regions[0]->frame_sink_id);
+  EXPECT_EQ(child_surface_id.local_surface_id(),
+            hit_test_region_list1->regions[0]->local_surface_id);
+  EXPECT_EQ(mojom::kHitTestChildSurface,
+            hit_test_region_list1->regions[0]->flags);
+  EXPECT_EQ(gfx::Rect(20, 20), hit_test_region_list1->regions[0]->rect);
+  EXPECT_EQ(transform2, hit_test_region_list1->regions[0]->transform);
 }
 
 }  // namespace

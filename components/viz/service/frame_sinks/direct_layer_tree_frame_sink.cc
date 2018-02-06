@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -114,7 +116,9 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     display_->SetLocalSurfaceId(local_surface_id_, device_scale_factor_);
   }
 
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  auto hit_test_region_list = CreateHitTestData(frame);
+  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame),
+                                  std::move(hit_test_region_list));
 }
 
 void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
@@ -188,6 +192,32 @@ void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
 
 void DirectLayerTreeFrameSink::OnContextLost() {
   // The display will be listening for OnContextLost(). Do nothing here.
+}
+
+mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
+    const CompositorFrame& frame) const {
+  auto hit_test_region_list = mojom::HitTestRegionList::New();
+  hit_test_region_list->flags = mojom::kHitTestMine;
+  hit_test_region_list->bounds.set_size(frame.size_in_pixels());
+
+  for (const auto& render_pass : frame.render_pass_list) {
+    for (const DrawQuad* quad : render_pass->quad_list) {
+      if (quad->material == DrawQuad::SURFACE_CONTENT) {
+        const SurfaceDrawQuad* surface_quad =
+            SurfaceDrawQuad::MaterialCast(quad);
+        auto hit_test_region = mojom::HitTestRegion::New();
+        const SurfaceId& surface_id = surface_quad->primary_surface_id;
+        hit_test_region->frame_sink_id = surface_id.frame_sink_id();
+        hit_test_region->local_surface_id = surface_id.local_surface_id();
+        hit_test_region->flags = mojom::kHitTestChildSurface;
+        hit_test_region->rect = surface_quad->rect;
+        hit_test_region->transform =
+            surface_quad->shared_quad_state->quad_to_target_transform;
+        hit_test_region_list->regions.push_back(std::move(hit_test_region));
+      }
+    }
+  }
+  return hit_test_region_list;
 }
 
 }  // namespace viz
