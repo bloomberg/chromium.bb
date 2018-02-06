@@ -608,64 +608,6 @@ void ScopedTransformOverviewWindow::EnsureVisible() {
   original_opacity_ = 1.f;
 }
 
-void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
-  if (minimized_widget_ && SplitViewController::ShouldAllowSplitView()) {
-    gfx::Point location(event->location());
-    ::wm::ConvertPointToScreen(minimized_widget_->GetNativeWindow(), &location);
-    switch (event->type()) {
-      case ui::ET_GESTURE_TAP_DOWN:
-        selector_item_->HandlePressEvent(location);
-        break;
-      case ui::ET_GESTURE_SCROLL_UPDATE:
-        selector_item_->HandleDragEvent(location);
-        break;
-      case ui::ET_SCROLL_FLING_START:
-      case ui::ET_GESTURE_SCROLL_END:
-        selector_item_->HandleReleaseEvent(location);
-        break;
-      case ui::ET_GESTURE_TAP:
-        selector_item_->ActivateDraggedWindow();
-        break;
-      case ui::ET_GESTURE_END:
-        selector_item_->ResetDraggedWindowGesture();
-        break;
-      default:
-        break;
-    }
-    event->SetHandled();
-  } else if (event->type() == ui::ET_GESTURE_TAP) {
-    EnsureVisible();
-    window_->Show();
-    wm::ActivateWindow(window_);
-  }
-}
-
-void ScopedTransformOverviewWindow::OnMouseEvent(ui::MouseEvent* event) {
-  if (minimized_widget_ && SplitViewController::ShouldAllowSplitView()) {
-    gfx::Point location(event->location());
-    ::wm::ConvertPointToScreen(minimized_widget_->GetNativeWindow(), &location);
-    switch (event->type()) {
-      case ui::ET_MOUSE_PRESSED:
-        selector_item_->HandlePressEvent(location);
-        break;
-      case ui::ET_MOUSE_DRAGGED:
-        selector_item_->HandleDragEvent(location);
-        break;
-      case ui::ET_MOUSE_RELEASED:
-        selector_item_->HandleReleaseEvent(location);
-        break;
-      default:
-        break;
-    }
-    event->SetHandled();
-  } else if (event->type() == ui::ET_MOUSE_PRESSED &&
-             event->IsOnlyLeftMouseButton()) {
-    EnsureVisible();
-    window_->Show();
-    wm::ActivateWindow(window_);
-  }
-}
-
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   // Add the mask which gives the window selector items rounded corners.
   ui::Layer* layer = minimized_widget_
@@ -700,7 +642,7 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   params.visible_on_all_workspaces = true;
   params.name = "OverviewModeMinimized";
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
-  params.accept_events = true;
+  params.accept_events = false;
   params.parent = window_->parent();
   minimized_widget_ = std::make_unique<views::Widget>();
   minimized_widget_->set_focus_on_creation(false);
@@ -711,7 +653,6 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   views::View* mirror_view =
       new wm::WindowMirrorView(window_, /*trilinear_filtering_on_init=*/false);
   mirror_view->SetVisible(true);
-  mirror_view->SetTargetHandler(this);
   minimized_widget_->SetContentsView(mirror_view);
   gfx::Rect bounds(window_->GetBoundsInScreen());
   gfx::Size preferred = mirror_view->GetPreferredSize();
