@@ -37,7 +37,7 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/channel_info.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "components/version_info/version_info.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -308,7 +308,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
     product_name.Release();
     if (ShouldReportFullNames())
       av_product.set_product_name(name);
-    av_product.set_product_name_hash(metrics::HashName(name));
+    av_product.set_product_name_hash(variations::HashName(name));
 
     base::win::ScopedBstr remediation_path;
     result = product->get_RemediationPath(remediation_path.Receive());
@@ -323,7 +323,8 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
     if (GetProductVersion(&path_str, &product_version)) {
       if (ShouldReportFullNames())
         av_product.set_product_version(product_version);
-      av_product.set_product_version_hash(metrics::HashName(product_version));
+      av_product.set_product_version_hash(
+          variations::HashName(product_version));
     }
 
     result_list.push_back(av_product);
@@ -440,7 +441,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
 
     if (ShouldReportFullNames())
       av_product.set_product_name(name);
-    av_product.set_product_name_hash(metrics::HashName(name));
+    av_product.set_product_name_hash(variations::HashName(name));
 
     base::win::ScopedVariant exe_path;
     hr = class_object->Get(L"pathToSignedProductExe", 0, exe_path.Receive(), 0,
@@ -458,7 +459,8 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
     if (GetProductVersion(&path_str, &product_version)) {
       if (ShouldReportFullNames())
         av_product.set_product_version(product_version);
-      av_product.set_product_version_hash(metrics::HashName(product_version));
+      av_product.set_product_version_hash(
+          variations::HashName(product_version));
     }
 
     result_list.push_back(av_product);
@@ -508,8 +510,8 @@ void AntiVirusMetricsProvider::MaybeAddUnregisteredAntiVirusProducts(
     av_product.set_product_name(product_name);
     av_product.set_product_version(product_version);
   }
-  av_product.set_product_name_hash(metrics::HashName(product_name));
-  av_product.set_product_version_hash(metrics::HashName(product_version));
+  av_product.set_product_name_hash(variations::HashName(product_name));
+  av_product.set_product_version_hash(variations::HashName(product_version));
 
   products->push_back(av_product);
 }

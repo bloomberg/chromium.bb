@@ -17,7 +17,7 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace metrics {
+namespace variations {
 
 // CachingPermutedEntropyProvider is an entropy provider that uses the same
 // algorithm as the PermutedEntropyProvider, but caches the results in Local
@@ -63,6 +63,6 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
   DISALLOW_COPY_AND_ASSIGN(CachingPermutedEntropyProvider);
 };
 
-}  // namespace metrics
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_

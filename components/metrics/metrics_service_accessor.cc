@@ -9,7 +9,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 
 namespace metrics {
 namespace {
@@ -46,7 +46,8 @@ bool MetricsServiceAccessor::RegisterSyntheticFieldTrial(
     base::StringPiece trial_name,
     base::StringPiece group_name) {
   return RegisterSyntheticFieldTrialWithNameAndGroupHash(
-      metrics_service, HashName(trial_name), HashName(group_name));
+      metrics_service, variations::HashName(trial_name),
+      variations::HashName(group_name));
 }
 
 // static
@@ -58,7 +59,7 @@ bool MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
     return false;
 
   metrics_service->synthetic_trial_registry()
-      ->RegisterSyntheticMultiGroupFieldTrial(HashName(trial_name),
+      ->RegisterSyntheticMultiGroupFieldTrial(variations::HashName(trial_name),
                                               group_name_hashes);
   return true;
 }
@@ -69,7 +70,7 @@ bool MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
     uint32_t trial_name_hash,
     base::StringPiece group_name) {
   return RegisterSyntheticFieldTrialWithNameAndGroupHash(
-      metrics_service, trial_name_hash, HashName(group_name));
+      metrics_service, trial_name_hash, variations::HashName(group_name));
 }
 
 // static

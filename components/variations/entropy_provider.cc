@@ -13,9 +13,9 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 
-namespace metrics {
+namespace variations {
 
 namespace internal {
 
@@ -133,4 +133,4 @@ uint16_t PermutedEntropyProvider::GetPermutedValue(
   return mapping[low_entropy_source_];
 }
 
-}  // namespace metrics
+}  // namespace variations

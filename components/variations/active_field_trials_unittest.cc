@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/string_piece.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -32,11 +32,11 @@ TEST(ActiveFieldTrialsTest, GetFieldTrialActiveGroups) {
   // Create our expected groups of IDs.
   ActiveGroupIdSet expected_groups;
   ActiveGroupId name_group_id;
-  name_group_id.name = metrics::HashName(trial_one);
-  name_group_id.group = metrics::HashName(group_one);
+  name_group_id.name = HashName(trial_one);
+  name_group_id.group = HashName(group_one);
   expected_groups.insert(name_group_id);
-  name_group_id.name = metrics::HashName(trial_two);
-  name_group_id.group = metrics::HashName(group_two);
+  name_group_id.name = HashName(trial_two);
+  name_group_id.group = HashName(group_two);
   expected_groups.insert(name_group_id);
 
   std::vector<ActiveGroupId> active_group_ids;
@@ -68,8 +68,8 @@ TEST(ActiveFieldTrialsTest, GetFieldTrialActiveGroupsWithSuffix) {
                                            &active_group_ids);
   EXPECT_EQ(1U, active_group_ids.size());
 
-  uint32_t expected_name = metrics::HashName("trial onesome_suffix");
-  uint32_t expected_group = metrics::HashName("group onesome_suffix");
+  uint32_t expected_name = HashName("trial onesome_suffix");
+  uint32_t expected_group = HashName("group onesome_suffix");
   EXPECT_EQ(expected_name, active_group_ids[0].name);
   EXPECT_EQ(expected_group, active_group_ids[0].group);
 }

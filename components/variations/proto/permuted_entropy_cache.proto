@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package metrics;
+package variations;
 
 // Represents a cache of permuted entropy mappings, where each entry maps from
 // a |randomization_seed| to a |value|.

@@ -12,7 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/pref_names.h"
 
-namespace metrics {
+namespace variations {
 
 CachingPermutedEntropyProvider::CachingPermutedEntropyProvider(
     PrefService* local_state,
@@ -105,4 +105,4 @@ bool CachingPermutedEntropyProvider::FindValue(uint32_t randomization_seed,
   return false;
 }
 
-}  // namespace metrics
+}  // namespace variations

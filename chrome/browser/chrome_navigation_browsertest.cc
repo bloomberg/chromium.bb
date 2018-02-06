@@ -18,7 +18,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -670,7 +670,7 @@ class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
     std::vector<std::string> synthetic_trials;
     variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
     std::string trial_hash =
-        base::StringPrintf("%x", metrics::HashName(trial_name));
+        base::StringPrintf("%x", variations::HashName(trial_name));
 
     for (auto entry : synthetic_trials) {
       if (base::StartsWith(entry, trial_hash, base::CompareCase::SENSITIVE))
@@ -684,8 +684,9 @@ class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
                                const std::string& trial_group) {
     std::vector<std::string> synthetic_trials;
     variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
-    std::string expected_entry = base::StringPrintf(
-        "%x-%x", metrics::HashName(trial_name), metrics::HashName(trial_group));
+    std::string expected_entry =
+        base::StringPrintf("%x-%x", variations::HashName(trial_name),
+                           variations::HashName(trial_group));
 
     for (auto entry : synthetic_trials) {
       if (entry == expected_entry)
