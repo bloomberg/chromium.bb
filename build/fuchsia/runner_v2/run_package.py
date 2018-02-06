@@ -32,18 +32,23 @@ def RunPackage(output_dir, target, package_path, run_args, symbolizer_config=Non
         logging.debug('  ' + next_line.strip().split('=')[0])
       logging.debug('')
 
-  # Copy the package.
-  deployed_package_path = '/tmp/package-%s.far' % uuid.uuid1()
+  # Deploy the package file to a unique path on the target.
+  # The package's UUID length is truncated so as to not overrun the filename
+  # field in the backtrace output.
+  unique_package_name = 'package-%s.far' % str(uuid.uuid4())[:18]
+  deployed_package_path = '/tmp/' + unique_package_name
   target.PutFile(package_path, deployed_package_path)
 
   try:
     command = ['run', deployed_package_path] + run_args
     process = target.RunCommandPiped(command,
                                      stdin=open(os.devnull, 'r'),
-                                     stdout=subprocess.PIPE)
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
     if symbolizer_config:
       # Decorate the process output stream with the symbolizer.
-      output = FilterStream(process.stdout, symbolizer_config, output_dir)
+      output = FilterStream(process.stdout, unique_package_name,
+                            symbolizer_config, output_dir)
     else:
       output = process.stdout
 
