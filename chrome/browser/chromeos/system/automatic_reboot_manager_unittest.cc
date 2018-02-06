@@ -39,7 +39,6 @@
 #include "content/public/browser/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/message_center.h"
 
 using ::testing::_;
 using ::testing::Invoke;

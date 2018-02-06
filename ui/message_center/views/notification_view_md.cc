@@ -24,7 +24,6 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/bounded_label.h"
-#include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -120,8 +119,14 @@ constexpr int kMessageViewWidth =
     kLeftContentPadding.right() - kContentRowPadding.left() -
     kContentRowPadding.right();
 
-// "Roboto-Regular, 13sp" is specified in the mock.
-constexpr int kTextFontSize = 13;
+const int kMinPixelsPerTitleCharacter = 4;
+
+// Character limit = pixels per line * line limit / min. pixels per character.
+constexpr size_t kMessageCharacterLimit =
+    kNotificationWidth * kMessageExpandedLineLimit / 3;
+
+// The default is 12, so this normally come out to 13.
+constexpr int kTextFontSizeDelta = 1;
 
 // In progress notification, if both the title and the message are long, the
 // message would be prioritized and the title would be elided.
@@ -132,10 +137,8 @@ constexpr double kProgressNotificationMessageRatio = 0.7;
 // FontList for the texts except for the header.
 gfx::FontList GetTextFontList() {
   gfx::Font default_font;
-  int font_size_delta = kTextFontSize - default_font.GetFontSize();
-  gfx::Font font = default_font.Derive(font_size_delta, gfx::Font::NORMAL,
+  gfx::Font font = default_font.Derive(kTextFontSizeDelta, gfx::Font::NORMAL,
                                        gfx::Font::Weight::NORMAL);
-  DCHECK_EQ(kTextFontSize, font.GetFontSize());
   return gfx::FontList(font);
 }
 
@@ -173,7 +176,7 @@ ItemView::ItemView(const NotificationItem& item) {
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(kRegularTextColorMD);
-  title->SetBackgroundColor(kDimTextBackgroundColor);
+  title->SetAutoColorReadabilityEnabled(false);
   AddChildView(title);
 
   views::Label* message = new views::Label(l10n_util::GetStringFUTF16(
@@ -182,7 +185,7 @@ ItemView::ItemView(const NotificationItem& item) {
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(kDimTextColorMD);
-  message->SetBackgroundColor(kDimTextBackgroundColor);
+  message->SetAutoColorReadabilityEnabled(false);
   AddChildView(message);
 }
 
@@ -886,7 +889,7 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   if (!message_view_) {
     message_view_ = new BoundedLabel(text, font_list);
     message_view_->SetLineLimit(kMaxLinesForMessageView);
-    message_view_->SetColors(kDimTextColorMD, kContextTextBackgroundColor);
+    message_view_->SetColor(kDimTextColorMD);
 
     left_content_->AddChildView(message_view_);
   } else {

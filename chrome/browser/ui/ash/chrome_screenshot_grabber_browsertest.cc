@@ -19,7 +19,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
-#include "ui/message_center/message_center_observer.h"
 
 class ChromeScreenshotGrabberBrowserTest
     : public InProcessBrowserTest,

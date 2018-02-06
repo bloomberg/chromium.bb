@@ -278,9 +278,9 @@ BoundedLabel::BoundedLabel(const base::string16& text)
 BoundedLabel::~BoundedLabel() {
 }
 
-void BoundedLabel::SetColors(SkColor textColor, SkColor backgroundColor) {
-  label_->SetEnabledColor(textColor);
-  label_->SetBackgroundColor(backgroundColor);
+void BoundedLabel::SetColor(SkColor text_color) {
+  label_->SetEnabledColor(text_color);
+  label_->SetAutoColorReadabilityEnabled(false);
 }
 
 void BoundedLabel::SetLineHeight(int height) {
