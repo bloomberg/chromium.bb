@@ -318,6 +318,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
  protected:
   bool RecalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
   bool RecalcPositionedDescendantsOverflowAfterStyleChange();
+  bool RecalcSelfOverflowAfterStyleChange();
 
  public:
   bool RecalcChildOverflowAfterStyleChange();
