@@ -42,10 +42,8 @@ PaintOpBufferSerializer::~PaintOpBufferSerializer() = default;
 void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
                                         const std::vector<size_t>* offsets,
                                         const Preamble& preamble) {
-  // Reset the canvas to the maximum extents of our playback rect, ensuring this
-  // rect will not reject images.
-  canvas_.resetCanvas(preamble.playback_rect.right(),
-                      preamble.playback_rect.bottom());
+  canvas_.resetCanvas(preamble.full_raster_rect.width(),
+                      preamble.full_raster_rect.height());
   DCHECK(canvas_.getTotalMatrix().isIdentity());
   static const int kInitialSaveCount = 1;
   DCHECK_EQ(kInitialSaveCount, canvas_.getSaveCount());
@@ -75,18 +73,103 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer) {
   SerializeBuffer(buffer, nullptr);
 }
 
+void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
+                                        const gfx::Rect& playback_rect,
+                                        const gfx::SizeF& post_scale) {
+  // Reset the canvas to the maximum extents of our playback rect, ensuring this
+  // rect will not reject images.
+  canvas_.resetCanvas(playback_rect.width(), playback_rect.height());
+  DCHECK(canvas_.getTotalMatrix().isIdentity());
+
+  PaintOp::SerializeOptions options(image_provider_, transfer_cache_, &canvas_,
+                                    canvas_.getTotalMatrix());
+  PlaybackParams params(image_provider_, canvas_.getTotalMatrix());
+
+  // TODO(khushalsagar): remove this clip rect if it's not needed.
+  if (!playback_rect.IsEmpty()) {
+    ClipRectOp clip_op(gfx::RectToSkRect(playback_rect), SkClipOp::kIntersect,
+                       false);
+    SerializeOp(&clip_op, options, params);
+  }
+
+  if (post_scale.width() != 1.f || post_scale.height() != 1.f) {
+    ScaleOp scale_op(post_scale.width(), post_scale.height());
+    SerializeOp(&scale_op, options, params);
+  }
+
+  SerializeBuffer(buffer, nullptr);
+}
+
 void PaintOpBufferSerializer::SerializePreamble(
     const Preamble& preamble,
     const PaintOp::SerializeOptions& options,
     const PlaybackParams& params) {
-  if (!preamble.translation.IsZero()) {
-    TranslateOp translate_op(-preamble.translation.x(),
-                             -preamble.translation.y());
+  DCHECK(preamble.full_raster_rect.Contains(preamble.playback_rect))
+      << "full: " << preamble.full_raster_rect.ToString()
+      << ", playback: " << preamble.playback_rect.ToString();
+
+  // Should full clears be clipped?
+  bool is_partial_raster = preamble.full_raster_rect != preamble.playback_rect;
+
+  // If rastering the entire tile, clear pre-clip.  This is so that any
+  // external texels outside of the playback rect also get cleared.  There's
+  // not enough information at this point to know if this texture is being
+  // reused from another tile, so the external texels could have been
+  // cleared to some wrong value.
+  if (preamble.requires_clear && !is_partial_raster) {
+    // If the tile is transparent, then just clear the whole thing.
+    DrawColorOp clear(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+    SerializeOp(&clear, options, params);
+  } else if (!is_partial_raster) {
+    // The last texel of this content is not guaranteed to be fully opaque, so
+    // inset by one to generate the fully opaque coverage rect .  This rect is
+    // in device space.
+    SkIRect coverage_device_rect = SkIRect::MakeWH(
+        preamble.content_size.width() - preamble.full_raster_rect.x() - 1,
+        preamble.content_size.height() - preamble.full_raster_rect.y() - 1);
+
+    SkIRect playback_device_rect = gfx::RectToSkIRect(preamble.playback_rect);
+    playback_device_rect.fLeft -= preamble.full_raster_rect.x();
+    playback_device_rect.fTop -= preamble.full_raster_rect.y();
+
+    // If not fully covered, we need to clear one texel inside the coverage rect
+    // (because of blending during raster) and one texel outside the full raster
+    // rect (because of bilinear filtering during draw).  See comments in
+    // RasterSource.
+    SkIRect device_column = SkIRect::MakeXYWH(coverage_device_rect.right(), 0,
+                                              2, coverage_device_rect.bottom());
+    // row includes the corner, column excludes it.
+    SkIRect device_row = SkIRect::MakeXYWH(0, coverage_device_rect.bottom(),
+                                           coverage_device_rect.right() + 2, 2);
+    // Only bother clearing if we need to.
+    if (SkIRect::Intersects(device_column, playback_device_rect)) {
+      Save(options, params);
+      ClipRectOp clip_op(SkRect::MakeFromIRect(device_column),
+                         SkClipOp::kIntersect, false);
+      SerializeOp(&clip_op, options, params);
+      DrawColorOp clear_op(preamble.background_color, SkBlendMode::kSrc);
+      SerializeOp(&clear_op, options, params);
+      RestoreToCount(1, options, params);
+    }
+    if (SkIRect::Intersects(device_row, playback_device_rect)) {
+      Save(options, params);
+      ClipRectOp clip_op(SkRect::MakeFromIRect(device_row),
+                         SkClipOp::kIntersect, false);
+      SerializeOp(&clip_op, options, params);
+      DrawColorOp clear_op(preamble.background_color, SkBlendMode::kSrc);
+      SerializeOp(&clear_op, options, params);
+      RestoreToCount(1, options, params);
+    }
+  }
+
+  if (!preamble.full_raster_rect.OffsetFromOrigin().IsZero()) {
+    TranslateOp translate_op(-preamble.full_raster_rect.x(),
+                             -preamble.full_raster_rect.y());
     SerializeOp(&translate_op, options, params);
   }
 
   if (!preamble.playback_rect.IsEmpty()) {
-    ClipRectOp clip_op(gfx::RectFToSkRect(preamble.playback_rect),
+    ClipRectOp clip_op(gfx::RectToSkRect(preamble.playback_rect),
                        SkClipOp::kIntersect, false);
     SerializeOp(&clip_op, options, params);
   }
@@ -101,6 +184,14 @@ void PaintOpBufferSerializer::SerializePreamble(
       preamble.post_scale.height() != 1.f) {
     ScaleOp scale_op(preamble.post_scale.width(), preamble.post_scale.height());
     SerializeOp(&scale_op, options, params);
+  }
+
+  // If tile is transparent and this is partial raster, just clear the
+  // section that is being rastered.  If this is opaque, trust the raster
+  // to write all the pixels inside of the full_raster_rect.
+  if (preamble.requires_clear && is_partial_raster) {
+    DrawColorOp clear_op(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+    SerializeOp(&clear_op, options, params);
   }
 }
 

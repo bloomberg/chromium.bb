@@ -1984,7 +1984,10 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
   PushDrawIRectOps(&buffer);
 
   PaintOpBufferSerializer::Preamble preamble;
-  preamble.playback_rect = gfx::RectF(1000.f, 1000.f);
+  preamble.content_size = gfx::Size(1000, 1000);
+  preamble.playback_rect = gfx::Rect(preamble.content_size);
+  preamble.full_raster_rect = preamble.playback_rect;
+  preamble.requires_clear = true;
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
@@ -2002,9 +2005,9 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
                                     options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
 
-  // The deserialized buffer has an extra pair of save/restores, for the
-  // preamble and root buffer.
-  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 3u);
+  // The deserialized buffer has an extra pair of save/restores and a clear, for
+  // the preamble and root buffer.
+  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 4u);
 
   size_t i = 0;
   auto serialized_iter = PaintOpBuffer::Iterator(&buffer);
@@ -2020,11 +2023,17 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
     }
 
     if (i == 2) {
-      // Preamble.
+      // Preamble partial raster clear.
+      ASSERT_EQ(op->GetType(), PaintOpType::DrawColor)
+          << PaintOpTypeToString(op->GetType());
+      continue;
+    }
+    if (i == 3) {
+      // Preamble playback rect clip.
       ASSERT_EQ(op->GetType(), PaintOpType::ClipRect)
           << PaintOpTypeToString(op->GetType());
       EXPECT_EQ(static_cast<const ClipRectOp*>(op)->rect,
-                gfx::RectFToSkRect(preamble.playback_rect));
+                gfx::RectToSkRect(preamble.playback_rect));
       continue;
     }
 
@@ -2045,10 +2054,12 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
 
 TEST(PaintOpSerializationTest, Preamble) {
   PaintOpBufferSerializer::Preamble preamble;
-  preamble.translation = gfx::Vector2dF(10.f, 20.f);
-  preamble.playback_rect = gfx::RectF(5.f, 5.f);
+  preamble.content_size = gfx::Size(30, 40);
+  preamble.full_raster_rect = gfx::Rect(10, 20, 8, 7);
+  preamble.playback_rect = gfx::Rect(12, 25, 1, 2);
   preamble.post_translation = gfx::Vector2dF(4.3f, 7.f);
   preamble.post_scale = gfx::SizeF(0.5f, 0.5f);
+  preamble.requires_clear = true;
 
   PaintOpBuffer buffer;
   buffer.push<DrawColorOp>(SK_ColorBLUE, SkBlendMode::kSrc);
@@ -2068,8 +2079,8 @@ TEST(PaintOpSerializationTest, Preamble) {
       PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
                                     options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
-  // 4 ops for the preamble and 2 for save/restore.
-  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 6u);
+  // 5 ops for the preamble and 2 for save/restore.
+  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 7u);
 
   size_t i = 0;
   for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
@@ -2087,8 +2098,8 @@ TEST(PaintOpSerializationTest, Preamble) {
       ASSERT_EQ(op->GetType(), PaintOpType::Translate)
           << PaintOpTypeToString(op->GetType());
       const auto* translate_op = static_cast<const TranslateOp*>(op);
-      EXPECT_EQ(translate_op->dx, -preamble.translation.x());
-      EXPECT_EQ(translate_op->dy, -preamble.translation.y());
+      EXPECT_EQ(translate_op->dx, -preamble.full_raster_rect.x());
+      EXPECT_EQ(translate_op->dy, -preamble.full_raster_rect.y());
       continue;
     }
 
@@ -2123,6 +2134,16 @@ TEST(PaintOpSerializationTest, Preamble) {
     }
 
     if (i == 6) {
+      // Partial raster clear goes last.
+      ASSERT_EQ(op->GetType(), PaintOpType::DrawColor)
+          << PaintOpTypeToString(op->GetType());
+      const auto* draw_color_op = static_cast<const DrawColorOp*>(op);
+      EXPECT_EQ(draw_color_op->color, SK_ColorTRANSPARENT);
+      EXPECT_EQ(draw_color_op->mode, SkBlendMode::kSrc);
+      continue;
+    }
+
+    if (i == 7) {
       // Buffer.
       EXPECT_EQ(*op, *buffer.GetFirstOp());
       continue;
@@ -2157,15 +2178,21 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
       PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
                                     options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
-  ASSERT_EQ(deserialized_buffer->size(), record->size() + 4u);
+  ASSERT_EQ(deserialized_buffer->size(), record->size() + 5u);
 
   size_t i = 0;
   auto serialized_iter = PaintOpBuffer::Iterator(record.get());
   for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
     i++;
-    if (i <= 2) {
+    if (i == 1 || i == 3) {
       // First 2 saves.
       ASSERT_EQ(op->GetType(), PaintOpType::Save)
+          << PaintOpTypeToString(op->GetType());
+      continue;
+    }
+    // Clear.
+    if (i == 2) {
+      ASSERT_EQ(op->GetType(), PaintOpType::DrawColor)
           << PaintOpTypeToString(op->GetType());
       continue;
     }
@@ -2216,7 +2243,12 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
                                       options_provider.image_provider(),
                                       options_provider.transfer_cache_helper());
     PaintOpBufferSerializer::Preamble preamble;
-    preamble.playback_rect = gfx::RectF(test_case.clip_rect);
+    preamble.playback_rect = test_case.clip_rect;
+    preamble.full_raster_rect = gfx::Rect(0, 0, test_case.clip_rect.right(),
+                                          test_case.clip_rect.bottom());
+    // Avoid clearing.
+    preamble.content_size = gfx::Size(1000, 1000);
+    preamble.requires_clear = false;
     serializer.Serialize(&buffer, nullptr, preamble);
     ASSERT_NE(serializer.written(), 0u);
 
@@ -2258,7 +2290,10 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
   buffer.push<RestoreOp>();
 
   PaintOpBufferSerializer::Preamble preamble;
-  preamble.playback_rect = gfx::RectF(1000.f, 1000.f);
+  preamble.content_size = gfx::Size(1000, 1000);
+  preamble.playback_rect = gfx::Rect(gfx::Size(100, 100));
+  preamble.full_raster_rect = preamble.playback_rect;
+  preamble.requires_clear = false;
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
@@ -2276,7 +2311,7 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
                                     options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
 
-  // 3 additional ops for save, clip and restore.
+  // 4 additional ops for save, clip, clear, and restore.
   ASSERT_EQ(deserialized_buffer->size(), 4u);
   size_t i = 0;
   for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {

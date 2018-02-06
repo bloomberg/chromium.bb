@@ -267,17 +267,6 @@ SkColor DebugColors::LayerAnimationBoundsFillColor() {
   return SkColorSetARGB(30, 112, 229, 0);
 }
 
-// Non-Painted rects in cyan.
-SkColor DebugColors::NonPaintedFillColor() { return SK_ColorCYAN; }
-
-// Missing picture rects in magenta.
-SkColor DebugColors::MissingPictureFillColor() { return SK_ColorMAGENTA; }
-
-// Missing resize invalidations are in salmon pink.
-SkColor DebugColors::MissingResizeInvalidations() {
-  return SkColorSetARGB(255, 255, 155, 170);
-}
-
 // Picture borders in transparent blue.
 SkColor DebugColors::PictureBorderColor() {
   return SkColorSetARGB(100, 0, 0, 200);

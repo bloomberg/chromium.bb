@@ -38,8 +38,7 @@ class FakeRasterSource : public RasterSource {
       base::WaitableEvent* playback_allowed_event);
 
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::ColorSpace& canvas_color_space,
-                        const PlaybackSettings& settings) const override;
+                        ImageProvider* image_provider) const override;
 
  protected:
   explicit FakeRasterSource(const RecordingSource* recording_source);

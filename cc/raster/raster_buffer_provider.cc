@@ -78,6 +78,8 @@ void RasterBufferProvider::PlaybackToMemory(
     stride = info.minRowBytes();
   DCHECK_GT(stride, 0u);
 
+  gfx::Size content_size = raster_source->GetContentSize(transform.scale());
+
   switch (format) {
     case viz::RGBA_8888:
     case viz::BGRA_8888:
@@ -90,8 +92,9 @@ void RasterBufferProvider::PlaybackToMemory(
       // See: http://crbug.com/721744.
       CHECK(surface);
       raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
-                                      canvas_bitmap_rect, canvas_playback_rect,
-                                      transform, playback_settings);
+                                      content_size, canvas_bitmap_rect,
+                                      canvas_playback_rect, transform,
+                                      playback_settings);
       return;
     }
     case viz::RGBA_4444:
@@ -99,9 +102,9 @@ void RasterBufferProvider::PlaybackToMemory(
       sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &surface_props);
       // TODO(reveman): Improve partial raster support by reducing the size of
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
-      raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
-                                      canvas_bitmap_rect, canvas_bitmap_rect,
-                                      transform, playback_settings);
+      raster_source->PlaybackToCanvas(
+          surface->getCanvas(), target_color_space, content_size,
+          canvas_bitmap_rect, canvas_bitmap_rect, transform, playback_settings);
 
       if (format == viz::ETC1) {
         TRACE_EVENT0("cc",
