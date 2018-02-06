@@ -635,8 +635,7 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
 
   BindFramebufferToTexture(render_pass->id);
   InitializeViewport(current_frame(), render_pass->output_rect,
-                     gfx::Rect(render_pass->output_rect.size()),
-                     GetRenderPassTextureSize(render_pass->id));
+                     gfx::Rect(render_pass->output_rect.size()), enlarged_size);
 }
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(

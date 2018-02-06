@@ -49,8 +49,6 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const override;
-  gfx::Size GetRenderPassTextureSize(
-      const RenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
   void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
