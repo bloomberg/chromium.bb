@@ -609,12 +609,15 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
 
   // Notifying the capturer of new compositor updates should cause no new copy
-  // requests to be issued at this point.
+  // requests to be issued at this point. However, the refresh timer should be
+  // scheduled to account for the capture of changed content that could not take
+  // place.
   const int first_uncaptured_frame = num_frames;
   AdvanceClockToNextVsync();
   NotifyBeginFrame(1, first_uncaptured_frame);
   NotifyFrameDamaged(1, first_uncaptured_frame);
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
   // Complete the first copy request. When notifying the capturer of another
   // compositor update, no new copy requests should be issued because the first
@@ -626,10 +629,12 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   NotifyBeginFrame(1, second_uncaptured_frame);
   NotifyFrameDamaged(1, second_uncaptured_frame);
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
   // Notify the capturer that the first frame has been consumed. Then, with
   // another compositor update, the capturer should issue another new copy
-  // request.
+  // request. The refresh timer should no longer be running because the next
+  // capture will satisfy the need to send updated content to the consumer.
   EXPECT_TRUE(consumer.TakeFrame(0));
   consumer.SendDoneNotification(0);
   const int first_capture_resumed_frame = second_uncaptured_frame + 1;
@@ -638,14 +643,17 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   NotifyFrameDamaged(1, first_capture_resumed_frame);
   ++num_frames;
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
 
   // With yet another compositor update, no new copy requests should be issued
-  // because the pipeline became saturated again.
+  // because the pipeline became saturated again. Once again, the refresh timer
+  // should be started to account for the need to capture at some future point.
   const int third_uncaptured_frame = first_capture_resumed_frame + 1;
   AdvanceClockToNextVsync();
   NotifyBeginFrame(1, third_uncaptured_frame);
   NotifyFrameDamaged(1, third_uncaptured_frame);
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
   // Complete all pending copy requests. Another compositor update should not
   // cause any new copy requests to be issued because all frames are being
@@ -660,6 +668,7 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   NotifyBeginFrame(1, fourth_uncaptured_frame);
   NotifyFrameDamaged(1, fourth_uncaptured_frame);
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
   // Notify the capturer that all frames have been consumed. Finally, with
   // another compositor update, capture should resume.
@@ -676,6 +685,7 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   frame_sink_.SendCopyOutputResult(frame_sink_.num_copy_results() - 1);
   ASSERT_EQ(frame_sink_.num_copy_results(), consumer.num_frames_received());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
 
   StopCapture();
 }

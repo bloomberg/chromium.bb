@@ -449,6 +449,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         VideoCaptureOracle::EventAsString(event), "atten_util_percent",
         base::saturated_cast<int>(utilization * 100.0f + 0.5f));
     oracle_.RecordWillNotCapture(utilization);
+    ScheduleRefreshFrame();
     return;
   }
 
