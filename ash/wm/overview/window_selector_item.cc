@@ -106,6 +106,10 @@ constexpr int kSelectorFadeInMilliseconds = 350;
 // Duration of background opacity transition when exiting overview mode.
 constexpr int kExitFadeInMilliseconds = 30;
 
+// Duration of the header and close button fade in/out when a drag is
+// started/finished on a window selector item;
+constexpr int kDragAnimationMs = 167;
+
 // Before closing a window animate both the window and the caption to shrink by
 // this fraction of size.
 constexpr float kPreCloseScale = 0.02f;
@@ -495,6 +499,14 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
 
   ShieldButton* listener_button() { return listener_button_; }
 
+  void SetCloseButtonVisibility(bool visible) {
+    AnimateLayerOpacity(close_button_->layer(), visible);
+  }
+
+  void SetTitleLabelVisibility(bool visible) {
+    AnimateLayerOpacity(background_->layer(), visible);
+  }
+
   void SetCannotSnapLabelVisibility(bool visible) {
     AnimateSplitviewLabelOpacity(cannot_snap_container_->layer(), visible);
   }
@@ -560,6 +572,34 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   const char* GetClassName() const override { return "CaptionContainerView"; }
 
  private:
+  // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
+  // otherwise. The tween type differs for |visible| and if |visible| is true
+  // there is a slight delay before the animation begins. Does not animate if
+  // opacity matches |visible|.
+  void AnimateLayerOpacity(ui::Layer* layer, bool visible) {
+    float target_opacity = visible ? 1.f : 0.f;
+    if (layer->GetTargetOpacity() == target_opacity)
+      return;
+
+    layer->SetOpacity(1.f - target_opacity);
+    {
+      ui::LayerAnimator* animator = layer->GetAnimator();
+      ui::ScopedLayerAnimationSettings settings(animator);
+      settings.SetPreemptionStrategy(
+          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      if (visible) {
+        animator->SchedulePauseForProperties(
+            base::TimeDelta::FromMilliseconds(kDragAnimationMs),
+            ui::LayerAnimationElement::OPACITY);
+      }
+      settings.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kDragAnimationMs));
+      settings.SetTweenType(visible ? gfx::Tween::LINEAR_OUT_SLOW_IN
+                                    : gfx::Tween::FAST_OUT_LINEAR_IN);
+      layer->SetOpacity(target_opacity);
+    }
+  }
+
   ShieldButton* listener_button_;
   WindowSelectorItem::RoundedContainerView* background_;
   views::ImageView* image_view_;
@@ -710,6 +750,17 @@ void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
   caption_container_view_->SetCannotSnapLabelVisibility(visible);
 }
 
+void WindowSelectorItem::OnSelectorItemDragStarted(WindowSelectorItem* item) {
+  caption_container_view_->SetCloseButtonVisibility(false);
+  if (item == this)
+    caption_container_view_->SetTitleLabelVisibility(false);
+}
+
+void WindowSelectorItem::OnSelectorItemDragEnded(WindowSelectorItem* item) {
+  caption_container_view_->SetCloseButtonVisibility(true);
+  caption_container_view_->SetTitleLabelVisibility(true);
+}
+
 ScopedTransformOverviewWindow::GridWindowFillMode
 WindowSelectorItem::GetWindowDimensionsType() const {
   return transform_window_.type();
@@ -789,6 +840,14 @@ void WindowSelectorItem::ActivateDraggedWindow() {
 void WindowSelectorItem::ResetDraggedWindowGesture() {
   DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
   window_selector_->ResetDraggedWindowGesture();
+}
+
+float WindowSelectorItem::GetCloseButtonOpacityForTesting() {
+  return close_button_->layer()->opacity();
+}
+
+float WindowSelectorItem::GetTitlebarOpacityForTesting() {
+  return background_view_->layer()->opacity();
 }
 
 gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {

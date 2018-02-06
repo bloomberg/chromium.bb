@@ -122,6 +122,12 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // window cannot be snapped.
   void UpdateCannotSnapWarningVisibility();
 
+  // Called when a WindowSelectorItem on any grid is dragged. Hides the close
+  // button when a drag is started, and reshows it when a drag is finished.
+  // Additional hides the title and window icon if |item| is this.
+  void OnSelectorItemDragStarted(WindowSelectorItem* item);
+  void OnSelectorItemDragEnded(WindowSelectorItem* item);
+
   ScopedTransformOverviewWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
 
@@ -149,6 +155,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void HandleDragEvent(const gfx::Point& location_in_screen);
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
+
+  float GetCloseButtonOpacityForTesting();
+  float GetTitlebarOpacityForTesting();
 
  private:
   class CaptionContainerView;
