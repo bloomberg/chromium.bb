@@ -45,12 +45,19 @@ decode_to_md5() {
 
   local md5_last_frame="$(tail -n1 "${output_file}" | awk '{print $1}')"
   local actual_md5="$(echo "${md5_last_frame}" | awk '{print $1}')"
-  [ "${actual_md5}" = "${expected_md5}" ] || return 1
+  if [ "${actual_md5}" = "${expected_md5}" ]; then
+    return 0
+  else
+    elog "MD5 mismatch:"
+    elog "Expected: ${expected_md5}"
+    elog "Actual: ${actual_md5}"
+    return 1
+  fi
 }
 
 decode_to_md5_av1() {
   # expected MD5 sum for the last frame.
-  local expected_md5="26d3ef1d60754a1f6acb603c3763efbe"
+  local expected_md5="f48cbb1efe36e37243df8e0d76a65678"
   local file="${AV1_IVF_FILE}"
 
   if [ "$(av1_decode_available)" = "yes" ]; then
