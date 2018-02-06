@@ -30,7 +30,7 @@ uintptr_t GetMask() {
   if (!IsWindows8Point1OrGreater()) {
     mask = internal::kASLRMaskBefore8_10;
   }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR))
 #elif defined(ARCH_CPU_32_BITS)
 #if defined(OS_WIN)
   BOOL is_wow64 = FALSE;
@@ -46,8 +46,17 @@ uintptr_t GetMask() {
 
 const size_t kSamples = 100;
 
+uintptr_t GetAddressBits() {
+  return reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
+}
+
+uintptr_t GetRandomBits() {
+  return GetAddressBits() - internal::kASLROffset;
+}
+
 }  // namespace
 
+// Configurations without ASLR are tested here.
 TEST(AddressSpaceRandomizationTest, DisabledASLR) {
   uintptr_t mask = GetMask();
   if (!mask) {
@@ -61,71 +70,132 @@ TEST(AddressSpaceRandomizationTest, DisabledASLR) {
   }
 }
 
-TEST(AddressSpaceRandomizationTest, Unpredictable) {
+TEST(AddressSpaceRandomizationTest, Alignment) {
   uintptr_t mask = GetMask();
-  // Configurations without ASLR are tested above, in DisabledASLR.
   if (!mask)
     return;
 
-  std::set<uintptr_t> addresses;
-  uintptr_t address_logical_sum = 0;
-  uintptr_t address_logical_product = static_cast<uintptr_t>(-1);
   for (size_t i = 0; i < kSamples; ++i) {
-    uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
-    // Test that address is in range.
-    EXPECT_LE(internal::kASLROffset, address);
-    EXPECT_GE(internal::kASLROffset + mask, address);
-    // Test that address is page aligned.
+    uintptr_t address = GetAddressBits();
     EXPECT_EQ(0ULL, (address & kPageAllocationGranularityOffsetMask));
-    // Test that address is unique (no collisions in kSamples tries)
-    CHECK_EQ(0ULL, addresses.count(address));
-    addresses.insert(address);
-    // Sum and product to test randomness at each bit position, below.
-    address -= internal::kASLROffset;
-    address_logical_sum |= address;
-    address_logical_product &= address;
   }
-  // All randomized bits in address_logical_sum should be set, since the
-  // likelihood of never setting any of the bits is 1 / (2 ^ kSamples) with a
-  // good RNG. Likewise, all bits in address_logical_product should be cleared.
-  // Note that we don't test unmasked high bits. These may be set if kASLROffset
-  // is larger than kASLRMask, or if adding kASLROffset generated a carry.
-  EXPECT_EQ(mask, address_logical_sum & mask);
-  EXPECT_EQ(0ULL, address_logical_product & mask);
+}
+
+TEST(AddressSpaceRandomizationTest, Range) {
+  uintptr_t mask = GetMask();
+  if (!mask)
+    return;
+
+  uintptr_t min = internal::kASLROffset;
+  uintptr_t max = internal::kASLROffset + internal::kASLRMask;
+  for (size_t i = 0; i < kSamples; ++i) {
+    uintptr_t address = GetAddressBits();
+    EXPECT_LE(min, address);
+    EXPECT_GE(max + mask, address);
+  }
 }
 
 TEST(AddressSpaceRandomizationTest, Predictable) {
   uintptr_t mask = GetMask();
-  // Configurations without ASLR are tested above, in DisabledASLR.
   if (!mask)
     return;
 
   const uintptr_t kInitialSeed = 0xfeed5eedULL;
   base::SetRandomPageBaseSeed(kInitialSeed);
 
-  // Make sure the addresses look random but are predictable.
-  std::set<uintptr_t> addresses;
   std::vector<uintptr_t> sequence;
   for (size_t i = 0; i < kSamples; ++i) {
     uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
     sequence.push_back(address);
-    // Test that address is in range.
-    EXPECT_LE(internal::kASLROffset, address);
-    EXPECT_GE(internal::kASLROffset + mask, address);
-    // Test that address is page aligned.
-    EXPECT_EQ(0ULL, (address & kPageAllocationGranularityOffsetMask));
-    // Test that address is unique (no collisions in kSamples tries)
-    CHECK_EQ(0ULL, addresses.count(address));
-    addresses.insert(address);
-    // Test that (address - offset) == (predicted & mask).
-    address -= internal::kASLROffset;
   }
 
-  // Make sure sequence is repeatable.
   base::SetRandomPageBaseSeed(kInitialSeed);
+
   for (size_t i = 0; i < kSamples; ++i) {
     uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
     EXPECT_EQ(address, sequence[i]);
+  }
+}
+
+// This randomness test is adapted from V8's PRNG tests.
+
+// Chi squared for getting m 0s out of n bits.
+double ChiSquared(int m, int n) {
+  double ys_minus_np1 = (m - n / 2.0);
+  double chi_squared_1 = ys_minus_np1 * ys_minus_np1 * 2.0 / n;
+  double ys_minus_np2 = ((n - m) - n / 2.0);
+  double chi_squared_2 = ys_minus_np2 * ys_minus_np2 * 2.0 / n;
+  return chi_squared_1 + chi_squared_2;
+}
+
+// Test for correlations between recent bits from the PRNG, or bits that are
+// biased.
+void RandomBitCorrelation(int random_bit) {
+#ifdef DEBUG
+  constexpr int kHistory = 2;
+  constexpr int kRepeats = 1000;
+#else
+  constexpr int kHistory = 8;
+  constexpr int kRepeats = 10000;
+#endif
+  constexpr int kPointerBits = 8 * sizeof(void*);
+  uintptr_t history[kHistory];
+  // The predictor bit is either constant 0 or 1, or one of the bits from the
+  // history.
+  for (int predictor_bit = -2; predictor_bit < kPointerBits; predictor_bit++) {
+    // The predicted bit is one of the bits from the PRNG.
+    for (int ago = 0; ago < kHistory; ago++) {
+      // We don't want to check whether each bit predicts itself.
+      if (ago == 0 && predictor_bit == random_bit)
+        continue;
+
+      // Enter the new random value into the history.
+      for (int i = ago; i >= 0; i--) {
+        history[i] = GetRandomBits();
+      }
+
+      // Find out how many of the bits are the same as the prediction bit.
+      int m = 0;
+      for (int i = 0; i < kRepeats; i++) {
+        uintptr_t random = GetRandomBits();
+        for (int j = ago - 1; j >= 0; j--)
+          history[j + 1] = history[j];
+        history[0] = random;
+
+        int predicted;
+        if (predictor_bit >= 0) {
+          predicted = (history[ago] >> predictor_bit) & 1;
+        } else {
+          predicted = predictor_bit == -2 ? 0 : 1;
+        }
+        int bit = (random >> random_bit) & 1;
+        if (bit == predicted)
+          m++;
+      }
+
+      // Chi squared analysis for k = 2 (2, states: same/not-same) and one
+      // degree of freedom (k - 1).
+      double chi_squared = ChiSquared(m, kRepeats);
+      // For 1 degree of freedom this corresponds to 1 in a million.  We are
+      // running ~8000 tests, so that would be surprising.
+      CHECK_GE(24, chi_squared);
+      // If the predictor bit is a fixed 0 or 1 then it makes no sense to
+      // repeat the test with a different age.
+      if (predictor_bit < 0)
+        break;
+    }
+  }
+}
+
+TEST(AddressSpaceRandomizationTest, Random) {
+  uintptr_t mask = GetMask();
+  if (!mask)
+    return;
+  // Use the mask to determine which bits to test.
+  for (int i = 0; mask != 0; mask >>= 1, i++) {
+    if ((mask & 0x1) == 0)
+      continue;
+    RandomBitCorrelation(i);
   }
 }
 
