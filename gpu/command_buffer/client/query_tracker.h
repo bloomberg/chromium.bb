@@ -30,8 +30,6 @@ class MappedMemoryManager;
 
 namespace gles2 {
 
-class GLES2Implementation;
-
 // Manages buckets of QuerySync instances in mapped memory.
 class GLES2_IMPL_EXPORT QuerySyncManager {
  public:
@@ -81,6 +79,33 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
   base::circular_deque<std::unique_ptr<Bucket>> buckets_;
 
   DISALLOW_COPY_AND_ASSIGN(QuerySyncManager);
+};
+
+class GLES2_IMPL_EXPORT QueryTrackerClient {
+ public:
+  // Issue commands directly to the command buffer.
+  virtual void IssueBeginQuery(GLenum target,
+                               GLuint id,
+                               uint32_t sync_data_shm_id,
+                               uint32_t sync_data_shm_offset) = 0;
+  virtual void IssueEndQuery(GLenum target, GLuint submit_count) = 0;
+  virtual void IssueQueryCounter(GLuint id,
+                                 GLenum target,
+                                 uint32_t sync_data_shm_id,
+                                 uint32_t sync_data_shm_offset,
+                                 GLuint submit_count) = 0;
+  virtual void IssueSetDisjointValueSync(uint32_t sync_data_shm_id,
+                                         uint32_t sync_data_shm_offset) = 0;
+
+  // Check for client side errors.
+  virtual GLenum GetClientSideGLError() = 0;
+
+  // Set client side error.
+  virtual void SetGLError(GLenum error,
+                          const char* function_name,
+                          const char* msg) = 0;
+
+  virtual CommandBufferHelper* cmd_buffer_helper() = 0;
 };
 
 // Tracks queries for client side of command buffer.
@@ -152,9 +177,9 @@ class GLES2_IMPL_EXPORT QueryTracker {
     friend class QueryTracker;
     friend class QueryTrackerTest;
 
-    void Begin(GLES2Implementation* gl);
-    void End(GLES2Implementation* gl);
-    void QueryCounter(GLES2Implementation* gl);
+    void Begin(QueryTrackerClient* client);
+    void End(QueryTrackerClient* client);
+    void QueryCounter(QueryTrackerClient* client);
 
     GLuint id_;
     GLenum target_;
@@ -175,10 +200,10 @@ class GLES2_IMPL_EXPORT QueryTracker {
   void RemoveQuery(GLuint id);
   void Shrink(CommandBufferHelper* helper);
 
-  bool BeginQuery(GLuint id, GLenum target, GLES2Implementation* gl);
-  bool EndQuery(GLenum target, GLES2Implementation* gl);
-  bool QueryCounter(GLuint id, GLenum target, GLES2Implementation* gl);
-  bool SetDisjointSync(GLES2Implementation* gl);
+  bool BeginQuery(GLuint id, GLenum target, QueryTrackerClient* client);
+  bool EndQuery(GLenum target, QueryTrackerClient* client);
+  bool QueryCounter(GLuint id, GLenum target, QueryTrackerClient* client);
+  bool SetDisjointSync(QueryTrackerClient* client);
   bool CheckAndResetDisjoint();
 
   int32_t DisjointCountSyncShmID() const {

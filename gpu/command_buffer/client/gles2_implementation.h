@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
+#include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/client/share_group.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
@@ -114,7 +115,6 @@ namespace gles2 {
 
 class GLES2CmdHelper;
 class VertexArrayObjectManager;
-class QueryTracker;
 
 // This class emulates GLES2 over command buffers. It can be used by a client
 // program so that the program does not need deal with shared memory and command
@@ -126,7 +126,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
     : public GLES2Interface,
       public ContextSupport,
       public GpuControlClient,
-      public base::trace_event::MemoryDumpProvider {
+      public base::trace_event::MemoryDumpProvider,
+      public QueryTrackerClient {
  public:
   // Stores GL state that never changes.
   struct GLES2_IMPL_EXPORT GLStaticState {
@@ -178,9 +179,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // The GLES2CmdHelper being used by this GLES2Implementation. You can use
   // this to issue cmds at a lower level for certain kinds of optimization.
   GLES2CmdHelper* helper() const;
-
-  // Gets client side generated errors.
-  GLenum GetClientSideGLError();
 
   // GLES2Interface implementation
   void FreeSharedMemory(void*) override;
@@ -293,6 +291,25 @@ class GLES2_IMPL_EXPORT GLES2Implementation
     return &share_group_context_data_;
   }
 
+  // QueryTrackerClient implementation.
+  void IssueBeginQuery(GLenum target,
+                       GLuint id,
+                       uint32_t sync_data_shm_id,
+                       uint32_t sync_data_shm_offset) override;
+  void IssueEndQuery(GLenum target, GLuint submit_count) override;
+  void IssueQueryCounter(GLuint id,
+                         GLenum target,
+                         uint32_t sync_data_shm_id,
+                         uint32_t sync_data_shm_offset,
+                         GLuint submit_count) override;
+  void IssueSetDisjointValueSync(uint32_t sync_data_shm_id,
+                                 uint32_t sync_data_shm_offset) override;
+  GLenum GetClientSideGLError() override;
+  CommandBufferHelper* cmd_buffer_helper() override;
+  void SetGLError(GLenum error,
+                  const char* function_name,
+                  const char* msg) override;
+
  private:
   friend class GLES2ImplementationTest;
   friend class VertexArrayObjectManager;
@@ -302,16 +319,15 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // Used to track whether an extension is available
   enum ExtensionStatus {
-      kAvailableExtensionStatus,
-      kUnavailableExtensionStatus,
-      kUnknownExtensionStatus
+    kAvailableExtensionStatus,
+    kUnavailableExtensionStatus,
+    kUnknownExtensionStatus
   };
 
   enum Dimension {
-      k2D,
-      k3D,
+    k2D,
+    k3D,
   };
-
 
   // Base class for mapped resources.
   struct MappedResource {
@@ -319,8 +335,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
         : access(_access),
           shm_id(_shm_id),
           shm_memory(mem),
-          shm_offset(offset) {
-    }
+          shm_offset(offset) {}
 
     // access mode. Currently only GL_WRITE_ONLY is valid
     GLenum access;
@@ -446,7 +461,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   GLenum GetGLError();
 
   // Sets our wrapper for the GLError.
-  void SetGLError(GLenum error, const char* function_name, const char* msg);
   void SetGLErrorInvalidEnum(
       const char* function_name, GLenum value, const char* label);
 
