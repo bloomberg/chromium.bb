@@ -89,6 +89,9 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // ContextLostObserver implementation:
   void OnContextLost() override;
 
+  mojom::HitTestRegionListPtr CreateHitTestData(
+      const CompositorFrame& frame) const;
+
   // This class is only meant to be used on a single thread.
   THREAD_CHECKER(thread_checker_);
 

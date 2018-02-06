@@ -262,6 +262,12 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }
+
+  // QueueFrame can fail in unit tests, so SubmitHitTestRegionList has to be
+  // called before that.
+  frame_sink_manager()->SubmitHitTestRegionList(
+      current_surface_id_, frame_index, std::move(hit_test_region_list));
+
   bool result = current_surface->QueueFrame(
       std::move(frame), frame_index,
       base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
@@ -283,9 +289,6 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     current_surface->SetPreviousFrameSurface(prev_surface);
     surface_manager_->DestroySurface(prev_surface->surface_id());
   }
-
-  frame_sink_manager()->SubmitHitTestRegionList(
-      current_surface_id_, frame_index, std::move(hit_test_region_list));
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
