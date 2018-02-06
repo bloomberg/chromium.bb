@@ -27,6 +27,7 @@
 #include "core/inspector/V8InspectorString.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 
@@ -483,9 +484,11 @@ void ThreadDebugger::startRepeatingTimer(
   timer_data_.push_back(data);
   timer_callbacks_.push_back(callback);
 
-  std::unique_ptr<Timer<ThreadDebugger>> timer = WTF::WrapUnique(
-      new Timer<ThreadDebugger>(this, &ThreadDebugger::OnTimer));
-  Timer<ThreadDebugger>* timer_ptr = timer.get();
+  std::unique_ptr<TaskRunnerTimer<ThreadDebugger>> timer =
+      std::make_unique<TaskRunnerTimer<ThreadDebugger>>(
+          Platform::Current()->CurrentThread()->Scheduler()->V8TaskRunner(),
+          this, &ThreadDebugger::OnTimer);
+  TaskRunnerTimer<ThreadDebugger>* timer_ptr = timer.get();
   timers_.push_back(std::move(timer));
   timer_ptr->StartRepeating(TimeDelta::FromSecondsD(interval), FROM_HERE);
 }

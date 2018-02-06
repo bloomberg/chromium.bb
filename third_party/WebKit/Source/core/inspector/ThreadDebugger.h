@@ -111,7 +111,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
 
   std::unique_ptr<v8_inspector::V8Inspector> v8_inspector_;
   std::unique_ptr<v8::TracingCpuProfiler> v8_tracing_cpu_profiler_;
-  Vector<std::unique_ptr<Timer<ThreadDebugger>>> timers_;
+  Vector<std::unique_ptr<TaskRunnerTimer<ThreadDebugger>>> timers_;
   Vector<v8_inspector::V8InspectorClient::TimerCallback> timer_callbacks_;
   Vector<void*> timer_data_;
   std::unique_ptr<UserGestureIndicator> user_gesture_indicator_;
