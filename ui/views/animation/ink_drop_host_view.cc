@@ -314,8 +314,11 @@ void InkDropHostView::ResetInkDropMask() {
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
   std::unique_ptr<InkDropImpl> ink_drop =
       std::make_unique<InkDropImpl>(this, size());
-  ink_drop->SetAutoHighlightMode(
-      views::InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
+  views::InkDropImpl::AutoHighlightMode mode =
+      PlatformStyle::kUseRipples
+          ? views::InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE
+          : views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE;
+  ink_drop->SetAutoHighlightMode(mode);
   return ink_drop;
 }
 
