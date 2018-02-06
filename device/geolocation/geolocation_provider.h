@@ -39,16 +39,6 @@ class GeolocationProvider {
   using RequestContextProducer = base::RepeatingCallback<void(
       base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>)>;
 
-  // Optional: Provide a callback to produce a request context for network
-  // geolocation requests.
-  // Call before using GetInstance().
-  DEVICE_GEOLOCATION_EXPORT static void SetRequestContextProducer(
-      RequestContextProducer request_context_producer);
-
-  // Optional: Provide a Google API key for network geolocation requests.
-  // Call before using Init() on the singleton GetInstance().
-  DEVICE_GEOLOCATION_EXPORT static void SetApiKey(const std::string& api_key);
-
   typedef base::Callback<void(const mojom::Geoposition&)>
       LocationUpdateCallback;
   typedef base::CallbackList<void(const mojom::Geoposition&)>::Subscription
