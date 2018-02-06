@@ -156,7 +156,6 @@ class OnDemandUpdater {
   friend class OnDemandTester;
   friend class policy::ComponentUpdaterPolicyTest;
   friend class SupervisedUserWhitelistInstaller;
-  friend class DownloadableStringsComponentInstallerPolicy;
   friend class ::ComponentsUI;
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;

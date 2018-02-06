@@ -1283,21 +1283,6 @@
             ]
         }
     ],
-    "DownloadableStrings": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DownloadableStrings"
-                    ]
-                }
-            ]
-        }
-    ],
     "DownloadsUi": [
         {
             "platforms": [
