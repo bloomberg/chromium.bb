@@ -963,15 +963,6 @@ TEST_F(ThumbnailDatabaseTest, Version8) {
 }
 
 TEST_F(ThumbnailDatabaseTest, Recovery) {
-  // This code tests the recovery module in concert with Chromium's
-  // custom recover virtual table.  Under USE_SYSTEM_SQLITE, this is
-  // not available.  This is detected dynamically because corrupt
-  // databases still need to be handled, perhaps by Raze(), and the
-  // recovery module is an obvious layer to abstract that to.
-  // TODO(shess): Handle that case for real!
-  if (!sql::Recovery::FullRecoverySupported())
-    return;
-
   // Create an example database.
   {
     EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v8.sql"));
@@ -1084,15 +1075,6 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
 }
 
 TEST_F(ThumbnailDatabaseTest, Recovery7) {
-  // This code tests the recovery module in concert with Chromium's
-  // custom recover virtual table.  Under USE_SYSTEM_SQLITE, this is
-  // not available.  This is detected dynamically because corrupt
-  // databases still need to be handled, perhaps by Raze(), and the
-  // recovery module is an obvious layer to abstract that to.
-  // TODO(shess): Handle that case for real!
-  if (!sql::Recovery::FullRecoverySupported())
-    return;
-
   // Create an example database without loading into ThumbnailDatabase
   // (which would upgrade it).
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v7.sql"));
@@ -1188,10 +1170,6 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
 }
 
 TEST_F(ThumbnailDatabaseTest, Recovery6) {
-  // TODO(shess): See comment at top of Recovery test.
-  if (!sql::Recovery::FullRecoverySupported())
-    return;
-
   // Create an example database without loading into ThumbnailDatabase
   // (which would upgrade it).
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v6.sql"));
@@ -1236,10 +1214,6 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
 }
 
 TEST_F(ThumbnailDatabaseTest, Recovery5) {
-  // TODO(shess): See comment at top of Recovery test.
-  if (!sql::Recovery::FullRecoverySupported())
-    return;
-
   // Create an example database without loading into ThumbnailDatabase
   // (which would upgrade it).
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v5.sql"));

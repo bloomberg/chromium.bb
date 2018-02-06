@@ -141,12 +141,6 @@ void RecordRecoveryEvent(RecoveryEventType recovery_event) {
 }  // namespace
 
 // static
-bool Recovery::FullRecoverySupported() {
-  // TODO(shess): See comment in Init().
-  return true;
-}
-
-// static
 std::unique_ptr<Recovery> Recovery::Begin(Connection* connection,
                                           const base::FilePath& db_path) {
   // Recovery is likely to be used in error handling.  Since recovery changes
