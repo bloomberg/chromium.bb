@@ -685,6 +685,16 @@ void WindowGrid::UpdateCannotSnapWarningVisibility() {
     window_selector_item->UpdateCannotSnapWarningVisibility();
 }
 
+void WindowGrid::OnSelectorItemDragStarted(WindowSelectorItem* item) {
+  for (auto& window_selector_item : window_list_)
+    window_selector_item->OnSelectorItemDragStarted(item);
+}
+
+void WindowGrid::OnSelectorItemDragEnded(WindowSelectorItem* item) {
+  for (auto& window_selector_item : window_list_)
+    window_selector_item->OnSelectorItemDragEnded(item);
+}
+
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));

@@ -2121,6 +2121,48 @@ TEST_F(WindowSelectorTest, ExtremeWindowBounds) {
             normal_item->GetWindowDimensionsType());
 }
 
+// Verify that the window selector items titlebar and close button change
+// visibility when a item is being dragged.
+TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+
+  UpdateDisplay("400x400");
+  const gfx::Rect bounds(10, 10, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  // Dragging is only allowed in tablet mode.
+  RunAllPendingInMessageLoop();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  ToggleOverview();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+
+  // Start the drag on |item1|. Verify the dragged item, |item1| has both the
+  // close button and titlebar hidden. All other items, |item2| should only have
+  // the close button hidden.
+  GetEventGenerator().MoveMouseTo(item1->target_bounds().CenterPoint());
+  GetEventGenerator().PressLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(0.f, item1->GetTitlebarOpacityForTesting());
+  EXPECT_EQ(0.f, item1->GetCloseButtonOpacityForTesting());
+  EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
+  EXPECT_EQ(0.f, item2->GetCloseButtonOpacityForTesting());
+
+  // Drag |item1| in a way so that |window1| does not get activated (drags
+  // within a certain threshold count as clicks). Verify the close button and
+  // titlebar is visible for all items.
+  GetEventGenerator().MoveMouseTo(gfx::Point(200, 200));
+  GetEventGenerator().ReleaseLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1.f, item1->GetTitlebarOpacityForTesting());
+  EXPECT_EQ(1.f, item1->GetCloseButtonOpacityForTesting());
+  EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
+  EXPECT_EQ(1.f, item2->GetCloseButtonOpacityForTesting());
+}
+
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
  public:
   SplitViewWindowSelectorTest() = default;
