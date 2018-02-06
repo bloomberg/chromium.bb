@@ -1703,6 +1703,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
+      typedom_types: ["Length", "Percent"]
     },
     {
       name: "marker-end",
