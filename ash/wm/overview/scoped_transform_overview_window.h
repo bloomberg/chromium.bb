@@ -15,7 +15,6 @@
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -50,8 +49,7 @@ class WindowSelectorItem;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedTransformOverviewWindow
-    : public ui::EventHandler,
-      public ui::ImplicitAnimationObserver {
+    : public ui::ImplicitAnimationObserver {
  public:
   // Overview windows have certain properties if their aspect ratio exceedes a
   // threshold. This enum keeps track of which category the window falls into,
@@ -179,10 +177,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Called via WindowSelectorItem from WindowGrid when |window_|'s bounds
   // change. Must be called before PositionWindows in WindowGrid.
   void UpdateWindowDimensionsType();
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
