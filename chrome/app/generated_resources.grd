@@ -7115,12 +7115,22 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Enterprise sign-in profile linking -->
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account sign-in">
-        Create a new profile
-      </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE" desc="Text of the button to link the current profile with the signed-in enterprise account">
-        Link data
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account sign-in">
+          Create a New Profile
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE" desc="Text of the button to link the current profile with the signed-in enterprise account">
+          Link Data
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account sign-in">
+          Create a new profile
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE" desc="Text of the button to link the current profile with the signed-in enterprise account">
+          Link data
+        </message>
+      </if>
 
       <message name="IDS_ENTERPRISE_SIGNIN_ALERT" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
         This account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
