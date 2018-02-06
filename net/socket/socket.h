@@ -65,12 +65,10 @@ class NET_EXPORT Socket {
   // Disconnected before the write completes, the callback will not be invoked.
   // |traffic_annotation| provides the required description for auditing. Please
   // refer to //docs/network_traffic_annotations.md for more details.
-  // TODO(crbug.com/656607): Remove default value.
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     const CompletionCallback& callback,
-                    const NetworkTrafficAnnotationTag& traffic_annotation =
-                        NO_TRAFFIC_ANNOTATION_BUG_656607) = 0;
+                    const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Set the receive buffer size (in bytes) for the socket.
   // Note: changing this value can affect the TCP window size on some platforms.

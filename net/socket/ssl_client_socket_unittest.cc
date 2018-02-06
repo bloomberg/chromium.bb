@@ -68,7 +68,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -325,7 +325,7 @@ int SynchronousErrorStreamSocket::Write(
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   if (have_write_error_)
     return pending_write_error_;
-  return transport_->Write(buf, buf_len, callback);
+  return transport_->Write(buf, buf_len, callback, traffic_annotation);
 }
 
 // FakeBlockingStreamSocket wraps an existing StreamSocket and simulates the
@@ -491,7 +491,7 @@ int FakeBlockingStreamSocket::Write(
   DCHECK_LE(0, len);
 
   if (!should_block_write_)
-    return transport_->Write(buf, len, callback);
+    return transport_->Write(buf, len, callback, traffic_annotation);
 
   // Schedule the write, but do nothing.
   DCHECK(!pending_write_buf_.get());
@@ -562,8 +562,9 @@ void FakeBlockingStreamSocket::UnblockWrite() {
   if (!pending_write_buf_.get())
     return;
 
-  int rv = transport_->Write(
-      pending_write_buf_.get(), pending_write_len_, pending_write_callback_);
+  int rv =
+      transport_->Write(pending_write_buf_.get(), pending_write_len_,
+                        pending_write_callback_, TRAFFIC_ANNOTATION_FOR_TESTS);
   pending_write_buf_ = NULL;
   pending_write_len_ = -1;
   if (rv == ERR_IO_PENDING) {
@@ -641,7 +642,7 @@ class CountingStreamSocket : public WrappedStreamSocket {
             const CompletionCallback& callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override {
     write_count_++;
-    return transport_->Write(buf, buf_len, callback);
+    return transport_->Write(buf, buf_len, callback, traffic_annotation);
   }
 
   int read_count() const { return read_count_; }
@@ -1121,8 +1122,8 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 
       // Write the request.
       rv = callback.GetResult(sock->Write(request_buffer.get(),
-                                          kRequestTextSize,
-                                          callback.callback()));
+                                          kRequestTextSize, callback.callback(),
+                                          TRAFFIC_ANNOTATION_FOR_TESTS));
       EXPECT_EQ(kRequestTextSize, rv);
 
       // The read will hang; it's waiting for the peer to complete the
@@ -1359,8 +1360,9 @@ TEST_P(SSLClientSocketReadTest, Read) {
       new IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = callback.GetResult(sock->Write(
-      request_buffer.get(), arraysize(request_text) - 1, callback.callback()));
+  rv = callback.GetResult(
+      sock->Write(request_buffer.get(), arraysize(request_text) - 1,
+                  callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
@@ -1448,8 +1450,9 @@ TEST_P(SSLClientSocketReadTest, Read_WithSynchronousError) {
   scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestTextSize));
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
 
-  rv = callback.GetResult(
-      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
+  rv = callback.GetResult(sock->Write(request_buffer.get(), kRequestTextSize,
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(kRequestTextSize, rv);
 
   // Simulate an unclean/forcible shutdown.
@@ -1511,8 +1514,9 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousError) {
   // This write should complete synchronously, because the TLS ciphertext
   // can be created and placed into the outgoing buffers independent of the
   // underlying transport.
-  rv = callback.GetResult(
-      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
+  rv = callback.GetResult(sock->Write(request_buffer.get(), kRequestTextSize,
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(kRequestTextSize, rv);
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
@@ -1576,8 +1580,9 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousErrorNoRead) {
   // This write should complete synchronously, because the TLS ciphertext
   // can be created and placed into the outgoing buffers independent of the
   // underlying transport.
-  rv = callback.GetResult(
-      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
+  rv = callback.GetResult(sock->Write(request_buffer.get(), kRequestTextSize,
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_EQ(kRequestTextSize, rv);
 
   // Let the event loop spin for a little bit of time. Even on platforms where
@@ -1620,8 +1625,9 @@ TEST_P(SSLClientSocketReadTest, Read_FullDuplex) {
   scoped_refptr<IOBuffer> request_buffer(new StringIOBuffer(request_text));
 
   TestCompletionCallback callback2;  // Used for Write only.
-  rv = callback2.GetResult(sock_->Write(
-      request_buffer.get(), request_text.size(), callback2.callback()));
+  rv = callback2.GetResult(
+      sock_->Write(request_buffer.get(), request_text.size(),
+                   callback2.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(request_text.size()), rv);
 
   // Now get the Read result.
@@ -1692,9 +1698,8 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
 
   // Attempt to write the remaining data. OpenSSL will return that its blocked
   // because the underlying transport is blocked.
-  rv = raw_sock->Write(request_buffer.get(),
-                       request_buffer->BytesRemaining(),
-                       callback.callback());
+  rv = raw_sock->Write(request_buffer.get(), request_buffer->BytesRemaining(),
+                       callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   ASSERT_FALSE(callback.have_result());
 
@@ -1757,8 +1762,9 @@ TEST_P(SSLClientSocketReadTest, Read_WithWriteError) {
   scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestTextSize));
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
 
-  rv = callback.GetResult(
-      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
+  rv = callback.GetResult(sock->Write(request_buffer.get(), kRequestTextSize,
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(kRequestTextSize, rv);
 
   // Start a hanging read.
@@ -1782,9 +1788,9 @@ TEST_P(SSLClientSocketReadTest, Read_WithWriteError) {
 
   // Write as much data as possible until hitting an error.
   do {
-    rv = callback.GetResult(sock->Write(long_request_buffer.get(),
-                                        long_request_buffer->BytesRemaining(),
-                                        callback.callback()));
+    rv = callback.GetResult(sock->Write(
+        long_request_buffer.get(), long_request_buffer->BytesRemaining(),
+        callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
     if (rv > 0) {
       long_request_buffer->DidConsume(rv);
       // Abort if the entire input is ever consumed. The input is larger than
@@ -1936,8 +1942,9 @@ TEST_P(SSLClientSocketReadTest, Read_SmallChunks) {
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
   TestCompletionCallback callback;
-  rv = callback.GetResult(sock_->Write(
-      request_buffer.get(), arraysize(request_text) - 1, callback.callback()));
+  rv = callback.GetResult(
+      sock_->Write(request_buffer.get(), arraysize(request_text) - 1,
+                   callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(1));
@@ -1973,8 +1980,9 @@ TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
       new IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = callback.GetResult(sock->Write(
-      request_buffer.get(), arraysize(request_text) - 1, callback.callback()));
+  rv = callback.GetResult(
+      sock->Write(request_buffer.get(), arraysize(request_text) - 1,
+                  callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_GT(rv, 0);
   ASSERT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
@@ -2007,8 +2015,9 @@ TEST_P(SSLClientSocketReadTest, Read_Interrupted) {
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
   TestCompletionCallback callback;
-  rv = callback.GetResult(sock_->Write(
-      request_buffer.get(), arraysize(request_text) - 1, callback.callback()));
+  rv = callback.GetResult(
+      sock_->Write(request_buffer.get(), arraysize(request_text) - 1,
+                   callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
   // Do a partial read and then exit.  This test should not crash!
@@ -2041,8 +2050,9 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
       new IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = callback.GetResult(sock->Write(
-      request_buffer.get(), arraysize(request_text) - 1, callback.callback()));
+  rv = callback.GetResult(
+      sock->Write(request_buffer.get(), arraysize(request_text) - 1,
+                  callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
   TestNetLogEntry::List entries;
@@ -2659,8 +2669,9 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   memcpy(request_buffer->data(), kRequestText, kRequestLen);
 
   TestCompletionCallback callback;
-  rv = callback.GetResult(
-      sock_->Write(request_buffer.get(), kRequestLen, callback.callback()));
+  rv = callback.GetResult(sock_->Write(request_buffer.get(), kRequestLen,
+                                       callback.callback(),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(kRequestLen), rv);
 
   // The socket has now been used.
@@ -2739,7 +2750,8 @@ TEST_F(SSLClientSocketTest, ReusableAfterWrite) {
   // outer Write operation.
   EXPECT_EQ(static_cast<int>(kRequestLen),
             callback.GetResult(sock->Write(request_buffer.get(), kRequestLen,
-                                           callback.callback())));
+                                           callback.callback(),
+                                           TRAFFIC_ANNOTATION_FOR_TESTS)));
 
   // The Write operation is complete, so the socket should be treated as
   // reusable, in case the server returns an HTTP response before completely
@@ -4313,7 +4325,8 @@ TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
 
   // Write a single record on the server.
   scoped_refptr<IOBuffer> write_buf(new StringIOBuffer("a"));
-  server_rv = server->Write(write_buf.get(), 1, server_callback.callback());
+  server_rv = server->Write(write_buf.get(), 1, server_callback.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Read that record on the server, but with a much larger buffer than
   // necessary.

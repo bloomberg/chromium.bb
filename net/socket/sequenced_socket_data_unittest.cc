@@ -16,6 +16,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,7 +123,8 @@ class ReentrantHelper {
       scoped_refptr<IOBuffer> write_buf = new IOBuffer(second_len_);
       memcpy(write_buf->data(), second_write_data_, second_len_);
       ASSERT_EQ(second_rv_,
-                socket_->Write(write_buf.get(), second_len_, second_callback_));
+                socket_->Write(write_buf.get(), second_len_, second_callback_,
+                               TRAFFIC_ANNOTATION_FOR_TESTS));
     }
   }
 
@@ -343,10 +345,12 @@ void SequencedSocketDataTest::AssertWriteReturns(const char* data,
   memcpy(buf->data(), data, len);
 
   if (rv == ERR_IO_PENDING) {
-    ASSERT_EQ(rv, sock_->Write(buf.get(), len, write_callback_.callback()));
+    ASSERT_EQ(rv, sock_->Write(buf.get(), len, write_callback_.callback(),
+                               TRAFFIC_ANNOTATION_FOR_TESTS));
     ASSERT_FALSE(write_callback_.have_result());
   } else {
-    ASSERT_EQ(rv, sock_->Write(buf.get(), len, failing_callback_));
+    ASSERT_EQ(rv, sock_->Write(buf.get(), len, failing_callback_,
+                               TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 }
 
@@ -388,7 +392,8 @@ void SequencedSocketDataTest::ReentrantAsyncWriteCallback(
   EXPECT_EQ(expected_rv, rv);
   scoped_refptr<IOBuffer> write_buf(new IOBuffer(len));
   memcpy(write_buf->data(), data, len);
-  EXPECT_THAT(sock_->Write(write_buf.get(), len, callback),
+  EXPECT_THAT(sock_->Write(write_buf.get(), len, callback,
+                           TRAFFIC_ANNOTATION_FOR_TESTS),
               IsError(ERR_IO_PENDING));
 }
 
@@ -796,12 +801,12 @@ TEST_F(SequencedSocketDataTest, SyncWriteFromCompletionCallback) {
 
   scoped_refptr<IOBuffer> write_buf(new IOBuffer(kLen1));
   memcpy(write_buf->data(), kMsg1, kLen1);
-  ASSERT_EQ(
-      ERR_IO_PENDING,
-      sock_->Write(
-          write_buf.get(), kLen1,
-          base::Bind(&SequencedSocketDataTest::ReentrantWriteCallback,
-                     base::Unretained(this), kLen1, kMsg2, kLen2, kLen2)));
+  ASSERT_EQ(ERR_IO_PENDING,
+            sock_->Write(
+                write_buf.get(), kLen1,
+                base::Bind(&SequencedSocketDataTest::ReentrantWriteCallback,
+                           base::Unretained(this), kLen1, kMsg2, kLen2, kLen2),
+                TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -820,7 +825,8 @@ TEST_F(SequencedSocketDataTest, AsyncWriteFromCompletionCallback) {
       sock_->Write(write_buf.get(), kLen1,
                    base::Bind(&SequencedSocketDataTest::ReentrantWriteCallback,
                               base::Unretained(this), kLen1, kMsg2, kLen2,
-                              ERR_IO_PENDING)));
+                              ERR_IO_PENDING),
+                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
   ASSERT_FALSE(write_callback_.have_result());
   ASSERT_EQ(kLen2, write_callback_.WaitForResult());
@@ -851,7 +857,8 @@ TEST_F(SequencedSocketDataTest, ManyReentrantWrites) {
 
   scoped_refptr<IOBuffer> write_buf(new IOBuffer(kLen1));
   memcpy(write_buf->data(), kMsg1, kLen1);
-  sock_->Write(write_buf.get(), kLen1, helper.callback());
+  sock_->Write(write_buf.get(), kLen1, helper.callback(),
+               TRAFFIC_ANNOTATION_FOR_TESTS);
 
   ASSERT_EQ(kLen4, write_callback_.WaitForResult());
 }
@@ -995,7 +1002,8 @@ TEST_F(SequencedSocketDataTest, AsyncReadFromWriteCompletionCallback) {
             sock_->Write(
                 write_buf.get(), kLen1,
                 base::Bind(&SequencedSocketDataTest::ReentrantAsyncReadCallback,
-                           base::Unretained(this), kLen1, kLen2)));
+                           base::Unretained(this), kLen1, kLen2),
+                TRAFFIC_ANNOTATION_FOR_TESTS));
 
   ASSERT_FALSE(read_callback_.have_result());
   ASSERT_EQ(kLen2, read_callback_.WaitForResult());
@@ -1055,7 +1063,8 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperations) {
 
   scoped_refptr<IOBuffer> write_buf(new IOBuffer(kLen1));
   memcpy(write_buf->data(), kMsg1, kLen1);
-  sock_->Write(write_buf.get(), kLen1, helper.callback());
+  sock_->Write(write_buf.get(), kLen1, helper.callback(),
+               TRAFFIC_ANNOTATION_FOR_TESTS);
 
   ASSERT_EQ(kLen4, read_callback_.WaitForResult());
 }
@@ -1089,7 +1098,8 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperationsThenSynchronousRead) {
   scoped_refptr<IOBuffer> write_buf(new IOBuffer(kLen1));
   memcpy(write_buf->data(), kMsg1, kLen1);
   ASSERT_EQ(ERR_IO_PENDING,
-            sock_->Write(write_buf.get(), kLen1, helper.callback()));
+            sock_->Write(write_buf.get(), kLen1, helper.callback(),
+                         TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
   AssertReadBufferEquals(kMsg4, kLen4);

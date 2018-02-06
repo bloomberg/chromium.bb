@@ -538,7 +538,7 @@ class SslCastSocketTest : public CastSocketTestBase {
       net::TestCompletionCallback write_callback;
       int write_result = write_callback.GetResult(server_socket_->Write(
           draining_buffer.get(), draining_buffer->BytesRemaining(),
-          write_callback.callback()));
+          write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
       EXPECT_GT(write_result, 0);
       draining_buffer->DidConsume(write_result);
     }

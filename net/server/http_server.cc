@@ -24,6 +24,7 @@
 #include "net/socket/server_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -285,11 +286,12 @@ void HttpServer::DoWriteLoop(HttpConnection* connection) {
   int rv = OK;
   HttpConnection::QueuedWriteIOBuffer* write_buf = connection->write_buf();
   while (rv == OK && write_buf->GetSizeToWrite() > 0) {
+    // TODO(crbug.com/656607:) Add proper annotation.
     rv = connection->socket()->Write(
-        write_buf,
-        write_buf->GetSizeToWrite(),
+        write_buf, write_buf->GetSizeToWrite(),
         base::Bind(&HttpServer::OnWriteCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), connection->id()));
+                   weak_ptr_factory_.GetWeakPtr(), connection->id()),
+        NO_TRAFFIC_ANNOTATION_BUG_656607);
     if (rv == ERR_IO_PENDING || rv == OK)
       return;
     rv = HandleWriteResult(connection, rv);

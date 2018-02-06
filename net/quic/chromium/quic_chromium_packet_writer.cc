@@ -13,6 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -107,7 +108,9 @@ WriteResult QuicChromiumPacketWriter::WritePacketToSocket(
 
 WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
   base::TimeTicks now = base::TimeTicks::Now();
-  int rv = socket_->Write(packet_.get(), packet_->size(), write_callback_);
+  // TODO(crbug.com/656607:) Add proper annotation.
+  int rv = socket_->Write(packet_.get(), packet_->size(), write_callback_,
+                          NO_TRAFFIC_ANNOTATION_BUG_656607);
 
   if (MaybeRetryAfterWriteError(rv))
     return WriteResult(WRITE_STATUS_BLOCKED, ERR_IO_PENDING);

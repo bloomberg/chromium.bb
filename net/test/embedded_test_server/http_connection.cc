@@ -8,6 +8,7 @@
 
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 namespace test_server {
@@ -51,9 +52,11 @@ bool HttpConnection::ConsumeData(int size) {
 void HttpConnection::SendInternal(const base::Closure& callback,
                                   scoped_refptr<DrainableIOBuffer> buf) {
   while (buf->BytesRemaining() > 0) {
+    // TODO(crbug.com/656607:) Add proper annotation.
     int rv = socket_->Write(buf.get(), buf->BytesRemaining(),
                             base::Bind(&HttpConnection::OnSendInternalDone,
-                                       base::Unretained(this), callback, buf));
+                                       base::Unretained(this), callback, buf),
+                            NO_TRAFFIC_ANNOTATION_BUG_656607);
     if (rv == ERR_IO_PENDING)
       return;
 

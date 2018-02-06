@@ -12,6 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace remoting {
 
@@ -107,10 +108,11 @@ void SecurityKeySocket::OnDataWritten(int result) {
 void SecurityKeySocket::DoWrite() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(write_buffer_);
-
+  // TODO(crbug.com/656607:) Add proper annotation.
   int result = socket_->Write(
       write_buffer_.get(), write_buffer_->BytesRemaining(),
-      base::Bind(&SecurityKeySocket::OnDataWritten, base::Unretained(this)));
+      base::Bind(&SecurityKeySocket::OnDataWritten, base::Unretained(this)),
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
   if (result != net::ERR_IO_PENDING) {
     OnDataWritten(result);
   }
