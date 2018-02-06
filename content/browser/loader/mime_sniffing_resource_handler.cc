@@ -546,7 +546,8 @@ bool MimeSniffingResourceHandler::MustDownload() {
   } else if (request()->url().SchemeIsHTTPOrHTTPS() &&
              // The MHTML mime type should be same as the one we check in
              // Blink's DocumentLoader.
-             response_->head.mime_type == "multipart/related") {
+             (response_->head.mime_type == "multipart/related" ||
+              response_->head.mime_type == "message/rfc822")) {
     // It is OK to load the saved offline copy, in MHTML format.
     const ResourceRequestInfo* info =
         ResourceRequestInfo::ForRequest(request());

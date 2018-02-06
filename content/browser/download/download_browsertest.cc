@@ -3158,25 +3158,60 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, ForceDownloadMhtml) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ForceDownloadMultipartRelatedPage) {
   // Force downloading the MHTML.
   DownloadTestContentBrowserClient new_client;
   new_client.set_allowed_rendering_mhtml_over_http(false);
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   NavigateToURLAndWaitForDownload(
-      shell(), embedded_test_server()->GetURL("/download/hello.mhtml"),
+      shell(),
+      // .mhtml file is mapped to "multipart/related" by the test server.
+      embedded_test_server()->GetURL("/download/hello.mhtml"),
       DownloadItem::COMPLETE);
   SetBrowserClientForTesting(old_client);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMhtml) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ForceDownloadMessageRfc822Page) {
+  // Force downloading the MHTML.
+  DownloadTestContentBrowserClient new_client;
+  new_client.set_allowed_rendering_mhtml_over_http(false);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  NavigateToURLAndWaitForDownload(
+      shell(),
+      // .mht file is mapped to "message/rfc822" by the test server.
+      embedded_test_server()->GetURL("/download/test.mht"),
+      DownloadItem::COMPLETE);
+  SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMultipartRelatedPage) {
   // Allows loading the MHTML, instead of downloading it.
   DownloadTestContentBrowserClient new_client;
   new_client.set_allowed_rendering_mhtml_over_http(true);
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
+  // .mhtml file is mapped to "multipart/related" by the test server.
   GURL url = embedded_test_server()->GetURL("/download/hello.mhtml");
+  auto observer = std::make_unique<content::TestNavigationObserver>(url);
+  observer->WatchExistingWebContents();
+  observer->StartWatchingNewWebContents();
+
+  NavigateToURL(shell(), url);
+
+  observer->WaitForNavigationFinished();
+  SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMessageRfc822Page) {
+  // Allows loading the MHTML, instead of downloading it.
+  DownloadTestContentBrowserClient new_client;
+  new_client.set_allowed_rendering_mhtml_over_http(true);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  // .mht file is mapped to "message/rfc822" by the test server.
+  GURL url = embedded_test_server()->GetURL("/download/test.mht");
   auto observer = std::make_unique<content::TestNavigationObserver>(url);
   observer->WatchExistingWebContents();
   observer->StartWatchingNewWebContents();

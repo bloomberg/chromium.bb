@@ -92,6 +92,7 @@ static const char* const kSupportedNonImageTypes[] = {
                       // type
     "application/xml", "application/atom+xml", "application/rss+xml",
     "application/xhtml+xml", "application/json",
+    "message/rfc822",     // For MHTML support.
     "multipart/related",  // For MHTML support.
     "multipart/x-mixed-replace"
     // Note: ADDING a new type here will probably render it AS HTML. This can

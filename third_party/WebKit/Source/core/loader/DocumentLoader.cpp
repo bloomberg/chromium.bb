@@ -96,9 +96,10 @@
 namespace blink {
 
 // The MHTML mime type should be same as the one we check in the browser
-// process's ChromeResourceDispatcherHostDelegate.
+// process's IsDownload (navigation_url_loader_network_service.cc).
 static bool IsArchiveMIMEType(const String& mime_type) {
-  return DeprecatedEqualIgnoringCase("multipart/related", mime_type);
+  return DeprecatedEqualIgnoringCase("multipart/related", mime_type) ||
+         DeprecatedEqualIgnoringCase("message/rfc822", mime_type);
 }
 
 DocumentLoader::DocumentLoader(

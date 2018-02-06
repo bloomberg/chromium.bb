@@ -163,7 +163,8 @@ bool IsDownload(const network::ResourceResponse& response,
     } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
                    url, response.head.mime_type)) {
       return true;
-    } else if (response.head.mime_type == "multipart/related") {
+    } else if (response.head.mime_type == "multipart/related" ||
+               response.head.mime_type == "message/rfc822") {
       // TODO(https://crbug.com/790734): retrieve the new NavigationUIData from
       // the request and and pass it to AllowRenderingMhtmlOverHttp().
       return !GetContentClient()->browser()->AllowRenderingMhtmlOverHttp(
