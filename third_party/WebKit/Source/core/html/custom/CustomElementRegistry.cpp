@@ -273,7 +273,12 @@ CustomElementDefinition* CustomElementRegistry::DefinitionForId(
 }
 
 void CustomElementRegistry::AddCandidate(Element* candidate) {
-  const AtomicString& name = candidate->localName();
+  AtomicString name = candidate->localName();
+  if (!CustomElement::IsValidName(name)) {
+    const AtomicString& is = candidate->FastGetAttribute(HTMLNames::isAttr);
+    if (!is.IsNull())
+      name = is;
+  }
   if (NameIsDefined(name) || V0NameIsDefined(name))
     return;
   UpgradeCandidateMap::iterator it = upgrade_candidates_->find(name);
